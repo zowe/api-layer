@@ -44,6 +44,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Objects;
 
+@SuppressWarnings("Duplicates")
 @Slf4j
 @Configuration
 public class SecureHttpConfig extends WebSecurityConfigurerAdapter {

@@ -7,11 +7,11 @@ const baseUrl = process.env.REACT_APP_CATALOG_URL_TEST;
 console.log('API Catalog Base URL:', baseUrl);
 const loginUrl = `${baseUrl}/#/login`;
 const dashboardUrl = `${baseUrl}/#/dashboard`;
-const detailPageUrl = `${baseUrl}/#/tile/apicatalog`;
+const detailPageUrl = `${baseUrl}/#/tile/apimediationlayer`;
 
 beforeAll(async () => {
     browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         ignoreHTTPSErrors: true,
         args: ['--no-sandbox', '--ignore-certificate-errors'],
     });

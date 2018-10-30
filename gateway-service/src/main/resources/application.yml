@@ -30,7 +30,7 @@ logging:
         com.ca.mfaas.ws: INFO
         com.ca.mfaas.gateway.config.error: INFO
         org.eclipse.jetty: WARN
-    #pattern:
+        #pattern:
         #console: "%-5p -- [%d{yyyy-MMM-dd HH:mm:ss.SSS}] %c -- %msg%n"
 
 ##############################################################################################
@@ -47,14 +47,19 @@ mfaas:
         endpoints:
             statusPage: application/info
             healthPage: application/health
-            homePage: /
+            homePage:
         info:
             serviceTitle: Gateway
-            description: This is the Gateway to Mainframe as a Service microservices
-            enableApiDoc: false
+            description: This is the Gateway to Zowe microservices
+            enableApiDoc: true
     service:
         hostname: ${environment.hostname}
         ipAddress: ${environment.ipAddress}
+    catalog-ui-tile:
+        id: apimediationlayer
+        title: API Mediation Layer API
+        description: API Mediation Layer for z/OS internal API services.
+        version:  1.0.0
     server:
         preferIpAddress: ${environment.preferIpAddress:false}
         ipAddress: ${environment.dsIpAddress}
@@ -111,6 +116,8 @@ zuul:
         socketTimeoutMillis: ${mfaas.gateway.timeoutInMillis}
 
 ribbon:
+    eureka:
+        enabled: true
     IsSecure: false
     ConnectTimeout: ${mfaas.gateway.timeoutInMillis}
     ReadTimeout: ${mfaas.gateway.timeoutInMillis}
@@ -121,6 +128,10 @@ http:
         timeout: ${mfaas.gateway.timeoutInMillis}
     socket:
         timeout: ${mfaas.gateway.timeoutInMillis}
+
+feign:
+    hystrix:
+        enabled: false
 
 hystrix:
     command:
@@ -152,24 +163,41 @@ management:
 eureka:
     instance:
         hostname: ${mfaas.service.hostname}
-        statusPageUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.statusPage}
-        healthCheckUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.healthPage}
-        secure-health-check-url: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.healthPage}
-        homePageUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.homePage}
+        statusPageUrl: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.statusPage}
+        healthCheckUrl: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.healthPage}
+        secureHealthCheckUrl: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.healthPage}
+        homePageUrl: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.homePage}
         ipAddress: ${mfaas.service.ipAddress}
         preferIpAddress: ${mfaas.server.preferIpAddress}
-        #nonSecurePortEnabled: ${mfaas.discovery.nonSecurePortEnabled}
-        nonSecurePort: ${mfaas.server.port}
         securePort: ${mfaas.server.port}
         securePortEnabled: ${mfaas.security.sslEnabled}
-        virtualHostName: ${mfaas.gateway.gatewayHostname}
-        secureVirtualHostName: ${mfaas.gateway.gatewayHostname}
+        nonSecurePortEnabled: false
+        virtualHostName: ${mfaas.discovery.serviceId}
+        secureVirtualHostName: ${mfaas.discovery.serviceId}
         metadata-map:
+            routed-services:
+                api-doc:
+                    gateway-url: /api/v1/api-doc
+                    service-url: /api-doc
             mfaas:
                 discovery:
+                    catalogUiTile:
+                        id: ${mfaas.catalog-ui-tile.id}
+                        title:  ${mfaas.catalog-ui-tile.title}
+                        description: ${mfaas.catalog-ui-tile.description}
+                        version: ${mfaas.catalog-ui-tile.version}
                     enableApiDoc: ${mfaas.discovery.info.enableApiDoc}
-                    serviceTitle: ${mfaas.discovery.info.serviceTitle}
-                    description: ${mfaas.discovery.info.description}
+                    service:
+                        title: ${mfaas.discovery.info.serviceTitle}
+                        description: ${mfaas.discovery.info.description}
+                api-info:
+                    apiVersionProperties:
+                        v1:
+                            title: Gateway Authentication Swagger
+                            description: Security Endpoints
+                            version: 1.0.0
+                            basePackage: com.ca.mfaas.gateway.controllers.swagger
+
     client:
         fetchRegistry: ${mfaas.discovery.fetchRegistry}
         registerWithEureka:  ${mfaas.discovery.registerWithEureka}
@@ -204,5 +232,3 @@ logging:
         org.springframework: INFO
         org.apache.catalina: INFO
         com.netflix: INFO
-
-

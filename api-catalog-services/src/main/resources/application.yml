@@ -51,7 +51,7 @@ mfaas:
         hostname: ${environment.hostname}
         ipAddress: ${environment.ipAddress}
     catalog-ui-tile:
-        id: apicatalog
+        id: apimediationlayer
         title: API Mediation Layer API
         description: API Mediation Layer for z/OS internal API services.
         version:  1.0.0
