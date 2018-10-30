@@ -1,0 +1,101 @@
+buildscript {
+    repositories {
+        maven {
+            setUrl('https://plugins.gradle.org/m2/')
+        }
+    }
+    dependencies {
+        classpath 'com.adarshr:gradle-test-logger-plugin:1.4.0'
+    }
+}
+
+apply plugin: 'com.adarshr.test-logger'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile libraries.http_client
+    compile libraries.jackson_dataformat_yaml
+    compile libraries.jackson_databind
+    compile libraries.json_path
+    compile libraries.spring_boot_starter_websocket
+
+    testCompile libraries.junit
+    testCompile libraries.hamcrest
+    testCompile libraries.rest_assured
+    testCompile libraries.awaitility
+    testCompile libraries.logback_classic
+    testCompile libraries.powermock_api_mockito2
+    testCompile libraries.power_mock_junit4
+    testCompile libraries.power_mock_junit4_rule
+    testCompile libraries.lombok
+    testCompile libraries.jsoup
+}
+
+jar {
+    baseName = "integration-tests"
+}
+
+testlogger {
+    theme 'standard-parallel'
+}
+
+test.enabled = false
+
+task startUpCheck(type: Test) {
+    group 'integration test'
+    description "Check that the API Mediation Layer is up and runnig"
+
+    systemProperties System.properties
+    useJUnit {
+        includeCategories 'com.ca.mfaas.utils.categories.StartupCheck'
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runIntegrationTests(type: Test) {
+    group "Integration tests"
+    description "Run only tests without long tests"
+
+    dependsOn startUpCheck
+    systemProperties System.properties
+    useJUnit {
+        excludeCategories(
+            'com.ca.mfaas.utils.categories.StartupCheck',
+            'com.ca.mfaas.utils.categories.SlowTests',
+            'com.ca.mfaas.utils.categories.LocalDeploymentTest'
+        )
+    }
+}
+
+task runLocalDeploymentIntegrationTests(type: Test) {
+    group "Integration tests"
+    description "Run integration tests with local deployment of helloworld-spring"
+
+    dependsOn startUpCheck
+    systemProperties System.getProperties()
+    useJUnit {
+        excludeCategories(
+            'com.ca.mfaas.utils.categories.StartupCheck',
+            'com.ca.mfaas.utils.categories.SlowTests'
+        )
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runAllIntegrationTests(type: Test) {
+    group "Integration tests"
+    description "Run all integration tests"
+
+    dependsOn startUpCheck
+    systemProperties System.properties
+    useJUnit {
+        excludeCategories(
+            'com.ca.mfaas.utils.categories.StartupCheck',
+            'com.ca.mfaas.utils.categories.LocalDeploymentTest'
+        )
+    }
+    outputs.upToDateWhen { false }
+}

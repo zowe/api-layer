@@ -1,0 +1,4 @@
+service: service
+homePageUrl: http://localhost:10012/discoverableclient/
+statusPageUrl: http://localhost:10012/discoverableclient/actuator/info
+healthCheckUrl: http://localhost:10012/discoverableclient/actuator/health

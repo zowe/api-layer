@@ -1,0 +1,208 @@
+spring:
+    application:
+        name: gateway
+    cloud:
+        client:
+            hostname: ${environment.hostname}
+            ipAddress: ${environment.ipAddress}
+    mvc:
+        throw-exception-if-no-handler-found: true
+    output:
+        ansi:
+            enabled: detect
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: INFO
+        org.springframework: WARN
+        org.apache.catalina: WARN
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.cloud.netflix.zuul.filters.route.support.AbstractRibbonCommand: ERROR
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
+        org.apache.tomcat.websocket: WARN
+        org.springframework.web.socket: WARN
+        com.ca.mfaas.ws: INFO
+        com.ca.mfaas.gateway.config.error: INFO
+        org.eclipse.jetty: WARN
+    #pattern:
+        #console: "%-5p -- [%d{yyyy-MMM-dd HH:mm:ss.SSS}] %c -- %msg%n"
+
+##############################################################################################
+# MFAAS configuration section
+##############################################################################################
+mfaas:
+    discovery:
+        serviceId: ${spring.application.name}
+        enabled: ${environment.discoveryEnabled:true}
+        locations: ${environment.discoveryLocations}
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
+        endpoints:
+            statusPage: application/info
+            healthPage: application/health
+            homePage: /
+        info:
+            serviceTitle: Gateway
+            description: This is the Gateway to Mainframe as a Service microservices
+            enableApiDoc: false
+    service:
+        hostname: ${environment.hostname}
+        ipAddress: ${environment.ipAddress}
+    server:
+        preferIpAddress: ${environment.preferIpAddress:false}
+        ipAddress: ${environment.dsIpAddress}
+        port: ${environment.port}
+        scheme: ${environment.scheme:https}
+    security:
+        esmEnabled: ${environment.esmEnabled:false}
+        sslEnabled: ${environment.sslEnabled:true}
+        protocol: TLSv1.2
+        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+        keyAlias: ${environment.keyAlias}
+        keyPassword: ${environment.keyPassword}
+        keyStore: ${environment.keystore}
+        keyStoreType: ${environment.keystoreType}
+        keyStorePassword: ${environment.keystorePassword}
+        trustStore: ${environment.truststore}
+        trustStoreType: ${environment.truststoreType}
+        trustStorePassword: ${environment.truststorePassword}
+    gateway:
+        gatewayHostname: ${environment.gatewayHostname}
+        timeoutInMillis: ${environment.gatewayTimeoutInMillis:30000}
+        debugHeaders: false
+        histrixTimeoutInMillis: ${environment.histrixTimeoutInMillis:240000}
+        verifySslCertificatesOfServices: true
+
+##############################################################################################
+
+server:
+    address: ${mfaas.server.ipAddress}
+    port: ${mfaas.server.port}
+    ssl:
+        enabled: ${mfaas.security.sslEnabled}
+        protocol: ${mfaas.security.protocol}
+        ciphers: ${mfaas.security.ciphers}
+        keyStore: ${mfaas.security.keyStore}
+        keyAlias: ${mfaas.security.keyAlias}
+        keyPassword: ${mfaas.security.keyPassword}
+        keyStorePassword: ${mfaas.security.keyStorePassword}
+        keyStoreType: ${mfaas.security.keyStoreType}
+        trustStore: ${mfaas.security.trustStore}
+        trustStoreType: ${mfaas.security.trustStoreType}
+        trustStorePassword: ${mfaas.security.trustStorePassword}
+
+zuul:
+    sslHostnameValidationEnabled: false
+    traceRequestBody: true
+    ignoreSecurityHeaders: false
+    includeDebugHeader: ${mfaas.gateway.debugHeaders}
+    sensitiveHeaders: Expires,Date
+    ignoredPatterns:
+        - /ws/**
+    host:
+        connectTimeoutMillis: ${mfaas.gateway.timeoutInMillis}
+        socketTimeoutMillis: ${mfaas.gateway.timeoutInMillis}
+
+ribbon:
+    IsSecure: false
+    ConnectTimeout: ${mfaas.gateway.timeoutInMillis}
+    ReadTimeout: ${mfaas.gateway.timeoutInMillis}
+    ConnectionManagerTimeout: ${mfaas.gateway.timeoutInMillis}
+
+http:
+    connection:
+        timeout: ${mfaas.gateway.timeoutInMillis}
+    socket:
+        timeout: ${mfaas.gateway.timeoutInMillis}
+
+hystrix:
+    command:
+        default:
+            fallback:
+                enabled: false
+            circuitBreaker:
+                enabled: false
+            execution:
+                timeout:
+                    enabled: false
+                isolation:
+                    thread:
+                        timeoutInMilliseconds: ${mfaas.gateway.timeoutInMillis}
+                    strategy: SEMAPHORE
+                    semaphore:
+                        maxConcurrentRequests: 100000
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,routes
+    health:
+        defaults:
+            enabled: false
+
+eureka:
+    instance:
+        hostname: ${mfaas.service.hostname}
+        statusPageUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.statusPage}
+        healthCheckUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.healthPage}
+        secure-health-check-url: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.healthPage}
+        homePageUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.homePage}
+        ipAddress: ${mfaas.service.ipAddress}
+        preferIpAddress: ${mfaas.server.preferIpAddress}
+        #nonSecurePortEnabled: ${mfaas.discovery.nonSecurePortEnabled}
+        nonSecurePort: ${mfaas.server.port}
+        securePort: ${mfaas.server.port}
+        securePortEnabled: ${mfaas.security.sslEnabled}
+        virtualHostName: ${mfaas.gateway.gatewayHostname}
+        secureVirtualHostName: ${mfaas.gateway.gatewayHostname}
+        metadata-map:
+            mfaas:
+                discovery:
+                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc}
+                    serviceTitle: ${mfaas.discovery.info.serviceTitle}
+                    description: ${mfaas.discovery.info.description}
+    client:
+        fetchRegistry: ${mfaas.discovery.fetchRegistry}
+        registerWithEureka:  ${mfaas.discovery.registerWithEureka}
+        region: ${mfaas.discovery.region}
+        serviceUrl:
+            defaultZone: ${mfaas.discovery.locations}
+        healthcheck:
+            enabled: true # always true
+
+
+---
+spring:
+    profiles: diag
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+
+---
+spring:
+    profiles: dev
+    profiles.include:
+        diag
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: DEBUG
+        org.springframework: INFO
+        org.apache.catalina: INFO
+        com.netflix: INFO
+
+

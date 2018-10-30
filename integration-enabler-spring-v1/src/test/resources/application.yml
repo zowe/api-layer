@@ -1,0 +1,97 @@
+spring:
+    application:
+        name: enablerv1sampleapp
+    output:
+        ansi:
+            enabled: always
+
+logging:
+    level:
+        ROOT: INFO
+        org.springframework: INFO
+        com.ca.mfaas: DEBUG
+
+##############################################################################################
+# MFAAS configuration section
+##############################################################################################
+mfaas:
+    discovery:
+        serviceId: ${environment.serviceId}
+        locations: ${environment.discoveryLocations}
+        enabled: ${environment.discoveryEnabled:true}
+        endpoints:
+            statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
+            healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
+            homePage:
+        info:
+            serviceTitle: ${environment.serviceTitle}
+            description:  ${environment.serviceDescription}
+            swaggerLocation: # populate this value with a json file from the resources folder to load a static swagger definition
+        fetchRegistry: false
+        region: default
+    service:
+        hostname: ${environment.hostname}
+        ipAddress: ${environment.ipAddress}
+    catalog-ui-tile:
+        id: cademoapps
+        title: Sample MFaaS applications
+        description: Applications which demonstrate how to make a service discoverable in the MFaaS ecosystem
+        version:  1.0.0
+    server:
+        port: ${environment.port}
+        contextPath: /${spring.application.name}
+        scheme: http
+
+eureka:
+    instance:
+        appName: ${mfaas.discovery.serviceId}
+        hostname: ${mfaas.service.hostname}
+        statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
+        healthCheckUrlPath: ${mfaas.discovery.endpoints.healthPage}
+        homePageUrlPath: ${mfaas.discovery.endpoints.homePage}
+        metadata-map:
+            routed-services:
+                api_v1:
+                    gateway-url: "api/v1"
+                    service-url: ${mfaas.server.contextPath}/api/v1
+                api-doc:
+                    gateway-url: "api/v1/api-doc"
+                    service-url: ${mfaas.server.contextPath}/api-doc
+            mfaas:
+                api-info:
+                    swagger:
+                        location: ${mfaas.discovery.info.swaggerLocation:}
+                    apiVersionProperties:
+                        v1:
+                            title: Service Integration Enabler V1 Sample App (spring boot 1.x)
+                            description: Sample micro-service showing how to enable a Spring Boot v1.5.9 application
+                            version: 1.0.0
+                            basePackage: com.ca.mfaas.sample.enable.v1.controller
+                discovery:
+                    catalogUiTile:
+                        id: ${mfaas.catalog-ui-tile.id}
+                        title:  ${mfaas.catalog-ui-tile.title}
+                        description: ${mfaas.catalog-ui-tile.description}
+                        version: ${mfaas.catalog-ui-tile.version}
+                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
+                    service:
+                        title: ${mfaas.discovery.info.serviceTitle}
+                        description: ${mfaas.discovery.info.description}
+    client:
+        healthcheck:
+            enabled: true
+        serviceUrl:
+            defaultZone: ${mfaas.discovery.locations}
+        fetchRegistry:  ${mfaas.discovery.fetchRegistry}
+        region: ${mfaas.discovery.region}
+        enabled: ${mfaas.discovery.enabled}
+
+##############################################################################################
+management:
+    context-path: /application
+
+server:
+    address: ${mfaas.service.hostname}
+    port: ${mfaas.server.port}
+    contextPath: ${mfaas.server.contextPath}
+

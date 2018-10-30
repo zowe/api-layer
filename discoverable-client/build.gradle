@@ -1,0 +1,48 @@
+buildscript {
+    repositories mavenRepositories
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.gorylenko.gradle-git-properties'
+
+springBoot {
+    // This statement tells the Gradle Spring Boot plugin to generate a file
+    // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
+    // via /info endpoint
+    buildInfo {
+        properties {
+            // Generate extra build info:
+            additionalProperties = [
+                by: System.properties['user.name'],
+                operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
+                number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
+                machine: InetAddress.localHost.hostName
+            ]
+        }
+    }
+}
+
+gitProperties {
+    gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
+}
+
+dependencies {
+    compile(project(':integration-enabler-spring-v2'))
+    compile(project(':gateway-common'))
+
+    compile libraries.gson
+    compile libraries.spring_boot_starter_actuator
+    compile libraries.spring_boot_starter_web
+    compile libraries.spring_boot_starter_websocket
+    compile libraries.spring_cloud_starter_eureka
+
+    compileOnly libraries.lombok
+
+    testCompile libraries.spring_boot_starter_test
+}
+
+bootJar.archiveName = "${bootJar.baseName}.jar"

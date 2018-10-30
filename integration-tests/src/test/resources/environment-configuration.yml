@@ -1,0 +1,16 @@
+gatewayServiceConfiguration:
+    scheme: https
+    host: localhost
+    port: 10010
+    user: qadba01
+    password: auto01
+discoveryServiceConfiguration:
+    scheme: http
+    user: eureka
+    password: password
+    host: localhost
+    port: 10011
+    instances: 1
+apiCatalogServiceConfiguration:
+    user: user
+    password: user

@@ -1,0 +1,180 @@
+spring:
+    application:
+        name: apicatalog
+    cloud:
+        client:
+            hostname: ${environment.hostname}
+            ipAddress: ${environment.ipAddress}
+    mvc:
+        throw-exception-if-no-handler-found: true
+    output:
+        ansi:
+            enabled: detect
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: INFO
+        com.ca.mfaas.security: DEBUG
+        org.springframework: WARN
+        org.apache.catalina: WARN
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+
+##############################################################################################
+# MFAAS configuration section
+##############################################################################################
+mfaas:
+    discovery:
+        serviceId: ${spring.application.name}
+        locations: ${environment.discoveryLocations}
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        eurekaUserName: ${environment.eurekaUserId}
+        eurekaUserPassword: ${environment.eurekaPassword}
+        endpoints:
+            statusPage: ${mfaas.server.contextPath}/application/info
+            healthPage: ${mfaas.server.contextPath}/application/health
+            homePage: /ui/v1/apicatalog
+        info:
+            serviceTitle: API Catalog
+            description: API Catalog microservice to display service details and API documentation for discovered API services
+            enableApiDoc: true
+    service:
+        hostname: ${environment.hostname}
+        ipAddress: ${environment.ipAddress}
+    catalog-ui-tile:
+        id: apicatalog
+        title: API Mediation Layer API
+        description: API Mediation Layer for z/OS internal API services.
+        version:  1.0.0
+    server:
+        port: ${environment.port}
+        contextPath: /apicatalog
+        scheme: http
+    security:
+        esmEnabled: ${environment.esmEnabled:false}
+        sslEnabled: false
+        protocol: TLSv1.2
+        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+        trustStore: ${environment.truststore}
+        trustStoreType: ${environment.truststoreType}
+        trustStorePassword: ${environment.truststorePassword}
+    gateway:
+        gatewayHostname: ${environment.gatewayHostname}
+    service-registry:
+        serviceFetchDelayInMillis:  30000
+        cacheRefreshUpdateThresholdInMillis: 60000
+        cacheRefreshInitialDelayInMillis: 60000
+        cacheRefreshRetryDelayInMillis: 60000
+
+##############################################################################################
+
+server:
+    address: ${mfaas.service.hostname}
+    port: ${mfaas.server.port}
+    servlet:
+        contextPath: ${mfaas.server.contextPath}
+    ssl:
+        enabled: ${mfaas.security.sslEnabled}
+        protocol: ${mfaas.security.protocol}
+        ciphers:  ${mfaas.security.ciphers}
+        trustStore: ${mfaas.security.trustStore}
+        trustStoreType: ${mfaas.security.trustStoreType}
+        trustStorePassword: ${mfaas.security.trustStorePassword}
+    error:
+        whitelabel:
+            enabled: false
+eureka:
+    instance:
+        hostname: ${mfaas.service.hostname}
+        statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
+        healthCheckUrl: ${mfaas.discovery.endpoints.healthPage}
+        homePageUrl: ${mfaas.discovery.endpoints.homePage}
+        metadata-map:
+            routed-services:
+                ui_v1:
+                    gateway-url: "ui/v1"
+                    service-url: /apicatalog
+                api_v1:
+                    gateway-url: "api/v1"
+                    service-url: /apicatalog
+                api-doc:
+                    gateway-url: "api/v1/api-doc"
+                    service-url: /apicatalog/api-doc
+            mfaas:
+                api-info:
+                    apiVersionProperties:
+                        v1:
+                            title: API Catalog
+                            description: REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.
+                            version: 1.0.0
+                            basePackage: com.ca.mfaas.apicatalog.controllers.api
+
+                discovery:
+                    catalogUiTile:
+                        id: ${mfaas.catalog-ui-tile.id}
+                        title: ${mfaas.catalog-ui-tile.title}
+                        description: ${mfaas.catalog-ui-tile.description}
+                        version: ${mfaas.catalog-ui-tile.version}
+                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:false}
+                    service:
+                        title: ${mfaas.discovery.info.serviceTitle}
+                        description: ${mfaas.discovery.info.description}
+    client:
+        healthcheck:
+            enabled: true
+        serviceUrl:
+            defaultZone: ${mfaas.discovery.locations}
+        fetchRegistry:  ${mfaas.discovery.fetchRegistry}
+        region: ${mfaas.discovery.region}
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+    health:
+        defaults:
+            enabled: false
+
+---
+
+spring:
+    profiles: diag
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+
+---
+
+spring:
+    profiles: dev
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: DEBUG
+        org.springframework: INFO
+        org.apache.catalina: INFO
+        com.netflix: INFO
+
+---
+
+spring:
+    profiles: unsecure
+
+security:
+    cookie:
+        maxAge: -1
+        secure: false

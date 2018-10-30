@@ -1,0 +1,116 @@
+spring:
+    application:
+        name: discovery
+    cloud:
+        client:
+            hostname: ${environment.hostname}
+            ipAddress: ${environment.ipAddress}
+    output:
+        ansi:
+            enabled: detect
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: INFO
+        org.springframework: WARN
+        org.apache.catalina: WARN
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
+
+##############################################################################################
+# MFAAS configuration section
+##############################################################################################
+mfaas:
+    discovery:
+        serviceId: ${spring.application.name}
+        eurekaUserName: ${environment.eurekaUserId}
+        eurekaUserPassword: ${environment.eurekaPassword}
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
+        locations: ${environment.discoveryLocations}
+        info:
+            serviceTitle: Discovery Service
+            description: A Discovery Service to discover, announce and provide about microservices registered in the MFaaS eco system
+            enableApiDoc: false
+    service:
+        hostname: ${environment.hostname}
+        ipAddress: ${environment.ipAddress}
+    server:
+        preferIpAddress: ${environment.preferIpAddress}
+        ipAddress: ${environment.dsIpAddress}
+        port: ${environment.port}
+        scheme: http
+    security:
+        esmEnabled: false
+        sslEnabled: false
+        protocol: TLSv1.2
+        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+        trustStore: ${environment.truststore}
+        trustStoreType: ${environment.truststoreType}
+        trustStorePassword: ${environment.truststorePassword}
+
+##############################################################################################
+server:
+    address: ${mfaas.server.ipAddress}
+    port: ${mfaas.server.port}
+    ssl:
+        enabled: ${mfaas.security.sslEnabled}
+        protocol: ${mfaas.security.protocol}
+        ciphers: ${mfaas.security.ciphers}
+        trustStore: ${mfaas.security.trustStore}
+        trustStoreType: ${mfaas.security.trustStoreType}
+        trustStorePassword: ${mfaas.security.trustStorePassword}
+
+eureka:
+    #server:
+        #enableSelfPreservation: false
+    instance:
+        hostname: ${mfaas.service.hostname}
+        ipAddress: ${mfaas.service.ipAddress}
+        preferIpAddress: ${mfaas.server.preferIpAddress}
+        metadata-map:
+            mfaas:
+                discovery:
+                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
+    client:
+        registerWithEureka: ${mfaas.discovery.registerWithEureka}
+        fetchRegistry: ${mfaas.discovery.fetchRegistry}
+        region: ${mfaas.discovery.region}
+        serviceUrl:
+            defaultZone: ${mfaas.discovery.locations}
+
+management:
+    health:
+        defaults:
+            enabled: false
+
+---
+spring:
+    profiles: diag
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+
+---
+spring:
+    profiles: dev
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: DEBUG
+        org.springframework: INFO
+        org.apache.catalina: INFO
+        com.netflix: INFO
+        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO

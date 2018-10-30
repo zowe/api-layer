@@ -1,0 +1,10 @@
+dependencies {
+    compileOnly libraries.lombok
+
+    compile libraries.jackson_annotations
+    compile libraries.jackson_dataformat_yaml
+    compile libraries.eureka_client
+
+    testCompile libraries.junit
+    testCompile libraries.logback_classic
+}

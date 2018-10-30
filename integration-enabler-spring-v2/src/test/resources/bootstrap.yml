@@ -1,0 +1,11 @@
+environment:
+    hostname: localhost
+    port: 10012
+    discoveryLocations: http://eureka:password@localhost:10011/eureka/
+    preferIpAddress: false
+    ipAddress: 127.0.0.1
+    serverIpAddress: 127.0.0.1
+    serviceTitle: Sample V2 Client
+    serviceDescription: Sample V2 Client
+
+

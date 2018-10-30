@@ -1,0 +1,24 @@
+.clear-text-search:hover {
+    cursor: pointer;
+}
+
+.filtering-container {
+    float: left;
+}
+
+.filtering-container .search-bar {
+    height: 50px;
+    width: 422px;
+}
+
+@media only screen and (max-width: 530px) {
+    .filtering-container .search-bar {
+        width: 360px;
+    }
+}
+
+@media only screen and (max-width: 390px) {
+    .filtering-container .search-bar {
+        width: 320px;
+    }
+}

@@ -1,0 +1,27 @@
+spring.profiles.include: diag
+
+environment:
+    cacheRefreshDelayInMillis: 10000
+    discoveryLocations: http://eureka:password@localhost:10011/eureka/
+    dsIpAddress: 0.0.0.0
+    eurekaPassword: password
+    eurekaUserId: eureka
+    hostname: localhost
+    initialCacheRefreshDelayInMillis: 10000
+    ipAddress: 127.0.0.1
+    port: 10011
+    preferIpAddress: false
+    registryServiceInitialDelayInSeconds: 10
+    registryServiceRetryDelayInSeconds: 5
+    truststore: keystore/local/localhost_truststore.jks
+    truststorePassword: trustword
+    truststoreType: JKS
+    updateThresholdInMillis: 10000
+
+discovery:
+    staticApiDefinitionsDirectory: config/local/api-defs
+
+spring:
+    output:
+        ansi:
+            enabled: always

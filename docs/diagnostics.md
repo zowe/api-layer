@@ -1,0 +1,30 @@
+# Diagnostics
+
+The running services needs to be diagnosed in case of problems. The Spring Boot Actuator provides a lot of useful REST API endpoints to know more about the application state. The issue is that thay should be opened to public. The idea is protect them with SAF resource on z/OS using ESM microservice. But ESM microservice is not used by API Mediation Layer code.
+
+The default configuration exposes just few endpoints that are safe. But for local development a profile `diag` is turned on to enable all of them. 
+
+See `config/local/gateway-service.yml` file and look for:
+
+    spring.profiles.include: diag
+
+
+Actuator endpoints can be accessed on `/application/` URL for each service. 
+For example, the gateway on localhost has this URL:
+
+    https://localhost:10010/application/
+
+
+## Build Information
+
+It can be useful to know what code is used. This is available at `/application/info` endpoint for each service. E.g:
+
+    https://localhost:10010/application/info
+
+
+It is also printed to the log as the very first messsage:
+
+    [DS] 16:32:04.022 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service discovery-service version 0.2.0-SNAPSHOT #n/a on 2018-08-23T14:28:33.223Z by plape03mac850 commit 6fd7c53
+    [GS] 16:32:04.098 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service gateway-service version 0.2.0-SNAPSHOT #n/a on 2018-08-23T14:28:33.231Z by plape03mac850 commit 6fd7c53
+    [DC] 16:32:04.195 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service discoverable-client version 0.2.0-SNAPSHOT #n/a on 2018-08-23T14:28:33.217Z by plape03mac850 commit 6fd7c53
+    [AC] 16:32:04.317 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service api-catalog-services version 0.2.0-SNAPSHOT #n/a on 2018-08-23T14:28:33.201Z by plape03mac850 commit 6fd7c53

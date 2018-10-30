@@ -1,0 +1,162 @@
+environment:
+    esmEnabled: false
+    serverIpAddress: 127.0.0.1
+    port: 12345
+    securePort: 12345
+    hostname: localhost
+    ipAddress: 127.0.0.1
+    preferIpAddress: false
+    discoveryServiceLocation: http://localhost:12345/eureka/apps
+    gatewayHostname: localhost
+    keyAlias: test
+    keyPassword: password
+    keystore: store/keystore
+    keystoreType: JKS
+    keystorePassword: password
+    truststore: store/truststore
+    truststoreType: PKCS12
+    truststorePassword: pass
+    eurekaUserId: eureka
+    eurekaPassword: password
+
+spring:
+    application:
+        name: gateway
+    output:
+        ansi:
+            enabled: always
+
+logging:
+    level:
+        ROOT: INFO
+        org.springframework: INFO
+        com.ca.mfaas: DEBUG
+
+##############################################################################################
+# MFAAS configuration section
+##############################################################################################
+mfaas:
+    discovery:
+        enabled: ${environment.discoveryEnabled:true}
+        locations: ${environment.discoveryLocations}
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        endpoints:
+            statusPage: actuator/info
+            healthPage: actuator/health
+            homePage:
+        info:
+            serviceTitle: Gateway
+            description: This is the Gateway to Mainframe as a Service microservices
+            enableApiDoc: false
+    service:
+        hostname: ${environment.hostname}
+        ipAddress: ${environment.ipAddress}
+    server:
+        preferIpAddress: ${environment.preferIpAddress:false}
+        ipAddress: ${environment.ipAddress}
+        port: ${environment.port}
+        securePort: ${environment.securePort:${environment.port}}
+    security:
+        esmEnabled: ${environment.esmEnabled:false}
+        scheme: https
+        sslEnabled: true
+        protocol: TLSv1.2
+        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+        keyAlias: ${environment.keyAlias}
+        keyPassword: ${environment.keyPassword}
+        keyStore:  ${environment.keystore}
+        keyStoreType:  ${environment.keystoreType}
+        keyStorePassword: ${environment.keystorePassword}
+        trustStore: ${environment.truststore}
+        trustStoreType: ${environment.truststoreType}
+        trustStorePassword: ${environment.truststorePassword}
+    gateway:
+        gatewayHostname: ${environment.gatewayHostname}
+        timeoutInMillis: ${environment.gatewayTimeoutInMillis:30000}
+        debugHeaders: true
+
+##############################################################################################
+
+server:
+    address: ${mfaas.server.ipAddress}
+    port: ${mfaas.server.port}
+    ssl:
+        enabled: ${mfaas.security.sslEnabled}
+        protocol: ${mfaas.security.protocol}
+        ciphers: ${mfaas.security.ciphers}
+        keyStore: ${mfaas.security.keyStore}
+        keyAlias: ${mfaas.security.keyAlias}
+        keyPassword: ${mfaas.security.keyPassword}
+        keyStorePassword: ${mfaas.security.keyStorePassword}
+        keyStoreType: ${mfaas.security.keyStoreType}
+        trustStore: ${mfaas.security.trustStore}
+        trustStoreType: ${mfaas.security.trustStoreType}
+        trustStorePassword: ${mfaas.security.trustStorePassword}
+
+zuul:
+    sslHostnameValidationEnabled: false
+    traceRequestBody: true
+    ignoreSecurityHeaders: false
+    includeDebugHeader: ${mfaas.gateway.debugHeaders}
+    sensitiveHeaders: Expires,Date
+    host:
+        connectTimeoutMillis: ${mfaas.gateway.timeoutInMillis}
+        socketTimeoutMillis: ${mfaas.gateway.timeoutInMillis}
+
+ribbon:
+    IsSecure: false
+    ConnectTimeout: ${mfaas.gateway.timeoutInMillis}
+    ReadTimeout: ${mfaas.gateway.timeoutInMillis}
+    ConnectionManagerTimeout: ${mfaas.gateway.timeoutInMillis}
+
+http:
+    connection:
+        timeout: ${mfaas.gateway.timeoutInMillis}
+    socket:
+        timeout: ${mfaas.gateway.timeoutInMillis}
+
+hystrix:
+    command:
+        default:
+            execution:
+                isolation:
+                    thread:
+                        timeoutInMilliseconds: ${mfaas.gateway.timeoutInMillis}
+
+management:
+    endpoint:
+        routes:
+            enabled: true
+
+eureka:
+    instance:
+        hostname: ${mfaas.service.hostname}
+        statusPageUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.securePort}/${mfaas.discovery.endpoints.statusPage}
+        healthCheckUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.securePort}/${mfaas.discovery.endpoints.healthPage}
+        secure-health-check-url: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.securePort}/${mfaas.discovery.endpoints.healthPage}
+        homePageUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.securePort}/${mfaas.discovery.endpoints.homePage}
+        ipAddress: ${mfaas.service.ipAddress}
+        preferIpAddress: ${mfaas.server.preferIpAddress}
+        nonSecurePortEnabled: ${mfaas.discovery.nonSecurePortEnabled}
+        securePortEnabled: ${mfaas.discovery.securePortEnabled}
+        securePort: ${mfaas.server.securePort:${mfaas.server.port}}
+        virtualHostName: ${mfaas.gateway.gatewayHostname}
+        secureVirtualHostName: ${mfaas.gateway.gatewayHostname}
+        metadata-map:
+            mfaas:
+                discovery:
+                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc}
+                    serviceTitle: ${mfaas.discovery.info.serviceTitle}
+                    description: ${mfaas.discovery.info.description}
+    client:
+        fetchRegistry: ${mfaas.discovery.fetchRegistry}
+        registerWithEureka:  ${mfaas.discovery.registerWithEureka}
+        region: ${mfaas.discovery.region}
+        serviceUrl:
+            defaultZone: ${mfaas.discovery.locations}
+        healthcheck:
+            enabled: true # always true

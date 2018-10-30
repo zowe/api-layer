@@ -1,0 +1,48 @@
+.login-object {
+    overflow: hidden;
+    background-image: url("../../assets/images/login_background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    display: flex;
+    flex: auto;
+    height: 100%;
+    padding-bottom: 0;
+}
+
+.login-form {
+    width: 440px;
+}
+
+.login-form {
+    height: 100vh;
+    background-color: #fff;
+}
+
+.login-bg > img {
+    height: 100vh;
+}
+
+.error-message {
+    display: flex;
+    align-items: center;
+}
+
+.error-message-content {
+    display: inline-flex;
+    align-items: center;
+}
+
+.error-message > * {
+    padding: 0;
+    margin: 0;
+}
+
+@media only screen and (max-width: 1315px) {
+    .picture {
+        display: none;
+    }
+}
+
+#error-message {
+    align-self: baseline;
+}

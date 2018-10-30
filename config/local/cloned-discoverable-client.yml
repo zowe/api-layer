@@ -1,0 +1,25 @@
+spring.profiles.include: diag
+
+environment:
+    discoveryLocations: http://eureka:password@localhost:10011/eureka/
+    hostname: localhost
+    ipAddress: 127.0.0.1
+    port: 10022
+    preferIpAddress: false
+    serviceDescription: 'Cloned Discoverable Client - use to simulate two different services under same parent Id.'
+    serviceId: cloneddiscoverableclient
+    serviceTitle: 'Cloned Sample API Mediation Layer Application (Spring Boot 2.x)'
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 5
+        registryFetchIntervalSeconds: 5
+
+    instance:
+        leaseExpirationDurationInSeconds: 6
+        leaseRenewalIntervalInSeconds: 5
+
+spring:
+    output:
+        ansi:
+            enabled: always

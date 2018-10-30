@@ -1,0 +1,23 @@
+[
+    {
+        "version": "1.0.1",
+        "id": "cademoapps",
+        "title": "Sample API Mediation Layer Applications",
+        "status": "UP",
+        "description": "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem",
+        "services": [
+            {
+                "serviceId": "discoverableclient",
+                "title": "Sample API Mediation Layer Application (Spring Boot 2.x)",
+                "description": "Sample Spring Boot 2.x REST API application using the API Mediation Layer enabler",
+                "status": "UP",
+                "secured": false,
+                "homePageUrl": "http://localhost:10012/discoverableclient/"
+            }
+        ],
+        "totalServices": 1,
+        "activeServices": 1,
+        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
+        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+    }
+]

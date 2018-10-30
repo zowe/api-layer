@@ -1,0 +1,89 @@
+ext {
+    artifactName = 'api-mediation-zowe-package'
+}
+
+configurations {
+    catalogServiceJar
+    discoveryServiceJar
+    gatewayServiceJar
+    enablerSpringBootJar
+    discoverableClientJar
+    zip
+}
+
+dependencies {
+    catalogServiceJar(project(path: ":api-catalog-services", configuration: "bootArchives"))
+    discoveryServiceJar(project(path: ":discovery-service", configuration: "bootArchives"))
+    gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
+    enablerSpringBootJar(project(path: ":integration-enabler-spring-v1", configuration: "archives"))
+    discoverableClientJar(project(path: ":discoverable-client", configuration: "bootArchives"))
+}
+
+task packageApiMediationZowe(type: Zip) {
+    archiveName = artifactName + ".zip"
+    includeEmptyDirs = true
+
+     into('/') {
+        from configurations.catalogServiceJar
+        from configurations.discoveryServiceJar
+        from configurations.gatewayServiceJar
+        from configurations.enablerSpringBootJar
+        from configurations.discoverableClientJar
+    }
+
+    into('scripts/') {
+        from "$buildDir/convert/api-mediation-start-template.sh"
+        from "$buildDir/convert/api-mediation-start-catalog-template.sh"
+        from "$buildDir/convert/api-mediation-start-discovery-template.sh"
+        from "$buildDir/convert/api-mediation-start-gateway-template.sh"
+
+        from "$buildDir/convert/gen-selfsigned-keystore-template.sh"
+    }
+}
+
+packageApiMediationZowe.doFirst {
+    List<File> scriptFiles =  new ArrayList<File>() {{
+        add(file('src/main/resources/scripts/api-mediation-start-template.sh'));
+        add(file('src/main/resources/scripts/api-mediation-start-catalog-template.sh'));
+        add(file('src/main/resources/scripts/api-mediation-start-discovery-template.sh'));
+        add(file('src/main/resources/scripts/api-mediation-start-gateway-template.sh'));
+        add(file('src/main/resources/scripts/gen-selfsigned-keystore-template.sh'));
+    }};
+    for (File scriptFile : scriptFiles){
+        def inputStream = new InputStreamReader(new FileInputStream(scriptFile), "ISO-8859-1");
+        def lineReader = new BufferedReader(inputStream);
+        def scriptOutputDir = new File("$buildDir/convert/");
+        if (!scriptOutputDir.exists()) {
+            scriptOutputDir.mkdirs();
+        }
+        File scriptConvertedOutput = new File("$buildDir/convert/"+scriptFile.getName());
+        if (scriptConvertedOutput.exists()) {
+            scriptConvertedOutput.delete();
+        }
+        scriptConvertedOutput.createNewFile();
+        def printer = new PrintWriter(scriptConvertedOutput, "IBM-1047");
+        def line;
+        def eol = [10] as byte[]
+        //  def ebcdicEol = [ 21 ] as byte []
+        while ((line = lineReader.readLine()) != null) {
+            printer.write(line);
+            printer.write(new String(eol, "ISO-8859-1"))
+        }
+        printer.flush();
+        printer.close();
+    }
+}
+
+build.dependsOn(packageApiMediationZowe)
+
+artifacts {
+    zip packageApiMediationZowe
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + ".zip")
+        }
+    }
+}

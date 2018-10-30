@@ -1,0 +1,196 @@
+<!--
+
+    This program and the accompanying materials are made available under the terms of the
+    Eclipse Public License v2.0 which accompanies this distribution, and is available at
+    https://www.eclipse.org/legal/epl-v20.html
+
+    SPDX-License-Identifier: EPL-2.0
+
+    Copyright Contributors to the Zowe Project.
+
+-->
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>API Mediation Layer</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        html {
+            font-family: "Open Sans", -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            line-height: 1.25;
+            -webkit-font-smoothing: antialiased;
+            -ms-text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
+            font-size: 22px;
+        }
+
+        body {
+            background-color: #F5F7FA;
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        h3 {
+            font-weight: 700;
+            font-size: 22px;
+        }
+
+        .header {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            height: 65px;
+            padding-right: 24px;
+            -webkit-box-pack: justify;
+            -webkit-justify-content: space-between;
+            -ms-flex-pack: justify;
+            justify-content: space-between;
+            background-color: #1d5bbf;
+        }
+
+        .logo {
+            height: 48px;
+            width: 48px;
+        }
+
+        .product-name {
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            padding-right: 24px;
+            padding-left: 24px;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+        }
+
+        .app-icon-container {
+            padding-right: 14px;
+            padding-left: 14px;
+        }
+
+        h1 {
+            text-align: center;
+            padding: .6rem 0;
+        }
+
+        nav {
+            background-color: #1D5BBF;
+            color: #fff;
+        }
+
+        .product-name {
+            display: flex;
+        }
+
+        .app-icon-container {
+            padding: 1rem;
+        }
+
+        ul.status {
+            ext-align: center;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .list-item {
+            padding: .6rem 0;
+        }
+
+        .status-icon {
+            display: inline-block;
+            padding-right: .6rem;
+        }
+
+        .disabled {
+            color: darkgray;
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+
+        .active {
+            text-decoration: none;
+            color: #6A98E2;
+        }
+
+        .wrap {
+            display: flex;
+            align-items: center;
+        }
+
+        .app {
+            background-image: url('static/images/background.svg');
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            font-size: 18px;
+            text-align: center;
+            padding-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+<nav class="header">
+    <div class="product-name">
+        <div class="app-icon-container">
+            <img class="logo" th:src="@{/images/gray-logo.png}" alt="API Catalog Product Name"/>
+        </div>
+        <h3>API Mediation Layer</h3>
+    </div>
+</nav>
+<div class="app">
+    <h1>API Mediation Layer</h1>
+    <ul class="status">
+        <li class="list-item">
+            <div class="wrap"><img class="status-icon"
+                                   th:src="@{/images/icon-notification-intent-warning.png}"
+                                   alt="Security options status icon"/>
+                <p class="status-text">Security options are turned off</p></div>
+        </li>
+        <li class="list-item">
+            <div class="wrap"><img class="status-icon"
+                                   th:src="@{${'/images/icon-notification-intent-' + catalogIconName + '.png'}}"
+                                   alt="API Catalog status icon"/>
+                <a class="active"
+                   th:if="${linkEnabled} == true"
+                   th:href="${catalogLink}"
+                   title="Go to the API Catalog">
+                    <p class="status-text" th:text="${catalogStatusText}"/>
+                </a>
+                <a class="disabled" th:if="${linkEnabled} == false">
+                    <p class="status-text" th:text="${catalogStatusText}"/>
+                </a>
+            </div>
+        </li>
+        <li class="list-item">
+            <div class="wrap"><img class="status-icon"
+                                   th:src="@{${'/images/icon-notification-intent-' + discoveryIconName + '.png'}}"
+                                   alt="Discovery service running icon"/>
+                <p class="status-text" th:text="${discoveryStatusText}"/></div>
+        </li>
+    </ul>
+</div>
+<footer>
+    <p class="footer" th:text="${buildInfoText}"/>
+</footer>
+</body>
+</html>

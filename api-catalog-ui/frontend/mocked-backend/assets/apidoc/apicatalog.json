@@ -1,0 +1,504 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.",
+        "version": "1.0.0",
+        "title": "API Catalog"
+    },
+    "host": "https://ca3x.ca.com:10010",
+    "basePath": "",
+    "tags": [
+        {
+            "name": "API Catalog",
+            "description": "Current state information"
+        },
+        {
+            "name": "API Documentation",
+            "description": "Service documentation"
+        }
+    ],
+    "paths": {
+        "/api/v1/apicatalog/containers": {
+            "get": {
+                "tags": [
+                    "API Catalog"
+                ],
+                "summary": "Lists catalog dashboard tiles",
+                "description": "Returns a list of tiles including status and tile description",
+                "operationId": "getAllAPIContainersUsingGET",
+                "produces": [
+                    "application/json;charset=UTF-8"
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/APIContainer"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/api/v1/apicatalog/containers/{id}": {
+            "get": {
+                "tags": [
+                    "API Catalog"
+                ],
+                "summary": "Retrieves a specific dashboard tile information",
+                "description": "Returns information for a specific tile {id} including status and tile description",
+                "operationId": "getAPIContainerByIdUsingGET",
+                "produces": [
+                    "application/json;charset=UTF-8"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/APIContainer"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/api/v1/apicatalog/apidoc/{service-id}/{api-version}": {
+            "get": {
+                "tags": [
+                    "API Documentation"
+                ],
+                "summary": "Retrieves the API documentation for a specific service version",
+                "description": "Returns the API documentation for a specific service {service-id} and version {api-version}",
+                "operationId": "getApiDocInfoUsingGET",
+                "produces": [
+                    "*/*"
+                ],
+                "parameters": [
+                    {
+                        "name": "service-id",
+                        "in": "path",
+                        "description": "The unique identifier of the registered service",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "api-version",
+                        "in": "path",
+                        "description": "The major version of the API documentation (v1, v2, etc.)",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "URI not found"
+                    },
+                    "500": {
+                        "description": "An unexpected condition occurred"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "APIContainer": {
+            "type": "object",
+            "properties": {
+                "activeServices": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "createdTimestamp": {
+                    "$ref": "#/definitions/Calendar"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "The description of the API"
+                },
+                "id": {
+                    "type": "string",
+                    "description": "The API Container Id"
+                },
+                "lastUpdatedTimestamp": {
+                    "$ref": "#/definitions/Calendar"
+                },
+                "services": {
+                    "type": "array",
+                    "description": "A collection of services which are registered with this API",
+                    "items": {
+                        "$ref": "#/definitions/APIService"
+                    }
+                },
+                "status": {
+                    "type": "string",
+                    "description": "The Status of the container"
+                },
+                "title": {
+                    "type": "string",
+                    "description": "The API Container title"
+                },
+                "totalServices": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "version": {
+                    "type": "string",
+                    "description": "The version of the API container"
+                }
+            },
+            "title": "APIContainer"
+        },
+        "APIService": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "description": "The description of the API service"
+                },
+                "homePageUrl": {
+                    "type": "string",
+                    "description": "The service home page of the API service"
+                },
+                "secured": {
+                    "type": "boolean",
+                    "example": false,
+                    "description": "The security status of the API service"
+                },
+                "serviceId": {
+                    "type": "string",
+                    "description": "The service id"
+                },
+                "status": {
+                    "type": "string",
+                    "description": "The status of the API service"
+                },
+                "title": {
+                    "type": "string",
+                    "description": "The API service name"
+                }
+            },
+            "title": "APIService"
+        },
+        "Application": {
+            "type": "object",
+            "properties": {
+                "instance": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/InstanceInfo"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "title": "Application"
+        },
+        "Applications": {
+            "type": "object",
+            "properties": {
+                "application": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Application"
+                    }
+                }
+            },
+            "title": "Applications"
+        },
+        "Calendar": {
+            "type": "object",
+            "properties": {
+                "calendarType": {
+                    "type": "string"
+                },
+                "firstDayOfWeek": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "lenient": {
+                    "type": "boolean"
+                },
+                "minimalDaysInFirstWeek": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "time": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "timeInMillis": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "timeZone": {
+                    "$ref": "#/definitions/TimeZone"
+                },
+                "weekDateSupported": {
+                    "type": "boolean"
+                },
+                "weekYear": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "weeksInWeekYear": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            },
+            "title": "Calendar"
+        },
+        "ContainerStatusChangeEvent": {
+            "type": "object",
+            "properties": {
+                "activeServices": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "containerId": {
+                    "type": "string"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/APIService"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "statusEventType": {
+                    "type": "string",
+                    "enum": [
+                        "CREATED_CONTAINER",
+                        "RENEW",
+                        "CANCEL"
+                    ]
+                },
+                "timeStamp": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "totalServices": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            },
+            "title": "ContainerStatusChangeEvent"
+        },
+        "DataCenterInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "enum": [
+                        "Netflix",
+                        "Amazon",
+                        "MyOwn"
+                    ]
+                }
+            },
+            "title": "DataCenterInfo"
+        },
+        "InstanceInfo": {
+            "type": "object",
+            "properties": {
+                "actionType": {
+                    "type": "string",
+                    "enum": [
+                        "ADDED",
+                        "MODIFIED",
+                        "DELETED"
+                    ]
+                },
+                "app": {
+                    "type": "string"
+                },
+                "appGroupName": {
+                    "type": "string"
+                },
+                "asgName": {
+                    "type": "string"
+                },
+                "countryId": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "dataCenterInfo": {
+                    "$ref": "#/definitions/DataCenterInfo"
+                },
+                "healthCheckUrl": {
+                    "type": "string"
+                },
+                "homePageUrl": {
+                    "type": "string"
+                },
+                "hostName": {
+                    "type": "string"
+                },
+                "instanceId": {
+                    "type": "string"
+                },
+                "ipAddr": {
+                    "type": "string"
+                },
+                "isCoordinatingDiscoveryServer": {
+                    "type": "boolean"
+                },
+                "lastDirtyTimestamp": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "lastUpdatedTimestamp": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "leaseInfo": {
+                    "$ref": "#/definitions/LeaseInfo"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "overriddenStatus": {
+                    "type": "string",
+                    "enum": [
+                        "UP",
+                        "DOWN",
+                        "STARTING",
+                        "OUT_OF_SERVICE",
+                        "UNKNOWN"
+                    ]
+                },
+                "secureHealthCheckUrl": {
+                    "type": "string"
+                },
+                "secureVipAddress": {
+                    "type": "string"
+                },
+                "sid": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "UP",
+                        "DOWN",
+                        "STARTING",
+                        "OUT_OF_SERVICE",
+                        "UNKNOWN"
+                    ]
+                },
+                "statusPageUrl": {
+                    "type": "string"
+                },
+                "vipAddress": {
+                    "type": "string"
+                }
+            },
+            "title": "InstanceInfo"
+        },
+        "LeaseInfo": {
+            "type": "object",
+            "properties": {
+                "durationInSecs": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "evictionTimestamp": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "lastRenewalTimestamp": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "registrationTimestamp": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "renewalIntervalInSecs": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "serviceUpTimestamp": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            },
+            "title": "LeaseInfo"
+        },
+        "Mono«ResponseEntity«string»»": {
+            "type": "object",
+            "title": "Mono«ResponseEntity«string»»"
+        },
+        "TimeZone": {
+            "type": "object",
+            "properties": {
+                "displayName": {
+                    "type": "string"
+                },
+                "dstsavings": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "rawOffset": {
+                    "type": "integer",
+                    "format": "int32"
+                }
+            },
+            "title": "TimeZone"
+        }
+    }
+}

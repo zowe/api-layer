@@ -1,0 +1,37 @@
+{
+    "name": "api-layer",
+    "version": "0.2.0",
+    "description": "Zowe API Mediation Layer",
+    "directories": {
+        "doc": "docs"
+    },
+    "scripts": {
+        "api-layer": "concurrently --names \"GS,DS,AC,DC\" -c cyan,yellow,white,blue npm:gateway-service npm:discovery-service npm:api-catalog-service npm:discoverable-client",
+        "api-layer-without-gateway": "concurrently --names \"DS,AC,DC\" -c yellow,white,blue npm:discovery-service npm:api-catalog-service npm:discoverable-client",
+        "api-layer-without-discovery": "concurrently --names \"GW,AC,DC\" -c cyan,white,blue npm:gateway-service npm:api-catalog-service npm:discoverable-client",
+        "api-layer-without-catalog": "concurrently --names \"GW,DS,DC\" -c cyan,yellow,blue npm:gateway-service npm:discovery-service npm:discoverable-client",
+        "gateway-service": "java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml",
+        "gateway-service-debug": "java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=5010,suspend=n -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml",
+        "discovery-service": "java -jar discovery-service/build/libs/discovery-service.jar --spring.config.additional-location=file:./config/local/discovery-service.yml",
+        "api-catalog-service": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local/api-catalog-service.yml",
+        "discoverable-client": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml",
+
+        "api-layer-multi": "concurrently --names \"GS1,DS1,DS2,AC1,DC1\" -c cyan,yellow,yellow,white,blue npm:gateway-service-1 npm:discovery-service-1 npm:discovery-service-2 npm:api-catalog-service-1 npm:discoverable-client-1",
+        "gateway-service-1": "java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local-multi/gateway-service.yml",
+        "discovery-service-1": "java -jar discovery-service/build/libs/discovery-service.jar --spring.config.additional-location=file:./config/local-multi/discovery-service-1.yml",
+        "discovery-service-2": "java -jar discovery-service/build/libs/discovery-service.jar --spring.config.additional-location=file:./config/local-multi/discovery-service-2.yml",
+        "api-catalog-service-1": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local-multi/api-catalog-service.yml",
+        "discoverable-client-1": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local-multi/discoverable-client.yml"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/gizafoundation/api-layer.git"
+    },
+    "author": "",
+    "license": "EPL-2.0",
+    "bugs": {
+        "url": "https://github.com/gizafoundation/api-layer/issues"
+    },
+    "homepage": "https://github.com/gizafoundation/api-layer#readme",
+    "dependencies": {}
+}

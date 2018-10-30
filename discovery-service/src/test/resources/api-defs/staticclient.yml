@@ -1,0 +1,31 @@
+#
+# Static definition of "discoverable-client" as "staticclient"
+#
+# This file provides static API service definition in YAML format.
+# It is loaded by the Discovery Service during its startup.
+#
+services:
+    - serviceId: staticclient  # unique lowercase ID of the service
+      catalogUiTileId: cademoapps  # ID of the API Catalog UI tile (visual grouping of the services)
+      title: Staticaly Defined Service  # Title of the service in the API catalog
+      description: Sample to demonstrate how to add an API service to API Catalog using a static YAML definition  # Description of the service in the API catalog
+      instanceBaseUrls:  # list of base URLs for each instance
+        - http://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+      homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
+      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+      routes:
+        - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+          serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
+        - gatewayUrl: ui/v1
+          serviceRelativeUrl: /
+        - gatewayUrl: ws/v1
+          serviceRelativeUrl: /ws
+        - gatewayUrl: api-doc
+          serviceRelativeUrl: /api-doc
+
+# List of tiles that can be used by services defined in YAML files:
+catalogUiTiles:
+    cademoapps:
+        title: Sample APIML applications
+        description: Applications which demonstrate how to make an API service discoverable in the APIML ecosystem

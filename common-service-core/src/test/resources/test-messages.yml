@@ -1,0 +1,10 @@
+messages:
+    - key: com.ca.mfaas.test.noArguments
+      number: CSC0001
+      type: ERROR
+      text: "No arguments message"
+
+    - key: com.ca.mfaas.test.invalidParameterFormat
+      number: TST0001
+      type: INFO
+      text: "Test message - expects decimal number %d"

@@ -1,0 +1,42 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.4.2'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(project(':integration-enabler-jersey'))
+
+    compile libraries.logback_classic
+    compile group: 'org.glassfish.jersey.core', name: 'jersey-server', version: '2.26'
+    compile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version:'2.26'
+    compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version:'2.26'
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version:'2.26'
+
+    testCompile libraries.junit
+    testCompile group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-jdk-http', version: '2.26'
+
+
+    def tomcatVersion = '8.0.39'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+        "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+        "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+}
+
+tomcat {
+    httpPort = 10016
+    ajpPort = 8009
+    stopPort = 8081
+    contextPath = '/'
+}

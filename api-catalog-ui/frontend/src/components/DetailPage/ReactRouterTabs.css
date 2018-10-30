@@ -1,0 +1,26 @@
+.nav-tab {
+    font-family: 'Roboto', sans-serif;
+    background-color: #c8d1e0;
+    display: inline-block;
+    padding: 10px 25px;
+    color: #333840;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.nav-tab.active {
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+    cursor: default;
+}
+
+.tabs-container {
+    padding-left: 2rem;
+    background-color: #c8d1e0;
+}
+
+.tabs-swagger {
+    display: flex;
+    flex-direction: column;
+}

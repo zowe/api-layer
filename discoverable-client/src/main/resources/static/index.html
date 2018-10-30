@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>Discoverable Client Hello World!</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" type="text/css" href="bootstrap/4.1.3/css/bootstrap.min.css"/>
+
+    <!-- Custom styles for this template -->
+    <link href="css/hello.css" rel="stylesheet">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <a class="navbar-brand" href="#">API Mediation Layer</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="api/v1/">REST API</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<main role="main">
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+        <div class="container">
+            <h1 class="display-3">Hello, world!</h1>
+            <p>This is a sample Hello World! UI. It shows how a simple UI can work with REST API and WebSocket
+                services.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Example row of columns -->
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Greeting</h2>
+                <p>Enter your name into the input box and you will recieve a greeting by our Greeting REST API
+                    Service!</p>
+                <p><input id="name" type="text" class="form-control" placeholder="Your name"></p>
+                <p>
+                    <button class="btn btn-lg btn-primary" onclick="unsecureCall()" type="button">Test REST call
+                    </button>
+                </p>
+                <div>
+                    <p class="hello-content"></p>
+                    <p class="hello-date"></p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <h2>WebSockets</h2>
+                <p>Enter a text and our WebSocket service will send your text in uppercase back!</p>
+                <p><input id="ws-text" type="text" class="form-control" placeholder="Your name"></p>
+                <p>
+                    <button class="btn btn-lg btn-primary" onclick="websocketCall()" type="button">Test WebSockets
+                    </button>
+                </p>
+                <div>
+                    <p id="ws-content">Connecting...</p>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+    </div> <!-- /container -->
+
+</main>
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script type="text/javascript" src="jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="js/hello.js"></script>
+</body>
+</html>

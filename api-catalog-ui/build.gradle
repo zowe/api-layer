@@ -1,0 +1,64 @@
+plugins {
+    id "com.moowork.node" version "1.2.0"
+}
+
+node {
+    // Version of node to use.
+    version = rootProject.nodejsVersion
+
+    // Base URL for fetching node distributions (change if you have a mirror).
+    distBaseUrl = 'https://nodejs.org/dist'
+
+    // If true, it will download node using above parameters.
+    // If false, it will try to use globally installed node.
+    download = true
+
+    // Set the work directory for unpacking node
+    workDir = file("${project.projectDir}/tools/nodejs")
+
+    // Set the work directory for NPM
+    npmWorkDir = file("${project.projectDir}/tools/npm")
+
+    // Set the work directory where node_modules should be located
+    nodeModulesDir = file("${project.projectDir}/frontend")
+}
+
+task cleanBundle(type: Delete) {
+    delete 'bin', 'build', 'frontend/build', 'frontend/node_modules', 'tools/nodejs'
+}
+
+task startMockedBackend(type: NpmTask) {
+    group = 'testing'
+    description = "UI Mocked Backend"
+    args = ['run', 'start:mocked-backend']
+}
+
+task javaScriptCoverage(type: NpmTask) {
+    group = 'testing'
+    description = "UI JavaScript Test Coverage"
+    args = ['run', 'coverage']
+}
+
+task runTests(type: NpmTask) {
+    group = 'testing'
+    description = "UI JavaScript Test Coverage"
+    args = ['run', 'test']
+}
+
+task bundle(type: NpmTask) {
+    inputs.dir('frontend/src')
+    inputs.dir('frontend/public')
+    inputs.files('frontend/.env*')
+    inputs.file('frontend/eslintrc.json')
+    inputs.file('frontend/package.json')
+
+    outputs.dir('frontend/build')
+
+    dependsOn npmInstall
+    args = ['run', 'build']
+}
+
+clean.dependsOn cleanBundle
+build.dependsOn bundle
+javaScriptCoverage.dependsOn bundle
+runTests.dependsOn bundle

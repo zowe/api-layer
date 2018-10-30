@@ -1,0 +1,143 @@
+spring:
+    application:
+        name: discoverableclient
+    cloud:
+        client:
+            hostname: ${environment.hostname}
+            ipAddress: ${environment.ipAddress}
+    output:
+        ansi:
+            enabled: detect
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: INFO
+        org.springframework: WARN
+        org.apache.catalina: WARN
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+
+##############################################################################################
+# MFAAS configuration section
+##############################################################################################
+mfaas:
+    discovery:
+        serviceId: ${environment.serviceId:${spring.application.name}}
+        locations: ${environment.discoveryLocations}
+        enabled: ${environment.discoveryEnabled:true}
+        endpoints:
+            statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
+            healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
+            homePage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/
+        info:
+            serviceTitle: ${environment.serviceTitle}
+            description:  ${environment.serviceDescription}
+            swaggerLocation: # populate this value with a json file from the resources folder to load a static swagger definition
+        fetchRegistry: true
+        region: default
+    service:
+        hostname: ${environment.hostname}
+        ipAddress: ${environment.ipAddress}
+    catalog-ui-tile:
+        id: cademoapps
+        title: Sample API Mediation Layer Applications
+        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+        version:  1.0.1
+    server:
+        port: ${environment.port}
+        contextPath: /discoverableclient
+        scheme: http
+
+eureka:
+    instance:
+        appName: ${mfaas.discovery.serviceId}
+        hostname: ${mfaas.service.hostname}
+        statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
+        healthCheckUrlPath: ${mfaas.discovery.endpoints.healthPage}
+        homePageUrl: ${mfaas.discovery.endpoints.homePage}
+        metadata-map:
+            routed-services:
+                ui_v1:
+                    gateway-url: "ui/v1"
+                    service-url: ${mfaas.server.contextPath}
+                api_v1:
+                    gateway-url: "api/v1"
+                    service-url: ${mfaas.server.contextPath}/api/v1
+                ws_v1:
+                    gateway-url: "ws/v1"
+                    service-url: ${mfaas.server.contextPath}/ws
+                api-doc:
+                    gateway-url: "api/v1/api-doc"
+                    service-url: ${mfaas.server.contextPath}/api-doc
+            mfaas:
+                api-info:
+                    swagger:
+                        location: ${mfaas.discovery.info.swaggerLocation:}
+                    apiVersionProperties:
+                        v1:
+                            title: Service Integration Enabler V2 Sample Application (Spring Boot 2.x)
+                            description: Sample service showing how to integrate a Spring Boot v2.x application
+                            version: 1.0.0
+                            basePackage: com.ca.mfaas.client.controller.controllers.api
+
+                discovery:
+                    catalogUiTile:
+                        id: ${mfaas.catalog-ui-tile.id}
+                        title:  ${mfaas.catalog-ui-tile.title}
+                        description: ${mfaas.catalog-ui-tile.description}
+                        version: ${mfaas.catalog-ui-tile.version}
+                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
+                    service:
+                        title: ${mfaas.discovery.info.serviceTitle}
+                        description: ${mfaas.discovery.info.description}
+    client:
+        healthcheck:
+            enabled: true
+        serviceUrl:
+            defaultZone: ${mfaas.discovery.locations}
+        fetchRegistry:  ${mfaas.discovery.fetchRegistry}
+        region: ${mfaas.discovery.region}
+        enabled: ${mfaas.discovery.enabled}
+
+##############################################################################################
+management:
+    endpoints:
+        web:
+            base-path: /application
+    health:
+        defaults:
+            enabled: false
+
+server:
+    address: ${mfaas.service.hostname}
+    port: ${mfaas.server.port}
+    servlet:
+        contextPath: ${mfaas.server.contextPath}
+
+---
+spring:
+    profiles: diag
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+
+---
+spring:
+    profiles: dev
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: DEBUG
+        org.springframework: INFO
+        org.apache.catalina: INFO
+        com.netflix: INFO

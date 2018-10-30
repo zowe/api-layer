@@ -1,0 +1,24 @@
+serviceId: service
+title: HelloWorld Spring REST API
+description: POC for exposing a Spring REST API
+baseUrl: http://localhost:10020/hellospring
+homePageRelativeUrl: /
+statusPageRelativeUrl: /application/info
+healthCheckRelativeUrl: /application/health
+discoveryServiceUrls:
+    - http://eureka:password@localhost:10011/eureka
+    - http://eureka:password@localhost:10011/eureka
+routes:
+    - gatewayUrl: api/v1
+      serviceUrl: /hellospring/api/v1
+    - gatewayUrl: api/v1/api-doc
+      serviceUrl: /hellospring/api-doc
+apiInfo:
+    title: HelloWorld Spring
+    description: REST API for a Spring Application
+    version: 1.0.0
+catalogUiTile:
+    id: helloworld-spring
+    title: HelloWorld Spring REST API
+    description: Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem
+    version: 1.0.0

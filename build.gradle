@@ -1,0 +1,185 @@
+import java.util.regex.Matcher
+
+//noinspection GroovyAssignabilityCheck
+group 'com.ca.mfaas'
+
+buildscript {
+    ext {
+        licenseGradlePluginVerion = '0.13.1'
+    }
+
+    ext.mavenRepositories = {
+        maven {
+            url artifactoryMavenSnapshotRepo
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+        maven {
+            url artifactoryMavenRepo
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+    }
+
+    repositories mavenRepositories
+
+    dependencies {
+        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5'
+        classpath 'com.palantir:jacoco-coverage:0.4.0'
+        classpath 'net.researchgate:gradle-release:2.6.0'
+        classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
+    }
+}
+
+apply plugin: 'com.palantir.jacoco-full-report'
+apply from: 'gradle/publish.gradle'
+apply from: 'gradle/coverage.gradle'
+apply from: 'gradle/versions.gradle'
+apply from: 'gradle/code-quality.gradle'
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'maven'
+    apply plugin: 'com.github.hierynomus.license'
+
+    repositories mavenRepositories
+
+    sourceCompatibility = 1.8
+    version = version
+
+    idea {
+        module {
+            //noinspection GroovyAssignabilityCheck
+            outputDir file('build/classes/main')
+            //noinspection GroovyAssignabilityCheck
+            testOutputDir file('build/classes/test')
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }
+}
+
+subprojects {
+    license {
+        header rootProject.file('.licence/EPL-2.0-licence-header.txt')
+        ext.year = Calendar.getInstance().get(Calendar.YEAR)
+        excludes(["**/*.yml", "**/*.json", "**/static", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks"])
+        mapping {
+            java = 'SLASHSTAR_STYLE'
+        }
+    }
+
+    tasks.withType(Test) {
+        maxParallelForks = Runtime.runtime.availableProcessors()
+    }
+
+}
+
+configurations {
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    all*.exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-kotlin'
+}
+
+task buildBackendCore(dependsOn: [':gateway-service:build', ':discovery-service:build',
+                                  ':api-catalog-services:build', ':helloworld-service:build']) {
+    description "Build core backend components (no UI)"
+    group "build"
+}
+
+task runIntegrationTests(dependsOn: ":integration-tests:runIntegrationTests") {
+    description "Run integration tests"
+    group "Integration tests"
+}
+
+task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTests") {
+    description "Run all integration tests"
+    group "Integration tests"
+}
+
+task jacocoSubProjects() {
+    subprojects.findAll { it.name in javaProjectsWithUnitTests }.each { dependsOn("${it.name}:jacocoTestReport") }
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+}
+
+task mergeCoverage() {
+    dependsOn test, jacocoFullReport
+}
+
+task coverage() {
+    mergeCoverage.mustRunAfter jacocoSubProjects
+    dependsOn mergeCoverage, jacocoSubProjects, jacocoTestReport
+}
+
+task publishAllVersions {
+    group 'Zoe Publishing'
+    description 'Publish SDK libraries for all version of Spring Boot to Zoe Artifactory'
+    doLast {
+        println 'Published all versions of SDK'
+    }
+}
+
+publishAllVersions.dependsOn publishSdkArtifacts
+
+//-----------Release part start
+apply plugin: 'net.researchgate.release'
+
+ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
+
+release {
+    failOnCommitNeeded = false
+    failOnPublishNeeded = false
+    failOnSnapshotDependencies = false
+    failOnUnversionedFiles = false
+    failOnUpdateNeeded = false
+    revertOnFail = true
+    preCommitText = '[Gradle Release plugin]'
+    preTagCommitMessage = 'Before tag commit'
+    tagCommitMessage = 'Release:'
+    tagTemplate = '${version}'
+    newVersionCommitMessage = 'Create new version:'
+    versionPropertyFile = 'gradle.properties'
+    buildTasks = ['build']
+
+    if (releaseScope == 'minor') {
+        versionPatterns = [
+            /[.]*\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll(".${(m[0][1] as int) + 1}.0") }
+        ]
+    } else if (releaseScope == 'major') {
+        versionPatterns = [
+            /(\d+)\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}.0.0") }
+        ]
+    } else {
+        versionPatterns = [
+            /(\d+)([^\d]*$)/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}${m[0][2]}") }
+        ]
+    }
+
+    scmAdapters = [
+        net.researchgate.release.GitAdapter
+    ]
+
+    git {
+        requireBranch = 'master'
+        pushToRemote = 'origin'
+        pushToBranchPrefix = ''
+        commitVersionFileOnly = false
+        signTag = false
+    }
+}
+
+afterReleaseBuild.dependsOn publishAllVersions
+//-----------Release part end
+
+

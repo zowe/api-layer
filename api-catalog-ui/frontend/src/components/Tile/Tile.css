@@ -1,0 +1,77 @@
+.grid-tile {
+    position: relative;
+    overflow: hidden;
+    height: 250px;
+    width: 350px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    z-index: 0;
+    transition: z-index .7s, box-shadow .7s;
+    animation: pop .3s ease-in forwards;
+    opacity: 0;
+}
+
+.css-vfxe48 {
+    text-align: left;
+}
+
+.pop {
+    position: relative;
+    overflow: hidden;
+    height: 194px;
+    width: 422px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    z-index: 0;
+    transition: z-index .7s, box-shadow .7s;
+}
+
+@keyframes pop {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: .5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.grid-tile:hover{
+    cursor: pointer;
+    z-index: 3;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.3);
+}
+
+.grid-tile-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.tile {
+    text-align: left;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+@media only screen and (max-width: 530px) {
+    .grid-tile {
+        width: 360px;
+    }
+}
+
+@media only screen and (max-width: 390px) {
+    .grid-tile {
+        width: 320px;
+        height: 200px;
+    }
+
+    .grid-tile > .grid-tile-status {
+        display: none;
+    }
+}

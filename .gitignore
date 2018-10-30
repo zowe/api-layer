@@ -1,0 +1,86 @@
+# Java
+*.class
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# IDE
+*.iml
+*.ipr
+*.iws
+.idea
+.vscode
+.project
+.settings
+.classpath
+.history
+# build folders
+build/
+
+# UI specific files and directories
+node_modules/
+npm-debug.log
+api-catalog-services/src/main/resources/static/
+api-catalog-ui/tools
+api-catalog-ui/src/main/resources/static
+
+# Python
+*.py[cod]
+Pipfile.lock
+.pytest_cache
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+*.jar
+*.war
+*.ear
+
+# Installer logs
+pip-log.txt
+
+# Unit test and coverage reports
+.tox
+nosetests.xml
+.coverage
+
+# Translations
+*.mo
+
+# logs
+logs/
+
+# pid files
+*.pid
+
+# OS files
+.DS_Store
+
+# Caches
+.sts4-cache
+.cache
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+api-catalog-ui/frontend/test-results/*.xml
+api-catalog-ui/frontend/debug.log
+
+debug.log

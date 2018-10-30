@@ -1,0 +1,474 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Static Swagger Info for Sample micro-service showing how to enable a Spring Boot v2.x application",
+        "version": "1.0.1",
+        "title": "Service Integration Enabler V2 Sample App (spring boot 2.x)"
+    },
+    "basePath": "/discoverableclient",
+    "tags": [
+        {
+            "name": "Instance",
+            "description": "Instance Controller"
+        },
+        {
+            "name": "Movie",
+            "description": "Movie Controller"
+        },
+        {
+            "name": "Suspects",
+            "description": "Suspects Controller"
+        }
+    ],
+    "paths": {
+        "/instance/configured-port": {
+            "get": {
+                "tags": [
+                    "Instance"
+                ],
+                "summary": "What port is this controller configured for",
+                "description": "What port is this controller configured for",
+                "operationId": "getPortUsingGET",
+                "produces": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "URI not found"
+                    }
+                }
+            }
+        },
+        "/instance/gateway-url": {
+            "get": {
+                "tags": [
+                    "Instance"
+                ],
+                "summary": "What is the URI of the Gateway",
+                "description": "What is the URI of the Gateway",
+                "operationId": "getGatewayLocationUsingGET",
+                "produces": [
+                    "text/plain"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "URI not found"
+                    },
+                    "500": {
+                        "description": "Internal Error Occurred"
+                    }
+                }
+            }
+        },
+        "/movies/list": {
+            "get": {
+                "tags": [
+                    "Movie"
+                ],
+                "summary": "Retrieve all movies",
+                "description": "Return a list of movies",
+                "operationId": "listUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Movie"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "URI not found"
+                    }
+                },
+                "security": [
+                    {
+                        "MoieControlleroauth": [
+                            "list"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/movies/show/{id}": {
+            "get": {
+                "tags": [
+                    "Movie"
+                ],
+                "summary": "Retrieve a movie",
+                "description": "Return a movie for a given {id}",
+                "operationId": "showMovieUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Movie"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/suspects/add": {
+            "post": {
+                "tags": [
+                    "Suspects"
+                ],
+                "summary": "Save a suspect",
+                "description": "Persists a suspect",
+                "operationId": "saveSuspectUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "suspect",
+                        "description": "suspect",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Suspect"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/suspects/delete/{id}": {
+            "delete": {
+                "tags": [
+                    "Suspects"
+                ],
+                "summary": "Deletes a suspect",
+                "description": "Deletes a suspect",
+                "operationId": "deleteUsingDELETE",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            }
+        },
+        "/suspects/list": {
+            "get": {
+                "tags": [
+                    "Suspects"
+                ],
+                "summary": "Retrieve all movies",
+                "description": "Return a list of movies",
+                "operationId": "listUsingGET_1",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Suspect"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/suspects/show/{id}": {
+            "get": {
+                "tags": [
+                    "Suspects"
+                ],
+                "summary": "Retrieve a suspect",
+                "description": "Return a suspect for a given {id}",
+                "operationId": "showSuspectUsingGET",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Suspect"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/suspects/update/{id}": {
+            "put": {
+                "tags": [
+                    "Suspects"
+                ],
+                "summary": "Updates a suspect",
+                "description": "Updates a suspect",
+                "operationId": "updateSuspectUsingPUT",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    {
+                        "in": "body",
+                        "name": "suspect",
+                        "description": "suspect",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Suspect"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Iterable«Movie»": {
+            "type": "object",
+            "title": "Iterable«Movie»"
+        },
+        "Iterable«Suspect»": {
+            "type": "object",
+            "title": "Iterable«Suspect»"
+        },
+        "Movie": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Episode IV",
+                    "description": "The description of the movie",
+                    "allowEmptyValue": false
+                },
+                "id": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 1,
+                    "description": "The database generated movie ID",
+                    "allowEmptyValue": false
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Star Wars",
+                    "description": "The movie name",
+                    "allowEmptyValue": false
+                },
+                "version": {
+                    "type": "integer",
+                    "format": "int32",
+                    "example": 1,
+                    "description": "The auto-generated version of the movie",
+                    "allowEmptyValue": false
+                }
+            },
+            "title": "Movie",
+            "description": "A Movie Database Object"
+        },
+        "Suspect": {
+            "type": "object",
+            "required": [
+                "description"
+            ],
+            "properties": {
+                "actorname": {
+                    "type": "string",
+                    "description": "The name of the actor who played the suspect",
+                    "allowEmptyValue": false
+                },
+                "description": {
+                    "type": "string",
+                    "description": "The description of the suspect",
+                    "allowEmptyValue": false
+                },
+                "id": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The database generated suspect ID",
+                    "allowEmptyValue": false
+                },
+                "imageUrl": {
+                    "type": "string",
+                    "description": "The image URL of the actor",
+                    "allowEmptyValue": false
+                },
+                "name": {
+                    "type": "string",
+                    "description": "The suspect name",
+                    "allowEmptyValue": false
+                },
+                "suspectId": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The application-specific suspect ID",
+                    "allowEmptyValue": false
+                },
+                "version": {
+                    "type": "integer",
+                    "format": "int32",
+                    "description": "The auto-generated version of the suspect",
+                    "allowEmptyValue": false
+                }
+            },
+            "title": "Suspect",
+            "description": "A Suspect Database Object"
+        }
+    }
+}

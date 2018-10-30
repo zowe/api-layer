@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'com.bmuschko.tomcat'
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile(project(':integration-enabler-java'))
+
+    compile libraries.spring4Mvc
+    compile libraries.jackson_databind
+    compile libraries.springFox
+    compile libraries.logback_classic
+
+    providedCompile libraries.javax_servlet_api
+
+    testCompile libraries.junit
+    testCompile libraries.mockito_core
+    testCompile libraries.spring4Test
+    testCompile libraries.json_path
+
+    def tomcatVersion = '8.5.16'
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:8.5.2",
+           "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+}
+
+tomcat {
+    httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
+    ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
+
+    httpPort = 10020
+    ajpPort = 8010
+    stopPort = 8082
+
+    contextPath = '/hellospring'
+}
+

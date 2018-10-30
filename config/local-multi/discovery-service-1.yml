@@ -1,0 +1,24 @@
+environment:
+    cacheRefreshDelayInMillis: 10000
+    discoveryLocations: http://eureka:password@localhost2:10021/eureka/,http://eureka:password@localhost3:10031/eureka/
+    dsIpAddress: 0.0.0.0
+    eurekaPassword: password
+    eurekaUserId: eureka
+    hostname: localhost2
+    initialCacheRefreshDelayInMillis: 10000
+    ipAddress: 127.0.0.2
+    port: 10021
+    preferIpAddress: false
+    registryServiceInitialDelayInSeconds: 10
+    registryServiceRetryDelayInSeconds: 5
+    truststore: keystore/local/localhost_truststore.jks
+    truststorePassword: trustword
+    truststoreType: JKS
+    updateThresholdInMillis: 10000
+discovery:
+    staticApiDefinitionsDirectory: config/local/api-defs
+
+spring:
+    output:
+        ansi:
+            enabled: always

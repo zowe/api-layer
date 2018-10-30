@@ -1,0 +1,56 @@
+.App {
+    text-align: center;
+}
+
+.App-logo {
+    animation: App-logo-spin infinite 20s linear;
+    height: 80px;
+}
+
+.App-header {
+    background-color: #222;
+    height: 150px;
+    padding: 20px;
+    color: white;
+}
+
+.App-header h1 {
+    overflow: hidden;
+}
+
+.App-title {
+    font-size: 1.5em;
+}
+
+.App-intro {
+    font-size: large;
+}
+
+.comment {
+    font-size: 80%;
+    color: gainsboro;
+}
+
+@keyframes App-logo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 760px) {
+    .App-header h1 {
+        font-size: 1.7rem;
+    }
+    .App-header span {
+        display: list-item;
+    }
+}
+
+@media (min-width: 972px) {
+    .apis {
+        background-image: url(../../assets/images/background.svg);
+    }
+}

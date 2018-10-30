@@ -1,0 +1,96 @@
+ext.springBootEnablers= [
+    'integration-enabler-spring-v1',
+    'integration-enabler-spring-v2'
+]
+
+ext.javaEnablers = [
+    'integration-enabler-jersey',
+    'integration-enabler-java'
+]
+
+ext.javaLibraries = [
+    'common-service-core',
+    'gateway-common'
+]
+
+ext.serviceJars = [ 'zowe-install' ]
+ext.enablers = ext.springBootEnablers + ext.javaEnablers
+ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
+
+ext.publishTasksList = projectsToPublish.collect { ":" + it + ":publish" }
+ext.externalServiceDependencies = ext.enablers + ext.javaLibraries
+
+ext.publishExternalServiceDependenciesList = externalServiceDependencies.collect { ":" + it + ":publish" }
+
+
+configure(subprojects.findAll { it.name in projectsToPublish }) {
+    apply plugin: "maven"
+    apply plugin: 'maven-publish'
+
+    publishing {
+        repositories.maven {
+            credentials {
+                username project.hasProperty("deploy.username") ? project.getProperty("deploy.username") : mavenPublishUser
+                password  project.hasProperty("deploy.password") ? project.getProperty("deploy.password") : mavenPublishPassword
+            }
+            if (rootProject.version.endsWith("-SNAPSHOT")) {
+                setUrl(artifactoryPublishingMavenSnapshotRepo)
+            } else {
+                setUrl(artifactoryPublishingMavenRepo)
+            }
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId 'com.ca.mfaas.sdk'
+                version rootProject.version
+                if (project.name in springBootEnablers) {
+                    artifactId "mfaas-${project.name}-springboot-${springBootVersion}"
+                } else {
+                    artifactId "mfaas-${project.name}"
+                }
+
+                from components.java
+
+                pom.withXml {
+                    asNode().dependencies.'*'.findAll() {
+                        it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
+                            dep.name == it.artifactId.text()
+                        }
+                    }.each { it.scope*.value = 'compile' }
+                }
+            }
+        }
+    }
+
+    tasks.withType(Jar) {
+        manifest {
+            attributes "Specification-Title": project.name
+            attributes "Specification-Version": rootProject.version
+            attributes "Specification-Vendor": "CA, Inc."
+
+            attributes "Implementation-Title": project.name
+            attributes "Implementation-Version": rootProject.version
+            attributes "Implementation-Vendor": "CA, Inc."
+            attributes "Implementation-Vendor-Id": "com.ca.mfaas.sdk"
+        }
+    }
+
+}
+
+//noinspection GroovyAssignabilityCheck
+task publishSdkArtifacts {
+    group 'Zoe Publishing'
+    description 'Publish SDK libraries for main version of Spring Boot to Zoe Artifactory'
+    doLast {
+        println 'Published SDK libraries for main version of Spring Boot to Zoe Artifactory'
+    }
+}
+
+task publishExternalServiceDependencies {
+    group 'External dependencies Publishing'
+}
+publishSdkArtifacts.dependsOn publishTasksList
+publishExternalServiceDependencies.dependsOn publishExternalServiceDependenciesList

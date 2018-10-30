@@ -1,0 +1,29 @@
+{
+    "version": "1.0.1",
+    "id": "testinson",
+    "title": "API tile for testing",
+    "status": "DOWN",
+    "description": "Testing Testing Testing",
+    "services": [
+        {
+            "serviceId": "todo",
+            "title": "TODO managing API",
+            "description": "Sample API for managing todos",
+            "status": "UP",
+            "secured": false,
+            "homePageUrl": ""
+        },
+        {
+            "serviceId": "movies",
+            "title": "StarDB API",
+            "description": "API to star-wars movie DB",
+            "status": "DOWN",
+            "secured": false,
+            "homePageUrl": ""
+        }
+    ],
+    "totalServices": 1,
+    "activeServices": 1,
+    "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
+    "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+}

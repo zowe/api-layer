@@ -1,0 +1,104 @@
+spring:
+    application:
+        name: discoverableclient
+    output:
+        ansi:
+            enabled: always
+
+logging:
+    level:
+        ROOT: INFO
+        org.springframework: INFO
+        com.ca.mfaas: DEBUG
+
+##############################################################################################
+# MFAAS configuration section
+##############################################################################################
+mfaas:
+    discovery:
+        serviceId: ${environment.serviceId:${spring.application.name}}
+        locations: ${environment.discoveryLocations}
+        enabled: ${environment.discoveryEnabled:true}
+        endpoints:
+            statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
+            healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
+            homePage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/
+        info:
+            serviceTitle: ${environment.serviceTitle}
+            description:  ${environment.serviceDescription}
+            swaggerLocation: # populate this value with a json file from the resources folder to load a static swagger definition
+        fetchRegistry: true
+        region: default
+    service:
+        hostname: ${environment.hostname}
+        ipAddress: ${environment.ipAddress}
+    catalog-ui-tile:
+        id: cademoapps
+        title: Sample MFaaS applications
+        description: Applications which demonstrate how to make a service discoverable in the MFaaS ecosystem
+        version:  1.0.0
+    server:
+        port: ${environment.port}
+        contextPath: /discoverableclient
+        scheme: http
+
+eureka:
+    instance:
+        appName: ${mfaas.discovery.serviceId}
+        hostname: ${mfaas.service.hostname}
+        statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
+        healthCheckUrlPath: ${mfaas.discovery.endpoints.healthPage}
+        homePageUrlPath: ${mfaas.discovery.endpoints.homePage}
+        metadata-map:
+            routed-services:
+                api_v1:
+                    gateway-url: "api/v1"
+                    service-url: ${mfaas.server.contextPath}
+                api-doc:
+                    gateway-url: "api/v1/api-doc"
+                    service-url: ${mfaas.server.contextPath}/api-doc
+            mfaas:
+                api-info:
+                    swagger:
+                        location: ${mfaas.discovery.info.swaggerLocation:}
+                    apiVersionProperties:
+                        v1:
+                            title: Service Integration Enabler V2 Sample App (spring boot 2.x)
+                            description: Sample micro-service showing how to enable a Spring Boot v2.x application
+                            version: 1.0.0
+                            basePackage: com.ca.mfaas.client.controller.controllers.api
+
+                discovery:
+                    catalogUiTile:
+                        id: ${mfaas.catalog-ui-tile.id}
+                        title:  ${mfaas.catalog-ui-tile.title}
+                        description: ${mfaas.catalog-ui-tile.description}
+                        version: ${mfaas.catalog-ui-tile.version}
+                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
+                    service:
+                        title: ${mfaas.discovery.info.serviceTitle}
+                        description: ${mfaas.discovery.info.description}
+    client:
+        healthcheck:
+            enabled: true
+        serviceUrl:
+            defaultZone: ${mfaas.discovery.locations}
+        fetchRegistry:  ${mfaas.discovery.fetchRegistry}
+        region: ${mfaas.discovery.region}
+        enabled: ${mfaas.discovery.enabled}
+
+##############################################################################################
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "health,info,routes"
+
+server:
+    address: ${mfaas.service.hostname}
+    port: ${mfaas.server.port}
+    servlet:
+        contextPath: ${mfaas.server.contextPath}
+

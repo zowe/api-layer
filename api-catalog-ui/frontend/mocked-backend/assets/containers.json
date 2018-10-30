@@ -1,0 +1,189 @@
+[
+    {
+        "version": "1.0.0",
+        "id": "apicatalog",
+        "title": "API Mediation Layer API",
+        "status": "UP",
+        "description": "The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.",
+        "services": [
+            {
+                "serviceId": "apicatalog",
+                "title": "API Catalog",
+                "description": "MFaaS Microservice to locate and display API documentation for MFaaS discovered microservices",
+                "status": "UP",
+                "secured": false,
+                "homePageUrl": "/ui/v1/apicatalog"
+            }
+        ],
+        "totalServices": 1,
+        "activeServices": 1,
+        "lastUpdatedTimestamp": "2018-08-22T08:32:03.110+0000",
+        "createdTimestamp": "2018-08-22T08:31:22.948+0000"
+    },
+    {
+        "version": "1.0.1",
+        "id": "cademoapps",
+        "title": "Sample API Mediation Layer Applications",
+        "status": "UP",
+        "description": "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem",
+        "services": [
+            {
+                "serviceId": "discoverableclient",
+                "title": "Sample API Mediation Layer Application (Spring Boot 2.x)",
+                "description": "Sample Spring Boot 2.x REST API application using the API Mediation Layer enabler",
+                "status": "UP",
+                "secured": false,
+                "homePageUrl": "http://localhost:10012/discoverableclient/"
+            }
+        ],
+        "totalServices": 1,
+        "activeServices": 1,
+        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
+        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+    },
+    {
+        "version": "1.0.1",
+        "id": "testinson",
+        "title": "API tile for testing",
+        "status": "DOWN",
+        "description": "Testing Testing Testing",
+        "services": [
+            {
+                "serviceId": "todo",
+                "title": "TODO managing API",
+                "description": "Sample API for managing todos",
+                "status": "UP",
+                "secured": false,
+                "homePageUrl": ""
+            },
+            {
+                "serviceId": "movies",
+                "title": "StarDB API",
+                "description": "API to star-wars movie DB",
+                "status": "DOWN",
+                "secured": false,
+                "homePageUrl": ""
+            }
+        ],
+        "totalServices": 1,
+        "activeServices": 1,
+        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
+        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+    },
+    {
+        "version": "1.0.1",
+        "id": "tile_tile1",
+        "title": "Test API",
+        "status": "UP",
+        "description": "Testing tile",
+        "services": [
+            {
+                "serviceId": "todo",
+                "title": "TODO managing API",
+                "description": "Sample API for managing todos",
+                "status": "UP",
+                "secured": false,
+                "homePageUrl": ""
+            },
+            {
+                "serviceId": "movies",
+                "title": "StarDB API",
+                "description": "API to star-wars movie DB",
+                "status": "DOWN",
+                "secured": false,
+                "homePageUrl": ""
+            }
+        ],
+        "totalServices": 1,
+        "activeServices": 1,
+        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
+        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+    },
+    {
+        "version": "1.0.1",
+        "id": "tile_tile2",
+        "title": "Test API",
+        "status": "UP",
+        "description": "Testing tile",
+        "services": [
+            {
+                "serviceId": "todo",
+                "title": "TODO managing API",
+                "description": "Sample API for managing todos",
+                "status": "UP",
+                "secured": false,
+                "homePageUrl": ""
+            },
+            {
+                "serviceId": "movies",
+                "title": "StarDB API",
+                "description": "API to star-wars movie DB",
+                "status": "DOWN",
+                "secured": false,
+                "homePageUrl": ""
+            }
+        ],
+        "totalServices": 1,
+        "activeServices": 1,
+        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
+        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+    },
+    {
+        "version": "1.0.1",
+        "id": "tile_tile3",
+        "title": "Test API",
+        "status": "UP",
+        "description": "Testing tile",
+        "services": [
+            {
+                "serviceId": "todo",
+                "title": "TODO managing API",
+                "description": "Sample API for managing todos",
+                "status": "UP",
+                "secured": false,
+                "homePageUrl": ""
+            },
+            {
+                "serviceId": "movies",
+                "title": "StarDB API",
+                "description": "API to star-wars movie DB",
+                "status": "DOWN",
+                "secured": false,
+                "homePageUrl": ""
+            }
+        ],
+        "totalServices": 1,
+        "activeServices": 1,
+        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
+        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+    },
+    {
+        "version": "1.0.1",
+        "id": "tile_tile4",
+        "title": "Test API",
+        "status": "UP",
+        "description": "Testing tile",
+        "services": [
+            {
+                "serviceId": "todo",
+                "title": "TODO managing API",
+                "description": "Sample API for managing todos",
+                "status": "UP",
+                "secured": false,
+                "homePageUrl": ""
+            },
+            {
+                "serviceId": "movies",
+                "title": "StarDB API",
+                "description": "API to star-wars movie DB",
+                "status": "DOWN",
+                "secured": false,
+                "homePageUrl": ""
+            }
+        ],
+        "totalServices": 2,
+        "activeServices": 1,
+        "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
+        "createdTimestamp": "2018-08-22T08:32:03.111+0000"
+    }
+]

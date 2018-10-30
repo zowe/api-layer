@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+
+<module name = "Checker">
+    <!-- Severity of rules is error -->
+    <property name="severity" value="error"/>
+
+    <!-- UTF-8 as charset -->
+    <property name="charset" value="UTF-8"/>
+
+    <!-- File extensions -->
+    <property name="fileExtensions" value="java, properties, xml"/>
+
+    <!-- Base Directory for Checkstyle -->
+    <property name="basedir" value="${baseDir}"/>
+
+    <!-- Use space only -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <module name="TreeWalker">
+
+        <!-- Imports from the same package -->
+        <module name="RedundantImport"/>
+
+        <!-- Unused imports -->
+        <module name="UnusedImports"/>
+
+        <!-- Do not import 'sun' packages -->
+        <module name="IllegalImport"/>
+
+        <!-- Import order, matching default IntelliJ settings -->
+        <module name="ImportOrder">
+            <property name="groups" value="*, javax, java"/>
+            <property name="ordered" value="true"/>
+            <property name="separated" value="true"/>
+            <property name="option" value="bottom"/>
+            <property name="sortStaticImportsAlphabetically" value="true"/>
+        </module>
+
+        <!-- Ensures that every token (such as keyword, operator or brace of any kind) is surrounded by whitespace -->
+        <module name="WhitespaceAround">
+            <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyMethods" value="true"/>
+            <property name="allowEmptyTypes" value="true"/>
+            <property name="allowEmptyLoops" value="true"/>
+            <property name="allowEmptyLambdas" value="true"/>
+        </module>
+
+        <!-- follow Java naming conventions for naming variables -->
+        <module name="LocalVariableName"/>
+
+    </module>
+
+    <!-- Read checkstyle suppressions from a file -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${configDir}/suppressions.xml"/>
+    </module>
+
+</module>
