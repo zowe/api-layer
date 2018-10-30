@@ -35,7 +35,7 @@ def GIT_USER_EMAIL = 'zowe.robot@gmail.com'
 /**
  * The base repository url for github
  */
-def GIT_REPO_URL = 'github.com/zowe/api-layer.git'
+def GIT_REPO_URL = 'https://github.com/zowe/api-layer.git'
 
 /**
  * The credentials id field for the authorization token for GitHub stored in Jenkins
