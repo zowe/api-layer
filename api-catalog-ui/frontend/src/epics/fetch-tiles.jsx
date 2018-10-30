@@ -15,6 +15,19 @@ const terminatingStatusCodes = [500, 401, 403];
 // override the termination if any of these APIM message codes are in the response
 const excludedMessageCodes = ['MFS0103'];
 
+function checkOrigin() {
+    // only allow the gateway url to authenticate the user
+    let allowOrigin = process.env.REACT_APP_GATEWAY_URL;
+    if (process.env.REACT_APP_GATEWAY_URL === null || process.env.REACT_APP_GATEWAY_URL === undefined
+        || process.env.REACT_APP_GATEWAY_URL === '') {
+        allowOrigin = window.location.origin;
+    }
+    if (allowOrigin === null || allowOrigin === undefined) {
+        throw new Error('Allow Origin is not set for Login/Logout process');
+    }
+    return allowOrigin;
+}
+
 /**
  * Construct the URL to fetch container data from the service
  * @param action the payload will contain a container Id
@@ -81,9 +94,10 @@ export const fetchTilesPollingEpic = (action$, store, { ajax, scheduler }) =>
                     ajax({
                         url: getUrl(action),
                         method: 'GET',
+                        credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': window.location.origin,
+                            'Access-Control-Allow-Origin': checkOrigin(),
                         },
                     }).pipe(
                         map(ajaxResponse => {

@@ -324,6 +324,6 @@ public class MFaaSConfigPropertiesContainer {
         private String cookieComment = "API Mediation Layer security token";
 
         // Max age of the cookie (-1 = session scope)
-        private Integer cookieMaxAge = -1;
+        private Integer cookieMaxAge = 24 * 60 * 60;
     }
 }

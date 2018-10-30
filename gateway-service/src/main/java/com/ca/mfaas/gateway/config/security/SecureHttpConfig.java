@@ -71,8 +71,7 @@ public class SecureHttpConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/**").permitAll()
             .and()
             .httpBasic().disable()
-            .headers().frameOptions().disable()
-            .httpStrictTransportSecurity().maxAgeInSeconds(0).includeSubDomains(true);
+            .headers().disable();
     }
 
     @Bean

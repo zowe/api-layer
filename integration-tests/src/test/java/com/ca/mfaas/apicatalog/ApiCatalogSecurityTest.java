@@ -64,7 +64,7 @@ public class ApiCatalogSecurityTest {
 
         assertTrue(cookie.isHttpOnly());
         assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(-1L));
+        assertThat(cookie.getMaxAge(), is(86400L));
     }
 
     @Test

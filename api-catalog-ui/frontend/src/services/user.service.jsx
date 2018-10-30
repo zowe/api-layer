@@ -14,11 +14,12 @@ function handleResponse(response) {
 function checkOrigin() {
     // only allow the gateway url to authenticate the user
     let allowOrigin = process.env.REACT_APP_GATEWAY_URL;
-    if (process.env.REACT_APP_GATEWAY_URL === null || process.env.REACT_APP_GATEWAY_URL === undefined) {
+    if (process.env.REACT_APP_GATEWAY_URL === null || process.env.REACT_APP_GATEWAY_URL === undefined
+    || process.env.REACT_APP_GATEWAY_URL === '') {
         allowOrigin = window.location.origin;
     }
     if (allowOrigin === null || allowOrigin === undefined) {
-        throw new Error('Allow Origin is not set for Logout process');
+        throw new Error('Allow Origin is not set for Login/Logout process');
     }
     return allowOrigin;
 }
@@ -46,6 +47,7 @@ function login(credentials) {
     const allowOrigin = checkOrigin();
     const requestOptions = {
         method: 'POST',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': allowOrigin,

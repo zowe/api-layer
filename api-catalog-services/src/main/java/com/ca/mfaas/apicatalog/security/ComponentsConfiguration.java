@@ -46,17 +46,13 @@ public class ComponentsConfiguration {
     }
 
     @Bean
-    public CookieConfiguration cookieConfiguration(@Value("${security.cookie.maxAge:-1}") Integer maxAge,
+    public CookieConfiguration cookieConfiguration(@Value("${security.cookie.maxAge:86400}") Integer maxAge,
                                                    @Value("${security.cookie.secure:true}") Boolean secure) {
-        String name = "apimlAuthenticationToken";
-        String comment = "API Catalog security token";
-        String path = "/";
-
         return CookieConfiguration.builder()
-            .name(name)
+            .name("apimlAuthenticationToken")
             .secure(secure)
-            .path(path)
-            .comment(comment)
+            .path("/")
+            .comment("API Catalog security token")
             .maxAge(maxAge)
             .build();
     }
