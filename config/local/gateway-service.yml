@@ -9,16 +9,16 @@ environment:
     ipAddress: 127.0.0.1
     keyAlias: localhost
     keyPassword: password
-    keystore: keystore/local/localhost_server.jks
+    keystoreType: PKCS12
+    keystore: keystore/localhost/localhost.keystore.p12
     keystorePassword: password
-    keystoreType: JKS
     port: 10010
     preferIpAddress: false
     scheme: https
     sslEnabled: true
-    truststore: keystore/local/localhost_truststore.jks
-    truststorePassword: trustword
-    truststoreType: JKS
+    truststore: keystore/localhost/localhost.truststore.p12
+    truststorePassword: password
+    truststoreType: PKCS12
 
 mfaas:
     gateway:
