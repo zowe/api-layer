@@ -10,7 +10,7 @@ from urllib.parse import quote
 log = logging.getLogger(__name__)
 
 zowe_github_auth_headers = {'Authorization': "token {}".format(os.environ["ZOWE_GITHUB_APIKEY"])}
-zowe_github_api_url = 'https://api.github.com/repos/gizafoundation/api-layer/'
+zowe_github_api_url = 'https://api.github.com/repos/zowe/api-layer/'
 
 # Labels:
 under_ca_testing = 'under CA testing'

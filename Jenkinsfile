@@ -25,22 +25,22 @@ def BUILD_FAILURE = 'FAILURE'
 /**
  * The user's name for git commits
  */
-def GIT_USER_NAME = 'giza-jenkins'
+def GIT_USER_NAME = 'zowe-robot'
 
 /**
  * The user's email address for git commits
  */
-def GIT_USER_EMAIL = 'giza.jenkins@gmail.com'
+def GIT_USER_EMAIL = 'zowe.robot@gmail.com'
 
 /**
  * The base repository url for github
  */
-def GIT_REPO_URL = 'github.com/gizafoundation/api-layer.git'
+def GIT_REPO_URL = 'https://github.com/zowe/api-layer.git'
 
 /**
  * The credentials id field for the authorization token for GitHub stored in Jenkins
  */
-def GIT_CREDENTIALS_ID = 'giza-jenkins-github'
+def GIT_CREDENTIALS_ID = 'zowe-robot-github'
 
 /**
  * A command to be run that gets the current revision pulled down
@@ -220,7 +220,7 @@ pipeline {
             archiveArtifacts artifacts: 'integration-enabler-jersey/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
 
-            withCredentials([usernamePassword(credentialsId: 'giza-jenkins-github-apikey', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {
+            withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {
                 sh """
                     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
                     python3 get-pip.py --user
