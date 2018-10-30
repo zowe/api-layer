@@ -9,17 +9,25 @@
  */
 package com.ca.mfaas.apicatalog.services.status;
 
+import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
+import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
 import com.ca.mfaas.product.family.ProductFamilyType;
+import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -41,6 +49,8 @@ public class APIDocRetrievalService {
 
     private final RestTemplate restTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
+    private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+    private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Autowired
     public APIDocRetrievalService(RestTemplate restTemplate,
@@ -57,24 +67,41 @@ public class APIDocRetrievalService {
      * @return the api docs as a string
      */
     public ResponseEntity<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
-        log.info("Attempting to retrieve API doc for: " + serviceId);
-        String version = apiVersion;
-        if (version == null) {
-            // ********** HARDCODED V1 ! remove when multi version implemented
-            version = "v1";
+        log.info("Attempting to retrieve API doc for service {} version {}",  serviceId, apiVersion);
+
+        String apiDocUrl = null;
+        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
+        InstanceInfo gateway = instanceRetrievalService.getInstanceInfo("gateway");
+
+        if (instanceInfo != null) {
+            List<ApiInfo> apiInfo = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+
+            if (apiInfo != null) {
+                ApiInfo api = findApi(apiInfo, apiVersion);
+                if (api.getSwaggerUrl() == null) {
+                    return swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, api);
+                }
+                else {
+                    apiDocUrl = api.getSwaggerUrl();
+                }
+            }
         }
+
+        if (apiDocUrl == null) {
+            String version = apiVersion;
+            if (version == null) {
+                version = "v1";
+            }
+            apiDocUrl = getGatewayUrl() + "/api/" + version + "/api-doc/" + serviceId.toLowerCase();
+        }
+
         try {
             // Create the request
             HttpEntity<?> entity = createRequest();
             ResponseEntity<String> response;
-            String targetEndpointInGateway;
-
-            targetEndpointInGateway = getGatewayUrl() +
-                "/api/" + version + "/api-doc/" + serviceId.toLowerCase();
-
-            log.info("Sending API Doc info request to: " + targetEndpointInGateway);
+            log.info("Sending API documentation request for service {} version {} to: {}", serviceId, apiVersion, apiDocUrl);
             response = restTemplate.exchange(
-                targetEndpointInGateway,
+                apiDocUrl,
                 HttpMethod.GET,
                 entity,
                 String.class);
@@ -82,10 +109,26 @@ public class APIDocRetrievalService {
             // Handle errors (request may fail if service is unavailable)
             return handleResponse(serviceId, response);
         } catch (Exception e) {
-            log.error("General Exception thrown when retrieving API Doc: " + e.getMessage(), e);
+            log.error("General exception thrown when retrieving API documentation for service {} version {}: {}", serviceId, apiVersion, e.getMessage());
             // more specific exceptions
             throw new ApiDocNotFoundException(e.getMessage());
         }
+    }
+
+    private ApiInfo findApi(List<ApiInfo> apiInfo, String apiVersion) {
+        String expectedGatewayUrl = "api";
+
+        if (apiVersion != null) {
+            expectedGatewayUrl = "api/" + apiVersion;
+        }
+
+        for (ApiInfo api: apiInfo) {
+            if (api.getGatewayUrl().equals(expectedGatewayUrl)) {
+                return api;
+            }
+        }
+
+        return apiInfo.get(0);
     }
 
     /**
@@ -116,10 +159,10 @@ public class APIDocRetrievalService {
 
             log.info("Sending API Doc info request to: " + instanceApiDocEndpoint);
             response = restTemplate.exchange(
-                instanceApiDocEndpoint,
-                HttpMethod.GET,
-                entity,
-                String.class);
+                    instanceApiDocEndpoint,
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
 
             // Handle errors (request may fail if service is unavailable)
             return response.getBody();
