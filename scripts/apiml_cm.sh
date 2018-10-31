@@ -37,9 +37,9 @@ function clean_local_ca {
 }
 
 function clean_service {
-    if [[ -e ${SERVICE_KEYSTORE}.keystore.p12 && -e ${SERVICE_KEYSTORE}.csr && -e ${SERVICE_KEYSTORE}.cer && -e ${SERVICE_TRUSTSTORE}.truststore.p12 ]];
+    if [[ -e ${SERVICE_KEYSTORE} && -e ${SERVICE_KEYSTORE}.csr && -e ${SERVICE_KEYSTORE}.cer && -e ${SERVICE_TRUSTSTORE} ]];
     then
-        rm -f ${SERVICE_KEYSTORE}.keystore.p12 ${SERVICE_KEYSTORE}.csr ${SERVICE_KEYSTORE}_signed.cer ${SERVICE_TRUSTSTORE}.truststore.p12
+        rm -f ${SERVICE_KEYSTORE} ${SERVICE_KEYSTORE}.csr ${SERVICE_KEYSTORE}_signed.cer ${SERVICE_TRUSTSTORE}
     fi
 }
 
@@ -58,11 +58,11 @@ function create_service_certificate_and_csr {
     if [ ! -e "${SERVICE_KEYSTORE}.keystore.p12" ];
     then
         echo "Generate service private key and service:"
-        keytool -genkeypair -v -alias ${SERVICE_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.keystore.p12 -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} \
+        keytool -genkeypair -v -alias ${SERVICE_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE} -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} \
             -storetype PKCS12 -dname "${SERVICE_DNAME}" -validity ${SERVICE_VALIDITY}
 
         echo "Generate CSR for the the service certificate:"
-        keytool -certreq -v -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.keystore.p12 -storepass ${SERVICE_PASSWORD} -file ${SERVICE_KEYSTORE}.csr \
+        keytool -certreq -v -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE} -storepass ${SERVICE_PASSWORD} -file ${SERVICE_KEYSTORE}.csr \
             -keyalg RSA -storetype PKCS12 -dname "${SERVICE_DNAME}" -validity ${SERVICE_VALIDITY}
     fi
 }
@@ -77,13 +77,13 @@ function sign_csr_using_local_ca {
 
 function import_signed_certificate_and_ca_certificate {
     echo "Import the Certificate Authority to the truststore:"
-    keytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_TRUSTSTORE}.truststore.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+    keytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_TRUSTSTORE} -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 
     echo "Import the Certificate Authority to the keystore:"
-    keytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_KEYSTORE}.keystore.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+    keytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_KEYSTORE} -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 
     echo "Import the signed CSR to the keystore:"
-    keytool -importcert -v -trustcacerts -noprompt -file ${SERVICE_KEYSTORE}_signed.cer -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.keystore.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+    keytool -importcert -v -trustcacerts -noprompt -file ${SERVICE_KEYSTORE}_signed.cer -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE} -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 }
 
 function setup_local_ca {
@@ -92,7 +92,7 @@ function setup_local_ca {
     ls -l  ${LOCAL_CA_FILENAME}*
 }
 
-function setup_local_apiml {
+function new_service {
     clean_service
     create_service_certificate_and_csr
     sign_csr_using_local_ca
@@ -108,119 +108,55 @@ while [ "$1" != "" ]; do
         -h | --help )           usage
                                 exit
                                 ;;
+        --local-ca-alias )      shift
+                                LOCAL_CA_ALIAS=$1
+                                ;;
+        --local-ca-filename )   shift
+                                LOCAL_CA_FILENAME=$1
+                                ;;
+        --local-ca-dname )      shift
+                                LOCAL_CA_DNAME=$1
+                                ;;
+        --local-ca-password )   shift
+                                LOCAL_CA_PASSWORD=$1
+                                ;;
+        --local-ca-validity )   shift
+                                LOCAL_CA_VALIDITY=$1
+                                ;;
+        --service-alias )       shift
+                                SERVICE_ALIAS=$1
+                                ;;
+        --service-hostname )    shift
+                                SERVICE_HOSTNAME=$1
+                                ;;
+        --service-keystore )    shift
+                                SERVICE_KEYSTORE=$1
+                                ;;
+        --service-truststore )  shift
+                                SERVICE_TRUSTSTORE=$1
+                                ;;
+        --service-dname )       shift
+                                SERVICE_DNAME=$1
+                                ;;
+        --service-password )    shift
+                                SERVICE_PASSWORD=$1
+                                ;;
+        --service-validity )    shift
+                                SERVICE_VALIDITY=$1
+                                ;;
         * )                     usage
                                 exit 1
     esac
     shift
-    if [ "$ACTION" == "setup" ];
-    then
-        case $1 in
-            --local-ca-alias )      shift
-                                    LOCAL_CA_ALIAS=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --local-ca-filename )   shift
-                                    LOCAL_CA_FILENAME=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --local-ca-dname )      shift
-                                    LOCAL_CA_DNAME=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --local-ca-password )   shift
-                                    LOCAL_CA_PASSWORD=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --local-ca-validity )   shift
-                                    LOCAL_CA_VALIDITY=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-    else
-        case $1 in
-            --service-alias )       shift
-                                    SERVICE_ALIAS=$1
-                                    ;;
-                * )                 usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --service-hostname )    shift
-                                    SERVICE_HOSTNAME=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --service-keystore )    shift
-                                    SERVICE_KEYSTORE=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --service-truststore )  shift
-                                    SERVICE_TRUSTSTORE=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --service-dname )       shift
-                                    SERVICE_DNAME=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --service-password )    shift
-                                    SERVICE_PASSWORD=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-        case $1 in
-            --service-validity )    shift
-                                    SERVICE_VALIDITY=$1
-                                    ;;
-            * )                     usage
-                                    exit 1
-        esac
-        shift
-    fi
 done
 
 case $ACTION in
     setup)
         setup_local_ca
-        setup_local_apiml
+        new_service
         ;;
     new-service)
-        exit 0
+        new_service
         ;;
     *)
         usage
