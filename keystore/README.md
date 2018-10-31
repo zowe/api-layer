@@ -33,11 +33,73 @@ Local CA:
     - private key of the local CA 
 
 
-## Process how create them
+## Generating own certificates for localhost
 
 Use following script:
 
     scripts/apiml_cm.sh --action setup
+
+
+## Generating certificate for a new service on localhost
+
+Use the following script in the root of the `api-layer` repository:
+
+    scripts/apiml_cm.sh --action new-service --service-keystore <keystore_path> --service-truststore <truststore_path> --service-alias <alias> --service-dname <dname> --service-password <password> --service-hostname <hostname> --service-validity <days>
+
+The `<keystore_path>` is the path including the extension to the key store that will be generated. It can be an absolute path or a path relative to the current working directory. The key store is generated in PKCS12 format.
+
+The `<truststore_path>` is the path including the extension to the trust store that will be generated. It can be an absolute path or a path relative to the current working directory. The trust store is generated in PKCS12 format.
+
+TODO Andrea
+
+
+### Example
+
+If you have the sample service described in the User Guide at https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md#sample-rest-api-service you need to complete following steps:
+
+1. Go to the directory with the sample service:
+
+        cd <your_directory>/swagger-samples/java/java-spring-boot
+
+
+2. Make directory for keystores:
+
+        mkdir keystore
+
+
+3. Call the script:
+
+        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.trustore.p12 --service-alias petstore --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-hostname localhost --service-validity 365
+
+
+4. This generated the certificate and private key to the `keystore` directory. You need to configure the HTTPS for the sample service:
+
+
+TODO Andrea (document propeties for HTTPS to be changed in `src/main/resources/application.properties`)
+
+Convert to properties:
+```
+server:
+    ssl:
+        keyAlias: petstore
+        keyPassword: password
+        keyStoreType: PKCS12
+        keyStore: keystore/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+```        
+
+5. Start:
+
+        java -jar target/swaggerhub-spring-boot-sample-1.0.0-SNAPSHOT.jar --server.port=8443 
+
+
+6. Now you have a service that is using a certificate signed by local CA and will be trusted by your API Mediation Layer.
+
+
+7. You can onboard the service to APIML by following instructions in ...
 
 
 ## Import the root certificate of local CA to your browser
