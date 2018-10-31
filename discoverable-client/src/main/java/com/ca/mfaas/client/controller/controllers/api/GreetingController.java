@@ -13,11 +13,10 @@ import com.ca.mfaas.client.controller.domain.Greeting;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * Version 1 of the controller that returns greetings.
@@ -29,13 +28,20 @@ public class GreetingController {
     private static final String TEMPLATE = "Hello, %s!";
 
     /**
-     * Gets a greeting for anyone.
+     * Gets a greeting.
      */
-    @GetMapping(value = "/api/v1/greeting")
+    @GetMapping(value = {"/api/v1/greeting/{yourName}", "/api/v1/greeting"})
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Other Operations"})
-    public Greeting greeting(@RequestParam(value = "name", defaultValue = "world") String name,
-                             @RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs) {
+    public Greeting yourGreeting(@RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs,
+                                 @PathVariable(value = "yourName") Optional<String> yourName) {
+
+        String name;
+        if (yourName.isPresent()) {
+            name = yourName.get();
+        } else {
+            name = "world";
+        }
         if (delayMs > 0) {
             try {
                 Thread.sleep(delayMs);

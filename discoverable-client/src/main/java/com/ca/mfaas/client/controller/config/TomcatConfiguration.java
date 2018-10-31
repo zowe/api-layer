@@ -24,6 +24,8 @@ public class TomcatConfiguration {
 
     @Bean
     public ServletWebServerFactory servletContainer() {
+        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
+
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         return tomcat;

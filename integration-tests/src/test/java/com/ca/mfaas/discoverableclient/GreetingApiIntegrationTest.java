@@ -32,4 +32,47 @@ public class GreetingApiIntegrationTest {
         // Then
         assertThat(content, equalTo("Hello, world!"));
     }
+
+    @Test
+    public void shouldCallDiscoverableServiceApiForPersonalGreeting() throws Exception {
+        // When
+        final HttpResponse response = HttpRequestUtils.getResponse("/api/v1/discoverableclient/greeting/You", SC_OK);
+        final String jsonResponse = EntityUtils.toString(response.getEntity());
+        DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+        String content = jsonContext.read("$.content");
+
+        // Then
+        assertThat(content, equalTo("Hello, You!"));
+    }
+
+
+    //Test for slash TBD
+ /*    @Test
+     public void shouldCallDiscoverableServiceApiWithSlash() throws Exception {
+         // When
+         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+         final String scheme = gatewayServiceConfiguration.getScheme();
+         final String host = gatewayServiceConfiguration.getHost();
+         final String port = gatewayServiceConfiguration.getPort();
+         final String path = scheme + "://" + host + ":" + port + "https:/api/v1/discoverableclient/greeting/with%2fslash";
+         URL url = new URL(path);
+
+         HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+         con.setRequestMethod("GET");
+
+         int status = con.getResponseCode();
+         BufferedReader in = new BufferedReader(
+             new InputStreamReader(con.getInputStream()));
+         String inputLine;
+         StringBuffer content = new StringBuffer();
+         while ((inputLine = in.readLine()) != null) {
+             content.append(inputLine);
+         }
+         in.close();
+         con.disconnect();
+
+         // Then
+         assertThat(content.toString(), equalTo("Hello, with/slash!"));
+
+     }*/
 }
