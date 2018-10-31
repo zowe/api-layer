@@ -118,46 +118,106 @@ while [ "$1" != "" ]; do
                                 exit 1
     esac
     shift
-    case $1 in
-        --local-ca-alias )      shift
-                                LOCAL_CA_ALIAS=$1
-                                ;;
-        * )                     usage
-                                exit 1
-    esac
-    shift
-    case $1 in
-        --local-ca-filename )   shift
-                                LOCAL_CA_FILENAME=$1
-                                ;;
-        * )                     usage
-                                exit 1
-    esac
-    shift
-    case $1 in
-        --local-ca-dname )      shift
-                                LOCAL_CA_DNAME=$1
-                                ;;
-        * )                     usage
-                                exit 1
-    esac
-    shift
-    case $1 in
-        --local-ca-password )   shift
-                                LOCAL_CA_PASSWORD=$1
-                                ;;
-        * )                     usage
-                                exit 1
-    esac
-    shift
-    case $1 in
-        --local-ca-validity )   shift
-                                LOCAL_CA_VALIDITY=$1
-                                ;;
-        * )                     usage
-                                exit 1
-    esac
-    shift
+    if [ "$ACTION" == "setup" ];
+    then
+        case $1 in
+            --local-ca-alias )      shift
+                                    LOCAL_CA_ALIAS=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --local-ca-filename )   shift
+                                    LOCAL_CA_FILENAME=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --local-ca-dname )      shift
+                                    LOCAL_CA_DNAME=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --local-ca-password )   shift
+                                    LOCAL_CA_PASSWORD=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --local-ca-validity )   shift
+                                    LOCAL_CA_VALIDITY=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+    else
+        case $1 in
+            --service-alias )       shift
+                                    SERVICE_ALIAS=$1
+                                    ;;
+                * )                 usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --service-hostname )    shift
+                                    SERVICE_HOSTNAME=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --service-keystore )    shift
+                                    SERVICE_KEYSTORE=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --service-truststore )  shift
+                                    SERVICE_TRUSTSTORE=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --service-dname )       shift
+                                    SERVICE_DNAME=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --service-password )    shift
+                                    SERVICE_PASSWORD=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+        case $1 in
+            --service-validity )    shift
+                                    SERVICE_VALIDITY=$1
+                                    ;;
+            * )                     usage
+                                    exit 1
+        esac
+        shift
+    fi
 done
 
 case $ACTION in
