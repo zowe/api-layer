@@ -20,20 +20,14 @@ LOCAL_CA_DNAME="CN=Zowe Development Instances Certificate Authority, OU=API Medi
 LOCAL_CA_PASSWORD="local_ca_password"
 LOCAL_CA_VALIDITY=3650
 
-SERVER_ALIAS="localhost"
-SERVER_PASSWORD="password"
-SERVER_FILENAME="keystore/localhost/localhost"
-SERVER_DNAME="CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
-SERVER_EXT="SAN=dns:localhost.localdomain,dns:localhost"
-SERVER_VALIDITY=3650
-
-SERVICE_ALIAS=
-SERVICE_HOSTNAME=
-SERVICE_KEYSTORE=
-SERVICE_TRUSTSTORE=
-SERVICE_DNAME=
-SERVICE_PASSWORD=
+SERVICE_ALIAS="localhost"
+SERVICE_PASSWORD="password"
+SERVICE_KEYSTORE="keystore/localhost/localhost"
+SERVICE_TRUSTSTORE="keystore/localhost/localhost"
+SERVICE_DNAME="CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
+SERVICE_EXT="SAN=dns:localhost.localdomain,dns:localhost"
 SERVICE_VALIDITY=3650
+SERVICE_HOSTNAME=
 
 function clean_local_ca {
     if [[ -e ${LOCAL_CA_FILENAME}.keystore.p12 && -e ${LOCAL_CA_FILENAME}.cer ]];
@@ -43,9 +37,9 @@ function clean_local_ca {
 }
 
 function clean_service {
-    if [[ -e ${SERVER_FILENAME}.keystore.p12 && -e ${SERVER_FILENAME}.csr && -e ${SERVER_FILENAME}.cer && -e ${SERVER_FILENAME}.truststore.p12 ]];
+    if [[ -e ${SERVICE_KEYSTORE}.keystore.p12 && -e ${SERVICE_KEYSTORE}.csr && -e ${SERVICE_KEYSTORE}.cer && -e ${SERVICE_TRUSTSTORE}.truststore.p12 ]];
     then
-        rm -f ${SERVER_FILENAME}.keystore.p12 ${SERVER_FILENAME}.csr ${SERVER_FILENAME}_signed.cer ${SERVER_FILENAME}.truststore.p12
+        rm -f ${SERVICE_KEYSTORE}.keystore.p12 ${SERVICE_KEYSTORE}.csr ${SERVICE_KEYSTORE}_signed.cer ${SERVICE_TRUSTSTORE}.truststore.p12
     fi
 }
 
@@ -61,35 +55,35 @@ function create_certificate_authority {
 }
 
 function create_service_certificate_and_csr {
-    if [ ! -e "${SERVER_FILENAME}.keystore.p12" ];
+    if [ ! -e "${SERVICE_KEYSTORE}.keystore.p12" ];
     then
         echo "Generate service private key and service:"
-        keytool -genkeypair -v -alias ${SERVER_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVER_FILENAME}.keystore.p12 -keypass ${SERVER_PASSWORD} -storepass ${SERVER_PASSWORD} \
-            -storetype PKCS12 -dname "${SERVER_DNAME}" -validity ${SERVER_VALIDITY}
+        keytool -genkeypair -v -alias ${SERVICE_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.keystore.p12 -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} \
+            -storetype PKCS12 -dname "${SERVICE_DNAME}" -validity ${SERVICE_VALIDITY}
 
         echo "Generate CSR for the the service certificate:"
-        keytool -certreq -v -alias ${SERVER_ALIAS} -keystore ${SERVER_FILENAME}.keystore.p12 -storepass ${SERVER_PASSWORD} -file ${SERVER_FILENAME}.csr \
-            -keyalg RSA -storetype PKCS12 -dname "${SERVER_DNAME}" -validity ${SERVER_VALIDITY}
+        keytool -certreq -v -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.keystore.p12 -storepass ${SERVICE_PASSWORD} -file ${SERVICE_KEYSTORE}.csr \
+            -keyalg RSA -storetype PKCS12 -dname "${SERVICE_DNAME}" -validity ${SERVICE_VALIDITY}
     fi
 }
 
 function sign_csr_using_local_ca {
     echo "Sign the CSR using the Certificate Authority:"
-    keytool -gencert -v -infile ${SERVER_FILENAME}.csr -outfile ${SERVER_FILENAME}_signed.cer -keystore ${LOCAL_CA_FILENAME}.keystore.p12 \
+    keytool -gencert -v -infile ${SERVICE_KEYSTORE}.csr -outfile ${SERVICE_KEYSTORE}_signed.cer -keystore ${LOCAL_CA_FILENAME}.keystore.p12 \
         -alias ${LOCAL_CA_ALIAS} -keypass ${LOCAL_CA_PASSWORD} -storepass ${LOCAL_CA_PASSWORD} -storetype PKCS12 \
-        -ext ${SERVER_EXT} -ext KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment -ext ExtendedKeyUsage=clientAuth,serverAuth -rfc \
-        -validity ${SERVER_VALIDITY}
+        -ext ${SERVICE_EXT} -ext KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment -ext ExtendedKeyUsage=clientAuth,serverAuth -rfc \
+        -validity ${SERVICE_VALIDITY}
 }
 
 function import_signed_certificate_and_ca_certificate {
     echo "Import the Certificate Authority to the truststore:"
-    keytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVER_FILENAME}.truststore.p12 -storepass ${SERVER_PASSWORD} -storetype PKCS12
+    keytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_TRUSTSTORE}.truststore.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 
     echo "Import the Certificate Authority to the keystore:"
-    keytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVER_FILENAME}.keystore.p12 -storepass ${SERVER_PASSWORD} -storetype PKCS12
+    keytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_KEYSTORE}.keystore.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 
     echo "Import the signed CSR to the keystore:"
-    keytool -importcert -v -trustcacerts -noprompt -file ${SERVER_FILENAME}_signed.cer -alias ${SERVER_ALIAS} -keystore ${SERVER_FILENAME}.keystore.p12 -storepass ${SERVER_PASSWORD} -storetype PKCS12
+    keytool -importcert -v -trustcacerts -noprompt -file ${SERVICE_KEYSTORE}_signed.cer -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.keystore.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 }
 
 function setup_local_ca {
@@ -103,7 +97,7 @@ function setup_local_apiml {
     create_service_certificate_and_csr
     sign_csr_using_local_ca
     import_signed_certificate_and_ca_certificate
-    ls ${SERVER_FILENAME}*
+    ls ${SERVICE_KEYSTORE}*
 }
 
 while [ "$1" != "" ]; do
