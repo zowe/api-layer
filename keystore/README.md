@@ -44,7 +44,7 @@ Use following script:
 
 Use the following script in the root of the `api-layer` repository:
 
-    scripts/apiml_cm.sh --action new-service --service-keystore <keystore_path> --service-truststore <truststore_path> --service-alias <alias> --service-dname <dname> --service-password <password> --service-hostname <hostname> --service-validity <days>
+    scripts/apiml_cm.sh --action new-service --service-alias <alias> --service-hostname <hostname> --service-keystore <keystore_path> --service-truststore <truststore_path> --service-dname <dname> --service-password <password> --service-validity <days>
 
 The `<keystore_path>` is the path including the extension to the key store that will be generated. It can be an absolute path or a path relative to the current working directory. The key store is generated in PKCS12 format.
 
@@ -65,7 +65,7 @@ If you have the sample service described in the User Guide at [this link](https:
 
 3. Call the script:
 
-        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.trustore.p12 --service-alias petstore --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-hostname localhost --service-validity 365
+        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-alias petstore --service-hostname localhost --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.trustore.p12 --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-validity 365
 
 4. This generated the certificate and private key to the `keystore` directory. You need to configure the HTTPS for the sample service. This can be done by adding the following properties to the `src/main/resources/application.properties`:
  
@@ -82,9 +82,7 @@ If you have the sample service described in the User Guide at [this link](https:
 
         java -jar target/swaggerhub-spring-boot-sample-1.0.0-SNAPSHOT.jar --server.port=8443 
 
-
 6. Now you have a service that is using a certificate signed by local CA and will be trusted by your API Mediation Layer.
-
 
 7. You can onboard the service to APIML by following instructions in ...
 
