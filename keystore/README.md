@@ -50,46 +50,33 @@ The `<keystore_path>` is the path including the extension to the key store that 
 
 The `<truststore_path>` is the path including the extension to the trust store that will be generated. It can be an absolute path or a path relative to the current working directory. The trust store is generated in PKCS12 format.
 
-TODO Andrea
-
 
 ### Example
 
-If you have the sample service described in the User Guide at https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md#sample-rest-api-service you need to complete following steps:
+If you have the sample service described in the User Guide at [this link](https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md#sample-rest-api-service) you need to complete the following steps:
 
 1. Go to the directory with the sample service:
 
         cd <your_directory>/swagger-samples/java/java-spring-boot
 
-
-2. Make directory for keystores:
+2. Make directory for keystore:
 
         mkdir keystore
-
 
 3. Call the script:
 
         <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.trustore.p12 --service-alias petstore --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-hostname localhost --service-validity 365
 
-
-4. This generated the certificate and private key to the `keystore` directory. You need to configure the HTTPS for the sample service:
-
-
-TODO Andrea (document propeties for HTTPS to be changed in `src/main/resources/application.properties`)
-
-Convert to properties:
-```
-server:
-    ssl:
-        keyAlias: petstore
-        keyPassword: password
-        keyStoreType: PKCS12
-        keyStore: keystore/localhost.keystore.p12
-        keyStorePassword: password
-        trustStore: keystore/localhost.truststore.p12
-        trustStorePassword: password
-        trustStoreType: PKCS12
-```        
+4. This generated the certificate and private key to the `keystore` directory. You need to configure the HTTPS for the sample service. This can be done by adding the following properties to the `src/main/resources/application.properties`:
+ 
+        server.ssl.keyAlias=petstore
+        server.ssl.keyPassword=password
+        server.ssl.keyStoreType=PKCS12
+        server.ssl.keyStore=keystore/localhost.keystore.p12
+        server.ssl.keyStorePassword=password
+        server.ssl.trustStore=keystore/localhost.truststore.p12
+        server.ssl.trustStorePassword=password
+        server.ssl.trustStoreType=PKCS12
 
 5. Start:
 
