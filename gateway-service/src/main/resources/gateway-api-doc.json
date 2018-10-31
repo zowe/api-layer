@@ -19,8 +19,7 @@
                 "tags": [
                     "Security"
                 ],
-                "summary": "Login",
-                "description": "Authenticate mainframe user credentials and get authentication token.",
+                "summary": "Authenticate mainframe user credentials and get authentication token.",
                 "operationId": "loginUsingPOST",
                 "consumes": [
                     "application/json"
@@ -35,40 +34,6 @@
                         "schema": {
                             "$ref": "#/definitions/Authentication"
                         }
-                    },
-                    "201": {
-                        "description": "Created"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    }
-                }
-            }
-        },
-        "auth/logout": {
-            "post": {
-                "tags": [
-                    "Security"
-                ],
-                "summary": "Logout",
-                "description": "Logout the current user.",
-                "operationId": "logoutUsingPOST",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "*/*"
-                ],
-                "parameters": [],
-                "responses": {
-                    "200": {
-                        "description": "OK"
                     },
                     "201": {
                         "description": "Created"
