@@ -12,7 +12,7 @@ package com.ca.mfaas.security.login;
 import org.springframework.security.authentication.AuthenticationServiceException;
 
 /**
- * This exception is trown in case of unsupported HTTP method.
+ * This exception is thrown in case of unsupported HTTP method.
  */
 public class AuthMethodNotSupportedException extends AuthenticationServiceException {
     public AuthMethodNotSupportedException(String msg) {

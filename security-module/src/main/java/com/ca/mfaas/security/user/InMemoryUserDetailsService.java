@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.user;
+package com.ca.mfaas.security.user;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +17,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Dummy service to provide user infor
+ * Dummy service to provide user information
  */
 @Deprecated // Delete once z/osmf authentication implemented
-@Service
+@Component
 public class InMemoryUserDetailsService implements UserDetailsService {
 
     private final BCryptPasswordEncoder passwordEncoder;
