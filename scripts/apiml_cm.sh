@@ -11,6 +11,7 @@ function usage {
     echo ""
     echo "  apiml_cm.sh --action setup"
     echo "  apiml_cm.sh --action setup --local-ca-alias ... --local-ca-filename ... --local-ca-dname ... --local-ca-password ... --local-ca-validity ..."
+    echo "  apiml_cm.sh --action new-service --service-alias <alias> --service-hostname <hostname> --service-keystore <keystore_path> --service-truststore <truststore_path> --service-dname <dname> --service-password <password> --service-validity <days>"
 }
 
 LOCAL_CA_ALIAS="localca"
@@ -25,6 +26,14 @@ SERVER_FILENAME="keystore/localhost/localhost"
 SERVER_DNAME="CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 SERVER_EXT="SAN=dns:localhost.localdomain,dns:localhost"
 SERVER_VALIDITY=3650
+
+SERVICE_ALIAS=
+SERVICE_HOSTNAME=
+SERVICE_KEYSTORE=
+SERVICE_TRUSTSTORE=
+SERVICE_DNAME=
+SERVICE_PASSWORD=
+SERVICE_VALIDITY=3650
 
 function clean_local_ca {
     if [[ -e ${LOCAL_CA_FILENAME}.keystore.p12 && -e ${LOCAL_CA_FILENAME}.cer ]];
