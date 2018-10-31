@@ -37,7 +37,7 @@ mfaas:
         locations: ${environment.discoveryLocations}
         info:
             serviceTitle: Discovery Service
-            description: A Discovery Service to discover, announce and provide about microservices registered in the MFaaS eco system
+            description: A Discovery Service to discover and provide information about services registered in the API Mediation Layer eco system.
             enableApiDoc: false
     service:
         hostname: ${environment.hostname}

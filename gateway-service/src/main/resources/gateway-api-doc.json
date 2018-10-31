@@ -1,0 +1,130 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API for the API Gateway service which is a component of the API Mediation Layer. Use this API to access the Enterprise z/OS Security Manager to perform tasks such as logging in with mainframe credentials and checking authorization to mainframe resources.\n\n[Swagger/OpenAPI JSON Document](https://localhost:10010/api/v1/apicatalog/apidoc/gateway/v1)",
+        "version": "1.0.0",
+        "title": "API Gateway"
+    },
+    "host": "https://localhost:10010",
+    "basePath": "/",
+    "tags": [
+        {
+            "name": "Security",
+            "description": "Mainframe authentication and authorization operations"
+        }
+    ],
+    "paths": {
+        "auth/login": {
+            "post": {
+                "tags": [
+                    "Security"
+                ],
+                "summary": "Login",
+                "description": "Authenticate mainframe user credentials and get authentication token.",
+                "operationId": "loginUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "*/*"
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/Authentication"
+                        }
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "auth/logout": {
+            "post": {
+                "tags": [
+                    "Security"
+                ],
+                "summary": "Logout",
+                "description": "Logout the current user.",
+                "operationId": "logoutUsingPOST",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "*/*"
+                ],
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Authentication": {
+            "type": "object",
+            "properties": {
+                "authenticated": {
+                    "type": "boolean"
+                },
+                "authorities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/GrantedAuthority"
+                    }
+                },
+                "credentials": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "details": {
+                    "type": "object",
+                    "properties": {}
+                },
+                "name": {
+                    "type": "string"
+                },
+                "principal": {
+                    "type": "object",
+                    "properties": {}
+                }
+            },
+            "title": "Authentication"
+        },
+        "GrantedAuthority": {
+            "type": "object",
+            "properties": {
+                "authority": {
+                    "type": "string"
+                }
+            },
+            "title": "GrantedAuthority"
+        }
+    }
+}

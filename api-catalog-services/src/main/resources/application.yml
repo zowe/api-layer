@@ -45,7 +45,7 @@ mfaas:
             homePage: /ui/v1/apicatalog
         info:
             serviceTitle: API Catalog
-            description: API Catalog microservice to display service details and API documentation for discovered API services
+            description: API Catalog service to display service details and API documentation for discovered API services.
             enableApiDoc: true
     service:
         hostname: ${environment.hostname}

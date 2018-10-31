@@ -180,8 +180,12 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
         // Add link to swagger to the description:
         String description = swagger.getInfo().getDescription();
         if (context.getRequest() != null) {
-            String swaggerLink = "\n\n[Swagger/OpenAPI JSON Document](" + context.getRequest().getRequestURL() + ")";
-            swagger.getInfo().setDescription(description + swaggerLink);
+            String swaggerLocationHeaderLink = "[Swagger/OpenAPI JSON Document]";
+            String swaggerLink = "\n\n" + swaggerLocationHeaderLink + "(" + context.getRequest().getRequestURL() + ")";
+            // do not add link if it already exists
+            if (!swagger.getInfo().getDescription().contains(swaggerLocationHeaderLink)) {
+                swagger.getInfo().setDescription(description + swaggerLink);
+            }
         }
 
         // Update all paths to gateway format

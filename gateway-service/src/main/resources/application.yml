@@ -49,9 +49,10 @@ mfaas:
             healthPage: application/health
             homePage:
         info:
-            serviceTitle: Gateway
-            description: This is the Gateway to Zowe microservices
+            serviceTitle: API Gateway
+            description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
             enableApiDoc: true
+            swaggerLocation: gateway-api-doc.json
     service:
         hostname: ${environment.hostname}
         ipAddress: ${environment.ipAddress}
@@ -191,12 +192,13 @@ eureka:
                         title: ${mfaas.discovery.info.serviceTitle}
                         description: ${mfaas.discovery.info.description}
                 api-info:
+                    swagger:
+                        location: ${mfaas.discovery.info.swaggerLocation:}
                     apiVersionProperties:
                         v1:
-                            title: Gateway Authentication Swagger
-                            description: Security Endpoints
+                            title: API Gateway
+                            description: REST API for the API Gateway service which is a component of the API Mediation Layer. Use this API to access the Enterprise z/OS Security Manager to perform tasks such as logging in with mainframe credentials and checking authorization to mainframe resources.
                             version: 1.0.0
-                            basePackage: com.ca.mfaas.gateway.controllers.swagger
 
     client:
         fetchRegistry: ${mfaas.discovery.fetchRegistry}
