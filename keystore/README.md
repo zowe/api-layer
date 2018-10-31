@@ -20,7 +20,7 @@ Key stores:
     - contains the server certificate signed by the local CA and private key for the server
     
   * `keystore/local/localhost.truststore.p12` 
-    - password: ``trustword``
+    - password: ``password``
     - used for HTTPS clients (e.g. integration tests, services using the gateway) 
     - contains the root certificate of the local CA (not the server certificate)
 
@@ -44,12 +44,13 @@ Use following script:
 
 Use the following script in the root of the `api-layer` repository:
 
-    scripts/apiml_cm.sh --action new-service --service-alias <alias> --service-hostname <hostname> --service-keystore <keystore_path> --service-truststore <truststore_path> --service-dname <dname> --service-password <password> --service-validity <days>
+    scripts/apiml_cm.sh --action new-service --service-alias <alias> --service-hostname <hostname> --service-keystore <keystore_path> --service-truststore <truststore_path> --service-dname <dname> --service-password <password> --service-validity <days> --local-ca-filename <localca_filename> --local-ca-password <localca_password>
 
 The `<keystore_path>` is the path including the extension to the key store that will be generated. It can be an absolute path or a path relative to the current working directory. The key store is generated in PKCS12 format.
 
 The `<truststore_path>` is the path including the extension to the trust store that will be generated. It can be an absolute path or a path relative to the current working directory. The trust store is generated in PKCS12 format.
 
+TODO Andrea: Describe all parameters for new-service action
 
 ### Example
 
@@ -65,10 +66,10 @@ If you have the sample service described in the User Guide at [this link](https:
 
 3. Call the script:
 
-        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-alias petstore --service-hostname localhost --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.trustore.p12 --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-validity 365
+        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-alias petstore --service-hostname localhost --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.truststore.p12 --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-validity 365 --local-ca-filename ~/workspace/zowe/api-layer/keystore/local_ca/localca
 
 4. This generated the certificate and private key to the `keystore` directory. You need to configure the HTTPS for the sample service. This can be done by adding the following properties to the `src/main/resources/application.properties`:
- 
+        
         server.ssl.keyAlias=petstore
         server.ssl.keyPassword=password
         server.ssl.keyStoreType=PKCS12
@@ -78,13 +79,18 @@ If you have the sample service described in the User Guide at [this link](https:
         server.ssl.trustStorePassword=password
         server.ssl.trustStoreType=PKCS12
 
-5. Start:
+5. Repackage the application:
+
+        mvn package
+
+6. Start:
 
         java -jar target/swaggerhub-spring-boot-sample-1.0.0-SNAPSHOT.jar --server.port=8443 
 
-6. Now you have a service that is using a certificate signed by local CA and will be trusted by your API Mediation Layer.
+7. Now you have a service that is using a certificate signed by local CA and will be trusted by your API Mediation Layer.
+   You can try it by accessing: https://localhost:8443/v2/swagger.json
 
-7. You can onboard the service to APIML by following instructions in ...
+8. You can onboard the service to the API Mediation Layer by following instructions in https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md.
 
 
 ## Import the root certificate of local CA to your browser
