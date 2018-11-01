@@ -10,8 +10,8 @@
 package com.ca.mfaas.apicatalog.services.initialisation;
 
 import com.ca.mfaas.enable.services.DiscoveredServiceInstance;
-import com.ca.mfaas.enable.services.MfaasServiceLocator;
 import com.ca.mfaas.enable.services.DiscoveredServiceInstances;
+import com.ca.mfaas.enable.services.MfaasServiceLocator;
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import com.ca.mfaas.product.registry.ApplicationWrapper;
 import com.fasterxml.jackson.annotation.JsonInclude;

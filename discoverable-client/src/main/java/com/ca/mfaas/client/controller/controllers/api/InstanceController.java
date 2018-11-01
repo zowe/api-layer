@@ -10,7 +10,6 @@
 package com.ca.mfaas.client.controller.controllers.api;
 
 import com.ca.mfaas.enable.services.DiscoveredServiceInstance;
-import com.ca.mfaas.enable.services.DiscoveredServiceInstances;
 import com.ca.mfaas.enable.services.MfaasServiceLocator;
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import com.ca.mfaas.product.family.ProductFamilyType;

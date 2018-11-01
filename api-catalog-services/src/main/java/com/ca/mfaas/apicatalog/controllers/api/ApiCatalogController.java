@@ -12,7 +12,6 @@ package com.ca.mfaas.apicatalog.controllers.api;
 import com.ca.mfaas.apicatalog.exceptions.ContainerStatusRetrievalException;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
-import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

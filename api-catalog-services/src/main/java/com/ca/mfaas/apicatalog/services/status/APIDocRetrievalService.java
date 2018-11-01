@@ -11,7 +11,6 @@ package com.ca.mfaas.apicatalog.services.status;
 
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
@@ -104,7 +103,7 @@ public class APIDocRetrievalService {
                 apiDocUrl = gatewayUrl.toASCIIString() + "/api/" + version + "/api-doc/" + serviceId.toLowerCase();
             }
         } catch (URISyntaxException e) {
-            log.error("Exception thrown when retrieving API documentation for service {} version {}: {}", serviceId, apiVersion, e.getMessage());
+            log.error("Exception thrown when constructing API Doc url for service {} version {}: {}", serviceId, apiVersion, e.getMessage());
             throw new ApiDocNotFoundException(e.getMessage());
         }
 
