@@ -9,13 +9,13 @@
  */
 package com.ca.mfaas.security.login;
 
-import com.ca.mfaas.security.token.CookieConfiguration;
+import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -23,24 +23,21 @@ import java.io.IOException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class SuccessfulLoginHandlerTest {
 
     @Test
-    public void successfulLoginHandlerTest() throws IOException {
+    public void successfulLoginHandlerTestForCookie() throws IOException {
         ObjectMapper mapper = mock(ObjectMapper.class);
-        CookieConfiguration cookieConfiguration = mock(CookieConfiguration.class);
-        HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MFaaSConfigPropertiesContainer propertiesContainer = new MFaaSConfigPropertiesContainer();
+        propertiesContainer.setSecurity(new MFaaSConfigPropertiesContainer.SecurityProperties());
+        request.addHeader(propertiesContainer.getSecurity().getAuthenticationResponseTypeHeaderName(), "cookie");
         TokenAuthentication tokenAuthentication = mock(TokenAuthentication.class);
-        when(cookieConfiguration.getName()).thenReturn("apimlAuthenticationToken");
-
-        SuccessfulLoginHandler successfulLoginHandler = new SuccessfulLoginHandler(mapper, cookieConfiguration);
+        SuccessfulLoginHandler successfulLoginHandler = new SuccessfulLoginHandler(mapper, propertiesContainer);
         successfulLoginHandler.onAuthenticationSuccess(request, response, tokenAuthentication);
-
         verify(response).addCookie(any(Cookie.class));
-        verify(tokenAuthentication).getCredentials();
     }
 
 }

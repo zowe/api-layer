@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.config.security;
+package com.ca.mfaas.gateway.config.web;
 
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +28,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
@@ -46,32 +43,15 @@ import java.util.Objects;
 
 @Slf4j
 @Configuration
-public class SecureHttpConfig extends WebSecurityConfigurerAdapter {
+public class HttpConfig {
 
     private static final String SAFKEYRING = "safkeyring";
 
     private final MFaaSConfigPropertiesContainer propertiesContainer;
 
     @Autowired
-    public SecureHttpConfig(MFaaSConfigPropertiesContainer propertiesContainer) {
+    public HttpConfig(MFaaSConfigPropertiesContainer propertiesContainer) {
         this.propertiesContainer = propertiesContainer;
-    }
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-            .cors().disable()
-            .csrf().disable()
-            .exceptionHandling()
-            .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
-            .authorizeRequests()
-            .antMatchers("/**").permitAll()
-            .and()
-            .httpBasic().disable()
-            .headers().disable();
     }
 
     @Bean
@@ -117,6 +97,7 @@ public class SecureHttpConfig extends WebSecurityConfigurerAdapter {
         }
     }
 
+    @SuppressWarnings("Duplicates")
     private ConnectionSocketFactory createSecureSslSocketFactory() {
         String trustStore = propertiesContainer.getSecurity().getTrustStore();
         String trustStorePassword = propertiesContainer.getSecurity().getTrustStorePassword();

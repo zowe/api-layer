@@ -9,32 +9,35 @@
  */
 package com.ca.mfaas.security.token;
 
+import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class HeaderTokenFilter extends AbstractTokenFilter {
-    private static final String HEADER = "Authorization";
-    private static final String TOKEN_PREFIX = "Bearer ";
+public class TokenFilter extends AbstractSecureContentFilter {
+    private final MFaaSConfigPropertiesContainer propertiesContainer;
 
-    public HeaderTokenFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
+    public TokenFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler,
+                       MFaaSConfigPropertiesContainer propertiesContainer) {
         super(authenticationManager, failureHandler);
+        this.propertiesContainer = propertiesContainer;
     }
 
     /**
      * Checks if token exists and extracts it
+     *
      * @param request to check for header
      * @return token if it is present or null
      */
     @Override
-    protected String extractToken(HttpServletRequest request) {
-        String token = request.getHeader(HEADER);
+    protected String extractContent(HttpServletRequest request) {
+        String token = request.getHeader(propertiesContainer.getSecurity().getTokenProperties().getAuthorizationHeader());
         if (token == null) {
             return null;
         }
-        if (token.startsWith(TOKEN_PREFIX)) {
-            return token.replaceFirst(TOKEN_PREFIX, "");
+        if (token.startsWith(propertiesContainer.getSecurity().getTokenProperties().getBearerPrefix())) {
+            return token.replaceFirst(propertiesContainer.getSecurity().getTokenProperties().getBearerPrefix(), "");
         }
         return null;
     }

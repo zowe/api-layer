@@ -11,16 +11,12 @@ package com.ca.mfaas.security.login;
 
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
-import com.ca.mfaas.security.user.FileUserDetails;
-import com.ca.mfaas.security.user.User;
-import org.junit.Before;
+import com.ca.mfaas.security.user.InMemoryUserDetailsService;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import static org.hamcrest.core.Is.is;
@@ -32,30 +28,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class LoginAuthenticationProviderTest {
-    private BCryptPasswordEncoder encoder = mock(BCryptPasswordEncoder.class);
-    private UserDetailsService userDetailsService = mock(UserDetailsService.class);
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+    private UserDetailsService userDetailsService = new InMemoryUserDetailsService(encoder);
     private TokenService tokenService = mock(TokenService.class);
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
-    @Before
-    public void setUp() {
-        encoder = mock(BCryptPasswordEncoder.class);
-        userDetailsService = mock(UserDetailsService.class);
-        tokenService = mock(TokenService.class);
-    }
-
     @Test
     public void loginWithExistingUser() {
         String username = "user";
-        String password = "password";
+        String password = "user";
         String token = "token";
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(username, password);
-        UserDetails userDetails = new FileUserDetails(new User(username, password));
 
-        when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
-        when(encoder.matches(password, password)).thenReturn(true);
         when(tokenService.createToken(username)).thenReturn(token);
 
         LoginAuthenticationProvider loginAuthenticationProvider
@@ -74,7 +60,6 @@ public class LoginAuthenticationProviderTest {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication
             = new UsernamePasswordAuthenticationToken(username, password);
 
-        when(userDetailsService.loadUserByUsername(username)).thenThrow(new UsernameNotFoundException("User not found"));
         exception.expect(InvalidUserException.class);
         exception.expectMessage("Username or password are invalid");
 
