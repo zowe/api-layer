@@ -112,8 +112,19 @@ If you have the sample service described in the User Guide at [this link](https:
 
 Import [keystore/local_ca/localca.cer](/keystore/local_ca/localca.cer) to your root certificate store and trust it. 
 
-You can you following command om Mac: 
+For **Windows**, you can run the following command:
+
+    certutil -enterprise -f -v -AddStore "Root" keystore/local_ca/localca.cer 
+
+This will install the certificate to the Trusted Root Certification Authorities. 
+
+If you're using **MacOS**, you can run the following command: 
 
     $ sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain keystore/local_ca/localca.cer 
 
+Firefox uses its own certificate truststore. You can manually import your root certificate via the Firefox settings, or force Firefox to use the Windows trust store:
 
+Create a new Javascript file firefox-windows-truststore.js at C:\Program Files (x86)\Mozilla Firefox\defaults\pref with the following content:
+
+    /* Enable experimental Windows trust store support */
+    pref("security.enterprise_roots.enabled", true);
