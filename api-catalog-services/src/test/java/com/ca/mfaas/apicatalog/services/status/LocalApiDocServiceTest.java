@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.status;
 
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.product.family.ProductFamilyType;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
@@ -37,7 +37,7 @@ public class LocalApiDocServiceTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private InstanceRetrievalService instanceRetrievalService;
+    private CachedServicesService cachedServicesService;
 
     @Spy
     @InjectMocks
@@ -50,7 +50,7 @@ public class LocalApiDocServiceTest {
         String apiDoc = "api doc goes here";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
 
-        when(instanceRetrievalService.getInstanceInfoFromDiscovery(ProductFamilyType.GATEWAY.getServiceId()))
+        when(cachedServicesService.getInstanceInfoForService(ProductFamilyType.GATEWAY.getServiceId()))
             .thenReturn(
                 getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 
@@ -70,7 +70,7 @@ public class LocalApiDocServiceTest {
         String apiDoc = "{}";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.NOT_FOUND);
 
-        when(instanceRetrievalService.getInstanceInfoFromDiscovery(ProductFamilyType.GATEWAY.getServiceId()))
+        when(cachedServicesService.getInstanceInfoForService(ProductFamilyType.GATEWAY.getServiceId()))
             .thenReturn(
                 getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 
@@ -88,7 +88,7 @@ public class LocalApiDocServiceTest {
         String apiDoc = "{}";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.INTERNAL_SERVER_ERROR);
 
-        when(instanceRetrievalService.getInstanceInfoFromDiscovery(ProductFamilyType.GATEWAY.getServiceId()))
+        when(cachedServicesService.getInstanceInfoForService(ProductFamilyType.GATEWAY.getServiceId()))
             .thenReturn(
                 getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 
