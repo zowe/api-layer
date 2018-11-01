@@ -10,22 +10,25 @@
 package com.ca.mfaas.enable.services;
 
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
-import com.ca.mfaas.product.family.ProductFamilyType;
 import com.ca.mfaas.product.registry.ApplicationWrapper;
-import com.ca.mfaas.product.registry.DiscoveryServiceNotAvailableException;
+import com.ca.mfaas.product.registry.DiscoveryServiceQueryException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.*;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,6 +41,7 @@ import java.util.List;
 /**
  * Find the URL of a service given a service Id
  */
+@SuppressWarnings("Duplicates")
 @Slf4j
 @Service
 public class MfaasServiceLocator {
@@ -50,7 +54,8 @@ public class MfaasServiceLocator {
 
     /**
      * Locate a service
-     *  @param discoveryClient     internal client discovery
+     *
+     * @param discoveryClient     internal client discovery
      * @param propertiesContainer Service properties
      */
     @Autowired
@@ -61,86 +66,39 @@ public class MfaasServiceLocator {
     }
 
     /**
-     * Locate the Gateway URL via discovery client or Eureka directly
+     * Locate instances from discovery for a given service id
      *
-     * @return the Gateway URI
+     * @param serviceId a specific service Id or null for all
+     * @return A map of instances by serviceId
      */
-    public URI locateGatewayUrl() throws Exception {
-        try {
-            String serviceId = ProductFamilyType.GATEWAY.getServiceId().toLowerCase();
-            List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
-            if (instances == null || instances.isEmpty()) {
-                log.debug("Could not locate any running instances of: " + serviceId
-                    + "using DiscoveryClient, querying Eureka");
-                ApplicationWrapper application = extractAllInstancesFromDiscovery(serviceId);
-                List<InstanceInfo> instanceInfos = application.getApplication().getInstances();
-                return checkInstancesInfos(instanceInfos);
-            } else {
-                // Check the instance VIP address for DVIPA location, otherwise send back the instance URL
-                return this.checkServiceInstances(instances);
-            }
-        } catch (Exception e) {
-            log.error("Could not locate Gateway location: " + e.getMessage(), e);
-            throw e;
-        }
+    public DiscoveredServiceInstance getServiceInstances(String serviceId) {
+        return extractInstance(serviceId.toLowerCase());
     }
 
     /**
-     * Check instances of type InstanceInfo
+     * Locate instances from discovery for all services
      *
-     * @param instances of type InstanceInfo
-     * @return the GatewayURI
-     * @throws URISyntaxException could not create gateway URI
+     * @return A map of instances by serviceId
      */
-    private URI checkInstancesInfos(List<InstanceInfo> instances) throws URISyntaxException {
-        URI gatewayURI;
-        InstanceInfo instanceInfo = instances.get(0);
-        String vipAddress = instanceInfo.getVIPAddress();
-        String hostName;
-        if (instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-            if (vipAddress != null) {
-                hostName = instanceInfo.getSecureVipAddress();
-            } else {
-                hostName = instanceInfo.getHostName();
+    public DiscoveredServiceInstances getAllServiceInstances() {
+        DiscoveredServiceInstances serviceInstances = null;
+        for (String id : discoveryClient.getServices()) {
+            DiscoveredServiceInstance serviceInstance = extractInstance(id);
+            if (serviceInstance.hasInstances()) {
+                serviceInstances.addInstancesForServiceId(id, serviceInstance);
             }
-            gatewayURI = new URIBuilder().setScheme("https").setHost(hostName).setPort(instanceInfo.getSecurePort()).build();
-        } else {
-            if (vipAddress != null) {
-                hostName = instanceInfo.getVIPAddress();
-            } else {
-                hostName = instanceInfo.getHostName();
-            }
-            gatewayURI = new URIBuilder().setScheme("http").setHost(hostName).setPort(instanceInfo.getPort()).build();
         }
-
-        return gatewayURI;
+        return serviceInstances;
     }
 
-    /**
-     * Check instances for this service
-     *
-     * @param instances check these instances
-     * @return the Gateway URI
-     * @throws URISyntaxException cannot construct URI
-     */
-    private URI checkServiceInstances(List<ServiceInstance> instances) throws URISyntaxException {
-        ServiceInstance serviceInstance = instances.get(0);
-        if (serviceInstance instanceof InstanceInfo) {
-            return checkInstancesInfos(Collections.singletonList((InstanceInfo) serviceInstance));
-        } else if (serviceInstance instanceof EurekaDiscoveryClient.EurekaServiceInstance) {
-            EurekaDiscoveryClient.EurekaServiceInstance instance = (EurekaDiscoveryClient.EurekaServiceInstance) serviceInstance;
-            return checkInstancesInfos(Collections.singletonList(instance.getInstanceInfo()));
+    private DiscoveredServiceInstance extractInstance(String serviceId) {
+        List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
+        if (instances == null || instances.isEmpty()) {
+            ApplicationWrapper application = extractAllInstancesFromDiscovery(serviceId);
+            List<InstanceInfo> instanceInfos = application.getApplication().getInstances();
+            return new DiscoveredServiceInstance(instanceInfos, null);
         } else {
-            String scheme;
-            int port;
-            if (serviceInstance.isSecure()) {
-                scheme = "https";
-                port = serviceInstance.getPort();
-            } else {
-                scheme = "http";
-                port = serviceInstance.getPort();
-            }
-            return new URIBuilder().setScheme(scheme).setHost(serviceInstance.getHost()).setPort(port).build();
+            return new DiscoveredServiceInstance(null, instances);
         }
     }
 
@@ -149,7 +107,6 @@ public class MfaasServiceLocator {
      *
      * @return HTTP Headers
      */
-    @SuppressWarnings({"squid:CallToDeprecatedMethod", "deprecation"})
     private HttpHeaders createRequestHeader() throws URISyntaxException {
         URI discoveryURI = new URI(propertiesContainer.getDiscovery().getLocations());
         String credentials = discoveryURI.getUserInfo();
@@ -176,7 +133,7 @@ public class MfaasServiceLocator {
      *
      * @return All Instances
      */
-    private ApplicationWrapper extractAllInstancesFromDiscovery(String serviceId) throws URISyntaxException {
+    private ApplicationWrapper extractAllInstancesFromDiscovery(String serviceId) {
 
         // call Eureka REST endpoint to fetch single or all Instances
         ResponseEntity<String> response = queryDiscoveryForInstances(serviceId);
@@ -202,12 +159,12 @@ public class MfaasServiceLocator {
      * @param serviceId search for this service
      * @return ResponseEntity<String> query response
      */
-    private ResponseEntity<String> queryDiscoveryForInstances(String serviceId) throws URISyntaxException {
-        String discoveryLocation = propertiesContainer.getDiscovery().getLocations();
-        discoveryLocation += APPS_ENDPOINT + serviceId;
-        HttpEntity<?> entity = new HttpEntity<>(null, createRequestHeader());
+    private ResponseEntity<String> queryDiscoveryForInstances(String serviceId) {
         ResponseEntity<String> response;
         try {
+            String discoveryLocation = propertiesContainer.getDiscovery().getLocations();
+            discoveryLocation += APPS_ENDPOINT + serviceId;
+            HttpEntity<?> entity = new HttpEntity<>(null, createRequestHeader());
             response = restTemplate.exchange(
                 discoveryLocation,
                 HttpMethod.GET,
@@ -217,12 +174,15 @@ public class MfaasServiceLocator {
                 log.error("Could not locate instance for request: " + discoveryLocation
                     + ", " + response.getStatusCode() + " = " + response.getStatusCode().getReasonPhrase());
             }
-        } catch (RestClientException e) {
+        } catch (Throwable e) {
             log.error("Discovery Service query failed: " + e.getMessage(), e);
-            throw new DiscoveryServiceNotAvailableException("Discovery Service could not be located", e.getMostSpecificCause());
+            if (e instanceof RestClientException) {
+                RestClientException ex = (RestClientException) e;
+                throw new DiscoveryServiceQueryException("Discovery Service could not be located", ex.getMostSpecificCause());
+            } else {
+                throw new DiscoveryServiceQueryException("Discovery Service could not be queried", e);
+            }
         }
         return response;
     }
-
-
 }

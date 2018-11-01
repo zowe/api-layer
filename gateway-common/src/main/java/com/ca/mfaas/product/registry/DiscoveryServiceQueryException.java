@@ -9,13 +9,13 @@
  */
 package com.ca.mfaas.product.registry;
 
-public class DiscoveryServiceNotAvailableException extends RuntimeException {
+public class DiscoveryServiceQueryException extends RuntimeException {
 
-    public DiscoveryServiceNotAvailableException(String message) {
+    public DiscoveryServiceQueryException(String message) {
         super(message);
     }
 
-    public DiscoveryServiceNotAvailableException(String message, Throwable cause) {
+    public DiscoveryServiceQueryException(String message, Throwable cause) {
         super(message, cause);
     }
 }

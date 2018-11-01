@@ -24,8 +24,18 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Refresh the cache with the latest state of the discovery service
@@ -96,21 +106,32 @@ public class CacheRefreshService {
     /**
      * @return a list of changed services
      */
-    @SuppressWarnings("deprecation")
     private Set<String> compareServices() {
-        // Updated containers
-        Set<String> containersUpdated = new HashSet<>();
         Applications cachedServices = apiServiceStatusService.getCachedApplicationState();
         Applications deltaFromDiscovery = instanceRetrievalService.extractDeltaFromDiscovery();
+        return updateCacheWithApplications(deltaFromDiscovery, cachedServices);
+    }
 
-        if (deltaFromDiscovery != null && !deltaFromDiscovery.getRegisteredApplications().isEmpty()) {
+    /**
+     * Initialise the cache with the current state of Eureka
+     */
+    public void initialiseCacheWithDiscoverySnapshot() {
+        Applications applications = instanceRetrievalService.extractServicesFromDiscovery();
+        Applications cachedServices = apiServiceStatusService.getCachedApplicationState();
+        updateCacheWithApplications(applications, cachedServices);
+    }
+
+    @SuppressWarnings("deprecation")
+    private Set<String> updateCacheWithApplications(Applications applications, Applications cachedServices) {
+        Set<String> containersUpdated = new HashSet<>();
+        if (applications != null && !applications.getRegisteredApplications().isEmpty()) {
             // use the version to check if this delta has changed, it is deprecated and should be replaced as soon as a
             // newer identifier is provided by Netflix
             // if getVersion is removed then the process will be slightly more inefficient but will not need to change
-            if (cachedServicesService.getVersionDelta() != deltaFromDiscovery.getVersion()) {
-                containersUpdated = processServiceInstances(cachedServices, deltaFromDiscovery);
+            if (cachedServicesService.getVersionDelta() != applications.getVersion()) {
+                containersUpdated = processServiceInstances(cachedServices, applications);
             }
-            cachedServicesService.setVersionDelta(deltaFromDiscovery.getVersion());
+            cachedServicesService.setVersionDelta(applications.getVersion());
         }
         return containersUpdated;
     }
@@ -231,15 +252,8 @@ public class CacheRefreshService {
         for (Application application : discoveredServices.getRegisteredApplications()) {
             if (!application.getInstances().isEmpty()) {
 
-                InstanceInfo instanceInfo = application.getInstances().get(0);
-                String value = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
-                boolean apiEnabled = true;
-                if (value != null) {
-                    apiEnabled = Boolean.valueOf(value);
-                }
-
                 // only add api enabled services
-                if (apiEnabled) {
+                if (instanceRetrievalService.isApiEnabled(application, API_ENABLED_METADATA_KEY)) {
                     filteredServices.addApplication(application);
                 } else {
                     log.debug("Service: " + application.getName() + " is not API enabled, it will be ignored by the API Catalog");
@@ -309,7 +323,7 @@ public class CacheRefreshService {
      */
     private Set<InstanceInfo> updateDelta(Applications delta) {
         // only process instances which are API Doc enabled
-        delta = filterByApiEnabled(delta);
+//        delta = filterByApiEnabled(delta);
         int deltaCount = 0;
         Set<InstanceInfo> updatedInstances = new HashSet<>();
         for (Application app : delta.getRegisteredApplications()) {

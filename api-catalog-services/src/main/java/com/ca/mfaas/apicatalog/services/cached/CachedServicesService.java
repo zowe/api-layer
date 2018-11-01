@@ -9,9 +9,11 @@
  */
 package com.ca.mfaas.apicatalog.services.cached;
 
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import java.util.Map;
 /**
  * Container for eureka services
  */
+@Slf4j
 @Service
 public class CachedServicesService {
 
@@ -70,5 +73,14 @@ public class CachedServicesService {
 
     public void setVersionDelta(long versionDelta) {
         this.versionDelta = versionDelta;
+    }
+
+    public InstanceInfo getInstanceInfoForService(String serviceId) {
+        Application service = services.get(serviceId.toLowerCase());
+        if (service != null && service.getInstances() != null && !service.getInstances().isEmpty()) {
+            log.warn("Service: " + serviceId + " contains no cached instances.");
+            return service.getInstances().get(0);
+        }
+        return null;
     }
 }

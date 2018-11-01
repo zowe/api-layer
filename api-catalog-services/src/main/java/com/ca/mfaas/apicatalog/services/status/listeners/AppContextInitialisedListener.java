@@ -9,8 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.status.listeners;
 
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
-import com.ca.mfaas.product.registry.CannotRegisterServiceException;
+import com.ca.mfaas.apicatalog.services.cached.CacheRefreshService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -21,11 +20,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppContextInitialisedListener {
 
-    private final InstanceRetrievalService instanceRetrievalService;
+    private final CacheRefreshService cacheRefreshService;
 
     @Autowired
-    public AppContextInitialisedListener(InstanceRetrievalService instanceRetrievalService) {
-        this.instanceRetrievalService = instanceRetrievalService;
+    public AppContextInitialisedListener(CacheRefreshService cacheRefreshService) {
+        this.cacheRefreshService = cacheRefreshService;
     }
 
     /**
@@ -34,7 +33,7 @@ public class AppContextInitialisedListener {
      * @param event spring event
      */
     @EventListener
-    public void onApplicationEvent(ContextRefreshedEvent event) throws CannotRegisterServiceException {
-        instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        cacheRefreshService.initialiseCacheWithDiscoverySnapshot();
     }
 }

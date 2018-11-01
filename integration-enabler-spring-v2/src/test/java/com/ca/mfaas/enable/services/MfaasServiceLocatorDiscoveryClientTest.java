@@ -10,18 +10,19 @@
 package com.ca.mfaas.enable.services;
 
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
-import com.netflix.appinfo.InstanceInfo;
+import com.ca.mfaas.product.family.ProductFamilyType;
+import org.apache.http.client.utils.URIBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.discovery.simple.SimpleDiscoveryProperties;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -45,43 +46,14 @@ public class MfaasServiceLocatorDiscoveryClientTest {
 
     @Test
     public void testGetGatewayFromDiscoveryClient() throws Exception {
-        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
-            .setAppName("gateway").setSecurePort(10010).setHostName("localhost").setSecureVIPAddress("localhost").build();
+        URI gatewayURI = new URIBuilder().setScheme("https").setHost("localhost").setPort(10010).build();
         List<ServiceInstance> serviceInstances = new ArrayList<>();
-        serviceInstances.add(new ServiceInstance() {
-            @Override
-            public String getServiceId() {
-                return instanceInfo.getAppName();
-            }
-
-            @Override
-            public String getHost() {
-                return instanceInfo.getHostName();
-            }
-
-            @Override
-            public int getPort() {
-                return instanceInfo.getSecurePort();
-            }
-
-            @Override
-            public boolean isSecure() {
-                return true;
-            }
-
-            @Override
-            public URI getUri() {
-                return null;
-            }
-
-            @Override
-            public Map<String, String> getMetadata() {
-                return null;
-            }
-        });
+        serviceInstances.add(new SimpleDiscoveryProperties.SimpleServiceInstance(gatewayURI));
         when(discoveryClient.getInstances(any())).thenReturn(serviceInstances);
-        URI uri = mfaasServiceLocator.locateGatewayUrl();
-        Assert.assertNotNull(uri);
-        Assert.assertEquals("https://localhost:10010", uri.toString());
+        DiscoveredServiceInstance gatewayInstances = mfaasServiceLocator.getServiceInstances(ProductFamilyType.GATEWAY.getServiceId());
+        Assert.assertNotNull(gatewayInstances);
+        List<ServiceInstance> instances = gatewayInstances.getServiceInstances();
+        ServiceInstance instance = instances.get(0);
+        Assert.assertEquals("https://localhost:10010", instance.getUri().toString());
     }
 }

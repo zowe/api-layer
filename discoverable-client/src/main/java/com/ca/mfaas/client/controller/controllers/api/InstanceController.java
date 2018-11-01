@@ -9,16 +9,22 @@
  */
 package com.ca.mfaas.client.controller.controllers.api;
 
+import com.ca.mfaas.enable.services.DiscoveredServiceInstance;
+import com.ca.mfaas.enable.services.DiscoveredServiceInstances;
 import com.ca.mfaas.enable.services.MfaasServiceLocator;
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.product.family.ProductFamilyType;
+import com.netflix.appinfo.InstanceInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.net.URISyntaxException;
 
 /**
  * A Controller for returning instance runtime info
@@ -29,12 +35,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class InstanceController {
 
     private final MFaaSConfigPropertiesContainer propertiesContainer;
-    private MfaasServiceLocator mfaasServiceLocator;
+    private final MfaasServiceLocator mfaasServiceLocator;
 
     /**
      * Test controller for checking instance services
      * @param propertiesContainer MFaaS properties
-     * @param mfaasServiceLocator Enabler service for locating services based on serviceId
      */
     @Autowired
     public InstanceController(MFaaSConfigPropertiesContainer propertiesContainer,
@@ -53,10 +58,6 @@ public class InstanceController {
         notes = "What port is this controller configured for",
         tags = {"Other Operations"},
         response = String.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK"),
-        @ApiResponse(code = 404, message = "URI not found"),
-    })
     public String getPort() {
         return propertiesContainer.getServer().getPort();
     }
@@ -67,17 +68,24 @@ public class InstanceController {
      * @return gateway url
      */
     @GetMapping(value = "/gateway-url", produces = "text/plain")
-    @ApiOperation(value = "What is the URI of the Gateway",
-        notes = "What is the URI of the Gateway",
-        tags = {"Other Operations"},
+    @ApiOperation(value = "What is the URL of the Gateway",
+        notes = "What is the URL of the Gateway",
         response = String.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK"),
-        @ApiResponse(code = 404, message = "URI not found"),
-        @ApiResponse(code = 500, message = "Internal Error Occurred"),
-    })
-    public String getGatewayLocation() throws Exception {
-        return mfaasServiceLocator.locateGatewayUrl().toString();
+    public String getGatewayLocation() throws URISyntaxException {
+        DiscoveredServiceInstance instances = mfaasServiceLocator.getServiceInstances(ProductFamilyType.GATEWAY.getServiceId());
+        if (instances != null && instances.hasInstances()) {
+            if (instances.getInstanceInfos() != null && !instances.getInstanceInfos().isEmpty()) {
+                InstanceInfo gatewayInstance = instances.getInstanceInfos().get(0);
+                if (gatewayInstance.isPortEnabled(InstanceInfo.PortType.SECURE)) {
+                    return new URIBuilder().setScheme("https").setHost(gatewayInstance.getSecureVipAddress()).setPort(gatewayInstance.getSecurePort()).build().toASCIIString();
+                } else {
+                    return new URIBuilder().setScheme("http").setHost(gatewayInstance.getVIPAddress()).setPort(gatewayInstance.getPort()).build().toASCIIString();
+                }
+            } else if (instances.getServiceInstances() != null && !instances.getServiceInstances().isEmpty()) {
+                ServiceInstance info = instances.getServiceInstances().get(0);
+                return new URIBuilder().setScheme(info.getScheme()).setHost(info.getHost()).setPort(info.getPort()).build().toASCIIString();
+            }
+        }
+        return null;
     }
-
 }

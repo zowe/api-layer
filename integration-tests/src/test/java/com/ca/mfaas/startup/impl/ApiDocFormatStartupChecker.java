@@ -48,6 +48,7 @@ public class ApiDocFormatStartupChecker {
             result = true;
         } else {
             log.info("Did not find correct endpoints");
+            log.info("API Doc for API Catalog is: " + jsonResponse);
         }
 
         return result;

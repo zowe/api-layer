@@ -50,7 +50,7 @@ public class LocalApiDocServiceTest {
         String apiDoc = "api doc goes here";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
 
-        when(instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId()))
+        when(instanceRetrievalService.getInstanceInfoFromDiscovery(ProductFamilyType.GATEWAY.getServiceId()))
             .thenReturn(
                 getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 
@@ -70,7 +70,7 @@ public class LocalApiDocServiceTest {
         String apiDoc = "{}";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.NOT_FOUND);
 
-        when(instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId()))
+        when(instanceRetrievalService.getInstanceInfoFromDiscovery(ProductFamilyType.GATEWAY.getServiceId()))
             .thenReturn(
                 getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 
@@ -88,7 +88,7 @@ public class LocalApiDocServiceTest {
         String apiDoc = "{}";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.INTERNAL_SERVER_ERROR);
 
-        when(instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId()))
+        when(instanceRetrievalService.getInstanceInfoFromDiscovery(ProductFamilyType.GATEWAY.getServiceId()))
             .thenReturn(
                 getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 

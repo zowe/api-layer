@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.services.status;
 
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
+import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
@@ -40,29 +41,30 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@DependsOn("instanceRetrievalService")
+@DependsOn("cachedServicesService")
 public class APIDocRetrievalService {
 
     private final String HTTPS = "https";
     private final String HTTP = "http";
-    private String gatewayUrl;
+    private InstanceInfo gatewayInstance;
+    private URI gatewayUrl;
 
     private final RestTemplate restTemplate;
-    private final InstanceRetrievalService instanceRetrievalService;
+    private final CachedServicesService cachedServicesService;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Autowired
     public APIDocRetrievalService(RestTemplate restTemplate,
-                                  InstanceRetrievalService instanceRetrievalService) {
+                                  CachedServicesService cachedServicesService) {
         this.restTemplate = restTemplate;
-        this.instanceRetrievalService = instanceRetrievalService;
+        this.cachedServicesService = cachedServicesService;
     }
 
     /**
      * Retrieve the API docs for a registered service (all versions)
      *
-     * @param serviceId  the unqiue service id
+     * @param serviceId  the unique service id
      * @param apiVersion the version of the API
      * @return the api docs as a string
      */
@@ -70,29 +72,40 @@ public class APIDocRetrievalService {
         log.info("Attempting to retrieve API doc for service {} version {}",  serviceId, apiVersion);
 
         String apiDocUrl = null;
-        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
-        InstanceInfo gateway = instanceRetrievalService.getInstanceInfo("gateway");
-
-        if (instanceInfo != null) {
-            List<ApiInfo> apiInfo = metadataParser.parseApiInfo(instanceInfo.getMetadata());
-
-            if (apiInfo != null) {
-                ApiInfo api = findApi(apiInfo, apiVersion);
-                if (api.getSwaggerUrl() == null) {
-                    return swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, api);
-                }
-                else {
-                    apiDocUrl = api.getSwaggerUrl();
+        try {
+            InstanceInfo serviceInstance = cachedServicesService.getInstanceInfoForService(serviceId);
+            if (gatewayInstance == null) {
+                gatewayInstance = cachedServicesService.getInstanceInfoForService(ProductFamilyType.GATEWAY.getServiceId());
+                if (gatewayInstance.isPortEnabled(InstanceInfo.PortType.SECURE)) {
+                    gatewayUrl = new URIBuilder().setScheme(HTTPS).setHost(gatewayInstance.getSecureVipAddress()).setPort(gatewayInstance.getSecurePort()).build();
+                } else {
+                    gatewayUrl = new URIBuilder().setScheme(HTTP).setHost(gatewayInstance.getVIPAddress()).setPort(gatewayInstance.getPort()).build();
                 }
             }
-        }
 
-        if (apiDocUrl == null) {
-            String version = apiVersion;
-            if (version == null) {
-                version = "v1";
+            if (serviceInstance != null) {
+                List<ApiInfo> apiInfo = metadataParser.parseApiInfo(serviceInstance.getMetadata());
+                if (apiInfo != null) {
+                    ApiInfo api = findApi(apiInfo, apiVersion);
+                    if (api.getSwaggerUrl() == null) {
+                        return swaggerGenerator.generateSubstituteSwaggerForService(gatewayInstance, serviceInstance, api);
+                    }
+                    else {
+                        apiDocUrl = api.getSwaggerUrl();
+                    }
+                }
             }
-            apiDocUrl = getGatewayUrl() + "/api/" + version + "/api-doc/" + serviceId.toLowerCase();
+
+            if (apiDocUrl == null) {
+                String version = apiVersion;
+                if (version == null) {
+                    version = "v1";
+                }
+                apiDocUrl = gatewayUrl.toASCIIString() + "/api/" + version + "/api-doc/" + serviceId.toLowerCase();
+            }
+        } catch (URISyntaxException e) {
+            log.error("Exception thrown when retrieving API documentation for service {} version {}: {}", serviceId, apiVersion, e.getMessage());
+            throw new ApiDocNotFoundException(e.getMessage());
         }
 
         try {
@@ -109,8 +122,8 @@ public class APIDocRetrievalService {
             // Handle errors (request may fail if service is unavailable)
             return handleResponse(serviceId, response);
         } catch (Exception e) {
-            log.error("General exception thrown when retrieving API documentation for service {} version {}: {}", serviceId, apiVersion, e.getMessage());
-            // more specific exceptions
+            log.error("Exception thrown when retrieving API documentation for service {} version {}: {}", serviceId, apiVersion, e.getMessage());
+            // more specific exception
             throw new ApiDocNotFoundException(e.getMessage());
         }
     }
@@ -197,37 +210,6 @@ public class APIDocRetrievalService {
             }
             return serviceUrl;
         }
-    }
-
-    /**
-     * return or retrieve the location of the Gateway
-     * @return the location of the Gateway (full URL)
-     */
-    public String getGatewayUrl() {
-        if (this.gatewayUrl == null) {
-            InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId());
-            try {
-                URI gateway;
-                boolean securePortEnabled = gatewayInstance.isPortEnabled(InstanceInfo.PortType.SECURE);
-                String homePageUrl = gatewayInstance.getHomePageUrl();
-                if (homePageUrl != null && !homePageUrl.toLowerCase().contains(HTTPS)) {
-                    log.info("Overriding secure port setting for: " + homePageUrl);
-                    securePortEnabled = false;
-                }
-                if (securePortEnabled) {
-                    gateway = new URIBuilder().setScheme(HTTPS).setHost(gatewayInstance.getSecureVipAddress()).setPort(gatewayInstance.getSecurePort()).build();
-                } else {
-                    gateway = new URIBuilder().setScheme(HTTP).setHost(gatewayInstance.getVIPAddress()).setPort(gatewayInstance.getPort()).build();
-                }
-                this.gatewayUrl = gateway.toString();
-                log.info("Gateway location set: " + this.gatewayUrl);
-            } catch (URISyntaxException e) {
-                String msg = "Cannot construct Gateway URL from Instance Info.";
-                log.error(msg, e);
-                throw new IllegalArgumentException(msg, e);
-            }
-        }
-        return this.gatewayUrl;
     }
 
     private HttpEntity<?> createRequest() {

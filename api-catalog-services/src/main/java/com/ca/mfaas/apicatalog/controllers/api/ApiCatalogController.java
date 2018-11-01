@@ -42,19 +42,15 @@ import java.util.stream.StreamSupport;
 public class ApiCatalogController {
 
     private final CachedProductFamilyService cachedProductFamilyService;
-    private final APIServiceStatusService apiServiceStatusService;
 
     /**
      * Create the controller and autowire in the repository services
      *
      * @param cachedProductFamilyService  cached service for containers
-     * @param apiServiceStatusService     Cached state opf containers and services
      */
     @Autowired
-    public ApiCatalogController(CachedProductFamilyService cachedProductFamilyService,
-                                APIServiceStatusService apiServiceStatusService) {
+    public ApiCatalogController(CachedProductFamilyService cachedProductFamilyService) {
         this.cachedProductFamilyService = cachedProductFamilyService;
-        this.apiServiceStatusService = apiServiceStatusService;
     }
 
 
