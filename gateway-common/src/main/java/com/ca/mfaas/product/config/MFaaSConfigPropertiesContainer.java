@@ -303,10 +303,10 @@ public class MFaaSConfigPropertiesContainer {
         private String issuer = "ApimlGateway";
 
         // Short name
-        private String shortTtlUsername = "apimlAuthenticationToken";
+        private String shortTtlUsername = "expire";
 
         // Short expiration
-        private long shortTtlExpirationInSeconds = 24 * 60 * 60;
+        private long shortTtlExpirationInSeconds = 1;
     }
 
     @Data
