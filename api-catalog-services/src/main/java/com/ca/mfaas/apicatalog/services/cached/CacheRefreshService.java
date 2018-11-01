@@ -15,6 +15,8 @@ import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.enable.model.ApiDocConfigException;
+import com.ca.mfaas.enable.services.LocalApiDocService;
+import com.ca.mfaas.product.family.ProductFamilyType;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -46,7 +48,7 @@ import java.util.concurrent.TimeoutException;
 @DependsOn("instanceRetrievalService")
 public class CacheRefreshService {
 
-    // until versioning is implemented, only v1 API docs are supported
+    // until versions are implemented, only v1 Docs are processed
     private static final String API_VERSION = "v1";
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
@@ -54,6 +56,7 @@ public class CacheRefreshService {
     private final InstanceRetrievalService instanceRetrievalService;
     private final APIDocRetrievalService apiDocRetrievalService;
     private final CachedApiDocService cachedApiDocService;
+    private final LocalApiDocService localApiDocService;
 
     private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
 
@@ -62,13 +65,16 @@ public class CacheRefreshService {
                                CachedServicesService cachedServicesService,
                                APIServiceStatusService apiServiceStatusService,
                                InstanceRetrievalService instanceRetrievalService,
-                               APIDocRetrievalService apiDocRetrievalService, CachedApiDocService cachedApiDocService) {
+                               APIDocRetrievalService apiDocRetrievalService,
+                               CachedApiDocService cachedApiDocService,
+                               LocalApiDocService localApiDocService) {
         this.cachedProductFamilyService = cachedProductFamilyService;
         this.cachedServicesService = cachedServicesService;
         this.apiServiceStatusService = apiServiceStatusService;
         this.instanceRetrievalService = instanceRetrievalService;
         this.apiDocRetrievalService = apiDocRetrievalService;
         this.cachedApiDocService = cachedApiDocService;
+        this.localApiDocService = localApiDocService;
     }
 
     /**
@@ -188,16 +194,21 @@ public class CacheRefreshService {
     private void processInstance(Set<String> containersUpdated, InstanceInfo instance, Application application) {
         if (InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             application.removeInstance(instance);
-
-            // invalidate API doc cache so next request will trigger a retrieval
         } else {
-            // refresh API Doc by requesting it from updated instance
-            CompletableFuture
-                .supplyAsync(() -> retrieveApiDocFromInstance(instance, API_VERSION))
-                .exceptionally(ex -> {
-                    throw new ApiDocNotFoundException("Could not retrieve API Doc: " + ex.getMessage(), ex);
-                })
-                .thenAccept(apiDoc -> updateApiDocCache(instance.getAppName().toLowerCase(), API_VERSION, apiDoc));
+            // if this is the API Catalog itself, do not call it from the instance, retrieve it locally
+            String serviceId = instance.getAppName().toLowerCase();
+            if (serviceId.equalsIgnoreCase(ProductFamilyType.API_CATALOG.getServiceId())) {
+                String apiDoc = localApiDocService.getApiDoc(null);
+                updateApiDocCache(serviceId, API_VERSION, apiDoc);
+            } else {
+                // refresh API Doc by requesting it from updated instance
+                CompletableFuture
+                    .supplyAsync(() -> retrieveApiDocFromInstance(instance, API_VERSION))
+                    .exceptionally(ex -> {
+                        throw new ApiDocNotFoundException("Could not retrieve API Doc: " + ex.getMessage(), ex);
+                    })
+                    .thenAccept(apiDoc -> updateApiDocCache(serviceId, API_VERSION, apiDoc));
+            }
         }
 
         // Update the service cache
