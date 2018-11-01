@@ -9,30 +9,31 @@
  */
 package com.ca.mfaas.security.token;
 
+import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-public class CookieFilter extends AbstractTokenFilter {
-    private final CookieConfiguration cookieConfiguration;
+public class CookieFilter extends AbstractSecureContentFilter {
+    private final MFaaSConfigPropertiesContainer propertiesContainer;
 
     public CookieFilter(AuthenticationManager authenticationManager,
                         AuthenticationFailureHandler failureHandler,
-                        CookieConfiguration cookieConfiguration) {
+                        MFaaSConfigPropertiesContainer propertiesContainer) {
         super(authenticationManager, failureHandler);
-        this.cookieConfiguration = cookieConfiguration;
+        this.propertiesContainer = propertiesContainer;
     }
 
     @Override
-    protected String extractToken(HttpServletRequest request) {
+    protected String extractContent(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             return null;
         }
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(cookieConfiguration.getName())) {
+            if (cookie.getName().equals(propertiesContainer.getSecurity().getCookieProperties().getCookieName())) {
                 return cookie.getValue();
             }
         }
