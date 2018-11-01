@@ -46,11 +46,24 @@ Use the following script in the root of the `api-layer` repository:
 
     scripts/apiml_cm.sh --action new-service --service-alias <alias> --service-hostname <hostname> --service-keystore <keystore_path> --service-truststore <truststore_path> --service-dname <dname> --service-password <password> --service-validity <days> --local-ca-filename <localca_filename> --local-ca-password <localca_password>
 
-The `<keystore_path>` is the path including the extension to the key store that will be generated. It can be an absolute path or a path relative to the current working directory. The key store is generated in PKCS12 format.
 
-The `<truststore_path>` is the path including the extension to the trust store that will be generated. It can be an absolute path or a path relative to the current working directory. The trust store is generated in PKCS12 format.
+The `service-alias` is an unique string to identify the key entry. All keystore entries (key and trusted certificate entries) are accessed via unique aliases.
 
-TODO Andrea: Describe all parameters for new-service action
+The `service-keystore` is a repository of security certificates plus corresponding private keys. The `<keystore_path>` is the path including the extension to the key store that will be generated. It can be an absolute path or a path relative to the current working directory. The key store is generated in PKCS12 format.
+
+
+The `service-truststore` contains certificates from other parties that you expect to communicate with, or from Certificate Authorities that you trust to identify other parties. The `<truststore_path>` is the path including the extension to the trust store that will be generated. It can be an absolute path or a path relative to the current working directory. The trust store is generated in PKCS12 format.
+
+The `service-dname` is the X.500 Distinguished Name and is used to identify entities, such as those which are named by the subject and issuer (signer) fields of X.509 certificates. 
+
+The `service-validity` is the number of days after that the certificate will expire.
+
+The `service-password` is the keystore password.
+
+The `local-ca-filename` follows the format `keystore/{path}/{suffix}` and is used to generate the keystore with the local CA private key and local CA public certificate.
+
+The `local-ca-password` is the local CA keystore password.
+
 
 ### Example
 
