@@ -115,8 +115,8 @@ Import [keystore/local_ca/localca.cer](/keystore/local_ca/localca.cer) to your r
 For **Windows**, you can run the following command:
 
     certutil -enterprise -f -v -AddStore "Root" keystore/local_ca/localca.cer 
-
-This will install the certificate to the Trusted Root Certification Authorities. 
+    
+You have to open the terminal as administrator. This will install the certificate to the Trusted Root Certification Authorities. 
 
 If you're using **MacOS**, you can run the following command: 
 
