@@ -5,6 +5,7 @@
 # - DISCOVERY_PORT - The port the discovery service will use
 # - CATALOG_PORT - The port the catalog service will use
 # - GATEWAY_PORT - The port the gateway service will use
+# - STATIC_DEF_CONFIG - The directory with statically defined APIs
 
 **JAVA_SETUP**
 if [[ ":$PATH:" == *":$JAVA_HOME/bin:"* ]]; then
@@ -22,6 +23,6 @@ java -Xms16m -Xmx512m \
 	-Denvironment.discoveryLocations=http://eureka:password@**IPADDRESS**:**DISCOVERY_PORT**/eureka/ \
 	-Denvironment.hostname=**HOSTNAME** -Denvironment.port=**DISCOVERY_PORT** -Denvironment.ipAddress=**IPADDRESS** \
 	-Denvironment.dsIpAddress=0.0.0.0 -Denvironment.preferIpAddress=true -Denvironment.eurekaUserId=eureka \
-	-Denvironment.eurekaPassword=password -Denvironment.truststore=$DIR/../keystore/api_gateway.ts \
-	-Denvironment.truststoreType=JKS -Denvironment.truststorePassword=zoe_password \
+	-Denvironment.eurekaPassword=password -Denvironment.truststore=$DIR/../keystore/localhost/localhost.truststore.p12 \
+	-Denvironment.truststoreType=PKCS12 -Denvironment.truststorePassword=password \
 	-Ddiscovery.staticApiDefinitionsDirectory=**STATIC_DEF_CONFIG** -jar $DIR/../discovery-service.jar &
