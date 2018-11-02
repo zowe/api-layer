@@ -128,3 +128,10 @@ Create a new Javascript file firefox-windows-truststore.js at C:\Program Files (
 
     /* Enable experimental Windows trust store support */
     pref("security.enterprise_roots.enabled", true);
+
+
+### Testing `apiml_cm.sh` on z/OS
+
+You can use following script from the `ca-api-layer` repository to test the script:
+
+    python3 ~/workspace/ca-api-layer/scripts/zossh.py ca32 /a/plape03/localca scripts/apiml_cm.sh --action setup
