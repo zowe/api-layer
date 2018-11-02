@@ -28,7 +28,6 @@ SERVICE_TRUSTSTORE="keystore/localhost/localhost.truststore.p12"
 SERVICE_DNAME="CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 SERVICE_EXT="SAN=dns:localhost.localdomain,dns:localhost"
 SERVICE_VALIDITY=3650
-SERVICE_HOSTNAME=
 
 function pkeytool {
     ARGS=$@
@@ -127,8 +126,8 @@ while [ "$1" != "" ]; do
         --service-alias )       shift
                                 SERVICE_ALIAS=$1
                                 ;;
-        --service-hostname )    shift
-                                SERVICE_HOSTNAME=$1
+        --service-ext )         shift
+                                SERVICE_EXT=$1
                                 ;;
         --service-keystore )    shift
                                 SERVICE_KEYSTORE=$1
