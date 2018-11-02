@@ -13,29 +13,31 @@ import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-public class CookieFilter extends AbstractSecureContentFilter {
+public class TokenFilter extends AbstractSecureContentFilter {
     private final MFaaSConfigPropertiesContainer propertiesContainer;
 
-    public CookieFilter(AuthenticationManager authenticationManager,
-                        AuthenticationFailureHandler failureHandler,
-                        MFaaSConfigPropertiesContainer propertiesContainer) {
+    public TokenFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler,
+                       MFaaSConfigPropertiesContainer propertiesContainer) {
         super(authenticationManager, failureHandler);
         this.propertiesContainer = propertiesContainer;
     }
 
+    /**
+     * Checks if token exists and extracts it
+     *
+     * @param request to check for header
+     * @return token if it is present or null
+     */
     @Override
     protected String extractContent(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
+        String token = request.getHeader(propertiesContainer.getSecurity().getTokenProperties().getAuthorizationHeader());
+        if (token == null) {
             return null;
         }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(propertiesContainer.getSecurity().getCookieProperties().getCookieName())) {
-                return cookie.getValue();
-            }
+        if (token.startsWith(propertiesContainer.getSecurity().getTokenProperties().getBearerPrefix())) {
+            return token.replaceFirst(propertiesContainer.getSecurity().getTokenProperties().getBearerPrefix(), "");
         }
         return null;
     }

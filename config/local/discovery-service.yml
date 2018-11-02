@@ -13,9 +13,9 @@ environment:
     preferIpAddress: false
     registryServiceInitialDelayInSeconds: 10
     registryServiceRetryDelayInSeconds: 5
-    truststore: keystore/local/localhost_truststore.jks
-    truststorePassword: trustword
-    truststoreType: JKS
+    truststore: keystore/localhost/localhost.truststore.p12
+    truststorePassword: password
+    truststoreType: PKCS12
     updateThresholdInMillis: 10000
 
 discovery:
