@@ -1,6 +1,5 @@
 #!/bin/sh
 
-ACTION=
 function usage {
     echo "APIML Certificate Management"
     echo "usage: apiml_cm.sh --action <action>"
