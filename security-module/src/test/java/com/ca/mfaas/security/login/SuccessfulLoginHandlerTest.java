@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.security.login;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -31,9 +31,8 @@ public class SuccessfulLoginHandlerTest {
         ObjectMapper mapper = mock(ObjectMapper.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        MFaaSConfigPropertiesContainer propertiesContainer = new MFaaSConfigPropertiesContainer();
-        propertiesContainer.setSecurity(new MFaaSConfigPropertiesContainer.SecurityProperties());
-        request.addHeader(propertiesContainer.getSecurity().getAuthenticationResponseTypeHeaderName(), "cookie");
+        SecurityConfigurationProperties propertiesContainer = new SecurityConfigurationProperties();
+        request.addHeader(propertiesContainer.getAuthenticationResponseTypeHeaderName(), "cookie");
         TokenAuthentication tokenAuthentication = mock(TokenAuthentication.class);
         SuccessfulLoginHandler successfulLoginHandler = new SuccessfulLoginHandler(mapper, propertiesContainer);
         successfulLoginHandler.onAuthenticationSuccess(request, response, tokenAuthentication);

@@ -1,16 +1,3 @@
-spring:
-    application:
-        name: gateway
-    cloud:
-        client:
-            hostname: ${environment.hostname}
-            ipAddress: ${environment.ipAddress}
-    mvc:
-        throw-exception-if-no-handler-found: true
-    output:
-        ansi:
-            enabled: detect
-
 logging:
     level:
         ROOT: INFO
@@ -30,97 +17,68 @@ logging:
         com.ca.mfaas.ws: INFO
         com.ca.mfaas.gateway.config.error: INFO
         org.eclipse.jetty: WARN
-    #pattern:
-        #console: "%-5p -- [%d{yyyy-MMM-dd HH:mm:ss.SSS}] %c -- %msg%n"
 
-##############################################################################################
-# MFAAS configuration section
-##############################################################################################
-mfaas:
-    discovery:
-        serviceId: ${spring.application.name}
-        enabled: ${environment.discoveryEnabled:true}
-        locations: ${environment.discoveryLocations}
-        fetchRegistry: true
-        registerWithEureka: true
-        region: default
-        endpoints:
-            statusPage: application/info
-            healthPage: application/health
-            homePage: /
-        info:
-            serviceTitle: Gateway
-            description: This is the Gateway to Mainframe as a Service microservices
-            enableApiDoc: false
+apiml:
+    # The `apiml` node contains API Mediation Layer specific configuration
     service:
-        hostname: ${environment.hostname}
-        ipAddress: ${environment.ipAddress}
-    server:
-        preferIpAddress: ${environment.preferIpAddress:false}
-        ipAddress: ${environment.dsIpAddress}
-        port: ${environment.port}
-        scheme: ${environment.scheme:https}
-    security:
-        esmEnabled: ${environment.esmEnabled:false}
-        sslEnabled: ${environment.sslEnabled:true}
-        protocol: TLSv1.2
-        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
-        keyAlias: ${environment.keyAlias}
-        keyPassword: ${environment.keyPassword}
-        keyStore: ${environment.keystore}
-        keyStoreType: ${environment.keystoreType}
-        keyStorePassword: ${environment.keystorePassword}
-        trustStore: ${environment.truststore}
-        trustStoreType: ${environment.truststoreType}
-        trustStorePassword: ${environment.truststorePassword}
+        # The `apiml.service` node contains information required by any APIML service
+        id: gateway  # Service ID of this service. It is fixed for APIML API Gateway
+        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
+        port: 10010  # Default port name for gateway service
+        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        scheme: https  # "https" or "http"
+        preferIpAddress: false
     gateway:
-        gatewayHostname: ${environment.gatewayHostname}
-        timeoutInMillis: ${environment.gatewayTimeoutInMillis:30000}
-        debugHeaders: false
-        histrixTimeoutInMillis: ${environment.histrixTimeoutInMillis:240000}
-        verifySslCertificatesOfServices: true
+        # The `apiml.gateway` node contains gateway-service only configuration
+        hostname: localhost  # The hostname for other services to access the gateway
+        timeoutMillis: 30000  # Timeout for connection to the services
 
-##############################################################################################
+spring:
+    application:
+        name: ${apiml.service.id}
+    cloud:
+        client:
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
+    mvc:
+        throw-exception-if-no-handler-found: true
+    output:
+        ansi:
+            enabled: detect
 
 server:
-    address: ${mfaas.server.ipAddress}
-    port: ${mfaas.server.port}
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.service.port}
     ssl:
-        enabled: ${mfaas.security.sslEnabled}
-        protocol: ${mfaas.security.protocol}
-        ciphers: ${mfaas.security.ciphers}
-        keyStore: ${mfaas.security.keyStore}
-        keyAlias: ${mfaas.security.keyAlias}
-        keyPassword: ${mfaas.security.keyPassword}
-        keyStorePassword: ${mfaas.security.keyStorePassword}
-        keyStoreType: ${mfaas.security.keyStoreType}
-        trustStore: ${mfaas.security.trustStore}
-        trustStoreType: ${mfaas.security.trustStoreType}
-        trustStorePassword: ${mfaas.security.trustStorePassword}
+        enabled: true
+        protocol: TLSv1.2
+        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
 
 zuul:
     sslHostnameValidationEnabled: false
     traceRequestBody: true
     ignoreSecurityHeaders: false
-    includeDebugHeader: ${mfaas.gateway.debugHeaders}
+    includeDebugHeader: false
     sensitiveHeaders: Expires,Date
     ignoredPatterns:
         - /ws/**
     host:
-        connectTimeoutMillis: ${mfaas.gateway.timeoutInMillis}
-        socketTimeoutMillis: ${mfaas.gateway.timeoutInMillis}
+        connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
+        socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
 
 ribbon:
     IsSecure: false
-    ConnectTimeout: ${mfaas.gateway.timeoutInMillis}
-    ReadTimeout: ${mfaas.gateway.timeoutInMillis}
-    ConnectionManagerTimeout: ${mfaas.gateway.timeoutInMillis}
+    ConnectTimeout: ${apiml.gateway.timeoutMillis}
+    ReadTimeout: ${apiml.gateway.timeoutMillis}
+    ConnectionManagerTimeout: ${apiml.gateway.timeoutMillis}
 
 http:
     connection:
-        timeout: ${mfaas.gateway.timeoutInMillis}
+        timeout: ${apiml.gateway.timeoutMillis}
     socket:
-        timeout: ${mfaas.gateway.timeoutInMillis}
+        timeout: ${apiml.gateway.timeoutMillis}
 
 hystrix:
     command:
@@ -134,7 +92,7 @@ hystrix:
                     enabled: false
                 isolation:
                     thread:
-                        timeoutInMilliseconds: ${mfaas.gateway.timeoutInMillis}
+                        timeoutInMilliseconds: ${apiml.gateway.timeoutMillis}
                     strategy: SEMAPHORE
                     semaphore:
                         maxConcurrentRequests: 100000
@@ -151,34 +109,31 @@ management:
 
 eureka:
     instance:
-        hostname: ${mfaas.service.hostname}
-        statusPageUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.statusPage}
-        healthCheckUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.healthPage}
-        secure-health-check-url: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.healthPage}
-        homePageUrlPath: ${mfaas.server.scheme}://${mfaas.gateway.gatewayHostname}:${mfaas.server.port}/${mfaas.discovery.endpoints.homePage}
-        ipAddress: ${mfaas.service.ipAddress}
-        preferIpAddress: ${mfaas.server.preferIpAddress}
-        #nonSecurePortEnabled: ${mfaas.discovery.nonSecurePortEnabled}
-        nonSecurePort: ${mfaas.server.port}
-        securePort: ${mfaas.server.port}
-        securePortEnabled: ${mfaas.security.sslEnabled}
-        virtualHostName: ${mfaas.gateway.gatewayHostname}
-        secureVirtualHostName: ${mfaas.gateway.gatewayHostname}
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        port: ${server.port}
+        securePort: ${server.port}
+        nonSecurePortEnabled: true
+        securePortEnabled: ${server.ssl.enabled}
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
+        statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
         metadata-map:
             mfaas:
                 discovery:
-                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc}
-                    serviceTitle: ${mfaas.discovery.info.serviceTitle}
-                    description: ${mfaas.discovery.info.description}
+                    enableApiDoc: false
+                    serviceTitle: API Gateway
+                    description: API Gateway to access REST APIs of registered services
     client:
-        fetchRegistry: ${mfaas.discovery.fetchRegistry}
-        registerWithEureka:  ${mfaas.discovery.registerWithEureka}
-        region: ${mfaas.discovery.region}
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
         serviceUrl:
-            defaultZone: ${mfaas.discovery.locations}
+            defaultZone: ${apiml.service.discoveryServiceUrls}
         healthcheck:
-            enabled: true # always true
-
+            enabled: true
 
 ---
 spring:
@@ -204,5 +159,6 @@ logging:
         org.springframework: INFO
         org.apache.catalina: INFO
         com.netflix: INFO
+        org.hibernate: INFO
 
 
