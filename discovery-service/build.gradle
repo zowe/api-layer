@@ -32,7 +32,6 @@ gitProperties {
 }
 
 dependencies {
-    compile(project(':integration-enabler-spring-v2'))
     compile(project(':gateway-common'))
 
     compile libraries.spring_boot_starter_web
@@ -40,6 +39,7 @@ dependencies {
     compile libraries.spring_boot_starter_actuator
     compile libraries.spring_cloud_starter_eureka_server
     compile libraries.jackson_dataformat_yaml
+    compile libraries.swagger_annotations
 
     compileOnly libraries.lombok
 
