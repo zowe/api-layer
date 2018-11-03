@@ -31,7 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 @Component
 public class StaticServicesRegistrationService {
-    @Value("${discovery.staticApiDefinitionsDirectory:#{null}}")
+    @Value("${apiml.discovery.staticApiDefinitionsDirectory:#{null}}")
     private String staticApiDefinitionsDirectory;
 
     private final ServiceDefinitionProcessor serviceDefinitionProcessor;
