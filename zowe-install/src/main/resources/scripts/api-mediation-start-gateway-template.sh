@@ -23,7 +23,7 @@ java -Xms16m -Xmx512m -Dibm.serversocket.recover=true -Dfile.encoding=UTF-8 -Dja
 	-Denvironment.preferIpAddress=true -Denvironment.ipAddress=**IPADDRESS** -Denvironment.gatewayTimeoutInMillis=30000 \
 	-Denvironment.sslEnabled=true -Denvironment.scheme=https -Denvironment.keystore=$DIR/../keystore/localhost/localhost.keystore.p12 \
 	-Denvironment.keystoreType=PKCS12 -Denvironment.keystorePassword=password \
-    -Denvironment.keyAlias=api_gateway -Denvironment.keyPassword=password \
+    -Denvironment.keyAlias=localhost -Denvironment.keyPassword=password \
 	-Denvironment.truststore=$DIR/../keystore/localhost/localhost.truststore.p12 -Denvironment.truststoreType=PKCS12 \
 	-Denvironment.truststorePassword=password \
 	-jar $DIR/../gateway-service.jar &
