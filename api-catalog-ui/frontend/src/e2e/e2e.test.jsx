@@ -6,7 +6,7 @@ let page;
 const baseUrl = process.env.REACT_APP_CATALOG_URL_TEST;
 console.log('API Catalog Base URL:', baseUrl);
 const loginUrl = `${baseUrl}/#/login`;
-const dashboardUrl = `${baseUrl}/#/dashboard`;
+const dashboardUrl = `${baseUrl}/ui/v1/apicatalog/#/dashboard`;
 const detailPageUrl = `${baseUrl}/#/tile/apicatalog`;
 
 beforeAll(async () => {
