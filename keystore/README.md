@@ -44,7 +44,7 @@ Use following script:
 
 Use the following script in the root of the `api-layer` repository:
 
-    scripts/apiml_cm.sh --action new-service --service-alias <alias> --service-hostname <hostname> --service-keystore <keystore_path> --service-truststore <truststore_path> --service-dname <dname> --service-password <password> --service-validity <days> --local-ca-filename <localca_filename> --local-ca-password <localca_password>
+    scripts/apiml_cm.sh --action new-service --service-alias <alias> --service-ext <ext> --service-keystore <keystore_path> --service-truststore <truststore_path> --service-dname <dname> --service-password <password> --service-validity <days> --local-ca-filename <localca_filename> --local-ca-password <localca_password>
 
 
 The `service-alias` is an unique string to identify the key entry. All keystore entries (key and trusted certificate entries) are accessed via unique aliases.
@@ -54,7 +54,11 @@ The `service-keystore` is a repository of security certificates plus correspondi
 
 The `service-truststore` contains certificates from other parties that you expect to communicate with, or from Certificate Authorities that you trust to identify other parties. The `<truststore_path>` is the path including the extension to the trust store that will be generated. It can be an absolute path or a path relative to the current working directory. The trust store is generated in PKCS12 format.
 
-The `service-dname` is the X.500 Distinguished Name and is used to identify entities, such as those which are named by the subject and issuer (signer) fields of X.509 certificates. 
+The `service-ext` specifies the X.509 extension that should be the Subject Alternate Name (SAN) for example:
+
+    "SAN=dns:localhost.localdomain,dns:localhost"
+
+The `service-dname` is the X.509 Distinguished Name and is used to identify entities, such as those which are named by the subject and issuer (signer) fields of X.509 certificates. 
 
 The `service-validity` is the number of days after that the certificate will expire.
 
@@ -79,7 +83,7 @@ If you have the sample service described in the User Guide at [this link](https:
 
 3. Call the script:
 
-        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-alias petstore --service-hostname localhost --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.truststore.p12 --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-validity 365 --local-ca-filename ~/workspace/zowe/api-layer/keystore/local_ca/localca
+        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-alias petstore --service-ext SAN=dns:localhost.localdomain,dns:localhost --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.truststore.p12 --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-validity 365 --local-ca-filename ~/workspace/zowe/api-layer/keystore/local_ca/localca
 
 4. This generated the certificate and private key to the `keystore` directory. You need to configure the HTTPS for the sample service. This can be done by adding the following properties to the `src/main/resources/application.properties`:
         
@@ -128,3 +132,10 @@ Create a new Javascript file firefox-windows-truststore.js at C:\Program Files (
 
     /* Enable experimental Windows trust store support */
     pref("security.enterprise_roots.enabled", true);
+
+
+### Testing `apiml_cm.sh` on z/OS
+
+You can use following script from the `ca-api-layer` repository to test the script:
+
+    python3 ~/workspace/ca-api-layer/scripts/zossh.py ca32 /a/plape03/localca scripts/apiml_cm.sh --action setup
