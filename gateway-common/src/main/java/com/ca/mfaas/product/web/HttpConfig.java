@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.config.web;
+package com.ca.mfaas.product.web;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.config.Registry;
@@ -37,6 +37,7 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Objects;
 
@@ -46,7 +47,7 @@ public class HttpConfig {
 
     private static final String SAFKEYRING = "safkeyring";
 
-    @Value("${server.ssl.protocol:TLS1.2}")
+    @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
 
     @Value("${server.ssl.trustStore:#{null}}")
@@ -58,11 +59,23 @@ public class HttpConfig {
     @Value("${server.ssl.trustStoreType:PKCS12}")
     private String trustStoreType;
 
-    @Value("${apiml.gateway.verifySslCertificatesOfServices:true}")
+    @Value("${server.ssl.keyStore:#{null}}")
+    private String keyStore;
+
+    @Value("${server.ssl.keyStorePassword:#{null}}")
+    private String keyStorePassword;
+
+    @Value("${server.ssl.keyPassword:#{null}}")
+    private String keyPassword;
+
+    @Value("${server.ssl.keyStoreType:PKCS12}")
+    private String keyStoreType;
+
+    @Value("${apiml.security.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
     @Bean
-    RestTemplate restTemplate() {
+    public RestTemplate restTemplate() {
         HttpComponentsClientHttpRequestFactory factory =
             new HttpComponentsClientHttpRequestFactory(secureHttpClient());
         return new RestTemplate(factory);
@@ -96,34 +109,33 @@ public class HttpConfig {
     }
 
     private ConnectionSocketFactory createIgnoringSslSocketFactory() {
+        return new SSLConnectionSocketFactory(ignoringSslContext(), new NoopHostnameVerifier());
+    }
+
+    private SSLContext ignoringSslContext() {
         try {
-            SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
-            return new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
+            return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
             throw new BeanInitializationException("Error initializing HTTP client " + e.getMessage(), e);
         }
     }
 
-    private ConnectionSocketFactory createSecureSslSocketFactory() {
-        SSLContextBuilder sslContextBuilder = SSLContexts
-            .custom()
-            .setKeyStoreType(trustStoreType)
-            .setProtocol(protocol);
+    private void loadTrustMaterial(SSLContextBuilder sslContextBuilder)
+            throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        if (trustStore != null) {
+            sslContextBuilder.setKeyStoreType(trustStoreType).setProtocol(protocol);
 
-        try {
             if (!trustStore.startsWith(SAFKEYRING)) {
-                if (trustStore == null) {
-                    throw new IllegalArgumentException("server.ssl.trustStore configuration parameter is not defined");
-                }
                 if (trustStorePassword == null) {
                     throw new IllegalArgumentException("server.ssl.trustStorePassoword configuration parameter is not defined");
                 }
-                log.info("Loading truststore file: " + trustStore);
+
+                log.info("Loading trust store file: " + trustStore);
                 FileSystemResource trustStoreResource = new FileSystemResource(trustStore);
 
                 sslContextBuilder.loadTrustMaterial(trustStoreResource.getFile(), trustStorePassword.toCharArray());
             } else {
-                log.info("Loading truststore key ring: " + trustStore);
+                log.info("Loading trust store key ring: " + trustStore);
                 if (!trustStore.startsWith(SAFKEYRING + ":////")) {
                     throw new MalformedURLException("Incorrect key ring format: " + trustStore +
                         ". Make sure you use format safkeyring:////userId/keyRing");
@@ -132,11 +144,65 @@ public class HttpConfig {
 
                 sslContextBuilder.loadTrustMaterial(keyRing, trustStorePassword.toCharArray());
             }
+        } else {
+            log.info("No trust store is defined");
+        }
+    }
 
-            return new SSLConnectionSocketFactory(sslContextBuilder.build(), SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-        } catch (IOException | CertificateException | KeyStoreException | KeyManagementException
-            | NoSuchAlgorithmException e) {
+    private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
+        if (keyStore != null) {
+            sslContextBuilder.setKeyStoreType(keyStoreType).setProtocol(protocol);
+
+            if (!keyStore.startsWith(SAFKEYRING)) {
+                if (keyStore == null) {
+                    throw new IllegalArgumentException("server.ssl.keyStore configuration parameter is not defined");
+                }
+                if (keyStorePassword == null) {
+                    throw new IllegalArgumentException("server.ssl.keyStorePassword configuration parameter is not defined");
+                }
+                log.info("Loading key store file: " + keyStore);
+                FileSystemResource keyStoreResource = new FileSystemResource(keyStore);
+                sslContextBuilder.loadKeyMaterial(keyStoreResource.getFile(), keyStorePassword.toCharArray(), keyPassword.toCharArray());
+            } else {
+                log.info("Loading key store key ring: " + keyStore);
+                if (!keyStore.startsWith(SAFKEYRING + ":////")) {
+                    throw new MalformedURLException("Incorrect key ring format: " + keyStore +
+                        ". Make sure you use format safkeyring:////userId/keyRing");
+                }
+                URL keyRing = new URL(keyStore.replaceFirst("////", "//"));
+
+                sslContextBuilder.loadKeyMaterial(keyRing, keyStorePassword.toCharArray(), keyPassword.toCharArray(), null);
+            }
+        } else {
+            log.info("No key store is defined");
+        }
+    }
+
+    private SSLContext secureSslContext() {
+        log.debug("Protocol: {}", protocol);
+        SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+        try {
+            loadTrustMaterial(sslContextBuilder);
+            loadKeyMaterial(sslContextBuilder);
+            return sslContextBuilder.build();
+         } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
+                | UnrecoverableKeyException | KeyManagementException e) {
+            log.error("Error initializing HTTP client: {}", e.getMessage(), e);
             throw new RuntimeException("Error initializing HTTP client: " + e.getMessage(), e);
         }
+    }
+
+    @Bean
+    public SSLContext apimlSslContext() {
+        if (verifySslCertificatesOfServices) {
+            return secureSslContext();
+        }
+        else {
+            return ignoringSslContext();
+        }
+    }
+
+    private ConnectionSocketFactory createSecureSslSocketFactory() {
+        return new SSLConnectionSocketFactory(secureSslContext(), SSLConnectionSocketFactory.getDefaultHostnameVerifier());
     }
 }

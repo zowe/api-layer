@@ -38,6 +38,7 @@ ext {
     jjwtVersion = '0.9.1'
     velocityVersion = '2.0'
     jsoupVersion = '1.8.3'
+    httpCoreVersion = '4.4.10'
 
     libraries = [
         lombok                             : "org.projectlombok:lombok:${lombokVersion}",
@@ -79,6 +80,8 @@ ext {
         swagger_models                     : "io.swagger:swagger-models:${swaggerCoreVersion}",
         swagger_annotations                : "io.swagger:swagger-annotations:${swaggerCoreVersion}",
         http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
+        http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
+
         mockSpringRest                     : "com.github.skjolber:mockito-rest-spring:${mockSpringRestVersion}",
         reactorCore                        : "io.projectreactor:reactor-core:${reactorVersion}",
         reactorTestSupport                 : "io.projectreactor.addons:reactor-test:${reactorVersion}",

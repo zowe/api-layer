@@ -32,8 +32,9 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableWebSecurity
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @EnableConfigurationProperties
-@ComponentScan(value = { "com.ca.mfaas.gateway", "com.ca.mfaas.product" }, excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig") })
+@ComponentScan(value = { "com.ca.mfaas.gateway", "com.ca.mfaas.product", "com.ca.mfaas.product.discovery",
+        "com.ca.mfaas.product.web" }, excludeFilters = {
+                @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig") })
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
 @EnableDiscoveryClient
 @EnableWebSocket
@@ -47,6 +48,7 @@ public class GatewayApplication implements ApplicationListener<ApplicationReadyE
 
     @Override
     public void onApplicationEvent(final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("Gateway Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+        new ServiceStartupEventHandler().onServiceStartup("Gateway Service",
+                ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

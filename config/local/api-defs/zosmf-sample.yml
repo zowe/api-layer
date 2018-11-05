@@ -6,7 +6,7 @@
 # config/local/gateway-service.yml:
 #
 #   apiml:
-#       gateway:
+#       security:
 #           verifySslCertificatesOfServices: false
 #
 #  Then you can access z/OSMF via the API gateway:
