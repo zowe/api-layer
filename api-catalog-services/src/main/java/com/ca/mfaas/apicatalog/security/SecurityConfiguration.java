@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.security;
 
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.security.handler.UnauthorizedHandler;
 import com.ca.mfaas.security.login.LoginAuthenticationProvider;
@@ -49,30 +50,33 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private static final String LOGIN_ENDPOINT = "/auth/login";
     private static final String LOGOUT_ENDPOINT = "/auth/logout";
 
-    private final ObjectMapper mapper;
+    private final ObjectMapper securityObjectMapper;
     private final UnauthorizedHandler unAuthorizedHandler;
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final LoginAuthenticationProvider loginAuthenticationProvider;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
-    private final MFaaSConfigPropertiesContainer mFaaSConfigPropertiesContainer;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final MFaaSConfigPropertiesContainer mfaasConfigPropertiesContainer;
 
     public SecurityConfiguration(
-        @Qualifier("securityObjectMapper") ObjectMapper mapper,
+        @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper,
         UnauthorizedHandler unAuthorizedHandler,
         SuccessfulLoginHandler successfulLoginHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         LoginAuthenticationProvider loginAuthenticationProvider,
         TokenAuthenticationProvider tokenAuthenticationProvider,
-        MFaaSConfigPropertiesContainer mFaaSConfigPropertiesContainer) {
+        SecurityConfigurationProperties securityConfigurationProperties,
+        MFaaSConfigPropertiesContainer mfaasConfigPropertiesContainer) {
         super();
-        this.mapper = mapper;
+        this.securityObjectMapper = securityObjectMapper;
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.successfulLoginHandler = successfulLoginHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.loginAuthenticationProvider = loginAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;
-        this.mFaaSConfigPropertiesContainer = mFaaSConfigPropertiesContainer;
+        this.securityConfigurationProperties = securityConfigurationProperties;
+        this.mfaasConfigPropertiesContainer = mfaasConfigPropertiesContainer;
     }
 
     @Override
@@ -126,16 +130,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/apidoc/**").authenticated();
     }
 
-    public TokenFilter headerTokenFilter() throws Exception {
-        return new TokenFilter(authenticationManager(), authenticationFailureHandler, mFaaSConfigPropertiesContainer);
+    private TokenFilter headerTokenFilter() throws Exception {
+        return new TokenFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }
 
-    public LoginFilter loginFilter(String loginEndpoint) throws Exception {
-        return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler, mapper, authenticationManager());
+    private LoginFilter loginFilter(String loginEndpoint) throws Exception {
+        return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler,
+            securityObjectMapper, authenticationManager());
     }
 
-    public CookieFilter cookieTokenFilter() throws Exception {
-        return new CookieFilter(authenticationManager(), authenticationFailureHandler, mFaaSConfigPropertiesContainer);
+    private CookieFilter cookieTokenFilter() throws Exception {
+        return new CookieFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }
 
     @Bean
@@ -146,14 +151,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     public LogoutSuccessHandler logoutSuccessHandler() {
-        return new ApiCatalogLogoutSuccessHandler(mFaaSConfigPropertiesContainer);
+        return new ApiCatalogLogoutSuccessHandler(securityConfigurationProperties);
     }
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     CorsConfigurationSource corsConfigurationSource(MFaaSConfigPropertiesContainer propertiesContainer) {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(ImmutableList.of(propertiesContainer.getGateway().getGatewayHostname(), "http://localhost:3000", "http://localhost:10014"));
+        configuration.setAllowedOrigins(ImmutableList.of(mfaasConfigPropertiesContainer.getGateway().getGatewayHostname(), "http://localhost:3000", "http://localhost:10014"));
         configuration.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST"));
         configuration.setAllowedHeaders(ImmutableList.of("Cookie", "Authorization", "Cache-Control", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

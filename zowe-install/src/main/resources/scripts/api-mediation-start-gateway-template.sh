@@ -17,13 +17,22 @@ fi
 
 DIR=`dirname $0`
 
-java -Xms16m -Xmx512m -Dibm.serversocket.recover=true -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/tmp -Xquickstart \
-	-Denvironment.gatewayHostname=**HOSTNAME** -Denvironment.hostname=**HOSTNAME** -Denvironment.port=**GATEWAY_PORT** \
-	-Denvironment.discoveryLocations=http://eureka:password@**IPADDRESS**:**DISCOVERY_PORT**/eureka/ -Denvironment.dsIpAddress=0.0.0.0 \
-	-Denvironment.preferIpAddress=true -Denvironment.ipAddress=**IPADDRESS** -Denvironment.gatewayTimeoutInMillis=30000 \
-	-Denvironment.sslEnabled=true -Denvironment.scheme=https -Denvironment.keystore=$DIR/../keystore/localhost/localhost.keystore.p12 \
-	-Denvironment.keystoreType=PKCS12 -Denvironment.keystorePassword=password \
-    -Denvironment.keyAlias=localhost -Denvironment.keyPassword=password \
-	-Denvironment.truststore=$DIR/../keystore/localhost/localhost.truststore.p12 -Denvironment.truststoreType=PKCS12 \
-	-Denvironment.truststorePassword=password \
-	-jar $DIR/../gateway-service.jar &
+java -Xms32m -Xmx256m -Xquickstart \
+    -Dibm.serversocket.recover=true \
+    -Dfile.encoding=UTF-8 \
+    -Djava.io.tmpdir=/tmp \
+    -Dapiml.service.hostname=**HOSTNAME** \
+    -Dapiml.service.port=**GATEWAY_PORT** \
+    -Dapiml.service.discoveryServiceUrls=http://eureka:password@**IPADDRESS**:**DISCOVERY_PORT**/eureka/ \
+    -Dapiml.service.preferIpAddress=true \
+    -Dapiml.service.ipAddress=**IPADDRESS** \
+    -Dapiml.gateway.timeoutMillis=30000 \
+    -Dserver.ssl.keystore=$DIR/../localhost/localhost.keystore.p12 \
+    -Dserver.ssl.keystoreType=PKCS12 \
+    -Dserver.ssl.keystorePassword=password \
+    -Dserver.ssl.keyAlias=localhost \
+    -Dserver.ssl.keyPassword=password \
+    -Dserver.ssl.truststore=$DIR/../keystore/localhost/localhost.truststore.p12 \
+    -Dserver.ssl.truststoreType=PKCS12 \
+    -Dserver.ssl.truststorePassword=password \
+    -jar $DIR/../gateway-service.jar &

@@ -55,6 +55,6 @@ public class BuildInfoDetails {
     }
 
     public String getCommitId() {
-        return build.get("build.artifact") == null ? "Unknown" : String.valueOf(build.get("build.artifact"));
+        return git.get("git.commit.id.abbrev") == null ? "Unknown" : String.valueOf(git.get("git.commit.id.abbrev"));
     }
 }

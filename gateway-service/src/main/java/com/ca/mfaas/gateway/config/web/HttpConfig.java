@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.gateway.config.web;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -23,7 +22,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -47,12 +46,20 @@ public class HttpConfig {
 
     private static final String SAFKEYRING = "safkeyring";
 
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    @Value("${server.ssl.protocol:TLS1.2}")
+    private String protocol;
 
-    @Autowired
-    public HttpConfig(MFaaSConfigPropertiesContainer propertiesContainer) {
-        this.propertiesContainer = propertiesContainer;
-    }
+    @Value("${server.ssl.trustStore:#{null}}")
+    private String trustStore;
+
+    @Value("${server.ssl.trustStorePassword:#{null}}")
+    private String trustStorePassword;
+
+    @Value("${server.ssl.trustStoreType:PKCS12}")
+    private String trustStoreType;
+
+    @Value("${apiml.gateway.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
 
     @Bean
     RestTemplate restTemplate() {
@@ -80,7 +87,7 @@ public class HttpConfig {
     }
 
     private ConnectionSocketFactory createSslSocketFactory() {
-        if (propertiesContainer.getGateway().getVerifySslCertificatesOfServices()) {
+        if (verifySslCertificatesOfServices) {
             return createSecureSslSocketFactory();
         } else {
             log.warn("The gateway is not verifying the TLS/SSL certificates of the services");
@@ -93,22 +100,24 @@ public class HttpConfig {
             SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
             return new SSLConnectionSocketFactory(sslContext, new NoopHostnameVerifier());
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-            throw new BeanInitializationException("Error initializing secureHttpClient: " + e.getMessage(), e);
+            throw new BeanInitializationException("Error initializing HTTP client " + e.getMessage(), e);
         }
     }
 
-    @SuppressWarnings("Duplicates")
     private ConnectionSocketFactory createSecureSslSocketFactory() {
-        String trustStore = propertiesContainer.getSecurity().getTrustStore();
-        String trustStorePassword = propertiesContainer.getSecurity().getTrustStorePassword();
-
         SSLContextBuilder sslContextBuilder = SSLContexts
             .custom()
-            .setKeyStoreType(propertiesContainer.getSecurity().getTrustStoreType())
-            .setProtocol(propertiesContainer.getSecurity().getProtocol());
+            .setKeyStoreType(trustStoreType)
+            .setProtocol(protocol);
 
         try {
             if (!trustStore.startsWith(SAFKEYRING)) {
+                if (trustStore == null) {
+                    throw new IllegalArgumentException("server.ssl.trustStore configuration parameter is not defined");
+                }
+                if (trustStorePassword == null) {
+                    throw new IllegalArgumentException("server.ssl.trustStorePassoword configuration parameter is not defined");
+                }
                 log.info("Loading truststore file: " + trustStore);
                 FileSystemResource trustStoreResource = new FileSystemResource(trustStore);
 
@@ -127,7 +136,7 @@ public class HttpConfig {
             return new SSLConnectionSocketFactory(sslContextBuilder.build(), SSLConnectionSocketFactory.getDefaultHostnameVerifier());
         } catch (IOException | CertificateException | KeyStoreException | KeyManagementException
             | NoSuchAlgorithmException e) {
-            throw new BeanInitializationException("Error initializing secureHttpClient: " + e.getMessage(), e);
+            throw new RuntimeException("Error initializing HTTP client: " + e.getMessage(), e);
         }
     }
 }
