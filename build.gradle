@@ -32,11 +32,13 @@ buildscript {
         classpath 'com.palantir:jacoco-coverage:0.4.0'
         classpath 'net.researchgate:gradle-release:2.6.0'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
+        classpath 'org.owasp:dependency-check-gradle:3.3.4'
     }
 }
 
 apply plugin: 'com.palantir.jacoco-full-report'
 apply from: 'gradle/publish.gradle'
+apply from: 'gradle/sonar.gradle'
 apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/versions.gradle'
 apply from: 'gradle/code-quality.gradle'
@@ -46,6 +48,7 @@ allprojects {
     apply plugin: 'idea'
     apply plugin: 'maven'
     apply plugin: 'com.github.hierynomus.license'
+    apply plugin: 'org.owasp.dependencycheck'
 
     repositories mavenRepositories
 
