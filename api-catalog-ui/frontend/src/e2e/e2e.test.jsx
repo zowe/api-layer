@@ -117,7 +117,7 @@ describe('>>> e2e tests', async () => {
 
     it('Should display the back button', async () => {
         const [res] = await Promise.all([page.waitForNavigation(), page.goto(detailPageUrl)]);
-        await page.waitForSelector('#tooltip-1 > span > a');
+        await page.waitForSelector('#go-back-button > span > span');
         const backButton = await page.$('#go-back-button > span > span');
         await page.waitFor(2000);
         const backButtonContent = await page.evaluate(el => el.innerText, backButton);
