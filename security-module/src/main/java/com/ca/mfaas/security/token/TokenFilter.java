@@ -9,19 +9,19 @@
  */
 package com.ca.mfaas.security.token;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 import javax.servlet.http.HttpServletRequest;
 
 public class TokenFilter extends AbstractSecureContentFilter {
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public TokenFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler,
-                       MFaaSConfigPropertiesContainer propertiesContainer) {
+        SecurityConfigurationProperties securityConfigurationProperties) {
         super(authenticationManager, failureHandler);
-        this.propertiesContainer = propertiesContainer;
+        this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     /**
@@ -32,12 +32,12 @@ public class TokenFilter extends AbstractSecureContentFilter {
      */
     @Override
     protected String extractContent(HttpServletRequest request) {
-        String token = request.getHeader(propertiesContainer.getSecurity().getTokenProperties().getAuthorizationHeader());
+        String token = request.getHeader(securityConfigurationProperties.getTokenProperties().getAuthorizationHeader());
         if (token == null) {
             return null;
         }
-        if (token.startsWith(propertiesContainer.getSecurity().getTokenProperties().getBearerPrefix())) {
-            return token.replaceFirst(propertiesContainer.getSecurity().getTokenProperties().getBearerPrefix(), "");
+        if (token.startsWith(securityConfigurationProperties.getTokenProperties().getBearerPrefix())) {
+            return token.replaceFirst(securityConfigurationProperties.getTokenProperties().getBearerPrefix(), "");
         }
         return null;
     }

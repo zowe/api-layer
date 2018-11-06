@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.security.token;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 public class TokenFilterTest {
 
-    private MFaaSConfigPropertiesContainer propertiesContainer = new MFaaSConfigPropertiesContainer();
+    private SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
     private HttpServletRequest request = mock(HttpServletRequest.class);
     private HttpServletResponse response = mock(HttpServletResponse.class);
     private FilterChain filterChain = mock(FilterChain.class);
@@ -45,20 +45,19 @@ public class TokenFilterTest {
         filterChain = mock(FilterChain.class);
         authenticationManager = mock(AuthenticationManager.class);
         failureHandler = mock(AuthenticationFailureHandler.class);
-        propertiesContainer.setSecurity(new MFaaSConfigPropertiesContainer.SecurityProperties());
     }
 
     @Test
     public void authenticationWithValidTokenInsideHeader() throws ServletException, IOException {
         String tokenValue = "token";
-        String authorizationHeader = propertiesContainer.getSecurity().getTokenProperties().getAuthorizationHeader();
-        String bearerPrefix = propertiesContainer.getSecurity().getTokenProperties().getBearerPrefix();
+        String authorizationHeader = securityConfigurationProperties.getTokenProperties().getAuthorizationHeader();
+        String bearerPrefix = securityConfigurationProperties.getTokenProperties().getBearerPrefix();
         String headerValue = bearerPrefix + tokenValue;
         TokenAuthentication authentication = new TokenAuthentication(tokenValue);
 
         when(request.getHeader(authorizationHeader)).thenReturn(headerValue);
 
-        TokenFilter filter = new TokenFilter(authenticationManager, failureHandler, propertiesContainer);
+        TokenFilter filter = new TokenFilter(authenticationManager, failureHandler, securityConfigurationProperties);
         filter.doFilter(request, response, filterChain);
 
         verify(request).getHeader(authorizationHeader);
@@ -70,15 +69,15 @@ public class TokenFilterTest {
     @Test
     public void authenticationWithNotValidTokenInsideHeader() throws ServletException, IOException {
         String notValidToken = "token";
-        String authorizationHeader = propertiesContainer.getSecurity().getTokenProperties().getAuthorizationHeader();
-        String headerValue = propertiesContainer.getSecurity().getTokenProperties().getBearerPrefix() + notValidToken;
+        String authorizationHeader = securityConfigurationProperties.getTokenProperties().getAuthorizationHeader();
+        String headerValue = securityConfigurationProperties.getTokenProperties().getBearerPrefix() + notValidToken;
         TokenAuthentication authentication = new TokenAuthentication(notValidToken);
         BadCredentialsException exception = new BadCredentialsException("Bad token");
 
         when(request.getHeader(authorizationHeader)).thenReturn(headerValue);
         when(authenticationManager.authenticate(authentication)).thenThrow(exception);
 
-        TokenFilter filter = new TokenFilter(authenticationManager, failureHandler, propertiesContainer);
+        TokenFilter filter = new TokenFilter(authenticationManager, failureHandler, securityConfigurationProperties);
         filter.doFilter(request, response, filterChain);
 
         verify(request).getHeader(authorizationHeader);
@@ -90,10 +89,10 @@ public class TokenFilterTest {
     @Test
     public void authenticationWithWrongHeader() throws ServletException, IOException {
         String headerValue = "Basic token";
-        String authorizationHeader = propertiesContainer.getSecurity().getTokenProperties().getAuthorizationHeader();
+        String authorizationHeader = securityConfigurationProperties.getTokenProperties().getAuthorizationHeader();
         when(request.getHeader(authorizationHeader)).thenReturn(headerValue);
 
-        TokenFilter filter = new TokenFilter(authenticationManager, failureHandler, propertiesContainer);
+        TokenFilter filter = new TokenFilter(authenticationManager, failureHandler, securityConfigurationProperties);
         filter.doFilter(request, response, filterChain);
 
         verify(request).getHeader(authorizationHeader);
@@ -104,10 +103,10 @@ public class TokenFilterTest {
 
     @Test
     public void callWithoutTokenInHeader() throws ServletException, IOException {
-        String authorizationHeader = propertiesContainer.getSecurity().getTokenProperties().getAuthorizationHeader();
+        String authorizationHeader = securityConfigurationProperties.getTokenProperties().getAuthorizationHeader();
         when(request.getHeader(authorizationHeader)).thenReturn(null);
 
-        TokenFilter filter = new TokenFilter(authenticationManager, failureHandler, propertiesContainer);
+        TokenFilter filter = new TokenFilter(authenticationManager, failureHandler, securityConfigurationProperties);
         filter.doFilter(request, response, filterChain);
 
         verify(request).getHeader(authorizationHeader);

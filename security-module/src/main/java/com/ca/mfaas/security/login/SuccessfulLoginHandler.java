@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.security.login;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
@@ -27,15 +27,16 @@ import java.io.IOException;
 @Component
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper mapper;
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
     private static final String JSON = "JSON";
     private static final String COOKIE = "COOKIE";
     private static final String COOKIE_RESPONSE = "";
+    private static final String AUTHENTICATION_RESPONSE_TYPE_HEADER_NAME = "Auth-Response-Type";
 
     public SuccessfulLoginHandler(ObjectMapper securityObjectMapper,
-                                  MFaaSConfigPropertiesContainer propertiesContainer) {
+    SecurityConfigurationProperties securityConfigurationProperties) {
         this.mapper = securityObjectMapper;
-        this.propertiesContainer = propertiesContainer;
+        this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     @Override
@@ -47,7 +48,7 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         response.setStatus(HttpStatus.OK.value());
 
-        final String responseType = request.getHeader(propertiesContainer.getSecurity().getAuthenticationResponseTypeHeaderName());
+        final String responseType = request.getHeader(AUTHENTICATION_RESPONSE_TYPE_HEADER_NAME);
         switch (responseType == null ? COOKIE : responseType.toUpperCase()) {
             case JSON:
                 setJson(token, response);
@@ -81,12 +82,12 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
      * @param response send back this response
      */
     private void setCookie(String token, HttpServletResponse response) throws IOException {
-        Cookie tokenCookie = new Cookie(propertiesContainer.getSecurity().getCookieProperties().getCookieName(), token);
-        tokenCookie.setComment(propertiesContainer.getSecurity().getCookieProperties().getCookieComment());
-        tokenCookie.setPath(propertiesContainer.getSecurity().getCookieProperties().getCookiePath());
+        Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
+        tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());
+        tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
         tokenCookie.setHttpOnly(true);
-        tokenCookie.setMaxAge(propertiesContainer.getSecurity().getCookieProperties().getCookieMaxAge());
-        tokenCookie.setSecure(propertiesContainer.getSecurity().getCookieProperties().isCookieSecure());
+        tokenCookie.setMaxAge(securityConfigurationProperties.getCookieProperties().getCookieMaxAge());
+        tokenCookie.setSecure(securityConfigurationProperties.getCookieProperties().isCookieSecure());
         response.addCookie(tokenCookie);
         mapper.writeValue(response.getWriter(), COOKIE_RESPONSE);
     }

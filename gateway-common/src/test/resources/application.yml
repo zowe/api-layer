@@ -81,7 +81,6 @@ mfaas:
         gatewayHostname: ${environment.gatewayHostname}
         timeoutInMillis: ${environment.gatewayTimeoutInMillis:30000}
         debugHeaders: true
-        verifySslCertificatesOfServices: true
     service-registry:
         serviceFetchDelayInMillis:  30000
         cacheRefreshUpdateThresholdInMillis: 60000

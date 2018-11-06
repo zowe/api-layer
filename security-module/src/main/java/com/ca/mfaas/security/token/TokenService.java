@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.security.token;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,10 +20,10 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class TokenService {
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    public TokenService(MFaaSConfigPropertiesContainer propertiesContainer) {
-        this.propertiesContainer = propertiesContainer;
+    public TokenService(SecurityConfigurationProperties securityConfigurationProperties) {
+        this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     public String createToken(String username) {
@@ -34,16 +34,16 @@ public class TokenService {
             .setSubject(username)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
-            .setIssuer(propertiesContainer.getSecurity().getTokenProperties().getIssuer())
+            .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.HS512, propertiesContainer.getSecurity().getTokenProperties().getSecret())
+            .signWith(SignatureAlgorithm.HS512, securityConfigurationProperties.getTokenProperties().getSecret())
             .compact();
     }
 
     TokenAuthentication validateToken(TokenAuthentication token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(propertiesContainer.getSecurity().getTokenProperties().getSecret())
+                .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
                 .parseClaimsJws(token.getCredentials())
                 .getBody();
 
@@ -65,12 +65,12 @@ public class TokenService {
     }
 
     private long calculateExpiration(long now, String username) {
-        long expiration = now + (propertiesContainer.getSecurity().getTokenProperties().getExpirationInSeconds() * 1000);
+        long expiration = now + (securityConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000);
 
         // calculate time for short TTL user
-        if (propertiesContainer.getSecurity().getTokenProperties().getShortTtlUsername() != null) {
-            if (username.equals(propertiesContainer.getSecurity().getTokenProperties().getShortTtlUsername())) {
-                expiration = now + (propertiesContainer.getSecurity().getTokenProperties().getShortTtlExpirationInSeconds() * 1000);
+        if (securityConfigurationProperties.getTokenProperties().getShortTtlUsername() != null) {
+            if (username.equals(securityConfigurationProperties.getTokenProperties().getShortTtlUsername())) {
+                expiration = now + (securityConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds() * 1000);
             }
         }
         return expiration;

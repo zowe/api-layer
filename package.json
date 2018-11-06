@@ -14,6 +14,7 @@
         "gateway-service-debug": "java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=5010,suspend=n -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local/gateway-service.yml",
         "discovery-service": "java -jar discovery-service/build/libs/discovery-service.jar --spring.config.additional-location=file:./config/local/discovery-service.yml",
         "api-catalog-service": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local/api-catalog-service.yml",
+        "api-catalog-service-debug": "java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=5014,suspend=n -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local/api-catalog-service.yml",
         "discoverable-client": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml",
 
         "api-layer-multi": "concurrently --names \"GS1,DS1,DS2,AC1,DC1\" -c cyan,yellow,yellow,white,blue npm:gateway-service-1 npm:discovery-service-1 npm:discovery-service-2 npm:api-catalog-service-1 npm:discoverable-client-1",
