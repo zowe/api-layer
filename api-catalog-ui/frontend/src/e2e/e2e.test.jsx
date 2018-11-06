@@ -6,7 +6,7 @@ let page;
 const baseUrl = process.env.REACT_APP_CATALOG_URL_TEST;
 console.log('API Catalog Base URL:', baseUrl);
 const loginUrl = `${baseUrl}/#/login`;
-const dashboardUrl = `${baseUrl}/ui/v1/apicatalog/#/dashboard`;
+const dashboardUrl = `${baseUrl}/#/dashboard`;
 const detailPageUrl = `${baseUrl}/#/tile/apicatalog`;
 
 beforeAll(async () => {
@@ -117,7 +117,7 @@ describe('>>> e2e tests', async () => {
 
     it('Should display the back button', async () => {
         const [res] = await Promise.all([page.waitForNavigation(), page.goto(detailPageUrl)]);
-        await page.waitForSelector('#go-back-button > span > span');
+        await page.waitForSelector('#tooltip-1 > span > a');
         const backButton = await page.$('#go-back-button > span > span');
         await page.waitFor(2000);
         const backButtonContent = await page.evaluate(el => el.innerText, backButton);
