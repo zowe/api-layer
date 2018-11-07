@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.discoverableclient;
 
+import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.http.HttpRequestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
@@ -16,6 +17,7 @@ import org.junit.Test;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class DiscoverableClientEndpointsAccess {
     private static final String ENDPOINT = "/api/v1/discoverableclient/instance/configured-port";
@@ -27,7 +29,10 @@ public class DiscoverableClientEndpointsAccess {
         final String jsonResponse = EntityUtils.toString(response.getEntity());
 
         // Then
-        assertEquals("10012", jsonResponse.toLowerCase());
+        assertNotNull(jsonResponse);
+
+        int port = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+        assertEquals(port + 2L, Long.parseLong(jsonResponse));
     }
 
 }

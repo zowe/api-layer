@@ -29,18 +29,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class InstanceController {
 
     private final MFaaSConfigPropertiesContainer propertiesContainer;
-    private MfaasServiceLocator mfaasServiceLocator;
 
     /**
      * Test controller for checking instance services
      * @param propertiesContainer MFaaS properties
-     * @param mfaasServiceLocator Enabler service for locating services based on serviceId
      */
     @Autowired
-    public InstanceController(MFaaSConfigPropertiesContainer propertiesContainer,
-                              MfaasServiceLocator mfaasServiceLocator) {
+    public InstanceController(MFaaSConfigPropertiesContainer propertiesContainer) {
         this.propertiesContainer = propertiesContainer;
-        this.mfaasServiceLocator = mfaasServiceLocator;
     }
 
     /**
@@ -51,6 +47,7 @@ public class InstanceController {
     @GetMapping(value = "/configured-port", produces = "text/plain")
     @ApiOperation(value = "What port is this controller configured for",
         notes = "What port is this controller configured for",
+        hidden = true,
         tags = {"Other Operations"},
         response = String.class)
     @ApiResponses(value = {

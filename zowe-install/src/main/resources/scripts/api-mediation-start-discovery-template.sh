@@ -5,6 +5,7 @@
 # - DISCOVERY_PORT - The port the discovery service will use
 # - CATALOG_PORT - The port the catalog service will use
 # - GATEWAY_PORT - The port the gateway service will use
+# - STATIC_DEF_CONFIG - The directory with statically defined APIs
 
 **JAVA_SETUP**
 if [[ ":$PATH:" == *":$JAVA_HOME/bin:"* ]]; then
@@ -17,11 +18,17 @@ fi
 
 DIR=`dirname $0`
 
-java -Xms16m -Xmx512m \
-	-Dibm.serversocket.recover=true -Dfile.encoding=UTF-8 -Djava.io.tmpdir=/tmp -Xquickstart \
-	-Denvironment.discoveryLocations=http://eureka:password@**IPADDRESS**:**DISCOVERY_PORT**/eureka/ \
-	-Denvironment.hostname=**HOSTNAME** -Denvironment.port=**DISCOVERY_PORT** -Denvironment.ipAddress=**IPADDRESS** \
-	-Denvironment.dsIpAddress=0.0.0.0 -Denvironment.preferIpAddress=true -Denvironment.eurekaUserId=eureka \
-	-Denvironment.eurekaPassword=password -Denvironment.truststore=$DIR/../keystore/api_gateway.ts \
-	-Denvironment.truststoreType=JKS -Denvironment.truststorePassword=zoe_password \
-	-Ddiscovery.staticApiDefinitionsDirectory=**STATIC_DEF_CONFIG** -jar $DIR/../discovery-service.jar &
+java -Xms32m -Xmx256m -Xquickstart \
+    -Dibm.serversocket.recover=true \
+    -Dfile.encoding=UTF-8 \
+    -Djava.io.tmpdir=/tmp \
+    -Dserver.address=0.0.0.0 \
+    -Dapiml.discovery.userid=eureka \
+    -Dapiml.discovery.password=password \
+    -Dapiml.discovery.allPeersUrls=http://eureka:password@**IPADDRESS**:**DISCOVERY_PORT**/eureka/ \
+    -Dapiml.service.hostname=**HOSTNAME** \
+    -Dapiml.service.port=**DISCOVERY_PORT** \
+    -Dapiml.service.ipAddress=**IPADDRESS** \
+    -Dapiml.service.preferIpAddress=true \
+    -Dapiml.discovery.staticApiDefinitionsDirectory=**STATIC_DEF_CONFIG** \
+    -jar $DIR/../discovery-service.jar &

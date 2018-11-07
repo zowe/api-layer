@@ -51,7 +51,7 @@ mfaas:
         info:
             serviceTitle: API Gateway
             description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
-            enableApiDoc: false
+            enableApiDoc: true
             swaggerLocation: gateway-api-doc.json
     service:
         hostname: ${environment.hostname}
