@@ -19,7 +19,6 @@ import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpEntity;
@@ -41,8 +40,6 @@ import java.util.stream.Collectors;
 @DependsOn("instanceRetrievalService")
 public class APIDocRetrievalService {
 
-    private final String HTTPS = "https";
-    private final String HTTP = "http";
     private String gatewayUrl;
 
     private final RestTemplate restTemplate;
@@ -143,17 +140,8 @@ public class APIDocRetrievalService {
             HttpEntity<?> entity = createRequest();
             ResponseEntity<String> response;
 
-            // construct the endpoint based on the instance details
-            String baseUrl;
-            String hostName = instance.getHostName();
-            if (instance.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-                baseUrl = new URIBuilder().setHost(hostName)
-                    .setScheme(HTTPS).setPort(instance.getSecurePort()).build().toString();
-            } else {
-                baseUrl = new URIBuilder().setHost(hostName)
-                    .setScheme(HTTP).setPort(instance.getPort()).build().toString();
-            }
-            String instanceApiDocEndpoint = baseUrl + getLocalApiDocEndPoint(instance);
+            // Always retrieve api doc via the gateway
+            String instanceApiDocEndpoint = getGatewayUrl() + "/api/" + apiVersion + "/" + instance.getAppName().toLowerCase() + "/api-doc";
 
             log.info("Sending API Doc info request to: " + instanceApiDocEndpoint);
             response = restTemplate.exchange(
