@@ -30,7 +30,7 @@ public class GreetingController {
     /**
      * Gets a greeting.
      */
-    @GetMapping(value = {"/api/v1/greeting/{yourName}", "/api/v1/greeting"})
+    @GetMapping(value = {"/greeting/{yourName}", "/greeting"})
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Other Operations"})
     public Greeting yourGreeting(@RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs,
