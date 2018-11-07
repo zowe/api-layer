@@ -148,6 +148,7 @@ public class APIServiceStatusService {
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+        headers.set("Api-Doc-Normalised", "true");
         return headers;
     }
 }

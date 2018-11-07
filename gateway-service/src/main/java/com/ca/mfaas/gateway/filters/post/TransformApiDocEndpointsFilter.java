@@ -15,6 +15,7 @@ import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import com.ca.mfaas.product.family.ProductFamilyType;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import io.swagger.models.Path;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.netflix.zuul.context.RequestContext.getCurrentContext;
@@ -108,6 +110,18 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
         // The catalog request is transformed here rather than when first retrieved due to the dependencies on routes
         if ((requestPath.contains("/api-doc") || requestPath.contains(ProductFamilyType.API_CATALOG.getServiceId() + "/apidoc/")) && !requestPath.contains("/api-doc/enabled")
             && (context.getResponseDataStream() != null || context.getResponseBody() != null)) {
+            List<Pair<String, String>> zuulResponseHeaders = context.getZuulResponseHeaders();
+            if (zuulResponseHeaders != null) {
+                for (Pair<String, String> it : zuulResponseHeaders) {
+                    if (it.first().contains("Api-Doc-Normalised")) {
+                        if (Boolean.valueOf(it.second())) {
+                            log.debug("Api Doc is already normalised for: " + requestPath + ", transformation not required.");
+                            return false;
+                        }
+                        break;
+                    }
+                }
+            }
             log.debug("Normalising endpoints for: " + requestPath);
             return true;
         }
