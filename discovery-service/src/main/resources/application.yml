@@ -1,14 +1,3 @@
-spring:
-    application:
-        name: discovery
-    cloud:
-        client:
-            hostname: ${environment.hostname}
-            ipAddress: ${environment.ipAddress}
-    output:
-        ansi:
-            enabled: detect
-
 logging:
     level:
         ROOT: INFO
@@ -23,70 +12,60 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
 
-##############################################################################################
-# MFAAS configuration section
-##############################################################################################
-mfaas:
-    discovery:
-        serviceId: ${spring.application.name}
-        eurekaUserName: ${environment.eurekaUserId}
-        eurekaUserPassword: ${environment.eurekaPassword}
-        fetchRegistry: true
-        registerWithEureka: true
-        region: default
-        locations: ${environment.discoveryLocations}
-        info:
-            serviceTitle: Discovery Service
-            description: A Discovery Service to discover and provide information about services registered in the API Mediation Layer eco system.
-            enableApiDoc: false
+apiml:
+    # The `apiml` node contains API Mediation Layer specific configuration
     service:
-        hostname: ${environment.hostname}
-        ipAddress: ${environment.ipAddress}
-    server:
-        preferIpAddress: ${environment.preferIpAddress}
-        ipAddress: ${environment.dsIpAddress}
-        port: ${environment.port}
-        scheme: http
-    security:
-        esmEnabled: false
-        sslEnabled: false
-        protocol: TLSv1.2
-        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
-        trustStore: ${environment.truststore}
-        trustStoreType: ${environment.truststoreType}
-        trustStorePassword: ${environment.truststorePassword}
+        # The `apiml.service` node contains information required by any APIML service
+        id: discovery  # Service ID of this service. It is fixed for APIML Discovery Service
+        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
+        port: 10011  # Default port name for discovery service
+        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        preferIpAddress: false
+    discovery:
+        # The `apiml.discovery` node contains discovery-service only configuration
+        userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
+        password: password  # Password that Eureka server will use to check authentication of its clients (other services)
+        allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
 
-##############################################################################################
+spring:
+    application:
+        name: ${apiml.service.id}
+    cloud:
+        client:
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
+    output:
+        ansi:
+            enabled: detect
+
 server:
-    address: ${mfaas.server.ipAddress}
-    port: ${mfaas.server.port}
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.service.port}
     ssl:
-        enabled: ${mfaas.security.sslEnabled}
-        protocol: ${mfaas.security.protocol}
-        ciphers: ${mfaas.security.ciphers}
-        trustStore: ${mfaas.security.trustStore}
-        trustStoreType: ${mfaas.security.trustStoreType}
-        trustStorePassword: ${mfaas.security.trustStorePassword}
+        enabled: false
 
 eureka:
-    #server:
-        #enableSelfPreservation: false
     instance:
-        hostname: ${mfaas.service.hostname}
-        ipAddress: ${mfaas.service.ipAddress}
-        preferIpAddress: ${mfaas.server.preferIpAddress}
-        metadata-map:
-            mfaas:
-                discovery:
-                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        port: ${server.port}
+        securePort: ${server.port}
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
     client:
-        registerWithEureka: ${mfaas.discovery.registerWithEureka}
-        fetchRegistry: ${mfaas.discovery.fetchRegistry}
-        region: ${mfaas.discovery.region}
+        registerWithEureka: true
+        fetchRegistry: true
+        region: default
         serviceUrl:
-            defaultZone: ${mfaas.discovery.locations}
+            defaultZone: ${apiml.discovery.allPeersUrls}
 
 management:
+    endpoints:
+        web:
+            base-path: /application
     health:
         defaults:
             enabled: false

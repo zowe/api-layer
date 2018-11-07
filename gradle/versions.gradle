@@ -17,7 +17,7 @@ ext {
     javaxServletApiVersion = '3.1.0'
     jacksonVersion = '2.9.2'
     restAssuredVersion = '3.0.7'
-    swaggerCoreVersion = "1.5.18"
+    swaggerCoreVersion = "1.5.21"
     commonsValidatorVersion = "1.6"
     powerMockVersion = "1.7.3"
     jacksonCoreVersion = "2.9.6"
@@ -77,6 +77,7 @@ ext {
         springFoxWeb                       : "io.springfox:springfox-spring-web:${springFoxVersion}",
         swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
         swagger_models                     : "io.swagger:swagger-models:${swaggerCoreVersion}",
+        swagger_annotations                : "io.swagger:swagger-annotations:${swaggerCoreVersion}",
         http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
         mockSpringRest                     : "com.github.skjolber:mockito-rest-spring:${mockSpringRestVersion}",
         reactorCore                        : "io.projectreactor:reactor-core:${reactorVersion}",

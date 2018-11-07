@@ -35,6 +35,7 @@ dependencies {
     compile(project(':integration-enabler-spring-v2'))
     compile(project(':common-service-core'))
     compile(project(':gateway-common'))
+    compile(project(':security-module'))
 
     compile libraries.spring_cloud_starter_zuul
     compile libraries.spring_boot_starter_actuator
@@ -44,10 +45,6 @@ dependencies {
     compile libraries.spring_boot_devtools
     compile libraries.tomcatCoyote
     compile libraries.tomcatEmbedCore
-    compile libraries.spring_boot_starter_security
-    compile libraries.spring_boot_starter_security
-    compile libraries.jjwt
-    compile libraries.spring_boot_starter_web_services
     compile libraries.spring_cloud_starter_eureka
     compile libraries.spring_cloud_starter_ribbon
     compile libraries.swagger_core

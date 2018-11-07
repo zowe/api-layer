@@ -9,47 +9,41 @@
  */
 package com.ca.mfaas.discovery.config;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 @Configuration
 @EnableWebSecurity
 @Order(1)
 public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
-
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    @Value("${apiml.service.id:#{null}}")
+    private String serviceId;
 
-    @Autowired
-    public EurekaSecurityConfiguration(MFaaSConfigPropertiesContainer propertiesContainer) {
-        this.propertiesContainer = propertiesContainer;
-    }
+    @Value("${apiml.discovery.userid:eureka}")
+    private String eurekaUserid;
+
+    @Value("${apiml.discovery.password:password}")
+    private String eurekaPassword;
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        // for inMemory Authentication  {noop} for plain text
-        auth.inMemoryAuthentication()
-            .withUser(propertiesContainer.getDiscovery().getEurekaUserName())
-            .password("{noop}" + propertiesContainer.getDiscovery().getEurekaUserPassword())
-            .roles("EUREKA");
+        auth.inMemoryAuthentication().withUser(eurekaUserid).password("{noop}" + eurekaPassword).roles("EUREKA");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-            .httpBasic()
-            .realmName(DISCOVERY_REALM)
-            .and()
-            .antMatcher("/**")
-            .authorizeRequests()
-            .anyRequest().authenticated();
         http.csrf().disable();
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.httpBasic().realmName(DISCOVERY_REALM).and().antMatcher("/**").authorizeRequests().anyRequest()
+                .authenticated();
     }
 }

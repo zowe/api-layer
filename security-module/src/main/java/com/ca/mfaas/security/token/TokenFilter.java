@@ -13,29 +13,31 @@ import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-public class CookieFilter extends AbstractSecureContentFilter {
+public class TokenFilter extends AbstractSecureContentFilter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    public CookieFilter(AuthenticationManager authenticationManager,
-                        AuthenticationFailureHandler failureHandler,
-                        SecurityConfigurationProperties securityConfigurationProperties) {
+    public TokenFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler,
+        SecurityConfigurationProperties securityConfigurationProperties) {
         super(authenticationManager, failureHandler);
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
+    /**
+     * Checks if token exists and extracts it
+     *
+     * @param request to check for header
+     * @return token if it is present or null
+     */
     @Override
     protected String extractContent(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
+        String token = request.getHeader(securityConfigurationProperties.getTokenProperties().getAuthorizationHeader());
+        if (token == null) {
             return null;
         }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
-                return cookie.getValue();
-            }
+        if (token.startsWith(securityConfigurationProperties.getTokenProperties().getBearerPrefix())) {
+            return token.replaceFirst(securityConfigurationProperties.getTokenProperties().getBearerPrefix(), "");
         }
         return null;
     }

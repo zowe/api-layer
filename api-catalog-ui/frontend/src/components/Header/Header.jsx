@@ -12,7 +12,7 @@ export default class Header extends Component {
 
     render() {
         const iconLogout = <IconPowerSettingsNew />;
-        const dashboard = '/#/dashboard';
+        const dashboard = '/ui/v1/apicatalog/#/dashboard';
         return (
             <div className="header">
                 <div className="product-name">

@@ -11,9 +11,9 @@ environment:
     ipAddress: 127.0.0.1
     port: 10019
     preferIpAddress: false
-    truststore: keystore/local/localhost_truststore.jks
-    truststorePassword: trustword
-    truststoreType: JKS
+    truststore: keystore/localhost/localhost.truststore.p12
+    truststorePassword: password
+    truststoreType: PKCS12
 
 eureka:
     client:
