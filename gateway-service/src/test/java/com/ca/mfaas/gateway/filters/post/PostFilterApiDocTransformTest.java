@@ -24,6 +24,7 @@ import javax.validation.UnexpectedTypeException;
 
 import java.io.IOException;
 
+import static com.ca.mfaas.product.constants.ApimConstants.API_DOC_NORMALISED;
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -35,6 +36,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 public class PostFilterApiDocTransformTest {
 
+    private final String apiDocEndpoint = "/api-doc";
     private TransformApiDocEndpointsFilter filter;
     private RequestContext ctx;
 
@@ -45,7 +47,7 @@ public class PostFilterApiDocTransformTest {
         this.filter = new TransformApiDocEndpointsFilter();
         ctx = RequestContext.getCurrentContext();
         ctx.clear();
-        ctx.set(REQUEST_URI_KEY, "/api-doc");
+        ctx.set(REQUEST_URI_KEY, apiDocEndpoint);
         ctx.set(PROXY_KEY, "/api/v1/discovered-service");
         String serviceId = "discovered-service";
         ctx.set(SERVICE_ID_KEY, serviceId);
@@ -66,7 +68,7 @@ public class PostFilterApiDocTransformTest {
         given().
             param("group", "v1").
             when().
-            get("/api-doc").
+            get(apiDocEndpoint).
             then().
             statusCode(200).
             body("swagger", equalTo("2.0"));
@@ -81,7 +83,7 @@ public class PostFilterApiDocTransformTest {
         assertTrue(this.filter.shouldFilter());
         this.filter.run();
         String body = ctx.getResponseBody();
-        assertEquals("/api-doc", ctx.get(REQUEST_URI_KEY));
+        assertEquals(apiDocEndpoint, ctx.get(REQUEST_URI_KEY));
         Swagger swagger = Json.mapper().readValue(body, Swagger.class);
         swagger.getPaths().forEach((endPoint, path) -> assertTrue(endPoint + " does not start with " + BASE_PATH, endPoint.startsWith(BASE_PATH)));
     }
@@ -99,8 +101,8 @@ public class PostFilterApiDocTransformTest {
     @Test(expected = UnexpectedTypeException.class)
     public void whenRequestIsAnApiDocRequestButNotSwagger_thenDoNotFilter() {
         final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(REQUEST_URI_KEY, "/api-doc");
-        ctx.set(PROXY_KEY, "/api-doc");
+        ctx.set(REQUEST_URI_KEY, apiDocEndpoint);
+        ctx.set(PROXY_KEY, apiDocEndpoint);
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(200);
         ctx.setResponse(response);
@@ -114,14 +116,25 @@ public class PostFilterApiDocTransformTest {
     @Test
     public void whenRequestIsAnApiDocRequestButAnErrorResponse_thenDoNotFilter() {
         final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(REQUEST_URI_KEY, "/api-doc");
-        ctx.set(PROXY_KEY, "/api-doc");
+        ctx.set(REQUEST_URI_KEY, apiDocEndpoint);
+        ctx.set(PROXY_KEY, apiDocEndpoint);
         String body = "I have a bad feeling about this....";
         ctx.setResponseBody(body);
         ctx.setResponseDataStream(IOUtils.toInputStream(body));
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(500);
         ctx.setResponse(response);
+        assertFalse(this.filter.shouldFilter());
+    }
+
+    @Test
+    public void whenRequestIsAnApiDocRequestButAlreadyNormalised_thenDoNotFilter() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.set(REQUEST_URI_KEY, "/hello");
+        ctx.set(PROXY_KEY, "/hello");
+        ctx.set(API_DOC_NORMALISED, "true");
+        String body = "do not normalise me";
+        ctx.setResponseBody(body);
         assertFalse(this.filter.shouldFilter());
     }
 }

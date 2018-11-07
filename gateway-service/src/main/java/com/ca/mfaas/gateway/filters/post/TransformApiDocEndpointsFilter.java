@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ca.mfaas.product.constants.ApimConstants.API_DOC_NORMALISED;
 import static com.netflix.zuul.context.RequestContext.getCurrentContext;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -113,7 +114,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
             List<Pair<String, String>> zuulResponseHeaders = context.getZuulResponseHeaders();
             if (zuulResponseHeaders != null) {
                 for (Pair<String, String> it : zuulResponseHeaders) {
-                    if (it.first().contains("Api-Doc-Normalised")) {
+                    if (it.first().contains(API_DOC_NORMALISED)) {
                         if (Boolean.valueOf(it.second())) {
                             log.debug("Api Doc is already normalised for: " + requestPath + ", transformation not required.");
                             return false;
