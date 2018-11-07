@@ -32,6 +32,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,15 +114,22 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
             && (context.getResponseDataStream() != null || context.getResponseBody() != null)) {
             List<Pair<String, String>> zuulResponseHeaders = context.getZuulResponseHeaders();
             if (zuulResponseHeaders != null) {
+                boolean shouldNormalise = true;
+                List<Pair<String, String>> filteredResponseHeaders = new ArrayList<>();
                 for (Pair<String, String> it : zuulResponseHeaders) {
                     if (it.first().contains(API_DOC_NORMALISED)) {
                         if (Boolean.valueOf(it.second())) {
                             log.debug("Api Doc is already normalised for: " + requestPath + ", transformation not required.");
-                            return false;
+                            shouldNormalise = false;
                         }
                         break;
+                    } else {
+                        filteredResponseHeaders.add(it);
                     }
                 }
+                // remove "Api-Doc-Normalised" from response
+                context.put("zuulResponseHeaders", filteredResponseHeaders);
+                return shouldNormalise;
             }
             log.debug("Normalising endpoints for: " + requestPath);
             return true;

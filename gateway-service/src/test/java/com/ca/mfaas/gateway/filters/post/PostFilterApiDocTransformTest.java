@@ -130,11 +130,25 @@ public class PostFilterApiDocTransformTest {
     @Test
     public void whenRequestIsAnApiDocRequestButAlreadyNormalised_thenDoNotFilter() {
         final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.set(REQUEST_URI_KEY, "/hello");
+        ctx.set(REQUEST_URI_KEY, "/api-doc");
         ctx.set(PROXY_KEY, "/hello");
-        ctx.set(API_DOC_NORMALISED, "true");
+        ctx.addZuulResponseHeader(API_DOC_NORMALISED, "true");
         String body = "do not normalise me";
         ctx.setResponseBody(body);
         assertFalse(this.filter.shouldFilter());
+    }
+
+    @Test
+    public void whenRequestIsAnApiDocRequestButAlreadyNormalised_thenDoNotFilterAndRemoveZuulHeader() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.set(REQUEST_URI_KEY, "/api-doc");
+        ctx.set(PROXY_KEY, "/hello");
+        ctx.addZuulResponseHeader(API_DOC_NORMALISED, "true");
+        ctx.addZuulResponseHeader("Leave-Me-Alone", "true");
+        String body = "do not normalise me";
+        ctx.setResponseBody(body);
+        assertFalse(this.filter.shouldFilter());
+        assertFalse(ctx.getZuulResponseHeaders().contains(API_DOC_NORMALISED));
+
     }
 }
