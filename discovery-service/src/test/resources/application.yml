@@ -1,97 +1,48 @@
-environment:
-    discoveryEnabled: false
-    serviceId: testservice
-    esmEnabled: false
-    serverIpAddress: 127.0.0.1
-    port: 12345
-    securePort: 12345
-    hostname: localhost
-    dsIpAddress: 127.0.0.1
-    ipAddress: 127.0.0.1
-    preferIpAddress: false
-    discoveryLocations: http://localhost:12345/eureka/apps
-    gatewayHostname: localhost
-    keyAlias: test
-    truststore: store/truststore
-    truststoreType: PKCS12
-    truststorePassword: pass
-    eurekaUserId: eureka
-    eurekaPassword: password
+apiml:
+    discovery:
+        userid: eureka
+        password: password
+        allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+    service:
+        id: discovery
+        hostname: localhost
+        port: 20011
+        ipAddress: 127.0.0.1
+        preferIpAddress: false
 
 spring:
     application:
-        name: discovery
+        name: ${apiml.service.id}
+    cloud:
+        client:
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
     output:
         ansi:
-            enabled: always
-
-logging:
-    level:
-        ROOT: INFO
-        com.ca.mfaas: DEBUG
-
-##############################################################################################
-# MFAAS configuration section
-##############################################################################################
-mfaas:
-    discovery:
-        serviceId: ${spring.application.name}
-        eurekaUserName: ${environment.eurekaUserId}
-        eurekaUserPassword: ${environment.eurekaPassword}
-        fetchRegistry: true
-        registerWithEureka: true
-        region: default
-        locations: ${environment.discoveryLocations}
-        info:
-            serviceTitle: Discovery Service
-            description: A Discovery Service to discover, announce and provide about microservices registered in the MFaaS eco system
-            enableApiDoc: false
-    service:
-        hostname: ${environment.hostname}
-        ipAddress: ${environment.ipAddress}
-    server:
-        preferIpAddress: ${environment.preferIpAddress}
-        ipAddress: ${environment.dsIpAddress}
-        port: ${environment.port}
-        scheme: http
-    security:
-        esmEnabled: false
-        sslEnabled: false
-        protocol: TLSv1.2
-        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
-        trustStore: ${environment.truststore}
-        trustStoreType: ${environment.truststoreType}
-        trustStorePassword: ${environment.truststorePassword}
-
-##############################################################################################
+            enabled: detect
 
 server:
-    address: ${mfaas.server.ipAddress}
-    port: ${mfaas.server.port}
-    ssl:
-        enabled: ${mfaas.security.sslEnabled}
-        protocol: ${mfaas.security.protocol}
-        ciphers: ${mfaas.security.ciphers}
-        trustStore: ${mfaas.security.trustStore}
-        trustStoreType: ${mfaas.security.trustStoreType}
-        trustStorePassword: ${mfaas.security.trustStorePassword}
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.service.port}
 
 eureka:
-    #server:
-        #enableSelfPreservation: false
     instance:
-        hostname: ${mfaas.service.hostname}
-        ipAddress: ${mfaas.service.ipAddress}
-        preferIpAddress: ${mfaas.server.preferIpAddress}
-        metadata-map:
-            mfaas:
-                discovery:
-                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
     client:
-        registerWithEureka: ${mfaas.discovery.registerWithEureka}
-        fetchRegistry: ${mfaas.discovery.fetchRegistry}
-        region: ${mfaas.discovery.region}
+        registerWithEureka: true
+        fetchRegistry: true
+        region: default
         serviceUrl:
-            defaultZone: ${mfaas.discovery.locations}
+            defaultZone: ${apiml.discovery.allPeersUrls}
 
-
+management:
+    endpoints:
+        web:
+            base-path: /application
+    health:
+        defaults:
+            enabled: false

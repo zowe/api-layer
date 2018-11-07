@@ -32,22 +32,21 @@ task packageApiMediationZowe(type: Zip) {
     }
 
     into('scripts/') {
-        from "$buildDir/convert/api-mediation-start-template.sh"
         from "$buildDir/convert/api-mediation-start-catalog-template.sh"
         from "$buildDir/convert/api-mediation-start-discovery-template.sh"
         from "$buildDir/convert/api-mediation-start-gateway-template.sh"
-
-        from "$buildDir/convert/gen-selfsigned-keystore-template.sh"
+        from "$buildDir/convert/setup-apiml-certificates-template.sh"
+        from "$buildDir/convert/apiml_cm.sh"
     }
 }
 
 packageApiMediationZowe.doFirst {
     List<File> scriptFiles =  new ArrayList<File>() {{
-        add(file('src/main/resources/scripts/api-mediation-start-template.sh'));
         add(file('src/main/resources/scripts/api-mediation-start-catalog-template.sh'));
         add(file('src/main/resources/scripts/api-mediation-start-discovery-template.sh'));
         add(file('src/main/resources/scripts/api-mediation-start-gateway-template.sh'));
-        add(file('src/main/resources/scripts/gen-selfsigned-keystore-template.sh'));
+        add(file('src/main/resources/scripts/setup-apiml-certificates-template.sh'));
+        add(file('../scripts/apiml_cm.sh'));
     }};
     for (File scriptFile : scriptFiles){
         def inputStream = new InputStreamReader(new FileInputStream(scriptFile), "ISO-8859-1");

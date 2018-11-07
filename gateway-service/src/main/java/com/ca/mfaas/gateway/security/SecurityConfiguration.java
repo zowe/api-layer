@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.security;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.security.handler.UnauthorizedHandler;
 import com.ca.mfaas.security.login.LoginAuthenticationProvider;
@@ -43,7 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final LoginAuthenticationProvider loginAuthenticationProvider;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public SecurityConfiguration(
         UnauthorizedHandler unAuthorizedHandler,
@@ -52,14 +52,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         LoginAuthenticationProvider loginAuthenticationProvider,
         TokenAuthenticationProvider tokenAuthenticationProvider,
         ObjectMapper securityObjectMapper,
-        MFaaSConfigPropertiesContainer propertiesContainer) {
+        SecurityConfigurationProperties securityConfigurationProperties) {
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.successfulLoginHandler = successfulLoginHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.loginAuthenticationProvider = loginAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;
         this.securityObjectMapper = securityObjectMapper;
-        this.propertiesContainer = propertiesContainer;
+        this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     @Override
@@ -93,11 +93,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // login endpoint
             .and()
-            .addFilterBefore(loginFilter(propertiesContainer.getSecurity().getLoginPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
 
             // allow login to pass through filters
-            .antMatchers(HttpMethod.POST, propertiesContainer.getSecurity().getLoginPath()).permitAll()
+            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
 
             // filters
             .and()
@@ -107,7 +107,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private TokenFilter headerTokenFilter() throws Exception {
-        return new TokenFilter(authenticationManager(), authenticationFailureHandler, propertiesContainer);
+        return new TokenFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
@@ -116,7 +116,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private CookieFilter cookieTokenFilter() throws Exception {
-        return new CookieFilter(authenticationManager(), authenticationFailureHandler, propertiesContainer);
+        return new CookieFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }
 
     @Bean

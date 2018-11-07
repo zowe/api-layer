@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.security.token;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.junit.Before;
@@ -21,52 +21,52 @@ import org.springframework.security.authentication.BadCredentialsException;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
+
 public class TokenServiceTest {
-    private MFaaSConfigPropertiesContainer propertiesContainer;
+    private SecurityConfigurationProperties securityConfigurationProperties;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() {
-        propertiesContainer = new MFaaSConfigPropertiesContainer();
-        propertiesContainer.setSecurity(new MFaaSConfigPropertiesContainer.SecurityProperties());
-        propertiesContainer.getSecurity().getTokenProperties().setSecret("secret");
-        propertiesContainer.getSecurity().getTokenProperties().setIssuer("test");
-        propertiesContainer.getSecurity().getTokenProperties().setExpirationInSeconds(60 * 60);
+        securityConfigurationProperties = new SecurityConfigurationProperties();
+        securityConfigurationProperties.getTokenProperties().setSecret("secret");
+        securityConfigurationProperties.getTokenProperties().setIssuer("test");
+        securityConfigurationProperties.getTokenProperties().setExpirationInSeconds(60 * 60);
     }
 
     @Test
     public void createTokenForGeneralUser() {
         String username = "user";
 
-        TokenService tokenService = new TokenService(propertiesContainer);
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(username);
         Claims claims = Jwts.parser()
-            .setSigningKey(propertiesContainer.getSecurity().getTokenProperties().getSecret())
+            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
             .parseClaimsJws(token)
             .getBody();
 
         assertThat(claims.getSubject(), is(username));
-        assertThat(claims.getIssuer(), is(propertiesContainer.getSecurity().getTokenProperties().getIssuer()));
+        assertThat(claims.getIssuer(), is(securityConfigurationProperties.getTokenProperties().getIssuer()));
         long ttl = (claims.getExpiration().getTime() - claims.getIssuedAt().getTime()) / 1000L;
-        assertThat(ttl, is(propertiesContainer.getSecurity().getTokenProperties().getExpirationInSeconds()));
+        assertThat(ttl, is(securityConfigurationProperties.getTokenProperties().getExpirationInSeconds()));
     }
 
     @Test
     public void createTokenForExpirationUser() {
         String expirationUsername = "user";
         long expiration = 10;
-        propertiesContainer.getSecurity().getTokenProperties().setExpirationInSeconds(10);
-        TokenService tokenService = new TokenService(propertiesContainer);
+        securityConfigurationProperties.getTokenProperties().setExpirationInSeconds(10);
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(expirationUsername);
         Claims claims = Jwts.parser()
-            .setSigningKey(propertiesContainer.getSecurity().getTokenProperties().getSecret())
+            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
             .parseClaimsJws(token)
             .getBody();
 
         assertThat(claims.getSubject(), is(expirationUsername));
-        assertThat(claims.getIssuer(), is(propertiesContainer.getSecurity().getTokenProperties().getIssuer()));
+        assertThat(claims.getIssuer(), is(securityConfigurationProperties.getTokenProperties().getIssuer()));
         long ttl = (claims.getExpiration().getTime() - claims.getIssuedAt().getTime()) / 1000L;
         assertThat(ttl, is(expiration));
     }
@@ -75,24 +75,24 @@ public class TokenServiceTest {
     public void createTokenForNonExpirationUser() {
         String username = "user";
 
-        TokenService tokenService = new TokenService(propertiesContainer);
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(username);
         Claims claims = Jwts.parser()
-            .setSigningKey(propertiesContainer.getSecurity().getTokenProperties().getSecret())
+            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
             .parseClaimsJws(token)
             .getBody();
 
         assertThat(claims.getSubject(), is(username));
-        assertThat(claims.getIssuer(), is(propertiesContainer.getSecurity().getTokenProperties().getIssuer()));
+        assertThat(claims.getIssuer(), is(securityConfigurationProperties.getTokenProperties().getIssuer()));
         long ttl = (claims.getExpiration().getTime() - claims.getIssuedAt().getTime()) / 1000L;
-        assertThat(ttl, is(propertiesContainer.getSecurity().getTokenProperties().getExpirationInSeconds()));
+        assertThat(ttl, is(securityConfigurationProperties.getTokenProperties().getExpirationInSeconds()));
     }
 
     @Test
     public void validateValidToken() {
         String username = "user";
 
-        TokenService tokenService = new TokenService(propertiesContainer);
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(username);
         TokenAuthentication authentication = new TokenAuthentication(token);
         TokenAuthentication validatedAuthentication = tokenService.validateToken(authentication);
@@ -104,12 +104,12 @@ public class TokenServiceTest {
     @Test
     public void validateExpiredToken() {
         String expirationUser = "user";
-        propertiesContainer.getSecurity().getTokenProperties().setExpirationInSeconds(0);
+        securityConfigurationProperties.getTokenProperties().setExpirationInSeconds(0);
 
         exception.expect(TokenExpireException.class);
         exception.expectMessage("is expired");
 
-        TokenService tokenService = new TokenService(propertiesContainer);
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(expirationUser);
         TokenAuthentication authentication = new TokenAuthentication(token);
         tokenService.validateToken(authentication);
@@ -123,7 +123,7 @@ public class TokenServiceTest {
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Token is not valid");
 
-        TokenService tokenService = new TokenService(propertiesContainer);
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(username);
         TokenAuthentication authentication = new TokenAuthentication(token + signaturePadding);
         tokenService.validateToken(authentication);

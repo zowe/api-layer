@@ -5,9 +5,9 @@ The basic functionality is provided at this moment. It includes
 Discovery service can register existing REST APIs without requiring them to be EurekaClients.
 
 The definitions of such services are provided by YAML files in a directory that can be set using
-the `discovery.staticApiDefinitionsDirectory` property. For example:
+the `apiml.discovery.staticApiDefinitionsDirectory` property. For example:
 
-    -Ddiscovery.staticApiDefinitionsDirectory=config/local/api-defs
+    -Dapiml.discovery.staticApiDefinitionsDirectory=config/local/api-defs
 
 The `config/local/api-defs` is the directory when the services are started on localhost.    
 

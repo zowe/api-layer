@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.security.token;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
@@ -17,13 +17,13 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 public class CookieFilter extends AbstractSecureContentFilter {
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public CookieFilter(AuthenticationManager authenticationManager,
                         AuthenticationFailureHandler failureHandler,
-                        MFaaSConfigPropertiesContainer propertiesContainer) {
+                        SecurityConfigurationProperties securityConfigurationProperties) {
         super(authenticationManager, failureHandler);
-        this.propertiesContainer = propertiesContainer;
+        this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class CookieFilter extends AbstractSecureContentFilter {
             return null;
         }
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(propertiesContainer.getSecurity().getCookieProperties().getCookieName())) {
+            if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
                 return cookie.getValue();
             }
         }
