@@ -26,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -139,7 +140,7 @@ public class CacheRefreshServiceTest {
     }
 
     @Test
-    public void testModifiedServiceWithUpdatedApiDoc() {
+    public void testModifiedServiceWithUpdatedApiDoc() throws IOException {
         ContainerServiceState cachedState = createContainersServicesAndInstances();
         mockServiceRetrievalFromCache(cachedState.getApplications());
 

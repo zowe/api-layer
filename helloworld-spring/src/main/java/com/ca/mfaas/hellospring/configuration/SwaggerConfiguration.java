@@ -17,6 +17,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.ObjectVendorExtension;
+import springfox.documentation.service.StringVendorExtension;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -32,7 +34,11 @@ public class SwaggerConfiguration extends WebMvcConfigurerAdapter {
 
     @Bean
     public Docket api() {
+        ObjectVendorExtension ext = new ObjectVendorExtension("apim");
+        ext.addProperty(new StringVendorExtension("normalised", "false"));
+
         return new Docket(DocumentationType.SWAGGER_2)
+            .extensions(Collections.singletonList(ext))
             .select()
             .apis(RequestHandlerSelectors.any())
             .paths(PathSelectors.any())

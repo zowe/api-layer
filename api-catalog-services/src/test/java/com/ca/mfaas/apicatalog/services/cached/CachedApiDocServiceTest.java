@@ -16,12 +16,14 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
+
 import static org.mockito.Mockito.when;
 
 public class CachedApiDocServiceTest {
 
     @Test
-    public void testRetrievalOfApiDocWhenApiIsAvailable() {
+    public void testRetrievalOfApiDocWhenApiIsAvailable() throws IOException {
         String expectedApiDoc = "This is some api doc";
         ResponseEntity<String> response = new ResponseEntity<>(expectedApiDoc, HttpStatus.OK);
         APIDocRetrievalService apiDocRetrievalService = Mockito.mock(APIDocRetrievalService.class);
@@ -34,7 +36,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void testUpdateOfApiDocForService() {
+    public void testUpdateOfApiDocForService() throws IOException {
         String expectedApiDoc = "This is some api doc";
         ResponseEntity<String> response = new ResponseEntity<>(expectedApiDoc, HttpStatus.OK);
         APIDocRetrievalService apiDocRetrievalService = Mockito.mock(APIDocRetrievalService.class);

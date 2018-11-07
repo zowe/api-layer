@@ -19,6 +19,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.ObjectVendorExtension;
+import springfox.documentation.service.StringVendorExtension;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -34,9 +36,13 @@ import static springfox.documentation.builders.PathSelectors.regex;
 @EnableSwagger2
 public class EnablerV1SpringFoxConfig {
 
+    private ObjectVendorExtension ext;
+
     @Autowired
     public EnablerV1SpringFoxConfig(ApiPropertiesContainerV1 apiPropertiesContainerV1,
                                     DefaultListableBeanFactory beanFactory) {
+        ext = new ObjectVendorExtension("apim");
+        ext.addProperty(new StringVendorExtension("normalised", "false"));
         apiPropertiesContainerV1.getApiVersionProperties().forEach((apiVersion, apiInfo) -> {
             Docket apiDocketBean;
             try {
@@ -71,6 +77,7 @@ public class EnablerV1SpringFoxConfig {
         }
         if (apiInfo.getBasePackage() == null && apiInfo.getApiPattern() == null) {
             return new Docket(DocumentationType.SWAGGER_2)
+                .extensions(Collections.singletonList(ext))
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .build()
@@ -86,6 +93,7 @@ public class EnablerV1SpringFoxConfig {
                 .groupName(groupName);
         } else if (apiInfo.getBasePackage() != null && !apiInfo.getBasePackage().isEmpty()) {
             return new Docket(DocumentationType.SWAGGER_2)
+                .extensions(Collections.singletonList(ext))
                 .select()
                 .apis(RequestHandlerSelectors.basePackage(apiInfo.getBasePackage()))
                 .build()
@@ -101,6 +109,7 @@ public class EnablerV1SpringFoxConfig {
                 .groupName(groupName);
         } else if (apiInfo.getApiPattern() != null && !apiInfo.getApiPattern().isEmpty()) {
             return new Docket(DocumentationType.SWAGGER_2)
+                .extensions(Collections.singletonList(ext))
                 .select()
                 .paths(regex(apiInfo.getApiPattern()))
                 .build()

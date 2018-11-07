@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
@@ -63,7 +66,7 @@ public class CatalogApiDocController {
         @ApiParam(name = "service-id", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "service-id") String serviceId,
         @ApiParam(name = "api-version", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v1")
-        @PathVariable(value = "api-version") String apiVersion) {
+        @PathVariable(value = "api-version") String apiVersion) throws IOException {
         return Mono.just(this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiVersion));
     }
 }

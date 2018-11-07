@@ -25,6 +25,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.IOException;
+
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -54,7 +56,7 @@ public class CatalogApiDocControllerApiDocNotFoundTest {
         private APIServiceStatusService apiServiceStatusService;
 
         @Bean
-        public CatalogApiDocController catalogApiDocController() {
+        public CatalogApiDocController catalogApiDocController() throws IOException {
             when(apiServiceStatusService.getServiceCachedApiDocInfo("service2", "v1"))
                 .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
 

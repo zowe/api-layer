@@ -197,7 +197,8 @@ public class CacheRefreshService {
         } else {
             // if this is the API Catalog itself, do not call it from the instance, retrieve it locally
             String serviceId = instance.getAppName().toLowerCase();
-            if (serviceId.equalsIgnoreCase(ProductFamilyType.API_CATALOG.getServiceId())) {
+            // TODO - always retrieve the API Catalog swagger through the Gateway not local to avoid the duplicate prefix issue
+            if (serviceId.equalsIgnoreCase(ProductFamilyType.API_CATALOG.getServiceId()) && false) {
                 String apiDoc = localApiDocService.getApiDoc(null);
                 updateApiDocCache(serviceId, API_VERSION, apiDoc);
             } else {

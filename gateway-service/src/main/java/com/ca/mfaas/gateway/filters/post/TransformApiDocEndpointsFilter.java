@@ -15,6 +15,7 @@ import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import com.ca.mfaas.product.family.ProductFamilyType;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import io.swagger.models.Path;
@@ -32,8 +33,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static com.ca.mfaas.product.constants.ApimConstants.API_DOC_NORMALISED;
 import static com.netflix.zuul.context.RequestContext.getCurrentContext;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -108,6 +111,18 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
         // The catalog request is transformed here rather than when first retrieved due to the dependencies on routes
         if ((requestPath.contains("/api-doc") || requestPath.contains(ProductFamilyType.API_CATALOG.getServiceId() + "/apidoc/")) && !requestPath.contains("/api-doc/enabled")
             && (context.getResponseDataStream() != null || context.getResponseBody() != null)) {
+            List<Pair<String, String>> zuulResponseHeaders = context.getZuulResponseHeaders();
+            if (zuulResponseHeaders != null) {
+                for (Pair<String, String> it : zuulResponseHeaders) {
+                    if (it.first().contains(API_DOC_NORMALISED)) {
+                        if (Boolean.valueOf(it.second())) {
+                            log.debug("Api Doc is already normalised for: " + requestPath);
+                            return true;
+                        }
+                        break;
+                    }
+                }
+            }
             log.debug("Normalising endpoints for: " + requestPath);
             return true;
         }
@@ -193,21 +208,21 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
 
             // Check each path
             String finalServiceId = serviceId;
-            swagger.getPaths().forEach((originalEndpoint, path) -> {
+            swagger.getPaths().forEach((swaggerEndpoint, path) -> {
 
                 // Logging
                 log.trace("Swagger Service Id: " + finalServiceId);
-                log.trace("Original Endpoint: " + originalEndpoint);
+                log.trace("Original Endpoint: " + swaggerEndpoint);
                 log.trace("Base Path: " + swagger.getBasePath());
 
                 // Retrieve route which matches endpoint
-                String updatedEndPoint = getGatewayURLForEndPoint(swagger.getBasePath() + originalEndpoint, finalServiceId);
+                String updatedEndPoint = getGatewayURLForEndPoint(swagger.getBasePath() + swaggerEndpoint, finalServiceId);
                 log.trace("Final Endpoint: " + updatedEndPoint);
                 // If endpoint not converted, then use original
                 if (updatedEndPoint != null) {
                     updatedPaths.put(updatedEndPoint, path);
                 } else {
-                    log.debug("Could not transform endpoint: " + originalEndpoint + ", original used");
+                    log.debug("Could not transform endpoint: " + swaggerEndpoint + ", original used");
                 }
             });
 

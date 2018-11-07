@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class CachedApiDocService {
      * @param apiVersion the version of the API
      * @return api doc info for the requested service id
      */
-    public String getApiDocForService(final String serviceId, final String apiVersion) {
+    public String getApiDocForService(final String serviceId, final String apiVersion) throws IOException {
         String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
         if (apiDoc == null) {
             ResponseEntity<String> response = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);

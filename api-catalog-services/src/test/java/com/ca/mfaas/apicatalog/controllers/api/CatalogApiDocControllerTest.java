@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+
 import static org.mockito.Mockito.when;
 
 public class CatalogApiDocControllerTest {
@@ -29,7 +31,7 @@ public class CatalogApiDocControllerTest {
     }
 
     @Test
-    public void testGetApiDocInfo() {
+    public void testGetApiDocInfo() throws IOException {
         APIServiceStatusService apiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
         CatalogApiDocController catalogApiDocController = new CatalogApiDocController(apiServiceStatusService);
         ResponseEntity<String> response = new ResponseEntity<>("Some API Doc", HttpStatus.OK);

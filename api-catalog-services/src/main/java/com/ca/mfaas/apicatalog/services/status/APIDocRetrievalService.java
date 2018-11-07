@@ -72,18 +72,25 @@ public class APIDocRetrievalService {
 
         String apiDocUrl = null;
         try {
-            InstanceInfo serviceInstance = cachedServicesService.getInstanceInfoForService(serviceId);
+            // set the Gateway instance
             if (gatewayInstance == null) {
                 gatewayInstance = cachedServicesService.getInstanceInfoForService(ProductFamilyType.GATEWAY.getServiceId());
-                if (gatewayInstance.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-                    gatewayUrl = new URIBuilder().setScheme(HTTPS).setHost(gatewayInstance.getSecureVipAddress()).setPort(gatewayInstance.getSecurePort()).build();
+                if (gatewayInstance != null) {
+                    if (gatewayInstance.isPortEnabled(InstanceInfo.PortType.SECURE)) {
+                        gatewayUrl = new URIBuilder().setScheme(HTTPS).setHost(gatewayInstance.getSecureVipAddress()).setPort(gatewayInstance.getSecurePort()).build();
+                    } else {
+                        gatewayUrl = new URIBuilder().setScheme(HTTP).setHost(gatewayInstance.getVIPAddress()).setPort(gatewayInstance.getPort()).build();
+                    }
                 } else {
-                    gatewayUrl = new URIBuilder().setScheme(HTTP).setHost(gatewayInstance.getVIPAddress()).setPort(gatewayInstance.getPort()).build();
+                    throw new IllegalStateException("Cannot retrieve Gateway instance");
                 }
             }
 
+            // Get the Instance of the serviceId
+            InstanceInfo serviceInstance = cachedServicesService.getInstanceInfoForService(serviceId);
             if (serviceInstance != null) {
                 List<ApiInfo> apiInfo = metadataParser.parseApiInfo(serviceInstance.getMetadata());
+                // check for static swagger
                 if (apiInfo != null) {
                     ApiInfo api = findApi(apiInfo, apiVersion);
                     if (api.getSwaggerUrl() == null) {
@@ -95,6 +102,7 @@ public class APIDocRetrievalService {
                 }
             }
 
+            // construct the API Doc url (gateway relative)
             if (apiDocUrl == null) {
                 String version = apiVersion;
                 if (version == null) {
@@ -204,7 +212,7 @@ public class APIDocRetrievalService {
             key = key.replace(".gateway-url", ".service-url");
             String serviceUrl = instance.getMetadata().get(key);
             if (serviceUrl == null) {
-                throw new ApiDocNotFoundException("Could not find Service URL in Instance metdata for: " + instance.getInstanceId()
+                throw new ApiDocNotFoundException("Could not find Service URL in Instance metadata for: " + instance.getInstanceId()
                 + " -- " + key);
             }
             return serviceUrl;
