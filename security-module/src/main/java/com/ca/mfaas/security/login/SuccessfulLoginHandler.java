@@ -9,10 +9,9 @@
  */
 package com.ca.mfaas.security.login;
 
-import com.ca.mfaas.security.token.CookieConfiguration;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -28,12 +27,16 @@ import java.io.IOException;
 @Component
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper mapper;
-    private final CookieConfiguration cookieConfiguration;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private static final String JSON = "JSON";
+    private static final String COOKIE = "COOKIE";
+    private static final String COOKIE_RESPONSE = "";
+    private static final String AUTHENTICATION_RESPONSE_TYPE_HEADER_NAME = "Auth-Response-Type";
 
-    public SuccessfulLoginHandler(@Qualifier("securityObjectMapper") ObjectMapper mapper,
-                                  CookieConfiguration cookieConfiguration) {
-        this.mapper = mapper;
-        this.cookieConfiguration = cookieConfiguration;
+    public SuccessfulLoginHandler(ObjectMapper securityObjectMapper,
+    SecurityConfigurationProperties securityConfigurationProperties) {
+        this.mapper = securityObjectMapper;
+        this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     @Override
@@ -45,14 +48,47 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         response.setStatus(HttpStatus.OK.value());
 
-        Cookie tokenCookie = new Cookie(cookieConfiguration.getName(), token);
-        tokenCookie.setComment(cookieConfiguration.getComment());
-        tokenCookie.setPath(cookieConfiguration.getPath());
-        tokenCookie.setHttpOnly(true);
-        tokenCookie.setMaxAge(cookieConfiguration.getMaxAge());
-        tokenCookie.setSecure(cookieConfiguration.isSecure());
-        response.addCookie(tokenCookie);
+        final String responseType = request.getHeader(AUTHENTICATION_RESPONSE_TYPE_HEADER_NAME);
+        switch (responseType == null ? COOKIE : responseType.toUpperCase()) {
+            case JSON:
+                setJson(token, response);
+                break;
+            case COOKIE:
+                setCookie(token, response);
+                break;
+            default:
+                setCookie(token, response);
+        }
+    }
 
-        mapper.writeValue(response.getWriter(), "");
+    /**
+     * Add the token to the response
+     *
+     * @param token    the authentication token
+     * @param response send back this response
+     */
+    private void setJson(String token, HttpServletResponse response) throws IOException {
+        mapper.writeValue(response.getWriter(), new LoginResponse(token));
+        response.getWriter().flush();
+        if (!response.isCommitted()) {
+            throw new IOException("Setting Authentication response is not commited.");
+        }
+    }
+
+    /**
+     * Add the cookie to the response
+     *
+     * @param token    the authentication token
+     * @param response send back this response
+     */
+    private void setCookie(String token, HttpServletResponse response) throws IOException {
+        Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
+        tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());
+        tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
+        tokenCookie.setHttpOnly(true);
+        tokenCookie.setMaxAge(securityConfigurationProperties.getCookieProperties().getCookieMaxAge());
+        tokenCookie.setSecure(securityConfigurationProperties.getCookieProperties().isCookieSecure());
+        response.addCookie(tokenCookie);
+        mapper.writeValue(response.getWriter(), COOKIE_RESPONSE);
     }
 }

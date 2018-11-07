@@ -86,7 +86,6 @@ public class MFaaSPropertiesContainerTest {
         assertNotNull(configPropertiesContainer.getGateway().getTimeoutInMillis());
         assertNotNull(configPropertiesContainer.getGateway().getDebugHeaders());
         assertNotNull(configPropertiesContainer.getGateway().getGatewayHostname());
-        assertNotNull(configPropertiesContainer.getGateway().getVerifySslCertificatesOfServices());
 
         assertNotNull(configPropertiesContainer.getServiceRegistry());
         assertNotNull(configPropertiesContainer.getServiceRegistry().getServiceFetchDelayInMillis());

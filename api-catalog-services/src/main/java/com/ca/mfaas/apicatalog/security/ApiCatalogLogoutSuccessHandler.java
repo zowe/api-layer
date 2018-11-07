@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.mfaas.security.token.CookieConfiguration;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,10 +21,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
-    private final CookieConfiguration cookieConfiguration;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    public ApiCatalogLogoutSuccessHandler(CookieConfiguration cookieConfiguration) {
-        this.cookieConfiguration = cookieConfiguration;
+    public ApiCatalogLogoutSuccessHandler(SecurityConfigurationProperties securityConfigurationProperties) {
+        this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     @Override
@@ -37,9 +37,9 @@ public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandle
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
 
         // Set the cookie to null and expired
-        Cookie tokenCookie = new Cookie(cookieConfiguration.getName(), null);
-        tokenCookie.setPath(cookieConfiguration.getPath());
-        tokenCookie.setComment(cookieConfiguration.getComment());
+        Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), null);
+        tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
+        tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());
         tokenCookie.setHttpOnly(true);
         tokenCookie.setMaxAge(0);
         httpServletResponse.addCookie(tokenCookie);

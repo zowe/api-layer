@@ -11,19 +11,13 @@ package com.ca.mfaas.apicatalog.security;
 
 import com.ca.mfaas.security.token.CookieConfiguration;
 import com.ca.mfaas.security.token.TokenServiceConfiguration;
-import com.ca.mfaas.security.user.FileUserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 public class ComponentsConfiguration {
-    @Bean(name = "userDetailsService")
-    public UserDetailsService userService() {
-        return new FileUserService("/users.yml");
-    }
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {

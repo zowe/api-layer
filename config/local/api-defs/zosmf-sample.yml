@@ -5,7 +5,7 @@
 # of the API Gateway you need to see following setting in the
 # config/local/gateway-service.yml:
 #
-#   mfaas:
+#   apiml:
 #       gateway:
 #           verifySslCertificatesOfServices: false
 #
