@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.client.controller.controllers.api;
 
-import com.ca.mfaas.enable.services.MfaasServiceLocator;
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

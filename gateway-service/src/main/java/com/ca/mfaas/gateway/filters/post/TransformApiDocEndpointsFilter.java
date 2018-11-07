@@ -224,6 +224,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
                 log.trace("Base Path: " + swagger.getBasePath());
 
                 // Retrieve route which matches endpoint
+
                 String updatedEndPoint = getGatewayURLForEndPoint(swagger.getBasePath() + originalEndpoint, finalServiceId);
                 log.trace("Final Endpoint: " + updatedEndPoint);
                 // If endpoint not converted, then use original
@@ -279,10 +280,6 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
             if (route != null) {
                 String separator = "/";
                 basePath = separator + route.getGatewayUrl();
-                // does the service have a servlet context or is the base = "/"
-                if (endPoint.startsWith("//")) {
-                    updatedEndPoint = separator + serviceId + endPoint.replace("//", "/");
-                }
                 updatedEndPoint = separator + serviceId + endPoint.replace(route.getServiceUrl(), "");
 
                 log.trace("Updated Endpoint: " + updatedEndPoint);
