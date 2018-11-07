@@ -77,9 +77,9 @@ public class APIDocRetrievalService {
                 gatewayInstance = cachedServicesService.getInstanceInfoForService(ProductFamilyType.GATEWAY.getServiceId());
                 if (gatewayInstance != null) {
                     if (gatewayInstance.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-                        gatewayUrl = new URIBuilder().setScheme(HTTPS).setHost(gatewayInstance.getSecureVipAddress()).setPort(gatewayInstance.getSecurePort()).build();
+                        gatewayUrl = new URIBuilder().setScheme(HTTPS).setHost(gatewayInstance.getHostName()).setPort(gatewayInstance.getSecurePort()).build();
                     } else {
-                        gatewayUrl = new URIBuilder().setScheme(HTTP).setHost(gatewayInstance.getVIPAddress()).setPort(gatewayInstance.getPort()).build();
+                        gatewayUrl = new URIBuilder().setScheme(HTTP).setHost(gatewayInstance.getHostName()).setPort(gatewayInstance.getPort()).build();
                     }
                 } else {
                     throw new IllegalStateException("Cannot retrieve Gateway instance");
