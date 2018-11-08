@@ -8,7 +8,7 @@ discoveryServiceConfiguration:
     scheme: http
     user: eureka
     password: password
-    host: locahost
+    host: localhost
     port: 10011
     instances: 1
 apiCatalogServiceConfiguration:
