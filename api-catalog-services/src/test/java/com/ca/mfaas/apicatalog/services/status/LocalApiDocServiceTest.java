@@ -109,7 +109,7 @@ public class LocalApiDocServiceTest {
 
     private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status) {
         return new InstanceInfo(serviceId, null, null, "192.168.0.1", null, new InstanceInfo.PortWrapper(true, 9090),
-                new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, "localhost", "localhost", 0, null,
+                new InstanceInfo.PortWrapper(true, 9090), "https://localhost:9090/", null, null, null, "localhost", "localhost", 0, null,
                 "localhost", status, null, null, null, null, null, null, null, null, null);
     }
 }

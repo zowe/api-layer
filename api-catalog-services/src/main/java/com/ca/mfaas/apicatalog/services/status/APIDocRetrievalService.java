@@ -19,7 +19,6 @@ import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpEntity;
@@ -31,8 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +40,6 @@ import java.util.stream.Collectors;
 @DependsOn("instanceRetrievalService")
 public class APIDocRetrievalService {
 
-    private final String HTTPS = "https";
-    private final String HTTP = "http";
     private String gatewayUrl;
 
     private final RestTemplate restTemplate;
@@ -145,17 +140,8 @@ public class APIDocRetrievalService {
             HttpEntity<?> entity = createRequest();
             ResponseEntity<String> response;
 
-            // construct the endpoint based on the instance details
-            String baseUrl;
-            String hostName = instance.getHostName();
-            if (instance.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-                baseUrl = new URIBuilder().setHost(hostName)
-                    .setScheme(HTTPS).setPort(instance.getSecurePort()).build().toString();
-            } else {
-                baseUrl = new URIBuilder().setHost(hostName)
-                    .setScheme(HTTP).setPort(instance.getPort()).build().toString();
-            }
-            String instanceApiDocEndpoint = baseUrl + getLocalApiDocEndPoint(instance);
+            // Always retrieve api doc via the gateway
+            String instanceApiDocEndpoint = getGatewayUrl() + "/api/" + apiVersion + "/" + instance.getAppName().toLowerCase() + "/api-doc";
 
             log.info("Sending API Doc info request to: " + instanceApiDocEndpoint);
             response = restTemplate.exchange(
@@ -206,26 +192,22 @@ public class APIDocRetrievalService {
     public String getGatewayUrl() {
         if (this.gatewayUrl == null) {
             InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId());
-            try {
-                URI gateway;
-                boolean securePortEnabled = gatewayInstance.isPortEnabled(InstanceInfo.PortType.SECURE);
-                String homePageUrl = gatewayInstance.getHomePageUrl();
-                if (homePageUrl != null && !homePageUrl.toLowerCase().contains(HTTPS)) {
-                    log.info("Overriding secure port setting for: " + homePageUrl);
-                    securePortEnabled = false;
-                }
-                if (securePortEnabled) {
-                    gateway = new URIBuilder().setScheme(HTTPS).setHost(gatewayInstance.getSecureVipAddress()).setPort(gatewayInstance.getSecurePort()).build();
-                } else {
-                    gateway = new URIBuilder().setScheme(HTTP).setHost(gatewayInstance.getVIPAddress()).setPort(gatewayInstance.getPort()).build();
-                }
-                this.gatewayUrl = gateway.toString();
-                log.info("Gateway location set: " + this.gatewayUrl);
-            } catch (URISyntaxException e) {
-                String msg = "Cannot construct Gateway URL from Instance Info.";
-                log.error(msg, e);
-                throw new IllegalArgumentException(msg, e);
+            if (gatewayInstance == null) {
+                String msg = "Cannot obtain information about API Gateway from Discovery Service";
+                log.error(msg);
+                throw new ApiDocNotFoundException(msg);
             }
+            String homePageUrl = gatewayInstance.getHomePageUrl();
+            if (homePageUrl == null) {
+                String msg = "Cannot obtain information about API Gateway home page from Discovery Service";
+                log.error(msg);
+                throw new ApiDocNotFoundException(msg);
+            }
+            if (homePageUrl.endsWith("/")) {
+                homePageUrl = homePageUrl.substring(0, homePageUrl.length() - 1);
+            }
+            this.gatewayUrl = homePageUrl;
+            log.info("Gateway location set: " + this.gatewayUrl);
         }
         return this.gatewayUrl;
     }

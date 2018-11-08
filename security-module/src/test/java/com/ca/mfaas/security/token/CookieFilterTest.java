@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.security.token;
 
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,12 +31,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CookieFilterTest {
-    private static final String COOKIE_NAME = "apimlAuthenticationToken";
-
     private HttpServletRequest request = mock(HttpServletRequest.class);
     private HttpServletResponse response = mock(HttpServletResponse.class);
     private FilterChain filterChain = mock(FilterChain.class);
-    private CookieConfiguration cookieConfiguration = mock(CookieConfiguration.class);
+    private SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
     private AuthenticationManager authenticationManager;
     private AuthenticationFailureHandler failureHandler;
 
@@ -46,20 +45,18 @@ public class CookieFilterTest {
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         filterChain = mock(FilterChain.class);
-
-        when(cookieConfiguration.getName()).thenReturn(COOKIE_NAME);
     }
 
     @Test
     public void authenticationWithValidTokenInsideCookie() throws ServletException, IOException {
         String token = "token";
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
-        Cookie cookie = new Cookie(COOKIE_NAME, token);
+        Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
         Cookie[] cookies = new Cookie[]{ cookie };
 
         when(request.getCookies()).thenReturn(cookies);
 
-        CookieFilter cookieFilter = new CookieFilter(authenticationManager, failureHandler, cookieConfiguration);
+        CookieFilter cookieFilter = new CookieFilter(authenticationManager, failureHandler, securityConfigurationProperties);
         cookieFilter.doFilter(request, response, filterChain);
 
         verify(authenticationManager).authenticate(tokenAuthentication);
@@ -71,14 +68,14 @@ public class CookieFilterTest {
     public void authenticationWithNotValidTokenInsideCookie() throws ServletException, IOException {
         String notValidToken = "token";
         TokenAuthentication tokenAuthentication = new TokenAuthentication(notValidToken);
-        Cookie cookie = new Cookie(COOKIE_NAME, notValidToken);
+        Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), notValidToken);
         Cookie[] cookies = new Cookie[]{ cookie };
         BadCredentialsException exception = new BadCredentialsException("Bad token");
 
         when(request.getCookies()).thenReturn(cookies);
         when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
 
-        CookieFilter cookieFilter = new CookieFilter(authenticationManager, failureHandler, cookieConfiguration);
+        CookieFilter cookieFilter = new CookieFilter(authenticationManager, failureHandler, securityConfigurationProperties);
         cookieFilter.doFilter(request, response, filterChain);
 
         verify(authenticationManager).authenticate(tokenAuthentication);
@@ -90,7 +87,7 @@ public class CookieFilterTest {
     public void authenticationWithoutCookies() throws ServletException, IOException {
         when(request.getCookies()).thenReturn(null);
 
-        CookieFilter cookieFilter = new CookieFilter(authenticationManager, failureHandler, cookieConfiguration);
+        CookieFilter cookieFilter = new CookieFilter(authenticationManager, failureHandler, securityConfigurationProperties);
         cookieFilter.doFilter(request, response, filterChain);
 
         verify(authenticationManager, never()).authenticate(any());
@@ -106,7 +103,7 @@ public class CookieFilterTest {
 
         when(request.getCookies()).thenReturn(cookies);
 
-        CookieFilter cookieFilter = new CookieFilter(authenticationManager, failureHandler, cookieConfiguration);
+        CookieFilter cookieFilter = new CookieFilter(authenticationManager, failureHandler, securityConfigurationProperties);
         cookieFilter.doFilter(request, response, filterChain);
 
         verify(authenticationManager, never()).authenticate(any());

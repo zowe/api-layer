@@ -16,15 +16,13 @@ import org.springframework.stereotype.Component;
 import javax.validation.constraints.NotBlank;
 
 /**
- * Container class for MFaaS service configuration
- * These fields relate to the mfass: section of the micro-services application.yml
- * Autowire this class and access the members directly rather than use @Value annotation for individual fields
- * External variables ${environment.xxxxx} should be used to set ${mfaas.xxx} variables
+ * Deprecated: See https://github.com/zowe/api-layer/wiki/Externalizing-Java-Code-Configuration-in-APIML
  */
 @Data
 @Component
 @ConfigurationProperties(prefix = "mfaas", ignoreUnknownFields = false)
 @SuppressWarnings("WeakerAccess")
+@Deprecated
 public class MFaaSConfigPropertiesContainer {
 
     // Service discovery properties
@@ -154,13 +152,6 @@ public class MFaaSConfigPropertiesContainer {
 
     @Data
     public static class SecurityProperties {
-
-        // Create default values for security parameters
-        public SecurityProperties() {
-            this.cookieProperties = new CookieProperties();
-            this.tokenProperties = new TokenProperties();
-        }
-
         // TRUE if ESM security is enabled for this service
         private Boolean esmEnabled;
 
@@ -199,22 +190,6 @@ public class MFaaSConfigPropertiesContainer {
 
         // Keystore password
         private String keyStorePassword;
-
-        // Authentication response type header name
-        private String authenticationResponseTypeHeaderName = "Auth-Response-Type";
-
-
-        // Default authentication login  endpoint
-        private String loginPath = "/auth/login/**";
-
-        // Default authentication logout endpoint
-        private String logoutPath = "/auth/logout/**";
-
-        // Gateway authentication token properties
-        private TokenProperties tokenProperties;
-
-        // Gateway authentication cookie properties
-        private CookieProperties cookieProperties;
     }
 
     @Data
@@ -234,8 +209,6 @@ public class MFaaSConfigPropertiesContainer {
         // ... * (ribbon.MaxAutoRetries(default = 0) + 1) * (ribbon.MaxAutoRetriesNextServer(default = 1) + 1)
         // default = 240,000
         private Integer histrixTimeoutInMillis;
-
-        private Boolean verifySslCertificatesOfServices;
     }
 
     /**
@@ -283,47 +256,5 @@ public class MFaaSConfigPropertiesContainer {
 
         // The location of a manually defined swagger endpoints, note disables automatic discovery of endpoints and swagger generation
         private String swaggerLocation;
-    }
-
-    @Data
-    public static class TokenProperties {
-        // Header for sending token based authentication requests
-        private String authorizationHeader = "Authorization";
-
-        // Token prefix
-        private String bearerPrefix = "Bearer ";
-
-        // Token expiration period (in seconds)
-        private long expirationInSeconds = 24 * 60 * 60;
-
-        // Secret key for token hashing
-        private String secret = "JwtSecretKey";
-
-        // Token issuer
-        private String issuer = "ApimlGateway";
-
-        // Short name
-        private String shortTtlUsername = "apimlAuthenticationToken";
-
-        // Short expiration
-        private long shortTtlExpirationInSeconds = 24 * 60 * 60;
-    }
-
-    @Data
-    public static class CookieProperties {
-        // Cookie name
-        private String cookieName = "apimlAuthenticationToken";
-
-        // Does the cookie only accept https requests
-        private boolean cookieSecure = true;
-
-        // Cookie coverage path
-        private String cookiePath = "/";
-
-        // Comment
-        private String cookieComment = "API Mediation Layer security token";
-
-        // Max age of the cookie (-1 = session scope)
-        private Integer cookieMaxAge = 24 * 60 * 60;
     }
 }

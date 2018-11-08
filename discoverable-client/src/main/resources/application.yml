@@ -1,14 +1,3 @@
-spring:
-    application:
-        name: discoverableclient
-    cloud:
-        client:
-            hostname: ${environment.hostname}
-            ipAddress: ${environment.ipAddress}
-    output:
-        ansi:
-            enabled: detect
-
 logging:
     level:
         ROOT: INFO
@@ -22,102 +11,98 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
 
-##############################################################################################
-# MFAAS configuration section
-##############################################################################################
-mfaas:
-    discovery:
-        serviceId: ${environment.serviceId:${spring.application.name}}
-        locations: ${environment.discoveryLocations}
-        enabled: ${environment.discoveryEnabled:true}
-        endpoints:
-            statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
-            healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
-            homePage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/
-        info:
-            serviceTitle: ${environment.serviceTitle}
-            description:  ${environment.serviceDescription}
-            swaggerLocation: # populate this value with a json file from the resources folder to load a static swagger definition
-        fetchRegistry: true
-        region: default
+apiml:
+    # The `apiml` node contains API Mediation Layer specific configuration
     service:
-        hostname: ${environment.hostname}
-        ipAddress: ${environment.ipAddress}
-    catalog-ui-tile:
-        id: cademoapps
-        title: Sample API Mediation Layer Applications
-        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
-        version:  1.0.1
-    server:
-        port: ${environment.port}
+        # The `apiml.service` node contains information required by any APIML service
+        id: discoverableclient  # Service ID of this service
+        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
+        port: 10012  # Default port name for discoverable-clinet service
+        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        preferIpAddress: false
+
+spring:
+    application:
+        name: ${apiml.service.id}
+    cloud:
+        client:
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
+    mvc:
+        throw-exception-if-no-handler-found: true
+    output:
+        ansi:
+            enabled: detect
+
+server:
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.service.port}
+    servlet:
         contextPath: /discoverableclient
-        scheme: http
 
 eureka:
     instance:
-        appName: ${mfaas.discovery.serviceId}
-        hostname: ${mfaas.service.hostname}
-        statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
-        healthCheckUrlPath: ${mfaas.discovery.endpoints.healthPage}
-        homePageUrl: ${mfaas.discovery.endpoints.homePage}
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        port: ${server.port}
+        securePort: ${server.port}
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        homePageUrl: http://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
+        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
+        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
         metadata-map:
             routed-services:
                 ui_v1:
                     gateway-url: "ui/v1"
-                    service-url: ${mfaas.server.contextPath}
+                    service-url: ${server.servlet.contextPath}
                 api_v1:
                     gateway-url: "api/v1"
-                    service-url: ${mfaas.server.contextPath}/api/v1
+                    service-url: ${server.servlet.contextPath}/api/v1
                 ws_v1:
                     gateway-url: "ws/v1"
-                    service-url: ${mfaas.server.contextPath}/ws
+                    service-url: ${server.servlet.contextPath}/ws
                 api-doc:
                     gateway-url: "api/v1/api-doc"
-                    service-url: ${mfaas.server.contextPath}/api-doc
+                    service-url: ${server.servlet.contextPath}/api-doc
             mfaas:
                 api-info:
-                    swagger:
-                        location: ${mfaas.discovery.info.swaggerLocation:}
                     apiVersionProperties:
                         v1:
-                            title: Service Integration Enabler V2 Sample Application (Spring Boot 2.x)
-                            description: Sample service showing how to integrate a Spring Boot v2.x application
+                            title: Service Integration Enabler V2 Sample Application API
+                            description: API of sample API service showing how to integrate a Spring Boot v2.x application
                             version: 1.0.0
                             basePackage: com.ca.mfaas.client.controller.controllers.api
-
                 discovery:
                     catalogUiTile:
-                        id: ${mfaas.catalog-ui-tile.id}
-                        title:  ${mfaas.catalog-ui-tile.title}
-                        description: ${mfaas.catalog-ui-tile.description}
-                        version: ${mfaas.catalog-ui-tile.version}
-                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
+                        id: cademoapps
+                        title: Sample API Mediation Layer Applications
+                        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+                        version: 1.0.1
+                    enableApiDoc: true
                     service:
-                        title: ${mfaas.discovery.info.serviceTitle}
-                        description: ${mfaas.discovery.info.description}
+                        title: Service Integration Enabler V2 Sample Application (Spring Boot 2.x)
+                        description: Sample API service showing how to integrate a Spring Boot v2.x application
     client:
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
         healthcheck:
             enabled: true
-        serviceUrl:
-            defaultZone: ${mfaas.discovery.locations}
-        fetchRegistry:  ${mfaas.discovery.fetchRegistry}
-        region: ${mfaas.discovery.region}
-        enabled: ${mfaas.discovery.enabled}
 
 ##############################################################################################
 management:
     endpoints:
         web:
             base-path: /application
+            exposure:
+                include: health,info,routes
     health:
         defaults:
             enabled: false
-
-server:
-    address: ${mfaas.service.hostname}
-    port: ${mfaas.server.port}
-    servlet:
-        contextPath: ${mfaas.server.contextPath}
 
 ---
 spring:
@@ -133,6 +118,8 @@ management:
 ---
 spring:
     profiles: dev
+    profiles.include:
+        diag
 
 logging:
     level:
