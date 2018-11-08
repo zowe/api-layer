@@ -12,7 +12,7 @@ const apiCatalogDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer/apicatalog`
 
 beforeAll(async () => {
     browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         ignoreHTTPSErrors: true,
         args: ['--no-sandbox', '--ignore-certificate-errors'],
     });
