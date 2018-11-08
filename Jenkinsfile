@@ -177,6 +177,28 @@ pipeline {
                     }
                 }
 
+                /************************************************************************
+                * STAGE
+                * -----
+                * SonarQube Scanner
+                *
+                * EXECUTION CONDITIONS
+                * --------------------
+                * - SHOULD_BUILD is true
+                * - The build is still successful and not unstable
+                *
+                * DESCRIPTION
+                * -----------
+                * Runs the sonar-scanner analysis tool, which submits the source, test resutls,
+                *  and coverage results for analysis in our SonarQube server. 
+                * TODO: This step does not yet support branch or PR submissions properly. 
+                ***********************************************************************/
+                stage('sonar') {
+                    withSonarQubeEnv('sonar-default-server') {
+                        sh './gradlew sonarqube'
+                    }
+                }
+
                 stage('Publish snapshot version to Artifactory for master') {
                     when {
                         expression {
