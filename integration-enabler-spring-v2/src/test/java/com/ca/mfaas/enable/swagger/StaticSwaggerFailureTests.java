@@ -33,7 +33,7 @@ public class StaticSwaggerFailureTests {
     @Autowired
     private ApiDocController apiDocController;
 
-    @Test(expected = FileNotFoundException.class)
+    @Test(expected = IOException.class)
     public void givenASwaggerLocationThatDoesntExistThenFail() throws IOException {
         apiDocController.getApiDoc(null);
     }
