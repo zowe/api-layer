@@ -7,7 +7,8 @@ const baseUrl = process.env.REACT_APP_CATALOG_URL_TEST;
 console.log('API Catalog Base URL:', baseUrl);
 const loginUrl = `${baseUrl}/#/login`;
 const dashboardUrl = `${baseUrl}/#/dashboard`;
-const detailPageUrl = `${baseUrl}/#/tile/apimediationlayer`;
+const defaultDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer`;
+const apiCatalogDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer/apicatalog`;
 
 beforeAll(async () => {
     browser = await puppeteer.launch({
@@ -90,7 +91,7 @@ describe('>>> e2e tests', async () => {
             page.click('div.apis > div > div:nth-child(2)'),
             page.waitForNavigation(),
         ]);
-        expect(page.url()).toBe(detailPageUrl);
+        expect(page.url()).toBe(defaultDetailPageUrl);
     });
 
     it('Should display message if no tiles were found', async () => {
@@ -103,7 +104,7 @@ describe('>>> e2e tests', async () => {
     });
 
     it('Should display the tab title and the description in the detail page', async () => {
-        const [res] = await Promise.all([page.waitForNavigation(), page.goto(detailPageUrl)]);
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(defaultDetailPageUrl)]);
         await page.waitForSelector('#title');
         await page.waitForSelector('#description');
         const tab = await page.$('#title');
@@ -116,7 +117,7 @@ describe('>>> e2e tests', async () => {
     });
 
     it('Should display the back button', async () => {
-        const [res] = await Promise.all([page.waitForNavigation(), page.goto(detailPageUrl)]);
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(defaultDetailPageUrl)]);
         await page.waitForSelector('#go-back-button > span > span');
         const backButton = await page.$('#go-back-button > span > span');
         await page.waitFor(2000);
@@ -124,8 +125,40 @@ describe('>>> e2e tests', async () => {
         expect(backButtonContent).toBe('Back');
     });
 
-    it('Should display the service title, URL and description in Swagger', async () => {
-        const [res] = await Promise.all([page.waitForNavigation(), page.goto(detailPageUrl)]);
+    it('Should display the Gateway service title, URL and description in Swagger', async () => {
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(defaultDetailPageUrl)]);
+        await page.waitForSelector(
+            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > a > span'
+        );
+        await page.waitForSelector(
+            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2'
+        );
+        await page.waitForSelector(
+            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
+        );
+        const serviceTitle = await page.$(
+            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2'
+        );
+        await page.waitFor(2000);
+        const serviceUrl = await page.$(
+            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > a > span'
+        );
+        const serviceDescription = await page.$(
+            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
+        );
+        const serviceTitleText = await page.evaluate(el => el.innerText, serviceTitle);
+        const serviceUrlValue = await page.evaluate(el => el.innerText, serviceUrl);
+        const serviceDescriptionText = await page.evaluate(el => el.innerText, serviceDescription);
+        const expectedTitleValue = 'API Gateway\n' + ' 1.0.0 ';
+        const expectedDescriptionValue =
+            'REST API for the API Gateway service which is a component of the API Mediation Layer. Use this API to access the Enterprise z/OS Security Manager to perform tasks such as logging in with mainframe credentials and checking authorization to mainframe resources.';
+        expect(serviceTitleText).toBe(expectedTitleValue);
+        expect(serviceUrlValue).toBe(' /api/v1/apicatalog/apidoc/gateway/v1 ');
+        expect(serviceDescriptionText).toBe(expectedDescriptionValue);
+    });
+
+    it('Should display the API Catalog service title, URL and description in Swagger', async () => {
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(apiCatalogDetailPageUrl)]);
         await page.waitForSelector(
             '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > a > span'
         );
@@ -157,7 +190,7 @@ describe('>>> e2e tests', async () => {
     });
 
     it('Should go back to the dashboard page, check the URL and check if the search bar works', async () => {
-        await page.goto(detailPageUrl);
+        await page.goto(defaultDetailPageUrl);
         await page.waitForSelector('#go-back-button');
         const [res] = await Promise.all([page.click('#go-back-button'), page.waitForNavigation()]);
         await Promise.all([
