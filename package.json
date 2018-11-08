@@ -15,7 +15,6 @@
         "discovery-service": "java -jar discovery-service/build/libs/discovery-service.jar --spring.config.additional-location=file:./config/local/discovery-service.yml",
         "api-catalog-service": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local/api-catalog-service.yml",
         "discoverable-client": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml",
-
         "api-layer-multi": "concurrently --names \"GS1,DS1,DS2,AC1,DC1\" -c cyan,yellow,yellow,white,blue npm:gateway-service-1 npm:discovery-service-1 npm:discovery-service-2 npm:api-catalog-service-1 npm:discoverable-client-1",
         "gateway-service-1": "java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additional-location=file:./config/local-multi/gateway-service.yml",
         "discovery-service-1": "java -jar discovery-service/build/libs/discovery-service.jar --spring.config.additional-location=file:./config/local-multi/discovery-service-1.yml",
@@ -33,5 +32,8 @@
         "url": "https://github.com/gizafoundation/api-layer/issues"
     },
     "homepage": "https://github.com/gizafoundation/api-layer#readme",
-    "dependencies": {}
+    "dependencies": {
+        "mineral-ui": "^0.49.0",
+        "mineral-ui-icons": "^0.4.0"
+    }
 }
