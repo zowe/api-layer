@@ -36,7 +36,7 @@ public class GreetingApiIntegrationTest {
     @Test
     public void shouldCallDiscoverableServiceApiPersonalGreeting() throws Exception {
         // When
-        final HttpResponse response = HttpRequestUtils.getResponse("/api/v1/discoverableclient/greeting/You", SC_OK);
+        final HttpResponse response = HttpRequestUtils.getResponse("/api/v1/discoverableclient/greeting/You%2slash", SC_OK);
         final String jsonResponse = EntityUtils.toString(response.getEntity());
         DocumentContext jsonContext = JsonPath.parse(jsonResponse);
         String content = jsonContext.read("$.content");
