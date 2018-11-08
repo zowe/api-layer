@@ -13,7 +13,11 @@ import com.ca.mfaas.client.controller.domain.Greeting;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 
 import java.util.Date;
 import java.util.Optional;
@@ -30,7 +34,7 @@ public class GreetingController {
     /**
      * Gets a greeting.
      */
-    @GetMapping(value = {"/greeting/{yourName}", "/greeting"})
+    @GetMapping(value = {"api/v1/greeting/{yourName}", "api/v1/greeting"})
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Other Operations"})
     public Greeting yourGreeting(@RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs,

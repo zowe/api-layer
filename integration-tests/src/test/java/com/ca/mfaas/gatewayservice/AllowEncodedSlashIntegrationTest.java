@@ -21,7 +21,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
 public class AllowEncodedSlashIntegrationTest {
-    private static final String GREETING_PATH = "/ui/v1/discoverableclient/greeting/with%2fslash";
+    private static final String GREETING_PATH = "/api/v1/discoverableclient/greeting/with%2fslash";
 
     private GatewayServiceConfiguration serviceConfiguration;
     private String scheme;
