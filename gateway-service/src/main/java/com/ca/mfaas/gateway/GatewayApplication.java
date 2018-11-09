@@ -39,6 +39,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableWebSocket
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
     public static void main(String[] args) {
+        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();

@@ -15,6 +15,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,8 +50,7 @@ public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         final String proxy = FilterUtils.removeFirstAndLastSlash((String) context.get(PROXY_KEY));
-        final String requestPath = FilterUtils.addFirstSlash((String) context.get(REQUEST_URI_KEY));
-
+        String requestPath = context.getRequest().getRequestURI().replaceFirst("/" + proxy,"");
         if (isRequestThatCanBeProcessed(serviceId, proxy, requestPath)) {
             RoutedServices routedServices = routedServicesMap.get(serviceId);
 
