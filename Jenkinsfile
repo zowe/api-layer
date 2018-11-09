@@ -194,8 +194,10 @@ pipeline {
                 * TODO: This step does not yet support branch or PR submissions properly. 
                 ***********************************************************************/
                 stage('sonar') {
-                    withSonarQubeEnv('sonar-default-server') {
-                        sh './gradlew sonarqube'
+                    steps {
+                        withSonarQubeEnv('sonar-default-server') {
+                            sh './gradlew sonarqube'
+                        }
                     }
                 }
 
