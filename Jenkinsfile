@@ -196,7 +196,8 @@ pipeline {
                 stage('sonar') {
                     steps {
                         withSonarQubeEnv('sonar-default-server') {
-                            sh './gradlew sonarqube'
+                            // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
+                            sh './gradlew --info sonarqube'
                         }
                     }
                 }
