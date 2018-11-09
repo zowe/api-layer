@@ -47,9 +47,4 @@ public class GreetingController {
         }
         return new Greeting(new Date(), String.format(TEMPLATE, name));
     }
-
-    @GetMapping(value = "/api/v1/path2/{path}")
-    public String getPath(@PathVariable(value = "path") String path) {
-        return "Path: " + path;
-    }
 }
