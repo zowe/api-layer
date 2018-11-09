@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { NavTab } from 'react-router-tabs';
 import { Button, Text } from 'mineral-ui';
 import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
@@ -121,6 +121,7 @@ export default class DetailPage extends Component {
                 <div className="content-description-container">
                     {tiles !== undefined &&
                         tiles.length === 1 && (
+                        <Suspense>
                             <Router history={history}>
                                 <Switch>
                                     <Route
@@ -159,6 +160,7 @@ export default class DetailPage extends Component {
                                     />
                                 </Switch>
                             </Router>
+                        </Suspense>
                         )}
                 </div>
             </div>
