@@ -12,7 +12,7 @@ dependencies {
     compileOnly libraries.spring_boot_configuration_processor
     compileOnly libraries.lombok
 
-    testCompile(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
+    testCompile libraries.javax_servlet_api
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.powermock_api_mockito2
     testCompile libraries.power_mock_junit4
