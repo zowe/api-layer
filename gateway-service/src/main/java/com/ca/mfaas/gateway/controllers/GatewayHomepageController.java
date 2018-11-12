@@ -41,10 +41,10 @@ public class GatewayHomepageController {
 
         if (catalogCount == 1) {
             catalogLink = getCatalogLink(catalogInstances.get(0));
-            catalogStatusText = "API Catalog is running";
+            catalogStatusText = "The API Catalog is running";
             linkEnabled = true;
         } else if (catalogCount == 0) {
-            catalogStatusText = "API Catalog is not running";
+            catalogStatusText = "The API Catalog is not running";
             linkEnabled = false;
             catalogIconName = "warning";
         }
@@ -56,16 +56,16 @@ public class GatewayHomepageController {
 
         switch (discoveryCount) {
             case 0:
-                discoveryStatusText = "No Discovery Service instances are running";
-                discoveryIconName = "warning";
+                discoveryStatusText = "The Discovery Service is not running";
+                discoveryIconName = "danger";
                 break;
             case 1:
-                discoveryStatusText = "One Discovery Service instance is running";
+                discoveryStatusText = "The Discovery Service is running";
                 discoveryIconName = "success";
                 break;
             default:
                 discoveryStatusText = discoveryCount + " Discovery Service instances are running";
-                discoveryIconName = "danger";
+                discoveryIconName = "success";
                 break;
         }
 
