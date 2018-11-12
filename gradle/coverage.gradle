@@ -1,6 +1,5 @@
 ext.javaProjectsWithUnitTests = [
     'api-catalog-services',
-    'api-catalog-ui',
     'common-service-core',
     'discoverable-client',
     'discovery-service',
