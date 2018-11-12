@@ -1,4 +1,6 @@
 dependencies {
+    compile(project(':common-service-core'))
+
     compile libraries.spring_boot_starter_web
     compile libraries.commons_validator
     compile libraries.spring_cloud_starter_eureka_server
@@ -10,6 +12,7 @@ dependencies {
     compileOnly libraries.spring_boot_configuration_processor
     compileOnly libraries.lombok
 
+    testCompile(group: 'javax.servlet', name: 'servlet-api', version: '2.5')
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.powermock_api_mockito2
     testCompile libraries.power_mock_junit4

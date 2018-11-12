@@ -9,8 +9,10 @@
  */
 package com.ca.mfaas.enable.discovery;
 
+import com.ca.mfaas.security.HttpsConfig;
+import com.ca.mfaas.security.HttpsFactory;
 import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
+import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,9 +20,14 @@ import org.springframework.context.annotation.Configuration;
 
 import java.security.NoSuchAlgorithmException;
 
+import javax.annotation.PostConstruct;
+
 @Configuration
 @Slf4j
 public class EurekaClientSecurityConfiguration {
+    @Value("${server.ssl.protocol:TLSv1.2}")
+    private String protocol;
+
     @Value("${spring.application.name}")
     private String serviceId;
 
@@ -39,35 +46,37 @@ public class EurekaClientSecurityConfiguration {
     @Value("${server.ssl.keyStore:#{null}}")
     private String keyStore;
 
+    @Value("${server.ssl.keePassword:#{null}}")
+    private String keyPassword;
+
     @Value("${server.ssl.keyStorePassword:#{null}}")
     private String keyStorePassword;
 
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
+    @Value("${apiml.security.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
+
+    private EurekaJerseyClient eurekaJerseyClient;
+
+    @PostConstruct
+    public void init() {
+        HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyStore(keyStore).keyPassword(keyPassword)
+                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
+                .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
+                .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
+
+        log.info("Using HTTPS configuration: {}", httpsConfig.toString());
+
+        HttpsFactory factory = new HttpsFactory(httpsConfig);
+        eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId).build();
+    }
+
     @Bean
     public DiscoveryClient.DiscoveryClientOptionalArgs discoveryClientOptionalArgs() throws NoSuchAlgorithmException {
-        if (eurekaServerUrl.startsWith("http://")) {
-            log.warn("Unsecure HTTP is used to connect to Discovery Service");
-            return null;
-        }
-        else {
-            log.info("Trust store to access Discovery Service: {}", trustStore);
-            log.info("Key store to access Discovery Service: {}", keyStore);
-            DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
-            System.setProperty("javax.net.ssl.keyStore", keyStore);
-            System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
-            System.setProperty("javax.net.ssl.keyStoreType", keyStoreType);
-            System.setProperty("javax.net.ssl.trustStore", trustStore);
-            System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
-            System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
-            EurekaJerseyClientBuilder builder = new EurekaJerseyClientBuilder();
-            builder.withClientName(serviceId);
-            builder.withSystemSSLConfiguration();
-            builder.withMaxTotalConnections(10);
-            builder.withMaxConnectionsPerHost(10);
-            args.setEurekaJerseyClient(builder.build());
-            return args;
-        }
+        DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
+        args.setEurekaJerseyClient(eurekaJerseyClient);
+        return args;
     }
 }

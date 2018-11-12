@@ -10,79 +10,27 @@
 package com.ca.mfaas.product.discovery;
 
 import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.net.ssl.SSLContext;
-
 import java.security.NoSuchAlgorithmException;
 
-
 @Configuration
-@Slf4j
 public class EurekaClientSecurityConfiguration {
+    private final EurekaJerseyClient eurekaJerseyClient;
+
     @Autowired
-    public EurekaClientSecurityConfiguration(SSLContext apimlSslContext) {
-        this.apimlSslContext = apimlSslContext;
+    public EurekaClientSecurityConfiguration(EurekaJerseyClient eurekaJerseyClient) {
+        this.eurekaJerseyClient = eurekaJerseyClient;
     }
-
-    private SSLContext apimlSslContext;
-    @Value("${spring.application.name}")
-    private String serviceId;
-
-    @Value("${eureka.client.serviceUrl.defaultZone}")
-    private String eurekaServerUrl;
-
-    @Value("${server.ssl.trustStore:#{null}}")
-    private String trustStore;
-
-    @Value("${server.ssl.trustStorePassword:#{null}}")
-    private String trustStorePassword;
-
-    @Value("${server.ssl.trustStoreType:PKCS12}")
-    private String trustStoreType;
-
-    @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStore;
-
-    @Value("${server.ssl.keyStorePassword:#{null}}")
-    private String keyStorePassword;
-
-    @Value("${server.ssl.keyStoreType:PKCS12}")
-    private String keyStoreType;
 
     @Bean
     public DiscoveryClient.DiscoveryClientOptionalArgs discoveryClientOptionalArgs() throws NoSuchAlgorithmException {
-        if (eurekaServerUrl.startsWith("http://")) {
-            log.warn("Unsecure HTTP is used to connect to Discovery Service");
-            return null;
-        }
-        else {
-            log.info("Trust store to access Discovery Service: {}", trustStore);
-            log.info("Key store to access Discovery Service: {}", keyStore);
-
-            DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-            System.setProperty("javax.net.ssl.keyStore", keyStore.replaceFirst("////", "//"));
-            System.setProperty("javax.net.ssl.keyStorePassword", keyStorePassword);
-            System.setProperty("javax.net.ssl.keyStoreType", keyStoreType);
-            System.setProperty("javax.net.ssl.trustStore", trustStore.replaceFirst("////", "//"));
-            System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
-            System.setProperty("javax.net.ssl.trustStoreType", trustStoreType);
-            EurekaJerseyClientBuilder builder = new EurekaJerseyClientBuilder();
-            builder.withClientName(serviceId);
-            // builder.withSystemSSLConfiguration()
-            builder.withCustomSSL(apimlSslContext);;
-            builder.withHostnameVerifier(new NoopHostnameVerifier());
-            builder.withMaxTotalConnections(10);
-            builder.withMaxConnectionsPerHost(10);
-            args.setEurekaJerseyClient(builder.build());
-            return args;
-        }
+        DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
+        args.setEurekaJerseyClient(eurekaJerseyClient);
+        return args;
     }
 }

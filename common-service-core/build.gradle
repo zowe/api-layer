@@ -4,13 +4,21 @@ dependencies {
     compile(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '0.23.0.RELEASE')
     compile(group: 'org.yaml', name: 'snakeyaml', version: '1.20')
     compile(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25')
+    compile(libraries.http_client)
+    compile(libraries.http_core)
+    compile(libraries.eureka_client)
 
     compileOnly(group: 'org.projectlombok', name: 'lombok', version: '1.16.18')
+    compileOnly(libraries.javax_servlet_api)
 
+    testCompile(libraries.tomcatEmbedCore)
+    testCompile(group: 'javax.servlet', name: 'servlet-api', version: '3.1.0')
     testCompile(group: 'junit', name: 'junit', version: '4.12')
     testCompile(group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.1')
     testCompile(group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.1')
     testCompile(group: 'net.javacrumbs.json-unit', name: 'json-unit', version: '1.25.0')
     testCompile(group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: '1.25.0')
     testCompile(group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3')
+    testCompile(libraries.javax_servlet_api)
+    testCompileOnly(group: 'org.projectlombok', name: 'lombok', version: '1.16.18')
 }
