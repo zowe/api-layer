@@ -17,7 +17,7 @@ apiml:
         # The `apiml.service` node contains information required by any APIML service
         id: discoverableclient  # Service ID of this service
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
-        port: 10012  # Default port name for discoverable-clinet service
+        port: 10012  # Default port name for discoverable-client service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         preferIpAddress: false
 
