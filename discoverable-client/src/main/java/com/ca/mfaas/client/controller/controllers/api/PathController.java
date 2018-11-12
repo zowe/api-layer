@@ -25,6 +25,11 @@ import java.util.Collections;
  */
 @Slf4j
 @RestController
+@Api(
+    value = "Endpoint for test slash encoding problem",
+    produces = "application/json; charset=utf-8",
+    hidden = true,
+    tags = {"Path Operations"})
 @ApiIgnore
 public class PathController {
 

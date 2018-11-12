@@ -13,6 +13,7 @@ import com.ca.mfaas.client.controller.domain.Greeting;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +32,7 @@ public class GreetingController {
     /**
      * Gets a greeting for anyone.
      */
-    @GetMapping(value = "/api/v1/greeting")
+    @GetMapping(value = "/api/v1/greeting", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Other Operations"})
     public Greeting greeting(@RequestParam(value = "name", defaultValue = "world") String name,
