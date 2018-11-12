@@ -61,16 +61,7 @@
     "ancestorSeparator": " › ",
     "usePathForSuiteName": "true"
   },
-  "proxy": {
-    "/api": {
-      "target": "https://localhost:10010",
-      "secure": false
-    },
-    "/ui": {
-      "target": "https://localhost:10010",
-      "secure": false
-    }
-  },
+  "proxy":"https://localhost:10010",
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-eslint": "^9.0.0",
