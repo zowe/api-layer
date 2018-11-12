@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.client.controller.controllers.api;
 
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,11 +24,6 @@ import java.util.Collections;
  */
 @Slf4j
 @RestController
-@Api(
-    value = "Endpoint for test slash encoding problem",
-    produces = "application/json; charset=utf-8",
-    hidden = true,
-    tags = {"Path Operations"})
 @ApiIgnore
 public class PathController {
 
