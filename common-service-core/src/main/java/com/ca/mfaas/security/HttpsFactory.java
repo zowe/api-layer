@@ -226,10 +226,13 @@ public class HttpsFactory {
             log.warn("Unsecure HTTP is used to connect to Discovery Service");
         }
         else {
+            // Setup HTTPS for Eureka replication client:
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
             setSystemSslProperties();
             // See: https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
-            builder.withCustomSSL(secureSslContext);;
+
+            // Setup HTTPS for Eureka client:
+            builder.withCustomSSL(secureSslContext);
             builder.withHostnameVerifier(createHostnameVerifier());
         }
         return builder;

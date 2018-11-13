@@ -10,6 +10,8 @@
 package com.ca.mfaas.security;
 
 public class HttpsConfigError extends RuntimeException {
+    private static final long serialVersionUID = -4219571432637725973L;
+
     public enum ErrorCode {
         UNKNOWN_ERROR, HTTP_CLIENT_INITIALIZATION_FAILED, KEYSTORE_NOT_DEFINED, KEYSTORE_PASSWORD_NOT_DEFINED,
         TRUSTSTORE_PASSWORD_NOT_DEFINED, SSL_CONTEXT_INITIALIZATION_FAILED;

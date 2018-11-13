@@ -70,20 +70,26 @@ public class HttpConfig {
 
     @PostConstruct
     public void init() {
-        HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyStore(keyStore).keyPassword(keyPassword)
-                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
-                .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
-                .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
+        try {
+            HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyStore(keyStore).keyPassword(keyPassword)
+                    .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
+                    .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
+                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
 
-        log.info("Using HTTPS configuration: {}", httpsConfig.toString());
+            log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
-        HttpsFactory factory = new HttpsFactory(httpsConfig);
-        secureHttpClient = factory.createSecureHttpClient();
-        secureSslContext = factory.createSslContext();
-        secureHostnameVerifier = factory.createHostnameVerifier();
-        eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
+            HttpsFactory factory = new HttpsFactory(httpsConfig);
+            secureHttpClient = factory.createSecureHttpClient();
+            secureSslContext = factory.createSslContext();
+            secureHostnameVerifier = factory.createHostnameVerifier();
+            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
 
-        factory.setSystemSslProperties();
+            factory.setSystemSslProperties();
+        }
+        catch (Exception e) {
+            log.error("Error in HTTPS configuration: {}", e.getMessage(), e);
+            System.exit(1);
+        }
     }
 
     @Bean
