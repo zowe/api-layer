@@ -7,3 +7,24 @@
     align-self: center;
     margin-bottom: 0;
 }
+
+a > .css-1un8gmf {
+    text-decoration: none;
+}
+
+.css-1i58psh {
+    background-color: transparent;
+    transition: background-color .3s ease-in-out;
+}
+
+.logout-container svg {
+    transition: color .3s ease-in-out;
+}
+
+.logout-container .css-1i58psh:hover svg {
+    color: #111111;
+}
+
+.css-1i58psh:hover {
+    background-color: #FFFFFF;
+}
