@@ -60,6 +60,9 @@ public class HttpConfig {
     @Value("${spring.application.name}")
     private String serviceId;
 
+    @Value("${server.ssl.trustStoreRequired:false}")
+    private boolean trustStoreRequired;
+
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
@@ -73,7 +76,7 @@ public class HttpConfig {
         try {
             HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyStore(keyStore).keyPassword(keyPassword)
                     .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
-                    .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
+                    .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
                     .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
 
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());

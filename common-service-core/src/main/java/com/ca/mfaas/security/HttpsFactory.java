@@ -118,7 +118,13 @@ public class HttpsFactory {
                 sslContextBuilder.loadTrustMaterial(keyRing, config.getTrustStorePassword().toCharArray());
             }
         } else {
-            log.info("No trust store is defined");
+            if (config.isTrustStoreRequired()) {
+                throw new HttpsConfigError(
+                        "server.ssl.trustStore configuration parameter is not defined but trust store is required",
+                        ErrorCode.TRUSTSTORE_NOT_DEFINED, config);
+            } else {
+                log.info("No trust store is defined");
+            }
         }
     }
 
@@ -192,18 +198,19 @@ public class HttpsFactory {
     private void setSystemProperty(String key, String value) {
         if (value == null) {
             System.clearProperty(key);
-        }
-        else {
+        } else {
             System.setProperty(key, value);
         }
     }
 
     public void setSystemSslProperties() {
-        setSystemProperty("javax.net.ssl.keyStore", config.getKeyStore() == null ? null : config.getKeyStore().replaceFirst("////", "//"));
+        setSystemProperty("javax.net.ssl.keyStore",
+                config.getKeyStore() == null ? null : config.getKeyStore().replaceFirst("////", "//"));
         setSystemProperty("javax.net.ssl.keyStorePassword", config.getKeyStorePassword());
         setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
 
-        setSystemProperty("javax.net.ssl.trustStore", config.getTrustStore() == null ? null : config.getTrustStore().replaceFirst("////", "//"));
+        setSystemProperty("javax.net.ssl.trustStore",
+                config.getTrustStore() == null ? null : config.getTrustStore().replaceFirst("////", "//"));
         setSystemProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword());
         setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
     }
@@ -224,12 +231,12 @@ public class HttpsFactory {
 
         if (eurekaServerUrl.startsWith("http://")) {
             log.warn("Unsecure HTTP is used to connect to Discovery Service");
-        }
-        else {
+        } else {
             // Setup HTTPS for Eureka replication client:
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
             setSystemSslProperties();
-            // See: https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
+            // See:
+            // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
 
             // Setup HTTPS for Eureka client:
             builder.withCustomSSL(secureSslContext);

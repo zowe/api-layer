@@ -17,6 +17,7 @@ import lombok.Value;
     @Builder.Default private String trustStore = null;
     @Builder.Default private String trustStorePassword = null;
     @Builder.Default private String trustStoreType = "PKCS12";
+    @Builder.Default private boolean trustStoreRequired = false;
     @Builder.Default private String keyStore = null;
     @Builder.Default private String keyStorePassword = null;
     @Builder.Default private String keyPassword = null;
