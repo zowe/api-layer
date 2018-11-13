@@ -6,6 +6,8 @@ const mapStateToProps = state => ({
     tiles: state.tilesReducer.tiles,
 });
 
+
+
 const mapDispatchToProps = () => ({});
 
 export default withRouter(
