@@ -27,7 +27,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.service.ipAddress=**IPADDRESS** \
     -Dapiml.gateway.timeoutMillis=30000 \
-    -Dserver.ssl.keystore=$DIR/../localhost/localhost.keystore.p12 \
+    -Dserver.ssl.keystore=$DIR/../keystore/localhost/localhost.keystore.p12 \
     -Dserver.ssl.keystoreType=PKCS12 \
     -Dserver.ssl.keystorePassword=password \
     -Dserver.ssl.keyAlias=localhost \
