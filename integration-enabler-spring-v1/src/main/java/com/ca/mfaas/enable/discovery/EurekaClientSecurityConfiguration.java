@@ -46,7 +46,7 @@ public class EurekaClientSecurityConfiguration {
     @Value("${server.ssl.keyStore:#{null}}")
     private String keyStore;
 
-    @Value("${server.ssl.keePassword:#{null}}")
+    @Value("${server.ssl.keyPassword:#{null}}")
     private String keyPassword;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")

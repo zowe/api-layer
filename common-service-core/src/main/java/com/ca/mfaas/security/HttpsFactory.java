@@ -144,8 +144,9 @@ public class HttpsFactory {
                 }
                 log.info("Loading key store file: " + config.getKeyStore());
                 File keyStoreFile = new File(config.getKeyStore());
-                sslContextBuilder.loadKeyMaterial(keyStoreFile, config.getKeyStorePassword().toCharArray(),
-                        config.getKeyPassword().toCharArray());
+                sslContextBuilder.loadKeyMaterial(keyStoreFile,
+                        config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
+                        config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray());
             } else {
                 log.info("Loading key store key ring: " + config.getKeyStore());
                 if (!config.getKeyStore().startsWith(SAFKEYRING + ":////")) {
@@ -155,7 +156,7 @@ public class HttpsFactory {
                 URL keyRing = new URL(config.getKeyStore().replaceFirst("////", "//"));
 
                 sslContextBuilder.loadKeyMaterial(keyRing, config.getKeyStorePassword().toCharArray(),
-                        config.getKeyPassword().toCharArray(), null);
+                        config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray(), null);
             }
         } else {
             log.info("No key store is defined");
@@ -239,7 +240,7 @@ public class HttpsFactory {
             // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
 
             // Setup HTTPS for Eureka client:
-            builder.withCustomSSL(secureSslContext);
+            builder.withCustomSSL(createSecureSslContext());
             builder.withHostnameVerifier(createHostnameVerifier());
         }
         return builder;
