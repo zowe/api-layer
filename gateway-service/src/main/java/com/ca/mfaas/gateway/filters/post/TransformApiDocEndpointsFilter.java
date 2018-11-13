@@ -241,7 +241,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
 
         // update host and base path
         swagger.setBasePath("");
-        String baseHost = null;
+        String baseHost;
         try {
             baseHost = new URIBuilder()
                 .setHost(context.getZuulRequestHeaders().get(X_FORWARDED_HOST_HEADER.toLowerCase()))
