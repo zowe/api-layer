@@ -2,7 +2,7 @@ dependencies {
     compile(group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.1')
     compile(group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.1')
     compile(group: 'org.springframework.hateoas', name: 'spring-hateoas', version: '0.23.0.RELEASE')
-    compile(group: 'org.yaml', name: 'snakeyaml', version: '1.20')
+    compile(group: 'org.yaml', name: 'snakeyaml', version: '1.23')
     compile(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25')
     compile(libraries.http_client)
     compile(libraries.http_core)
