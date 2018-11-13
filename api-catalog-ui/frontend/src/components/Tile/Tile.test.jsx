@@ -13,7 +13,7 @@ const match = {
 const sampleTile = {
     version: '1.0.0',
     id: 'apicatalog',
-    title: 'API Mediation Layer for z/OS internal API services',
+    title: 'API Mediation Layer API',
     status: 'UP',
     description: 'lkajsdlkjaldskj',
     services: [
@@ -43,9 +43,9 @@ describe('>>> Tile component tests', () => {
         resetSampleTile();
     });
 
-    it('should display API Mediation Layer for z/OS internal API services tile with correct title', () => {
+    it('should display API Mediation Layer API tile with correct title', () => {
         const instance = shallow(<Tile tile={sampleTile} />);
-        expect(instance.find('API Mediation Layer for z/OS internal API services')).not.toBeNull();
+        expect(instance.find('API Mediation Layer API')).not.toBeNull();
     });
 
     it('method getTileStatus() should return correct values', () => {

@@ -13,7 +13,7 @@ describe('>>> Tile reducer tests', () => {
     const sampleTile = {
         version: '1.0.0',
         id: 'apicatalog',
-        title: 'API Mediation Layer for z/OS internal API services',
+        title: 'API Mediation Layer API',
         status: 'UP',
         description: 'lkajsdlkjaldskj',
         services: [

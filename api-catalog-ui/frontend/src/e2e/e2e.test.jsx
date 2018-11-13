@@ -70,7 +70,7 @@ describe('>>> e2e tests', async () => {
         await page.waitForSelector(selector);
         const catalogTile = await page.$(selector);
         const catalogTileText = await page.evaluate(el => el.innerText, catalogTile);
-        expect(catalogTileText).toBe('API Mediation Layer for z/OS internal API services');
+        expect(catalogTileText).toBe('API Mediation Layer API');
     });
 
     it('Should filter tiles', async () => {
@@ -80,7 +80,7 @@ describe('>>> e2e tests', async () => {
         await page.waitFor(2000);
         const tileHeader = await page.evaluate(el => el.innerText, filteredTiles);
 
-        expect(tileHeader).toBe('API Mediation Layer for z/OS internal API services');
+        expect(tileHeader).toBe('API Mediation Layer API');
     });
 
     it('Should click on API Catalog Tile and navigate correctly to the detail page', async () => {
@@ -111,7 +111,7 @@ describe('>>> e2e tests', async () => {
         const description = await page.$('#description');
         const tabTitleText = await page.evaluate(el => el.innerText, tab);
         const descriptionText = await page.evaluate(el => el.innerText, description);
-        expect(tabTitleText).toBe('API Mediation Layer for z/OS internal API services');
+        expect(tabTitleText).toBe('API Mediation Layer API');
         expect(descriptionText).toBe('The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.');
     });
 
@@ -169,7 +169,7 @@ describe('>>> e2e tests', async () => {
         const tileHeader = await page.evaluate(el => el.innerText, filteredTiles);
         expect(page.url()).toBe(dashboardUrl);
 
-        expect(tileHeader).toBe('API Mediation Layer for z/OS internal API services');
+        expect(tileHeader).toBe('API Mediation Layer API');
     });
 
     it('Should logout and display the login page', async () => {

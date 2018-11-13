@@ -20,15 +20,15 @@ Basic routing of an API endpoint (automated by integration tests)
 ### For API Catalog
 - Open <https://yourhost:10010/ui/v1/apicatalog/#/dashboard>
     - No error should be displayed, and API Catalog main page should appear
-    - API Mediation Layer for z/OS internal API services -> All services are running, Sample API Mediation Layer Applications -All services are running tiles should display
+    - API Mediation Layer API -> All services are running, Sample API Mediation Layer Applications -All services are running tiles should display
 - Write "Sample" on the search bar
-    - API Mediation Layer for z/OS internal API services tile should disappear, and Sample API Mediation Layer Applications should be there when you stop typing
+    - API Mediation Layer API tile should disappear, and Sample API Mediation Layer Applications should be there when you stop typing
     - Search Icon should be replaced by clear icon on the right side of search bar
 - Press the clear icon ``X`` on the search bar
     - Text on search bar should disappear
     - All tiles should show up again
 - Click Sample API Mediation Layer Application
-    - No error should be displayed and API Mediation Layer for z/OS internal API services page(<https://yourhost:10010/ui/v1/apicatalog/#/tile/apicatalog/apicatalog>) should appear
+    - No error should be displayed and API Mediation Layer API page(<https://yourhost:10010/ui/v1/apicatalog/#/tile/apicatalog/apicatalog>) should appear
     - Full service title should appear when you hover mouse on top of tab names (discoverableclient, enablerv1samleapp)
 - Click on the provided URL </api/v1/apicatalog/apidoc/discoverableclient/v1>
     - A full JSON response should return in a new browser tab, with no HTTP errors
@@ -39,7 +39,7 @@ Basic routing of an API endpoint (automated by integration tests)
     - New service "Service Integration Enabler V1 Sample App (spring boot 1.x)" should display
 - Press the application "< Back" button
     - should return to catalog dashboard
-- Click on API Mediation Layer for z/OS internal API services tile, verify it is valid, then press the browser back button
+- Click on API Mediation Layer API tile, verify it is valid, then press the browser back button
     - should return to catalog dashboard
 - Click again on a tile, then press the API Catalog header Icon
     - should return to catalog dashboard

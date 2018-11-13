@@ -76,7 +76,7 @@ public class ApiCatalogEndpointIntegrationTest {
         JSONArray containerStatus = jsonContext.read("$.[*].status");
 
         // Then
-        assertTrue("Tile title did not match: API Mediation Layer for z/OS internal API services", containerTitles.contains("API Mediation Layer for z/OS internal API services"));
+        assertTrue("Tile title did not match: API Mediation Layer API", containerTitles.contains("API Mediation Layer API"));
         assertTrue(containerStatus.contains("UP"));
     }
 

@@ -137,7 +137,7 @@ describe('>>> Integration tests', () => {
         await wait(() => getByTestId('search-bar'));
         const searchBar = getByTestId('search-bar');
         expect(searchBar.length).toEqual(1);
-        const searchCriteria = 'API Mediation Layer for z/OS internal API services';
+        const searchCriteria = 'API Mediation Layer API';
         fireEvent.change(searchBar, { target: { value: searchCriteria } });
 
         await wait(() => getByTestId('tile'));
