@@ -3,6 +3,10 @@
     box-sizing: border-box
 }
 
+.swagger-ui .scheme-container {
+    display: none;
+}
+
 #swaggerContainer {
     background-color: #fff;
     padding-left: 1rem;
@@ -49,8 +53,8 @@
     border-bottom: none;
 }
 
-.swagger-ui .opblock-tag:hover {
-    background: rgba(0, 0, 0, .02)
+#swaggerContainer > .swagger-ui .opblock-tag:hover {
+    background: rgba(0, 0, 0, .06)
 }
 
 .swagger-ui .opblock-tag {
@@ -113,8 +117,8 @@
     box-shadow: none;
 }
 
-#swaggerContainer > div > div:nth-child(2) > div:nth-child(5) > section > div > span > div > div > span > div:hover {
-    background-color: rgba(0, 0, 0, .02);
+#swaggerContainer > div > div:nth-child(2) > div.wrapper > section > div > span > div > div > span > div:hover {
+    background-color: rgba(0, 0, 0, .06);
 }
 
 .swagger-ui .opblock.is-open .opblock-summary {
@@ -161,7 +165,7 @@
 .swagger-ui .opblock .opblock-summary-method {
     font-size: 14px;
     font-weight: 700;
-    min-width: 80px;
+    width: 5rem;
     padding: 6px 15px;
     text-align: center;
     border-radius: 3px;
@@ -171,7 +175,7 @@
     color: #fff
 }
 
-.swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-path__deprecated {
+.swagger-ui .opblock .opblock-summary-path , .swagger-ui .opblock .opblock-summary-path__deprecated {
     font-size: 14px;
     display: -webkit-box;
     display: -ms-flexbox;
@@ -1083,7 +1087,7 @@
 }
 
 .swagger-ui section.models h4:hover {
-    background: rgba(0, 0, 0, .02)
+    background: rgba(0, 0, 0, .06)
 }
 
 .swagger-ui section.models h5 {
@@ -1590,7 +1594,7 @@
     background: #84B1FA;
 }
 
-#swaggerContainer > div > div:nth-child(2) > div:nth-child(5) > section > div > span > div > div > span > div {
+#swaggerContainer > div > div:nth-child(2) > div.wrapper > section > div > span > div > div > span > div {
     border-color: #ffffff;
     border-bottom: 1px solid rgba(59, 65, 81, .3);
 }
