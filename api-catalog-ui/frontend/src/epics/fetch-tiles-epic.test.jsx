@@ -10,7 +10,7 @@ const mockResponse = [
     {
         version: '1.0.0',
         id: 'apicatalog',
-        title: 'API Mediation Layer API',
+        title: 'API Mediation Layer for z/OS internal API services',
         status: 'UP',
         description: 'The API Mediation Layer for z/OS internal API services.',
         services: [],

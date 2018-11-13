@@ -481,9 +481,8 @@
 
 .swagger-ui .scheme-container {
     margin: 0 0 20px;
-    padding: 30px 0;
+    padding: 5px 0;
     background: #fff;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .15)
 }
 
 .swagger-ui .scheme-container .schemes {

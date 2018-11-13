@@ -111,8 +111,8 @@ describe('>>> Integration tests', () => {
             }
         );
 
-        await wait(() => getByText('Available APIs'));
-        expect(container.querySelector('.api-heading').textContent).toEqual('Available APIs');
+        await wait(() => getByText('Available API services'));
+        expect(container.querySelector('.api-heading').textContent).toEqual('Available API services');
         await wait(() => getByTestId('tile'));
         const tiles = queryAllByTestId('tile');
 
@@ -137,7 +137,7 @@ describe('>>> Integration tests', () => {
         await wait(() => getByTestId('search-bar'));
         const searchBar = getByTestId('search-bar');
         expect(searchBar.length).toEqual(1);
-        const searchCriteria = 'API Mediation Layer API';
+        const searchCriteria = 'API Mediation Layer for z/OS internal API services';
         fireEvent.change(searchBar, { target: { value: searchCriteria } });
 
         await wait(() => getByTestId('tile'));
@@ -211,8 +211,8 @@ describe('>>> Integration tests', () => {
 
         fireEvent.click(backButton);
 
-        await wait(() => getByText('Available APIs'));
-        const dashboard = getByText('Available APIs');
+        await wait(() => getByText('Available API services'));
+        const dashboard = getByText('Available API services');
 
         expect(dashboard).toBeTruthy();
     });

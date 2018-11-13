@@ -49,4 +49,11 @@ public class GreetingController {
     public Response defaultGreeting() {
         return Response.ok(new Greeting(new Date(), String.format(TEMPLATE, "World"))).build();
     }
+
+    @GET
+    @Path(value = "/atlas/{path}/content")
+    @Produces(MediaType.APPLICATION_JSON)
+    public String getContent(@PathParam("path") String path) {
+        return path;
+    }
 }

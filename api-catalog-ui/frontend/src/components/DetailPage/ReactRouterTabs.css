@@ -1,12 +1,7 @@
 .nav-tab {
-    font-family: 'Roboto', sans-serif;
     background-color: #c8d1e0;
     display: inline-block;
-    padding: 10px 25px;
-    color: #333840;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 14px;
+    padding: 15px 25px 5px 25px;
 }
 
 .nav-tab.active {

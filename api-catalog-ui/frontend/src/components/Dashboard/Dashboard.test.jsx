@@ -73,7 +73,7 @@ describe('>>> Dashboard component tests', () => {
         const dashboardTile = {
             version: '1.0.0',
             id: 'apicatalog',
-            title: 'API Mediation Layer API',
+            title: 'API Mediation Layer for z/OS internal API services',
             status: 'UP',
             description: 'lkajsdlkjaldskj',
             services: [
