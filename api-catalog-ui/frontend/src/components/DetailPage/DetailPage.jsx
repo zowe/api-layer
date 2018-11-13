@@ -12,6 +12,7 @@ import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
+import DetailBackground from '../../assets/images/detail-Illustration.svg';
 
 export default class DetailPage extends Component {
     tileId = null;

@@ -8,7 +8,7 @@
     margin-bottom: 0;
 }
 
-a > .css-1un8gmf {
+.product-name > a:hover {
     text-decoration: none;
 }
 
