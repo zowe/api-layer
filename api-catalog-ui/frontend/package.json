@@ -65,11 +65,11 @@
     },
     "proxy": {
         "/api": {
-            "target": "https://localhost:10010",
+            "target": "http://localhost:8000",
             "secure": false
         },
         "/ui": {
-            "target": "https://localhost:10010",
+            "target": "http://localhost:8000",
             "secure": false
         }
     },

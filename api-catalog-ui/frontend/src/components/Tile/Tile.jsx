@@ -56,10 +56,12 @@ export default class Tile extends Component {
         history.push(tileRoute);
     };
 
+    // not a great way to avoid overlapping text in a card block
+    // Mineral bug
     shortenDescription = description => {
-        if (description.length > 230) {
+        if (description.length > 180) {
             console.log('shortened');
-            return `${description.substring(0, 227)}...`;
+            return `${description.substring(0, 177)}...`;
         }
         return description;
     };

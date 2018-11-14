@@ -36,7 +36,7 @@ describe('>>> e2e tests', async () => {
         const dashboardTitleText = await page.evaluate(el => el.innerText, dashboardTitle);
 
         expect(page.url()).toBe(dashboardUrl);
-        expect(dashboardTitleText).toBe('Available APIs');
+        expect(dashboardTitleText).toBe('Available API services');
     });
 
     it('Should display product title', async () => {
@@ -52,14 +52,14 @@ describe('>>> e2e tests', async () => {
         const dashboardTitleText = await page.evaluate(el => el.innerText, dashboardTitle);
 
         expect(page.url()).toBe(dashboardUrl);
-        expect(dashboardTitleText).toBe('Available APIs');
+        expect(dashboardTitleText).toBe('Available API services');
         expect(productTitleText).toBe('API Catalog');
     });
 
     it('Should display Dashboard title', async () => {
         const dashboardTitle = await page.$('div.filtering-container > h2');
         const dashboardTitleText = await page.evaluate(el => el.innerText, dashboardTitle);
-        expect(dashboardTitleText).toBe('Available APIs');
+        expect(dashboardTitleText).toBe('Available API services');
     });
 
     it('Should display API Catalog Tile', async () => {
@@ -74,7 +74,7 @@ describe('>>> e2e tests', async () => {
     });
 
     it('Should filter tiles', async () => {
-        page.type('[data-testid=search-bar]', 'api mediation layer api');
+        page.type('[data-testid=search-bar]', 'api mediation layer for z/os');
         const filteredTiles = await page.$('div.grid-tile.pop > div > div > div > h3');
 
         await page.waitFor(2000);
@@ -112,7 +112,7 @@ describe('>>> e2e tests', async () => {
         const tabTitleText = await page.evaluate(el => el.innerText, tab);
         const descriptionText = await page.evaluate(el => el.innerText, description);
         expect(tabTitleText).toBe('API Mediation Layer API');
-        expect(descriptionText).toBe('API Mediation Layer for z/OS internal API services.');
+        expect(descriptionText).toBe('The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.');
     });
 
     it('Should display the back button', async () => {
@@ -162,7 +162,7 @@ describe('>>> e2e tests', async () => {
         const [res] = await Promise.all([page.click('#go-back-button'), page.waitForNavigation()]);
         await Promise.all([
             await page.waitForSelector('[data-testid=search-bar]'),
-            await page.type('[data-testid=search-bar]', 'api mediation layer api'),
+            await page.type('[data-testid=search-bar]', 'api mediation layer for z/os'),
         ]);
         await page.waitForSelector('div.grid-tile.pop > div > div > div > h3');
         const filteredTiles = await page.$('div.grid-tile.pop > div > div > div > h3');
