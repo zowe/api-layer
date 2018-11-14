@@ -15,7 +15,7 @@ import lombok.Value;
 
 @Builder
 @Value
-@ToString(exclude = { "trustStorePassword", "keyStorePassword" })
+@ToString(exclude = { "trustStorePassword", "keyStorePassword", "keyPassword" })
 public class HttpsConfig {
     @Builder.Default private String protocol = "TLSv1.2";
     @Builder.Default private String trustStore = null;

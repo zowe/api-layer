@@ -43,6 +43,9 @@ public class EurekaClientSecurityConfiguration {
     @Value("${server.ssl.trustStoreType:PKCS12}")
     private String trustStoreType;
 
+    @Value("${server.ssl.keyAlias:#{null}}")
+    private String keyAlias;
+
     @Value("${server.ssl.keyStore:#{null}}")
     private String keyStore;
 
@@ -62,7 +65,7 @@ public class EurekaClientSecurityConfiguration {
 
     @PostConstruct
     public void init() {
-        HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyStore(keyStore).keyPassword(keyPassword)
+        HttpsConfig httpsConfig = HttpsConfig.builder().keyAlias(keyAlias).protocol(protocol).keyStore(keyStore).keyPassword(keyPassword)
                 .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
                 .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
                 .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();

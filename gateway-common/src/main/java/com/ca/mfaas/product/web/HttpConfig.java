@@ -42,6 +42,9 @@ public class HttpConfig {
     @Value("${server.ssl.trustStoreType:PKCS12}")
     private String trustStoreType;
 
+    @Value("${server.ssl.keyAlias:#{null}}")
+    private String keyAlias;
+
     @Value("${server.ssl.keyStore:#{null}}")
     private String keyStore;
 
@@ -74,7 +77,7 @@ public class HttpConfig {
     @PostConstruct
     public void init() {
         try {
-            HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyStore(keyStore).keyPassword(keyPassword)
+            HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
                     .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
                     .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
                     .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
