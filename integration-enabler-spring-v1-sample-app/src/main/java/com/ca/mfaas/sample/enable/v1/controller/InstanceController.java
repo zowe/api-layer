@@ -58,23 +58,4 @@ public class InstanceController {
     public String getPort() {
         return port;
     }
-
-    /**
-     * What is the gateway URL
-     *
-     * @return gateway url
-     */
-    @GetMapping(value = "/gateway-url", produces = "text/plain")
-    @ApiOperation(value = "What is the URI of the Gateway",
-        notes = "What is the URI of the Gateway",
-        response = String.class)
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK"),
-        @ApiResponse(code = 404, message = "URI not found"),
-        @ApiResponse(code = 500, message = "Internal Error Occurred"),
-    })
-    public String getGatewayLocation() throws Exception {
-        return mfaasServiceLocator.locateGatewayUrl().toString();
-    }
-
 }
