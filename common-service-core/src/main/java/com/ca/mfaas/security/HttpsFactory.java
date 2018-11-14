@@ -29,10 +29,14 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
@@ -171,6 +175,7 @@ public class HttpsFactory {
                 loadTrustMaterial(sslContextBuilder);
                 loadKeyMaterial(sslContextBuilder);
                 secureSslContext = sslContextBuilder.build();
+                validateSslConfig();
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                     | UnrecoverableKeyException | KeyManagementException e) {
@@ -181,6 +186,14 @@ public class HttpsFactory {
         } else {
             return secureSslContext;
         }
+    }
+
+    private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
+        KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
+        File keyStoreFile = new File(config.getKeyStore());
+        InputStream istream = new FileInputStream(keyStoreFile);
+        ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
+        ks.getKey(config.getKeyAlias(), config.getKeyPassword().toCharArray());
     }
 
     private ConnectionSocketFactory createSecureSslSocketFactory() {

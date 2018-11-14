@@ -22,6 +22,7 @@ public class HttpsConfig {
     @Builder.Default private String trustStorePassword = null;
     @Builder.Default private String trustStoreType = "PKCS12";
     @Builder.Default private boolean trustStoreRequired = false;
+    @Builder.Default private String keyAlias = null;
     @Builder.Default private String keyStore = null;
     @Builder.Default private String keyStorePassword = null;
     @Builder.Default private String keyPassword = null;
