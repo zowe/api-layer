@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import SwaggerUi, { presets } from 'swagger-ui';
-import 'swagger-ui/dist/swagger-ui.css';
-
 import './swagger.css';
 import Spinner from '../Spinner/Spinner';
 
@@ -60,7 +58,7 @@ export default class SwaggerUI extends Component {
             <div style={{ width: '100%', background: '#ffffff' }}>
                 <Spinner isLoading={isLoading} />
                 {loadingStatus === 'failed' && (
-                    <div style={{ width: '100%', background: '#ffffff', paddingLeft: 120, paddingTop: 30 }}>
+                    <div style={{ width: '100%', background: '#ffffff', paddingLeft: 50, paddingTop: 30 }}>
                         <h2 style={{ color: '#de1b1b' }}>Swagger Not Loaded</h2>
                         <h5 style={{ color: '#de1b1b' }}>See console for details</h5>
                     </div>
