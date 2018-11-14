@@ -23,7 +23,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Djava.io.tmpdir=/tmp \
     -Dapiml.service.hostname=**HOSTNAME** \
     -Dapiml.service.port=**GATEWAY_PORT** \
-    -Dapiml.service.discoveryServiceUrls=http://eureka:password@**IPADDRESS**:**DISCOVERY_PORT**/eureka/ \
+    -Dapiml.service.discoveryServiceUrls=https://**HOSTNAME**:**DISCOVERY_PORT**/eureka/ \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.service.ipAddress=**IPADDRESS** \
     -Dapiml.gateway.timeoutMillis=30000 \

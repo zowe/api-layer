@@ -26,7 +26,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.discovery.password=password \
-    -Dapiml.discovery.allPeersUrls=http://eureka:password@**IPADDRESS**:**DISCOVERY_PORT**/eureka/ \
+    -Dapiml.discovery.allPeersUrls=https://**HOSTNAME**:**DISCOVERY_PORT**/eureka/ \
     -Dapiml.service.hostname=**HOSTNAME** \
     -Dapiml.service.port=**DISCOVERY_PORT** \
     -Dapiml.service.ipAddress=**IPADDRESS** \

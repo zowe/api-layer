@@ -10,9 +10,13 @@
 package com.ca.mfaas.security;
 
 import lombok.Builder;
+import lombok.ToString;
 import lombok.Value;
 
-@Value @Builder public class HttpsConfig {
+@Value
+@Builder
+@ToString(exclude = { "trustStorePassword", "keyStorePassword" })
+public class HttpsConfig {
     @Builder.Default private String protocol = "TLSv1.2";
     @Builder.Default private String trustStore = null;
     @Builder.Default private String trustStorePassword = null;

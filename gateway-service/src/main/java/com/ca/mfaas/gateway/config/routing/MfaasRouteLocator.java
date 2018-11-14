@@ -13,7 +13,6 @@ import com.ca.mfaas.gateway.filters.pre.FilterUtils;
 import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
-import com.ca.mfaas.product.family.ProductFamilyType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -23,7 +22,12 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapp
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Slf4j
 class MfaasRouteLocator extends DiscoveryClientRouteLocator {
@@ -68,11 +72,6 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                 RoutedServices routedServices = new RoutedServices();
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
 
-                // If no instances were found by Zuul, then ask Eureka (ignore our internal Gateway)
-                if (!serviceId.equalsIgnoreCase(ProductFamilyType.GATEWAY.getServiceId())
-                    && (serviceInstances == null || serviceInstances.isEmpty())) {
-                    log.error("No instances found for: " + serviceId + " ---- RE-IMPLEMENT ME !");
-                }
                 if (serviceInstances == null) {
                     log.error("Cannot find any instances of service: " + serviceId);
                     return null;
