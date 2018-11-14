@@ -30,7 +30,6 @@ import org.apache.http.ssl.SSLContexts;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -189,11 +188,15 @@ public class HttpsFactory {
     }
 
     private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
-        KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-        File keyStoreFile = new File(config.getKeyStore());
-        InputStream istream = new FileInputStream(keyStoreFile);
-        ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
-        ks.getKey(config.getKeyAlias(), config.getKeyPassword().toCharArray());
+        if (config.getKeyAlias() != null) {
+            KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
+            File keyStoreFile = new File(config.getKeyStore().replaceFirst("////", "//"));
+            InputStream istream = new FileInputStream(keyStoreFile);
+            ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
+            if (!ks.containsAlias(config.getKeyAlias())) {
+                throw new HttpsConfigError(String.format("Invalid key alias '%s'", config.getKeyAlias()), ErrorCode.WRONG_KEY_ALIAS, config);
+            }
+        }
     }
 
     private ConnectionSocketFactory createSecureSslSocketFactory() {

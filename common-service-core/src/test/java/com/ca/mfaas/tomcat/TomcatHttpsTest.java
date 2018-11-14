@@ -73,6 +73,17 @@ public class TomcatHttpsTest {
         }
     }
 
+    @Test
+    public void wrongKeyAliasShouldFail() throws IOException, LifecycleException {
+        HttpsConfig httpsConfig = correctHttpsKeyStoreSettings().keyAlias("wrong").build();
+        try {
+            startTomcatAndDoHttpsRequest(httpsConfig);
+            fail("excepted message not thrown");
+        } catch (HttpsConfigError e) {
+            assertEquals(ErrorCode.WRONG_KEY_ALIAS, e.getCode());
+        }
+    }
+
     private String pathFromRepository(String path) {
         try {
             return new File("../" + path).getCanonicalPath();

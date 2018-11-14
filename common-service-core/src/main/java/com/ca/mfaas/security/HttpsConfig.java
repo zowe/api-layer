@@ -13,8 +13,8 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
 
-@Value
 @Builder
+@Value
 @ToString(exclude = { "trustStorePassword", "keyStorePassword" })
 public class HttpsConfig {
     @Builder.Default private String protocol = "TLSv1.2";
