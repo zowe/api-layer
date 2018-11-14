@@ -27,12 +27,14 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.service.ipAddress=**IPADDRESS** \
     -Dapiml.gateway.timeoutMillis=30000 \
-    -Dserver.ssl.keystore=$DIR/../localhost/localhost.keystore.p12 \
-    -Dserver.ssl.keystoreType=PKCS12 \
-    -Dserver.ssl.keystorePassword=password \
+    -Dserver.ssl.enabled=true \
+    -Dserver.ssl.keyStore=$DIR/../keystore/localhost/localhost.keystore.p12 \
+    -Dserver.ssl.keyStoreType=PKCS12 \
+    -Dserver.ssl.keyStorePassword=password \
     -Dserver.ssl.keyAlias=localhost \
     -Dserver.ssl.keyPassword=password \
-    -Dserver.ssl.truststore=$DIR/../keystore/localhost/localhost.truststore.p12 \
-    -Dserver.ssl.truststoreType=PKCS12 \
-    -Dserver.ssl.truststorePassword=password \
+    -Dserver.ssl.trustStore=$DIR/../keystore/localhost/localhost.truststore.p12 \
+    -Dserver.ssl.trustStoreType=PKCS12 \
+    -Dserver.ssl.trustStorePassword=password \
+    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar $DIR/../gateway-service.jar &
