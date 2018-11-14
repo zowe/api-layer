@@ -119,7 +119,7 @@ task mergeCoverage() {
 
 task coverage() {
     mergeCoverage.mustRunAfter jacocoSubProjects
-    dependsOn mergeCoverage, jacocoSubProjects, jacocoTestReport, ":api-catalog-ui:javaScriptCoverage"
+    dependsOn mergeCoverage, jacocoSubProjects, jacocoTestReport, ":api-catalog-ui:javaScriptCoverage", ":api-catalog-ui:runTests"
 }
 
 task publishAllVersions {
