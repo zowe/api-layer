@@ -3,13 +3,9 @@ import SwaggerUi, { presets } from 'swagger-ui';
 import 'swagger-ui/dist/swagger-ui.css';
 
 import './swagger.css';
-import Spinner from '../Spinner/Spinner';
+import { Text } from "mineral-ui";
 
 export default class SwaggerUI extends Component {
-    state = {
-        isLoading: false,
-        loadingStatus: null,
-    };
 
     componentDidMount() {
         this.retrieveSwagger();
@@ -41,32 +37,39 @@ export default class SwaggerUI extends Component {
     });
 
     retrieveSwagger = () => {
-        const { url, spec, serviceId, version, service} = this.props;
+        const { service } = this.props;
 
-        const apidocUrl = `${url}/${serviceId}/${version}`;
-
-        const swagger = JSON.parse(service.apiDoc);
-        SwaggerUi({
-            dom_id: '#swaggerContainer',
-            // url: apidocUrl,
-            spec: swagger,
-            presets: [presets.apis],
-            plugins: [this.customPlugins],
-        });
+        if (service.apiDoc !== null && service.apiDoc !== undefined && service.apiDoc.length !== 0) {
+            try {
+                const swagger = JSON.parse(service.apiDoc);
+                SwaggerUi({
+                    dom_id: '#swaggerContainer',
+                    spec: swagger,
+                    presets: [presets.apis],
+                    plugins: [this.customPlugins],
+                });
+            } catch (e) {
+                throw new Error(e);
+            }
+        }
     };
 
     render() {
-        const { isLoading, loadingStatus } = this.state;
+        const { service } = this.props;
+        let error = false;
+        if (service.apiDoc === undefined || service.apiDoc === null || service.apiDoc.length === 0) {
+            error = true;
+        }
         return (
-            <div style={{ width: '100%', background: '#ffffff' }}>
-                <Spinner isLoading={isLoading} />
-                {loadingStatus === 'failed' && (
-                    <div style={{ width: '100%', background: '#ffffff', paddingLeft: 120, paddingTop: 30 }}>
-                        <h2 style={{ color: '#de1b1b' }}>Swagger Not Loaded</h2>
-                        <h5 style={{ color: '#de1b1b' }}>See console for details</h5>
-                    </div>
+            <div>
+            {error &&  (
+                <Text element="h3" color="#de1b1b" fontWeight="bold" style={{ margin: '0 auto', 'background': '#ffff', width: '100%' }}>
+                    <p style={{marginLeft: '55px', marginTop: '50px'}}>Api Documentation for this service could not be retrieved or is not defined.</p>
+                </Text>
                 )}
-                <div id="swaggerContainer" data-testid="swagger"/>
+            {!error && (
+                    <div id="swaggerContainer" data-testid="swagger"/>
+            )}
             </div>
         );
     }
