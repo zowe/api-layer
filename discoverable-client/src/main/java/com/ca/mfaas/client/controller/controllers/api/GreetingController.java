@@ -14,10 +14,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.Date;
 
@@ -47,11 +45,5 @@ public class GreetingController {
             }
         }
         return new Greeting(new Date(), String.format(TEMPLATE, name));
-    }
-
-    @ApiIgnore
-    @GetMapping(value = "/api/v1/path2/{path}")
-    public String getPath(@PathVariable(value = "path") String path) {
-        return "Path: " + path;
     }
 }
