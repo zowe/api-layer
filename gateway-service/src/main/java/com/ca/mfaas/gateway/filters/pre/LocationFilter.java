@@ -49,7 +49,8 @@ public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
         final String proxy = FilterUtils.removeFirstAndLastSlash((String) context.get(PROXY_KEY));
-        String requestPath = context.getRequest().getRequestURI().replaceFirst("/" + proxy,"");
+        final String requestPath = FilterUtils.addFirstSlash((String) context.get(REQUEST_URI_KEY));
+
         if (isRequestThatCanBeProcessed(serviceId, proxy, requestPath)) {
             RoutedServices routedServices = routedServicesMap.get(serviceId);
 
