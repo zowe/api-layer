@@ -12,9 +12,8 @@ const apiCatalogDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer/apicatalog`
 
 beforeAll(async () => {
     browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         ignoreHTTPSErrors: true,
-        dumpio: true,
         args: ['--no-sandbox', '--ignore-certificate-errors'],
     });
     page = await browser.newPage();
@@ -124,38 +123,6 @@ describe('>>> e2e tests', async () => {
         await page.waitFor(2000);
         const backButtonContent = await page.evaluate(el => el.innerText, backButton);
         expect(backButtonContent).toBe('Back');
-    });
-
-    xit('Should display the Gateway service title, URL and description in Swagger', async () => {
-        const [res] = await Promise.all([page.waitForNavigation(), page.goto(defaultDetailPageUrl)]);
-        await page.waitForSelector(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > a > span'
-        );
-        await page.waitForSelector(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2'
-        );
-        await page.waitForSelector(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
-        );
-        const serviceTitle = await page.$(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2'
-        );
-        await page.waitFor(2000);
-        const serviceUrl = await page.$(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > a > span'
-        );
-        const serviceDescription = await page.$(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
-        );
-        const serviceTitleText = await page.evaluate(el => el.innerText, serviceTitle);
-        const serviceUrlValue = await page.evaluate(el => el.innerText, serviceUrl);
-        const serviceDescriptionText = await page.evaluate(el => el.innerText, serviceDescription);
-        const expectedTitleValue = 'API Gateway\n' + ' 1.0.0 ';
-        const expectedDescriptionValue =
-            'REST API for the API Gateway service which is a component of the API Mediation Layer. Use this API to access the Enterprise z/OS Security Manager to perform tasks such as logging in with mainframe credentials and checking authorization to mainframe resources.';
-        expect(serviceTitleText).toBe(expectedTitleValue);
-        expect(serviceUrlValue).toBe(' /api/v1/apicatalog/apidoc/gateway/v1 ');
-        expect(serviceDescriptionText).toBe(expectedDescriptionValue);
     });
 
     it('Should display the API Catalog service title, URL and description in Swagger', async () => {
