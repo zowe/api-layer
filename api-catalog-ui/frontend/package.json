@@ -44,6 +44,7 @@
         "start:mocked-backend": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mocked-backend/server.js",
         "build": "react-scripts build",
         "analyze": "source-map-explorer build/static/js/main.*",
+        "postbuild": "rimraf build/**/*.map",
         "test": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/*",
         "test:unit": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/*",
         "test:int": "react-scripts test --env=jsdom integration-tests/*",
@@ -62,7 +63,16 @@
         "ancestorSeparator": " › ",
         "usePathForSuiteName": "true"
     },
-    "proxy": "http://localhost:8000",
+    "proxy": {
+        "/api": {
+            "target": "https://localhost:10010",
+            "secure": false
+        },
+        "/ui": {
+            "target": "https://localhost:10010",
+            "secure": false
+        }
+    },
     "devDependencies": {
         "babel-cli": "^6.26.0",
         "babel-eslint": "^9.0.0",

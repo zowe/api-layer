@@ -109,9 +109,17 @@ public class ApiCatalogController {
                 // add API Doc to the services to improve UI performance
                 apiContainers.forEach(apiContainer -> {
                     apiContainer.getServices().forEach(apiService -> {
-                        String apiDoc = cachedApiDocService.getApiDocForService(apiService.getServiceId(), "v1");
-                        if (apiDoc != null) {
-                            apiService.setApiDoc(apiDoc);
+                        // try the get teh Api Doc for this service, if it fails for any reason then do not change the existing value
+                        // it may or may not be null
+                        try {
+                            String apiDoc = cachedApiDocService.getApiDocForService(apiService.getServiceId(), "v1");
+                            if (apiDoc != null) {
+                                apiService.setApiDoc(apiDoc);
+                            }
+                        } catch (Exception e) {
+                            log.warn("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
+                                ", processing can continue but this service will not be able to display any Api Documentation.\n" +
+                                "Error Message: " + e.getMessage());
                         }
                     });
                 });

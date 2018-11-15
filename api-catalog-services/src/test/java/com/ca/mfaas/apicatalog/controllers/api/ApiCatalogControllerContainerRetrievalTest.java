@@ -49,9 +49,6 @@ public class ApiCatalogControllerContainerRetrievalTest {
     static class ContextConfiguration {
 
         @MockBean
-        private APIServiceStatusService apiServiceStatusService;
-
-        @MockBean
         private CachedProductFamilyService cachedProductFamilyService;
 
         @Bean
