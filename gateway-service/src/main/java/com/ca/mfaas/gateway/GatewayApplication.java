@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway;
 
+import com.ca.mfaas.enable.EnableApiDiscovery;
 import com.ca.mfaas.gateway.config.ribbon.GatewayRibbonConfig;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
@@ -16,7 +17,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
@@ -32,14 +33,14 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableWebSecurity
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @EnableConfigurationProperties
-@ComponentScan(value = { "com.ca.mfaas.gateway", "com.ca.mfaas.product" }, excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig") })
+@ComponentScan(value = {"com.ca.mfaas.enable", "com.ca.mfaas.gateway", "com.ca.mfaas.product" }, excludeFilters = {
+    @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig") })
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
-@EnableDiscoveryClient
+@EnableEurekaClient
 @EnableWebSocket
+@EnableApiDiscovery
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
     public static void main(String[] args) {
-        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
