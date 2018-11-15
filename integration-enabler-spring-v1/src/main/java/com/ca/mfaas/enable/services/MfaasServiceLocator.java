@@ -36,6 +36,7 @@ import java.util.List;
 /**
  * Find the URL of a service given a service Id
  */
+@SuppressWarnings("Duplicates")
 @Slf4j
 @Service
 public class MfaasServiceLocator {
@@ -225,6 +226,4 @@ public class MfaasServiceLocator {
         }
         return response;
     }
-
-
 }
