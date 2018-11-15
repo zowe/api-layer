@@ -9,34 +9,44 @@
  */
 package com.ca.mfaas.gateway.config.routing;
 
+import com.ca.mfaas.enable.services.MfaasServiceLocator;
+import com.ca.mfaas.enable.services.ServiceInstances;
 import com.ca.mfaas.gateway.filters.pre.FilterUtils;
 import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
-import com.ca.mfaas.product.family.ProductFamilyType;
+import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Slf4j
 class MfaasRouteLocator extends DiscoveryClientRouteLocator {
     private final DiscoveryClient discovery;
     private final ZuulProperties properties;
     private final List<RoutedServicesUser> routedServicesUsers;
+    private final MfaasServiceLocator mfaasServiceLocator;
 
     MfaasRouteLocator(String servletPath, DiscoveryClient discovery, ZuulProperties properties,
-                      ServiceRouteMapper serviceRouteMapper, List<RoutedServicesUser> routedServicesUsers) {
+                      ServiceRouteMapper serviceRouteMapper, List<RoutedServicesUser> routedServicesUsers, MfaasServiceLocator mfaasServiceLocator) {
         super(servletPath, discovery, properties, serviceRouteMapper);
         this.discovery = discovery;
         this.properties = properties;
         this.routedServicesUsers = routedServicesUsers;
+        this.mfaasServiceLocator = mfaasServiceLocator;
     }
 
     /**
@@ -69,9 +79,22 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
 
                 // If no instances were found by Zuul, then ask Eureka (ignore our internal Gateway)
-                if (!serviceId.equalsIgnoreCase(ProductFamilyType.GATEWAY.getServiceId())
-                    && (serviceInstances == null || serviceInstances.isEmpty())) {
-                    log.error("No instances found for: " + serviceId + " ---- RE-IMPLEMENT ME !");
+                if (serviceInstances == null || serviceInstances.isEmpty()) {
+                    try {
+                        ServiceInstances instances = this.mfaasServiceLocator.getServiceInstances(serviceId);
+                        if (instances.getServiceInstances() != null) {
+                            serviceInstances = instances.getServiceInstances();
+                        } else {
+                            List<InstanceInfo> instanceInfos = instances.getInstanceInfos();
+                            if (instanceInfos != null) {
+                                serviceInstances = new ArrayList<>();
+                                List<ServiceInstance> finalServiceInstances = serviceInstances;
+                                instanceInfos.forEach(instance -> finalServiceInstances.add(new EurekaDiscoveryClient.EurekaServiceInstance(instance)));
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 if (serviceInstances == null) {
                     log.error("Cannot find any instances of service: " + serviceId);

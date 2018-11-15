@@ -36,7 +36,7 @@ mfaas:
         hostname: ${environment.hostname:localhost}
         ipAddress: ${environment.ipAddress:127.0.0.1}
     catalog-ui-tile:
-        id: apicatalog
+        id: apimediationlayer
         title: API Catalog
         description: Display services which are discoverable in the Zowe ecosystem and have API documentation
         version:  1.0.0
