@@ -39,6 +39,10 @@ ext {
     velocityVersion = '2.0'
     jsoupVersion = '1.8.3'
     httpCoreVersion = '4.4.10'
+    snakeyamlVersion = '1.23'
+    springHateoasVersion = '0.23.0.RELEASE'
+    springRetryVersion = '1.2.2.RELEASE'
+    jsonUnitVersion = '1.25.0'
 
     libraries = [
         lombok                             : "org.projectlombok:lombok:${lombokVersion}",
@@ -58,7 +62,8 @@ ext {
         spring_boot_starter_log4j2         : "org.springframework.boot:spring-boot-starter-log4j2:${springBootVersion}",
         spring_boot_starter_thymeleaf      : "org.springframework.boot:spring-boot-starter-thymeleaf:${springBootVersion}",
         spring_boot_devtools               : "org.springframework.boot:spring-boot-devtools:${springBootVersion}",
-        spring_retry                       : "org.springframework.retry:spring-retry:1.2.2.RELEASE",
+        spring_retry                       : "org.springframework.retry:spring-retry:${springRetryVersion}",
+        spring_hateoas                     : "org.springframework.hateoas:spring-hateoas:${springHateoasVersion}",
 
         spring_cloud_config_server         : "org.springframework.cloud:spring-cloud-config-server:${springCloudVersion}",
         spring_cloud_starter_config        : "org.springframework.cloud:spring-cloud-starter-config:${springCloudVersion}",
@@ -101,8 +106,8 @@ ext {
         javax_validation                   : "javax.validation:validation-api:${javaxValidationApiVersion}",
         gson                               : "com.google.code.gson:gson:${gsonVersion}",
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
-        tomcatCoyote                       : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
-        tomcatEmbedCore                    : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+        tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
+        tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         apacheCommons                      : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
@@ -112,6 +117,9 @@ ext {
         spring4Test                        : "org.springframework:spring-test:${spring4Version}",
         awaitility                         : "org.awaitility:awaitility:${awaitilityVersion}",
         jjwt                               : "io.jsonwebtoken:jjwt:${jjwtVersion}",
-        apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}"
+        apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
+        snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
+        json_unit                          : "net.javacrumbs.json-unit:json-unit:${jsonUnitVersion}",
+        json_unit_fluent                   : "net.javacrumbs.json-unit:json-unit-fluent:${jsonUnitVersion}"
     ]
 }
