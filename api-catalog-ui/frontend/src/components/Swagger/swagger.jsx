@@ -41,14 +41,15 @@ export default class SwaggerUI extends Component {
     });
 
     retrieveSwagger = () => {
-        const { url, spec, serviceId, version } = this.props;
+        const { url, spec, serviceId, version, service} = this.props;
 
         const apidocUrl = `${url}/${serviceId}/${version}`;
 
+        const swagger = JSON.parse(service.apiDoc);
         SwaggerUi({
             dom_id: '#swaggerContainer',
-            url: apidocUrl,
-            spec,
+            // url: apidocUrl,
+            spec: swagger,
             presets: [presets.apis],
             plugins: [this.customPlugins],
         });

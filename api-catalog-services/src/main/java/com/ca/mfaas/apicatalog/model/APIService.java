@@ -37,6 +37,9 @@ public class APIService implements Serializable {
     @ApiModelProperty(notes = "The service home page of the API service")
     private String homePageUrl;
 
+    @ApiModelProperty(notes = "The API documentation for this service")
+    private String apiDoc;
+
     public APIService(String serviceId, String title, String description, boolean secured, String homePageUrl) {
         this.serviceId = serviceId;
         this.title = title;
@@ -44,5 +47,16 @@ public class APIService implements Serializable {
         this.status = "UP";
         this.secured = secured;
         this.homePageUrl = homePageUrl;
+        this.apiDoc = null;
+    }
+
+    public APIService(String serviceId, String title, String description, boolean secured, String homePageUrl, String apiDoc) {
+        this.serviceId = serviceId;
+        this.title = title;
+        this.description = description;
+        this.status = "UP";
+        this.secured = secured;
+        this.homePageUrl = homePageUrl;
+        this.apiDoc = apiDoc;
     }
 }

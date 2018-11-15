@@ -46,7 +46,7 @@
         "id": "testinson",
         "title": "API tile for testing",
         "status": "DOWN",
-        "description": "Testing Testing Testing",
+        "description": "One Up, One Down",
         "services": [
             {
                 "serviceId": "todo",
@@ -65,7 +65,7 @@
                 "homePageUrl": ""
             }
         ],
-        "totalServices": 1,
+        "totalServices": 2,
         "activeServices": 1,
         "lastUpdatedTimestamp": "2018-08-22T08:32:03.112+0000",
         "createdTimestamp": "2018-08-22T08:32:03.111+0000"

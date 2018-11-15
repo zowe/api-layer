@@ -61,7 +61,7 @@ public class ApiCatalogControllerContainerRetrievalTest {
 
             verify(cachedProductFamilyService, never()).getAllContainers();
 
-            return new ApiCatalogController(cachedProductFamilyService, apiServiceStatusService);
+            return new ApiCatalogController(cachedProductFamilyService, null);
         }
 
         @Bean

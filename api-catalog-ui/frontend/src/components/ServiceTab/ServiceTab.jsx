@@ -8,14 +8,18 @@ export default class ServiceTab extends Component {
         const message = 'The API documentation was retrieved but could not be displayed!';
         const { match, tiles } = this.props;
         const serviceList = tiles.map(prop => prop.services);
+        var selectedService = null;
         let wrongService = false;
         serviceList.forEach(serviceId => {
-            serviceId.forEach(key => {
+            serviceId.forEach(service => {
                 wrongService = false;
                 const previousServiceId = serviceId.map(prop => prop.serviceId)[0];
-                if (key.serviceId !== match.params.serviceId && match.params.serviceId !== previousServiceId) {
+                if (service.serviceId !== match.params.serviceId && match.params.serviceId !== previousServiceId) {
                     wrongService = true;
                     return wrongService;
+                }
+                if (service.serviceId === match.params.serviceId) {
+                    selectedService = service;
                 }
             });
         });
@@ -30,7 +34,9 @@ export default class ServiceTab extends Component {
                     </Text>
                 )}
                 <Shield title={message}>
-                    <SwaggerUI serviceId={match.params.serviceId} version="v1" />
+                    {selectedService !== null && (
+                        <SwaggerUI serviceId={match.params.serviceId} version="v1" service={selectedService}/>
+                    )}
                 </Shield>
             </React.Fragment>
         );

@@ -9,12 +9,12 @@
  */
 package com.ca.mfaas.client.controller.controllers.api;
 
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.Collections;
 
@@ -24,7 +24,7 @@ import java.util.Collections;
  */
 @Slf4j
 @RestController
-@Api(tags = {"Path Operations"}, hidden = true)
+@ApiIgnore
 public class PathController {
 
     @GetMapping(value = "/api/v1/files/{path}/content")
