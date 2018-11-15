@@ -61,6 +61,7 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
         if (Arrays.asList(environment.getActiveProfiles()).contains("https")) {
             if (verifySslCertificatesOfServices) {
                 http.antMatcher("/eureka/**").authorizeRequests().anyRequest().authenticated().and().x509().userDetailsService(x509UserDetailsService());
+                http.antMatcher("/discovery/**").authorizeRequests().anyRequest().authenticated().and().x509().userDetailsService(x509UserDetailsService());
             }
             http.httpBasic().realmName(DISCOVERY_REALM).and().antMatcher("/*").authorizeRequests().anyRequest().authenticated();
         }
