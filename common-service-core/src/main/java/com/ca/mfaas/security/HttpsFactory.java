@@ -187,7 +187,7 @@ public class HttpsFactory {
         }
     }
 
-    private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
+    private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if (config.getKeyAlias() != null) {
             KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
             File keyStoreFile = new File(config.getKeyStore().replaceFirst("////", "//"));
