@@ -36,4 +36,5 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dserver.ssl.trustStore=$DIR/../keystore/localhost/localhost.truststore.p12 \
     -Dserver.ssl.trustStoreType=PKCS12 \
     -Dserver.ssl.trustStorePassword=password \
+    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar $DIR/../gateway-service.jar &
