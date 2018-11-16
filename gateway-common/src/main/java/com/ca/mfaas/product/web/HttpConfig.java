@@ -17,6 +17,7 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.Eure
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -94,8 +95,14 @@ public class HttpConfig {
         }
         catch (Exception e) {
             log.error("Error in HTTPS configuration: {}", e.getMessage(), e);
-            System.exit(1);
+            System.exit(1); // NOSONAR
         }
+    }
+
+    @Bean
+    public SslContextFactory jettySslContextFactory() {
+        // TODO: Replace with verification
+        return new SslContextFactory(true);
     }
 
     @Bean
