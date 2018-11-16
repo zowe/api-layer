@@ -198,9 +198,10 @@ public class HttpsFactory {
     }
 
     private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        if (config.getKeyAlias() != null) {
+        if ((config.getKeyAlias() != null) && !config.getKeyStore().startsWith(SAFKEYRING)) {
             KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-            File keyStoreFile = new File(config.getKeyStore().replaceFirst("////", "//"));
+            log.debug("Validating alias {} in key store: {}", config.getKeyAlias(), config.getKeyStore());
+            File keyStoreFile = new File(config.getKeyStore());
             InputStream istream = new FileInputStream(keyStoreFile);
             ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
             if (!ks.containsAlias(config.getKeyAlias())) {
