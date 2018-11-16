@@ -36,7 +36,9 @@ export default class ServiceTab extends Component {
                 )}
                 <Shield title={message}>
                     {currentService !== null && (
-                        <SwaggerContainer/>
+                        <div style={{ margin: '0 auto', 'background': '#ffff', width: '100%', height: '100%' }}>
+                            <SwaggerContainer/>
+                        </div>
                     )}
                 </Shield>
             </React.Fragment>

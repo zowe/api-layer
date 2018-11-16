@@ -1,8 +1,6 @@
 import { Text } from 'mineral-ui';
 import React, { Component } from 'react';
 import SwaggerUi, { presets } from 'swagger-ui';
-import 'swagger-ui/dist/swagger-ui.css';
-
 import './Swagger.css';
 
 export default class SwaggerUI extends Component {
