@@ -24,9 +24,11 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 @Slf4j
@@ -66,6 +68,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
             List<String> services = this.discovery.getServices();
             String[] ignored = this.properties.getIgnoredServices()
                 .toArray(new String[0]);
+            Set<String> removedRoutes = new HashSet<>();
             for (String serviceId : services) {
                 // Ignore specifically ignored services and those that were manually
                 // configured
@@ -87,17 +90,15 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
 
                 if (staticServices.containsKey(serviceId)
                     && staticServices.get(serviceId).getUrl() == null) {
-                    // Explicitly configured with no URL, cannot be ignored
-                    // all static routes are already in routesMap
-                    // Update location using serviceId if location is null
+                    // Explicitly configured with no URL, they are the default routes from the parent
+                    // We need to remove them
                     ZuulProperties.ZuulRoute staticRoute = staticServices.get(serviceId);
-                    if (!StringUtils.hasText(staticRoute.getLocation())) {
-                        staticRoute.setLocation(serviceId);
-                    }
+                    routesMap.remove(staticRoute.getPath());
+                    removedRoutes.add(staticRoute.getPath());
                 }
                 for (String key : keys) {
                     if (!PatternMatchUtils.simpleMatch(ignored, serviceId)
-                        && !routesMap.containsKey(key)) {
+                        && !routesMap.containsKey(key) && !removedRoutes.contains(key)) {
                         // Not ignored
                         routesMap.put(key, new ZuulProperties.ZuulRoute(key, serviceId));
                     }
