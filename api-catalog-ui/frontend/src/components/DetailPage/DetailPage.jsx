@@ -35,8 +35,10 @@ export default class DetailPage extends Component {
         const {
             tiles,
             isLoading,
+            clearService,
             fetchTilesStop,
             fetchTilesError,
+            selectedTile,
             match,
             match: {
                 params: { tileID },
@@ -49,11 +51,11 @@ export default class DetailPage extends Component {
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
-        } else if (this.tileId !== tileID) {
+        } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== tileID) {
+            clearService();
             fetchTilesStop();
             fetchTilesStart(tileID);
         }
-        this.tileId = tileID;
         return (
             <div className="detail-page">
                 <Spinner isLoading={isLoading} />

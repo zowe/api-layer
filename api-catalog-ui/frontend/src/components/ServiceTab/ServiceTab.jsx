@@ -1,18 +1,28 @@
-import React, { Component } from 'react';
 import { Text } from 'mineral-ui';
-import SwaggerUI from '../Swagger/swagger';
+import React, { Component } from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
+import SwaggerContainer from '../Swagger/SwaggerContainer';
 
 export default class ServiceTab extends Component {
     render() {
         const message = 'The API documentation was retrieved but could not be displayed.';
-        const { match, tiles } = this.props;
-        let selectedService = null;
+        const {
+            match: {
+                params: { tileID, serviceId },
+            },
+            tiles, clearService, selectService, selectedService, selectedTile } = this.props;
+        let currentService = null;
         let invalidService = true;
 
+        if (tiles === null || tiles === undefined || tiles.length === 0) {
+            throw new Error("No tile is selected.")
+        }
         tiles[0].services.forEach(service => {
-            if (service.serviceId === match.params.serviceId) {
-                selectedService = service;
+            if (service.serviceId === serviceId) {
+                currentService = service;
+                if (currentService.serviceId !== selectedService.serviceId || selectedTile !== tileID) {
+                    selectService(currentService, tileID);
+                }
                 invalidService = false;
             }
         });
@@ -20,12 +30,13 @@ export default class ServiceTab extends Component {
             <React.Fragment>
                 {invalidService && (
                     <Text element="h3" style={{ margin: '0 auto', 'background': '#ffff', width: '100%' }}>
-                        <p style={{marginLeft: '55px', marginTop: '50px'}}>This tile does not contain service "{match.params.serviceId}"</p>
+                        <p style={{ marginLeft: '55px', marginTop: '50px' }}>This tile does not contain service
+                            "{serviceId}"</p>
                     </Text>
                 )}
                 <Shield title={message}>
-                    {selectedService !== null && (
-                        <SwaggerUI service={selectedService}/>
+                    {currentService !== null && (
+                        <SwaggerContainer/>
                     )}
                 </Shield>
             </React.Fragment>

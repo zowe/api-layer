@@ -1,9 +1,9 @@
+import { Text } from 'mineral-ui';
 import React, { Component } from 'react';
 import SwaggerUi, { presets } from 'swagger-ui';
 import 'swagger-ui/dist/swagger-ui.css';
 
-import './swagger.css';
-import { Text } from "mineral-ui";
+import './Swagger.css';
 
 export default class SwaggerUI extends Component {
 
@@ -12,8 +12,8 @@ export default class SwaggerUI extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { serviceId, version } = this.props;
-        if (serviceId !== prevProps.serviceId || version !== prevProps.version) {
+        const { selectedService } = this.props;
+        if (selectedService.serviceId !== prevProps.selectedService.serviceId || selectedService.tileId !== prevProps.selectedService.tileId) {
             this.retrieveSwagger();
         }
     }
@@ -37,11 +37,11 @@ export default class SwaggerUI extends Component {
     });
 
     retrieveSwagger = () => {
-        const { service } = this.props;
+        const { selectedService } = this.props;
 
-        if (service.apiDoc !== null && service.apiDoc !== undefined && service.apiDoc.length !== 0) {
+        if (selectedService.apiDoc !== null && selectedService.apiDoc !== undefined && selectedService.apiDoc.length !== 0) {
             try {
-                const swagger = JSON.parse(service.apiDoc);
+                const swagger = JSON.parse(selectedService.apiDoc);
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
                     spec: swagger,
@@ -55,21 +55,24 @@ export default class SwaggerUI extends Component {
     };
 
     render() {
-        const { service } = this.props;
+        const { selectedService } = this.props;
         let error = false;
-        if (service.apiDoc === undefined || service.apiDoc === null || service.apiDoc.length === 0) {
+        if (selectedService.apiDoc === undefined || selectedService.apiDoc === null || selectedService.apiDoc.length === 0) {
             error = true;
         }
         return (
             <div>
-            {error &&  (
-                <Text element="h3" color="#de1b1b" fontWeight="bold" style={{ margin: '0 auto', 'background': '#ffff', width: '100%' }}>
-                    <p style={{marginLeft: '55px', marginTop: '50px'}}>Api Documentation for this service could not be retrieved or is not defined.</p>
-                </Text>
+                {error && (
+                    <Text element="h3" color="#de1b1b" fontWeight="bold"
+                          style={{ margin: '0 auto', 'background': '#ffff', width: '100%' }}>
+                        <p style={{ marginLeft: '55px', marginTop: '50px' }}>Api Documentation for
+                            service {selectedService.title}({selectedService.serviceId}) could not be retrieved or is
+                            not defined.</p>
+                    </Text>
                 )}
-            {!error && (
+                {!error && (
                     <div id="swaggerContainer" data-testid="swagger"/>
-            )}
+                )}
             </div>
         );
     }
