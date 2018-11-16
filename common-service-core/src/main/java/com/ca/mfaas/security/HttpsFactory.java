@@ -137,33 +137,43 @@ public class HttpsFactory {
             sslContextBuilder.setKeyStoreType(config.getKeyStoreType()).setProtocol(config.getProtocol());
 
             if (!config.getKeyStore().startsWith(SAFKEYRING)) {
-                if (config.getKeyStore() == null) {
-                    throw new HttpsConfigError("server.ssl.keyStore configuration parameter is not defined",
-                            ErrorCode.KEYSTORE_NOT_DEFINED, config);
-                }
-                if (config.getKeyStorePassword() == null) {
-                    throw new HttpsConfigError("server.ssl.keyStorePassword configuration parameter is not defined",
-                            ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
-                }
-                log.info("Loading key store file: " + config.getKeyStore());
-                File keyStoreFile = new File(config.getKeyStore());
-                sslContextBuilder.loadKeyMaterial(keyStoreFile,
-                        config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
-                        config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray());
+                loadKeystoreMaterial(sslContextBuilder);
             } else {
-                log.info("Loading key store key ring: " + config.getKeyStore());
-                if (!config.getKeyStore().startsWith(SAFKEYRING + ":////")) {
-                    throw new MalformedURLException("Incorrect key ring format: " + config.getKeyStore()
-                            + ". Make sure you use format safkeyring:////userId/keyRing");
-                }
-                URL keyRing = new URL(config.getKeyStore().replaceFirst("////", "//"));
-
-                sslContextBuilder.loadKeyMaterial(keyRing, config.getKeyStorePassword().toCharArray(),
-                        config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray(), null);
+                loadKeyringMaterial(sslContextBuilder);
             }
         } else {
             log.info("No key store is defined");
         }
+    }
+
+    private void loadKeystoreMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
+            NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        if (config.getKeyStore() == null) {
+            throw new HttpsConfigError("server.ssl.keyStore configuration parameter is not defined",
+                    ErrorCode.KEYSTORE_NOT_DEFINED, config);
+        }
+        if (config.getKeyStorePassword() == null) {
+            throw new HttpsConfigError("server.ssl.keyStorePassword configuration parameter is not defined",
+                    ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
+        }
+        log.info("Loading key store file: " + config.getKeyStore());
+        File keyStoreFile = new File(config.getKeyStore());
+        sslContextBuilder.loadKeyMaterial(keyStoreFile,
+                config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
+                config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray());
+    }
+
+    private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
+            NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        log.info("Loading key ring: " + config.getKeyStore());
+        if (!config.getKeyStore().startsWith(SAFKEYRING + ":////")) {
+            throw new MalformedURLException("Incorrect key ring format: " + config.getKeyStore()
+                    + ". Make sure you use format safkeyring:////userId/keyRing");
+        }
+        URL keyRing = new URL(config.getKeyStore().replaceFirst("////", "//"));
+
+        sslContextBuilder.loadKeyMaterial(keyRing, config.getKeyStorePassword().toCharArray(),
+                config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray(), null);
     }
 
     private synchronized SSLContext createSecureSslContext() {
@@ -187,7 +197,7 @@ public class HttpsFactory {
         }
     }
 
-    private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, UnrecoverableKeyException {
+    private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if (config.getKeyAlias() != null) {
             KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
             File keyStoreFile = new File(config.getKeyStore().replaceFirst("////", "//"));
