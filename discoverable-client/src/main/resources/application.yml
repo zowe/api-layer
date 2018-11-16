@@ -55,9 +55,9 @@ eureka:
         nonSecurePortEnabled: false
         securePortEnabled: true
         preferIpAddress: ${apiml.service.preferIpAddress}
-        homePageUrl: http://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
-        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
-        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
+        homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
+        statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
+        healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
         metadata-map:
             routed-services:
                 ui_v1:
