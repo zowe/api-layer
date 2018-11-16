@@ -1,7 +1,7 @@
 spring.profiles.include: diag
 
 environment:
-    discoveryLocations: http://eureka:password@localhost:10011/eureka/
+    discoveryLocations: https://localhost:10011/eureka/
     dsIpAddress: 0.0.0.0
     esmEnabled: false
     eurekaPassword: password
@@ -23,6 +23,15 @@ eureka:
         leaseExpirationDurationInSeconds: 6
         leaseRenewalIntervalInSeconds: 5
 
+server:
+    ssl:
+        enabled: false
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+
 mfaas:
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
@@ -38,3 +47,4 @@ spring:
 logging:
     level:
         com.ca.mfaas.security: DEBUG
+        # org.apache.http: DEBUG

@@ -30,4 +30,6 @@ dependencies {
     testCompile libraries.spring_boot_starter_web
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.lombok
+    testCompile libraries.javax_servlet_api
+    testCompile(group: 'org.yaml', name: 'snakeyaml', version: '1.23')
 }

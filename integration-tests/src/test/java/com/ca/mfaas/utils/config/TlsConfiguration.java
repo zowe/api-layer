@@ -14,11 +14,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class EnvironmentConfiguration {
-    private GatewayServiceConfiguration gatewayServiceConfiguration;
-    private DiscoveryServiceConfiguration discoveryServiceConfiguration;
-    private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
-    private TlsConfiguration tlsConfiguration;
+@NoArgsConstructor
+public class TlsConfiguration {
+    private String keyAlias;
+    private String keyPassword;
+    private String keyStoreType;
+    private String keyStore;
+    private String keyStorePassword;
+    private String trustStoreType;
+    private String trustStore;
+    private String trustStorePassword;
 }

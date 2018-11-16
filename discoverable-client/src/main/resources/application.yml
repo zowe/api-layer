@@ -39,6 +39,10 @@ server:
     port: ${apiml.service.port}
     servlet:
         contextPath: /discoverableclient
+    ssl:
+        enabled: false
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
 
 eureka:
     instance:
