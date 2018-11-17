@@ -102,13 +102,13 @@ public class HttpConfig {
     @Bean
     public SslContextFactory jettySslContextFactory() {
         if (verifySslCertificatesOfServices) {
-            SslContextFactory sslContextFactory = new SslContextFactory(keyStore);
+            SslContextFactory sslContextFactory = new SslContextFactory(HttpsFactory.replaceFourSlashes(keyStore));
             sslContextFactory.setProtocol(protocol);
             sslContextFactory.setKeyStorePassword(keyStorePassword);
             sslContextFactory.setKeyStoreType(keyStoreType);
             sslContextFactory.setCertAlias(keyAlias);
             if (trustStore != null) {
-                sslContextFactory.setTrustStorePath(trustStore);
+                sslContextFactory.setTrustStorePath(HttpsFactory.replaceFourSlashes(trustStore));
                 sslContextFactory.setTrustStoreType(trustStoreType);
                 sslContextFactory.setTrustStorePassword(trustStorePassword);
             }

@@ -131,9 +131,8 @@ public class HttpsFactory {
             throw new MalformedURLException("Incorrect key ring format: " + config.getTrustStore()
                     + ". Make sure you use format safkeyring:////userId/keyRing");
         }
-        return new URL(uri.replaceFirst("////", "//"));
+        return new URL(replaceFourSlashes(uri));
     }
-
 
     private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException,
             KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
@@ -237,15 +236,17 @@ public class HttpsFactory {
     }
 
     public void setSystemSslProperties() {
-        setSystemProperty("javax.net.ssl.keyStore",
-                config.getKeyStore() == null ? null : config.getKeyStore().replaceFirst("////", "//"));
+        setSystemProperty("javax.net.ssl.keyStore", replaceFourSlashes(config.getKeyStore()));
         setSystemProperty("javax.net.ssl.keyStorePassword", config.getKeyStorePassword());
         setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
 
-        setSystemProperty("javax.net.ssl.trustStore",
-                config.getTrustStore() == null ? null : config.getTrustStore().replaceFirst("////", "//"));
+        setSystemProperty("javax.net.ssl.trustStore", replaceFourSlashes(config.getTrustStore()));
         setSystemProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword());
         setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
+    }
+
+    public static String replaceFourSlashes(String storeUri) {
+        return storeUri == null ? null : storeUri.replaceFirst("////", "//");
     }
 
     public HostnameVerifier createHostnameVerifier() {
