@@ -51,6 +51,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     public WebSocketProxyServerHandler(DiscoveryClient discovery, SslContextFactory jettySslContextFactory) {
         this.discovery = discovery;
         this.jettySslContextFactory = jettySslContextFactory;
+        log.debug("Creating WebSocketProxyServerHandler {} jettySslContextFactory={}", this, jettySslContextFactory);
     }
 
     public void addRoutedServices(String serviceId, RoutedServices routedServices) {
@@ -99,7 +100,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             String path, WebSocketSession webSocketSession) throws IOException {
         String targetUrl = (serviceInstance.isSecure() ? "wss" : "ws") + "://" + serviceInstance.getHost() + ":"
                 + serviceInstance.getPort() + service.getServiceUrl() + "/" + path;
-        log.debug(String.format("Opening routed WebSocket session from %s to %s", uri.toString(), targetUrl));
+        log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, jettySslContextFactory, this));
         try {
             WebSocketRoutedSession session = new WebSocketRoutedSession(webSocketSession, targetUrl, jettySslContextFactory);
             routedSessions.put(webSocketSession.getId(), session);
@@ -137,7 +138,10 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage)
             throws Exception {
         log.debug("handleMessage(session={},message={})", webSocketSession, webSocketMessage);
-        getRoutedSession(webSocketSession).sendMessageToServer(webSocketMessage);
+        WebSocketRoutedSession session = getRoutedSession(webSocketSession);
+        if (session != null) {
+            session.sendMessageToServer(webSocketMessage);
+        }
     }
 
     private WebSocketRoutedSession getRoutedSession(WebSocketSession webSocketSession) {

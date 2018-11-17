@@ -112,13 +112,8 @@ public class HttpsFactory {
                 sslContextBuilder.loadTrustMaterial(trustStoreFile, config.getTrustStorePassword().toCharArray());
             } else {
                 log.info("Loading trust store key ring: " + config.getTrustStore());
-                if (!config.getTrustStore().startsWith(SAFKEYRING + ":////")) {
-                    throw new MalformedURLException("Incorrect key ring format: " + config.getTrustStore()
-                            + ". Make sure you use format safkeyring:////userId/keyRing");
-                }
-                URL keyRing = new URL(config.getTrustStore().replaceFirst("////", "//"));
-
-                sslContextBuilder.loadTrustMaterial(keyRing, config.getTrustStorePassword().toCharArray());
+                sslContextBuilder.loadTrustMaterial(keyRingUrl(config.getTrustStore()),
+                        config.getTrustStorePassword() == null ? null : config.getTrustStorePassword().toCharArray());
             }
         } else {
             if (config.isTrustStoreRequired()) {
@@ -130,6 +125,15 @@ public class HttpsFactory {
             }
         }
     }
+
+    private URL keyRingUrl(String uri) throws MalformedURLException {
+        if (!uri.startsWith(SAFKEYRING + ":////")) {
+            throw new MalformedURLException("Incorrect key ring format: " + config.getTrustStore()
+                    + ". Make sure you use format safkeyring:////userId/keyRing");
+        }
+        return new URL(uri.replaceFirst("////", "//"));
+    }
+
 
     private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException,
             KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
@@ -165,14 +169,9 @@ public class HttpsFactory {
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
-        log.info("Loading key ring: " + config.getKeyStore());
-        if (!config.getKeyStore().startsWith(SAFKEYRING + ":////")) {
-            throw new MalformedURLException("Incorrect key ring format: " + config.getKeyStore()
-                    + ". Make sure you use format safkeyring:////userId/keyRing");
-        }
-        URL keyRing = new URL(config.getKeyStore().replaceFirst("////", "//"));
-
-        sslContextBuilder.loadKeyMaterial(keyRing, config.getKeyStorePassword().toCharArray(),
+        log.info("Loading trust key ring: " + config.getKeyStore());
+        sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()),
+                config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
                 config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray(), null);
     }
 
@@ -200,8 +199,15 @@ public class HttpsFactory {
     private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if (config.getKeyAlias() != null) {
             KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-            File keyStoreFile = new File(config.getKeyStore().replaceFirst("////", "//"));
-            InputStream istream = new FileInputStream(keyStoreFile);
+            InputStream istream;
+            if (config.getKeyStore().startsWith(SAFKEYRING)) {
+                URL url = keyRingUrl(config.getKeyStore());
+                istream = url.openStream();
+            }
+            else {
+                File keyStoreFile = new File(config.getKeyStore());
+                istream = new FileInputStream(keyStoreFile);
+            }
             ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
             if (!ks.containsAlias(config.getKeyAlias())) {
                 throw new HttpsConfigError(String.format("Invalid key alias '%s'", config.getKeyAlias()), ErrorCode.WRONG_KEY_ALIAS, config);
