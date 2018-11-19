@@ -2,6 +2,9 @@
 
 [Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
 
+[![codecov](https://codecov.io/gh/plavjanik/api-layer/branch/master/graph/badge.svg)](https://codecov.io/gh/zowe/api-layer)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/zowe/api-layer.svg?columns=all)](https://waffle.io/zowe/api-layer)
+
 The home of Zowe API Mediation Layer
 
 ## Prequisites 
