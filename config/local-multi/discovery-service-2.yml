@@ -1,25 +1,34 @@
-environment:
-    cacheRefreshDelayInMillis: 10000
-    discoveryLocations: http://eureka:password@localhost2:10021/eureka/,http://eureka:password@localhost3:10031/eureka/
-    dsIpAddress: 0.0.0.0
-    eurekaPassword: password
-    eurekaUserId: eureka
-    hostname: localhost3
-    initialCacheRefreshDelayInMillis: 10000
-    ipAddress: 127.0.0.3
-    port: 10031
-    preferIpAddress: false
-    registryServiceInitialDelayInSeconds: 10
-    registryServiceRetryDelayInSeconds: 5
-    truststore: keystore/local/localhost_truststore.jks
-    truststorePassword: trustword
-    truststoreType: JKS
-    updateThresholdInMillis: 10000
+spring.profiles.include: diag
 
-discovery:
-    staticApiDefinitionsDirectory: config/local/api-defs
+apiml:
+    service:
+        hostname: localhost3
+        ipAddress: 127.0.0.3
+        port: 10031
+    discovery:
+        staticApiDefinitionsDirectory: config/local/api-defs
+        allPeersUrls: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
 
 spring:
     output:
         ansi:
             enabled: always
+
+---
+spring.profiles: https
+
+apiml:
+    discovery:
+        allPeersUrls: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
+
+server:
+    address: 0.0.0.0
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStoreType: PKCS12
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password

@@ -94,4 +94,7 @@ server:
     address: ${mfaas.service.hostname}
     port: ${mfaas.server.port}
     contextPath: ${mfaas.server.contextPath}
+    ssl:
+        enabled: false
+        protocol: TLS
 

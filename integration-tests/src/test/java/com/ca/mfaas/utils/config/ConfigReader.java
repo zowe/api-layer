@@ -36,9 +36,12 @@ public class ConfigReader {
                         log.info("Can't read service configuration from resource file, using default: http://localhost:10010");
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, "qadba01", "auto01");
-                        DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("http", "eureka", "password", "localhost", 10011, 1);
+                        DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
                         ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = new ApiCatalogServiceConfiguration("user", "user");
-                        configuration = new EnvironmentConfiguration(gatewayServiceConfiguration, discoveryServiceConfiguration, apiCatalogServiceConfiguration);
+                        TlsConfiguration tlsConfiguration = new TlsConfiguration("localhost", "password", "PKCS12",
+                                "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
+                                "../keystore/localhost/localhost.truststore.p12", "password");
+                        configuration = new EnvironmentConfiguration(gatewayServiceConfiguration, discoveryServiceConfiguration, apiCatalogServiceConfiguration, tlsConfiguration);
                     }
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
@@ -46,14 +49,18 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setPort(Integer.parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort()))));
                     configuration.getGatewayServiceConfiguration().setUser(System.getProperty("gateway.user", configuration.getGatewayServiceConfiguration().getUser()));
                     configuration.getGatewayServiceConfiguration().setPassword(System.getProperty("gateway.password", configuration.getGatewayServiceConfiguration().getPassword()));
+
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
                     configuration.getDiscoveryServiceConfiguration().setPassword(System.getProperty("discovery.password", configuration.getDiscoveryServiceConfiguration().getPassword()));
                     configuration.getDiscoveryServiceConfiguration().setHost(System.getProperty("discovery.host", configuration.getDiscoveryServiceConfiguration().getHost()));
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
+
                     configuration.getApiCatalogServiceConfiguration().setUser(System.getProperty("apicatalog.user", configuration.getApiCatalogServiceConfiguration().getUser()));
                     configuration.getApiCatalogServiceConfiguration().setPassword(System.getProperty("apicatalog.password", configuration.getApiCatalogServiceConfiguration().getPassword()));
+
+                    setTlsConfigurationFromSystemProperties(configuration);
 
                     instance = configuration;
                 }
@@ -61,5 +68,16 @@ public class ConfigReader {
         }
 
         return instance;
+    }
+
+    private static void setTlsConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
+        TlsConfiguration tlsConfiguration = configuration.getTlsConfiguration();
+        tlsConfiguration.setKeyAlias(System.getProperty("tlsConfiguration.keyAlias", tlsConfiguration.getKeyAlias()));
+        tlsConfiguration.setKeyPassword(System.getProperty("tlsConfiguration.keyPassword", tlsConfiguration.getKeyPassword()));
+        tlsConfiguration.setKeyStoreType(System.getProperty("tlsConfiguration.keyStoreType", tlsConfiguration.getKeyStoreType()));
+        tlsConfiguration.setKeyPassword(System.getProperty("tlsConfiguration.keyStorePassword", tlsConfiguration.getKeyStorePassword()));
+        tlsConfiguration.setTrustStoreType(System.getProperty("tlsConfiguration.trustStoreType", tlsConfiguration.getTrustStoreType()));
+        tlsConfiguration.setTrustStore(System.getProperty("tlsConfiguration.trustStore", tlsConfiguration.getTrustStore()));
+        tlsConfiguration.setTrustStoreType(System.getProperty("tlsConfiguration.trustStorePassword", tlsConfiguration.getTrustStorePassword()));
     }
 }

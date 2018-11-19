@@ -5,7 +5,7 @@ gatewayServiceConfiguration:
     user: qadba01
     password: auto01
 discoveryServiceConfiguration:
-    scheme: http
+    scheme: https
     user: eureka
     password: password
     host: localhost
@@ -14,3 +14,12 @@ discoveryServiceConfiguration:
 apiCatalogServiceConfiguration:
     user: user
     password: user
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
