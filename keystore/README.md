@@ -69,6 +69,13 @@ The `local-ca-filename` follows the format `keystore/{path}/{suffix}` and is use
 The `local-ca-password` is the local CA keystore password.
 
 
+### Export the service certificate to PEM format
+
+Some utilities (e.g. `http`) requires the service certificate to be in the PEM format. Use following command to convert it to the PEM format:
+
+    openssl pkcs12 -in keystore/localhost/localhost.keystore.p12 -out keystore/localhost/localhost.pem -passin 'pass:password' -nodes
+
+
 ### Example
 
 If you have the sample service described in the User Guide at [this link](https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md#sample-rest-api-service) you need to complete the following steps:

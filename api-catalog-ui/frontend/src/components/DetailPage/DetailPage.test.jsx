@@ -7,7 +7,7 @@ import DetailPage from './DetailPage';
 const tile = {
     version: '1.0.0',
     id: 'apicatalog',
-    title: 'API Mediation Layer API',
+    title: 'API Mediation Layer for z/OS internal API services',
     status: 'UP',
     description: 'lkajsdlkjaldskj',
     services: [

@@ -1,5 +1,5 @@
 environment:
-    discoveryLocations: http://eureka:password@localhost2:10021/eureka/,http://eureka:password@localhost3:10031/eureka/
+    discoveryLocations: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
     dsIpAddress: 0.0.0.0
     esmEnabled: false
     eurekaPassword: password
@@ -9,9 +9,9 @@ environment:
     ipAddress: 127.0.0.1
     port: 10014
     preferIpAddress: false
-    truststore: keystore/local/localhost_truststore.jks
-    truststorePassword: trustword
-    truststoreType: JKS
+    truststore: keystore/localhost/localhost.truststore.p12
+    truststorePassword: password
+    truststoreType: PKCS12
 
 eureka:
     client:
@@ -21,6 +21,14 @@ eureka:
         leaseExpirationDurationInSeconds: 6
         leaseRenewalIntervalInSeconds: 5
 
+server:
+    ssl:
+        enabled: false
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
 mfaas:
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
@@ -32,3 +40,8 @@ spring:
     output:
         ansi:
             enabled: always
+
+logging:
+    level:
+        com.ca.mfaas.security: DEBUG
+        # org.apache.http: DEBUG

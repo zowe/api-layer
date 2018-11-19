@@ -111,8 +111,8 @@ describe('>>> Integration tests', () => {
             }
         );
 
-        await wait(() => getByText('Available APIs'));
-        expect(container.querySelector('.api-heading').textContent).toEqual('Available APIs');
+        await wait(() => getByText('Available API services'));
+        expect(container.querySelector('.api-heading').textContent).toEqual('Available API services');
         await wait(() => getByTestId('tile'));
         const tiles = queryAllByTestId('tile');
 
@@ -211,8 +211,8 @@ describe('>>> Integration tests', () => {
 
         fireEvent.click(backButton);
 
-        await wait(() => getByText('Available APIs'));
-        const dashboard = getByText('Available APIs');
+        await wait(() => getByText('Available API services'));
+        const dashboard = getByText('Available API services');
 
         expect(dashboard).toBeTruthy();
     });

@@ -20,15 +20,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GatewayRibbonConfig {
 
-    @Autowired
-    private CloseableHttpClient secureHttpClient;
-
     @Bean
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
-            CloseableHttpClient secureHttpClient,
-            IClientConfig config,
-            ServerIntrospector serverIntrospector) {
+        CloseableHttpClient secureHttpClient,
+        IClientConfig config,
+        ServerIntrospector serverIntrospector) {
         return new GatewayRibbonLoadBalancingHttpClient(secureHttpClient, config, serverIntrospector);
     }
 }

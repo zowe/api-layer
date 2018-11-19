@@ -53,7 +53,7 @@ mfaas:
         hostname: ${environment.hostname}
         ipAddress: ${environment.ipAddress}
     catalog-ui-tile:
-        id: apicatalog
+        id: apimediationlayer
         title: CA API Catalog
         description: Display services which are discoverable in the MFaaS ecosystem and have API documentation
         version: 1.0.0
