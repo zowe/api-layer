@@ -37,6 +37,7 @@ import javax.net.ssl.SSLHandshakeException;
 public class TomcatHttpsTest {
     private static final String EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN = "excepted SSLHandshakeException exception not thrown";
     private static final String EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN = "excepted HttpsConfigError exception not thrown";
+    private static final String UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE = "unable to find valid certification path";
     private static final String STORE_PASSWORD = "password";  // NOSONAR
 
     @Test
@@ -52,7 +53,7 @@ public class TomcatHttpsTest {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
         } catch (SSLHandshakeException e) {  // NOSONAR
-            assertTrue(e.getMessage().contains("unable to find valid certification path"));
+            assertTrue(e.getMessage().contains(UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE));
         }
     }
 
@@ -64,8 +65,15 @@ public class TomcatHttpsTest {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
         } catch (SSLHandshakeException e) {  // NOSONAR
-            assertTrue(e.getMessage().contains("unable to find valid certification path"));
+            assertTrue(e.getMessage().contains(UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE));
         }
+    }
+
+    @Test
+    public void trustStoreWithDifferentCertificateAuthorityShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
+        HttpsConfig httpsConfig = correctHttpsSettings().verifySslCertificatesOfServices(false)
+                .trustStore(pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
+        startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
     @Test
