@@ -41,7 +41,8 @@ import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 public class TomcatServerFactory {
-    private final static String SERVLET_NAME = "hello";
+    private static final String SERVLET_NAME = "hello";
+    private static final String STORE_PASSWORD = "password";  // NOSONAR
 
     public Tomcat startTomcat(HttpsConfig httpsConfig) throws IOException {
         Tomcat tomcat = new Tomcat();
@@ -67,7 +68,7 @@ public class TomcatServerFactory {
         try {
             tomcat.start();
         } catch (LifecycleException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e);  // NOSONAR
         }
         return tomcat;
     }
@@ -77,9 +78,14 @@ public class TomcatServerFactory {
         httpsConnector.setPort(0);
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
+        httpsConnector.setAttribute("clientAuth",
+                Boolean.toString(httpsConfig.isClientAuth() && httpsConfig.isVerifySslCertificatesOfServices()));
         httpsConnector.setAttribute("keystoreFile", httpsConfig.getKeyStore());
-        httpsConnector.setAttribute("clientAuth", Boolean.toString(httpsConfig.isClientAuth()));
-        httpsConnector.setAttribute("keystorePass", httpsConfig.getKeyPassword());
+        httpsConnector.setAttribute("keystorePass", httpsConfig.getKeyStorePassword());
+        if (httpsConfig.isClientAuth()) {
+            httpsConnector.setAttribute("truststoreFile", httpsConfig.getTrustStore());
+            httpsConnector.setAttribute("truststorePass", httpsConfig.getTrustStorePassword());
+        }
         httpsConnector.setAttribute("sslProtocol", httpsConfig.getProtocol());
         httpsConnector.setAttribute("SSLEnabled", true);
         return httpsConnector;
@@ -103,9 +109,9 @@ public class TomcatServerFactory {
 
         HttpsConfig httpsConfig = HttpsConfig.builder()
                 .keyStore(new File("keystore/localhost/localhost.keystore.p12").getCanonicalPath())
-                .keyStorePassword("password").keyPassword("password")
+                .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD)
                 .trustStore(new File("keystore/localhost/localhost.truststore.p12").getCanonicalPath())
-                .trustStorePassword("password").protocol("TLSv1.2").build();
+                .trustStorePassword(STORE_PASSWORD).protocol("TLSv1.2").build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
 
         Tomcat tomcat = new TomcatServerFactory().startTomcat(httpsConfig);

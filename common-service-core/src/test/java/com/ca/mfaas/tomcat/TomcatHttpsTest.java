@@ -9,6 +9,17 @@
  */
 package com.ca.mfaas.tomcat;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import com.ca.mfaas.security.HttpsConfig;
+import com.ca.mfaas.security.HttpsConfigError;
+import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
+import com.ca.mfaas.security.HttpsFactory;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.http.HttpResponse;
@@ -22,16 +33,13 @@ import java.io.IOException;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import com.ca.mfaas.security.HttpsConfig;
-import com.ca.mfaas.security.HttpsConfigError;
-import com.ca.mfaas.security.HttpsFactory;
-import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
-
+@Slf4j
 public class TomcatHttpsTest {
+    private static final String EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN = "excepted SSLHandshakeException exception not thrown";
+    private static final String EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN = "excepted HttpsConfigError exception not thrown";
+    private static final String UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE = "unable to find valid certification path";
+    private static final String STORE_PASSWORD = "password";  // NOSONAR
+
     @Test
     public void correctConfigurationShouldWork() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = correctHttpsSettings().build();
@@ -43,9 +51,9 @@ public class TomcatHttpsTest {
         HttpsConfig httpsConfig = correctHttpsKeyStoreSettings().build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
-            fail("excepted SSLHandshakeException message not thrown");
-        } catch (SSLHandshakeException e) {
-            assertTrue(e.getMessage().contains("unable to find valid certification path"));
+            fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
+        } catch (SSLHandshakeException e) {  // NOSONAR
+            assertTrue(e.getMessage().contains(UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE));
         }
     }
 
@@ -55,10 +63,17 @@ public class TomcatHttpsTest {
                 .trustStore(pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
-            fail("excepted SSLHandshakeException message not thrown");
-        } catch (SSLHandshakeException e) {
-            assertTrue(e.getMessage().contains("unable to find valid certification path"));
+            fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
+        } catch (SSLHandshakeException e) {  // NOSONAR
+            assertTrue(e.getMessage().contains(UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE));
         }
+    }
+
+    @Test
+    public void trustStoreWithDifferentCertificateAuthorityShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
+        HttpsConfig httpsConfig = correctHttpsSettings().verifySslCertificatesOfServices(false)
+                .trustStore(pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
+        startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
     @Test
@@ -67,8 +82,8 @@ public class TomcatHttpsTest {
                 .trustStore(pathFromRepository("README.md")).build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
-            fail("excepted SSLHandshakeException message not thrown");
-        } catch (HttpsConfigError e) {
+            fail(EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN);
+        } catch (HttpsConfigError e) {  // NOSONAR
             assertEquals(ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, e.getCode());
         }
     }
@@ -78,25 +93,57 @@ public class TomcatHttpsTest {
         HttpsConfig httpsConfig = correctHttpsKeyStoreSettings().keyAlias("wrong").build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
-            fail("excepted message not thrown");
-        } catch (HttpsConfigError e) {
+            fail(EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN);
+        } catch (HttpsConfigError e) {  // NOSONAR
             assertEquals(ErrorCode.WRONG_KEY_ALIAS, e.getCode());
         }
     }
 
-    private String pathFromRepository(String path) {
+    @Test
+    public void correctConfigurationWithClientAuthenticationShouldWork() throws IOException, LifecycleException {
+        HttpsConfig httpsConfig = correctHttpsSettings().clientAuth(true).build();
+        startTomcatAndDoHttpsRequest(httpsConfig);
+    }
+
+    @Test
+    public void wrongClientCertificateShouldFail() throws IOException, LifecycleException {
+        HttpsConfig serverConfig = correctHttpsSettings().clientAuth(true).build();
+        HttpsConfig clientConfig = correctHttpsSettings().keyStore(pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
         try {
-            return new File("../" + path).getCanonicalPath();
-        } catch (IOException e) {
-            throw new Error("Invalid repository path: " + path, e);
+            startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
+            fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
+        } catch (SSLHandshakeException e) {  // NOSONAR
+            assertTrue(e.getMessage().contains("bad_certificate"));
         }
     }
 
-    private void startTomcatAndDoHttpsRequest(HttpsConfig httpsConfig) throws IOException, LifecycleException {
-        Tomcat tomcat = new TomcatServerFactory().startTomcat(httpsConfig);
+    @Test
+    public void wrongClientCertificateShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
+        HttpsConfig serverConfig = correctHttpsSettings().clientAuth(true).verifySslCertificatesOfServices(false).build();
+        HttpsConfig clientConfig = correctHttpsSettings().keyStore(pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
+        startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
+    }
+
+    private String pathFromRepository(String path) {
+        String newPath = "../" + path;
         try {
-            HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-            HttpClient client = httpsFactory.createSecureHttpClient();
+            return new File(newPath).getCanonicalPath();
+        } catch (IOException e) {
+            log.error("Error opening file {}", newPath, e);
+            fail("Invalid repository path: " + newPath);
+            return null;
+        }
+    }
+
+    private void startTomcatAndDoHttpsRequest(HttpsConfig config) throws IOException, LifecycleException {
+        startTomcatAndDoHttpsRequest(config, config);
+    }
+
+    private void startTomcatAndDoHttpsRequest(HttpsConfig serverConfig, HttpsConfig clientConfig) throws IOException, LifecycleException {
+        Tomcat tomcat = new TomcatServerFactory().startTomcat(serverConfig);
+        try {
+            HttpsFactory clientHttpsFactory = new HttpsFactory(clientConfig);
+            HttpClient client = clientHttpsFactory.createSecureHttpClient();
 
             int port = TomcatServerFactory.getLocalPort(tomcat);
             HttpGet get = new HttpGet(String.format("https://localhost:%d", port));
@@ -113,13 +160,13 @@ public class TomcatHttpsTest {
 
     private HttpsConfig.HttpsConfigBuilder correctHttpsKeyStoreSettings() throws IOException {
         return HttpsConfig.builder().protocol("TLSv1.2")
-                .keyStore(pathFromRepository("keystore/localhost/localhost.keystore.p12")).keyStorePassword("password")
-                .keyPassword("password");
+                .keyStore(pathFromRepository("keystore/localhost/localhost.keystore.p12"))
+                .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD);
     }
 
     private HttpsConfig.HttpsConfigBuilder correctHttpsSettings() throws IOException {
         return correctHttpsKeyStoreSettings()
                 .trustStore(pathFromRepository("keystore/localhost/localhost.truststore.p12"))
-                .trustStorePassword("password");
+                .trustStorePassword(STORE_PASSWORD);
     }
 }
