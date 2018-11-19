@@ -28,6 +28,8 @@ Do not use these certificates in other environments. More details can be found a
 
 ### Discovery Service
 
+**Note:** If you want to run the discovery service using IntelliJ Run Dashboard, you need to add `https` in the `Active profiles` field in `Edit Configuration`. 
+
 ```shell
 java -jar discovery-service/build/libs/discovery-service.jar --spring.config.additional-location=file:./config/local/discovery-service.yml
 ```
