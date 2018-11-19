@@ -77,7 +77,7 @@ public class HttpsFactory {
         if (config.isVerifySslCertificatesOfServices()) {
             return createSecureSslSocketFactory();
         } else {
-            log.warn("The gateway is not verifying the TLS/SSL certificates of the services");
+            log.warn("The service is not verifying the TLS/SSL certificates of the services");
             return createIgnoringSslSocketFactory();
         }
     }
