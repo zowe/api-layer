@@ -99,6 +99,31 @@ public class TomcatHttpsTest {
         }
     }
 
+    @Test
+    public void correctConfigurationWithClientAuthenticationShouldWork() throws IOException, LifecycleException {
+        HttpsConfig httpsConfig = correctHttpsSettings().clientAuth(true).build();
+        startTomcatAndDoHttpsRequest(httpsConfig);
+    }
+
+    @Test
+    public void wrongClientCertificateShouldFail() throws IOException, LifecycleException {
+        HttpsConfig serverConfig = correctHttpsSettings().clientAuth(true).build();
+        HttpsConfig clientConfig = correctHttpsSettings().keyStore(pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
+        try {
+            startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
+            fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
+        } catch (SSLHandshakeException e) {  // NOSONAR
+            assertTrue(e.getMessage().contains("bad_certificate"));
+        }
+    }
+
+    @Test
+    public void wrongClientCertificateShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
+        HttpsConfig serverConfig = correctHttpsSettings().clientAuth(true).verifySslCertificatesOfServices(false).build();
+        HttpsConfig clientConfig = correctHttpsSettings().keyStore(pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
+        startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
+    }
+
     private String pathFromRepository(String path) {
         String newPath = "../" + path;
         try {
@@ -110,11 +135,15 @@ public class TomcatHttpsTest {
         }
     }
 
-    private void startTomcatAndDoHttpsRequest(HttpsConfig httpsConfig) throws IOException, LifecycleException {
-        Tomcat tomcat = new TomcatServerFactory().startTomcat(httpsConfig);
+    private void startTomcatAndDoHttpsRequest(HttpsConfig config) throws IOException, LifecycleException {
+        startTomcatAndDoHttpsRequest(config, config);
+    }
+
+    private void startTomcatAndDoHttpsRequest(HttpsConfig serverConfig, HttpsConfig clientConfig) throws IOException, LifecycleException {
+        Tomcat tomcat = new TomcatServerFactory().startTomcat(serverConfig);
         try {
-            HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-            HttpClient client = httpsFactory.createSecureHttpClient();
+            HttpsFactory clientHttpsFactory = new HttpsFactory(clientConfig);
+            HttpClient client = clientHttpsFactory.createSecureHttpClient();
 
             int port = TomcatServerFactory.getLocalPort(tomcat);
             HttpGet get = new HttpGet(String.format("https://localhost:%d", port));
