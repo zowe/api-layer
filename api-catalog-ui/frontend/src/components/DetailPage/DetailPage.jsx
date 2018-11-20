@@ -12,7 +12,6 @@ import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
-import DetailBackground from '../../assets/images/detail-Illustration.svg';
 
 export default class DetailPage extends Component {
     tileId = null;
@@ -122,47 +121,64 @@ export default class DetailPage extends Component {
                 <div className="content-description-container">
                     {tiles !== undefined &&
                         tiles.length === 1 && (
-                        <Suspense>
-                            <Router history={history}>
-                                <Switch>
-                                    <Route
-                                        exact
-                                        path={`${match.path}`}
-                                        render={() => (
-                                            <Redirect replace to={`${match.url}/${tiles[0].services[0].serviceId}`} />
-                                        )}
-                                    />
-                                    <Route
-                                        exact
-                                        path={`${match.path}/:serviceId`}
-                                        render={() => (
-                                            <div className="tabs-swagger">
-                                                <div className="tabs-container">
-                                                    {tiles !== undefined &&
-                                                        tiles.length === 1 &&
-                                                        tiles[0].services.map(({ serviceId, title, status }) => (
-                                                            <Tooltip key={serviceId} content={title} placement="bottom">
-                                                                <React.Fragment>
-                                                                    {status === 'UP' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4">{serviceId}</Text></NavTab>}
-                                                                    {status === 'DOWN' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4" color="#de1b1b">{serviceId}</Text></NavTab>}
-                                                                </React.Fragment>
-                                                            </Tooltip>
-                                                        ))}
+                            <Suspense>
+                                <Router history={history}>
+                                    <Switch>
+                                        <Route
+                                            exact
+                                            path={`${match.path}`}
+                                            render={() => (
+                                                <Redirect
+                                                    replace
+                                                    to={`${match.url}/${tiles[0].services[0].serviceId}`}
+                                                />
+                                            )}
+                                        />
+                                        <Route
+                                            exact
+                                            path={`${match.path}/:serviceId`}
+                                            render={() => (
+                                                <div className="tabs-swagger">
+                                                    <div className="tabs-container">
+                                                        {tiles !== undefined &&
+                                                            tiles.length === 1 &&
+                                                            tiles[0].services.map(({ serviceId, title, status }) => (
+                                                                <Tooltip
+                                                                    key={serviceId}
+                                                                    content={title}
+                                                                    placement="bottom"
+                                                                >
+                                                                    <React.Fragment>
+                                                                        {status === 'UP' && (
+                                                                            <NavTab to={`${match.url}/${serviceId}`}>
+                                                                                <Text element="h4">{serviceId}</Text>
+                                                                            </NavTab>
+                                                                        )}
+                                                                        {status === 'DOWN' && (
+                                                                            <NavTab to={`${match.url}/${serviceId}`}>
+                                                                                <Text element="h4" color="#de1b1b">
+                                                                                    {serviceId}
+                                                                                </Text>
+                                                                            </NavTab>
+                                                                        )}
+                                                                    </React.Fragment>
+                                                                </Tooltip>
+                                                            ))}
+                                                    </div>
+                                                    <ServiceTabContainer />
                                                 </div>
-                                                <ServiceTabContainer />
-                                            </div>
-                                        )}
-                                    />
-                                    <Route
-                                        render={(props, state) => (
-                                            <BigShield history={history}>
-                                                <PageNotFound {...props} {...state} />
-                                            </BigShield>
-                                        )}
-                                    />
-                                </Switch>
-                            </Router>
-                        </Suspense>
+                                            )}
+                                        />
+                                        <Route
+                                            render={(props, state) => (
+                                                <BigShield history={history}>
+                                                    <PageNotFound {...props} {...state} />
+                                                </BigShield>
+                                            )}
+                                        />
+                                    </Switch>
+                                </Router>
+                            </Suspense>
                         )}
                 </div>
             </div>

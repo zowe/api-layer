@@ -48,9 +48,3 @@
         display: list-item;
     }
 }
-
-@media (min-width: 972px) {
-    .apis {
-        background-image: url(../../assets/images/background.svg);
-    }
-}

@@ -12,16 +12,21 @@
     text-decoration: none;
 }
 
-.css-1i58psh {
-    background-color: transparent;
+.logout-container button.css-1upkw8q-Button {
+    background-color: #1d5bbf;
     transition: background-color .3s ease-in-out;
 }
+
+.logout-container button.css-1upkw8q-Button:hover {
+    background-color: #ffffff;
+}
+
 
 .logout-container svg {
     transition: color .3s ease-in-out;
 }
 
-.logout-container .css-1i58psh:hover svg {
+.logout-container button.css-1upkw8q-Button:hover svg {
     color: #111111;
 }
 

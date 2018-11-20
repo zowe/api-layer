@@ -94,12 +94,6 @@
     line-height: 130%;
 }
 
-.api-description-container {
-    overflow: visible;
-    background-size: 60%;
-    background: url(../../assets/images/detail-Illustration.svg) no-repeat 100% 0;
-}
-
 .no-tiles-container {
     margin-top: 2rem;
     margin-left: 2rem;
@@ -116,10 +110,8 @@
     width: 100%;
 }
 
-@media (min-width: 972px) {
+/*@media (min-width: 972px) {*/
     .api-description-container {
-        overflow: visible;
-        background-size: 60%;
         background-image: url(../../assets/images/detail-Illustration.svg);
     }
-}
+/*}*/
