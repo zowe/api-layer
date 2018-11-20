@@ -40,9 +40,9 @@ mfaas:
         eurekaUserName: ${environment.eurekaUserId}
         eurekaUserPassword: ${environment.eurekaPassword}
         endpoints:
-            homePage: https://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}
-            statusPage: https://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
-            healthPage: https://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
+            homePage: ${mfaas.service.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}
+            statusPage: ${mfaas.service.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
+            healthPage: ${mfaas.service.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
         info:
             serviceTitle: API Catalog
             description: API Catalog service to display service details and API documentation for discovered API services.
