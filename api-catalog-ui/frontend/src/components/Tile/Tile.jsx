@@ -60,7 +60,7 @@ export default class Tile extends Component {
     // Mineral bug
     shortenDescription = description => {
         if (description.length > 180) {
-            console.log('shortened');
+            // console.log('shortened');
             return `${description.substring(0, 177)}...`;
         }
         return description;

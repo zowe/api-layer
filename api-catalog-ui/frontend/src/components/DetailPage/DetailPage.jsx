@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import { NavTab } from 'react-router-tabs';
-import { Button, Text } from 'mineral-ui';
-import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
+import { Button, Text, Tooltip } from 'mineral-ui';
+import { IconChevronLeft, IconSuccessSimple } from 'mineral-ui-icons';
 import { Redirect, Route, Switch, Router } from 'react-router-dom';
 
 import './DetailPage.css';
 import './ReactRouterTabs.css';
-import Tooltip from 'mineral-ui/Tooltip';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
@@ -140,10 +139,21 @@ export default class DetailPage extends Component {
                                                         tiles.length === 1 &&
                                                         tiles[0].services.map(({ serviceId, title, status }) => (
                                                             <Tooltip key={serviceId} content={title} placement="bottom">
-                                                                <React.Fragment>
-                                                                    {status === 'UP' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4">{serviceId}</Text></NavTab>}
-                                                                    {status === 'DOWN' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4" color="#de1b1b">{serviceId}</Text></NavTab>}
-                                                                </React.Fragment>
+                                                                <div>
+                                                                    {status === 'UP' && (
+                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                            <Text element="h4">{serviceId}</Text>
+                                                                        </NavTab>
+                                                                    )}
+                                                                    {status === 'DOWN' && (
+                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                            <Text element="h4" color="#de1b1b">
+                                                                                {serviceId}
+                                                                            </Text>
+                                                                            <IconSuccessSimple color="#de1b1b" />
+                                                                        </NavTab>
+                                                                    )}
+                                                                </div>
                                                             </Tooltip>
                                                         ))}
                                                 </div>
