@@ -220,6 +220,15 @@ pipeline {
                 sh './gradlew :api-catalog-ui:javaScriptCoverage'
             }
         }
+
+        stage ('Codecov') {
+            when { expression { changeClass in ['full'] } }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
+                    sh './codecov.sh'
+                }
+            }
+        }
     }
 
     post {

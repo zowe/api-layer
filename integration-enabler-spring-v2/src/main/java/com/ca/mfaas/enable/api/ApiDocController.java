@@ -15,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +25,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
@@ -85,15 +89,36 @@ public class ApiDocController {
             if (!swaggerLocation.startsWith(CLASSPATH_URL_PREFIX)) {
                 swaggerLocation = CLASSPATH_URL_PREFIX + swaggerLocation.trim();
             }
-            File file = ResourceUtils.getFile(swaggerLocation);
-            if (!file.exists()) {
-                throw new IOException("Cannot find Api Documentation (swagger) file: " + swaggerLocation);
+            try {
+                File file = ResourceUtils.getFile(swaggerLocation);
+                if (!file.exists()) {
+                    return loadDocumentationAsFileInJar();
+                } else {
+                    return new String(Files.readAllBytes(file.toPath()));
+                }
+            } catch (FileNotFoundException e) {
+                return loadDocumentationAsFileInJar();
             }
-            return new String(Files.readAllBytes(file.toPath()));
         } catch (IOException e) {
             log.error("An exception occurred when attempting to retrieve swagger file: "
                 + swaggerLocation + ". " + e.getMessage(), e);
             throw e;
+        }
+    }
+
+    /**
+     * Load the swagger as a file system file in a jar
+     * @return the swagger as a string
+     * @throws IOException if something bad happened
+     */
+    private String loadDocumentationAsFileInJar() throws IOException {
+        log.debug("Loading Api Documentation from jar resource: " + swaggerLocation);
+        ClassPathResource cpr = new ClassPathResource(swaggerLocation);
+        try {
+            byte[] bytes = FileCopyUtils.copyToByteArray(cpr.getInputStream());
+            return new String(bytes, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IOException("Cannot find Api Documentation (swagger) file: " + swaggerLocation);
         }
     }
 

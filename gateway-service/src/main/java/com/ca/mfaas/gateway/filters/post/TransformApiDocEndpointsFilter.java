@@ -203,8 +203,12 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
         // Add link to swagger to the description:
         String description = swagger.getInfo().getDescription();
         if (context.getRequest() != null) {
-            String swaggerLink = "\n\n[Swagger/OpenAPI JSON Document](" + context.getRequest().getRequestURL() + ")";
-            swagger.getInfo().setDescription(description + swaggerLink);
+            String swaggerLocationHeaderLink = "[Swagger/OpenAPI JSON Document]";
+            String swaggerLink = "\n\n" + swaggerLocationHeaderLink + "(" + context.getRequest().getRequestURL() + ")";
+            // do not add link if it already exists
+            if (!swagger.getInfo().getDescription().contains(swaggerLocationHeaderLink)) {
+                swagger.getInfo().setDescription(description + swaggerLink);
+            }
         }
 
         // Update all paths to gateway format
@@ -220,6 +224,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
                 log.trace("Base Path: " + swagger.getBasePath());
 
                 // Retrieve route which matches endpoint
+
                 String updatedEndPoint = getGatewayURLForEndPoint(swagger.getBasePath() + originalEndpoint, finalServiceId);
                 log.trace("Final Endpoint: " + updatedEndPoint);
                 // If endpoint not converted, then use original
@@ -236,7 +241,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
 
         // update host and base path
         swagger.setBasePath("");
-        String baseHost = null;
+        String baseHost;
         try {
             baseHost = new URIBuilder()
                 .setHost(context.getZuulRequestHeaders().get(X_FORWARDED_HOST_HEADER.toLowerCase()))
@@ -275,10 +280,6 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
             if (route != null) {
                 String separator = "/";
                 basePath = separator + route.getGatewayUrl();
-                // does the service have a servlet context or is the base = "/"
-                if (endPoint.startsWith("//")) {
-                    updatedEndPoint = separator + serviceId + endPoint.replace("//", "/");
-                }
                 updatedEndPoint = separator + serviceId + endPoint.replace(route.getServiceUrl(), "");
 
                 log.trace("Updated Endpoint: " + updatedEndPoint);

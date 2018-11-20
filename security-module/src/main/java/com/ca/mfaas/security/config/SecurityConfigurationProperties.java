@@ -27,6 +27,7 @@ public class SecurityConfigurationProperties {
     private String logoutPath = "/auth/logout/**";
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
+    private boolean verifySslCertificatesOfServices = true;
 
     @Data
     public static class TokenProperties {

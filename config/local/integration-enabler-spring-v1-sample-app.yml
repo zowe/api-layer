@@ -1,0 +1,28 @@
+spring.profiles.include: diag
+
+environment:
+    serviceId: enablerv1sampleapp
+    serviceTitle: Service Integration Enabler V1 Sample App (Spring Boot 1.x)
+    serviceDescription: Sample Spring Boot 1.x REST API Application using the APIML Integration Enabler for Spring Boot 1.x
+    discoveryEnabled: true
+    hostname: localhost
+    port: 10015
+    discoveryLocations: https://localhost:10011/eureka/
+    ipAddress: 127.0.0.1
+
+spring:
+    output:
+        ansi:
+            enabled: always
+
+server:
+    ssl:
+        enabled: false
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12

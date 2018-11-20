@@ -52,7 +52,7 @@ export default class Dashboard extends Component {
                                 <Shield title="Search Bar is broken !">
                                     <SearchCriteria placeholder="Search for APIs" doSearch={this.handleSearch} />
                                 </Shield>
-                                <h2 className="api-heading">Available APIs</h2>
+                                <h2 className="api-heading">Available API services</h2>
                             </div>
                             {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles &&

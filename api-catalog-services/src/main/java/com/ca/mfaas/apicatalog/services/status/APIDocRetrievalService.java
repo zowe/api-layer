@@ -129,7 +129,7 @@ public class APIDocRetrievalService {
     /**
      * Retrieve the API docs for a registered service (all versions)
      *
-     * @param instance   retrieve API doc for this instance
+     * @param instance retrieve API doc for this instance
      * @param apiVersion the version of the API
      * @return the api docs as a string
      */
@@ -178,8 +178,8 @@ public class APIDocRetrievalService {
             key = key.replace(".gateway-url", ".service-url");
             String serviceUrl = instance.getMetadata().get(key);
             if (serviceUrl == null) {
-                throw new ApiDocNotFoundException("Could not find Service URL in Instance metdata for: " + instance.getInstanceId()
-                + " -- " + key);
+                throw new ApiDocNotFoundException("Could not find Service URL in Instance metadata for: " + instance.getInstanceId()
+                    + " -- " + key);
             }
             return serviceUrl;
         }
