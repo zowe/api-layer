@@ -25,7 +25,7 @@ eureka:
 
 server:
     ssl:
-        enabled: false
+        enabled: true
         keyAlias: localhost
         keyPassword: password
         keyStore: keystore/localhost/localhost.keystore.p12
