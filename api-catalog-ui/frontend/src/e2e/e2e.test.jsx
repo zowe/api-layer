@@ -125,7 +125,7 @@ describe('>>> e2e tests', async () => {
         expect(backButtonContent).toBe('Back');
     });
 
-    xit('Should display the Gateway service title, URL and description in Swagger', async () => {
+    xit('Should display the Service Info, Gateway URL and Catalog endpoints in Detailed Page', async () => {
         const [res] = await Promise.all([page.waitForNavigation(), page.goto(defaultDetailPageUrl)]);
         await page.waitForSelector(
             '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > a > span'
