@@ -1,33 +1,23 @@
-environment:
-    discoveryLocations: http://eureka:password@localhost2:10021/eureka/,http://eureka:password@localhost3:10031/eureka/
-    dsIpAddress: 127.0.0.1
-    gatewayHostname: localhost
-    gatewayTimeoutInMillis: 30000
-    hostname: localhost
-    ipAddress: 127.0.0.1
-    keyAlias: localhost
-    keyPassword: password
-    keystore: keystore/local/localhost_server.jks
-    keystorePassword: password
-    keystoreType: JKS
-    port: 10010
-    preferIpAddress: false
-    scheme: https
-    sslEnabled: true
-    truststore: keystore/local/localhost_truststore.jks
-    truststorePassword: trustword
-    truststoreType: JKS
-
-eureka:
-    client:
-        initialInstanceInfoReplicationIntervalSeconds: 5
-        registryFetchIntervalSeconds: 5
-    instance:
-        leaseExpirationDurationInSeconds: 6
-        leaseRenewalIntervalInSeconds: 5
+spring.profiles.include: diag
+apiml:
+    service:
+        hostname: localhost
+        ipAddress: 127.0.0.1
+        port: 10010
+        discoveryServiceUrls: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
 
 spring:
     output:
         ansi:
             enabled: always
 
+server:
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12

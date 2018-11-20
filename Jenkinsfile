@@ -174,6 +174,14 @@ pipeline {
                                reportFiles          : 'index.html',
                                reportName           : "Java Coverage Report"
                            ])
+                            publishHTML(target: [
+                                allowMissing         : false,
+                                alwaysLinkToLastBuild: false,
+                                keepAll              : true,
+                                reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
+                                reportFiles          : 'index.html',
+                                reportName           : "UI JavaScript Test Coverage"
+                            ])
                     }
                 }
 
@@ -222,6 +230,15 @@ pipeline {
             steps {
                 sh './gradlew :api-catalog-ui:startMockedBackend &'
                 sh './gradlew :api-catalog-ui:javaScriptCoverage'
+            }
+        }
+
+        stage ('Codecov') {
+            when { expression { changeClass in ['full'] } }
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
+                    sh './codecov.sh'
+                }
             }
         }
     }

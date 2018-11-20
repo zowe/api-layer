@@ -72,6 +72,36 @@ management:
 
 ---
 spring:
+    profiles: https
+
+apiml:
+    discovery:
+        allPeersUrls: https://${apiml.service.hostname}:${apiml.service.port}/eureka/
+
+server:
+    ssl:
+        enabled: true
+        clientAuth: want
+        protocol: TLSv1.2
+        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+        trustStoreRequired: true
+
+eureka:
+    instance:
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}/
+        statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
+    client:
+        serviceUrl:
+            defaultZone: ${apiml.discovery.allPeersUrls}
+
+---
+spring:
     profiles: diag
 
 management:

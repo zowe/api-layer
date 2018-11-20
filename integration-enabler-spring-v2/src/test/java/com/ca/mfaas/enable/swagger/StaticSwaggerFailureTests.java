@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 @RunWith(SpringRunner.class)
@@ -33,7 +32,7 @@ public class StaticSwaggerFailureTests {
     @Autowired
     private ApiDocController apiDocController;
 
-    @Test(expected = FileNotFoundException.class)
+    @Test(expected = IOException.class)
     public void givenASwaggerLocationThatDoesntExistThenFail() throws IOException {
         apiDocController.getApiDoc(null);
     }
