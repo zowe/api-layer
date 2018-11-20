@@ -13,15 +13,17 @@ jar {
 }
 
 dependencies {
-    compile(project(':gateway-common'))
+    compile(project(':common-service-core'))
 
     compile libraries.springFox
     compile libraries.springFoxWeb
     compile libraries.javax_validation
+    compile libraries.spring_cloud_starter_eureka
+    compile libraries.spring_boot_starter_actuator
 
     compileOnly libraries.lombok
     compileOnly libraries.spring_boot_starter_web
-    compileOnly libraries.spring_cloud_starter_eureka
+    compileOnly libraries.javax_servlet_api
 
     testCompile libraries.gson
     testCompile libraries.powermock_api_mockito2
@@ -31,5 +33,6 @@ dependencies {
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.lombok
     testCompile libraries.javax_servlet_api
-    testCompile(group: 'org.yaml', name: 'snakeyaml', version: '1.23')
+    testCompile libraries.snakeyaml
+    testCompile libraries.javax_servlet_api
 }

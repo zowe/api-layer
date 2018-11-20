@@ -18,7 +18,7 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @EnableApiDiscovery
 @EnableConfigurationProperties
-@ComponentScan({"com.ca.mfaas.enable", "com.ca.mfaas.product"})
+@ComponentScan({"com.ca.mfaas.enable"})
 public class StaticSwaggerApplication {
     public static void main(String[] args) {
         SpringApplication.run(StaticSwaggerApplication.class, args);

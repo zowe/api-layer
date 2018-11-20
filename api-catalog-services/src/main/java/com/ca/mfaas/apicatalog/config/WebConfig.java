@@ -15,7 +15,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@ComponentScan("com.ca.mfaas.product")
+@ComponentScan("com.ca.mfaas.product.web")
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
