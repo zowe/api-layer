@@ -69,6 +69,13 @@ The `local-ca-filename` follows the format `keystore/{path}/{suffix}` and is use
 The `local-ca-password` is the local CA keystore password.
 
 
+### Export the service certificate to PEM format
+
+Some utilities (e.g. `http`) requires the service certificate to be in the PEM format. Use following command to convert it to the PEM format:
+
+    openssl pkcs12 -in keystore/localhost/localhost.keystore.p12 -out keystore/localhost/localhost.pem -passin 'pass:password' -nodes
+
+
 ### Example
 
 If you have the sample service described in the User Guide at [this link](https://github.com/zowe/docs-site/blob/api-mediation-doc/docs/user-guide/api-mediation/api-mediation-onboard-overview.md#sample-rest-api-service) you need to complete the following steps:
@@ -139,3 +146,17 @@ Create a new Javascript file firefox-windows-truststore.js at C:\Program Files (
 You can use following script from the `ca-api-layer` repository to test the script:
 
     python3 ~/workspace/ca-api-layer/scripts/zossh.py ca32 /a/plape03/localca scripts/apiml_cm.sh --action setup
+
+
+### Disabling certificate validation on localhost
+
+The default configuration of services for local development is to verify certificates of all services. Since the APIML service use correctly generated certificates, there should be no issues.
+
+However, you may want to quickly register an existing service without generating a certificate for it using the `apiml_cm.sh --action new-service` command.
+
+You can do it by setting the `apiml.security.verifySslCertificatesOfServices` configuration property to `false` from the default `true` for the APIML services (gateway, discovery service and API catalog). 
+This can be done by adding following options to the startup command of each service in `package.json` or in your IDE:
+
+    --apiml.security.verifySslCertificatesOfServices=false
+
+

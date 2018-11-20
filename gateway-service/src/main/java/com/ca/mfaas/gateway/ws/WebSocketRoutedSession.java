@@ -15,6 +15,8 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -31,10 +33,13 @@ public class WebSocketRoutedSession {
 
     private final WebSocketSession webSocketClientSession;
     private final WebSocketSession webSocketServerSession;
+    private final SslContextFactory jettySslContextFactory;
 
-    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl) {
-        this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl);
+    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory jettySslContextFactory) {
+        log.debug("Creating WebSocketRoutedSession jettySslContextFactory={}", jettySslContextFactory);
         this.webSocketServerSession = webSocketServerSession;
+        this.jettySslContextFactory = jettySslContextFactory;
+        this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl);
     }
 
     public WebSocketSession getWebSocketClientSession() {
@@ -47,15 +52,28 @@ public class WebSocketRoutedSession {
 
     private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl) {
         try {
-            log.debug("createWebSocketClientSession(session={},targetUrl={})", webSocketClientSession, targetUrl);
-            JettyWebSocketClient client = new JettyWebSocketClient();
+            log.debug("createWebSocketClientSession(session={},targetUrl={},jettySslContextFactory={})",
+                    webSocketClientSession, targetUrl, jettySslContextFactory);
+            JettyWebSocketClient client = new JettyWebSocketClient(new WebSocketClient(jettySslContextFactory));
             client.start();
             ListenableFuture<WebSocketSession> futureSession = client
                     .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), targetUrl);
             return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
+        catch (IllegalStateException e) {
+            throw webSocketProxyException(targetUrl, e, webSocketServerSession, true);
+        }
+        catch (Exception e) {
+            throw webSocketProxyException(targetUrl, e, webSocketServerSession, false);
+        }
+    }
+
+    private WebSocketProxyError webSocketProxyException(String targetUrl, Exception cause, WebSocketSession webSocketServerSession, boolean logError) {
+        String message = String.format("Error opening session to WebSocket service at %s: %s", targetUrl, cause.getMessage());
+        if (logError) {
+            log.error(message);
+        }
+        return new WebSocketProxyError(message, cause, webSocketServerSession);
     }
 
     public void sendMessageToServer(WebSocketMessage<?> webSocketMessage) throws IOException {

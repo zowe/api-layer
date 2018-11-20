@@ -20,4 +20,5 @@ public class EnvironmentConfiguration {
     private GatewayServiceConfiguration gatewayServiceConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
+    private TlsConfiguration tlsConfiguration;
 }

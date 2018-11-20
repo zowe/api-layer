@@ -14,7 +14,7 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         org.apache.tomcat.websocket: WARN
         org.springframework.web.socket: WARN
-        com.ca.mfaas.ws: INFO
+        com.ca.mfaas.gateway.ws: INFO
         com.ca.mfaas.gateway.config.error: INFO
         org.eclipse.jetty: WARN
 

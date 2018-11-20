@@ -14,5 +14,3 @@ fi
 EXT="SAN=dns:**HOSTNAME**,ip:**IPADDRESS**,dns:localhost.localdomain,dns:localhost,ip:127.0.0.1"
 
 scripts/apiml_cm.sh --action setup --service-ext $EXT
-
-
