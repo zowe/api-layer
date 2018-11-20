@@ -1,7 +1,7 @@
 spring.profiles.include: diag
 
 environment:
-    discoveryLocations: http://eureka:password@localhost:10011/eureka/
+    discoveryLocations: https://localhost:10011/eureka/
     dsIpAddress: 0.0.0.0
     esmEnabled: false
     eurekaPassword: password
