@@ -7,6 +7,8 @@ apiml:
         port: 10011
     discovery:
         staticApiDefinitionsDirectory: config/local/api-defs
+    security:
+        verifySslCertificatesOfServices: true
 
 spring:
     output:
