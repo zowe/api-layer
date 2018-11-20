@@ -30,7 +30,8 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @EnableEurekaClient
 @EnableWebFlux
 @EnableApiDiscovery
-@ComponentScan({"com.ca.mfaas.enable", "com.ca.mfaas.apicatalog", "com.ca.mfaas.product"})
+@ComponentScan({ "com.ca.mfaas.enable", "com.ca.mfaas.apicatalog", "com.ca.mfaas.product",
+        "com.ca.mfaas.product.discovery", "com.ca.mfaas.product.web" })
 @EnableScheduling
 @EnableRetry
 @EnableAsync
@@ -45,6 +46,7 @@ public class ApiCatalogApplication implements ApplicationListener<ApplicationRea
 
     @Override
     public void onApplicationEvent(final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("API Catalog Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+        new ServiceStartupEventHandler().onServiceStartup("API Catalog Service",
+                ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

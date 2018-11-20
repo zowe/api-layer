@@ -1,23 +1,24 @@
-environment:
-    discoveryLocations: http://eureka:password@localhost2:10021/eureka/,http://eureka:password@localhost3:10031/eureka/
-    hostname: localhost
-    ipAddress: 127.0.0.1
-    port: 10012
-    preferIpAddress: false
-    serviceDescription: 'Sample Spring Boot 2.x REST API application using the API Mediation Layer enabler'
-    serviceId: discoverableclient
-    serviceTitle: 'Sample API Mediation Layer Application (Spring Boot 2.x)'
+spring.profiles.include: diag
 
-eureka:
-    client:
-        initialInstanceInfoReplicationIntervalSeconds: 5
-        registryFetchIntervalSeconds: 5
-
-    instance:
-        leaseExpirationDurationInSeconds: 6
-        leaseRenewalIntervalInSeconds: 5
+apiml:
+    service:
+        hostname: localhost
+        ipAddress: 127.0.0.1
+        port: 10012
+        discoveryServiceUrls: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
 
 spring:
     output:
         ansi:
             enabled: always
+
+server:
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12

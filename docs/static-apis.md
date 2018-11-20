@@ -27,29 +27,37 @@ They can be refreshed later by issuing a POST request to `/discovery/api/v1/stat
 
     http -j -a eureka:password POST http://localhost:10011/discovery/api/v1/staticApi
 
+With HTTPS enabled you need to do:
+
+    http --cert=keystore/localhost/localhost.pem --verify=keystore/local_ca/localca.cer -j POST https://localhost:10011/discovery/api/v1/staticApi
+
 
 ## Diagnostics
 
 List all registered applications in Discovery Service:
 
     http -j -a eureka:password GET http://localhost:10011/eureka/apps/
+    http --cert=keystore/localhost/localhost.pem --verify=keystore/local_ca/localca.cer -j GET https://localhost:10011/eureka/apps/
 
 List all routes in the API gateway:
 
-    http --verify=keystore/local_ca/local_ca.pem GET https://localhost:10010/application/routes
+    http --verify=keystore/local_ca/localca.cer GET https://localhost:10010/application/routes
 
 List static API instances:
 
     http -j -a eureka:password GET http://localhost:10011/discovery/api/v1/staticApi
+    http --cert=keystore/localhost/localhost.pem --verify=keystore/local_ca/localca.cer -j GET https://localhost:10011/discovery/api/v1/staticApi
 
 Reload static API definitions:
     
     http -j -a eureka:password POST http://localhost:10011/discovery/api/v1/staticApi
+    http --cert=keystore/localhost/localhost.pem --verify=keystore/local_ca/localca.cer -j POST https://localhost:10011/discovery/api/v1/staticApi
 
 Notes:
  * `http` is a CLI REST API client (https://httpie.org/)
  *  `-j` requests response in JSON format
- *  `--verify=keystore/local_ca/local_ca.pem` trusts the CA that has signed the HTTPS certificate of the localhost system
+ *  `--verify=keystore/local_ca/localca.cer` trusts the CA that has signed the HTTPS certificate of the localhost system
+ *  `--cert=keystore/localhost/localhost.pem` to provide client certificate that authorizes you to access the Discovery Service API
 
 
 ## Future steps

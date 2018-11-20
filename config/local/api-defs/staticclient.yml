@@ -10,7 +10,7 @@ services:
       title: Statically Defined API Service  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service with Swagger to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
-        - http://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+        - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -25,14 +25,14 @@ services:
       apiInfo:
         - apiId: org.zowe.discoverableclient
           gatewayUrl: api/v1
-          swaggerUrl: http://localhost:10012/discoverableclient/api-doc
+          swaggerUrl: https://localhost:10012/discoverableclient/api-doc
 
     - serviceId: staticclient2  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Staticaly Defined Service 2  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
-        - http://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+        - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl

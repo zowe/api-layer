@@ -2,6 +2,9 @@
 
 [Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
 
+[![codecov](https://codecov.io/gh/plavjanik/api-layer/branch/master/graph/badge.svg)](https://codecov.io/gh/zowe/api-layer)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/zowe/api-layer.svg?columns=all)](https://waffle.io/zowe/api-layer)
+
 The home of Zowe API Mediation Layer
 
 ## Prequisites 
@@ -62,6 +65,11 @@ You can an individual test class by:
 Follow the instructions in [Integration Tests](integration-tests/README.md) to run integration tests.
 
 
+## Security
+
+For more information about how the certificates between APIML services are setup, see [TLS Certificates for localhost](keystore/README.md).
+
+
 ## Contributor guidelines
 
 Follow the guidelines in [Contributing](CONTRIBUTING.md) to add new functionality.
@@ -71,7 +79,8 @@ Follow the guidelines in [Contributing](CONTRIBUTING.md) to add new functionalit
 
 Follow the guidelines in [Local Configuration](docs/local-configuration.md) to set local environment properties for testing on your local machine include HTTPS setup.
 
-Also if you use IntelliJ Idea [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
+Also if you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
+
 
 ## Adding services that does not support API Mediation Layer natively
 

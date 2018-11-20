@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.gateway.config.routing;
 
-import com.ca.mfaas.enable.services.MfaasServiceLocator;
 import com.ca.mfaas.gateway.filters.post.TransformApiDocEndpointsFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
@@ -49,13 +48,12 @@ public class MfaasRoutingConfig {
     public DiscoveryClientRouteLocator discoveryClientRouteLocator(DiscoveryClient discovery,
                                                                    ZuulProperties zuulProperties,
                                                                    ServiceRouteMapper serviceRouteMapper,
-                                                                   WebSocketProxyServerHandler webSocketProxyServerHandler,
-                                                                   MfaasServiceLocator mfaasServiceLocator) {
+                                                                   WebSocketProxyServerHandler webSocketProxyServerHandler) {
         List<RoutedServicesUser> routedServicesUsers = new ArrayList<>();
         routedServicesUsers.add(locationFilter());
         routedServicesUsers.add(transformApiDocEndpointsFilter());
         routedServicesUsers.add(webSocketProxyServerHandler);
 
-        return new MfaasRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers, mfaasServiceLocator);
+        return new MfaasRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
     }
 }

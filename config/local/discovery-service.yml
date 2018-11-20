@@ -7,8 +7,24 @@ apiml:
         port: 10011
     discovery:
         staticApiDefinitionsDirectory: config/local/api-defs
+    security:
+        verifySslCertificatesOfServices: true
 
 spring:
     output:
         ansi:
             enabled: always
+
+---
+spring.profiles: https
+
+server:
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStoreType: PKCS12
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
