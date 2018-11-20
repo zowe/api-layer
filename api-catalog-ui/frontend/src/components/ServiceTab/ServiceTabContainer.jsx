@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { fetchTilesStop } from '../../actions/catalog-tile-actions';
-import { clearService, selectService } from '../../actions/selected-service-actions';
+import { selectService } from '../../actions/selected-service-actions';
 import ServiceTab from './ServiceTab';
 
 const mapStateToProps = state => ({
@@ -12,7 +12,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     fetchTilesStop: () => dispatch(fetchTilesStop()),
-    clearService: () => dispatch(clearService()),
     selectService: (service, tileId) => dispatch(selectService(service, tileId)),
 });
 

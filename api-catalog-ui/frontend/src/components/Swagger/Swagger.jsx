@@ -64,7 +64,7 @@ export default class SwaggerUI extends Component {
                     <Text element="h3" color="#de1b1b" fontWeight="bold"
                           style={{ margin: '0 auto', 'background': '#ffff', width: '100%' }}>
                         <p style={{ marginLeft: '55px', marginTop: '50px' }}>Api Documentation for
-                            service {selectedService.title}({selectedService.serviceId}) could not be retrieved or is
+                            service "{selectedService.title}" (Service Id: {selectedService.serviceId}) could not be retrieved or is
                             not defined.</p>
                     </Text>
                 )}

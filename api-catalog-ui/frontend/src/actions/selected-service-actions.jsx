@@ -1,10 +1,10 @@
 import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-constants';
 
-export function selectService(service = {}, tileId = "") {
+export function selectService(selectedService = {}, selectedTile = "") {
     return {
         type: SELECT_SERVICE,
-        selectedService: service,
-        selectedTile: tileId
+        selectedService: selectedService,
+        selectedTile: selectedTile
     };
 }
 

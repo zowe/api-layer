@@ -1,9 +1,8 @@
 /* eslint-disable no-undef */
 
-import { SELECT_SERVICE } from '../constants/selected-service-constants';
-import selectedServiceReducer from './selected-service-reducer';
+import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-constants';
 
-describe('>>> Selected Service reducer tests', () => {
+describe('>>> Selected Service actions tests', () => {
     it('should return selected service', () => {
         const state = { selectedService: {id: 'one'}, selectedTile: 'aaaa' };
         const expectedState = { selectedService: {id: 'one'}, selectedTile: 'aaaa' };

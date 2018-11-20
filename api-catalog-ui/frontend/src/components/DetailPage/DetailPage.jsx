@@ -141,11 +141,11 @@ export default class DetailPage extends Component {
                                                     {tiles !== undefined &&
                                                         tiles.length === 1 &&
                                                         tiles[0].services.map(({ serviceId, title, status }) => (
-                                                            <Tooltip key={serviceId} content={title} placement="bottom">
-                                                                <React.Fragment>
+                                                            <Tooltip key={serviceId} content={title} placement="top">
+                                                                <div>
                                                                     {status === 'UP' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4">{serviceId}</Text></NavTab>}
                                                                     {status === 'DOWN' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4" color="#de1b1b">{serviceId}</Text></NavTab>}
-                                                                </React.Fragment>
+                                                                </div>
                                                             </Tooltip>
                                                         ))}
                                                 </div>

@@ -10,7 +10,7 @@ export default class ServiceTab extends Component {
             match: {
                 params: { tileID, serviceId },
             },
-            tiles, clearService, selectService, selectedService, selectedTile } = this.props;
+            tiles, selectService, selectedService, selectedTile } = this.props;
         let currentService = null;
         let invalidService = true;
 
@@ -37,7 +37,7 @@ export default class ServiceTab extends Component {
                 <Shield title={message}>
                     {currentService !== null && (
                         <div style={{ margin: '0 auto', 'background': '#ffff', width: '100%', height: '100%' }}>
-                            <SwaggerContainer/>
+                            <SwaggerContainer />
                         </div>
                     )}
                 </Shield>
