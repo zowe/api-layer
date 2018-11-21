@@ -31,9 +31,10 @@ export default class ServiceTab extends Component {
         return (
             <React.Fragment>
                 {invalidService && (
-                    <Text element="h3" style={{ margin: '0 auto', 'background': '#ffff', width: '100%' }}>
-                        <p style={{ marginLeft: '55px', marginTop: '50px' }}>This tile does not contain service
-                            "{serviceId}"</p>
+                    <Text element="h3" style={{ margin: "0 auto", "background": "#ffff", width: "100%" }}>
+                        <br/>
+                        <br/>
+                        <p style={{ marginLeft: "122px" }}>This tile does not contain service "{serviceId}"</p>
                     </Text>
                 )}
                 <Shield title={message}>
