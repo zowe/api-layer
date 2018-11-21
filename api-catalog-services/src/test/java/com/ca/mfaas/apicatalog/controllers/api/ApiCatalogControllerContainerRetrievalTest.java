@@ -11,7 +11,6 @@ package com.ca.mfaas.apicatalog.controllers.api;
 
 import com.ca.mfaas.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
-import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import org.junit.Test;
@@ -49,9 +48,6 @@ public class ApiCatalogControllerContainerRetrievalTest {
     static class ContextConfiguration {
 
         @MockBean
-        private APIServiceStatusService apiServiceStatusService;
-
-        @MockBean
         private CachedProductFamilyService cachedProductFamilyService;
 
         @Bean
@@ -61,7 +57,7 @@ public class ApiCatalogControllerContainerRetrievalTest {
 
             verify(cachedProductFamilyService, never()).getAllContainers();
 
-            return new ApiCatalogController(cachedProductFamilyService, apiServiceStatusService);
+            return new ApiCatalogController(cachedProductFamilyService, null);
         }
 
         @Bean
