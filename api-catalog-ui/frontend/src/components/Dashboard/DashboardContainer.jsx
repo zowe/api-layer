@@ -6,6 +6,7 @@ import {
     fetchTilesSuccess,
     fetchTilesStop,
 } from '../../actions/catalog-tile-actions';
+import { clearService } from '../../actions/selected-service-actions';
 import { filterText } from '../../actions/filter-actions';
 import { createLoadingSelector, getVisibleTiles } from '../../selectors/selectors';
 
@@ -19,6 +20,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = {
+    clearService,
     fetchTilesStart,
     fetchTilesSuccess,
     fetchTilesFailed,

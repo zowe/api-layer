@@ -11,8 +11,8 @@ package com.ca.mfaas.apicatalog.controllers.api;
 
 import com.ca.mfaas.apicatalog.exceptions.ContainerStatusRetrievalException;
 import com.ca.mfaas.apicatalog.model.APIContainer;
+import com.ca.mfaas.apicatalog.services.cached.CachedApiDocService;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
-import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -42,19 +42,19 @@ import java.util.stream.StreamSupport;
 public class ApiCatalogController {
 
     private final CachedProductFamilyService cachedProductFamilyService;
-    private final APIServiceStatusService apiServiceStatusService;
+    private final CachedApiDocService cachedApiDocService;
 
     /**
      * Create the controller and autowire in the repository services
      *
      * @param cachedProductFamilyService  cached service for containers
-     * @param apiServiceStatusService     Cached state opf containers and services
+     * @param cachedApiDocService     Cached state opf containers and services
      */
     @Autowired
     public ApiCatalogController(CachedProductFamilyService cachedProductFamilyService,
-                                APIServiceStatusService apiServiceStatusService) {
+                                CachedApiDocService cachedApiDocService) {
         this.cachedProductFamilyService = cachedProductFamilyService;
-        this.apiServiceStatusService = apiServiceStatusService;
+        this.cachedApiDocService = cachedApiDocService;
     }
 
 
@@ -103,8 +103,26 @@ public class ApiCatalogController {
             if (apiContainers.isEmpty()) {
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             } else {
-                // for each container, check the status of all it's services so it's overall status can be set here
+                // Fot this single container, check the status of all it's services so it's overall status can be set here
                 apiContainers.forEach(cachedProductFamilyService::calculateContainerServiceTotals);
+
+                // add API Doc to the services to improve UI performance
+                apiContainers.forEach(apiContainer -> {
+                    apiContainer.getServices().forEach(apiService -> {
+                        // try the get teh Api Doc for this service, if it fails for any reason then do not change the existing value
+                        // it may or may not be null
+                        try {
+                            String apiDoc = cachedApiDocService.getApiDocForService(apiService.getServiceId(), "v1");
+                            if (apiDoc != null) {
+                                apiService.setApiDoc(apiDoc);
+                            }
+                        } catch (Exception e) {
+                            log.warn("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
+                                ", processing can continue but this service will not be able to display any Api Documentation.\n" +
+                                "Error Message: " + e.getMessage());
+                        }
+                    });
+                });
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
         } catch (Exception e) {
