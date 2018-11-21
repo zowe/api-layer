@@ -23,15 +23,6 @@ eureka:
         leaseExpirationDurationInSeconds: 6
         leaseRenewalIntervalInSeconds: 5
 
-server:
-    ssl:
-        enabled: true
-        keyAlias: localhost
-        keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
-        keyStorePassword: password
-        keyStoreType: PKCS12
-
 mfaas:
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
@@ -47,4 +38,9 @@ spring:
 logging:
     level:
         com.ca.mfaas.security: DEBUG
-        # org.apache.http: DEBUG
+
+# use this option to turn off https validation for UI testing (when running dev mode UI)
+apiml:
+    security:
+        cookieProperties:
+            cookieSecure: "false"

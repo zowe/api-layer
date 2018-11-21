@@ -3,7 +3,7 @@
     "id": "testinson",
     "title": "API tile for testing",
     "status": "DOWN",
-    "description": "Testing Testing Testing",
+    "description": "One Up , One Down",
     "services": [
         {
             "serviceId": "todo",

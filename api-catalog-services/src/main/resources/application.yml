@@ -35,14 +35,14 @@ mfaas:
         fetchRegistry: true
         registerWithEureka: true
         region: default
-        nonSecurePortEnabled: true
-        securePortEnabled: false
+        nonSecurePortEnabled: false
+        securePortEnabled: true
         eurekaUserName: ${environment.eurekaUserId}
         eurekaUserPassword: ${environment.eurekaPassword}
         endpoints:
-            statusPage: ${mfaas.server.contextPath}/application/info
-            healthPage: ${mfaas.server.contextPath}/application/health
-            homePage: /ui/v1/apicatalog
+            homePage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}
+            statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
+            healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
         info:
             serviceTitle: API Catalog
             description: API Catalog service to display service details and API documentation for discovered API services.
@@ -58,10 +58,10 @@ mfaas:
     server:
         port: ${environment.port}
         contextPath: /apicatalog
-        scheme: http
+        scheme: https
     security:
         esmEnabled: ${environment.esmEnabled:false}
-        sslEnabled: false
+        sslEnabled: true
         protocol: TLSv1.2
         ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
         trustStore: ${environment.truststore}
@@ -98,6 +98,10 @@ eureka:
         statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
         healthCheckUrl: ${mfaas.discovery.endpoints.healthPage}
         homePageUrl: ${mfaas.discovery.endpoints.homePage}
+        port: ${mfaas.server.port}
+        securePort: ${mfaas.server.port}
+        nonSecurePortEnabled: ${mfaas.discovery.nonSecurePortEnabled}
+        securePortEnabled: ${mfaas.discovery.securePortEnabled}
         metadata-map:
             routed-services:
                 ui_v1:
