@@ -35,8 +35,10 @@ export default class DetailPage extends Component {
         const {
             tiles,
             isLoading,
+            clearService,
             fetchTilesStop,
             fetchTilesError,
+            selectedTile,
             match,
             match: {
                 params: { tileID },
@@ -49,11 +51,11 @@ export default class DetailPage extends Component {
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
-        } else if (this.tileId !== tileID) {
+        } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== tileID) {
+            clearService();
             fetchTilesStop();
             fetchTilesStart(tileID);
         }
-        this.tileId = tileID;
         return (
             <div className="detail-page">
                 <Spinner isLoading={isLoading} />
@@ -139,11 +141,11 @@ export default class DetailPage extends Component {
                                                     {tiles !== undefined &&
                                                         tiles.length === 1 &&
                                                         tiles[0].services.map(({ serviceId, title, status }) => (
-                                                            <Tooltip key={serviceId} content={title} placement="bottom">
-                                                                <React.Fragment>
+                                                            <Tooltip key={serviceId} content={title} placement="top">
+                                                                <div>
                                                                     {status === 'UP' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4">{serviceId}</Text></NavTab>}
                                                                     {status === 'DOWN' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4" color="#de1b1b">{serviceId}</Text></NavTab>}
-                                                                </React.Fragment>
+                                                                </div>
                                                             </Tooltip>
                                                         ))}
                                                 </div>

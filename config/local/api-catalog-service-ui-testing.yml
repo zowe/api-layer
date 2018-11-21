@@ -1,0 +1,46 @@
+spring.profiles.include: diag
+
+environment:
+    discoveryLocations: https://localhost:10011/eureka/
+    dsIpAddress: 0.0.0.0
+    esmEnabled: false
+    eurekaPassword: password
+    eurekaUserId: eureka
+    gatewayHostname: https://localhost:10010
+    hostname: localhost
+    ipAddress: 127.0.0.1
+    port: 10014
+    preferIpAddress: false
+    truststore: keystore/localhost/localhost.truststore.p12
+    truststorePassword: password
+    truststoreType: PKCS12
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 5
+        registryFetchIntervalSeconds: 5
+    instance:
+        leaseExpirationDurationInSeconds: 6
+        leaseRenewalIntervalInSeconds: 5
+
+mfaas:
+    service-registry:
+        cacheRefreshInitialDelayInMillis: 10000
+        cacheRefreshRetryDelayInMillis: 10000
+        cacheRefreshUpdateThresholdInMillis: 120000
+        serviceFetchDelayInMillis: 10000
+
+spring:
+    output:
+        ansi:
+            enabled: always
+
+logging:
+    level:
+        com.ca.mfaas.security: DEBUG
+
+# use this option to turn off https validation for UI testing (when running dev mode UI)
+apiml:
+    security:
+        cookieProperties:
+            cookieSecure: "false"
