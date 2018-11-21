@@ -212,7 +212,7 @@ pipeline {
             when { expression { changeClass in ['full'] } }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
-                    sh './codecov.sh'
+                    sh 'curl -s https://codecov.io/bash | bash -s'
                 }
             }
         }
