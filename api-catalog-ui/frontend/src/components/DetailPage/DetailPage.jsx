@@ -30,6 +30,13 @@ export default class DetailPage extends Component {
         history.push('/dashboard');
     };
 
+    setTitle = (title, status) => {
+        if (status === 'DOWN') {
+            return title + ' - This service is not running'
+        }
+        return title;
+    };
+
     render() {
         const {
             tiles,
@@ -140,7 +147,7 @@ export default class DetailPage extends Component {
                                                     {tiles !== undefined &&
                                                         tiles.length === 1 &&
                                                         tiles[0].services.map(({ serviceId, title, status }) => (
-                                                            <Tooltip key={serviceId} content={title} placement="bottom">
+                                                            <Tooltip key={serviceId} content={this.setTitle(title, status)} placement="bottom">
                                                                 <div>
                                                                     {status === 'UP' && (
                                                                         <NavTab to={`${match.url}/${serviceId}`}>
