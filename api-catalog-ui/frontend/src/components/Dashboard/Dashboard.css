@@ -12,9 +12,7 @@ a {
     height: 100%;
     justify-items: center;
     justify-content: start;
-    padding: 3rem;
-    padding-left: 36px;
-    padding-top: 0;
+    padding: 0 3rem 3rem 36px;
     display: grid;
     grid-gap: 20px;
     grid-template-columns: repeat(auto-fill, 422px);
@@ -71,5 +69,11 @@ a {
         grid-template-columns: 320px;
         padding-left: 1rem;
         padding-right: 1rem;
+    }
+}
+
+@media (min-width: 972px) {
+    .apis {
+        background-image: url(../../assets/images/background.svg);
     }
 }
