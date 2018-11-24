@@ -1,0 +1,10 @@
+a.nav-tab {
+    display: flex;
+    align-items: baseline;
+}
+
+a.nav-tab > svg {
+    text-align: center;
+    margin-left: .3rem;
+    padding-top: .3rem;
+}

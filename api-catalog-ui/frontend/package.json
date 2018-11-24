@@ -13,7 +13,7 @@
         "install": "0.12.2",
         "lodash": "4.17.11",
         "loglevel": "1.6.1",
-        "mineral-ui": "0.49.0",
+        "mineral-ui": "0.53.0",
         "mineral-ui-icons": "0.4.0",
         "npm": "^6.4.1",
         "react": "16.6.3",
@@ -62,7 +62,7 @@
         "ancestorSeparator": " › ",
         "usePathForSuiteName": "true"
     },
-    "proxy": "https://localhost:10010",
+    "proxy": "http://localhost:8000",
     "devDependencies": {
         "babel-cli": "6.26.0",
         "babel-eslint": "9.0.0",

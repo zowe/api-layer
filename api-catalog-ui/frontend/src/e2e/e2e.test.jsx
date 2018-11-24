@@ -44,10 +44,10 @@ describe('>>> e2e tests', async () => {
         const [res] = await Promise.all([
             page.waitForNavigation(),
             page.goto(dashboardUrl),
-            page.waitForSelector('div.product-name > span > span > a > h3'),
+            page.waitForSelector('div.product-name > a:nth-child(2) > h3'),
             page.waitForSelector('div.filtering-container > h2'),
         ]);
-        const productTitle = await page.$('div.product-name > span > span > a > h3');
+        const productTitle = await page.$('div.product-name > a:nth-child(2) > h3');
         const productTitleText = await page.evaluate(el => el.innerText, productTitle);
         const dashboardTitle = await page.$('div.filtering-container > h2');
         const dashboardTitleText = await page.evaluate(el => el.innerText, dashboardTitle);
