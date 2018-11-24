@@ -1,4 +1,3 @@
-import { Text } from 'mineral-ui';
 import React, { Component } from 'react';
 import SwaggerUi, { presets } from 'swagger-ui';
 import './Swagger.css';
@@ -59,14 +58,14 @@ export default class SwaggerUI extends Component {
             error = true;
         }
         return (
-            <div>
+            <div style={{ width: '100%', background: '#ffffff' }}>
                 {error && (
-                    <Text element="h3" color="#de1b1b" fontWeight="bold"
-                          style={{ margin: '0 auto', 'background': '#ffff', width: '100%' }}>
-                        <p style={{ marginLeft: '55px', marginTop: '50px' }}>Api Documentation for
+                    <div style={{ width: '100%', background: '#ffffff', paddingLeft: 50, paddingTop: 30 }}>
+                        <h2 style={{ color: '#de1b1b' }}>Api Documentation for
                             service "{selectedService.title}" (Service Id: {selectedService.serviceId}) could not be retrieved or is
-                            not defined.</p>
-                    </Text>
+                            not defined.</h2>
+                        <h5 style={{ color: '#de1b1b' }}>See console for details</h5>
+                    </div>
                 )}
                 {!error && (
                     <div id="swaggerContainer" data-testid="swagger"/>

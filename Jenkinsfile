@@ -209,7 +209,7 @@ pipeline {
         }
 
         stage ('Codecov') {
-            when { expression { changeClass in ['full'] } }
+            when { expression { changeClass in ['full', 'api-catalog'] } }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
                     sh 'curl -s https://codecov.io/bash | bash -s'
