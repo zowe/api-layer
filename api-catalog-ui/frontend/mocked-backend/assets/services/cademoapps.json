@@ -30,7 +30,6 @@
                 "description": "Dummy Service for enabling others",
                 "status": "UP",
                 "secured": false,
-                "homePageUrl": "http://localhost:10013/enabler/",
                 "apiDoc": null
             },
             {
@@ -39,7 +38,7 @@
                 "description": "Dummy Service for enabling others",
                 "status": "UP",
                 "secured": false,
-                "homePageUrl": "http://localhost:10013/enabler/",
+                "homePageUrl": "",
                 "apiDoc": ""
             },
             {

@@ -5,6 +5,7 @@
 
 #swaggerContainer {
     background-color: #fff;
+    padding-top: 0;
     padding-left: 1rem;
     padding-right: 2rem;
 }
@@ -21,8 +22,7 @@
 .swagger-ui .wrapper {
     width: 100%;
     max-width: 1460px;
-    margin: 0 auto;
-    padding: 0 20px
+    margin: 0 0 0 40px;
 }
 
 .swagger-ui .opblock-tag-section {
@@ -95,7 +95,7 @@
     top: 3px;
     width: 20px;
     margin: 0 5px;
-    cursor: pointer;
+    cursor: crosshair;
     -webkit-transition: all .5s;
     transition: all .5s
 }
@@ -471,7 +471,7 @@
     border-radius: 4px;
     background: #333840;
     font-family: Source Code Pro, monospace;
-    font-weight: 600;
+    font-weight: 500;
     color: #fff
 }
 
@@ -480,10 +480,7 @@
 }
 
 .swagger-ui .scheme-container {
-    margin: 0 0 20px;
-    padding: 30px 0;
-    background: #fff;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .15)
+    display: none;
 }
 
 .swagger-ui .scheme-container .schemes {
@@ -729,7 +726,15 @@
 }
 
 .swagger-ui .response-col_description__inner div.markdown {
-    background-color: #333840;
+    font-size: 12px;
+    margin: 0;
+    padding: 10px;
+    white-space: pre-wrap;
+    border-radius: 4px;
+    background: #333840;
+    font-family: Source Code Pro, monospace;
+    font-weight: 600;
+    color: #fff;
 }
 
 .swagger-ui label {
@@ -1215,7 +1220,7 @@
 
 .swagger-ui .parameter__name {
     font-size: 16px;
-    font-weight: 400;
+    font-weight: 600;
     font-family: Titillium Web, sans-serif;
     color: #3b4151
 }
@@ -1231,6 +1236,14 @@
     padding: 5px;
     content: "required";
     color: rgba(255, 0, 0, .6)
+}
+
+.swagger-ui .parameter__type {
+    font-size: 12px;
+    padding: 5px 0;
+    font-family: monospace;
+    font-weight: 600;
+    color: #3b4151;
 }
 
 .swagger-ui .parameter__in {
@@ -1305,7 +1318,7 @@
 }
 
 .swagger-ui .info {
-    margin: 50px 0
+    margin: 40px 0
 }
 
 .swagger-ui .info hgroup.main {
@@ -1343,10 +1356,6 @@
     color: #1f69c0
 }
 
-.swagger-ui .info > div {
-    margin: 0 0 5px
-}
-
 .swagger-ui .info .base-url {
     font-size: 12px;
     font-weight: 300 !important;
@@ -1357,7 +1366,7 @@
 }
 
 .swagger-ui .info .title {
-    font-size: 36px;
+    font-size: 20px;
     margin: 0;
     font-family: Open Sans, sans-serif;
     color: #3b4151
@@ -1370,7 +1379,6 @@
 
 .swagger-ui .info .title small pre {
     margin: 0;
-    padding-top: .6rem;
     font-family: Titillium Web, sans-serif;
     color: black;
 }
