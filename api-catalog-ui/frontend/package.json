@@ -62,7 +62,7 @@
         "ancestorSeparator": " › ",
         "usePathForSuiteName": "true"
     },
-    "proxy": "http://localhost:8000",
+    "proxy": "https://localhost:10010",
     "devDependencies": {
         "babel-cli": "6.26.0",
         "babel-eslint": "9.0.0",
