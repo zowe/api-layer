@@ -1,0 +1,19 @@
+{
+  "name": "helloworld-expressjs",
+  "version": "0.2.0",
+  "description": "Hello World Service in Express",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zowe/api-layer/helloworld-expressjs"
+  },
+  "author": "",
+  "license": "EPL-2.0",
+  "dependencies": {
+    "eureka-js-client": "^4.4.2",
+    "express": "^4.16.4"
+  }
+}
