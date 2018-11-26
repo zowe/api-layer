@@ -18,7 +18,7 @@
         }
     ],
     "schemes": [
-        "http"
+        "https"
     ],
     "paths": {
         "/hello": {
