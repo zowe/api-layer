@@ -4,6 +4,7 @@ import filtersReducer from './filter-reducer';
 import loadingReducer from './loading-reducer';
 import errorReducer from './error-reducer';
 import authenticationReducer from './authentication.reducer';
+import selectedServiceReducer from './selected-service-reducer';
 
 const reducers = {
     filtersReducer,
@@ -11,6 +12,7 @@ const reducers = {
     loadingReducer,
     errorReducer,
     authenticationReducer,
+    selectedServiceReducer,
 };
 
 // eslint-disable-next-line import/prefer-default-export

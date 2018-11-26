@@ -1,12 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { NavTab } from 'react-router-tabs';
-import { Button, Text } from 'mineral-ui';
-import IconChevronLeft from 'mineral-ui-icons/IconChevronLeft';
+import { Button, Text, Tooltip } from 'mineral-ui';
+import { IconChevronLeft, IconSuccessSimple } from 'mineral-ui-icons';
 import { Redirect, Route, Switch, Router } from 'react-router-dom';
 
 import './DetailPage.css';
 import './ReactRouterTabs.css';
-import Tooltip from 'mineral-ui/Tooltip';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
@@ -31,12 +30,21 @@ export default class DetailPage extends Component {
         history.push('/dashboard');
     };
 
+    setTitle = (title, status) => {
+        if (status === 'DOWN') {
+            return title + ' - This service is not running'
+        }
+        return title;
+    };
+
     render() {
         const {
             tiles,
             isLoading,
+            clearService,
             fetchTilesStop,
             fetchTilesError,
+            selectedTile,
             match,
             match: {
                 params: { tileID },
@@ -49,11 +57,11 @@ export default class DetailPage extends Component {
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
-        } else if (this.tileId !== tileID) {
+        } else if (selectedTile !== null && selectedTile !== undefined && selectedTile !== tileID) {
+            clearService();
             fetchTilesStop();
             fetchTilesStart(tileID);
         }
-        this.tileId = tileID;
         return (
             <div className="detail-page">
                 <Spinner isLoading={isLoading} />
@@ -121,6 +129,7 @@ export default class DetailPage extends Component {
                 <div className="content-description-container">
                     {tiles !== undefined &&
                         tiles.length === 1 && (
+                        <Suspense>
                             <Router history={history}>
                                 <Switch>
                                     <Route
@@ -139,11 +148,22 @@ export default class DetailPage extends Component {
                                                     {tiles !== undefined &&
                                                         tiles.length === 1 &&
                                                         tiles[0].services.map(({ serviceId, title, status }) => (
-                                                            <Tooltip key={serviceId} content={title} placement="bottom">
-                                                                <React.Fragment>
-                                                                    {status === 'UP' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4">{serviceId}</Text></NavTab>}
-                                                                    {status === 'DOWN' && <NavTab to={`${match.url}/${serviceId}`} ><Text element="h4" color="#de1b1b">{serviceId}</Text></NavTab>}
-                                                                </React.Fragment>
+                                                            <Tooltip key={serviceId} content={this.setTitle(title, status)} placement="bottom">
+                                                                <div>
+                                                                    {status === 'UP' && (
+                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                            <Text element="h4">{serviceId}</Text>
+                                                                        </NavTab>
+                                                                    )}
+                                                                    {status === 'DOWN' && (
+                                                                        <NavTab to={`${match.url}/${serviceId}`}>
+                                                                            <Text element="h4" color="#de1b1b">
+                                                                                {serviceId}
+                                                                            </Text>
+                                                                            <IconSuccessSimple color="#de1b1b" />
+                                                                        </NavTab>
+                                                                    )}
+                                                                </div>
                                                             </Tooltip>
                                                         ))}
                                                 </div>
@@ -160,6 +180,7 @@ export default class DetailPage extends Component {
                                     />
                                 </Switch>
                             </Router>
+                        </Suspense>
                         )}
                 </div>
             </div>

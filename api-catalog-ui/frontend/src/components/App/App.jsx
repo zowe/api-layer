@@ -1,18 +1,22 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { Redirect, Route, Router, Switch } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ErrorContainer from '../Error/ErrorContainer';
-import { AsyncDetailPageContainer, AsyncDashboardContainer, AsyncLoginContainer } from './AsyncModules';
 import '../../webflow.css';
 import './App.css';
 import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
+import Spinner from "../Spinner/Spinner";
+import DetailPageContainer from "../DetailPage/DetailPageContainer";
+import DashboardContainer from "../Dashboard/DashboardContainer";
+import LoginContainer from "../Login/LoginContainer";
 
 class App extends Component {
     render() {
         const { history, authentication } = this.props;
+        const isLoading = true;
         return (
             <div className="App">
                 <BigShield history={history}>
@@ -20,20 +24,21 @@ class App extends Component {
                         authentication.showHeader === true && <HeaderContainer />}
                     <ToastContainer />
                     <ErrorContainer />
+                    <Suspense fallback={<Spinner isLoading={isLoading} />}>
                     <Router history={history}>
                         <Switch>
                             <Route path="/" exact render={() => <Redirect replace to="/login" />} />
                             <Route
                                 path="/login"
                                 exact
-                                render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
+                                render={(props, state) => <LoginContainer {...props} {...state} />}
                             />
                             <Route
                                 exact
                                 path="/dashboard"
                                 render={(props, state) => (
                                     <BigShield>
-                                        <AsyncDashboardContainer {...props} {...state} />
+                                        <DashboardContainer {...props} {...state} />
                                     </BigShield>
                                 )}
                             />
@@ -41,7 +46,7 @@ class App extends Component {
                                 path="/tile/:tileID"
                                 render={(props, state) => (
                                     <BigShield history={history}>
-                                        <AsyncDetailPageContainer {...props} {...state} />
+                                        <DetailPageContainer {...props} {...state} />
                                     </BigShield>
                                 )}
                             />
@@ -54,6 +59,7 @@ class App extends Component {
                             />
                         </Switch>
                     </Router>
+                    </Suspense>
                 </BigShield>
             </div>
         );

@@ -20,6 +20,7 @@ describe('>>> Dashboard component tests', () => {
                 tiles={[]}
                 searchCriteria=" Supercalafragalisticexpialadoshus"
                 fetchTilesStart={jest.fn()}
+                clearService={jest.fn()}
                 fetchTilesStop={jest.fn()}
                 fetchTilesFailed={jest.fn()}
             />
@@ -37,6 +38,7 @@ describe('>>> Dashboard component tests', () => {
             <Dashboard
                 tiles={[]}
                 fetchTilesError={ajaxError}
+                clearService={jest.fn()}
                 fetchTilesStart={jest.fn()}
                 fetchTilesStop={jest.fn()}
                 fetchTilesFailed={jest.fn()}
@@ -53,7 +55,7 @@ describe('>>> Dashboard component tests', () => {
 
     it('should stop epic on unmount', () => {
         const fetchTilesStop = jest.fn();
-        const wrapper = shallow(<Dashboard tiles={null} fetchTilesStart={jest.fn()} fetchTilesStop={fetchTilesStop} />);
+        const wrapper = shallow(<Dashboard tiles={null} fetchTilesStart={jest.fn()} fetchTilesStop={fetchTilesStop} clearService={jest.fn()} />);
         const instance = wrapper.instance();
         instance.componentWillUnmount();
         expect(fetchTilesStop).toHaveBeenCalled();
@@ -62,7 +64,7 @@ describe('>>> Dashboard component tests', () => {
     it('should trigger filterText on handleSearch', () => {
         const filterText = jest.fn();
         const wrapper = shallow(
-            <Dashboard tiles={null} fetchTilesStart={jest.fn()} filterText={filterText} fetchTilesStop={jest.fn()} />
+            <Dashboard tiles={null} fetchTilesStart={jest.fn()} filterText={filterText} fetchTilesStop={jest.fn()} clearService={jest.fn()} />
         );
         const instance = wrapper.instance();
         instance.handleSearch();
@@ -94,7 +96,7 @@ describe('>>> Dashboard component tests', () => {
         };
 
         const dashboard = shallow(
-            <Dashboard tiles={[dashboardTile]} fetchTilesStart={jest.fn()} fetchTilesStop={jest.fn()} />
+            <Dashboard tiles={[dashboardTile]} fetchTilesStart={jest.fn()} fetchTilesStop={jest.fn()} clearService={jest.fn()} />
         );
         const tile = dashboard.find('Tile');
         expect(tile.length).toEqual(1);

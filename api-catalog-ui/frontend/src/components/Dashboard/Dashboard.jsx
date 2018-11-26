@@ -9,7 +9,8 @@ import formatError from '../Error/ErrorFormatter';
 
 export default class Dashboard extends Component {
     componentDidMount() {
-        const { fetchTilesStart } = this.props;
+        const { fetchTilesStart, clearService } = this.props;
+        clearService();
         fetchTilesStart();
     }
 
