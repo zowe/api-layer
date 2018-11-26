@@ -15,6 +15,7 @@ There are following files:
  You can start the service using:
 
     cd helloworld-expressjs
+    npm install
     node index.js
 
 If the APIML is already running then you should see following messages:
