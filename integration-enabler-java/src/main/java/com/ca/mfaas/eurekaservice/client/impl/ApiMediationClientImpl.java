@@ -18,19 +18,18 @@ import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
+
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.PortType;
 import com.netflix.appinfo.MyDataCenterInstanceConfig;
 import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
+import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.ssl.SSLContextBuilder;
-
-import javax.net.ssl.SSLContext;
+import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,15 +58,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         ApplicationInfoManager applicationInfoManager, EurekaClientConfig clientConfig, ApiMediationServiceConfig config) {
 
         Ssl sslConfig = config.getSsl();
-        URL baseUrl;
-        try {
-            baseUrl = new URL(config.getBaseUrl());
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
-        }
-
         HttpsConfig httpsConfig = HttpsConfig.builder()
-            .protocol("TLSv1.2")
+            .protocol(sslConfig.getProtocol())
             .keyAlias(sslConfig.getKeyAlias())
             .keyStore(sslConfig.getKeyStore())
             .keyPassword(sslConfig.getKeyPassword())
@@ -76,12 +68,14 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             .trustStore(sslConfig.getTrustStore())
             .trustStoreType(sslConfig.getTrustStoreType())
             .trustStorePassword(sslConfig.getTrustStorePassword())
+            .verifySslCertificatesOfServices(sslConfig.isVerifySslCertificatesOfServices())
             .build();
         HttpsFactory factory = new HttpsFactory(httpsConfig);
-        SSLContext secureSslContext = factory.createSslContext();
+        EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(
+            config.getDiscoveryServiceUrls().get(0), config.getServiceId()).build();
 
-        DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
-        args.setSSLContext(secureSslContext);
+        AbstractDiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
+        args.setEurekaJerseyClient(eurekaJerseyClient);
         if (this.eurekaClient == null) {
             eurekaClient = new DiscoveryClient(applicationInfoManager, clientConfig, args);
         }
@@ -142,9 +136,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
         }
 
-        InstanceInfo instanceInformation = builder.build();
-
-        return instanceInformation;
+        return builder.build();
     }
 
     private Map<String, String> createMetadata(ApiMediationServiceConfig config) {

@@ -10,6 +10,7 @@
 package com.ca.mfaas.eurekaservice.client;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
+import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.junit.Rule;
@@ -22,6 +23,9 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void startEurekaClient() {
+        Ssl ssl = new Ssl(false, "TLSv1.2", "localhost", "password",
+            "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
+            "../keystore/localhost/localhost.truststore.p12","password", "PKCS12");
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
             .serviceId("service")
@@ -29,7 +33,8 @@ public class ApiMediationClientImplTest {
             .healthCheckRelativeUrl("")
             .homePageRelativeUrl("")
             .statusPageRelativeUrl("")
-            .discoveryServiceUrl("http://eureka:password@localhost:10011/eureka")
+            .discoveryServiceUrl("https://localhost:10011/eureka")
+            .ssl(ssl)
             .build();
 
         client.register(config);

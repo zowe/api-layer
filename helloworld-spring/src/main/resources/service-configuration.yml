@@ -8,7 +8,7 @@ healthCheckRelativeUrl: /application/health
 discoveryServiceUrls:
     - https://localhost:10011/eureka
 ssl:
-    enabled: false
+    verifySslCertificatesOfServices: true
     protocol: TLSv1.2
     keyAlias: localhost
     keyPassword: password
