@@ -1,15 +1,15 @@
 gatewayServiceConfiguration:
     scheme: https
-    host: localhost
-    port: 10010
+    host: ca3x.ca.com
+    port: 10210
     user: qadba01
     password: auto01
 discoveryServiceConfiguration:
     scheme: https
     user: eureka
     password: password
-    host: localhost
-    port: 10011
+    host: ca3x.ca.com
+    port: 10211
     instances: 1
 apiCatalogServiceConfiguration:
     user: user

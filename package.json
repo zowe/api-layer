@@ -1,6 +1,6 @@
 {
     "name": "api-layer",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Zowe API Mediation Layer",
     "directories": {
         "doc": "docs"
@@ -32,13 +32,13 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/gizafoundation/api-layer.git"
+        "url": "git+https://github.com/zowe/api-layer.git"
     },
     "author": "",
     "license": "EPL-2.0",
     "bugs": {
-        "url": "https://github.com/gizafoundation/api-layer/issues"
+        "url": "https://github.com/zowe/api-layer/issues"
     },
-    "homepage": "https://github.com/gizafoundation/api-layer#readme",
+    "homepage": "https://github.com/zowe/api-layer#readme",
     "dependencies": {}
 }

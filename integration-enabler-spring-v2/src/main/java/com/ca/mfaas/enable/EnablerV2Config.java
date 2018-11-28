@@ -9,16 +9,15 @@
  */
 package com.ca.mfaas.enable;
 
+import com.ca.mfaas.enable.conditions.ConditionalOnMissingProperty;
 import com.ca.mfaas.enable.model.ApiPropertiesContainer;
-import com.ca.mfaas.product.conditions.ConditionalOnMissingProperty;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Slf4j
 @ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
 @Configuration
 public class EnablerV2Config {

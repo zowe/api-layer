@@ -7,3 +7,29 @@
     align-self: center;
     margin-bottom: 0;
 }
+
+.product-name > a:hover {
+    text-decoration: none;
+}
+
+.logout-container button.css-1upkw8q-Button {
+    background-color: #1d5bbf;
+    transition: background-color .3s ease-in-out;
+}
+
+.logout-container button.css-1upkw8q-Button:hover {
+    background-color: #5691f0;
+}
+
+
+.logout-container svg {
+    transition: color .3s ease-in-out;
+}
+
+.logout-container button.css-1upkw8q-Button:hover svg {
+    color: #111111;
+}
+
+.css-1i58psh:hover {
+    background-color: #5691f0;
+}
