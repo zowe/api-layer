@@ -13,8 +13,11 @@ import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.eurekaservice.client.config.EurekaClientConfiguration;
 import com.ca.mfaas.eurekaservice.client.config.Route;
+import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.security.HttpsConfig;
+import com.ca.mfaas.security.HttpsFactory;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
@@ -24,6 +27,10 @@ import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.ssl.SSLContextBuilder;
+
+import javax.net.ssl.SSLContext;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -38,7 +45,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     public void register(ApiMediationServiceConfig config) {
         ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
-        initializeEurekaClient(infoManager, clientConfiguration);
+        initializeEurekaClient(infoManager, clientConfiguration, config);
     }
 
     @Override
@@ -49,9 +56,34 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     }
 
     private synchronized EurekaClient initializeEurekaClient(
-        ApplicationInfoManager applicationInfoManager, EurekaClientConfig clientConfig) {
+        ApplicationInfoManager applicationInfoManager, EurekaClientConfig clientConfig, ApiMediationServiceConfig config) {
+
+        Ssl sslConfig = config.getSsl();
+        URL baseUrl;
+        try {
+            baseUrl = new URL(config.getBaseUrl());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
+        }
+
+        HttpsConfig httpsConfig = HttpsConfig.builder()
+            .protocol("TLSv1.2")
+            .keyAlias(sslConfig.getKeyAlias())
+            .keyStore(sslConfig.getKeyStore())
+            .keyPassword(sslConfig.getKeyPassword())
+            .keyStorePassword(sslConfig.getKeyStorePassword())
+            .keyStoreType(sslConfig.getKeyStoreType())
+            .trustStore(sslConfig.getTrustStore())
+            .trustStoreType(sslConfig.getTrustStoreType())
+            .trustStorePassword(sslConfig.getTrustStorePassword())
+            .build();
+        HttpsFactory factory = new HttpsFactory(httpsConfig);
+        SSLContext secureSslContext = factory.createSslContext();
+
+        DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
+        args.setSSLContext(secureSslContext);
         if (this.eurekaClient == null) {
-            eurekaClient = new DiscoveryClient(applicationInfoManager, clientConfig);
+            eurekaClient = new DiscoveryClient(applicationInfoManager, clientConfig, args);
         }
         applicationInfoManager.setInstanceStatus(InstanceInfo.InstanceStatus.UP);
         return eurekaClient;
