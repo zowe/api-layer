@@ -25,6 +25,17 @@
         <servlet-name>jersey</servlet-name>
         <url-pattern>/helloworld-jersey/*</url-pattern>
     </servlet-mapping>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Protected resource</web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+        </web-resource-collection>
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
 
     <servlet>
         <servlet-name>Jersey2Config</servlet-name>
