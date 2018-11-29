@@ -10,14 +10,20 @@ const args = {
     ipAddr: process.argv[4] || "127.0.0.1",
     serviceId: process.argv[5] || "hwexpress",
     discoveryServiceUrl: process.argv[6] || "https://localhost:10011/eureka/apps/",
-    pfx: process.argv[7] || "../keystore/localhost/localhost.keystore.p12",
-    passphrase: process.argv[8] || "password"
+    cert: process.argv[7] || "../keystore/localhost/localhost.keystore.cer",
+    key: process.argv[8] || "../keystore/localhost/localhost.keystore.key",
+    ca: process.argv[9] || "../keystore/local_ca/localca.cer",
+    // pfx: process.argv[7] || "../keystore/localhost/localhost.keystore.p12",
+    // passphrase: process.argv[8] || "password"
 };
 
 // Options for TLS (shared by the HTTPS server and Eureka client):
 const tlsOptions = {
-    pfx: fs.readFileSync(args.pfx),
-    passphrase: args.passphrase,
+    cert: fs.readFileSync(args.cert),
+    key: fs.readFileSync(args.key),
+    ca: fs.readFileSync(args.ca),
+    // pfx: fs.readFileSync(args.pfx),
+    // passphrase: args.passphrase,
     secureProtocol: "TLSv1_2_method",
     rejectUnauthorized: true
 };
