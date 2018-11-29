@@ -48,6 +48,34 @@ java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.conf
 java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
 ```
 
+### Helloworld Jersey
+
+In order to enable HTTPS for Apache Tomcat, there are few additional steps that are needed to be done:
+1. Go to `apache-tomcat-8.0.39-windows-x64\conf` directory (the full path depends on where you decided to install Tomcat) and open `server.xml` file with some text editor as Administrator. Add the xml block below:
+    ```xml
+           <Connector port="8080" protocol="org.apache.coyote.http11.Http11NioProtocol"
+                          maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
+                          clientAuth="false" sslProtocol="TLS"
+                          keystoreFile="C:\Users\taban03\IdeaProjects\open_zowe\api-layer\keystore\localhost\localhost.keystore.p12"
+                          keystorePass="password"
+                                                />
+    ```
+    Be also sure to comment the HTTP connector which uses the same port.
+2. Navigate to the `WEB-INF/` located in `helloworld-jersey` module and add the following xml block to the `web.xml` file, right below the `<servlet-mapping>` tag:
+    ```xml
+    <security-constraint>
+            <web-resource-collection>
+                <web-resource-name>Protected resource</web-resource-name>
+                <url-pattern>/*</url-pattern>
+                <http-method>GET</http-method>
+                <http-method>POST</http-method>
+            </web-resource-collection>
+            <user-data-constraint>
+                <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+            </user-data-constraint>
+        </security-constraint>
+    ```
+3. Deploy Helloworld Jersey application with these additional paramters: `-Djavax.net.ssl.trustStore="C:\Users\taban03\IdeaProjects\open_zowe\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. If you want some more information about SSL configuration status while deploying, use this parameter `-Djavax.net.debug=SSL`.
 
 ### Default Discovery Timing Settings 
 
