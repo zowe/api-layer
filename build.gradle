@@ -30,7 +30,6 @@ buildscript {
     dependencies {
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5'
         classpath 'com.palantir:jacoco-coverage:0.4.0'
-        classpath 'net.researchgate:gradle-release:2.6.0'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
     }
 }
@@ -91,12 +90,12 @@ task buildBackendCore(dependsOn: [':gateway-service:build', ':discovery-service:
     group "build"
 }
 
-task runIntegrationTests(dependsOn: ":integration-tests:runIntegrationTests") {
+task runIntegrationTests(dependsOn: ':integration-tests:runIntegrationTests') {
     description "Run integration tests"
     group "Integration tests"
 }
 
-task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTests") {
+task runAllIntegrationTests(dependsOn: ':integration-tests:runAllIntegrationTests') {
     description "Run all integration tests"
     group "Integration tests"
 }
@@ -131,55 +130,5 @@ task publishAllVersions {
 }
 
 publishAllVersions.dependsOn publishSdkArtifacts
-
-//-----------Release part start
-apply plugin: 'net.researchgate.release'
-
-ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
-
-release {
-    failOnCommitNeeded = false
-    failOnPublishNeeded = false
-    failOnSnapshotDependencies = false
-    failOnUnversionedFiles = false
-    failOnUpdateNeeded = false
-    revertOnFail = true
-    preCommitText = '[Gradle Release plugin]'
-    preTagCommitMessage = 'Before tag commit'
-    tagCommitMessage = 'Release:'
-    tagTemplate = '${version}'
-    newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = 'gradle.properties'
-    buildTasks = ['build']
-
-    if (releaseScope == 'minor') {
-        versionPatterns = [
-            /[.]*\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll(".${(m[0][1] as int) + 1}.0") }
-        ]
-    } else if (releaseScope == 'major') {
-        versionPatterns = [
-            /(\d+)\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}.0.0") }
-        ]
-    } else {
-        versionPatterns = [
-            /(\d+)([^\d]*$)/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}${m[0][2]}") }
-        ]
-    }
-
-    scmAdapters = [
-        net.researchgate.release.GitAdapter
-    ]
-
-    git {
-        requireBranch = 'master'
-        pushToRemote = 'origin'
-        pushToBranchPrefix = ''
-        commitVersionFileOnly = false
-        signTag = false
-    }
-}
-
-afterReleaseBuild.dependsOn publishAllVersions
-//-----------Release part end
 
 
