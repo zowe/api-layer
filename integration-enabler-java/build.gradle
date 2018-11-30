@@ -1,11 +1,11 @@
 dependencies {
-    compileOnly libraries.lombok
-
     compile(project(':common-service-core'))
 
     compile libraries.jackson_annotations
     compile libraries.jackson_dataformat_yaml
     compile libraries.eureka_client
+
+    compileOnly libraries.lombok
 
     testCompile libraries.junit
     testCompile libraries.logback_classic
