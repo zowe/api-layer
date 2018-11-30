@@ -35,8 +35,13 @@ dependencies {
 }
 
 tomcat {
-    httpPort = 10016
+    httpsPort = 10016
     ajpPort = 8009
     stopPort = 8081
     contextPath = '/'
+    enableSSL = true
+    tomcatRun.keystoreFile = file('../keystore/localhost/localhost.keystore.p12')
+    tomcatRun.truststoreFile = file('../keystore/localhost/localhost.truststore.p12')
+    tomcatRun.keystorePass = "password"
+    tomcatRun.truststorePass = "password"
 }
