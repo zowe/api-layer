@@ -48,6 +48,11 @@ java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.conf
 java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
 ```
 
+### Sample Application - Hello World Spring
+
+```shell
+./gradlew :helloworld-spring:tomcatRun
+```
 
 ### Default Discovery Timing Settings 
 
