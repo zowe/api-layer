@@ -77,3 +77,47 @@ a {
         background-image: url(../../assets/images/background.svg);
     }
 }
+
+/* Custom styles for IE10 and above */
+@media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
+    .grid-container {
+        width : 100%;
+        height: 100%;
+        padding: 0 3rem 3rem 36px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .grid-container > .grid-tile {
+        margin-bottom: 20px;
+    }
+
+    .filtering-container {
+        margin-left: 0;
+        width: 100%;
+        justify-items: left;
+        float: left;
+    }
+
+    .no-tiles-container {
+        margin-top: 2rem;
+        margin-left: 2rem;
+        text-align: left;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    @media only screen and (max-width: 530px) {
+        .grid-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+
+    @media only screen and (max-width: 390px) {
+        .grid-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+}
