@@ -23,6 +23,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
     -Dspring.profiles.active=https \
+    -Dspring.profiles.include= \
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.discovery.password=password \
