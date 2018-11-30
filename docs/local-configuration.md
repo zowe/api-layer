@@ -48,6 +48,7 @@ java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.conf
 java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
 ```
 
+
 ### Default Discovery Timing Settings 
 
 Default timings can require up to 3 minutes for service startup discovery and shutdown to be registered.
