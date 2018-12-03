@@ -44,7 +44,7 @@
         "build": "react-scripts build",
         "analyze": "source-map-explorer build/static/js/main.*",
         "postbuild": "rimraf build/**/*.map",
-        "test": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/*",
+        "test": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter",
         "test:unit": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/*",
         "test:int": "react-scripts test --env=jsdom integration-tests/*",
         "test:e2e": "react-scripts test --env=jsdom e2e/*",
@@ -63,6 +63,11 @@
         "usePathForSuiteName": "true"
     },
     "proxy": "https://localhost:10010",
+    "jest-html-reporter": {
+        "pageTitle": "API Catalog UI Unit Tests",
+        "outputPath": "./test-results/test-report-unit.html",
+        "includeFailureMsg": true
+    },
     "devDependencies": {
         "babel-cli": "6.26.0",
         "babel-eslint": "9.0.0",
@@ -85,6 +90,7 @@
         "jest": "23.6.0",
         "jest-environment-enzyme": "7.0.1",
         "jest-enzyme": "7.0.1",
+        "jest-html-reporter": "^2.4.2",
         "jest-junit": "5.2.0",
         "jest-mock": "23.2.0",
         "nodemon": "1.18.6",
