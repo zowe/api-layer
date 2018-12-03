@@ -21,12 +21,15 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
+    -Dspring.profiles.include= \
     -Dapiml.service.hostname=**HOSTNAME** \
     -Dapiml.service.port=**GATEWAY_PORT** \
     -Dapiml.service.discoveryServiceUrls=https://**HOSTNAME**:**DISCOVERY_PORT**/eureka/ \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.service.ipAddress=**IPADDRESS** \
     -Dapiml.gateway.timeoutMillis=30000 \
+    -Dapiml.security.verifySslCertificatesOfServices=true \
+    -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=$DIR/../keystore/localhost/localhost.keystore.p12 \
     -Dserver.ssl.keyStoreType=PKCS12 \

@@ -105,7 +105,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             WebSocketRoutedSession session = new WebSocketRoutedSession(webSocketSession, targetUrl, jettySslContextFactory);
             routedSessions.put(webSocketSession.getId(), session);
         } catch (WebSocketProxyError e) {
-            log.debug("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage(), e);
+            log.error("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage(), e);
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
         }
     }
