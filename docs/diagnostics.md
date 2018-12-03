@@ -24,7 +24,7 @@ It can be useful to know what code is used. This is available at `/application/i
 
 It is also printed to the log as the very first messsage:
 
-    [DS] 16:32:04.022 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service discovery-service version 0.2.0-SNAPSHOT #n/a on 2018-08-23T14:28:33.223Z by plape03mac850 commit 6fd7c53
-    [GS] 16:32:04.098 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service gateway-service version 0.2.0-SNAPSHOT #n/a on 2018-08-23T14:28:33.231Z by plape03mac850 commit 6fd7c53
-    [DC] 16:32:04.195 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service discoverable-client version 0.2.0-SNAPSHOT #n/a on 2018-08-23T14:28:33.217Z by plape03mac850 commit 6fd7c53
-    [AC] 16:32:04.317 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service api-catalog-services version 0.2.0-SNAPSHOT #n/a on 2018-08-23T14:28:33.201Z by plape03mac850 commit 6fd7c53
+    [DS] 16:32:04.022 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service discovery-service version xyz #n/a on 2018-08-23T14:28:33.223Z by plape03mac850 commit 6fd7c53
+    [GS] 16:32:04.098 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service gateway-service version xyz #n/a on 2018-08-23T14:28:33.231Z by plape03mac850 commit 6fd7c53
+    [DC] 16:32:04.195 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service discoverable-client version xyz #n/a on 2018-08-23T14:28:33.217Z by plape03mac850 commit 6fd7c53
+    [AC] 16:32:04.317 [main] INFO com.ca.mfaas.product.service.BuildInfo - Service api-catalog-services version xyz #n/a on 2018-08-23T14:28:33.201Z by plape03mac850 commit 6fd7c53

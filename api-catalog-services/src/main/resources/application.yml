@@ -78,7 +78,7 @@ mfaas:
 ##############################################################################################
 
 server:
-    address: ${mfaas.service.hostname}
+    address: ${mfaas.service.ipAddress}
     port: ${mfaas.server.port}
     servlet:
         contextPath: ${mfaas.server.contextPath}

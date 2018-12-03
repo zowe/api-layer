@@ -90,7 +90,7 @@ If you have the sample service described in the User Guide at [this link](https:
 
 3. Call the script:
 
-        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-alias petstore --service-ext SAN=dns:localhost.localdomain,dns:localhost --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.truststore.p12 --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-validity 365 --local-ca-filename ~/workspace/zowe/api-layer/keystore/local_ca/localca
+        <api-layer-repository>/scripts/apiml_cm.sh --action new-service --service-alias petstore --service-ext SAN=dns:localhost.localdomain,dns:localhost --service-keystore keystore/localhost.keystore.p12 --service-truststore keystore/localhost.truststore.p12 --service-dname "CN=Petstore Service, OU=orgUnit, O=org, L=city, S=state, C=country" --service-password password --service-validity 365 --local-ca-filename <api-layer-repository>/keystore/local_ca/localca
 
 4. This generated the certificate and private key to the `keystore` directory. You need to configure the HTTPS for the sample service. This can be done by adding the following properties to the `src/main/resources/application.properties`:
         
