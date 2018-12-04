@@ -162,6 +162,10 @@
     color: #3b4151
 }
 
+.swagger-ui .wrapper {
+    width: unset;
+}
+
 .swagger-ui .opblock .opblock-summary-method {
     font-size: 14px;
     font-weight: 700;
