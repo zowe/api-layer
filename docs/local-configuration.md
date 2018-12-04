@@ -83,7 +83,7 @@ To run Helloworld Jersey, you need to have Apache Tomcat installed in your compu
 4. Run `gradlew tomcatRun` with these additional parameters: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
 If you need some more information about SSL configuration status while deploying, use this parameter `-Djavax.net.debug=SSL`.
 
-5. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service is registered to the discovery service. You should be able to reach the following endpoints:
+5. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:
 
     * [https://localhost:10016/helloworld-jersey/api-doc](https://localhost:10016/helloworld-jersey/api-doc) which contains the API documentation
     * [https://localhost:10016/helloworld-jersey/application/health](https://localhost:10016/helloworld-jersey/application/health) for the health check endpoint containing the status of the application
@@ -91,7 +91,7 @@ If you need some more information about SSL configuration status while deploying
     * [https://localhost:10016/helloworld-jersey/application/info](https://localhost:10016/helloworld-jersey/application/info) for the service informations such as hostname, port etc
     * [https://localhost:10016/helloworld-jersey/v1/greeting](https://localhost:10016/helloworld-jersey/v1/greeting) for the greeting endpoint
     
-    Go to the API Catalog and check if the API documentation of the service is loaded.
+    Go to the [API Catalog](https://localhost:10010/ui/v1/apicatalog) and check if the API documentation of the service is retrieved.
 
 ### Default Discovery Timing Settings 
 
