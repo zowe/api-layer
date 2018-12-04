@@ -17,15 +17,15 @@ export default class Header extends Component {
             <div className="header">
                 <div className="product-name">
                     <Link href={dashboard}>
-                    <div className="app-icon-container">
-                        <img id="logo" alt="API Catalog Product Name" src={productImage} />
-                    </div>
+                        <div className="app-icon-container">
+                            <img id="logo" alt="API Catalog Product Name" src={productImage} />
+                        </div>
                     </Link>
-                        <Link href={dashboard}>
-                            <Text element="h3" color="#ffffff">
-                                API Catalog
-                            </Text>
-                        </Link>
+                    <Link href={dashboard}>
+                        <Text element="h3" color="#ffffff">
+                            API Catalog
+                        </Text>
+                    </Link>
                 </div>
                 <div className="right-icons">
                     <div className="logout-container">

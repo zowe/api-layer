@@ -209,6 +209,18 @@ pipeline {
                         }
                     }
                 }
+                stage('Publish UI test results') {
+                    steps {
+                        publishHTML(target: [
+                            allowMissing         : false,
+                            alwaysLinkToLastBuild: false,
+                            keepAll              : true,
+                            reportDir            : 'api-catalog-ui/frontend/test-results',
+                            reportFiles          : 'test-report-unit.html',
+                            reportName           : "UI Unit Test Results"
+                        ])
+                    }
+                }
 
                 stage('Publish snapshot version to Artifactory for master') {
                     when {
