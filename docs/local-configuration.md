@@ -75,7 +75,7 @@ In order to enable HTTPS for Apache Tomcat, there are few additional steps that 
             </user-data-constraint>
         </security-constraint>
     ```
-3. (Optional) By default you can deploy by using gradle task `gradlew tomcatRun`. If you want to set Tomcat configuration by yourself deploy Helloworld Jersey application with these additional paramters: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. If you want some more information about SSL configuration status while deploying, use this parameter `-Djavax.net.debug=SSL`.
+3. Run `gradlew tomcatRun` with these additional parameters: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. If you want some more information about SSL configuration status while deploying, use this parameter `-Djavax.net.debug=SSL`.
 
 ### Default Discovery Timing Settings 
 
