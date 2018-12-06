@@ -53,7 +53,7 @@ java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config
 To run Helloworld Jersey, you need to have Apache Tomcat installed in your computer. Follow the steps below:
 
 1.  Download Apache Tomcat 8.0.39 and install it. 
-2.  Build Helloworld Jersey through Intellij UI or by running `gradlew helloworld-jersey:build`. 
+2.  Build Helloworld Jersey through IntelliJ or by running `gradlew helloworld-jersey:build` in the terminal. 
 
 3.  Enable HTTPS for Apache Tomcat. In order to do that, there are few additional steps that are needed to be done:
     * Go to `apache-tomcat-8.0.39-windows-x64\conf` directory (the full path depends on where you decided to install Tomcat) and open `server.xml` file with some text editor as Administrator. Add the xml block below:
