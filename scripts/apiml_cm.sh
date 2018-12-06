@@ -15,6 +15,7 @@ function usage {
 }
 
 ACTION=
+V=
 
 LOCAL_CA_ALIAS="localca"
 LOCAL_CA_FILENAME="keystore/local_ca/localca"
@@ -55,31 +56,36 @@ function clean_service {
 
 function create_certificate_authority {
     echo "Generate keystore with the local CA private key and local CA public certificate:"
-    pkeytool -genkeypair -v -alias ${LOCAL_CA_ALIAS} -keyalg RSA -keysize 2048 -keystore ${LOCAL_CA_FILENAME}.keystore.p12 \
+    pkeytool -genkeypair $V -alias ${LOCAL_CA_ALIAS} -keyalg RSA -keysize 2048 -keystore ${LOCAL_CA_FILENAME}.keystore.p12 \
         -dname "${LOCAL_CA_DNAME}" -keypass ${LOCAL_CA_PASSWORD} -storepass ${LOCAL_CA_PASSWORD} -storetype PKCS12 -validity ${LOCAL_CA_VALIDITY} \
         -ext KeyUsage="keyCertSign" -ext BasicConstraints:"critical=ca:true"
 
     echo "Export local CA public certificate:"
-    pkeytool -export -v -alias ${LOCAL_CA_ALIAS} -file ${LOCAL_CA_FILENAME}.cer -keystore ${LOCAL_CA_FILENAME}.keystore.p12 -rfc \
+    pkeytool -export $V -alias ${LOCAL_CA_ALIAS} -file ${LOCAL_CA_FILENAME}.cer -keystore ${LOCAL_CA_FILENAME}.keystore.p12 -rfc \
         -keypass ${LOCAL_CA_PASSWORD} -storepass ${LOCAL_CA_PASSWORD} -storetype PKCS12
+
+    if [ `uname` = "OS/390" ]; then
+        iconv -f ISO8859-1 -t IBM-1047 ${LOCAL_CA_FILENAME}.cer > ${LOCAL_CA_FILENAME}.cer-ebcdic
+    fi
+
 }
 
 function create_service_certificate_and_csr {
     if [ ! -e "${SERVICE_KEYSTORE}.p12" ];
     then
         echo "Generate service private key and service:"
-        pkeytool -genkeypair -v -alias ${SERVICE_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.p12 -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} \
+        pkeytool -genkeypair $V -alias ${SERVICE_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.p12 -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} \
             -storetype PKCS12 -dname "${SERVICE_DNAME}" -validity ${SERVICE_VALIDITY}
 
         echo "Generate CSR for the the service certificate:"
-        pkeytool -certreq -v -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -file ${SERVICE_KEYSTORE}.csr \
+        pkeytool -certreq $V -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -file ${SERVICE_KEYSTORE}.csr \
             -keyalg RSA -storetype PKCS12 -dname "${SERVICE_DNAME}" -validity ${SERVICE_VALIDITY}
     fi
 }
 
 function sign_csr_using_local_ca {
     echo "Sign the CSR using the Certificate Authority:"
-    pkeytool -gencert -v -infile ${SERVICE_KEYSTORE}.csr -outfile ${SERVICE_KEYSTORE}_signed.cer -keystore ${LOCAL_CA_FILENAME}.keystore.p12 \
+    pkeytool -gencert $V -infile ${SERVICE_KEYSTORE}.csr -outfile ${SERVICE_KEYSTORE}_signed.cer -keystore ${LOCAL_CA_FILENAME}.keystore.p12 \
         -alias ${LOCAL_CA_ALIAS} -keypass ${LOCAL_CA_PASSWORD} -storepass ${LOCAL_CA_PASSWORD} -storetype PKCS12 \
         -ext ${SERVICE_EXT} -ext KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment -ext ExtendedKeyUsage=clientAuth,serverAuth -rfc \
         -validity ${SERVICE_VALIDITY}
@@ -87,18 +93,22 @@ function sign_csr_using_local_ca {
 
 function import_signed_certificate_and_ca_certificate {
     echo "Import the Certificate Authority to the truststore:"
-    pkeytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+    pkeytool -importcert $V -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 
     echo "Import the Certificate Authority to the keystore:"
-    pkeytool -importcert -v -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+    pkeytool -importcert $V -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 
     echo "Import the signed CSR to the keystore:"
-    pkeytool -importcert -v -trustcacerts -noprompt -file ${SERVICE_KEYSTORE}_signed.cer -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+    pkeytool -importcert $V -trustcacerts -noprompt -file ${SERVICE_KEYSTORE}_signed.cer -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 }
 
 function export_service_certificate {
     echo "Export service certificate to the PEM format"
     pkeytool -exportcert -alias localhost -keystore ${SERVICE_KEYSTORE}.p12 -storetype PKCS12 -storepass ${SERVICE_PASSWORD} -rfc -file ${SERVICE_KEYSTORE}.cer
+
+    if [ `uname` = "OS/390" ]; then
+        iconv -f ISO8859-1 -t IBM-1047 ${SERVICE_KEYSTORE}.cer > ${SERVICE_KEYSTORE}.cer-ebcdic
+    fi
 }
 
 function export_service_private_key {
@@ -158,7 +168,8 @@ EOF
 function setup_local_ca {
     clean_local_ca
     create_certificate_authority
-    ls -l  ${LOCAL_CA_FILENAME}*
+    echo "Listing generated files for local CA:"
+    ls -l ${LOCAL_CA_FILENAME}*
 }
 
 function new_service {
@@ -168,7 +179,8 @@ function new_service {
     import_signed_certificate_and_ca_certificate
     export_service_certificate
     export_service_private_key
-    ls ${SERVICE_KEYSTORE}*
+    echo "Listing generated files for service:"
+    ls -l ${SERVICE_KEYSTORE}*
 }
 
 while [ "$1" != "" ]; do
@@ -237,4 +249,3 @@ case $ACTION in
         usage
         exit 1
 esac
-
