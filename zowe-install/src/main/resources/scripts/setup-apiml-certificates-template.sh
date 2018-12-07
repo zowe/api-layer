@@ -1,4 +1,6 @@
 #!/bin/sh
+echo "<setup-apiml-certificates.sh>" >> $LOG_FILE
+
 mkdir -p keystore/local_ca
 mkdir -p keystore/localhost
 
@@ -16,7 +18,10 @@ scripts/apiml_cm.sh --verbose --log $LOG_FILE --action setup --service-ext $EXT
 RC=$?
 
 echo "apiml_cm.sh returned: $RC" >> $LOG_FILE
+echo "</setup-apiml-certificates.sh>" >> $LOG_FILE
+
 if [ "$RC" -ne "0" ]; then
     echo "apiml_cm.sh has failed. See $LOG_FILE for more details"
     exit 1
 fi
+
