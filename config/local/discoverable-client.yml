@@ -17,8 +17,10 @@ server:
         keyAlias: localhost
         keyPassword: password
         keyStore: keystore/selfsigned/localhost.keystore.p12
+        # keyStore: keystore/selfsigned/localhost-untrusted.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
         trustStore: keystore/selfsigned/localhost.truststore.p12
+        # trustStore: keystore/selfsigned/localhost-untrusted.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12

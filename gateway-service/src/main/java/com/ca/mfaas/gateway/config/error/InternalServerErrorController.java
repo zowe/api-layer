@@ -25,6 +25,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 
@@ -56,28 +57,36 @@ public class InternalServerErrorController implements ErrorController {
     }
 
     @RequestMapping(value = PATH, produces = "application/json")
-    public @ResponseBody
-    ResponseEntity<ApiMessage> error(HttpServletRequest request) {
+    @ResponseBody
+    public ResponseEntity<ApiMessage> error(HttpServletRequest request) {
         final int status = getErrorStatus(request);
         final String errorMessage = getErrorMessage(request);
         final Throwable exc = (Throwable) request.getAttribute("javax.servlet.error.exception");
 
         // Check for a specific error cause:
         ResponseEntity<ApiMessage> entity = checkTimeoutError(exc);
+        if (entity == null) {
+            entity = checkTlsHandshakeError(request, exc);
+        }
+
         if (entity != null) {
             return entity;
         }
 
         // Fallback for unexpected internal errors
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.common.endPointNotFound", getErrorURI(request));
+        ApiMessage message = errorService.createApiMessage("apiml.common.requestError", getErrorURI(request), ExceptionUtils.getMessage(exc));
         log.error(errorMessage, exc);
         return ResponseEntity.status(status).body(message);
     }
 
     private ResponseEntity<ApiMessage> gatewayTimeoutResponse(String message) {
-        ApiMessage apiMessage = errorService.createApiMessage("com.ca.mfaas.common.serviceTimeout", message);
-        log.error("MFSG0002 Timeout error: " + message);
+        ApiMessage apiMessage = errorService.createApiMessage("apiml.common.serviceTimeout", message);
         return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(apiMessage);
+    }
+
+    private ResponseEntity<ApiMessage> tlsErrorResponse(HttpServletRequest request, String message) {
+        ApiMessage apiMessage = errorService.createApiMessage("apiml.common.tlsError", getErrorURI(request), message);
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(apiMessage);
     }
 
     /**
@@ -102,6 +111,18 @@ public class InternalServerErrorController implements ErrorController {
 
             else if (rootCause instanceof SocketTimeoutException) {
                 return gatewayTimeoutResponse(rootCause.getMessage());
+            }
+        }
+
+        return null;
+    }
+
+    private ResponseEntity<ApiMessage> checkTlsHandshakeError(HttpServletRequest request, Throwable exc) {
+        if (exc instanceof ZuulException) {
+            int handshakeExceptionIndex = ExceptionUtils.indexOfType(exc, SSLHandshakeException.class);
+            if (handshakeExceptionIndex != -1) {
+                Throwable sslHandshakeException = ExceptionUtils.getThrowables(exc)[handshakeExceptionIndex];
+                return tlsErrorResponse(request, sslHandshakeException.getMessage());
             }
         }
 
