@@ -22,7 +22,6 @@ import com.netflix.discovery.EurekaClientConfig;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import java.net.MalformedURLException;
 import java.util.ResourceBundle;
 
 public class RestDiscoveryListener implements ServletContextListener {
