@@ -50,6 +50,9 @@ function apiLayerServiceModule() {
             },
             requestMiddleware: (requestOpts, done) => {
                 requestOpts.pfx = options.tlsOptions.pfx;
+                requestOpts.ca = options.tlsOptions.ca;
+                requestOpts.cert = options.tlsOptions.cert;
+                requestOpts.key = options.tlsOptions.key;
                 requestOpts.passphrase = options.tlsOptions.passphrase;
                 done(requestOpts);
             }
