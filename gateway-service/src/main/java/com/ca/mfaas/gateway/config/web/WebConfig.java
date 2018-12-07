@@ -9,6 +9,9 @@
  */
 package com.ca.mfaas.gateway.config.web;
 
+import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -22,5 +25,10 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/resources/**", "/images/**")
             .addResourceLocations("/resources/", "classpath:/static/images/");
+    }
+
+    @Bean
+    public ErrorService errorService() {
+        return new ErrorServiceImpl();
     }
 }

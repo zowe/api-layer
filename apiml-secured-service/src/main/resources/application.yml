@@ -1,0 +1,27 @@
+spring:
+    application:
+        name: service
+
+server:
+    port: 10012
+
+service:
+    instance:
+        name: service1
+
+#logging:
+#    level:
+#        ROOT: INFO
+#        io.apiml.gateway.GatewayApplication: WARN
+#        io.apiml: DEBUG
+#        com.ca.mfaas: DEBUG
+#        org.apache.catalina: WARN
+#        org.apache.coyote: WARN
+#        org.apache.tomcat: WARN
+#        org.springframework.boot: WARN
+#        org.springframework.boot.web.embedded.tomcat: INFO
+#        org.springframework.scheduling: WARN
+#        org.springframework.security: WARN
+#        org.springframework.web.context.ContextLoader: WARN
+#        org.springframework.web.servlet.DispatcherServlet: WARN
+#        org.springframework: INFO

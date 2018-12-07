@@ -35,7 +35,8 @@ dependencies {
     compile(project(':integration-enabler-spring-v2'))
     compile(project(':common-service-core'))
     compile(project(':gateway-common'))
-    compile(project(':security-module'))
+    implementation(project(":apiml-security"))
+    implementation("io.jsonwebtoken:jjwt:0.9.1")
 
     compile libraries.spring_cloud_starter_zuul
     compile libraries.spring_boot_starter_actuator

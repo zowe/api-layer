@@ -21,6 +21,8 @@ dependencies {
     compile libraries.jackson_databind
     compile libraries.json_path
     compile libraries.spring_boot_starter_websocket
+    implementation("org.json:json:20180813")
+    implementation("io.jsonwebtoken:jjwt:0.9.1")
 
     testCompile libraries.junit
     testCompile libraries.hamcrest
@@ -32,6 +34,7 @@ dependencies {
     testCompile libraries.power_mock_junit4_rule
     testCompile libraries.lombok
     testCompile libraries.jsoup
+    testImplementation(project(':apiml-security'))
 }
 
 jar {

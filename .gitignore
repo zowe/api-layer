@@ -19,6 +19,7 @@ hs_err_pid*
 .history
 # build folders
 build/
+out/
 
 # UI specific files and directories
 node_modules/

@@ -17,4 +17,5 @@ include 'helloworld-spring'
 include 'integration-enabler-java'
 include 'security-module'
 include 'api-catalog-ui'
-
+include("apiml-security")
+include("apiml-secured-service")
