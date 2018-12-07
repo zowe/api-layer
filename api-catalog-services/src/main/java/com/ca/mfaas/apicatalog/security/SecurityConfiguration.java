@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.security.handler.UnauthorizedHandler;
@@ -20,14 +19,11 @@ import com.ca.mfaas.security.token.CookieFilter;
 import com.ca.mfaas.security.token.TokenAuthenticationProvider;
 import com.ca.mfaas.security.token.TokenFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -38,9 +34,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -57,7 +50,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final LoginAuthenticationProvider loginAuthenticationProvider;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     private final SecurityConfigurationProperties securityConfigurationProperties;
-    private final MFaaSConfigPropertiesContainer mfaasConfigPropertiesContainer;
 
     public SecurityConfiguration(
         @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper,
@@ -66,8 +58,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         FailedAuthenticationHandler authenticationFailureHandler,
         LoginAuthenticationProvider loginAuthenticationProvider,
         TokenAuthenticationProvider tokenAuthenticationProvider,
-        SecurityConfigurationProperties securityConfigurationProperties,
-        MFaaSConfigPropertiesContainer mfaasConfigPropertiesContainer) {
+        SecurityConfigurationProperties securityConfigurationProperties) {
         super();
         this.securityObjectMapper = securityObjectMapper;
         this.unAuthorizedHandler = unAuthorizedHandler;
@@ -76,7 +67,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.loginAuthenticationProvider = loginAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;
         this.securityConfigurationProperties = securityConfigurationProperties;
-        this.mfaasConfigPropertiesContainer = mfaasConfigPropertiesContainer;
     }
 
     @Override
@@ -156,17 +146,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     public LogoutSuccessHandler logoutSuccessHandler() {
         return new ApiCatalogLogoutSuccessHandler(securityConfigurationProperties);
-    }
-
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    CorsConfigurationSource corsConfigurationSource(MFaaSConfigPropertiesContainer propertiesContainer) {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(ImmutableList.of(mfaasConfigPropertiesContainer.getGateway().getGatewayHostname(), "http://localhost:3000", "http://localhost:10014"));
-        configuration.setAllowedMethods(ImmutableList.of("HEAD", "GET", "POST"));
-        configuration.setAllowedHeaders(ImmutableList.of("Cookie", "Authorization", "Cache-Control", "Content-Type"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
     }
 }

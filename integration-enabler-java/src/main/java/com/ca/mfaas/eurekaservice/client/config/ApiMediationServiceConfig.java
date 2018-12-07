@@ -31,4 +31,5 @@ public class ApiMediationServiceConfig {
     private List<Route> routes;
     private ApiInfo apiInfo;
     private CatalogUiTile catalogUiTile;
+    private Ssl ssl;
 }

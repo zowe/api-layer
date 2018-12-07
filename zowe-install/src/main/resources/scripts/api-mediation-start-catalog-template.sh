@@ -23,7 +23,10 @@ java -Xms16m -Xmx512m -Dibm.serversocket.recover=true -Dfile.encoding=UTF-8 \
     -Denvironment.preferIpAddress=true -Denvironment.gatewayHostname=**HOSTNAME** \
     -Denvironment.eurekaUserId=eureka \
     -Denvironment.eurekaPassword=password \
-    -Dserver.ssl.enabled=false \
+    -Dapiml.security.verifySslCertificatesOfServices=true \
+    -Dspring.profiles.include= \
+    -Dserver.address=0.0.0.0 \
+    -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=$DIR/../keystore/localhost/localhost.keystore.p12 \
     -Dserver.ssl.keyStoreType=PKCS12 \
     -Dserver.ssl.keyStorePassword=password \

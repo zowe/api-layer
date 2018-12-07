@@ -101,23 +101,24 @@ public class HttpConfig {
 
     @Bean
     public SslContextFactory jettySslContextFactory() {
-        if (verifySslCertificatesOfServices) {
-            SslContextFactory sslContextFactory = new SslContextFactory(HttpsFactory.replaceFourSlashes(keyStore));
-            sslContextFactory.setProtocol(protocol);
-            sslContextFactory.setKeyStorePassword(keyStorePassword);
-            sslContextFactory.setKeyStoreType(keyStoreType);
-            sslContextFactory.setCertAlias(keyAlias);
-            if (trustStore != null) {
-                sslContextFactory.setTrustStorePath(HttpsFactory.replaceFourSlashes(trustStore));
-                sslContextFactory.setTrustStoreType(trustStoreType);
-                sslContextFactory.setTrustStorePassword(trustStorePassword);
-            }
-            log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
-            return sslContextFactory;
+        SslContextFactory sslContextFactory = new SslContextFactory(HttpsFactory.replaceFourSlashes(keyStore));
+        sslContextFactory.setProtocol(protocol);
+        sslContextFactory.setKeyStorePassword(keyStorePassword);
+        sslContextFactory.setKeyStoreType(keyStoreType);
+        sslContextFactory.setCertAlias(keyAlias);
+
+        if (trustStore != null) {
+            sslContextFactory.setTrustStorePath(HttpsFactory.replaceFourSlashes(trustStore));
+            sslContextFactory.setTrustStoreType(trustStoreType);
+            sslContextFactory.setTrustStorePassword(trustStorePassword);
         }
-        else {
-            return new SslContextFactory(true);
+        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
+
+        if (!verifySslCertificatesOfServices) {
+            sslContextFactory.setTrustAll(true);
         }
+
+        return sslContextFactory;
     }
 
     @Bean
