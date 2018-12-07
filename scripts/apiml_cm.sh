@@ -16,6 +16,7 @@ function usage {
 
 ACTION=
 V=
+LOG=
 
 LOCAL_CA_ALIAS="localca"
 LOCAL_CA_FILENAME="keystore/local_ca/localca"
@@ -38,7 +39,11 @@ fi
 function pkeytool {
     ARGS=$@
     echo "Calling keytool $ARGS"
-    keytool "$@"
+    if [ "$LOG" != "" ]; then
+        keytool "$@" >> $LOG 2>&1
+    else
+        keytool "$@"
+    fi
     RC=$?
     echo "keytool returned: $RC"
     if [ "$RC" -ne "0" ]; then
@@ -59,6 +64,7 @@ function create_certificate_authority {
     pkeytool -genkeypair $V -alias ${LOCAL_CA_ALIAS} -keyalg RSA -keysize 2048 -keystore ${LOCAL_CA_FILENAME}.keystore.p12 \
         -dname "${LOCAL_CA_DNAME}" -keypass ${LOCAL_CA_PASSWORD} -storepass ${LOCAL_CA_PASSWORD} -storetype PKCS12 -validity ${LOCAL_CA_VALIDITY} \
         -ext KeyUsage="keyCertSign" -ext BasicConstraints:"critical=ca:true"
+    chmod 600 ${LOCAL_CA_FILENAME}.keystore.p12
 
     echo "Export local CA public certificate:"
     pkeytool -export $V -alias ${LOCAL_CA_ALIAS} -file ${LOCAL_CA_FILENAME}.cer -keystore ${LOCAL_CA_FILENAME}.keystore.p12 -rfc \
@@ -67,7 +73,6 @@ function create_certificate_authority {
     if [ `uname` = "OS/390" ]; then
         iconv -f ISO8859-1 -t IBM-1047 ${LOCAL_CA_FILENAME}.cer > ${LOCAL_CA_FILENAME}.cer-ebcdic
     fi
-
 }
 
 function create_service_certificate_and_csr {
@@ -191,8 +196,14 @@ while [ "$1" != "" ]; do
         -h | --help )           usage
                                 exit
                                 ;;
+        -v | --verbose )        V="-v"
+                                ;;
         --local-ca-alias )      shift
                                 LOCAL_CA_ALIAS=$1
+                                ;;
+        --log )                 shift
+                                export LOG=$1
+                                exec >> $LOG
                                 ;;
         --local-ca-filename )   shift
                                 LOCAL_CA_FILENAME=$1
