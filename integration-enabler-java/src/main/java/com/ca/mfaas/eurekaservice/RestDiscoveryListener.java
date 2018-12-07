@@ -36,6 +36,17 @@ public class RestDiscoveryListener implements ServletContextListener {
             String serviceId = eurekaProperties.getString("eureka.name");
             String hostname = eurekaProperties.getString("eureka.service.hostname");
             String port = eurekaProperties.getString("eureka.port");
+            String sslEnabled = eurekaProperties.getString("ssl.enabled");
+            switch (sslEnabled) {
+                case "false":
+                    builder.enablePort(InstanceInfo.PortType.SECURE, false).enablePort(InstanceInfo.PortType.UNSECURE, true)
+                        .setPort(Integer.parseInt(eurekaProperties.getString("eureka.port")));
+                    break;
+                case "true":
+                    builder.enablePort(InstanceInfo.PortType.SECURE, true).enablePort(InstanceInfo.PortType.UNSECURE, false)
+                        .setSecurePort(Integer.parseInt(eurekaProperties.getString("eureka.securePort")));
+                    break;
+            }
             String instanceId = String.format("%s:%s:%s", hostname, serviceId, port);
             InstanceInfo updatedInstanceInfo = builder.setInstanceId(instanceId).setHostName(hostname).build();
             applicationInfoManager = new ApplicationInfoManager(instanceConfig, updatedInstanceInfo);

@@ -48,6 +48,51 @@ java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.conf
 java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
 ```
 
+### Helloworld Jersey
+
+To run Helloworld Jersey, you need to have Apache Tomcat installed in your computer. Follow the steps below:
+
+1.  Download Apache Tomcat 8.0.39 and install it. 
+2.  Build Helloworld Jersey through IntelliJ or by running `gradlew helloworld-jersey:build` in the terminal. 
+
+3.  Enable HTTPS for Apache Tomcat. In order to do that, there are few additional steps that are needed to be done:
+    * Go to `apache-tomcat-8.0.39-windows-x64\conf` directory (the full path depends on where you decided to install Tomcat) and open `server.xml` file with some text editor as Administrator. Add the xml block below:
+        ```xml
+               <Connector port="8080" protocol="org.apache.coyote.http11.Http11NioProtocol"
+                              maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
+                              clientAuth="false" sslProtocol="TLS"
+                              keystoreFile="{your-project-directory}\api-layer\keystore\localhost\localhost.keystore.p12"
+                              keystorePass="password"
+                                                    />
+        ```
+        Be also sure to comment the HTTP connector which uses the same port.
+    * Navigate to the `WEB-INF/` located in `helloworld-jersey` module and add the following xml block to the `web.xml` file, right below the `<servlet-mapping>` tag:
+        ```xml
+        <security-constraint>
+                <web-resource-collection>
+                    <web-resource-name>Protected resource</web-resource-name>
+                    <url-pattern>/*</url-pattern>
+                    <http-method>GET</http-method>
+                    <http-method>POST</http-method>
+                </web-resource-collection>
+                <user-data-constraint>
+                    <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+                </user-data-constraint>
+            </security-constraint>
+        ```
+4. Run `gradlew tomcatRun` with these additional parameters: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
+If you need some more information about SSL configuration status while deploying, use this parameter `-Djavax.net.debug=SSL`.
+
+5. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:
+
+    * [https://localhost:10011/eureka/apps/HELLOWORLD-JERSEY/localhost:helloworld-jersey:10016](https://localhost:10011/eureka/apps/HELLOWORLD-JERSEY/localhost:helloworld-jersey:10016) for metadata and service information
+    * [https://localhost:10016/helloworld-jersey/api-doc](https://localhost:10016/helloworld-jersey/api-doc) which contains the API documentation
+    * [https://localhost:10016/helloworld-jersey/application/health](https://localhost:10016/helloworld-jersey/application/health) for the health check endpoint containing the status of the application
+    * [https://localhost:10016](https://localhost:10016) for the homepage 
+    * [https://localhost:10016/helloworld-jersey/application/info](https://localhost:10016/helloworld-jersey/application/info) for the service informations such as hostname, port etc
+    * [https://localhost:10016/helloworld-jersey/v1/greeting](https://localhost:10016/helloworld-jersey/v1/greeting) for the greeting endpoint
+    
+    Go to the [API Catalog](https://localhost:10010/ui/v1/apicatalog) and check if the API documentation of the service is retrieved.
 
 ### Default Discovery Timing Settings 
 
