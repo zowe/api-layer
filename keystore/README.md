@@ -69,11 +69,44 @@ The `local-ca-filename` follows the format `keystore/{path}/{suffix}` and is use
 The `local-ca-password` is the local CA keystore password.
 
 
-### Export the service certificate to PEM format
+### Use the service certificate in the PEM format
 
-Some utilities (e.g. `http`) requires the service certificate to be in the PEM format. Use following command to convert it to the PEM format:
+Some utilities (e.g. `http`) requires the service certificate to be in the PEM format. The `apiml_cm.sh` script is converting the certificate
+to the PEM format:
 
-    openssl pkcs12 -in keystore/localhost/localhost.keystore.p12 -out keystore/localhost/localhost.pem -passin 'pass:password' -nodes
+- The public certificate of services: `keystore/localhost/localhost.keystore.cer`
+- The public certificate of the local CA: `keystore/local_ca/localca.cer`
+
+The private key of the service certificate: `keystore/localhost/localhost.keystore.key`
+
+
+### Trust certificates of other services
+
+The APIML needs to validate the certificate of the services that it accessed by the APIML. The APIML needs to validate the full certificate chain. It usually means that:
+
+1. You need to import the public certificate of the root CA that has signed the certificate of the service to the APIML truststore.
+
+2. Your service needs to have its own certificate and all intermediate CA certificates (if it was signed by intermediate CA) in its keystore.
+
+    - If the service does not provide intermediate CA certificates to the APIML then the validation fails. This can be circumvented by importing the intermediate CA certificates to the APIML truststore.
+
+You can add a public certificate to the APIML trust store by calling in the directory with APIML:
+
+    scripts/apiml_cm.sh --action trust --certificate <path-to-certificate-in-PEM-format> --alias <alias>
+
+
+### Self-signed certificate
+
+You can also use a self-signed certificate.
+
+1. Generate a self-signed certificate for a service:
+
+    mkdir -p keystore/selfsigned
+    scripts/apiml_cm.sh --action new-self-signed-service --service-keystore keystore/selfsigned/localhost.keystore --service-truststore keystore/selfsigned/localhost.truststore  --service-dname "CN=Zowe Self-Signed Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
+
+2. Trust it in the APIML:
+
+    scripts/apiml_cm.sh --action trust --alias selfsigned --certificate keystore/selfsigned/localhost.keystore.cer
 
 
 ### Example

@@ -9,6 +9,7 @@ function usage {
     echo "  <action> action to be done:"
     echo "     - setup - setups APIML certificate management"
     echo "     - new-service - adds new service"
+    echo "     - trust - adds a public certificate of a service to APIML truststore"
     echo "     - clean - removes files created by setup"
     echo ""
     echo "  See ${BASE_DIR}/keystore/README.md for more details"
@@ -31,6 +32,9 @@ SERVICE_TRUSTSTORE="keystore/localhost/localhost.truststore"
 SERVICE_DNAME="CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 SERVICE_EXT="SAN=dns:localhost.localdomain,dns:localhost"
 SERVICE_VALIDITY=3650
+
+ALIAS="alias"
+CERTIFICATE="no-certificate-specified"
 
 if [ -z ${TEMP_DIR+x} ]; then
     TEMP_DIR=/tmp
@@ -88,6 +92,16 @@ function create_service_certificate_and_csr {
     fi
 }
 
+function create_self_signed_service {
+    if [ ! -e "${SERVICE_KEYSTORE}.p12" ];
+    then
+        echo "Generate service private key and service:"
+        pkeytool -genkeypair $V -alias ${SERVICE_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.p12 -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} \
+            -storetype PKCS12 -dname "${SERVICE_DNAME}" -validity ${SERVICE_VALIDITY} \
+            -ext ${SERVICE_EXT} -ext KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment -ext ExtendedKeyUsage=clientAuth,serverAuth
+    fi
+}
+
 function sign_csr_using_local_ca {
     echo "Sign the CSR using the Certificate Authority:"
     pkeytool -gencert $V -infile ${SERVICE_KEYSTORE}.csr -outfile ${SERVICE_KEYSTORE}_signed.cer -keystore ${LOCAL_CA_FILENAME}.keystore.p12 \
@@ -96,9 +110,12 @@ function sign_csr_using_local_ca {
         -validity ${SERVICE_VALIDITY}
 }
 
-function import_signed_certificate_and_ca_certificate {
+function import_ca_certificate {
     echo "Import the Certificate Authority to the truststore:"
     pkeytool -importcert $V -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+}
+
+function import_signed_certificate {
 
     echo "Import the Certificate Authority to the keystore:"
     pkeytool -importcert $V -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
@@ -181,11 +198,27 @@ function new_service {
     clean_service
     create_service_certificate_and_csr
     sign_csr_using_local_ca
-    import_signed_certificate_and_ca_certificate
+    import_ca_certificate
+    import_signed_certificate
     export_service_certificate
     export_service_private_key
     echo "Listing generated files for service:"
     ls -l ${SERVICE_KEYSTORE}*
+}
+
+function new_self_signed_service {
+    clean_service
+    create_self_signed_service
+    import_ca_certificate
+    export_service_certificate
+    export_service_private_key
+    echo "Listing generated files for self-signed service:"
+    ls -l ${SERVICE_KEYSTORE}*
+}
+
+function trust {
+    echo "Import a certificate to the truststore:"
+    pkeytool -importcert $V -trustcacerts -noprompt -file ${CERTIFICATE} -alias ${ALIAS} -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 }
 
 while [ "$1" != "" ]; do
@@ -238,6 +271,12 @@ while [ "$1" != "" ]; do
         --service-validity )    shift
                                 SERVICE_VALIDITY=$1
                                 ;;
+        --certificate )         shift
+                                CERTIFICATE=$1
+                                ;;
+        --alias )               shift
+                                ALIAS=$1
+                                ;;
         * )                     usage
                                 exit 1
     esac
@@ -255,6 +294,12 @@ case $ACTION in
         ;;
     new-service)
         new_service
+        ;;
+    new-self-signed-service)
+        new_self_signed_service
+        ;;
+    trust)
+        trust
         ;;
     *)
         usage
