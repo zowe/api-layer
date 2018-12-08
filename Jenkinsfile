@@ -198,8 +198,8 @@ pipeline {
                 * DESCRIPTION
                 * -----------
                 * Runs the sonar-scanner analysis tool, which submits the source, test resutls,
-                *  and coverage results for analysis in our SonarQube server. 
-                * TODO: This step does not yet support branch or PR submissions properly. 
+                *  and coverage results for analysis in our SonarQube server.
+                * TODO: This step does not yet support branch or PR submissions properly.
                 ***********************************************************************/
                 stage('sonar') {
                     steps {
@@ -272,6 +272,7 @@ pipeline {
             archiveArtifacts artifacts: 'common-service-core/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'gateway-common/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-jersey/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'scripts/apiml_cm.sh'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
 
             withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {
