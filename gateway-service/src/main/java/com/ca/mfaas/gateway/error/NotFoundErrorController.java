@@ -11,24 +11,18 @@ package com.ca.mfaas.gateway.error;
 
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 
-/**
- * Handles errors in REST API processing.
- */
-@Slf4j
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NotFoundErrorController implements ErrorController {
@@ -47,18 +41,10 @@ public class NotFoundErrorController implements ErrorController {
     }
 
     @GetMapping(value = PATH, produces = "application/json")
-    public @ResponseBody
-    ResponseEntity notFound400HttpResponse(HttpServletRequest request) {
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.common.endPointNotFound", getErrorURI(request));
-        return ResponseEntity.status(getErrorStatus(request)).body(message);
-    }
-
-    private int getErrorStatus(HttpServletRequest request) {
-        Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
-        return statusCode != null ? statusCode : HttpStatus.INTERNAL_SERVER_ERROR.value();
-    }
-
-    private String getErrorURI(HttpServletRequest request) {
-        return (String) request.getAttribute(RequestDispatcher.FORWARD_REQUEST_URI);
+    @ResponseBody
+    public ResponseEntity<ApiMessage> notFound400HttpResponse(HttpServletRequest request) {
+        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.common.endPointNotFound",
+                ErrorUtils.getGatewayUri(request));
+        return ResponseEntity.status(ErrorUtils.getErrorStatus(request)).body(message);
     }
 }
