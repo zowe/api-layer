@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.config.ribbon;
+package com.ca.mfaas.gateway.ribbon;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.CommonClientConfigKey;

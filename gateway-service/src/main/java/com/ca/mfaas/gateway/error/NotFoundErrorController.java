@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.config.error;
+package com.ca.mfaas.gateway.error;
 
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.config.routing;
+package com.ca.mfaas.gateway.routing;
 
 import com.ca.mfaas.gateway.filters.post.TransformApiDocEndpointsFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
