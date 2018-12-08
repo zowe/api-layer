@@ -28,20 +28,20 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
     apply plugin: 'maven-publish'
 
     publishing {
-        repositories.maven {
-            credentials {
-                username project.hasProperty("deploy.username") ? project.getProperty("deploy.username") : mavenPublishUser
-                password  project.hasProperty("deploy.password") ? project.getProperty("deploy.password") : mavenPublishPassword
-            }
-            if (rootProject.version.endsWith("-SNAPSHOT")) {
-                setUrl(artifactoryPublishingMavenSnapshotRepo)
-            } else {
-                setUrl(artifactoryPublishingMavenRepo)
+        repositories {
+            maven {
+                credentials {
+                    username project.hasProperty("deploy.username") ? project.getProperty("deploy.username") : mavenPublishUser
+                    password  project.hasProperty("deploy.password") ? project.getProperty("deploy.password") : mavenPublishPassword
+                }
+                if (rootProject.version.endsWith("-SNAPSHOT")) {
+                    url = artifactoryPublishingMavenSnapshotRepo
+                } else {
+                    url = artifactoryPublishingMavenRepo
+                }
             }
         }
-    }
-
-    publishing {
+        
         publications {
             mavenJava(MavenPublication) {
                 groupId 'com.ca.mfaas.sdk'
