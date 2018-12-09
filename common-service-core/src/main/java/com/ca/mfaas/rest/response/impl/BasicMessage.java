@@ -72,6 +72,14 @@ public class BasicMessage implements Message {
         this(messageType, messageNumber, messageContent, null, null, null, null, null, null, null);
     }
 
+    @SuppressWarnings("WeakerAccess")
+    public BasicMessage(@JsonProperty("messageKey") String messageKey,
+                        @JsonProperty("messageType") MessageType messageType,
+                        @JsonProperty("messageNumber") String messageNumber,
+                        @JsonProperty("messageContent") String messageContent) {
+        this(messageType, messageNumber, messageContent, null, null, messageKey, null, null, null, null);
+    }
+
     @Override
     public MessageType getMessageType() {
         return messageType;
