@@ -68,6 +68,8 @@ public class InternalServerErrorController implements ErrorController {
             return entity;
         }
 
+        log.debug("Unresolved request error: {}", exc.getMessage(), exc);
+
         return logAndCreateReponseForInternalError(request, exc);
     }
 

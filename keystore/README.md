@@ -101,12 +101,12 @@ You can also use a self-signed certificate.
 
 1. Generate a self-signed certificate for a service:
 
-    mkdir -p keystore/selfsigned
-    scripts/apiml_cm.sh --action new-self-signed-service --service-keystore keystore/selfsigned/localhost.keystore --service-truststore keystore/selfsigned/localhost.truststore  --service-dname "CN=Zowe Self-Signed Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
+        mkdir -p keystore/selfsigned
+        scripts/apiml_cm.sh --action new-self-signed-service --service-keystore keystore/selfsigned/localhost.keystore --service-truststore keystore/selfsigned/localhost.truststore  --service-dname "CN=Zowe Self-Signed Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 
 2. Trust it in the APIML:
 
-    scripts/apiml_cm.sh --action trust --alias selfsigned --certificate keystore/selfsigned/localhost.keystore.cer
+        scripts/apiml_cm.sh --action trust --alias selfsigned --certificate keystore/selfsigned/localhost.keystore.cer
 
 
 ### Example
