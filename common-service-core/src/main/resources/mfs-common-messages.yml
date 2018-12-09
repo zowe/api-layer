@@ -40,7 +40,7 @@ messages:
       type: ERROR
       text: "The certificate of the service accessed by HTTPS using URI '%s' is not trusted by the API Gateway: %s"
 
-    - key: apiml.common.requestError
+    - key: apiml.common.internalRequestError
       number: AML0106
       type: ERROR
       text: "The request to the URI '%s' has failed: %s"

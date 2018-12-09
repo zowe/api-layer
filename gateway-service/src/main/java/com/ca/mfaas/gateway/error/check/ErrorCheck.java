@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
 
+@FunctionalInterface
 public interface ErrorCheck {
     ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc);
 }
