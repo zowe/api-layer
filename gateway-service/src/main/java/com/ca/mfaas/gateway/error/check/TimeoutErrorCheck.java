@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletRequest;
  * Checks whether the error was caused by timeout (service not responding).
  */
 public class TimeoutErrorCheck implements ErrorCheck {
+    public static final String DEFAULT_MESSAGE = "The service did not respond in time";
+
     private static final String ERROR_CAUSE_TIMEOUT = "TIMEOUT";
 
     private final ErrorService errorService;
@@ -45,7 +47,7 @@ public class TimeoutErrorCheck implements ErrorCheck {
                 if (cause != null) {
                     causeMessage = cause.getMessage();
                 } else {
-                    causeMessage = "The service did not respond in time";
+                    causeMessage = DEFAULT_MESSAGE;
                 }
                 return gatewayTimeoutResponse(causeMessage);
             }

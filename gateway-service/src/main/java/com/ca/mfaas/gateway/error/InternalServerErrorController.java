@@ -61,22 +61,32 @@ public class InternalServerErrorController implements ErrorController {
     @RequestMapping(value = PATH, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessage> error(HttpServletRequest request) {
+        final Throwable exc = (Throwable) request.getAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION);
+
+        ResponseEntity<ApiMessage> entity = checkForSpecificErrors(request, exc);
+        if (entity != null) {
+            return entity;
+        }
+
+        return logAndCreateReponseForInternalError(request, exc);
+    }
+
+    private ResponseEntity<ApiMessage> logAndCreateReponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
         final String errorMessage = ErrorUtils.getErrorMessage(request);
-        final Throwable exc = (Throwable) request.getAttribute("javax.servlet.error.exception");
+        ApiMessage message = errorService.createApiMessage("apiml.common.internalRequestError", ErrorUtils.getGatewayUri(request),
+                ExceptionUtils.getMessage(exc));
+        log.error(errorMessage, exc);
+        return ResponseEntity.status(status).body(message);
+    }
 
-        // Check for a specific error cause:
+    private ResponseEntity<ApiMessage> checkForSpecificErrors(HttpServletRequest request, Throwable exc) {
         for (ErrorCheck check : errorChecks) {
             ResponseEntity<ApiMessage> entity = check.checkError(request, exc);
             if (entity != null) {
                 return entity;
             }
         }
-
-        // Fallback for unexpected internal errors
-        ApiMessage message = errorService.createApiMessage("apiml.common.requestError", ErrorUtils.getGatewayUri(request),
-                ExceptionUtils.getMessage(exc));
-        log.error(errorMessage, exc);
-        return ResponseEntity.status(status).body(message);
+        return null;
     }
 }
