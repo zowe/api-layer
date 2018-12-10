@@ -1,6 +1,17 @@
 #!/bin/sh
 
+#
+# APIML Certificate Management
+# ============================
+#
+# User guide: https://github.com/zowe/docs-site/blob/apiml-https/docs/guides/api-mediation-security.md
+#
+# IBM Java keytool documentation:
+# https://www.ibm.com/support/knowledgecenter/en/SSYKE2_8.0.0/com.ibm.java.security.component.80.doc/security-component/keytoolDocs/keytool_overview.html
+#
+
 BASE_DIR=$(dirname "$0")
+PARAMS="$@"
 
 function usage {
     echo "APIML Certificate Management"
@@ -8,11 +19,15 @@ function usage {
     echo ""
     echo "  <action> action to be done:"
     echo "     - setup - setups APIML certificate management"
-    echo "     - new-service - adds new service"
+    echo "     - new-service-csr - creates CSR for new service to be signed by external CA"
+    echo "     - new-service - adds new service signed by local CA or external CA"
     echo "     - trust - adds a public certificate of a service to APIML truststore"
+    echo "     - trust-zosmf - adds public certificates from z/OSMF keyring to APIML truststore"
     echo "     - clean - removes files created by setup"
     echo ""
     echo "  See ${BASE_DIR}/keystore/README.md for more details"
+    echo ""
+    echo "  Called with: ${PARAMS}"
 }
 
 ACTION=
@@ -24,6 +39,8 @@ LOCAL_CA_FILENAME="keystore/local_ca/localca"
 LOCAL_CA_DNAME="CN=Zowe Development Instances Certificate Authority, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 LOCAL_CA_PASSWORD="local_ca_password"
 LOCAL_CA_VALIDITY=3650
+EXTERNAL_CA_FILENAME="keystore/local_ca/extca"
+EXTERNAL_CA=
 
 SERVICE_ALIAS="localhost"
 SERVICE_PASSWORD="password"
@@ -32,6 +49,11 @@ SERVICE_TRUSTSTORE="keystore/localhost/localhost.truststore"
 SERVICE_DNAME="CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 SERVICE_EXT="SAN=dns:localhost.localdomain,dns:localhost"
 SERVICE_VALIDITY=3650
+EXTERNAL_CERTIFICATE=
+EXTERNAL_CERTIFICATE_ALIAS=
+
+ZOSMF_KEYRING="IZUKeyring.IZUDFLT"
+ZOSMF_USERID="IZUSVR"
 
 ALIAS="alias"
 CERTIFICATE="no-certificate-specified"
@@ -79,6 +101,22 @@ function create_certificate_authority {
     fi
 }
 
+function add_external_ca {
+    echo "Adding external Certificate Authorities:"
+    if [ -n "${EXTERNAL_CA}" ]; then
+        I=1
+        for FILE in ${EXTERNAL_CA}; do
+            cp -v ${FILE} ${EXTERNAL_CA_FILENAME}.${I}.cer
+            I=$((I+1))
+        done
+        if [ `uname` = "OS/390" ]; then
+            for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
+                iconv -f ISO8859-1 -t IBM-1047 ${FILENAME} > ${FILENAME}-ebcdic
+            done
+        fi
+    fi
+}
+
 function create_service_certificate_and_csr {
     if [ ! -e "${SERVICE_KEYSTORE}.p12" ];
     then
@@ -110,18 +148,44 @@ function sign_csr_using_local_ca {
         -validity ${SERVICE_VALIDITY}
 }
 
-function import_ca_certificate {
-    echo "Import the Certificate Authority to the truststore:"
+function import_local_ca_certificate {
+    echo "Import the local Certificate Authority to the truststore:"
     pkeytool -importcert $V -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 }
 
-function import_signed_certificate {
+function import_external_ca_certificates {
+    echo "Import the external Certificate Authorities to the truststore:"
+    I=1
+    ls ${EXTERNAL_CA_FILENAME}.*.cer
+    for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
+        [ -e "$FILENAME" ] || continue
+        pkeytool -importcert $V -trustcacerts -noprompt -file ${FILENAME} -alias "extca${I}" -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+        I=$((I+1))
+    done
+}
 
+function import_signed_certificate {
     echo "Import the Certificate Authority to the keystore:"
     pkeytool -importcert $V -trustcacerts -noprompt -file ${LOCAL_CA_FILENAME}.cer -alias ${LOCAL_CA_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 
     echo "Import the signed CSR to the keystore:"
     pkeytool -importcert $V -trustcacerts -noprompt -file ${SERVICE_KEYSTORE}_signed.cer -alias ${SERVICE_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+}
+
+function import_external_certificate {
+    echo "Import the external Certificate Authorities to the keystore:"
+    I=1
+    for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
+        [ -e "$FILENAME" ] || continue
+        pkeytool -importcert $V -trustcacerts -noprompt -file ${FILENAME} -alias "extca${I}" -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+        I=$((I+1))
+    done
+
+    if [ -n "${EXTERNAL_CERTIFICATE}" ]; then
+        echo "Import the signed certificate and its private key to the keystore:"
+        pkeytool -importkeystore $V -deststorepass ${SERVICE_PASSWORD} -destkeypass ${SERVICE_PASSWORD} -destkeystore ${SERVICE_KEYSTORE}.p12 -deststoretype PKCS12 -destalias ${SERVICE_ALIAS} \
+          -srckeystore ${EXTERNAL_CERTIFICATE} -srcstoretype PKCS12 -srcstorepass ${SERVICE_PASSWORD} -keypass ${SERVICE_PASSWORD} -srcalias ${EXTERNAL_CERTIFICATE_ALIAS}
+    fi
 }
 
 function export_service_certificate {
@@ -135,6 +199,7 @@ function export_service_certificate {
 
 function export_service_private_key {
     echo "Exporting service private key"
+    echo "TEMP_DIR=$TEMP_DIR"
     cat <<EOF >$TEMP_DIR/ExportPrivateKey.java
 
 import java.io.File;
@@ -182,34 +247,50 @@ public class ExportPrivateKey {
     }
 }
 EOF
+    echo "cat returned $?"
     javac ${TEMP_DIR}/ExportPrivateKey.java
+    echo "javac returned $?"
     java -cp ${TEMP_DIR} ExportPrivateKey ${SERVICE_KEYSTORE}.p12 PKCS12 ${SERVICE_PASSWORD} ${SERVICE_ALIAS} ${SERVICE_PASSWORD} ${SERVICE_KEYSTORE}.key
+    echo "java returned $?"
     rm ${TEMP_DIR}/ExportPrivateKey.java ${TEMP_DIR}/ExportPrivateKey.class
 }
 
 function setup_local_ca {
     clean_local_ca
     create_certificate_authority
+    add_external_ca
     echo "Listing generated files for local CA:"
     ls -l ${LOCAL_CA_FILENAME}*
 }
 
-function new_service {
+function new_service_csr {
     clean_service
     create_service_certificate_and_csr
-    sign_csr_using_local_ca
-    import_ca_certificate
-    import_signed_certificate
+    echo "Listing generated files for service:"
+    ls -l ${SERVICE_KEYSTORE}* ${SERVICE_TRUSTSTORE}*
+}
+
+function new_service {
+    clean_service
+    if [ -n "${EXTERNAL_CERTIFICATE}" ]; then
+        import_external_certificate
+    else
+        create_service_certificate_and_csr
+        sign_csr_using_local_ca
+        import_signed_certificate
+    fi
+    import_local_ca_certificate
+    import_external_ca_certificates
     export_service_certificate
     export_service_private_key
     echo "Listing generated files for service:"
-    ls -l ${SERVICE_KEYSTORE}*
+    ls -l ${SERVICE_KEYSTORE}* ${SERVICE_TRUSTSTORE}*
 }
 
 function new_self_signed_service {
     clean_service
     create_self_signed_service
-    import_ca_certificate
+    import_local_ca_certificate
     export_service_certificate
     export_service_private_key
     echo "Listing generated files for self-signed service:"
@@ -219,6 +300,28 @@ function new_self_signed_service {
 function trust {
     echo "Import a certificate to the truststore:"
     pkeytool -importcert $V -trustcacerts -noprompt -file ${CERTIFICATE} -alias ${ALIAS} -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+}
+
+function trust_zosmf {
+    ALIASES_FILE=${TEMP_DIR}/aliases.txt
+    rm -f ${ALIASES_FILE}
+    echo "Listing entries in the z/OSMF keyring (${ZOSMF_KEYRING}):"
+    _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider
+    RC=$?
+    if [ "$RC" -ne "0" ]; then
+    SWITCHED_USERID=`_BPX_USERID=${ZOSMF_USERID} whoami`
+    echo "It is not possible to execute commands as z/OSMF user ID ${ZOSMF_USERID}. The effective user ID was: ${SWITCHED_USERID}. You need to run this command as user that has access to the z/OSMF keyring or as a superuser"
+    exit 1
+    fi
+    _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
+    CERT_PREFIX=${TEMP_DIR}/zosmf_cert_
+    for ALIAS in `cat ${ALIASES_FILE}`; do
+        echo "Exporting certificate ${ALIAS} from z/OSMF:"
+        CERTIFICATE=${CERT_PREFIX}${ALIAS}.cer
+        _BPX_USERID=${ZOSMF_USERID} keytool -exportcert -alias ${ALIAS} -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider -file ${CERTIFICATE}
+        trust
+        rm ${CERTIFICATE}
+    done
 }
 
 while [ "$1" != "" ]; do
@@ -271,13 +374,32 @@ while [ "$1" != "" ]; do
         --service-validity )    shift
                                 SERVICE_VALIDITY=$1
                                 ;;
+        --external-certificate ) shift
+                                EXTERNAL_CERTIFICATE=$1
+                                ;;
+        --external-certificate-alias ) shift
+                                EXTERNAL_CERTIFICATE_ALIAS=$1
+                                ;;
+        --external-ca )         shift
+                                EXTERNAL_CA="${EXTERNAL_CA} $1"
+                                ;;
+        --external-ca-filename ) shift
+                                EXTERNAL_CA_FILENAME=$1
+                                ;;
+        --zosmf-keyring )       shift
+                                ZOSMF_KEYRING=$1
+                                ;;
+        --zosmf-userid )        shift
+                                ZOSMF_USERID=$1
+                                ;;
         --certificate )         shift
                                 CERTIFICATE=$1
                                 ;;
         --alias )               shift
                                 ALIAS=$1
                                 ;;
-        * )                     usage
+        * )                     echo "Unexpected parameter: $1"
+                                usage
                                 exit 1
     esac
     shift
@@ -292,6 +414,12 @@ case $ACTION in
         setup_local_ca
         new_service
         ;;
+    add-external-ca)
+        add_external_ca
+        ;;
+    new-service-csr)
+        new_service_csr
+        ;;
     new-service)
         new_service
         ;;
@@ -300,6 +428,13 @@ case $ACTION in
         ;;
     trust)
         trust
+        ;;
+    trust-zosmf)
+        trust_zosmf
+        ;;
+    cert-key-export)
+        export_service_certificate
+        export_service_private_key
         ;;
     *)
         usage
