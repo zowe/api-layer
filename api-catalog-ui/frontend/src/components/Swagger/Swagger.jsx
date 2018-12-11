@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import SwaggerUi, { presets } from 'swagger-ui';
 import './Swagger.css';
-import * as Sswagger from'./endoverswagger';
 
 export default class SwaggerUI extends Component {
     componentDidMount() {
@@ -42,11 +41,10 @@ export default class SwaggerUI extends Component {
             selectedService.apiDoc.length !== 0
         ) {
             try {
-                // const swagger = JSON.parse(selectedService.apiDoc);
-                console.log(Sswagger.default);
+                const swagger = JSON.parse(selectedService.apiDoc);
                 SwaggerUi({
                     dom_id: '#swaggerContainer',
-                    spec: Sswagger.default,
+                    spec: swagger,
                     presets: [presets.apis],
                     plugins: [this.customPlugins],
                 });
