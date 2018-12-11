@@ -3,8 +3,13 @@
     box-sizing: border-box
 }
 
-.swagger-ui .scheme-container {
-    display: none;
+.modal-btn {
+    max-width: 20vh;
+    margin: 1rem;
+}
+
+.try-out {
+    padding-left: 1rem;
 }
 
 #swaggerContainer {
@@ -487,10 +492,6 @@
     color: #fff !important
 }
 
-.swagger-ui .scheme-container {
-    display: none;
-}
-
 .swagger-ui .scheme-container .schemes {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -915,7 +916,7 @@
     left: 50%;
     width: 100%;
     min-width: 300px;
-    max-width: 650px;
+    max-width: 70vh;
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
     border: 1px solid #ebebeb;
