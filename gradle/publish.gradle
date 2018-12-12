@@ -4,7 +4,7 @@ ext.springBootEnablers= [
 ]
 
 ext.javaEnablers = [
-    'integration-enabler-jersey',
+//    'integration-enabler-jersey',
     'integration-enabler-java'
 ]
 

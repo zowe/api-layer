@@ -16,8 +16,12 @@ repositories {
 }
 
 dependencies {
-    compile(project(':integration-enabler-jersey'))
+    compile(project(':integration-enabler-java'))
 
+    compile libraries.springFox
+    compile group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.5.10'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.9.7'
+    compileOnly libraries.lombok
     compile libraries.logback_classic
     compile group: 'org.glassfish.jersey.core', name: 'jersey-server', version: '2.26'
     compile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version:'2.26'

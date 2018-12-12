@@ -75,10 +75,10 @@ eureka.homePageUrl=https://localhost:10016
 
 eureka.metadata.routed-services.uiv1.gateway-url=ui/v1
 eureka.metadata.routed-services.uiv1.service-url=/helloworld-jersey/
-eureka.metadata.routed-services.api-doc.gate-way-url=api/v1/api-doc
+eureka.metadata.routed-services.api-doc.gateway-url=api/v1/api-doc
 eureka.metadata.routed-services.api-doc.service-url=/helloworld-jersey/api-doc
-eureka.metadata.routed-services.api.gateway-url=api/v1
-eureka.metadata.routed-services.api.service-url=/helloworld-jersey
+eureka.metadata.routed-services.api-v1.gateway-url=api/v1
+eureka.metadata.routed-services.api-v1.service-url=/helloworld-jersey
 eureka.metadata.routed-services.app.gateway-url=app
 eureka.metadata.routed-services.app.service-url=/helloworld-jersey/application
 

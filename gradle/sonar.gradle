@@ -47,11 +47,11 @@ project(":api-catalog-ui") {
 }
 
 // Workaround since tests don't exist
-project(":integration-enabler-jersey") {
-    sonarqube{
-        skipProject = true
-    }
-}
+//project(":integration-enabler-jersey") {
+//    sonarqube{
+//        skipProject = true
+//    }
+//}
 
 // Packaging project; sonar does not apply
 project(":zowe-install") {

@@ -7,23 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice;
+package com.ca.hwsjersey.resource;
 
-import com.ca.mfaas.eurekaservice.model.*;
+import com.ca.mfaas.eurekaservice.model.Health;
+import com.ca.mfaas.eurekaservice.model.InstanceInfo;
 import io.swagger.annotations.ApiOperation;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
 import java.util.HashMap;
-import java.util.ResourceBundle;
 
 
 @Path("/application")
 public class DiscoveryController {
-    private static ResourceBundle eurekaProperties = ResourceBundle.getBundle("eureka-client");
 
     @GET
     @Path("/info")
