@@ -89,64 +89,116 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     }
 
     private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) {
-        EurekaInstanceConfig eurekaInstanceConfig = new MyDataCenterInstanceConfig();
-        InstanceInfo instanceInformation = createInstanceInfo(eurekaInstanceConfig, config);
+        EurekaInstanceConfig eurekaInstanceConfig = createEurekaInsanceConfig(config);
+        InstanceInfo instanceInformation = new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get();
+        log.info(instanceInformation.getHostName());
         return new ApplicationInfoManager(eurekaInstanceConfig, instanceInformation);
     }
 
-    private InstanceInfo createInstanceInfo(EurekaInstanceConfig eurekaInstanceConfig, ApiMediationServiceConfig config) {
-        InstanceInfo.Builder builder = new InstanceInfo.Builder(
-            new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get());
+    private EurekaInstanceConfig createEurekaInsanceConfig(ApiMediationServiceConfig config) {
+        ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
+
         String hostname;
-        String port;
+        int port;
         URL baseUrl;
-        log.info("config.getBaseUrl(): " + config.getBaseUrl());
+
         try {
             baseUrl = new URL(config.getBaseUrl());
             hostname = baseUrl.getHost();
-            port = config.getEureka().getPort();
+            port = baseUrl.getPort();
         } catch (MalformedURLException e) {
             throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
         }
 
-        log.info("baseUrl.getHost(): " + baseUrl.getHost());
-
-
-        builder.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port))
-            .setAppName(config.getServiceId())
-            .setVIPAddress(config.getServiceId())
-            .setHostName(hostname)
-            .setAppGroupName(null)
-            .setMetadata(createMetadata(config))
-            .setStatusPageUrl(null, config.getBaseUrl() + config.getStatusPageRelativeUrl());
+        result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
+        result.setAppname(config.getServiceId());
+        result.setHostName(hostname);
+        result.setAppGroupName(null);
+        result.setMetadataMap(createMetadata(config));
+        result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
 
         if (!StringUtils.isNullOrEmpty(config.getHomePageRelativeUrl())) {
-            builder.setHomePageUrl(null, config.getBaseUrl() + config.getHomePageRelativeUrl());
-        } else {
-            builder.setHomePageUrl(null, "");
+            result.setHomePageUrl(config.getBaseUrl() + config.getHomePageRelativeUrl());
         }
 
         String protocol = baseUrl.getProtocol();
+        result.setNonSecurePort(port);
+        result.setSecurePort(port);
+
         switch (protocol) {
             case "http":
-                builder.enablePort(PortType.SECURE, false).enablePort(PortType.UNSECURE, true)
-                    .setPort(baseUrl.getPort());
-                builder.setHealthCheckUrls(null, config.getBaseUrl() + config.getHealthCheckRelativeUrl(), null);
+                result.setNonSecurePortEnabled(true);
+                result.setHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             case "https":
-                builder.enablePort(PortType.SECURE, true).enablePort(PortType.UNSECURE, false)
-                    .setSecurePort(baseUrl.getPort());
-                builder.setHealthCheckUrls(null, null, config.getBaseUrl() + config.getHealthCheckRelativeUrl());
+                result.setSecurePortEnabled(true);
+                result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
                 throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
         }
+
         constructApiDocLocation(config);
 
-        InstanceInfo instanceInfo = builder.build();
-        log.info("instanceInfo.getHostName(): " + instanceInfo.getHostName());
-        return instanceInfo;
+        log.info(result.toString());
+
+        return result;
     }
+
+    // private InstanceInfo createInstanceInfo(EurekaInstanceConfig eurekaInstanceConfig,
+    //         ApiMediationServiceConfig config) {
+    //     InstanceInfo.Builder builder = new InstanceInfo.Builder(
+    //         new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get());
+    //     String hostname;
+    //     String port;
+    //     URL baseUrl;
+    //     log.info("config.getBaseUrl(): " + config.getBaseUrl());
+    //     try {
+    //         baseUrl = new URL(config.getBaseUrl());
+    //         hostname = baseUrl.getHost();
+    //         port = config.getEureka().getPort();
+    //     } catch (MalformedURLException e) {
+    //         throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
+    //     }
+
+    //     log.info("baseUrl.getHost(): " + baseUrl.getHost());
+
+
+    //     builder.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port))
+    //         .setAppName(config.getServiceId())
+    //         .setVIPAddress(config.getServiceId())
+    //         .setHostName(hostname)
+    //         .setAppGroupName(null)
+    //         .setMetadata(createMetadata(config))
+    //         .setStatusPageUrl(null, config.getBaseUrl() + config.getStatusPageRelativeUrl());
+
+    //     if (!StringUtils.isNullOrEmpty(config.getHomePageRelativeUrl())) {
+    //         builder.setHomePageUrl(null, config.getBaseUrl() + config.getHomePageRelativeUrl());
+    //     } else {
+    //         builder.setHomePageUrl(null, "");
+    //     }
+
+    //     String protocol = baseUrl.getProtocol();
+    //     switch (protocol) {
+    //         case "http":
+    //             builder.enablePort(PortType.SECURE, false).enablePort(PortType.UNSECURE, true)
+    //                 .setPort(baseUrl.getPort());
+    //             builder.setHealthCheckUrls(null, config.getBaseUrl() + config.getHealthCheckRelativeUrl(), null);
+    //             break;
+    //         case "https":
+    //             builder.enablePort(PortType.SECURE, true).enablePort(PortType.UNSECURE, false)
+    //                 .setSecurePort(baseUrl.getPort());
+    //             builder.setHealthCheckUrls(null, null, config.getBaseUrl() + config.getHealthCheckRelativeUrl());
+    //             break;
+    //         default:
+    //             throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
+    //     }
+    //     constructApiDocLocation(config);
+
+    //     InstanceInfo instanceInfo = builder.build();
+    //     log.info("instanceInfo.getHostName(): " + instanceInfo.getHostName());
+    //     return instanceInfo;
+    // }
 
     private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
         Map<String, String> metadata = new HashMap<>();
@@ -178,12 +230,12 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         String hostname;
         String serviceId = config.getServiceId();
         String contextPath = config.getContextPath();
-        String port;
+        int port;
         URL baseUrl;
         try {
             baseUrl = new URL(config.getBaseUrl());
-            hostname = config.getEureka().getHostname();
-            port = config.getEureka().getPort();
+            hostname = baseUrl.getHost();
+            port = baseUrl.getPort();
         } catch (MalformedURLException e) {
             throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
         }
@@ -192,7 +244,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             apiDocEndpoint = new URIBuilder()
                 .setScheme("https")
                 .setHost(hostname)
-                .setPort(Integer.parseInt(port))
+                .setPort(port)
                 .setPath((contextPath.isEmpty() ? "" : contextPath + "/") + "swagger.json").build();
         } catch (URISyntaxException e) {
             log.error("Could not construct API Doc endpoint. API Doc cannot be accessed via /api-doc endpoint.\n"
