@@ -40,7 +40,7 @@ if [[ -z "**EXTERNAL_CERTIFICATE**" ]] || [[ -z "**EXTERNAL_CERTIFICATE_ALIAS**"
   fi
 else
   EXT_CA_PARM=""
-  for CA in "**EXTERNAL_CERTIFICATE_AUTHORITIES**"; do
+  for CA in **EXTERNAL_CERTIFICATE_AUTHORITIES**; do
       EXT_CA_PARM="${EXT_CA_PARM} --external-ca ${CA} "
   done
 
@@ -50,7 +50,6 @@ else
 
   echo "apiml_cm.sh --action setup returned: $RC" >> $LOG_FILE
 fi
-
 
 if [ "$RC" -ne "0" ]; then
     (>&2 echo "apiml_cm.sh --action setup has failed. See $LOG_FILE for more details")
