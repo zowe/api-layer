@@ -22,16 +22,35 @@ fi
 
 SAN="SAN=dns:**HOSTNAME**,ip:**IPADDRESS**,dns:localhost.localdomain,dns:localhost,ip:127.0.0.1"
 
-EXT_CA_PARM=""
-for CA in "**EXTERNAL_CERTIFICATE_AUTHORITIES**"; do
-    EXT_CA_PARM="${EXT_CA_PARM} --external-ca ${CA} "
-done
+# If any external certificate fields are zero [blank], do not use the external setup method.
+# If all external certificate fields are zero [blank], create everything from scratch.
+# If all external fields are not zero [valid string], use external setup method.
 
-scripts/apiml_cm.sh --verbose --log $LOG_FILE --action setup --service-ext ${SAN} \
-   --external-certificate **EXTERNAL_CERTIFICATE** --external-certificate-alias **EXTERNAL_CERTIFICATE_ALIAS** ${EXT_CA_PARM}
-RC=$?
+if [[ -z "**EXTERNAL_CERTIFICATE**" ]] || [[ -z "**EXTERNAL_CERTIFICATE_ALIAS**" ]] || [[ -z "**EXTERNAL_CERTIFICATE_AUTHORITIES**" ]]; then
+  if [[ -z "**EXTERNAL_CERTIFICATE**" ]] && [[ -z "**EXTERNAL_CERTIFICATE_ALIAS**" ]] && [[ -z "**EXTERNAL_CERTIFICATE_AUTHORITIES**" ]]; then
+    scripts/apiml_cm.sh --verbose --log $LOG_FILE --action setup --service-ext ${SAN}
+    RC=$?
+    echo "apiml_cm.sh --action setup returned: $RC" >> $LOG_FILE
+  else
+    (>&2 echo "Zowe Install setup configuration is invalid; check your zowe-install.yaml file.")
+    (>&2 echo "Some external apiml certificate fields are supplied...Fields must be filled out in full or left completely blank.")
+    (>&2 echo "See $LOG_FILE for more details.")
+    echo "</setup-apiml-certificates.sh>" >> $LOG_FILE
+    exit 1
+  fi
+else
+  EXT_CA_PARM=""
+  for CA in "**EXTERNAL_CERTIFICATE_AUTHORITIES**"; do
+      EXT_CA_PARM="${EXT_CA_PARM} --external-ca ${CA} "
+  done
 
-echo "apiml_cm.sh --action setup returned: $RC" >> $LOG_FILE
+  scripts/apiml_cm.sh --verbose --log $LOG_FILE --action setup --service-ext ${SAN} \
+    --external-certificate **EXTERNAL_CERTIFICATE** --external-certificate-alias **EXTERNAL_CERTIFICATE_ALIAS** ${EXT_CA_PARM}
+  RC=$?
+
+  echo "apiml_cm.sh --action setup returned: $RC" >> $LOG_FILE
+fi
+
 
 if [ "$RC" -ne "0" ]; then
     (>&2 echo "apiml_cm.sh --action setup has failed. See $LOG_FILE for more details")
