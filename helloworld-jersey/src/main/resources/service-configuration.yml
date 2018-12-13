@@ -1,0 +1,39 @@
+contextPath: /hellojersey
+serviceId: hellojersey
+eureka:
+    hostname: localhost
+    ipAddress: 127.0.0.1
+    port: 10016
+title: Hello Jersey REST API
+description: Example for exposing a Jersey REST API
+baseUrl: https://localhost:10016/hellojersey
+homePageRelativeUrl:
+statusPageRelativeUrl: /application/info
+healthCheckRelativeUrl: /application/health
+discoveryServiceUrls:
+    - https://localhost:10011/eureka
+ssl:
+    verifySslCertificatesOfServices: true
+    protocol: TLSv1.2
+    keyAlias: localhost
+    keyPassword: password
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    keyStorePassword: password
+    keyStoreType: PKCS12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+    trustStoreType: PKCS12
+routes:
+    - gatewayUrl: api/v1
+      serviceUrl: /hellojersey/api/v1
+    - gatewayUrl: api/v1/api-doc
+      serviceUrl: /hellojersey/api-doc
+apiInfo:
+    title: Hello World Jersey
+    description: REST API for a Jersey Application
+    version: 1.0.0
+catalogUiTile:
+    id: cademoapps
+    title: Sample API Mediation Layer Applications
+    description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+    version: 1.0.0
