@@ -28,6 +28,7 @@ public class ApiMediationServiceConfig {
     private String statusPageRelativeUrl;
     private String healthCheckRelativeUrl;
     private String contextPath;
+    private String defaultZone;
     private Boolean securePortEnabled;
     @Singular
     private List<Route> routes;

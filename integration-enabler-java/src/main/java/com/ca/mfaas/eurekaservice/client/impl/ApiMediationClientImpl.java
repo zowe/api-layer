@@ -114,6 +114,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         result.setAppname(config.getServiceId());
         result.setHostName(hostname);
         result.setAppGroupName(null);
+        result.setInstanceEnabledOnit(true);
+        result.setIpAddress("127.0.0.1");
         result.setMetadataMap(createMetadata(config));
         result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
 
@@ -139,7 +141,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         }
 
         constructApiDocLocation(config);
-
+        log.info("hostname: " + result.getHostName());
         log.info(result.toString());
 
         return result;

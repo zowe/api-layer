@@ -20,7 +20,7 @@ import java.util.Map;
 @Data
 public class ApimlEurekaInstanceConfig implements EurekaInstanceConfig {
     private boolean securePortEnabled;
-    private boolean instanceEnabledOnit = false;
+    private boolean instanceEnabledOnit = true;
     private boolean nonSecurePortEnabled;
     private DataCenterInfo dataCenterInfo = new DataCenterInfo() {
         @Override
