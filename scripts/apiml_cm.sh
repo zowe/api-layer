@@ -12,6 +12,7 @@
 
 BASE_DIR=$(dirname "$0")
 PARAMS="$@"
+PWD=`pwd`
 
 function usage {
     echo "APIML Certificate Management"
@@ -310,7 +311,9 @@ function trust_zosmf {
     RC=$?
     if [ "$RC" -ne "0" ]; then
     SWITCHED_USERID=`_BPX_USERID=${ZOSMF_USERID} whoami`
-    echo "It is not possible to execute commands as z/OSMF user ID ${ZOSMF_USERID}. The effective user ID was: ${SWITCHED_USERID}. You need to run this command as user that has access to the z/OSMF keyring or as a superuser"
+    echo "It is not possible to execute commands as z/OSMF user ID ${ZOSMF_USERID}. The effective user ID was: ${SWITCHED_USERID}. You need to run this command as user that has access to the z/OSMF keyring or as a superuser:"
+    echo "  cd ${PWD}"
+    echo "  scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR"
     exit 1
     fi
     _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
