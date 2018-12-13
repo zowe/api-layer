@@ -1,10 +1,11 @@
-# Variables to be replace:
+# Variables to be replaced:
 # - JAVA_SETUP -- sets JAVA_HOME by ZOWE_JAVA_HOME
 # - IPADDRESS   -  The IP Address of the system running API Mediation
 # - HOSTNAME   -  The hostname of the system running API Mediation (defaults to localhost)
 # - DISCOVERY_PORT - The port the discovery service will use
 # - CATALOG_PORT - The port the catalog service will use
 # - GATEWAY_PORT - The port the gateway service will use
+# - VERIFY_CERTIFICATES - true/false - Validation of TLS/SSL certitificates for services
 
 **JAVA_SETUP**
 if [[ ":$PATH:" == *":$JAVA_HOME/bin:"* ]]; then
@@ -23,7 +24,7 @@ java -Xms16m -Xmx512m -Dibm.serversocket.recover=true -Dfile.encoding=UTF-8 \
     -Denvironment.preferIpAddress=true -Denvironment.gatewayHostname=**HOSTNAME** \
     -Denvironment.eurekaUserId=eureka \
     -Denvironment.eurekaPassword=password \
-    -Dapiml.security.verifySslCertificatesOfServices=true \
+    -Dapiml.security.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dspring.profiles.include= \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \

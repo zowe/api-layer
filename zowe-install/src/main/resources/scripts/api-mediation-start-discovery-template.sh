@@ -1,4 +1,4 @@
-# Variables to be replace:
+# Variables to be replaced:
 # - JAVA_SETUP -- sets JAVA_HOME by ZOWE_JAVA_HOME
 # - IPADDRESS   -  The IP Address of the system running API Mediation
 # - HOSTNAME   -  The hostname of the system running API Mediation (defaults to localhost)
@@ -6,6 +6,7 @@
 # - CATALOG_PORT - The port the catalog service will use
 # - GATEWAY_PORT - The port the gateway service will use
 # - STATIC_DEF_CONFIG - The directory with statically defined APIs
+# - VERIFY_CERTIFICATES - true/false - Validation of TLS/SSL certitificates for services
 
 **JAVA_SETUP**
 if [[ ":$PATH:" == *":$JAVA_HOME/bin:"* ]]; then
@@ -33,7 +34,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.ipAddress=**IPADDRESS** \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.discovery.staticApiDefinitionsDirectory=**STATIC_DEF_CONFIG** \
-    -Dapiml.security.verifySslCertificatesOfServices=true \
+    -Dapiml.security.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=$DIR/../keystore/localhost/localhost.keystore.p12 \
     -Dserver.ssl.keyStoreType=PKCS12 \
