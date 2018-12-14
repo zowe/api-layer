@@ -10,6 +10,8 @@ const args = {
     ipAddr: process.argv[4] || "127.0.0.1",
     serviceId: process.argv[5] || "hwexpress",
     discoveryServiceUrl: process.argv[6] || "https://localhost:10011/eureka/apps/",
+    // On z/OS, you need to use certificates encoded in EBCDIC
+    // The APIML stores such certificates in files with `-ebcdic` suffix
     cert: process.argv[7] || "../keystore/localhost/localhost.keystore.cer",
     key: process.argv[8] || "../keystore/localhost/localhost.keystore.key",
     ca: process.argv[9] || "../keystore/local_ca/localca.cer",
