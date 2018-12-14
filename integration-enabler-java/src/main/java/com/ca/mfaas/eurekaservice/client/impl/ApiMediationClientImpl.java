@@ -115,7 +115,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         result.setHostName(hostname);
         result.setAppGroupName(null);
         result.setInstanceEnabledOnit(true);
-        result.setIpAddress("127.0.0.1");
+        result.setIpAddress(config.getEureka().getIpAddress());
         result.setMetadataMap(createMetadata(config));
         result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
 
@@ -225,6 +225,11 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         // fill service metadata
         metadata.put("mfaas.discovery.service.title", config.getTitle());
         metadata.put("mfaas.discovery.service.description", config.getDescription());
+
+        // fill api metadata
+        metadata.put("mfaas.api-info.apiVersionProperties.v1.title", config.getApiInfo().getTitle());
+        metadata.put("mfaas.api-info.apiVersionProperties.v1.description", config.getApiInfo().getDescription());
+        metadata.put("mfaas.api-info.apiVersionProperties.v1.version", config.getApiInfo().getVersion());
 
         return metadata;
     }

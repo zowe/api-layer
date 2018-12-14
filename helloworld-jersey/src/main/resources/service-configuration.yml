@@ -29,6 +29,8 @@ routes:
       serviceUrl: /hellojersey/api/v1
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellojersey/api-doc
+    - gatewayUrl: ui/v1
+      serviceUrl: /hellojersey/
 apiInfo:
     title: Hello World Jersey
     description: REST API for a Jersey Application
@@ -38,3 +40,4 @@ catalogUiTile:
     title: Sample API Mediation Layer Applications
     description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
     version: 1.0.0
+
