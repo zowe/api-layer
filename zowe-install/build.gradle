@@ -73,6 +73,7 @@ packageApiMediationZowe.doFirst {
     }
 }
 
+jar.dependsOn(packageApiMediationZowe)
 build.dependsOn(packageApiMediationZowe)
 
 artifacts {
