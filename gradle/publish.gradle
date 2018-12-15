@@ -30,8 +30,8 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
     publishing {
         repositories.maven {
             credentials {
-                username project.hasProperty("deploy.username") ? project.getProperty("deploy.username") : mavenPublishUser
-                password  project.hasProperty("deploy.password") ? project.getProperty("deploy.password") : mavenPublishPassword
+                username project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
+                password project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
             }
             if (rootProject.version.endsWith("-SNAPSHOT")) {
                 setUrl(artifactoryPublishingMavenSnapshotRepo)
