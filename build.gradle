@@ -150,7 +150,7 @@ release {
     preCommitText = '[Gradle Release plugin]'
     preTagCommitMessage = 'Before tag commit'
     tagCommitMessage = 'Release:'
-    tagTemplate = '${version}'
+    tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
     versionPropertyFile = 'gradle.properties'
     buildTasks = ['build']

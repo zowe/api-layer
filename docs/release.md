@@ -6,7 +6,7 @@
 
 You can set them:
 
-- on command-line: `-Pzowe.deploy.username=$USERNAME... -Pzowe.deploy.password=$PASSWORD`
+- on command-line: `-Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD`
 - in `~/.gradle/gradle.properties`
 
 **Warning!** Do not commit them to the Git repository. They are secret
