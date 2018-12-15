@@ -30,7 +30,7 @@ buildscript {
     dependencies {
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5'
         classpath 'com.palantir:jacoco-coverage:0.4.0'
-        classpath 'net.researchgate:gradle-release:2.6.0'
+        classpath 'net.researchgate:gradle-release:2.7.0'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
         classpath 'org.owasp:dependency-check-gradle:3.3.4'
     }
@@ -126,10 +126,10 @@ task coverage() {
 }
 
 task publishAllVersions {
-    group 'Zoe Publishing'
-    description 'Publish SDK libraries for all version of Spring Boot to Zoe Artifactory'
+    group 'Zowe Publishing'
+    description 'Publish ZIP file and SDK libraries to Zowe Artifactory'
     doLast {
-        println 'Published all versions of SDK'
+        println 'Published ZIP file and libraries'
     }
 }
 
@@ -141,11 +141,11 @@ apply plugin: 'net.researchgate.release'
 ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
 
 release {
-    failOnCommitNeeded = false
-    failOnPublishNeeded = false
-    failOnSnapshotDependencies = false
-    failOnUnversionedFiles = false
-    failOnUpdateNeeded = false
+    failOnCommitNeeded = true
+    failOnPublishNeeded = true
+    failOnSnapshotDependencies = true
+    failOnUnversionedFiles = true
+    failOnUpdateNeeded = true
     revertOnFail = true
     preCommitText = '[Gradle Release plugin]'
     preTagCommitMessage = 'Before tag commit'
@@ -174,7 +174,7 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
+        requireBranch = 'auto-release'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = false
