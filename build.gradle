@@ -178,7 +178,7 @@ release {
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = false
-        signTag = false
+        signTag = true
     }
 }
 
