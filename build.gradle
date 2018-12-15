@@ -133,6 +133,10 @@ task publishAllVersions {
     }
 }
 
+task archiveSourceCode(type: Exec) {
+    commandLine "git", "archive", "--format", "tar.gz", "-9", "--output", "api-layer.tar.gz", "HEAD"
+}
+
 publishAllVersions.dependsOn publishSdkArtifacts
 
 //-----------Release part start
@@ -153,7 +157,7 @@ release {
     tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
     versionPropertyFile = 'gradle.properties'
-    buildTasks = ['build']
+    buildTasks = ['archiveSourceCode', 'build']
 
     if (releaseScope == 'minor') {
         versionPatterns = [
@@ -178,7 +182,7 @@ release {
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = false
-        signTag = true
+        signTag = false
     }
 }
 
