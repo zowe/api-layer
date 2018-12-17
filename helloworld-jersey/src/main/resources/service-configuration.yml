@@ -1,4 +1,3 @@
-contextPath: /hellojersey
 serviceId: hellojersey
 eureka:
     hostname: localhost
@@ -31,6 +30,8 @@ routes:
       serviceUrl: /hellojersey/api-doc
     - gatewayUrl: ui/v1
       serviceUrl: /hellojersey/
+    - gatewayUrl: app
+      serviceUrl: /hellojersey/application
 apiInfo:
     title: Hello World Jersey
     description: REST API for a Jersey Application

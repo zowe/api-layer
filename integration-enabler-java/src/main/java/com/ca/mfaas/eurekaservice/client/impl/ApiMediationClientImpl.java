@@ -238,7 +238,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     private static void constructApiDocLocation(ApiMediationServiceConfig config) {
         String hostname;
         String serviceId = config.getServiceId();
-        String contextPath = config.getContextPath();
         int port;
         URL baseUrl;
         try {
@@ -254,7 +253,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 .setScheme("https")
                 .setHost(hostname)
                 .setPort(port)
-                .setPath((contextPath.isEmpty() ? "" : contextPath + "/") + "swagger.json").build();
+                .setPath( "/" + serviceId + "/" + "swagger.json").build();
         } catch (URISyntaxException e) {
             log.error("Could not construct API Doc endpoint. API Doc cannot be accessed via /api-doc endpoint.\n"
                 + e.getMessage(), e);
