@@ -32,7 +32,9 @@ function usage {
     echo ""
     echo "  See ${BASE_DIR}/keystore/README.md for more details"
     echo ""
-    echo "  Called with: ${PARAMS}"
+    if [ -n "{$PARAMS}"]; then
+        echo "  Called with: ${PARAMS}"
+    fi
 }
 
 ACTION=
