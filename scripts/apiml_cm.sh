@@ -157,7 +157,7 @@ function import_local_ca_certificate {
 }
 
 function import_external_ca_certificates {
-    if ls ${EXTERNAL_CA_FILENAME}.*.cer; 1> /dev/null 2>&1; then
+    if ls ${EXTERNAL_CA_FILENAME}.*.cer 1> /dev/null 2>&1; then
         echo "Import the external Certificate Authorities to the truststore:"
         I=1
         for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
@@ -178,7 +178,7 @@ function import_signed_certificate {
 
 function import_external_certificate {
     echo "Import the external Certificate Authorities to the keystore:"
-    if ls ${EXTERNAL_CA_FILENAME}.*.cer; 1> /dev/null 2>&1; then
+    if ls ${EXTERNAL_CA_FILENAME}.*.cer 1> /dev/null 2>&1; then
         I=1
         for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
             [ -e "$FILENAME" ] || continue
