@@ -157,14 +157,15 @@ function import_local_ca_certificate {
 }
 
 function import_external_ca_certificates {
-    echo "Import the external Certificate Authorities to the truststore:"
-    I=1
-    ls ${EXTERNAL_CA_FILENAME}.*.cer
-    for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
-        [ -e "$FILENAME" ] || continue
-        pkeytool -importcert $V -trustcacerts -noprompt -file ${FILENAME} -alias "extca${I}" -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
-        I=$((I+1))
-    done
+    if ls ${EXTERNAL_CA_FILENAME}.*.cer 1> /dev/null 2>&1; then
+        echo "Import the external Certificate Authorities to the truststore:"
+        I=1
+        for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
+            [ -e "$FILENAME" ] || continue
+            pkeytool -importcert $V -trustcacerts -noprompt -file ${FILENAME} -alias "extca${I}" -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+            I=$((I+1))
+        done
+    fi
 }
 
 function import_signed_certificate {
@@ -177,12 +178,14 @@ function import_signed_certificate {
 
 function import_external_certificate {
     echo "Import the external Certificate Authorities to the keystore:"
-    I=1
-    for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
-        [ -e "$FILENAME" ] || continue
-        pkeytool -importcert $V -trustcacerts -noprompt -file ${FILENAME} -alias "extca${I}" -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
-        I=$((I+1))
-    done
+    if ls ${EXTERNAL_CA_FILENAME}.*.cer 1> /dev/null 2>&1; then
+        I=1
+        for FILENAME in ${EXTERNAL_CA_FILENAME}.*.cer; do
+            [ -e "$FILENAME" ] || continue
+            pkeytool -importcert $V -trustcacerts -noprompt -file ${FILENAME} -alias "extca${I}" -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+            I=$((I+1))
+        done
+    fi
 
     if [ -n "${EXTERNAL_CERTIFICATE}" ]; then
         echo "Import the signed certificate and its private key to the keystore:"
@@ -309,7 +312,11 @@ function trust_zosmf {
     ALIASES_FILE=${TEMP_DIR}/aliases.txt
     rm -f ${ALIASES_FILE}
     echo "Listing entries in the z/OSMF keyring (${ZOSMF_KEYRING}):"
-    _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider
+    if [ "$LOG" != "" ]; then
+        _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider >> $LOG 2>&1
+    else
+        _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider
+    fi
     RC=$?
     if [ "$RC" -ne "0" ]; then
     SWITCHED_USERID=`_BPX_USERID=${ZOSMF_USERID} whoami`
