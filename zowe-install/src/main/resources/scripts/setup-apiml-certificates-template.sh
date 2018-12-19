@@ -65,7 +65,7 @@ if [ "$RC" -ne "0" ]; then
     (>&2 echo "apiml_cm.sh --action trust-zosmf has failed. See $LOG_FILE for more details")
     (>&2 echo "WARNING: z/OSMF is not trusted by the API Mediation Layer. Follow instructions in Zowe documentation about manual steps to trust z/OSMF")
     (>&2 echo "  Issue following commands as a superuser:")
-    (>&2 echo "    cd $ZOWE_RUNTIME/api-mediation")
+    (>&2 echo "    cd **ZOWE_ROOT_DIR**/api-mediation")
     (>&2 echo "    scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR")
 fi
 
