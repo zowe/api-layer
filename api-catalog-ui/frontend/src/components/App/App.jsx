@@ -21,46 +21,49 @@ class App extends Component {
         return (
             <div className="App">
                 <BigShield history={history}>
-                    {authentication.showHeader !== undefined &&
-                        authentication.showHeader === true && <HeaderContainer />}
-                    <ToastContainer />
-                    <ErrorContainer />
-                    <Suspense fallback={<Spinner isLoading={isLoading} />}>
-                        <Router history={history}>
-                            <Switch>
-                                <Route path="/" exact render={() => <Redirect replace to="/login" />} />
-                                <Route
-                                    path="/login"
-                                    exact
-                                    render={(props, state) => <LoginContainer {...props} {...state} />}
-                                />
-                                <Route
-                                    exact
-                                    path="/dashboard"
-                                    render={(props, state) => (
-                                        <BigShield>
-                                            <DashboardContainer {...props} {...state} />
-                                        </BigShield>
-                                    )}
-                                />
-                                <Route
-                                    path="/tile/:tileID"
-                                    render={(props, state) => (
-                                        <BigShield history={history}>
-                                            <DetailPageContainer {...props} {...state} />
-                                        </BigShield>
-                                    )}
-                                />
-                                <Route
-                                    render={(props, state) => (
-                                        <BigShield history={history}>
-                                            <PageNotFound {...props} {...state} />
-                                        </BigShield>
-                                    )}
-                                />
-                            </Switch>
-                        </Router>
-                    </Suspense>
+                    <div className="content">
+                        {authentication.showHeader !== undefined &&
+                            authentication.showHeader === true && <HeaderContainer />}
+                        <ToastContainer />
+                        <ErrorContainer />
+                        <Suspense fallback={<Spinner isLoading={isLoading} />}>
+                            <Router history={history}>
+                                <Switch>
+                                    <Route path="/" exact render={() => <Redirect replace to="/login" />} />
+                                    <Route
+                                        path="/login"
+                                        exact
+                                        render={(props, state) => <LoginContainer {...props} {...state} />}
+                                    />
+                                    <Route
+                                        exact
+                                        path="/dashboard"
+                                        render={(props, state) => (
+                                            <BigShield>
+                                                <DashboardContainer {...props} {...state} />
+                                            </BigShield>
+                                        )}
+                                    />
+                                    <Route
+                                        path="/tile/:tileID"
+                                        render={(props, state) => (
+                                            <BigShield history={history}>
+                                                <DetailPageContainer {...props} {...state} />
+                                            </BigShield>
+                                        )}
+                                    />
+                                    <Route
+                                        render={(props, state) => (
+                                            <BigShield history={history}>
+                                                <PageNotFound {...props} {...state} />
+                                            </BigShield>
+                                        )}
+                                    />
+                                </Switch>
+                            </Router>
+
+                        </Suspense>
+                    </div>
                     {authentication.showHeader !== undefined && authentication.showHeader === true && <Footer />}
                 </BigShield>
             </div>
