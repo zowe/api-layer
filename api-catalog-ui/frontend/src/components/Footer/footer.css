@@ -1,0 +1,25 @@
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #fff;
+    color: #111;
+    text-align: center;
+    padding: .6rem 1rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-top: 1px solid #DDE3ED;
+    box-sizing: border-box;
+}
+
+.right {
+    display: inline-flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+}
+
+.right > * {
+    padding: 0 0.6rem;
+}
