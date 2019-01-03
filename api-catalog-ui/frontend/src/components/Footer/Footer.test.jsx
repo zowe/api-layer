@@ -6,12 +6,24 @@ import Footer from './Footer';
 
 describe('>>> Footer component tests', () => {
     it('should display a Link', () => {
-        const sample = enzyme.shallow(<Footer />);
-        expect(sample.find('Link')).toBeDefined();
+        const footer = enzyme.shallow(<Footer />);
+        expect(footer.find('Link')).toBeDefined();
     });
 
     it('should have link href to CA support', () => {
-        const sample = enzyme.shallow(<Footer />);
-        expect(sample.find('Link').first().props().href).toEqual('https://support.ca.com/us.html');
+        const footer = enzyme.shallow(<Footer />);
+        expect(
+            footer
+                .find('Link')
+                .first()
+                .props().href
+        ).toEqual('https://support.ca.com/us.html');
+    });
+
+    it('should not display link to ca support', () => {
+        process.env.REACT_APP_CA_ENV = false;
+        const footer = enzyme.shallow(<Footer />);
+        console.log(process.env.REACT_APP_CA_ENV);
+        expect(footer.find('Link')).toBeUndefined();
     });
 });
