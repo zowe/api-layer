@@ -7,7 +7,7 @@ import './footer.css';
 export default class Footer extends Component {
     render() {
         if (process.env.REACT_APP_CA_ENV === 'false') {
-            return '';
+            return null;
         }
         return (
             <footer>
