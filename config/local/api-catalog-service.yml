@@ -43,8 +43,3 @@ spring:
     output:
         ansi:
             enabled: always
-
-logging:
-    level:
-        com.ca.mfaas.security: DEBUG
-        # org.apache.http: DEBUG
