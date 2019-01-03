@@ -23,6 +23,6 @@ describe('>>> Footer component tests', () => {
     it('should not display link to ca support', () => {
         process.env.REACT_APP_CA_ENV = false;
         const footer = enzyme.shallow(<Footer />);
-        expect(footer.find('Link')).toBeUndefined();
+        expect(footer.find('footer')).toBeUndefined();
     });
 });
