@@ -6,6 +6,9 @@ import './footer.css';
 
 export default class Footer extends Component {
     render() {
+        if (process.env.REACT_APP_CA_ENV === 'false') {
+            return '';
+        }
         return (
             <footer>
                 <div className="left">
@@ -14,9 +17,7 @@ export default class Footer extends Component {
                 </div>
                 <div className="right">
                     <p>&copy; 2018 CA Technologies. All Rights Reserved.</p>
-                    {process.env.REACT_APP_CA_ENV === 'true' && (
-                        <Link href="https://support.ca.com/us.html">CA Support</Link>
-                    )}
+                    <Link href="https://support.ca.com/us.html">CA Support</Link>
                 </div>
             </footer>
         );
