@@ -14,7 +14,9 @@ export default class Footer extends Component {
                 </div>
                 <div className="right">
                     <p>&copy; 2018 CA Technologies. All Rights Reserved.</p>
-                    <Link href="https://support.ca.com/us.html">CA Support</Link>
+                    {process.env.REACT_APP_CA_ENV === 'true' && (
+                        <Link href="https://support.ca.com/us.html">CA Support</Link>
+                    )}
                 </div>
             </footer>
         );
