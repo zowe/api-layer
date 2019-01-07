@@ -20,7 +20,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 
 
-@Path("/application")
+@Path("/api/v1/application")
 public class DiscoveryController {
 
     @GET
