@@ -40,9 +40,7 @@ export default class Dashboard extends Component {
                     <div className="no-tiles-container">
                         <br />
                         <br />
-                        <Text element="h3">
-                            Tile details could not be retrieved, the following error was returned:
-                        </Text>
+                        <Text element="h3">Tile details could not be retrieved, the following error was returned:</Text>
                         {error}
                     </div>
                 )}

@@ -230,7 +230,7 @@ pipeline {
                     }
                     steps {
                         withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                        sh "./gradlew publishAllVersions -Pdeploy.username=$USERNAME -Pdeploy.password=$PASSWORD"
+                        sh "./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD"
                         }
                     }
                 }
