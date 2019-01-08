@@ -19,11 +19,11 @@ import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import io.swagger.models.Path;
-import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.http.HttpStatus;
 
 import javax.validation.UnexpectedTypeException;
@@ -31,7 +31,11 @@ import javax.validation.UnexpectedTypeException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.ca.mfaas.product.constants.ApimConstants.API_DOC_NORMALISED;
 import static com.netflix.zuul.context.RequestContext.getCurrentContext;
@@ -45,7 +49,6 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @Slf4j
 public class TransformApiDocEndpointsFilter extends ZuulFilter implements RoutedServicesUser {
 
-    private static final String SEPARATOR = "/";
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
 
     /**
@@ -94,7 +97,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
      *
      * @param serviceId   the service id
      * @param requestPath the request path
-     * @param context     request context
+     * @param context request context
      * @return true if this can be processed
      */
     private boolean isRequestThatCanBeProcessed(String serviceId, String requestPath, RequestContext context) {
@@ -137,7 +140,6 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
 
     /**
      * Retrieve the body as a String from the data stream
-     *
      * @param responseStream the data stream
      * @return a string
      * @throws IOException body could not be retrieved
@@ -182,8 +184,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
             throw new UnexpectedTypeException("Response is not a Swagger type object. Http Response: " + context.getResponseStatusCode());
         }
 
-        Map<String, Path> updatedShortPaths = new HashMap<>();
-        Map<String, Path> updatedLongPaths = new HashMap<>();
+        Map<String, Path> updatedPaths = new HashMap<>();
         String serviceId = (String) context.get(SERVICE_ID_KEY);
         String requestUri = (String) context.get(REQUEST_URI_KEY);
 
@@ -211,7 +212,6 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
         }
 
         // Update all paths to gateway format
-        Set<String> prefixes = new HashSet<>();
         if (swagger.getPaths() != null && !swagger.getPaths().isEmpty()) {
 
             // Check each path
@@ -224,41 +224,33 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
                 log.trace("Base Path: " + swagger.getBasePath());
 
                 // Retrieve route which matches endpoint
-                String endPoint = swagger.getBasePath() + originalEndpoint;
-                RoutedService route = getRouteServiceForEndpoint(endPoint, finalServiceId);
 
-                String updatedShortEndPoint = null;
-                String updatedLongEndPoint = null;
-                if (route != null) {
-                    prefixes.add(route.getGatewayUrl());
-                    updatedShortEndPoint = endPoint.replace(route.getServiceUrl(), "");
-                    updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + finalServiceId + updatedShortEndPoint;
-                }
-                log.trace("Final Endpoint: " + updatedLongEndPoint);
-
+                String updatedEndPoint = getGatewayURLForEndPoint(swagger.getBasePath() + originalEndpoint, finalServiceId);
+                log.trace("Final Endpoint: " + updatedEndPoint);
                 // If endpoint not converted, then use original
-                if (updatedLongEndPoint != null) {
-                    updatedShortPaths.put(updatedShortEndPoint, path);
-                    updatedLongPaths.put(updatedLongEndPoint, path);
+                if (updatedEndPoint != null) {
+                    updatedPaths.put(updatedEndPoint, path);
                 } else {
                     log.debug("Could not transform endpoint: " + originalEndpoint + ", original used");
                 }
             });
+
+            // update the original swagger object with the new paths
+            swagger.setPaths(updatedPaths);
         }
 
-        // update basePath and the original swagger object with the new paths
-        if (prefixes.size() == 1) {
-            swagger.setBasePath(SEPARATOR + prefixes.iterator().next() + SEPARATOR + serviceId);
-            swagger.setPaths(updatedShortPaths);
-        } else {
-            swagger.setBasePath("");
-            swagger.setPaths(updatedLongPaths);
+        // update host and base path
+        swagger.setBasePath("");
+        String baseHost;
+        try {
+            baseHost = new URIBuilder()
+                .setHost(context.getZuulRequestHeaders().get(X_FORWARDED_HOST_HEADER.toLowerCase()))
+                .setScheme(context.getZuulRequestHeaders().get(X_FORWARDED_PROTO_HEADER.toLowerCase())).build().toString();
+        } catch (URISyntaxException e) {
+            log.warn("An error occurred when setting host in the Api Doc, setting it to fallback value", e);
+            baseHost = context.getZuulRequestHeaders().get(X_FORWARDED_HOST_HEADER.toLowerCase());
         }
-
-        // update scheme and host
-        String scheme = context.getZuulRequestHeaders().get(X_FORWARDED_PROTO_HEADER.toLowerCase());
-        swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
-        swagger.setHost(context.getZuulRequestHeaders().get(X_FORWARDED_HOST_HEADER.toLowerCase()));
+        swagger.setHost(baseHost);
 
         // Convert to JSON and set content body
         try {
@@ -271,18 +263,38 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
     }
 
     /**
-     * Get the transformation routes for the endpoint
+     * Get the base path for this Api Version
      *
-     * @param endPoint the endpoint
+     * @return the base path
+     * @param endPoint the REST endpoint (relative to service)
      * @param serviceId the service id
-     * @return modified content
      */
-    private RoutedService getRouteServiceForEndpoint(String endPoint, String serviceId) {
+    private String getGatewayURLForEndPoint(String endPoint, String serviceId) {
+        String updatedEndPoint = null;
+        String basePath = null;
+
+        // Get the transformation routes for this service
         RoutedServices routedServices = routedServicesMap.get(serviceId);
-        if (routedServices == null) {
-            return null;
-        } else {
-            return routedServices.findGatewayUrlThatMatchesServiceUrl(endPoint, true);
+        if (routedServices != null) {
+            RoutedService route = routedServices.findGatewayUrlThatMatchesServiceUrl(endPoint, true);
+            if (route != null) {
+                String separator = "/";
+                basePath = separator + route.getGatewayUrl();
+                updatedEndPoint = separator + serviceId + endPoint.replace(route.getServiceUrl(), "");
+
+                log.trace("Updated Endpoint: " + updatedEndPoint);
+
+                // remove any prefixes where the base path may also contain the service Id
+                String duplicatePrefix = "/" + serviceId + "/" + serviceId;
+                if (updatedEndPoint.startsWith(duplicatePrefix)) {
+                    updatedEndPoint = updatedEndPoint.replace(duplicatePrefix, "/" + serviceId);
+                    log.debug("Duplicate Modified Endpoint: " + updatedEndPoint);
+                }
+            } else {
+                // if no route found then do not update endpoint, use original
+                return null;
+            }
         }
+        return basePath + updatedEndPoint;
     }
 }
