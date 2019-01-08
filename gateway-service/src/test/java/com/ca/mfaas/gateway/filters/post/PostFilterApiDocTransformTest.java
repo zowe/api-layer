@@ -88,12 +88,12 @@ public class PostFilterApiDocTransformTest {
         assertEquals("Base path for only one Gateway Url is not correct.", BASE_PATH, swagger.getBasePath());
         swagger.getPaths().forEach((endPoint, path) -> {
             assertTrue(endPoint + " does not contains 'pets'.", endPoint.contains(ENDPOINT));
-            assertFalse(endPoint + " contains base path '" + BASE_PATH +"'.", endPoint.contains(SERVICE_ID));
+            assertFalse(endPoint + " contains base path '" + BASE_PATH + "'.", endPoint.contains(SERVICE_ID));
         });
     }
 
     @Test
-    public void  whenPostFilterApplied_thenSwaggerVersionModified_twoGWUrls() throws IOException {
+    public void whenPostFilterApplied_thenSwaggerVersionModified_twoGWUrls() throws IOException {
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(
             new RoutedService("v1", "api/v1", "/discovered-service/v1"));
@@ -112,7 +112,7 @@ public class PostFilterApiDocTransformTest {
         assertTrue("Base path for two Gateway Urls is not empty.", swagger.getBasePath().isEmpty());
         swagger.getPaths().forEach((endPoint, path) -> {
             assertTrue(endPoint + " does not contains 'pets'.", endPoint.contains(ENDPOINT));
-            assertTrue(endPoint + " does not contains base path '" + BASE_PATH +"'.", endPoint.contains(SERVICE_ID));
+            assertTrue(endPoint + " does not contains base path '" + BASE_PATH + "'.", endPoint.contains(SERVICE_ID));
         });
     }
 
