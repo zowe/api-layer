@@ -315,9 +315,9 @@ function trust_zosmf {
     rm -f ${ALIASES_FILE}
     echo "Listing entries in the z/OSMF keyring (${ZOSMF_KEYRING}):"
     if [ "$LOG" != "" ]; then
-        _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider >> $LOG 2>&1
+        keytool -list -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider >> $LOG 2>&1
     else
-        _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider
+        keytool -list -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider
     fi
     RC=$?
     if [ "$RC" -ne "0" ]; then
@@ -327,12 +327,12 @@ function trust_zosmf {
     echo "  scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR"
     exit 1
     fi
-    _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
+    _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
     CERT_PREFIX=${TEMP_DIR}/zosmf_cert_
     for ALIAS in `cat ${ALIASES_FILE}`; do
         echo "Exporting certificate ${ALIAS} from z/OSMF:"
         CERTIFICATE=${CERT_PREFIX}${ALIAS}.cer
-        _BPX_USERID=${ZOSMF_USERID} keytool -exportcert -alias ${ALIAS} -keystore safkeyring:///${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider -file ${CERTIFICATE}
+        keytool -exportcert -alias ${ALIAS} -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider -file ${CERTIFICATE}
         trust
         rm ${CERTIFICATE}
     done
