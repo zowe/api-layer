@@ -20,7 +20,7 @@ ext {
     swaggerCoreVersion = "1.5.21"
     commonsValidatorVersion = "1.6"
     powerMockVersion = "1.7.3"
-    jacksonCoreVersion = "2.9.6"
+    jacksonCoreVersion = "2.9.8"
     javaxValidationApiVersion = "2.0.1.Final"
     esmClientVersion = '2.0.0-SNAPSHOT'
     gsonVersion = '2.8.2'
@@ -33,7 +33,7 @@ ext {
     eurekaClientVersion = '1.8.6'
     junitVersion = '4.12'
     logbackVersion = '1.2.3'
-    spring4Version = '4.3.7.RELEASE'
+    spring4Version = '4.3.21.RELEASE'
     awaitilityVersion = '3.0.0'
     jjwtVersion = '0.9.1'
     velocityVersion = '2.0'
