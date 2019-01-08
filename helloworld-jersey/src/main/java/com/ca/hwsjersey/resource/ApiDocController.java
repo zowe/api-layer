@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice.client.config;
+package com.ca.hwsjersey.resource;
 
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import org.slf4j.Logger;
@@ -30,6 +30,7 @@ public class ApiDocController {
     @Path("/api-doc")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getApiDoc() {
+        log.info("apidocendpoint value: " + ApiMediationClientImpl.getApiDocEndpoint());
         if (ApiMediationClientImpl.getApiDocEndpoint() == null) {
             throw new IllegalStateException("API Doc target endpoint is not set, API Doc cannot be accessed via /api-doc.");
         }

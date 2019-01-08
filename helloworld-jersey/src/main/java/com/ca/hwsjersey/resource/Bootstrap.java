@@ -7,8 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice.client.config;
+package com.ca.hwsjersey.resource;
 
+import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import io.swagger.jaxrs.config.SwaggerContextService;
 import io.swagger.models.Info;
 import io.swagger.models.Swagger;
@@ -23,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ResourceBundle;
 
 public class Bootstrap extends HttpServlet {
 

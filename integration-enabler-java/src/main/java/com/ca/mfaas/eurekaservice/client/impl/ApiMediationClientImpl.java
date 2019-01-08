@@ -30,6 +30,9 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
+import io.swagger.jaxrs.config.SwaggerContextService;
+import io.swagger.models.Info;
+import io.swagger.models.Swagger;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +144,12 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             default:
                 throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
         }
-
+        Info info = new Info()
+            .title(config.getApiInfo().getTitle())
+            .description(config.getApiInfo().getDescription())
+            .version(config.getApiInfo().getVersion());
+        Swagger swagger = new Swagger().info(info);
+        new SwaggerContextService().updateSwagger(swagger);
         constructApiDocLocation(config);
         log.info("hostname: " + result.getHostName());
         log.info(result.toString());
@@ -258,6 +266,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             log.error("Could not construct API Doc endpoint. API Doc cannot be accessed via /api-doc endpoint.\n"
                 + e.getMessage(), e);
         }
+        log.info("apiDocEndpoint: "+ apiDocEndpoint);
     }
 
     public static URI getApiDocEndpoint() {
