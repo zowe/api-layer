@@ -10,7 +10,6 @@
 package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
@@ -32,7 +31,6 @@ public class ApiMediationServiceConfigReader {
         }
         File configFile = new File(fileUrl.getFile());
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         ApiMediationServiceConfig configuration;
         try {
             configuration = mapper.readValue(configFile, ApiMediationServiceConfig.class);

@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -54,7 +55,8 @@ public class GreetingControllerTest {
 
     @Test
     public void givenGreetingUriWithoutName_whenMockMVC_thenVerifyResponse() throws Exception {
-        MvcResult mvcResult = this.mockMvc.perform(get("/api/v1/greeting"))
+        MvcResult mvcResult = this.mockMvc.perform(get("/api/v1/greeting")
+            .accept(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content").value("Hello, World!"))
             .andReturn();
@@ -65,7 +67,8 @@ public class GreetingControllerTest {
 
     @Test
     public void givenGreetingUriWithName_whenMockMVC_thenVerifyResponse() throws Exception {
-        MvcResult mvcResult = this.mockMvc.perform(get("/api/v1/greeting/petr"))
+        MvcResult mvcResult = this.mockMvc.perform(get("/api/v1/greeting/petr")
+            .accept(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content").value("Hello, petr!"))
             .andReturn();

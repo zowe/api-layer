@@ -22,8 +22,6 @@ import com.ca.mfaas.security.HttpsFactory;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.PortType;
-import com.netflix.appinfo.MyDataCenterInstanceConfig;
 import com.netflix.appinfo.providers.EurekaConfigBasedInstanceInfoProvider;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.DiscoveryClient;
@@ -92,13 +90,12 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     }
 
     private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) {
-        EurekaInstanceConfig eurekaInstanceConfig = createEurekaInsanceConfig(config);
+        EurekaInstanceConfig eurekaInstanceConfig = createEurekaInstanceConfig(config);
         InstanceInfo instanceInformation = new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get();
-        log.info(instanceInformation.getHostName());
         return new ApplicationInfoManager(eurekaInstanceConfig, instanceInformation);
     }
 
-    private EurekaInstanceConfig createEurekaInsanceConfig(ApiMediationServiceConfig config) {
+    private EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) {
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
         String hostname;
@@ -151,66 +148,10 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         Swagger swagger = new Swagger().info(info);
         new SwaggerContextService().updateSwagger(swagger);
         constructApiDocLocation(config);
-        log.info("hostname: " + result.getHostName());
-        log.info(result.toString());
 
         return result;
     }
 
-    // private InstanceInfo createInstanceInfo(EurekaInstanceConfig eurekaInstanceConfig,
-    //         ApiMediationServiceConfig config) {
-    //     InstanceInfo.Builder builder = new InstanceInfo.Builder(
-    //         new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get());
-    //     String hostname;
-    //     String port;
-    //     URL baseUrl;
-    //     log.info("config.getBaseUrl(): " + config.getBaseUrl());
-    //     try {
-    //         baseUrl = new URL(config.getBaseUrl());
-    //         hostname = baseUrl.getHost();
-    //         port = config.getEureka().getPort();
-    //     } catch (MalformedURLException e) {
-    //         throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
-    //     }
-
-    //     log.info("baseUrl.getHost(): " + baseUrl.getHost());
-
-
-    //     builder.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port))
-    //         .setAppName(config.getServiceId())
-    //         .setVIPAddress(config.getServiceId())
-    //         .setHostName(hostname)
-    //         .setAppGroupName(null)
-    //         .setMetadata(createMetadata(config))
-    //         .setStatusPageUrl(null, config.getBaseUrl() + config.getStatusPageRelativeUrl());
-
-    //     if (!StringUtils.isNullOrEmpty(config.getHomePageRelativeUrl())) {
-    //         builder.setHomePageUrl(null, config.getBaseUrl() + config.getHomePageRelativeUrl());
-    //     } else {
-    //         builder.setHomePageUrl(null, "");
-    //     }
-
-    //     String protocol = baseUrl.getProtocol();
-    //     switch (protocol) {
-    //         case "http":
-    //             builder.enablePort(PortType.SECURE, false).enablePort(PortType.UNSECURE, true)
-    //                 .setPort(baseUrl.getPort());
-    //             builder.setHealthCheckUrls(null, config.getBaseUrl() + config.getHealthCheckRelativeUrl(), null);
-    //             break;
-    //         case "https":
-    //             builder.enablePort(PortType.SECURE, true).enablePort(PortType.UNSECURE, false)
-    //                 .setSecurePort(baseUrl.getPort());
-    //             builder.setHealthCheckUrls(null, null, config.getBaseUrl() + config.getHealthCheckRelativeUrl());
-    //             break;
-    //         default:
-    //             throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
-    //     }
-    //     constructApiDocLocation(config);
-
-    //     InstanceInfo instanceInfo = builder.build();
-    //     log.info("instanceInfo.getHostName(): " + instanceInfo.getHostName());
-    //     return instanceInfo;
-    // }
 
     private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
         Map<String, String> metadata = new HashMap<>();
@@ -266,7 +207,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             log.error("Could not construct API Doc endpoint. API Doc cannot be accessed via /api-doc endpoint.\n"
                 + e.getMessage(), e);
         }
-        log.info("apiDocEndpoint: "+ apiDocEndpoint);
     }
 
     public static URI getApiDocEndpoint() {

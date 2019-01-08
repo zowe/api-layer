@@ -1,5 +1,9 @@
 serviceId: hellospring
 title: Hello Spring REST API
+eureka:
+    hostname: localhost
+    ipAddress: 127.0.0.1
+    port: 10020
 description: Example for exposing a Spring REST API
 baseUrl: http://localhost:10020/hellospring
 homePageRelativeUrl:

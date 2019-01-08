@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -55,7 +56,8 @@ public class MfaasControllerTest {
 
     @Test
     public void givenHealthUri_whenMockMVC_thenVerifyResponse() throws Exception {
-        MvcResult mvcResult = this.mockMvc.perform(get("/application/health"))
+        MvcResult mvcResult = this.mockMvc.perform(get("/application/health")
+            .accept(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("UP"))
             .andReturn();
@@ -66,7 +68,8 @@ public class MfaasControllerTest {
 
     @Test
     public void givenInfoUri_whenMockMVC_thenVerifyResponse() throws Exception {
-        MvcResult mvcResult = this.mockMvc.perform(get("/application/info"))
+        MvcResult mvcResult = this.mockMvc.perform(get("/application/info")
+            .accept(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").value(""))
             .andReturn();
