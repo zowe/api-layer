@@ -31,7 +31,7 @@ describe(script, function() {
     });
     describe("setup", function() {
         it("should create local CA and APIML stores", function(done) {
-            this.timeout(10000);
+            this.timeout(60000);
             nixt()
                 .cwd(testDir)
                 .exec('mkdir -p keystore/local_ca')
