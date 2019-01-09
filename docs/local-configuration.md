@@ -85,12 +85,12 @@ If you need some more information about SSL configuration status while deploying
 
 5. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:
 
-    * [https://localhost:10011/eureka/apps/HELLOWORLD-JERSEY/localhost:helloworld-jersey:10016](https://localhost:10011/eureka/apps/HELLOWORLD-JERSEY/localhost:helloworld-jersey:10016) for metadata and service information
-    * [https://localhost:10016/helloworld-jersey/api-doc](https://localhost:10016/helloworld-jersey/api-doc) which contains the API documentation
-    * [https://localhost:10016/helloworld-jersey/application/health](https://localhost:10016/helloworld-jersey/application/health) for the health check endpoint containing the status of the application
+    * [https://localhost:10011/eureka/apps/HELLOJERSEY/localhost:hellojersey:10016](https://localhost:10011/eureka/apps/HELLOJERSEY/localhost:hellojersey:10016) for metadata and service information
+    * [https://localhost:10016/hellojersey/api-doc](https://localhost:10016/hellojersey/api-doc) which contains the API documentation
+    * [https://localhost:10016/hellojersey/application/health](https://localhost:10016/hellojersey/application/health) for the health check endpoint containing the status of the application
     * [https://localhost:10016](https://localhost:10016) for the homepage 
-    * [https://localhost:10016/helloworld-jersey/application/info](https://localhost:10016/helloworld-jersey/application/info) for the service informations such as hostname, port etc
-    * [https://localhost:10016/helloworld-jersey/v1/greeting](https://localhost:10016/helloworld-jersey/v1/greeting) for the greeting endpoint
+    * [https://localhost:10016/hellojersey/application/info](https://localhost:10016/hellojersey/application/info) for the service informations such as hostname, port etc
+    * [https://localhost:10016/hellojersey/v1/greeting](https://localhost:10016/hellojersey/v1/greeting) for the greeting endpoint
     
     Go to the [API Catalog](https://localhost:10010/ui/v1/apicatalog) and check if the API documentation of the service is retrieved.
 

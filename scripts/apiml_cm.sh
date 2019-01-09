@@ -10,7 +10,9 @@
 # https://www.ibm.com/support/knowledgecenter/en/SSYKE2_8.0.0/com.ibm.java.security.component.80.doc/security-component/keytoolDocs/keytool_overview.html
 #
 
-export IBM_JAVA_OPTIONS="-Dfile.encoding=IBM-1047"
+if [ `uname` = "OS/390" ]; then
+    export IBM_JAVA_OPTIONS="-Dfile.encoding=IBM-1047"
+fi
 
 BASE_DIR=$(dirname "$0")
 PARAMS="$@"

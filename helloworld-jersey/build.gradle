@@ -16,16 +16,20 @@ repositories {
 }
 
 dependencies {
-    compile(project(':integration-enabler-jersey'))
+    compile(project(':integration-enabler-java'))
 
+    compile libraries.springFox
+    compile group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.5.10'
+    compile libraries.jackson_dataformat_yaml
+    compileOnly libraries.lombok
     compile libraries.logback_classic
-    compile group: 'org.glassfish.jersey.core', name: 'jersey-server', version: '2.26'
-    compile group: 'org.glassfish.jersey.inject', name: 'jersey-hk2', version:'2.26'
-    compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version:'2.26'
-    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version:'2.26'
+    compile libraries.jersey_server
+    compile libraries.jersey_hk2
+    compile libraries.jersey_container_servlet_core
+    compile libraries.jersey_media_json_jackson
 
     testCompile libraries.junit
-    testCompile group: 'org.glassfish.jersey.test-framework.providers', name: 'jersey-test-framework-provider-jdk-http', version: '2.26'
+    testCompile libraries.jersey_test_provider_jdk_http
 
 
     def tomcatVersion = '8.0.39'

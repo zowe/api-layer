@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 import java.util.Date;
 
 @Api(value = "Greeting", tags = {"Greeting Controller"})
-@Path("/v1")
+@Path("/api/v1")
 public class GreetingController {
 
     private static final String TEMPLATE = "Hello, %s!";
