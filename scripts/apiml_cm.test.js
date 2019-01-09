@@ -1,7 +1,7 @@
 const nixt = require("nixt");
 const path = require("path");
 
-const script =  path.join(__dirname, "apiml_cm.sh");
+const script =  "bash " + path.join(__dirname, "apiml_cm.sh");
 const testDir = path.join(__dirname, ".apiml_cm_test");
 console.log(testDir);
 
