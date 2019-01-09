@@ -60,6 +60,8 @@ pip-log.txt
 .tox
 nosetests.xml
 .coverage
+scripts/test-results/xunit.xml
+.apiml_cm_test/
 
 # Translations
 *.mo
@@ -86,4 +88,3 @@ api-catalog-ui/frontend/debug.log
 debug.log
 api-layer.tar.gz
 /package-lock.json
-.apiml_cm_test/
