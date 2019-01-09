@@ -24,12 +24,12 @@ import static org.hamcrest.Matchers.is;
 
 @Category(LocalDeploymentTest.class)
 public class HelloWorldJerseyEndpointTest {
-    private static final String UI_V1_PATH = "/helloworld-jersey/";
-    private static final String APP_INFO_PATH = "/app/helloworld-jersey/info/";
-    private static final String APP_INFO_HEALTH = "/app/helloworld-jersey/health/";
-    private static final String API_DOC_PATH = "/api/v1/api-doc/helloworld-jersey/";
-    private static final String GREETING_PATH = "/api/v1/helloworld-jersey/v1/greeting";
-    private static final String GREETING_WITH_NAME_PATH = "/api/v1/helloworld-jersey/v1/greeting/Petr";
+    private static final String UI_V1_PATH = "/hellojersey/";
+    private static final String APP_INFO_PATH = "/app/hellojersey/info/";
+    private static final String APP_INFO_HEALTH = "/app/hellojersey/health/";
+    private static final String API_DOC_PATH = "/api/v1/api-doc/hellojersey/";
+    private static final String GREETING_PATH = "/api/v1/hellojersey/v1/greeting";
+    private static final String GREETING_WITH_NAME_PATH = "/api/v1/hellojersey/v1/greeting/Petr";
     private static final String JSON_CONTENT_TYPE = "application/json";
 
     @BeforeClass

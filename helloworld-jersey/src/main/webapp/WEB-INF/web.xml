@@ -23,7 +23,7 @@
 
     <servlet-mapping>
         <servlet-name>jersey</servlet-name>
-        <url-pattern>/helloworld-jersey/*</url-pattern>
+        <url-pattern>/hellojersey/*</url-pattern>
     </servlet-mapping>
     <security-constraint>
         <web-resource-collection>
@@ -46,19 +46,13 @@
         </init-param>
         <init-param>
             <param-name>swagger.api.basepath</param-name>
-            <param-value>http://localhost:10016/helloworld-jersey</param-value>
+            <param-value>http://localhost:10016/hellojersey</param-value>
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>
 
-    <servlet>
-        <servlet-name>Bootstrap</servlet-name>
-        <servlet-class>com.ca.mfaas.eurekaservice.Bootstrap</servlet-class>
-        <load-on-startup>2</load-on-startup>
-    </servlet>
-
     <listener>
-        <listener-class>com.ca.mfaas.eurekaservice.RestDiscoveryListener</listener-class>
+        <listener-class> com.ca.hwsjersey.listener.ApiDiscoveryListener</listener-class>
     </listener>
 
 </web-app>

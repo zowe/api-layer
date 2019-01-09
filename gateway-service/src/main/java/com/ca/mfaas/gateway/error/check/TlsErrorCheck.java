@@ -20,7 +20,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLException;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -36,11 +36,11 @@ public class TlsErrorCheck implements ErrorCheck {
 
     public ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException) {
-            int handshakeExceptionIndex = ExceptionUtils.indexOfType(exc, SSLHandshakeException.class);
-            if (handshakeExceptionIndex != -1) {
-                Throwable sslHandshakeException = ExceptionUtils.getThrowables(exc)[handshakeExceptionIndex];
-                log.debug("TLS request error: {}", sslHandshakeException.getMessage(), sslHandshakeException);
-                return tlsErrorResponse(request, sslHandshakeException.getMessage());
+            int exceptionIndex = ExceptionUtils.indexOfType(exc, SSLException.class);
+            if (exceptionIndex != -1) {
+                Throwable sslException = ExceptionUtils.getThrowables(exc)[exceptionIndex];
+                log.debug("TLS request error: {}", sslException.getMessage(), sslException);
+                return tlsErrorResponse(request, sslException.getMessage());
             }
         }
 
