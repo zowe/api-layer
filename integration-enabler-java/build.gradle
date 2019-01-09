@@ -4,7 +4,7 @@ dependencies {
     compile libraries.jackson_annotations
     compile libraries.jackson_dataformat_yaml
     compile libraries.eureka_client
-
+    compile group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.5.10'
     compileOnly libraries.lombok
 
     testCompile libraries.junit

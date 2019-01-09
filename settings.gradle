@@ -1,7 +1,6 @@
 rootProject.name = 'api-layer'
 
 include 'helloworld-jersey'
-include 'integration-enabler-jersey'
 include 'discovery-service'
 include 'integration-enabler-spring-v2'
 include 'integration-enabler-spring-v1'

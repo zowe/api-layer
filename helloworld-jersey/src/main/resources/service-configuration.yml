@@ -1,11 +1,12 @@
-serviceId: hellospring
-title: Hello Spring REST API
+serviceId: hellojersey
 eureka:
     hostname: localhost
     ipAddress: 127.0.0.1
-    port: 10020
-description: Example for exposing a Spring REST API
-baseUrl: http://localhost:10020/hellospring
+    port: 10016
+title: Hello Jersey REST API
+description: Example for exposing a Jersey REST API
+defaultZone: https://localhost:10011/eureka/
+baseUrl: https://localhost:10016/hellojersey
 homePageRelativeUrl:
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
@@ -24,15 +25,20 @@ ssl:
     trustStoreType: PKCS12
 routes:
     - gatewayUrl: api/v1
-      serviceUrl: /hellospring/api/v1
+      serviceUrl: /hellojersey/api/v1
     - gatewayUrl: api/v1/api-doc
-      serviceUrl: /hellospring/api-doc
+      serviceUrl: /hellojersey/api-doc
+    - gatewayUrl: ui/v1
+      serviceUrl: /hellojersey/
+    - gatewayUrl: app
+      serviceUrl: /hellojersey/application
 apiInfo:
-    title: Hello World Spring
-    description: REST API for a Spring Application
+    title: Hello World Jersey
+    description: REST API for a Jersey Application
     version: 1.0.0
 catalogUiTile:
     id: cademoapps
     title: Sample API Mediation Layer Applications
     description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
     version: 1.0.0
+
