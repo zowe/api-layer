@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'mineral-ui';
 
-import caLogo from '../../assets/images/CA-Logo.svg';
+import logo from '../../assets/images/ca-broadcom-logo.svg';
 import './footer.css';
 
 export default class Footer extends Component {
@@ -12,8 +12,7 @@ export default class Footer extends Component {
         return (
             <footer>
                 <div className="left">
-                    <img src={caLogo} alt="" />
-                    CA API Catalog
+                    <img src={logo} alt="CA technologies, a Broadcom company" id="footerLogo" />
                 </div>
                 <div className="right">
                     <p>&copy; 2018 CA Technologies. All Rights Reserved.</p>

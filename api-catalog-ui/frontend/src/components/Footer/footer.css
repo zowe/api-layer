@@ -1,8 +1,9 @@
 footer {
+    font-family: "Open Sans";
     background-color: #fff;
     color: #111;
     text-align: center;
-    padding: .6rem 1rem;
+    padding: .6rem 38px .6rem 28px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -16,8 +17,14 @@ footer {
     display: inline-flex;
     justify-content: space-evenly;
     flex-direction: row;
+    padding-top: .4rem;
 }
 
 .right > * {
     padding: 0 0.6rem;
+}
+
+#footerLogo {
+    width: 96px;
+    height: 32px;
 }
