@@ -30,8 +30,6 @@ function usage {
     echo "     - trust-zosmf - adds public certificates from z/OSMF keyring to APIML truststore"
     echo "     - clean - removes files created by setup"
     echo ""
-    echo "  See ${BASE_DIR}/keystore/README.md for more details"
-    echo ""
     echo "  Called with: ${PARAMS}"
 }
 
