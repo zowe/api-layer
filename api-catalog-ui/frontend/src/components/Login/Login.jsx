@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, FormField, Text, TextInput } from 'mineral-ui';
+import { Button, FormField, TextInput } from 'mineral-ui';
 import { IconDanger } from 'mineral-ui-icons';
 
 import logoImage from '../../assets/images/api-catalog-logo.png';
@@ -11,8 +11,8 @@ export default class Login extends React.Component {
         super(props);
 
         this.state = {
-            username: 'user',
-            password: 'user',
+            username: '',
+            password: '',
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -106,9 +106,6 @@ export default class Login extends React.Component {
                                         className="form"
                                         onSubmit={this.handleSubmit}
                                     >
-                                        <Text color="#ad5f00">
-                                            Use the supplied username: <b>user</b> <br /> and password: <b>user</b>
-                                        </Text>
                                         <FormField
                                             label="Username"
                                             className="formfield"
