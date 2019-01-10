@@ -1,15 +1,14 @@
 footer {
-    font-family: "Open Sans";
+    font-family: "Open Sans",-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
     background-color: #fff;
     color: #111;
     text-align: center;
-    padding: .6rem 38px .6rem 28px;
+    padding: .6rem 38px .3rem 28px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     border-top: 1px solid #DDE3ED;
     box-sizing: border-box;
-
     flex-shrink: 0;
 }
 
@@ -17,11 +16,15 @@ footer {
     display: inline-flex;
     justify-content: space-evenly;
     flex-direction: row;
-    padding-top: .4rem;
+    padding-top: 1.3rem;
 }
 
 .right > * {
     padding: 0 0.6rem;
+}
+
+.left {
+    padding: 16px 0;
 }
 
 #footerLogo {
