@@ -30,8 +30,6 @@ function usage {
     echo "     - trust-zosmf - adds public certificates from z/OSMF keyring to APIML truststore"
     echo "     - clean - removes files created by setup"
     echo ""
-    echo "  See ${BASE_DIR}/keystore/README.md for more details"
-    echo ""
     echo "  Called with: ${PARAMS}"
 }
 
@@ -321,13 +319,13 @@ function trust_zosmf {
     fi
     RC=$?
     if [ "$RC" -ne "0" ]; then
-    SWITCHED_USERID=`_BPX_USERID=${ZOSMF_USERID} whoami`
-    echo "It is not possible to execute commands as z/OSMF user ID ${ZOSMF_USERID}. The effective user ID was: ${SWITCHED_USERID}. You need to run this command as user that has access to the z/OSMF keyring or as a superuser:"
-    echo "  cd ${PWD}"
-    echo "  scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR"
-    exit 1
+        USERID=`whoami`
+        echo "It is not possible to read z/OSMF keyring ${ZOSMF_USERID}/${ZOSMF_KEYRING}. The effective user ID was: ${USERID}. You need to run this command as user that has access to the z/OSMF keyring:"
+        echo "  cd ${PWD}"
+        echo "  scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR"
+        exit 1
     fi
-    _BPX_USERID=${ZOSMF_USERID} keytool -list -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
+    keytool -list -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
     CERT_PREFIX=${TEMP_DIR}/zosmf_cert_
     for ALIAS in `cat ${ALIASES_FILE}`; do
         echo "Exporting certificate ${ALIAS} from z/OSMF:"

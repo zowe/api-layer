@@ -102,7 +102,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,routes
+                include: health,info
     health:
         defaults:
             enabled: false
@@ -160,6 +160,26 @@ eureka:
 
 ---
 spring:
+    profiles: debug
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,routes,loggers
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: DEBUG
+        org.springframework: INFO
+        org.apache.catalina: INFO
+        com.netflix: INFO
+        org.hibernate: INFO
+
+---
+spring:
     profiles: diag
 
 management:
@@ -173,15 +193,5 @@ management:
 spring:
     profiles: dev
     profiles.include:
-        diag
-
-logging:
-    level:
-        ROOT: INFO
-        com.ca.mfaas: DEBUG
-        org.springframework: INFO
-        org.apache.catalina: INFO
-        com.netflix: INFO
-        org.hibernate: INFO
-
-
+        - debug
+        - diag

@@ -102,6 +102,26 @@ eureka:
 
 ---
 spring:
+    profiles: debug
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,loggers
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: DEBUG
+        org.springframework: INFO
+        org.apache.catalina: INFO
+        com.netflix: INFO
+        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+
+---
+spring:
     profiles: diag
 
 management:
@@ -114,12 +134,6 @@ management:
 ---
 spring:
     profiles: dev
-
-logging:
-    level:
-        ROOT: INFO
-        com.ca.mfaas: DEBUG
-        org.springframework: INFO
-        org.apache.catalina: INFO
-        com.netflix: INFO
-        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+    profiles.include:
+        - debug
+        - diag

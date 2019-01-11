@@ -92,6 +92,7 @@ server:
     error:
         whitelabel:
             enabled: false
+
 eureka:
     instance:
         hostname: ${mfaas.service.hostname}
@@ -149,7 +150,25 @@ management:
             enabled: false
 
 ---
+spring:
+    profiles: debug
 
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,loggers
+
+logging:
+    level:
+        ROOT: INFO
+        com.ca.mfaas: DEBUG
+        org.springframework: INFO
+        org.apache.catalina: INFO
+        com.netflix: INFO
+
+---
 spring:
     profiles: diag
 
@@ -161,20 +180,13 @@ management:
                 include: "*"
 
 ---
-
 spring:
     profiles: dev
-
-logging:
-    level:
-        ROOT: INFO
-        com.ca.mfaas: DEBUG
-        org.springframework: INFO
-        org.apache.catalina: INFO
-        com.netflix: INFO
+    profiles.include:
+        - debug
+        - diag
 
 ---
-
 spring:
     profiles: unsecure
 
