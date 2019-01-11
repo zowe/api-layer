@@ -85,3 +85,4 @@ api-catalog-ui/frontend/test-results/*.xml
 api-catalog-ui/frontend/debug.log
 
 debug.log
+api-layer.tar.gz

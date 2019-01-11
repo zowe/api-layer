@@ -117,7 +117,7 @@ public class ErrorServiceImpl implements ErrorService {
             text = String.format(message.getText(), parameters);
         }
 
-        return new BasicMessage(message.getType(), message.getNumber(), text);
+        return new BasicMessage(key, message.getType(), message.getNumber(), text);
     }
 
     private ErrorMessage validateMessage(ErrorMessage message, String key, Object... parameters) {

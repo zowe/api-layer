@@ -44,7 +44,7 @@ public class ApiDocFormatStartupChecker {
             jsonResponse = EntityUtils.toString(response.getEntity());
         } catch (Exception ignore) { }
 
-        if (jsonResponse.contains("/api/v1/apicatalog/containers")) {
+        if (jsonResponse.contains("/api/v1/apicatalog")) {
             result = true;
         } else {
             log.info("Did not find correct endpoints");

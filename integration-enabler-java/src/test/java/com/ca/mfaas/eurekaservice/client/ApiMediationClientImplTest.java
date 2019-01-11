@@ -9,13 +9,15 @@
  */
 package com.ca.mfaas.eurekaservice.client;
 
-import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.config.Ssl;
+import com.ca.mfaas.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ApiMediationClientImplTest {
     @Rule
@@ -23,11 +25,25 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void startEurekaClient() {
+        ApiInfo apiInfo = new ApiInfo("Hello World Spring", "REST API for a Spring Application", "1.0.0");
+        CatalogUiTile catalogUiTile = new CatalogUiTile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0");
+        Eureka eureka = new Eureka("10020", "localhost", "127.0.0.1");
         Ssl ssl = new Ssl(false, "TLSv1.2", "localhost", "password",
             "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
             "../keystore/localhost/localhost.truststore.p12","password", "PKCS12");
+        List<Route> routes = new ArrayList<Route>();
+        Route apiRoute = new Route("api/v1", "/hellospring/api/v1");
+        Route apiDocRoute = new Route("api/v1/api-doc", "/hellospring/api-doc");
+        routes.add(apiRoute);
+        routes.add(apiDocRoute);
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
+            .apiInfo(apiInfo)
+            .eureka(eureka)
+            .catalogUiTile(catalogUiTile)
+            .routes(routes)
+            .description("Example for exposing a Spring REST API")
+            .title("Hello Spring REST API")
             .serviceId("service")
             .baseUrl("http://host:1000/service")
             .healthCheckRelativeUrl("")

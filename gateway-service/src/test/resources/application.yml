@@ -15,7 +15,7 @@ logging:
         org.apache.tomcat.websocket: WARN
         org.springframework.web.socket: WARN
         com.ca.mfaas.ws: INFO
-        com.ca.mfaas.gateway.config.error: INFO
+        com.ca.mfaas.gateway.error: INFO
         org.eclipse.jetty: WARN
 
 apiml:

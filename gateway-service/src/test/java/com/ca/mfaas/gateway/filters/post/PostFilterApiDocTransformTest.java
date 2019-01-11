@@ -36,21 +36,21 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 public class PostFilterApiDocTransformTest {
 
+    private static final String SERVICE_ID = "discovered-service";
+    private static final String BASE_PATH = "/api/v1/discovered-service";
+    private static final String ENDPOINT = "pets";
+
     private final String apiDocEndpoint = "/api-doc";
     private TransformApiDocEndpointsFilter filter;
-    private RequestContext ctx;
-
-    private String BASE_PATH  = "/api/v1/discovered-service";
 
     @Before
     public void setUp() {
         this.filter = new TransformApiDocEndpointsFilter();
-        ctx = RequestContext.getCurrentContext();
+        RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
         ctx.set(REQUEST_URI_KEY, apiDocEndpoint);
         ctx.set(PROXY_KEY, "/api/v1/discovered-service");
-        String serviceId = "discovered-service";
-        ctx.set(SERVICE_ID_KEY, serviceId);
+        ctx.set(SERVICE_ID_KEY, SERVICE_ID);
         ctx.setResponseBody(ApiDocController.apiDocResult);
         ctx.setResponseDataStream(IOUtils.toInputStream(ApiDocController.apiDocResult));
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -58,8 +58,8 @@ public class PostFilterApiDocTransformTest {
         ctx.setResponse(response);
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(
-            new RoutedService(serviceId, "api/v1", "/discovered-service/v1"));
-        this.filter.addRoutedServices(serviceId, routedServices);
+            new RoutedService("v1", "api/v1", "/discovered-service/v1"));
+        this.filter.addRoutedServices(SERVICE_ID, routedServices);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class PostFilterApiDocTransformTest {
     }
 
     @Test
-    public void whenPostFilterApplied_thenSwaggerVersion2UnModified() throws IOException {
+    public void whenPostFilterApplied_thenSwaggerVersionModified_oneGWUrl() throws IOException {
         final RequestContext ctx = RequestContext.getCurrentContext();
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(200);
@@ -85,7 +85,35 @@ public class PostFilterApiDocTransformTest {
         String body = ctx.getResponseBody();
         assertEquals(apiDocEndpoint, ctx.get(REQUEST_URI_KEY));
         Swagger swagger = Json.mapper().readValue(body, Swagger.class);
-        swagger.getPaths().forEach((endPoint, path) -> assertTrue(endPoint + " does not start with " + BASE_PATH, endPoint.startsWith(BASE_PATH)));
+        assertEquals("Base path for only one Gateway Url is not correct.", BASE_PATH, swagger.getBasePath());
+        swagger.getPaths().forEach((endPoint, path) -> {
+            assertTrue(endPoint + " does not contains 'pets'.", endPoint.contains(ENDPOINT));
+            assertFalse(endPoint + " contains base path '" + BASE_PATH + "'.", endPoint.contains(SERVICE_ID));
+        });
+    }
+
+    @Test
+    public void whenPostFilterApplied_thenSwaggerVersionModified_twoGWUrls() throws IOException {
+        RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(
+            new RoutedService("v1", "api/v1", "/discovered-service/v1"));
+        routedServices.addRoutedService(
+            new RoutedService("v2", "api/v2", "/discovered-service/v2"));
+        this.filter.addRoutedServices(SERVICE_ID, routedServices);
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        response.setStatus(200);
+        ctx.setResponse(response);
+        assertTrue(this.filter.shouldFilter());
+        this.filter.run();
+        String body = ctx.getResponseBody();
+        assertEquals(apiDocEndpoint, ctx.get(REQUEST_URI_KEY));
+        Swagger swagger = Json.mapper().readValue(body, Swagger.class);
+        assertTrue("Base path for two Gateway Urls is not empty.", swagger.getBasePath().isEmpty());
+        swagger.getPaths().forEach((endPoint, path) -> {
+            assertTrue(endPoint + " does not contains 'pets'.", endPoint.contains(ENDPOINT));
+            assertTrue(endPoint + " does not contains base path '" + BASE_PATH + "'.", endPoint.contains(SERVICE_ID));
+        });
     }
 
     @Test

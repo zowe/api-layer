@@ -31,6 +31,10 @@
     color: gainsboro;
 }
 
+.content {
+    min-height: calc(100vh - 52px);
+}
+
 @keyframes App-logo-spin {
     from {
         transform: rotate(0deg);

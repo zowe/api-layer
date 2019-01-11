@@ -1,6 +1,0 @@
-dependencies {
-    compile(project(':integration-enabler-java'))
-
-    compile group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.5.10'
-    compile libraries.slf4j_api
-}
