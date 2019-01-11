@@ -13,15 +13,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 
 @Configuration
-@EnableWebMvc
-public class MultipartConfig implements WebMvcConfigurer {
+public class MultipartConfig    {
 
     @Bean
     public MultipartResolver multipartResolver() {
