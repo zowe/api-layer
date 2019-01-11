@@ -9,11 +9,14 @@
  */
 package com.ca.mfaas.gateway.routing;
 
+import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import com.ca.mfaas.gateway.filters.post.TransformApiDocEndpointsFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -41,6 +44,12 @@ public class MfaasRoutingConfig {
     @Bean
     public TransformApiDocEndpointsFilter transformApiDocEndpointsFilter() {
         return new TransformApiDocEndpointsFilter();
+    }
+
+    @Bean
+    @Autowired
+    public ConvertAuthTokenInUriToCookieFilter convertAuthTokenInUriToCookieFilter(SecurityConfigurationProperties securityConfigurationProperties) {
+        return new ConvertAuthTokenInUriToCookieFilter(securityConfigurationProperties);
     }
 
     @Bean
