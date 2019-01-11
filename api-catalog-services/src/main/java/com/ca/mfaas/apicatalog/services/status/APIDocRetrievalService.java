@@ -135,13 +135,15 @@ public class APIDocRetrievalService {
      */
     public String retrieveApiDocFromInstance(@NonNull InstanceInfo instance, String apiVersion) {
         log.info("Attempting to retrieve API doc for instance: " + instance.getInstanceId());
+
+        // Always retrieve api doc via the gateway
+        String instanceApiDocEndpoint = getGatewayUrl() + "/api/" + apiVersion + "/" + instance.getAppName().toLowerCase() + "/api-doc";
+
         try {
             // Create the request header
             HttpEntity<?> entity = createRequest();
             ResponseEntity<String> response;
 
-            // Always retrieve api doc via the gateway
-            String instanceApiDocEndpoint = getGatewayUrl() + "/api/" + apiVersion + "/" + instance.getAppName().toLowerCase() + "/api-doc";
 
             log.info("Sending API Doc info request to: " + instanceApiDocEndpoint);
             response = restTemplate.exchange(
@@ -153,7 +155,9 @@ public class APIDocRetrievalService {
             // Handle errors (request may fail if service is unavailable)
             return response.getBody();
         } catch (Exception e) {
-            log.error("Exception thrown when retrieving API Doc: " + e.getMessage(), e);
+            log.error("Exception thrown when retrieving API Doc for service " + instance.getAppName() +
+                " at url " + instanceApiDocEndpoint  + ": " + e.getMessage(), e);
+
             // more specific exceptions
             throw new ApiDocNotFoundException("Request for API Doc to instance: " + instance.getInstanceId() +
                 " failed with error: " + e.getMessage(), e);
