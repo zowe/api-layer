@@ -27,11 +27,17 @@ public class TokenService {
     }
 
     public String createToken(String username) {
+        return createToken(username, "", "");
+    }
+
+    public String createToken(String username, String domain, String ltpaToken) {
         long now = System.currentTimeMillis();
         long expiration = calculateExpiration(now, username);
 
         return Jwts.builder()
             .setSubject(username)
+            .claim("dom", domain)
+            .claim("ltpa", ltpaToken)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())

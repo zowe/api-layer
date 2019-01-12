@@ -12,8 +12,9 @@ discoveryServiceConfiguration:
     port: 10011
     instances: 1
 apiCatalogServiceConfiguration:
-    user: user
-    password: user
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: REPLACEME
+    password: REPLACEME
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

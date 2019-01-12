@@ -125,9 +125,6 @@ eureka:
                 api-v1:
                     gateway-url: /api/v1
                     service-url: /api/v1
-                api-doc:
-                    gateway-url: /api/v1/api-doc
-                    service-url: /api-doc
             mfaas:
                 discovery:
                     catalogUiTile:
