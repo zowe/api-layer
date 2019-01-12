@@ -18,7 +18,7 @@ completely and ready for tests to start.
 
 2. Run
     ```shell
-    ./gradlew runIntegrationTests
+    ./gradlew runIntegrationTests ./gradlew runIntegrationTests -Dapicatalog.user=<MAINFRAME_USERID> -Dapicatalog.password=<PASSWORD>
     ``` 
 
 3. (Optional) Change host/port/scheme for gateway-service and discovery-service. You can also set the number of instances for discovery service

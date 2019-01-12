@@ -12,9 +12,9 @@ package com.ca.mfaas.apicatalog.security;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.security.handler.UnauthorizedHandler;
-import com.ca.mfaas.security.login.LoginAuthenticationProvider;
 import com.ca.mfaas.security.login.LoginFilter;
 import com.ca.mfaas.security.login.SuccessfulLoginHandler;
+import com.ca.mfaas.security.login.ZosmfAuthenticationProvider;
 import com.ca.mfaas.security.token.CookieFilter;
 import com.ca.mfaas.security.token.TokenAuthenticationProvider;
 import com.ca.mfaas.security.token.TokenFilter;
@@ -47,7 +47,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final UnauthorizedHandler unAuthorizedHandler;
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
-    private final LoginAuthenticationProvider loginAuthenticationProvider;
+    private final ZosmfAuthenticationProvider loginAuthenticationProvider;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
@@ -56,7 +56,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         UnauthorizedHandler unAuthorizedHandler,
         SuccessfulLoginHandler successfulLoginHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
-        LoginAuthenticationProvider loginAuthenticationProvider,
+        ZosmfAuthenticationProvider loginAuthenticationProvider,
         TokenAuthenticationProvider tokenAuthenticationProvider,
         SecurityConfigurationProperties securityConfigurationProperties) {
         super();
