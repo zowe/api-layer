@@ -12,7 +12,11 @@ package com.ca.mfaas.security.token;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.Date;
 import java.util.UUID;
@@ -20,6 +24,8 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class TokenService {
+    private static final String BEARER_HEADER = "Bearer ";
+
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public TokenService(SecurityConfigurationProperties securityConfigurationProperties) {
@@ -68,6 +74,36 @@ public class TokenService {
             log.debug("Token is not valid due to: {}", exception.getMessage());
             throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid");
         }
+    }
+
+    public String getLtpaToken(String jwtToken) {
+        Claims claims = Jwts.parser()
+            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
+            .parseClaimsJws(jwtToken)
+            .getBody();
+
+        return claims.get("ltpa", String.class);
+    }
+
+    public String getToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        return extractToken(request.getHeader(HttpHeaders.AUTHORIZATION));
+    }
+
+    private String extractToken(String header) {
+        if (header != null && header.startsWith(BEARER_HEADER)) {
+            return header.replaceFirst(BEARER_HEADER, "");
+        }
+
+        return null;
     }
 
     private long calculateExpiration(long now, String username) {

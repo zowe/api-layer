@@ -1,0 +1,59 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+package com.ca.mfaas.gateway.filters.pre;
+
+import com.ca.mfaas.security.token.TokenService;
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+
+public class ZosmfFilter extends ZuulFilter {
+    private static final String ZOSMF = "zosmf";
+
+    private final TokenService tokenService;
+
+    @Autowired
+    public ZosmfFilter(TokenService tokenService) {
+        this.tokenService = tokenService;
+
+    }
+
+    @Override
+    public boolean shouldFilter() {
+        RequestContext context = RequestContext.getCurrentContext();
+
+        String serviceId = (String) context.get(SERVICE_ID_KEY);
+        return serviceId.toLowerCase().contains(ZOSMF);
+    }
+
+    @Override
+    public String filterType() {
+        return "pre";
+    }
+
+    @Override
+    public int filterOrder() {
+        return PRE_DECORATION_FILTER_ORDER + 3;
+    }
+
+    @Override
+    public Object run() {
+        RequestContext context = RequestContext.getCurrentContext();
+
+        String jwtToken = tokenService.getToken(context.getRequest());
+        String ltpaToken = tokenService.getLtpaToken(jwtToken);
+
+        context.addZuulRequestHeader("Cookie", ltpaToken);
+        return null;
+    }
+}
