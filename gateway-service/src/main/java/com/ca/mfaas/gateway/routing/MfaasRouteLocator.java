@@ -100,7 +100,8 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     if (!PatternMatchUtils.simpleMatch(ignored, serviceId)
                         && !routesMap.containsKey(key) && !removedRoutes.contains(key)) {
                         // Not ignored
-                        routesMap.put(key, new ZuulProperties.ZuulRoute(key, serviceId));
+                        String targetServiceId = changeServiceId(serviceId);
+                        routesMap.put(key, new ZuulProperties.ZuulRoute(key, targetServiceId));
                     }
                 }
             }
@@ -123,7 +124,14 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
         return values;
     }
 
-    @SuppressWarnings("squid:S3776") //Suppress complexity warning
+    private String changeServiceId(String serviceId) {
+        if (serviceId.equals("gateway")) {
+            return "apicatalog";
+        }
+        return serviceId;
+    }
+
+    @SuppressWarnings("squid:S3776") // Suppress complexity warning
     private List<String> createRouteKeys(List<ServiceInstance> serviceInstance,
                                          RoutedServices routes, String serviceId) {
         List<String> keys = new ArrayList<>();
