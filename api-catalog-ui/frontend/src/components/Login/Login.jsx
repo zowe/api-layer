@@ -11,8 +11,8 @@ export default class Login extends React.Component {
         super(props);
 
         this.state = {
-            username: 'user',
-            password: 'user',
+            username: '',
+            password: '',
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -107,7 +107,7 @@ export default class Login extends React.Component {
                                         onSubmit={this.handleSubmit}
                                     >
                                         <Text color="#ad5f00">
-                                            Use the supplied username: <b>user</b> <br /> and password: <b>user</b>
+                                            Use your mainframe credentials
                                         </Text>
                                         <FormField
                                             label="Username"

@@ -5,6 +5,9 @@ let browser;
 let page;
 const baseUrl = process.env.REACT_APP_CATALOG_URL_TEST;
 console.log('API Catalog Base URL:', baseUrl);
+const username = process.env.REACT_APP_CATALOG_USERNAME;
+const password = process.env.REACT_APP_CATALOG_PASSWORD;
+console.log('API Catalog User ID:', username);
 const loginUrl = `${baseUrl}/#/login`;
 const dashboardUrl = `${baseUrl}/#/dashboard`;
 const defaultDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer`;
@@ -31,6 +34,8 @@ describe('>>> e2e tests', async () => {
         const [res] = await Promise.all([page.waitForNavigation(), page.goto(loginUrl)]);
         await page.waitForSelector('[data-testid="username"]');
         await page.waitForSelector('[data-testid="password"]');
+        await page.type('[data-testid="username"]', username),
+        await page.type('[data-testid="password"]', password),
         await page.click('[data-testid="submit"]');
         await page.waitForSelector('div.filtering-container > h2');
         const dashboardTitle = await page.$('div.filtering-container > h2');

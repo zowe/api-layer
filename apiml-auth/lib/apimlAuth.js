@@ -70,15 +70,13 @@ ApimlAuthenticator.prototype = {
    */
   authenticate(request, sessionState) {
     return new Promise((resolve, reject) => {
-      const authUrl = this.gatewayUrl + "/auth/login";
       const gatewayUrl = this.gatewayUrl;
-      axios.post(authUrl, {}, {
-        auth: {
-          username: request.body.username,
-          password: request.body.password
-        },
-        httpsAgent: this.httpsAgent
-      }).then(function (response) {
+      const authUrl = gatewayUrl + "/api/v1/gateway/auth/login";
+      const body = {
+        username: request.body.username,
+        password: request.body.password
+      };
+      axios.post(authUrl, body, { httpsAgent: this.httpsAgent }).then(function (response) {
         let apimlCookie;
         if (response.status == 200) {
           if (typeof response.headers['set-cookie'] === 'object') {
