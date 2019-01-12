@@ -15,7 +15,6 @@ import com.ca.mfaas.security.token.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
@@ -106,7 +105,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         String uri = null;
 
         List<ServiceInstance> zosmfInstances = discovery.getInstances(zosmf);
-        if (zosmfInstances != null) {
+        if (zosmfInstances != null && !zosmfInstances.isEmpty()) {
             ServiceInstance zosmfInstance = zosmfInstances.get(0);
             if (zosmfInstance != null) {
                 uri = zosmfInstance.getUri().toString();
