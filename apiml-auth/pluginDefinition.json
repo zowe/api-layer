@@ -1,0 +1,16 @@
+{
+  "identifier": "org.zowe.zlux.auth.apiml",
+  "pluginType": "nodeAuthentication",
+  "authenticationCategory": "apiml",
+  "apiVersion": "1.0.0",
+  "pluginVersion": "0.3.5",
+  "filename": "apimlAuth.js",
+  "dataServices": [
+    {
+      "type": "router",
+      "name": "tokenInjector",
+      "fileName": "tokenInjector.js",
+      "version": "1.0.0"
+    }
+  ]
+}
