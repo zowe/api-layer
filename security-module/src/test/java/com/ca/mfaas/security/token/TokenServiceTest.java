@@ -161,11 +161,20 @@ public class TokenServiceTest {
     }
 
     @Test
-    public void getLtpaToken() {
+    public void getLtpaTokenReturnsTokenFromJwt() {
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         String jwtToken = Jwts.builder().claim(LTPA_CLAIM_NAME, TEST_TOKEN)
                 .signWith(SignatureAlgorithm.HS512, securityConfigurationProperties.getTokenProperties().getSecret())
                 .compact();
         assertEquals(TEST_TOKEN, tokenService.getLtpaToken(jwtToken));
+    }
+
+    @Test
+    public void getLtpaTokenReturnsNullIfLtpaIsMissing() {
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
+        String jwtToken = Jwts.builder().claim("dom", "test")
+                .signWith(SignatureAlgorithm.HS512, securityConfigurationProperties.getTokenProperties().getSecret())
+                .compact();
+        assertEquals(null, tokenService.getLtpaToken(jwtToken));
     }
 }
