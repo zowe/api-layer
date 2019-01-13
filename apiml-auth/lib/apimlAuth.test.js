@@ -34,11 +34,12 @@ describe("apimlAuth", function () {
     });
 
     it("authenticates", function (done) {
+        this.timeout(10000);
         apimlAuth(pluginDef, pluginConf, serverConf).then(function (authenticator) {
             const request = {
                 body: {
-                    username: "user",
-                    password: "user"
+                    username: process.env.MF_USERID,
+                    password: process.env.MF_PASSWORD
                 }
             };
             var sessionState = {};
@@ -54,6 +55,7 @@ describe("apimlAuth", function () {
     });
 
     it("reports login failure", function (done) {
+        this.timeout(10000);
         apimlAuth(pluginDef, pluginConf, serverConf).then(function (authenticator) {
             const request = {
                 body: {

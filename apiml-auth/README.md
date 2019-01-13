@@ -21,4 +21,4 @@ It requires APIML Security service to be available at https://localhost:10010.
 Run:
 
     npm install
-    npm run test
+    MF_USERID=userid MF_PASSWORD="***" npm run test
