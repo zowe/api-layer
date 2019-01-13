@@ -17,8 +17,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpServletRequest;
+import javax.servlet.http.Cookie;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 
@@ -129,4 +133,29 @@ public class TokenServiceTest {
         tokenService.validateToken(authentication);
     }
 
+    @Test
+    public void getTokenReturnsTokenInCookie() {
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie("apimlAuthenticationToken", "token"));
+
+        assertEquals("token", tokenService.getToken(request));
+    }
+
+    @Test
+    public void getTokenReturnsTokenInAuthorizationHeader() {
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer token");
+
+        assertEquals("token", tokenService.getToken(request));        
+    }
+
+    @Test
+    public void getTokenReturnsNullIfTokenIsMissing() {
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        assertEquals(null, tokenService.getToken(request));
+    }    
 }

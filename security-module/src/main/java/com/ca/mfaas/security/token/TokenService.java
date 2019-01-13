@@ -95,10 +95,10 @@ public class TokenService {
             }
         }
 
-        return extractToken(request.getHeader(HttpHeaders.AUTHORIZATION));
+        return extractTokenFromAuthoritationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
-    private String extractToken(String header) {
+    private String extractTokenFromAuthoritationHeader(String header) {
         if (header != null && header.startsWith(BEARER_HEADER)) {
             return header.replaceFirst(BEARER_HEADER, "");
         }
