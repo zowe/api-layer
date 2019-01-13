@@ -12,7 +12,11 @@ package com.ca.mfaas.security.token;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.Date;
 import java.util.UUID;
@@ -20,6 +24,9 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class TokenService {
+    static final String LTPA_CLAIM_NAME = "ltpa";
+    static final String BEARER_TYPE_PREFIX = "Bearer ";
+
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public TokenService(SecurityConfigurationProperties securityConfigurationProperties) {
@@ -37,7 +44,7 @@ public class TokenService {
         return Jwts.builder()
             .setSubject(username)
             .claim("dom", domain)
-            .claim("ltpa", ltpaToken)
+            .claim(LTPA_CLAIM_NAME, ltpaToken)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
@@ -68,6 +75,36 @@ public class TokenService {
             log.debug("Token is not valid due to: {}", exception.getMessage());
             throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid");
         }
+    }
+
+    public String getLtpaToken(String jwtToken) {
+        Claims claims = Jwts.parser()
+            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
+            .parseClaimsJws(jwtToken)
+                .getBody();
+
+        return claims.get(LTPA_CLAIM_NAME, String.class);
+    }
+
+    public String getToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        return extractTokenFromAuthoritationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+    }
+
+    private String extractTokenFromAuthoritationHeader(String header) {
+        if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
+            return header.replaceFirst(BEARER_TYPE_PREFIX, "");
+        }
+
+        return null;
     }
 
     private long calculateExpiration(long now, String username) {
