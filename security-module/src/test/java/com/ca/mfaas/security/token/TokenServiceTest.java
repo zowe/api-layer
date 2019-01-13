@@ -9,24 +9,31 @@
  */
 package com.ca.mfaas.security.token;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.mock.web.MockHttpServletRequest;
-import javax.servlet.http.Cookie;
-
+import static com.ca.mfaas.security.token.TokenService.BEARER_TYPE_PREFIX;
+import static com.ca.mfaas.security.token.TokenService.LTPA_CLAIM_NAME;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import javax.servlet.http.Cookie;
+
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.authentication.BadCredentialsException;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 public class TokenServiceTest {
+    private static final String TEST_TOKEN = "token";
+
     private SecurityConfigurationProperties securityConfigurationProperties;
 
     @Rule
@@ -46,10 +53,8 @@ public class TokenServiceTest {
 
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(username);
-        Claims claims = Jwts.parser()
-            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
-            .parseClaimsJws(token)
-            .getBody();
+        Claims claims = Jwts.parser().setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
+                .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(username));
         assertThat(claims.getIssuer(), is(securityConfigurationProperties.getTokenProperties().getIssuer()));
@@ -64,10 +69,8 @@ public class TokenServiceTest {
         securityConfigurationProperties.getTokenProperties().setExpirationInSeconds(10);
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(expirationUsername);
-        Claims claims = Jwts.parser()
-            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
-            .parseClaimsJws(token)
-            .getBody();
+        Claims claims = Jwts.parser().setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
+                .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(expirationUsername));
         assertThat(claims.getIssuer(), is(securityConfigurationProperties.getTokenProperties().getIssuer()));
@@ -81,10 +84,8 @@ public class TokenServiceTest {
 
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         String token = tokenService.createToken(username);
-        Claims claims = Jwts.parser()
-            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
-            .parseClaimsJws(token)
-            .getBody();
+        Claims claims = Jwts.parser().setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
+                .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(username));
         assertThat(claims.getIssuer(), is(securityConfigurationProperties.getTokenProperties().getIssuer()));
@@ -137,18 +138,18 @@ public class TokenServiceTest {
     public void getTokenReturnsTokenInCookie() {
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setCookies(new Cookie("apimlAuthenticationToken", "token"));
+        request.setCookies(new Cookie("apimlAuthenticationToken", TEST_TOKEN));
 
-        assertEquals("token", tokenService.getToken(request));
+        assertEquals(TEST_TOKEN, tokenService.getToken(request));
     }
 
     @Test
     public void getTokenReturnsTokenInAuthorizationHeader() {
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer token");
+        request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_TYPE_PREFIX + TEST_TOKEN);
 
-        assertEquals("token", tokenService.getToken(request));        
+        assertEquals(TEST_TOKEN, tokenService.getToken(request));
     }
 
     @Test
@@ -157,5 +158,14 @@ public class TokenServiceTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         assertEquals(null, tokenService.getToken(request));
-    }    
+    }
+
+    @Test
+    public void getLtpaToken() {
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
+        String jwtToken = Jwts.builder().claim(LTPA_CLAIM_NAME, TEST_TOKEN)
+                .signWith(SignatureAlgorithm.HS512, securityConfigurationProperties.getTokenProperties().getSecret())
+                .compact();
+        assertEquals(TEST_TOKEN, tokenService.getLtpaToken(jwtToken));
+    }
 }

@@ -24,7 +24,8 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class TokenService {
-    private static final String BEARER_HEADER = "Bearer ";
+    static final String LTPA_CLAIM_NAME = "ltpa";
+    static final String BEARER_TYPE_PREFIX = "Bearer ";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
@@ -43,7 +44,7 @@ public class TokenService {
         return Jwts.builder()
             .setSubject(username)
             .claim("dom", domain)
-            .claim("ltpa", ltpaToken)
+            .claim(LTPA_CLAIM_NAME, ltpaToken)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
@@ -80,9 +81,9 @@ public class TokenService {
         Claims claims = Jwts.parser()
             .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
             .parseClaimsJws(jwtToken)
-            .getBody();
+                .getBody();
 
-        return claims.get("ltpa", String.class);
+        return claims.get(LTPA_CLAIM_NAME, String.class);
     }
 
     public String getToken(HttpServletRequest request) {
@@ -99,8 +100,8 @@ public class TokenService {
     }
 
     private String extractTokenFromAuthoritationHeader(String header) {
-        if (header != null && header.startsWith(BEARER_HEADER)) {
-            return header.replaceFirst(BEARER_HEADER, "");
+        if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
+            return header.replaceFirst(BEARER_TYPE_PREFIX, "");
         }
 
         return null;
