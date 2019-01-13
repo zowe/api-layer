@@ -15,17 +15,19 @@ import com.netflix.zuul.context.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 public class ZosmfFilter extends ZuulFilter {
     private static final String ZOSMF = "zosmf";
+
+    private static final String COOKIE_HEADER = "cookie";
 
     private final TokenService tokenService;
 
     @Autowired
     public ZosmfFilter(TokenService tokenService) {
         this.tokenService = tokenService;
-
     }
 
     @Override
@@ -38,7 +40,7 @@ public class ZosmfFilter extends ZuulFilter {
 
     @Override
     public String filterType() {
-        return "pre";
+        return PRE_TYPE;
     }
 
     @Override
@@ -53,7 +55,14 @@ public class ZosmfFilter extends ZuulFilter {
         String jwtToken = tokenService.getToken(context.getRequest());
         String ltpaToken = tokenService.getLtpaToken(jwtToken);
 
-        context.addZuulRequestHeader("Cookie", ltpaToken);
+        String cookie = context.getZuulRequestHeaders().get(COOKIE_HEADER);
+        if (cookie != null) {
+            cookie += "; " + ltpaToken;
+        }
+        else {
+            cookie = ltpaToken;
+        }
+        context.addZuulRequestHeader(COOKIE_HEADER, cookie);
         return null;
     }
 }
