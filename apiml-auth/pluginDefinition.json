@@ -10,7 +10,8 @@
       "type": "router",
       "name": "tokenInjector",
       "fileName": "tokenInjector.js",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "dependenciesIncluded": true
     }
   ]
 }
