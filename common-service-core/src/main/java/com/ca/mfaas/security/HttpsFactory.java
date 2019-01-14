@@ -283,6 +283,9 @@ public class HttpsFactory {
     }
 
     public String readSecret() {
+        if (config.getKeyStore() == null) {
+            return null;
+        }
         try {
             KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
             InputStream istream;
