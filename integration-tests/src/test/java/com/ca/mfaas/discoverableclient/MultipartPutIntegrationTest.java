@@ -10,36 +10,52 @@
 
 package com.ca.mfaas.discoverableclient;
 
+import com.ca.mfaas.utils.categories.LocalDeploymentTest;
+import com.ca.mfaas.utils.http.HttpRequestUtils;
+import io.restassured.RestAssured;
+import io.restassured.parsing.Parser;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.experimental.categories.Category;
 
 import static org.hamcrest.Matchers.is;
 import java.io.File;
+import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 
+@Category(LocalDeploymentTest.class)
 public class MultipartPutIntegrationTest {
-    @Autowired
+    private static final String MULTIPART_PATH = "/api/v1/discoverableclient/multipart";
+    private String configFileName = "example.txt";
+    private ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+    @BeforeClass
+    public static void beforeClass() {
+        RestAssured.useRelaxedHTTPSValidation();
+    }
     @Test
-    public void shouldDoPutRequestWithMultipart() {
+    public void shouldDoPutRequestAndMatchReturnBody() {
+        RestAssured.registerParser("text/plain", Parser.JSON);
+        URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
         given().
-            contentType("multipart/mixed").
-            multiPart(new File("example.txt")).
+            contentType("multipart/form-data").
+            multiPart(new File(classLoader.getResource(configFileName).getFile())).
         expect().
             statusCode(200).
-            body("fileUploadResult", is("OK")).
+            body(is("fileUploadView")).
         when().
-            put("/api/v1/discoverableclient/multipart");
+            put(uri);
     }
-//
-//    @Test
-//    public void shouldDoPutRequestWithMultipart() {
-//        given().
-//            contentType(MediaType.MULTIPART_FORM_DATA_VALUE).
-//            multiPart(new File("example.txt")).
-//            when().
-//            put("/api/v1/discoverableclient/multipart").
-//            then().
-//            statusCode(200);
-//    }
+
+    @Test
+    public void shouldDoPutRequestAndReturnOk() {
+        URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
+        given().
+            contentType("multipart/form-data").
+            multiPart(new File(classLoader.getResource(configFileName).getFile())).
+        when().
+            put(uri).
+        then().
+            statusCode(200);
+    }
 }
