@@ -35,8 +35,7 @@ public class SecurityConfigurationProperties {
         private String authorizationHeader = "Authorization";
         private String bearerPrefix = "Bearer ";
         private long expirationInSeconds = 24 * 60 * 60;
-        private String secret = "JwtSecretKey";
-        private String issuer = "ApimlGateway";
+        private String issuer = "APIML";
         private String shortTtlUsername = "expire";
         private long shortTtlExpirationInSeconds = 1;
     }
