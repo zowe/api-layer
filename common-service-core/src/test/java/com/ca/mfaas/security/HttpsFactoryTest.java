@@ -35,7 +35,8 @@ public class HttpsFactoryTest {
         assertNotNull(secret);
     }
 
-    @Test(expected = HttpsConfigError.class)    public void specificIncorrectAliasShouldFail() throws IOException, LifecycleException {
+    @Test(expected = HttpsConfigError.class)    
+    public void specificIncorrectAliasShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyAlias("INVALID").build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         String secret = httpsFactory.readSecret();
