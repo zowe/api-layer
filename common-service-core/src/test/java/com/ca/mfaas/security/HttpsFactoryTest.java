@@ -27,6 +27,14 @@ public class HttpsFactoryTest {
         assertNotNull(secret);
     }
 
+    @Test(expected = HttpsConfigError.class)    
+    public void wrongKeyPasswordConfigurationShouldFail() throws IOException, LifecycleException {
+        HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyPassword("WRONG").build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        String secret = httpsFactory.readSecret();
+        assertNotNull(secret);
+    }
+
     @Test
     public void specificCorrectAliasShouldWork() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyAlias("localhost").build();
