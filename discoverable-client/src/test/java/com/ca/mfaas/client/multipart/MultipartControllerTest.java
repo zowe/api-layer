@@ -28,7 +28,7 @@ public class MultipartControllerTest {
     }
 
     @Test
-    public void shouldSubmitAndReturnString() throws Exception {
+    public void shouldSubmitAndReturnString() {
         MockMultipartFile file = new MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
         ModelMap model = new ModelMap();
         Assert.assertEquals("fileUploadView", multipartController.submit(file, model));
