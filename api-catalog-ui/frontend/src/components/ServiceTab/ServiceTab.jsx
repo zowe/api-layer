@@ -58,11 +58,11 @@ export default class ServiceTab extends Component {
                                             {selectedService.status === 'UP' && (
                                                 <Tooltip
                                                     key={selectedService.serviceId}
-                                                    content="Open API Homepage"
+                                                    content="Open Service Homepage"
                                                     placement="bottom"
                                                 >
                                                     <Link href={selectedService.homePageUrl}>
-                                                        <strong>API Homepage</strong>
+                                                        <strong>Service Homepage</strong>
                                                     </Link>
                                                 </Tooltip>
                                             )}

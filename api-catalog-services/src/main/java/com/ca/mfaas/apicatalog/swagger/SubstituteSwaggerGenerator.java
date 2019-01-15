@@ -37,7 +37,7 @@ public class SubstituteSwaggerGenerator {
         String scheme = gateway.isPortEnabled(PortType.SECURE) ? "https" : "http";
 
         String host = gateway.getHostName();
-        if (scheme == "http") {
+        if (scheme.equals("http")) {
             if (gateway.getPort() != 80) {
                 host += ":" + gateway.getPort();
             }
