@@ -161,6 +161,12 @@
     <ul class="status">
         <li class="list-item">
             <div class="wrap"><img class="status-icon"
+                                   th:src="@{/images/icon-notification-intent-success.png}"
+                                   alt="Security options status icon"/>
+                <p class="status-text">Security options are turned off</p></div>
+        </li>
+        <li class="list-item">
+            <div class="wrap"><img class="status-icon"
                                    th:src="@{${'/images/icon-notification-intent-' + catalogIconName + '.png'}}"
                                    alt="API Catalog status icon"/>
                 <a class="active"
