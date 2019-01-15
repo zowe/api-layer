@@ -10,6 +10,7 @@
 package com.ca.mfaas.security.token;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.security.query.QueryResponse;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +26,7 @@ import java.util.UUID;
 @Slf4j
 public class TokenService {
     static final String LTPA_CLAIM_NAME = "ltpa";
+    static final String DOMAIN_CLAIM_NAME = "dom";
     static final String BEARER_TYPE_PREFIX = "Bearer ";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
@@ -43,7 +45,7 @@ public class TokenService {
 
         return Jwts.builder()
             .setSubject(username)
-            .claim("dom", domain)
+            .claim(DOMAIN_CLAIM_NAME, domain)
             .claim(LTPA_CLAIM_NAME, ltpaToken)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
@@ -75,6 +77,16 @@ public class TokenService {
             log.debug("Token is not valid due to: {}", exception.getMessage());
             throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid");
         }
+    }
+
+    public QueryResponse parseToken(String token) {
+        Claims claims = Jwts.parser()
+            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret()) //Must be changed
+            .parseClaimsJws(token)
+            .getBody();
+
+        return new QueryResponse(claims.get(DOMAIN_CLAIM_NAME, String.class),
+            claims.getSubject(), claims.getIssuedAt(), claims.getExpiration());
     }
 
     public String getLtpaToken(String jwtToken) {

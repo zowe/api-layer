@@ -24,6 +24,7 @@ public class SecurityConfigurationProperties {
 
     private String authenticationResponseTypeHeaderName = "Auth-Response-Type";
     private String loginPath = "/auth/login/**";
+    private String queryPath = "/auth/query/**";
     private String logoutPath = "/auth/logout/**";
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
