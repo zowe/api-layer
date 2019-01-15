@@ -52,7 +52,7 @@ function readUtf8FilesToArray(fileArray) {
           contentArray.push(content);
         }
         else {
-          console.log('Error: file ' + filePath + 'is not a certificate')
+          console.log('Error: file ' + filePath + ' is not a certificate')
         }
       }
     } catch (e) {
