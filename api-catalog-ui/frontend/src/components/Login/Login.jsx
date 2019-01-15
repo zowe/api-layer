@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, FormField, TextInput } from 'mineral-ui';
+import { Button, FormField, Text, TextInput } from 'mineral-ui';
 import { IconDanger } from 'mineral-ui-icons';
 
 import logoImage from '../../assets/images/api-catalog-logo.png';
