@@ -42,7 +42,19 @@ function readUtf8FilesToArray(fileArray) {
   for (var i = 0; i < fileArray.length; i++) {
     const filePath = fileArray[i];
     try {
-      contentArray.push(fs.readFileSync(filePath, 'utf8'));
+      var content = fs.readFileSync(filePath);
+      if (content.indexOf('-BEGIN CERTIFICATE-') > -1) {
+        contentArray.push(content);
+      }
+      else {
+        content = fs.readFileSync(filePath, 'utf8');
+        if (content.indexOf('-BEGIN CERTIFICATE-') > -1) {
+          contentArray.push(content);
+        }
+        else {
+          console.log('Error: file ' + filePath + 'is not a certificate')
+        }
+      }
     } catch (e) {
       console.log('Error when reading file=' + filePath + '. Error=' + e.message);
     }
