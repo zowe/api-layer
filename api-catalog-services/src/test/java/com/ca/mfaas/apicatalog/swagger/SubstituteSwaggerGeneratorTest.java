@@ -38,9 +38,16 @@ public class SubstituteSwaggerGeneratorTest {
         InstanceInfo gateway = InstanceInfo.Builder.newBuilder().setAppName("gateway").setHostName("localhost")
                 .setSecurePort(10010).enablePort(PortType.SECURE, true).build();
 
+        InstanceInfo httpGateway = InstanceInfo.Builder.newBuilder().setAppName("gateway").setHostName("localhost")
+                .setPort(10010).enablePort(PortType.UNSECURE, true).build();
+
         ResponseEntity<String> result = new SubstituteSwaggerGenerator().generateSubstituteSwaggerForService(gateway,
                 service, info.get(0));
-
         assertTrue(result.getBody().contains("https://doc.ca.com/api"));
+
+        result = new SubstituteSwaggerGenerator().generateSubstituteSwaggerForService(httpGateway,
+                service, info.get(0));
+        assertTrue(result.getBody().contains("https://doc.ca.com/api"));
+
     }
 }
