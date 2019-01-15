@@ -160,7 +160,6 @@ public class CacheRefreshServiceTest {
         // Mock the discovery and cached service query
         Applications discoveredServices = new Applications("12323", 2L,discoveredState.getApplications());
         when(instanceRetrievalService.extractDeltaFromDiscovery()).thenReturn(discoveredServices);
-        when(apiDocRetrievalService.retrieveApiDocFromInstance(any(), anyString())).thenReturn("API DOC UPDATED");
         when(cachedApiDocService.getApiDocForService(any(), anyString())).thenReturn("API DOC CACHED");
         Applications cachedServices = new Applications("4512312316", 1L,cachedState.getApplications());
         when(apiServiceStatusService.getCachedApplicationState()).thenReturn(cachedServices);

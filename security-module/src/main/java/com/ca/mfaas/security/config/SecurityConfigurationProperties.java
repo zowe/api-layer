@@ -27,6 +27,7 @@ public class SecurityConfigurationProperties {
     private String logoutPath = "/auth/logout/**";
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
+    private String zosmfServiceId;
     private boolean verifySslCertificatesOfServices = true;
 
     @Data

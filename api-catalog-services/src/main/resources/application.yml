@@ -1,3 +1,7 @@
+apiml:
+    security:
+        zosmfServiceId: zosmf
+
 spring:
     application:
         name: apicatalog

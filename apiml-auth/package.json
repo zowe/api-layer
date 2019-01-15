@@ -1,0 +1,25 @@
+{
+  "name": "apiml-auth",
+  "version": "0.3.5",
+  "description": "API Mediation Layer Authentication Plugin for zLUX",
+  "main": "lib/apimlAuth.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "mocha lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zowe/api-layer/apiml-auth/"
+  },
+  "author": "",
+  "license": "EPL-2.0",
+  "devDependencies": {
+    "jenkins-mocha": "^6.0.0",
+    "mocha": "^5.2.0"
+  },
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}

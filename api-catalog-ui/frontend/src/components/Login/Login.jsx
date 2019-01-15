@@ -106,6 +106,9 @@ export default class Login extends React.Component {
                                         className="form"
                                         onSubmit={this.handleSubmit}
                                     >
+                                        <Text color="#ad5f00">
+                                            Use your mainframe credentials
+                                        </Text>
                                         <FormField
                                             label="Username"
                                             className="formfield"
