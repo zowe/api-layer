@@ -32,7 +32,7 @@
 }
 
 .content {
-    min-height: calc(100vh - 52px);
+    min-height: calc(100vh - 80px);
 }
 
 @keyframes App-logo-spin {

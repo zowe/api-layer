@@ -31,8 +31,21 @@ public class TokenService {
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
+    private String secret;
+
     public TokenService(SecurityConfigurationProperties securityConfigurationProperties) {
         this.securityConfigurationProperties = securityConfigurationProperties;
+    }
+
+    public String getSecret() {
+        if (secret == null) {
+            throw new NullPointerException("The secret key for JWT token service is null");
+        }
+        return secret;
+    }
+
+    public void setSecret(String secret) {
+        this.secret = secret;
     }
 
     public String createToken(String username) {
@@ -51,14 +64,14 @@ public class TokenService {
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.HS512, securityConfigurationProperties.getTokenProperties().getSecret())
+            .signWith(SignatureAlgorithm.HS512, getSecret())
             .compact();
     }
 
     TokenAuthentication validateToken(TokenAuthentication token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
+                .setSigningKey(getSecret())
                 .parseClaimsJws(token.getCredentials())
                 .getBody();
 
@@ -81,7 +94,7 @@ public class TokenService {
 
     public QueryResponse parseToken(String token) {
         Claims claims = Jwts.parser()
-            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret()) //Must be changed
+            .setSigningKey(getSecret())
             .parseClaimsJws(token)
             .getBody();
 
@@ -91,7 +104,7 @@ public class TokenService {
 
     public String getLtpaToken(String jwtToken) {
         Claims claims = Jwts.parser()
-            .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
+            .setSigningKey(getSecret())
             .parseClaimsJws(jwtToken)
                 .getBody();
 
