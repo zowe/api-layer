@@ -31,9 +31,11 @@ public class SuccessfulQueryHandlerTest {
         String user = "user";
         String domain = "domain";
         String ltpa = "ltpa";
+        String secret = "secret";
 
         SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
         TokenService tokenService = new TokenService(securityConfigurationProperties);
+        tokenService.setSecret(secret);
         ObjectMapper mapper = new ObjectMapper();
         SuccessfulQueryHandler successfulQueryHandler = new SuccessfulQueryHandler(mapper, tokenService);
 
