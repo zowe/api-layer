@@ -21,7 +21,7 @@ import { rootReducer } from './reducers/index';
 import { rootEpic } from './epics';
 import { sendError } from './actions/error-actions';
 import Spinner from './components/Spinner/Spinner';
-import { AsyncAppContainer } from "./components/App/AsyncModules";
+import { AsyncAppContainer } from './components/App/AsyncModules';
 
 function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
@@ -44,15 +44,12 @@ const epicMiddleware = createEpicMiddleware({
     dependencies: { ajax },
 });
 const composeEnhancers = compose;
-const middlewares = [epicMiddleware, reduxCatch(errorHandler)];
-if (process.env.NODE_ENV === 'development') {
+const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
+if (process.env.NODE_ENV !== 'production') {
     middlewares.push(logger);
 }
 const persistedReducer = persistReducer(persistConfig, rootReducer);
-const store = createStore(
-    persistedReducer,
-    composeEnhancers(applyMiddleware(epicMiddleware, thunk, logger, reduxCatch(errorHandler)))
-);
+const store = createStore(persistedReducer, composeEnhancers(applyMiddleware(...middlewares)));
 epicMiddleware.run(rootEpic);
 const persistor = persistStore(store);
 
