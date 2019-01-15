@@ -22,3 +22,27 @@ Run:
 
     npm install
     MF_USERID=userid MF_PASSWORD="***" npm run test
+
+
+## Running with zLUX
+
+1. Stand up a local version of the Example Zowe Application Server following instruction at https://zowe.github.io/docs-site/latest/extend/extend-desktop/zlux-example-server.html with having `zlux` superproject at the same level as `api-layer` repository
+
+2. Create `zlux/zowe-app-server/plugins/org.zowe.zlux.auth.apiml.json` with following contents:
+
+    ```json
+    {
+        "identifier": "org.zowe.zlux.auth.apiml",
+        "pluginLocation": "../../../api-layer/apiml-auth"
+    }
+    ```
+
+3. Edit `zlux/zowe-app-server/config/zluxserver.json` and add to the `"implementationDefaults"` node:
+
+    ```json
+    "apiml": {
+        "plugins": ["org.zowe.zlux.auth.apiml"]    
+    },
+    ```
+
+4. Make sure that the APIML port for gateway and discovery service are properly set in `zluxserver.json`
