@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.client.controller.controllers.api;
+package com.ca.mfaas.client.api;
 
 import com.ca.mfaas.client.exception.PetIdMismatchException;
 import com.ca.mfaas.client.exception.PetNotFoundException;

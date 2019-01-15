@@ -7,9 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.client.petstore;
+package com.ca.mfaas.client.api;
 
-import com.ca.mfaas.client.controller.controllers.api.PetController;
 import com.ca.mfaas.client.configuration.ApplicationConfiguration;
 import com.ca.mfaas.client.configuration.SpringComponentsConfiguration;
 import com.ca.mfaas.client.model.Pet;
@@ -30,14 +29,14 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
-public class PetControllerPutTest {
+public class PetControllerPostPetTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -47,22 +46,22 @@ public class PetControllerPutTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void putExistingPet() throws Exception {
+    public void addPetWithValidObject() throws Exception {
+        String name = "Linux";
         int id = 1;
-        String name = "Falco";
-        Pet pet = new Pet((long) id, name);
+        Pet pet = new Pet(null, name);
         String payload = mapper.writeValueAsString(pet);
-        when(petService.update(pet)).thenReturn(pet);
+        when(petService.save(any(Pet.class))).thenReturn(new Pet((long) id, name));
 
         this.mockMvc.perform(
-            put("/api/v1/pets/" + id)
+            post("/api/v1/pets")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(payload))
-            .andExpect(status().isOk())
+            .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id", is(id)))
             .andExpect(jsonPath("$.name", is(name)));
 
-        verify(petService, times(1)).update(any(Pet.class));
+        verify(petService, times(1)).save(any(Pet.class));
     }
 
 }

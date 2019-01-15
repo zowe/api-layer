@@ -8,15 +8,15 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.client.multipart;
+package com.ca.mfaas.client.api;
 
-import com.ca.mfaas.client.controller.controllers.api.MultipartController;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.ui.ModelMap;
+
+import static org.junit.Assert.assertEquals;
 
 
 public class MultipartControllerTest {
@@ -31,7 +31,7 @@ public class MultipartControllerTest {
     public void shouldSubmitAndReturnString() {
         MockMultipartFile file = new MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
         ModelMap model = new ModelMap();
-        Assert.assertEquals("fileUploadView", multipartController.submit(file, model));
 
+        assertEquals("fileUploadView", multipartController.submit(file, model));
     }
 }

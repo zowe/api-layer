@@ -7,11 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.service.impl;
+package com.ca.mfaas.client.impl;
 
-import com.ca.mfaas.client.service.impl.PetServiceImpl;
 import com.ca.mfaas.client.exception.PetNotFoundException;
 import com.ca.mfaas.client.model.Pet;
+import com.ca.mfaas.client.service.impl.PetServiceImpl;
 import org.junit.Test;
 
 import java.util.List;

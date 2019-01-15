@@ -7,9 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.model;
+package com.ca.mfaas.client.model;
 
-import com.ca.mfaas.client.model.Pet;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

@@ -7,11 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.client.petstore;
+package com.ca.mfaas.client.api;
 
 import com.ca.mfaas.client.configuration.ApplicationConfiguration;
-import com.ca.mfaas.client.controller.controllers.api.PetController;
-import com.ca.mfaas.client.model.Pet;
 import com.ca.mfaas.client.service.PetService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,16 +20,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
 @Import(ApplicationConfiguration.class)
-public class PetControllerGetOneTest {
+public class PetControllerDeleteTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -39,16 +36,14 @@ public class PetControllerGetOneTest {
     private PetService petService;
 
     @Test
-    public void getExistingPet() throws Exception {
+    public void deleteExistingPet() throws Exception {
         int id = 1;
-        String name = "Falco";
-        Pet pet = new Pet((long) id, name);
-        when(petService.getById((long) id)).thenReturn(pet);
 
-        this.mockMvc.perform(get("/api/v1/pets/" + id))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id", is(id)))
-            .andExpect(jsonPath("$.name", is(name)));
+        this.mockMvc.perform(delete("/api/v1/pets/" + id))
+            .andExpect(status().isNoContent());
+
+        verify(petService, times(1)).deleteById((long) id);
     }
+
 
 }

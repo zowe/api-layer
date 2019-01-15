@@ -7,9 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.exception;
+package com.ca.mfaas.client.exception;
 
-import com.ca.mfaas.client.exception.PetIdMismatchException;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
