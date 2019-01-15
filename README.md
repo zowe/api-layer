@@ -36,6 +36,17 @@ Run all service on local machine:
     npm run api-layer
 
 
+## Setting up connection to z/OSMF
+
+z/OSMF is required for the API Catalog login. You need to configure a valid z/OSMF instance to `config/local/api-defs/zosmf-sample.yml` under the `instanceBaseUrls`.
+
+The certificate of z/OSMF needs to be trusted by APIML. You have to options:
+
+1. Import it to the APIML keystore using `scripts/apiml_cm.sh --action trust` as desribed at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other_services)
+
+2. Disable certificate validation as described in [Disabling certificate validation on localhost](/keystore/README.md#Disabling-certificate-validation-on-localhost)
+
+
 ## Run unit tests
 
 Unit tests for Java and TypeScript modules are executed as a part of the build process.
