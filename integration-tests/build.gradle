@@ -21,6 +21,9 @@ dependencies {
     compile libraries.jackson_databind
     compile libraries.json_path
     compile libraries.spring_boot_starter_websocket
+    compile("org.json:json:20180813")
+    compile("io.jsonwebtoken:jjwt:0.9.1")
+    compile(project(':security-module'))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest
