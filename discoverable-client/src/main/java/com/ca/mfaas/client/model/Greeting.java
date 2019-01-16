@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.client.controller.domain;
+package com.ca.mfaas.client.model;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
