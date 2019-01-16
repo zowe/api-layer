@@ -113,6 +113,17 @@ describe('>>> Login page component tests', () => {
         expect(messageText).toEqual('Internal Error: SEC0099');
     });
 
+    it('should disable button and show spinner when request is being resolved', () => {
+        const wrapper = enzyme.shallow(<Login isFetching />);
+
+        const submitButton = wrapper.find('Button');
+        const spinner = wrapper.find('Spinner');
+
+        expect(submitButton).toBeDefined();
+        expect(spinner).toBeDefined();
+        expect(submitButton.props().disabled).toBeTruthy();
+    });
+
     it('should display UI session ajax message', () => {
         const authentication = {
             error: {
