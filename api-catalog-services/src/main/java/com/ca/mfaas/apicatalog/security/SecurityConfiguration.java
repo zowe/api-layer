@@ -15,9 +15,12 @@ import com.ca.mfaas.security.handler.UnauthorizedHandler;
 import com.ca.mfaas.security.login.LoginFilter;
 import com.ca.mfaas.security.login.SuccessfulLoginHandler;
 import com.ca.mfaas.security.login.ZosmfAuthenticationProvider;
+import com.ca.mfaas.security.query.QueryFilter;
+import com.ca.mfaas.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.security.token.CookieFilter;
 import com.ca.mfaas.security.token.TokenAuthenticationProvider;
 import com.ca.mfaas.security.token.TokenFilter;
+import com.ca.mfaas.security.token.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -40,12 +43,11 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 @ComponentScan("com.ca.mfaas.security")
 @Import(ComponentsConfiguration.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    private static final String LOGIN_ENDPOINT = "/auth/login";
-    private static final String LOGOUT_ENDPOINT = "/auth/logout";
-
     private final ObjectMapper securityObjectMapper;
+    private final TokenService tokenService;
     private final UnauthorizedHandler unAuthorizedHandler;
     private final SuccessfulLoginHandler successfulLoginHandler;
+    private final SuccessfulQueryHandler successfulQueryHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final ZosmfAuthenticationProvider loginAuthenticationProvider;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
@@ -55,17 +57,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper,
         UnauthorizedHandler unAuthorizedHandler,
         SuccessfulLoginHandler successfulLoginHandler,
+        SuccessfulQueryHandler successfulQueryHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         ZosmfAuthenticationProvider loginAuthenticationProvider,
         TokenAuthenticationProvider tokenAuthenticationProvider,
+        TokenService tokenService,
         SecurityConfigurationProperties securityConfigurationProperties) {
         super();
         this.securityObjectMapper = securityObjectMapper;
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.successfulLoginHandler = successfulLoginHandler;
+        this.successfulQueryHandler = successfulQueryHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.loginAuthenticationProvider = loginAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;
+        this.tokenService = tokenService;
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
@@ -105,14 +111,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // login endpoint
             .and()
-            .addFilterBefore(loginFilter(LOGIN_ENDPOINT), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, LOGIN_ENDPOINT).permitAll()
+            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
+
+            // query endpoint
+            .and()
+            .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
+            .authorizeRequests()
 
             // logout endpoint
             .and()
             .logout()
-            .logoutUrl(LOGOUT_ENDPOINT)
+            .logoutUrl(securityConfigurationProperties.getLogoutPath())
             .logoutSuccessHandler(logoutSuccessHandler())
 
             // endpoints protection
@@ -131,6 +142,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler,
             securityObjectMapper, authenticationManager());
+    }
+
+    private QueryFilter queryFilter(String queryEndpoint) throws Exception {
+        return new QueryFilter(queryEndpoint, successfulQueryHandler, authenticationFailureHandler, tokenService,
+            authenticationManager());
     }
 
     private CookieFilter cookieTokenFilter() throws Exception {

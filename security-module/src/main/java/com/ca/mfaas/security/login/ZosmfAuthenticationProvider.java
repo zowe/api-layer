@@ -66,8 +66,8 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
         String zosmf = securityConfigurationProperties.getZosmfServiceId();
         if (zosmf == null || zosmf.isEmpty()) {
-            log.error("zOSMF service name not found. Set property mfaas.security.zosmf to your service name.");
-            throw new AuthenticationServiceException("A failure occurred when authenticating.");
+            log.error("zOSMF service name not found. Set property mfaas.security.zosmfServiceId to your service name.");
+            throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
         }
 
         String uri = getURI(zosmf);
@@ -95,7 +95,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             tokenAuthentication.setAuthenticated(true);
 
             return tokenAuthentication;
-        } catch (RestClientException | IOException e) {
+        } catch (RestClientException e) {
             log.error("Can not access z/OSMF service. Uri '{}' returned: {}", uri, e.getMessage());
             throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
         }
@@ -126,17 +126,26 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         if (cookie == null || cookie.isEmpty() || !cookie.contains("LtpaToken2")) {
             throw new InvalidUserException("Username or password are invalid.");
         } else {
-            ltpaToken = cookie.substring(0, cookie.indexOf(';'));
+            int end = cookie.indexOf(';');
+            ltpaToken = end > 0 ? cookie.substring(0, end) : cookie;
         }
 
         return ltpaToken;
     }
 
-    private String readDomain(String content) throws IOException {
-        ObjectNode zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);
-        if (zosmfNode.has(ZOSMF_DOMAIN)) {
+    private String readDomain(String content) {
+        ObjectNode zosmfNode;
+        try {
+            zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);
+        } catch (IOException e) {
+            log.error("Error parsing zOSMF response.");
+            throw new AuthenticationServiceException("zOSMF domain cannot be read.");
+        }
+
+        if (zosmfNode != null && zosmfNode.has(ZOSMF_DOMAIN)) {
             return zosmfNode.get(ZOSMF_DOMAIN).asText();
         } else {
+            log.error("zOSMF response does not contain field '{}'.", ZOSMF_DOMAIN);
             throw new AuthenticationServiceException("zOSMF domain cannot be read.");
         }
     }

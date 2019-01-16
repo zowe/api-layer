@@ -9,8 +9,7 @@
  */
 package com.ca.mfaas.security.token;
 
-import static com.ca.mfaas.security.token.TokenService.BEARER_TYPE_PREFIX;
-import static com.ca.mfaas.security.token.TokenService.LTPA_CLAIM_NAME;
+import static com.ca.mfaas.security.token.TokenService.*;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -19,6 +18,7 @@ import javax.servlet.http.Cookie;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 
+import com.ca.mfaas.security.query.QueryResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,9 +31,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
+import java.util.Calendar;
+import java.util.Date;
+
 public class TokenServiceTest {
     private static final String TEST_TOKEN = "token";
-
+    private static final String TEST_DOMAIN = "domain";
+    private static final String TEST_USER = "user";
     private static final String SECRET = "secret";
 
     private SecurityConfigurationProperties securityConfigurationProperties;
@@ -51,20 +55,18 @@ public class TokenServiceTest {
     @Test(expected = NullPointerException.class)
     public void tokenServiceWithoutSecretCannotWork() {
         TokenService tokenService = new TokenService(securityConfigurationProperties);
-        tokenService.createToken("user");
+        tokenService.createToken(TEST_USER);
     }
 
     @Test
     public void createTokenForGeneralUser() {
-        String username = "user";
-
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         tokenService.setSecret(SECRET);
-        String token = tokenService.createToken(username);
+        String token = tokenService.createToken(TEST_USER);
         Claims claims = Jwts.parser().setSigningKey(tokenService.getSecret())
                 .parseClaimsJws(token).getBody();
 
-        assertThat(claims.getSubject(), is(username));
+        assertThat(claims.getSubject(), is(TEST_USER));
         assertThat(claims.getIssuer(), is(securityConfigurationProperties.getTokenProperties().getIssuer()));
         long ttl = (claims.getExpiration().getTime() - claims.getIssuedAt().getTime()) / 1000L;
         assertThat(ttl, is(securityConfigurationProperties.getTokenProperties().getExpirationInSeconds()));
@@ -89,15 +91,13 @@ public class TokenServiceTest {
 
     @Test
     public void createTokenForNonExpirationUser() {
-        String username = "user";
-
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         tokenService.setSecret(SECRET);
-        String token = tokenService.createToken(username);
+        String token = tokenService.createToken(TEST_USER);
         Claims claims = Jwts.parser().setSigningKey(tokenService.getSecret())
                 .parseClaimsJws(token).getBody();
 
-        assertThat(claims.getSubject(), is(username));
+        assertThat(claims.getSubject(), is(TEST_USER));
         assertThat(claims.getIssuer(), is(securityConfigurationProperties.getTokenProperties().getIssuer()));
         long ttl = (claims.getExpiration().getTime() - claims.getIssuedAt().getTime()) / 1000L;
         assertThat(ttl, is(securityConfigurationProperties.getTokenProperties().getExpirationInSeconds()));
@@ -105,16 +105,14 @@ public class TokenServiceTest {
 
     @Test
     public void validateValidToken() {
-        String username = "user";
-
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         tokenService.setSecret(SECRET);
-        String token = tokenService.createToken(username);
+        String token = tokenService.createToken(TEST_USER);
         TokenAuthentication authentication = new TokenAuthentication(token);
         TokenAuthentication validatedAuthentication = tokenService.validateToken(authentication);
 
         assertThat(validatedAuthentication.isAuthenticated(), is(true));
-        assertThat(validatedAuthentication.getPrincipal(), is(username));
+        assertThat(validatedAuthentication.getPrincipal(), is(TEST_USER));
     }
 
     @Test
@@ -134,14 +132,13 @@ public class TokenServiceTest {
 
     @Test
     public void validateTokenWithWrongSecretSection() {
-        String username = "user";
         String signaturePadding = "someText";
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Token is not valid");
 
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         tokenService.setSecret(SECRET);
-        String token = tokenService.createToken(username);
+        String token = tokenService.createToken(TEST_USER);
         TokenAuthentication authentication = new TokenAuthentication(token + signaturePadding);
         tokenService.validateToken(authentication);
     }
@@ -186,10 +183,35 @@ public class TokenServiceTest {
     }
 
     @Test
+    public void parseToken() {
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
+        tokenService.setSecret(SECRET);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2018, 1, 15);
+        Date issuedAt = calendar.getTime();
+        calendar.set(2099, 1, 16);
+        Date expiration = calendar.getTime();
+
+        String jwtToken = Jwts.builder()
+            .setSubject(TEST_USER)
+            .claim(DOMAIN_CLAIM_NAME, TEST_DOMAIN)
+            .setIssuedAt(issuedAt)
+            .setExpiration(expiration)
+            .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
+            .signWith(SignatureAlgorithm.HS512, tokenService.getSecret())
+            .compact();
+
+        QueryResponse response = new QueryResponse(TEST_DOMAIN, TEST_USER, issuedAt, expiration);
+
+        assertEquals(response.toString(), tokenService.parseToken(jwtToken).toString());
+    }
+
+    @Test
     public void getLtpaTokenReturnsNullIfLtpaIsMissing() {
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         tokenService.setSecret(SECRET);
-        String jwtToken = Jwts.builder().claim("dom", "test")
+        String jwtToken = Jwts.builder().claim(DOMAIN_CLAIM_NAME, TEST_DOMAIN)
                 .signWith(SignatureAlgorithm.HS512, tokenService.getSecret())
                 .compact();
         assertEquals(null, tokenService.getLtpaToken(jwtToken));
