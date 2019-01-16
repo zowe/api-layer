@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.client.controller.controllers.api;
+package com.ca.mfaas.client.api;
 
-import com.ca.mfaas.client.controller.domain.Greeting;
+import com.ca.mfaas.client.model.Greeting;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
