@@ -7,9 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.controller.domain;
+package com.ca.mfaas.client.model;
 
-import com.ca.mfaas.client.controller.domain.Greeting;
 import org.junit.Test;
 
 import java.util.Date;

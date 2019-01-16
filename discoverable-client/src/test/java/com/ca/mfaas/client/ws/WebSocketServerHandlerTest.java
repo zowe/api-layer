@@ -17,6 +17,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class WebSocketServerHandlerTest {
@@ -32,5 +33,19 @@ public class WebSocketServerHandlerTest {
         verify(session).sendMessage(messageCaptor.capture());
 
         assertEquals("TEXT", messageCaptor.getValue().getPayload().toString());
+    }
+
+    @Test
+    public void handleByeMessage() throws Exception {
+        WebSocketServerHandler handler = new WebSocketServerHandler();
+        WebSocketSession session = mock(WebSocketSession.class);
+
+        handler.handleMessage(session, new TextMessage("BYE"));
+
+        ArgumentCaptor<WebSocketMessage<?>> messageCaptor = ArgumentCaptor.forClass(WebSocketMessage.class);
+        verify(session).sendMessage(messageCaptor.capture());
+
+        assertEquals("BYE", messageCaptor.getValue().getPayload().toString());
+        verify(session, times(1)).close();
     }
 }

@@ -32,6 +32,7 @@ dependencies {
     testCompile libraries.power_mock_junit4_rule
     testCompile libraries.lombok
     testCompile libraries.jsoup
+    testCompile libraries.rest_assured
 }
 
 jar {
