@@ -1,7 +1,4 @@
 buildscript {
-    repositories {
-        mavenCentral()
-    }
     dependencies {
         classpath 'com.bmuschko:gradle-tomcat-plugin:2.4.2'
     }
@@ -21,12 +18,15 @@ dependencies {
     compile libraries.springFox
     compile group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.5.10'
     compile libraries.jackson_dataformat_yaml
-    compileOnly libraries.lombok
     compile libraries.logback_classic
     compile libraries.jersey_server
     compile libraries.jersey_hk2
     compile libraries.jersey_container_servlet_core
     compile libraries.jersey_media_json_jackson
+
+    compileOnly libraries.javax_servlet_api
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
     testCompile libraries.junit
     testCompile libraries.jersey_test_provider_jdk_http

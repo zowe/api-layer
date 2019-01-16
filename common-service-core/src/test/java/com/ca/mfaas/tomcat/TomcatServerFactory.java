@@ -9,13 +9,8 @@
  */
 package com.ca.mfaas.tomcat;
 
-import static org.junit.Assert.assertEquals;
-
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.Service;
@@ -29,20 +24,23 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
+import org.slf4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@Slf4j
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+
+import static org.junit.Assert.assertEquals;
+
 public class TomcatServerFactory {
     private static final String SERVLET_NAME = "hello";
     private static final String STORE_PASSWORD = "password";  // NOSONAR
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(TomcatServerFactory.class);
 
     public Tomcat startTomcat(HttpsConfig httpsConfig) throws IOException {
         Tomcat tomcat = new Tomcat();

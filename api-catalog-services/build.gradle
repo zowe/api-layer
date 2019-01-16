@@ -37,7 +37,8 @@ dependencies {
     compile(project(':common-service-core'))
     compile(project(':security-module'))
 
-    compileOnly libraries.lombok
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_actuator

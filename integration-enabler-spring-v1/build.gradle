@@ -3,7 +3,6 @@ buildscript {
         springBootVersion = "1.5.9.RELEASE"
         springCloudVersion = "1.4.0.RELEASE"
     }
-    repositories mavenRepositories
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
@@ -25,7 +24,8 @@ dependencies {
     compile "io.springfox:springfox-spring-web:2.7.0"
 
     compileOnly libraries.javax_servlet_api
-    compileOnly libraries.lombok
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
     testCompile libraries.javax_servlet_api

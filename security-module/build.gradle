@@ -10,7 +10,8 @@ dependencies {
 
     compileOnly libraries.slf4j_api
     compileOnly libraries.javax_servlet_api
-    compileOnly libraries.lombok
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
     testCompile libraries.junit
     testCompile libraries.hamcrest

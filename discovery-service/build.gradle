@@ -1,5 +1,4 @@
 buildscript {
-    repositories mavenRepositories
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
@@ -34,17 +33,19 @@ gitProperties {
 dependencies {
     compile(project(':gateway-common'))
 
-    compile libraries.spring_boot_starter_web
-    compile libraries.spring_boot_starter_security
-    compile libraries.spring_boot_starter_actuator
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: '2.1.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.1.2.RELEASE'
     compile libraries.spring_cloud_starter_eureka_server
     compile libraries.jackson_dataformat_yaml
     compile libraries.swagger_annotations
 
-    compileOnly libraries.lombok
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
     testCompile libraries.lombok
-    testCompile libraries.spring_boot_starter_test
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.2.RELEASE'
+
 }
 
 

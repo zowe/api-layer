@@ -9,12 +9,14 @@ dependencies {
     compile libraries.http_client
     compile libraries.http_core
     compile libraries.jetty_websocket_client
-
-    compileOnly libraries.spring_boot_configuration_processor
-    compileOnly libraries.lombok
+    
+    compileOnly group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.1.2.RELEASE'
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: '2.1.2.RELEASE'
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
     testCompile libraries.javax_servlet_api
-    testCompile libraries.spring_boot_starter_test
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.2.RELEASE'
     testCompile libraries.powermock_api_mockito2
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule

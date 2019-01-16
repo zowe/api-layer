@@ -1,5 +1,4 @@
 buildscript {
-    repositories mavenRepositories
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
@@ -19,10 +18,11 @@ dependencies {
     compile libraries.springFoxWeb
     compile libraries.javax_validation
     compile libraries.spring_cloud_starter_eureka
-    compile libraries.spring_boot_starter_actuator
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.1.2.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.1.2.RELEASE'
 
-    compileOnly libraries.lombok
-    compileOnly libraries.spring_boot_starter_web
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
     compileOnly libraries.javax_servlet_api
 
     testCompile libraries.gson
@@ -30,7 +30,7 @@ dependencies {
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule
     testCompile libraries.spring_boot_starter_web
-    testCompile libraries.spring_boot_starter_test
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.2.RELEASE'
     testCompile libraries.lombok
     testCompile libraries.javax_servlet_api
     testCompile libraries.snakeyaml

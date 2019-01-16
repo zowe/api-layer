@@ -1,9 +1,4 @@
 buildscript {
-    repositories {
-        maven {
-            setUrl('https://plugins.gradle.org/m2/')
-        }
-    }
     dependencies {
         classpath 'com.adarshr:gradle-test-logger-plugin:1.4.0'
     }
@@ -20,10 +15,13 @@ dependencies {
     compile libraries.jackson_dataformat_yaml
     compile libraries.jackson_databind
     compile libraries.json_path
-    compile libraries.spring_boot_starter_websocket
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: '2.1.2.RELEASE'
     compile("org.json:json:20180813")
     compile("io.jsonwebtoken:jjwt:0.9.1")
     compile(project(':security-module'))
+
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
     testCompile libraries.junit
     testCompile libraries.hamcrest
@@ -33,7 +31,8 @@ dependencies {
     testCompile libraries.powermock_api_mockito2
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule
-    testCompile libraries.lombok
+    testAnnotationProcessor libraries.lombok
+    testCompileOnly libraries.lombok
     testCompile libraries.jsoup
     testCompile libraries.rest_assured
 }

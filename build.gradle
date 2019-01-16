@@ -1,11 +1,21 @@
 import java.util.regex.Matcher
 
 //noinspection GroovyAssignabilityCheck
-group 'com.ca.mfaas'
+group "com.ca.mfaas"
+
+allprojects {
+    buildscript {
+        repositories {
+            maven {
+                url "https://plugins.gradle.org/m2/"
+            }
+        }
+    }
+}
 
 buildscript {
     ext {
-        licenseGradlePluginVerion = '0.13.1'
+        licenseGradlePluginVerion = "0.13.1"
     }
 
     ext.mavenRepositories = {
@@ -25,30 +35,32 @@ buildscript {
         }
     }
 
-    repositories mavenRepositories
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
 
     dependencies {
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5'
-        classpath 'com.palantir:jacoco-coverage:0.4.0'
-        classpath 'net.researchgate:gradle-release:2.7.0'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5"
+        classpath "net.researchgate:gradle-release:2.7.0"
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
-        classpath 'org.owasp:dependency-check-gradle:3.3.4'
+        classpath "org.owasp:dependency-check-gradle:3.3.4"
     }
 }
 
-apply plugin: 'com.palantir.jacoco-full-report'
-apply from: 'gradle/publish.gradle'
-apply from: 'gradle/sonar.gradle'
-apply from: 'gradle/coverage.gradle'
-apply from: 'gradle/versions.gradle'
-apply from: 'gradle/code-quality.gradle'
+apply from: "gradle/versions.gradle"
+apply from: "gradle/publish.gradle"
+apply from: "gradle/sonar.gradle"
+apply from: "gradle/coverage.gradle"
+apply from: "gradle/code-quality.gradle"
 
 allprojects {
-    apply plugin: 'java'
-    apply plugin: 'idea'
-    apply plugin: 'maven'
-    apply plugin: 'com.github.hierynomus.license'
-    apply plugin: 'org.owasp.dependencycheck'
+    apply plugin: "java"
+    apply plugin: "idea"
+    apply plugin: "maven"
+    apply plugin: "com.github.hierynomus.license"
+    apply plugin: "org.owasp.dependencycheck"
 
     repositories mavenRepositories
 
@@ -58,9 +70,9 @@ allprojects {
     idea {
         module {
             //noinspection GroovyAssignabilityCheck
-            outputDir file('build/classes/main')
+            outputDir file("build/classes/main")
             //noinspection GroovyAssignabilityCheck
-            testOutputDir file('build/classes/test')
+            testOutputDir file("build/classes/test")
             downloadJavadoc = true
             downloadSources = true
         }
@@ -69,11 +81,11 @@ allprojects {
 
 subprojects {
     license {
-        header rootProject.file('.licence/EPL-2.0-licence-header.txt')
+        header rootProject.file(".licence/EPL-2.0-licence-header.txt")
         ext.year = Calendar.getInstance().get(Calendar.YEAR)
         excludes(["**/*.yml", "**/*.json", "**/static", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks"])
         mapping {
-            java = 'SLASHSTAR_STYLE'
+            java = "SLASHSTAR_STYLE"
         }
     }
 
@@ -84,12 +96,11 @@ subprojects {
 }
 
 configurations {
-    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    all*.exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-kotlin'
+    all*.exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+    all*.exclude group: "com.fasterxml.jackson.module", module: "jackson-module-kotlin"
 }
 
-task buildBackendCore(dependsOn: [':gateway-service:build', ':discovery-service:build',
-                                  ':api-catalog-services:build', ':helloworld-service:build']) {
+task buildBackendCore(dependsOn: [":gateway-service:build", ":discovery-service:build", ":helloworld-service:build"]) {
     description "Build core backend components (no UI)"
     group "build"
 }
@@ -108,37 +119,20 @@ task jacocoSubProjects() {
     subprojects.findAll { it.name in javaProjectsWithUnitTests }.each { dependsOn("${it.name}:jacocoTestReport") }
 }
 
-jacocoTestReport {
-    dependsOn test
-    reports {
-        xml.enabled true
-        html.enabled true
-    }
-}
-
-task mergeCoverage() {
-    dependsOn test, jacocoFullReport
-}
-
-task coverage() {
-    mergeCoverage.mustRunAfter jacocoSubProjects
-    dependsOn mergeCoverage, jacocoSubProjects, jacocoTestReport, ":api-catalog-ui:javaScriptCoverage"
-}
-
 task publishAllVersions {
-    group 'Zowe Publishing'
-    description 'Publish ZIP file and SDK libraries to Zowe Artifactory'
+    group "Zowe Publishing"
+    description "Publish ZIP file and SDK libraries to Zowe Artifactory"
     doLast {
-        println 'Published ZIP file and libraries'
+        println "Published ZIP file and libraries"
     }
 }
 
 publishAllVersions.dependsOn publishSdkArtifacts
 
 //-----------Release part start
-apply plugin: 'net.researchgate.release'
+apply plugin: "net.researchgate.release"
 
-ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
+ext.releaseScope = project.hasProperty("release.scope") ? project.getProperty("release.scope") : "patch"
 
 release {
     failOnCommitNeeded = true
@@ -147,19 +141,19 @@ release {
     failOnUnversionedFiles = true
     failOnUpdateNeeded = true
     revertOnFail = true
-    preCommitText = '[Gradle Release plugin]'
-    preTagCommitMessage = 'Before tag commit'
-    tagCommitMessage = 'Release:'
+    preCommitText = "[Gradle Release plugin]"
+    preTagCommitMessage = "Before tag commit"
+    tagCommitMessage = "Release:"
     tagTemplate = 'v${version}'
-    newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = 'gradle.properties'
-    buildTasks = ['build']
+    newVersionCommitMessage = "Create new version:"
+    versionPropertyFile = "gradle.properties"
+    buildTasks = ["build"]
 
-    if (releaseScope == 'minor') {
+    if (releaseScope == "minor") {
         versionPatterns = [
             /[.]*\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll(".${(m[0][1] as int) + 1}.0") }
         ]
-    } else if (releaseScope == 'major') {
+    } else if (releaseScope == "major") {
         versionPatterns = [
             /(\d+)\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}.0.0") }
         ]
@@ -174,9 +168,9 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
-        pushToRemote = 'origin'
-        pushToBranchPrefix = ''
+        requireBranch = "master"
+        pushToRemote = "origin"
+        pushToBranchPrefix = ""
         commitVersionFileOnly = false
         signTag = false
     }

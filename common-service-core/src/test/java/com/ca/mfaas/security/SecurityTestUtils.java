@@ -9,16 +9,16 @@
  */
 package com.ca.mfaas.security;
 
-import static org.junit.Assert.fail;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 
-import lombok.extern.slf4j.Slf4j;
+import static org.junit.Assert.fail;
 
-@Slf4j
 public class SecurityTestUtils {
     private static final String STORE_PASSWORD = "password"; // NOSONAR
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(SecurityTestUtils.class);
 
     public static HttpsConfig.HttpsConfigBuilder correctHttpsSettings() throws IOException {
         return SecurityTestUtils.correctHttpsKeyStoreSettings()
