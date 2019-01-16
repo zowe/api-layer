@@ -11,6 +11,10 @@ package com.ca.mfaas.gatewayservice;
 
 
 
+import com.ca.mfaas.security.login.LoginRequest;
+import com.ca.mfaas.utils.config.ConfigReader;
+import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
+
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -22,23 +26,24 @@ public class SecurityUtils {
     private final static String TOKEN = "apimlAuthenticationToken";
     private final static String LOGIN_ENDPOINT = "/auth/login";
 
+    private static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private static String scheme = serviceConfiguration.getScheme();
+    private static String host = serviceConfiguration.getHost();
+    private static int port = serviceConfiguration.getPort();
+    private static String basePath = "/api/v1/gateway";
 
     public static String gatewayToken(String username, String password) {
-        GatewayLoginRequest loginRequest = new GatewayLoginRequest(username, password);
+        LoginRequest loginRequest = new LoginRequest(username, password);
 
         String token = given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(LOGIN_ENDPOINT)
+            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
             .then()
             .statusCode(is(SC_OK))
             .cookie(TOKEN, not(isEmptyString()))
-            .body(
-                TOKEN, not(isEmptyString())
-            )
-            .extract().
-                path(TOKEN);
+            .extract().cookie(TOKEN);
 
         return token;
     }

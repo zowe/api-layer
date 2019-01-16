@@ -9,27 +9,42 @@
  */
 package com.ca.mfaas.gatewayservice;
 
+import com.ca.mfaas.utils.config.ConfigReader;
+import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
 public class QueryIntegrationTest {
-    private final static String USERNAME = "apimtst";
-    private final static String PASSWORD = "password";
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUser();
     private final static String QUERY_ENDPOINT = "/auth/query";
-    private final static String DOMAIN = "gateway";
+
     private String token;
+    private GatewayServiceConfiguration serviceConfiguration;
+    private String scheme;
+    private String host;
+    private int port;
+    private String basePath;
 
     @Before
     public void setUp() {
-        RestAssured.port = 10010;
+        serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        scheme = serviceConfiguration.getScheme();
+        host = serviceConfiguration.getHost();
+        port = serviceConfiguration.getPort();
+        basePath = "/api/v1/gateway";
+
+        RestAssured.port = port;
+        RestAssured.basePath = basePath;
+        RestAssured.useRelaxedHTTPSValidation();
         token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
     }
 
@@ -38,81 +53,73 @@ public class QueryIntegrationTest {
         given()
             .header("Authorization", "Bearer " + token)
         .when()
-            .get(QUERY_ENDPOINT)
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, QUERY_ENDPOINT))
         .then()
             .statusCode(is(SC_OK))
             .body(
-                "username", equalTo(USERNAME),
-                "domain", equalTo(DOMAIN)
+                "userId", equalTo(USERNAME)
             );
     }
 
     @Test
     public void doQueryWithInvalidToken() {
         String invalidToken = "1234";
-        String expectedMessage = "Token is not valid";
+        String expectedMessage = "Authentication problem: 'Token is not valid' for URL '/apicatalog/auth/query'";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
+            .contentType(JSON)
         .when()
-            .get(QUERY_ENDPOINT)
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, QUERY_ENDPOINT))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "error.message", equalTo(expectedMessage),
-                "error.status", equalTo(SC_UNAUTHORIZED),
-                "error.code", equalTo("SEC0004")
-            );
+        .body(
+            "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage)
+        );
     }
 
     @Test
     public void doQueryWithoutHeader() {
-        String expectedMessage = "Token is blank or missing";
+        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/apicatalog/auth/query'";
 
         given()
             .when()
-            .get(QUERY_ENDPOINT)
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, QUERY_ENDPOINT))
             .then()
-            .statusCode(is(SC_BAD_REQUEST))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "error.message", equalTo(expectedMessage),
-                "error.status", equalTo(SC_BAD_REQUEST),
-                "error.code", equalTo("SEC0004")
+                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage)
             );
     }
 
     @Test
     public void doQueryWithWrongAuthType() {
-        String expectedMessage = "Token format is wrong";
+        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/apicatalog/auth/query'";
 
         given()
             .header("Authorization", "Basic " + token)
             .when()
-            .get(QUERY_ENDPOINT)
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, QUERY_ENDPOINT))
             .then()
-            .statusCode(is(SC_BAD_REQUEST))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "error.message", equalTo(expectedMessage),
-                "error.status", equalTo(SC_BAD_REQUEST),
-                "error.code", equalTo("SEC0004")
+                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage)
             );
     }
 
     @Test
     public void doQueryWithEmptyHeader() {
         String emptyToken = " ";
-        String expectedMessage = "Token format is wrong";
+        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/apicatalog/auth/query'";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
             .when()
-            .get(QUERY_ENDPOINT)
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, QUERY_ENDPOINT))
             .then()
-            .statusCode(is(SC_BAD_REQUEST))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "error.message", equalTo(expectedMessage),
-                "error.status", equalTo(SC_BAD_REQUEST),
-                "error.code", equalTo("SEC0004")
+                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage)
             );
     }
 }
