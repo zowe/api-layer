@@ -2,6 +2,19 @@
 
 This is a page about API Mediation Layer.
 
+* [Quick start 1-2-3](#quick-start-1-2-3)
+    * [Build](#build)
+        * [Prerequisites for build](#prerequisites-for-build)
+        * [Build all modules](#build-all-modules)
+        * [Unit tests](#unit-tests)
+        * [Measure code coverage](#measure-code-coverage)
+    * [Run](#run)
+        * [Prerequisites for run](#prerequisites-for-run)
+    * [Use](#use)
+        * [Run integration tests](#run-integration-tests)
+* [Features](#features)
+* [Topics](#topics)
+
 ## Quick start 1-2-3
 
 1. Build
@@ -62,29 +75,31 @@ npm run api-layer
 
 Follow the instructions in [Integration Tests](integration-tests/README.md) to run integration tests.
 
+## Features
 
-## Security
+### Security
 
 For more information about how the certificates between APIML services are set up, see [TLS Certificates for localhost](keystore/README.md).
 
+## Topics
 
-## Contributor guidelines
+### Contributor guidelines
 
 Follow the guidelines in [Contributing](CONTRIBUTING.md) to add new functionality.
 
 
-## Local configuration of services
+### Local configuration of services
 
 Follow the guidelines in [Local Configuration](docs/local-configuration.md) to set local environment properties for testing on your local machine include HTTPS setup.
 
 Also if you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
 
 
-## Adding services that do not support API Mediation Layer natively
+### Adding services that do not support API Mediation Layer natively
 
 See [Adding Services to API Gateway without Code Changes](docs/static-apis.md).
 
 
-## API Catalog UI
+### API Catalog UI
 
 For more information about the UI of the Catalog see its [README](api-catalog-ui/frontend/README.md).
