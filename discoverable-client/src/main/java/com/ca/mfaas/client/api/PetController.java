@@ -33,7 +33,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1")
 @Api(
-    value = "/qpi/v1/pets",
+    value = "/api/v1/pets",
     consumes = "application/json",
     tags = {"The pet API"})
 public class PetController {
