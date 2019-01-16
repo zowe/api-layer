@@ -1,71 +1,71 @@
-# api-layer
+# API Mediation Layer.
 
-[Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/zowe/api-layer.svg?columns=all)](https://waffle.io/zowe/api-layer)
+This is a page about API Mediation Layer.
 
-The home of Zowe API Mediation Layer
+## Quick start 1-2-3
 
-## Prequisites 
+1. Build
+2. Run
+3. Use
+
+## Build
+
+### Prerequisites for build
 
 Following platform is required to run the API Mediation Layer:
 
- * Oracle or IBM Java SE Development Kit 8 (http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html or https://www.ibm.com/developerworks/java/jdk/), Java 10 is not supported
-  
-### Other development prerequisites
-
-Following tools are required to build and develop API Mediation Layer:
-
- * Node.js 8.11.1 or higher (https://nodejs.org/en/) - to build UI modules
- * concurently (https://www.npmjs.com/package/concurrently) - to run API Mediation Layer on your computer from CLI
-  
-
-## Quick start
-
-Build all modules:
-
-    ./gradlew build
-
-You need to install `concurrently` globally:
-
-    npm install -g concurrently
-
-Run all service on local machine:
-    
-    npm run api-layer
+* **Java** Oracle or IBM Java SE Development Kit 8 (http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html or https://www.ibm.com/developerworks/java/jdk/), Java 10 is not supported.
+* **Node.js** You should be able to run Node.js on your machine.
 
 
-## Run unit tests
+### Build all modules
+```shell
+./gradlew build
+```
 
+### Unit tests
 Unit tests for Java and TypeScript modules are executed as a part of the build process.
 
 
-## Measure code coverage
+#### Measure code coverage
 
 For the code coverage of all modules, run:
-
-    ./gradlew coverage
-
-The code coverage for new code should be higher that 60% and should not be decreased for existing code.
+```shell
+./gradlew coverage
+```
+The code coverage for new code should be higher than 60% and should not be decreased for existing code.
 
 The reports in HTML format are stored `build/reports/jacoco/test/html/index.html` for each Java module.
 
 For the code coverage of a single Java module (for example `discovery-service`), run:
-
-    ./gradlew :discovery-service:jacocoTestReport
-
+```shell
+./gradlew :discovery-service:jacocoTestReport
+```
 You can an individual test class by:
+```shell
+./gradlew :discovery-service:test --tests com.ca.mfaas.discovery.staticdef.ServiceDefinitionProcessorTest
+```
 
-    ./gradlew :discovery-service:test --tests com.ca.mfaas.discovery.staticdef.ServiceDefinitionProcessorTest
+## Run
+### Prerequisites for run
+* **concurrently**
+You need to install `concurrently` globally:
+```shell
+npm install -g concurrently
+Run all service on the local machine:
+```shell
+npm run api-layer
+```
+## Use
 
-
-## Run integration tests
+### Run integration tests
 
 Follow the instructions in [Integration Tests](integration-tests/README.md) to run integration tests.
 
 
 ## Security
 
-For more information about how the certificates between APIML services are setup, see [TLS Certificates for localhost](keystore/README.md).
+For more information about how the certificates between APIML services are set up, see [TLS Certificates for localhost](keystore/README.md).
 
 
 ## Contributor guidelines
@@ -80,7 +80,7 @@ Follow the guidelines in [Local Configuration](docs/local-configuration.md) to s
 Also if you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
 
 
-## Adding services that does not support API Mediation Layer natively
+## Adding services that do not support API Mediation Layer natively
 
 See [Adding Services to API Gateway without Code Changes](docs/static-apis.md).
 
