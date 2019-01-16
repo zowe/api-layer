@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, FormField, Text, TextInput } from 'mineral-ui';
+import { Button, FormField, TextInput } from 'mineral-ui';
 import { IconDanger } from 'mineral-ui-icons';
 
 import logoImage from '../../assets/images/api-catalog-logo.png';
@@ -106,13 +106,7 @@ export default class Login extends React.Component {
                                         className="form"
                                         onSubmit={this.handleSubmit}
                                     >
-                                        <Text color="#ad5f00">
-                                            Use your mainframe credentials
-                                        </Text>
-                                        <FormField
-                                            label="Username"
-                                            className="formfield"
-                                        >
+                                        <FormField label="Username" className="formfield">
                                             <TextInput
                                                 id="username"
                                                 data-testid="username"
@@ -123,10 +117,7 @@ export default class Login extends React.Component {
                                                 onChange={this.handleChange}
                                             />
                                         </FormField>
-                                        <FormField
-                                            label="Password"
-                                            className="formfield"
-                                        >
+                                        <FormField label="Password" className="formfield">
                                             <TextInput
                                                 id="password"
                                                 data-testid="password"
