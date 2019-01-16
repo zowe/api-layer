@@ -3,7 +3,7 @@ ext {
 }
 
 configurations {
-    catalogServiceJar
+    //catalogServiceJar
     discoveryServiceJar
     gatewayServiceJar
     enablerSpringBootJar
@@ -12,7 +12,7 @@ configurations {
 }
 
 dependencies {
-    catalogServiceJar(project(path: ":api-catalog-services", configuration: "bootArchives"))
+    //catalogServiceJar(project(path: ":api-catalog-services", configuration: "bootArchives"))
     discoveryServiceJar(project(path: ":discovery-service", configuration: "bootArchives"))
     gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
     enablerSpringBootJar(project(path: ":integration-enabler-spring-v1", configuration: "archives"))
@@ -24,7 +24,7 @@ task packageApiMediationZowe(type: Zip) {
     includeEmptyDirs = true
 
      into('/') {
-        from configurations.catalogServiceJar
+        //from configurations.catalogServiceJar
         from configurations.discoveryServiceJar
         from configurations.gatewayServiceJar
         from configurations.enablerSpringBootJar
@@ -32,7 +32,7 @@ task packageApiMediationZowe(type: Zip) {
     }
 
     into('scripts/') {
-        from "$buildDir/convert/api-mediation-start-catalog-template.sh"
+        //from "$buildDir/convert/api-mediation-start-catalog-template.sh"
         from "$buildDir/convert/api-mediation-start-discovery-template.sh"
         from "$buildDir/convert/api-mediation-start-gateway-template.sh"
         from "$buildDir/convert/setup-apiml-certificates-template.sh"

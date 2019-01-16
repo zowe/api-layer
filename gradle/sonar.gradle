@@ -40,11 +40,11 @@ project(":gateway-service") {
     }
 }
 
-project(":api-catalog-ui") {
-    sonarqube {
-        skipProject = true
-    }
-}
+//project(":api-catalog-ui") {
+//    sonarqube {
+//        skipProject = true
+//    }
+//}
 
 
 // Packaging project; sonar does not apply

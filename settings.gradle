@@ -14,6 +14,6 @@ include 'zowe-install'
 include 'helloworld-spring'
 include 'integration-enabler-java'
 include 'security-module'
-include 'api-catalog-services'
-include 'api-catalog-ui'
+//include 'api-catalog-services'
+//include 'api-catalog-ui'
 
