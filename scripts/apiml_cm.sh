@@ -305,7 +305,7 @@ function new_self_signed_service {
 
 function trust {
     echo "Import a certificate to the truststore:"
-    pkeytool -importcert $V -trustcacerts -noprompt -file ${CERTIFICATE} -alias ${ALIAS} -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
+    pkeytool -importcert $V -trustcacerts -noprompt -file ${CERTIFICATE} -alias "${ALIAS}" -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 }
 
 function trust_zosmf {
@@ -327,13 +327,15 @@ function trust_zosmf {
     fi
     keytool -list -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
     CERT_PREFIX=${TEMP_DIR}/zosmf_cert_
-    for ALIAS in `cat ${ALIASES_FILE}`; do
-        echo "Exporting certificate ${ALIAS} from z/OSMF:"
-        CERTIFICATE=${CERT_PREFIX}${ALIAS}.cer
-        keytool -exportcert -alias ${ALIAS} -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider -file ${CERTIFICATE}
+    I=0
+    while read ALIAS; do
+        I=$((I + 1))
+        echo "Exporting certificate '${ALIAS}' from z/OSMF:"
+        CERTIFICATE="${CERT_PREFIX}${I}.cer"
+        keytool -exportcert -alias "${ALIAS}" -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider -file ${CERTIFICATE}
         trust
-        rm ${CERTIFICATE}
-    done
+        rm "${CERTIFICATE}"
+    done <${ALIASES_FILE}
 }
 
 while [ "$1" != "" ]; do
