@@ -79,7 +79,7 @@ eureka:
                             title: Service Integration Enabler V2 Sample Application API
                             description: API of sample API service showing how to integrate a Spring Boot v2.x application
                             version: 1.0.0
-                            basePackage: com.ca.mfaas.client.controller.controllers.api
+                            basePackage: com.ca.mfaas.client.api
                 discovery:
                     catalogUiTile:
                         id: cademoapps
