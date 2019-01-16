@@ -1,6 +1,6 @@
 import React from 'react';
-import {Button, FormField, TextInput} from 'mineral-ui';
-import {IconDanger} from 'mineral-ui-icons';
+import { Button, FormField, TextInput } from 'mineral-ui';
+import { IconDanger } from 'mineral-ui-icons';
 
 import logoImage from '../../assets/images/api-catalog-logo.png';
 import './Login.css';
@@ -143,7 +143,7 @@ export default class Login extends React.Component {
                                                 Sign in
                                             </Button>
                                         </FormField>
-                                        <FormField className="formfield form-spinner">
+                                        <FormField className="formfield form-spinner" label="">
                                             <Spinner
                                                 isLoading={isFetching}
                                                 css={{
