@@ -15,7 +15,7 @@ export default class Footer extends Component {
                     <img src={logo} alt="CA technologies, a Broadcom company" id="footerLogo" />
                 </div>
                 <div className="right">
-                    <p>Copyright &copy; 2018 Broadcom. All Rights Reserved.</p>
+                    <p>Copyright &copy; 2019 Broadcom. All Rights Reserved.</p>
                     <Link href="https://support.ca.com/us.html">CA Support</Link>
                 </div>
             </footer>
