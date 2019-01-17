@@ -80,33 +80,23 @@ public class ZosmfSsoIntegrationTest {
                 "items.dsname", hasItems(dsname1, dsname2));
     }
 
-    /*
     @Test
     public void doZosmfCallWithValidLtpaCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
 
-        String token = given()
-            .contentType(JSON)
-            .body(loginRequest)
-            .when()
-            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-            .then()
-            .statusCode(is(SC_OK))
-            .cookie(TOKEN, not(isEmptyString()))
-            .extract().cookie(TOKEN);
+        String ltpa = SecurityUtils.zosmfToken(USERNAME, PASSWORD);
 
         given()
-            .cookie("apimlAuthenticationToken", token)
+            .cookie(SecurityUtils.ZOSMF_TOKEN, ltpa)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .when()
+        .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-            .then()
+        .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
     }
-    */
 
     @Test
     public void doZosmfCallWithInvalidToken() {

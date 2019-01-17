@@ -18,7 +18,9 @@ import java.io.IOException;
 
 @Slf4j
 public class ConfigReader {
-    private ConfigReader() {}
+    private ConfigReader() {
+    }
+
     private static volatile EnvironmentConfiguration instance;
 
     public static EnvironmentConfiguration environmentConfiguration() {
@@ -39,9 +41,10 @@ public class ConfigReader {
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
                         ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = new ApiCatalogServiceConfiguration("user", "user");
                         TlsConfiguration tlsConfiguration = new TlsConfiguration("localhost", "password", "PKCS12",
-                                "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
-                                "../keystore/localhost/localhost.truststore.p12", "password");
-                        configuration = new EnvironmentConfiguration(gatewayServiceConfiguration, discoveryServiceConfiguration, apiCatalogServiceConfiguration, tlsConfiguration);
+                            "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
+                            "../keystore/localhost/localhost.truststore.p12", "password");
+                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);
+                        configuration = new EnvironmentConfiguration(gatewayServiceConfiguration, discoveryServiceConfiguration, apiCatalogServiceConfiguration, tlsConfiguration, zosmfServiceConfiguration);
                     }
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
