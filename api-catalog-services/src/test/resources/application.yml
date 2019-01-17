@@ -26,7 +26,7 @@ mfaas:
         endpoints:
             statusPage: ${mfaas.server.contextPath}/application/info
             healthPage: ${mfaas.server.contextPath}/application/health
-            homePage: ${mfaas.server.contextPath}/
+            homePage: ${mfaas.gateway.gatewayHostname}/ui/v1${mfaas.server.contextPath}
         info:
             serviceTitle: API Catalog
             description: Service to locate and display API documentation for discovered services
