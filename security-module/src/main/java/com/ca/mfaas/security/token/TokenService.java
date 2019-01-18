@@ -27,7 +27,7 @@ import java.util.UUID;
 public class TokenService {
     static final String LTPA_CLAIM_NAME = "ltpa";
     static final String DOMAIN_CLAIM_NAME = "dom";
-    static final String BEARER_TYPE_PREFIX = "Bearer ";
+    static final String BEARER_TYPE_PREFIX = "Bearer";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
@@ -103,12 +103,22 @@ public class TokenService {
     }
 
     public String getLtpaToken(String jwtToken) {
-        Claims claims = Jwts.parser()
-            .setSigningKey(getSecret())
-            .parseClaimsJws(jwtToken)
+        try {
+            Claims claims = Jwts.parser()
+                .setSigningKey(getSecret())
+                .parseClaimsJws(jwtToken)
                 .getBody();
-
-        return claims.get(LTPA_CLAIM_NAME, String.class);
+            return claims.get(LTPA_CLAIM_NAME, String.class);
+        } catch (ExpiredJwtException exception) {
+            log.debug("Authentication: Token with id '{}' for user '{}' is expired", exception.getClaims().getId(), exception.getClaims().getSubject());
+            throw new TokenExpireException("Token is expired");
+        } catch (JwtException exception) {
+            log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
+            throw new TokenNotValidException("Token is not valid");
+        } catch (Exception exception) {
+            log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
+            throw new TokenNotValidException("Token is not valid");
+        }
     }
 
     public String getToken(HttpServletRequest request) {
@@ -126,7 +136,7 @@ public class TokenService {
 
     private String extractTokenFromAuthoritationHeader(String header) {
         if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
-            return header.replaceFirst(BEARER_TYPE_PREFIX, "");
+            return header.replaceFirst(BEARER_TYPE_PREFIX + " ", "");
         }
 
         return null;

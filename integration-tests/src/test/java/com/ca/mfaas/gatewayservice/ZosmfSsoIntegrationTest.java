@@ -98,7 +98,7 @@ public class ZosmfSsoIntegrationTest {
     @Test
     public void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
-        String expectedMessage = "Authentication problem: 'Token is not valid' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Token is not valid'";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
@@ -107,26 +107,26 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage));
+                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
     }
 
     @Test
     public void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
-        String expectedMessage = "Authentication problem: 'Token is not valid' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Token is not valid'";
 
         given()
-            .cookie("apimlAuthenticationToken", token)
+            .cookie("apimlAuthenticationToken", invalidToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
             .log().body()
             .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
             .then()
-            .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage));
+                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
     }
 
     @Test
@@ -146,7 +146,7 @@ public class ZosmfSsoIntegrationTest {
     @Test
     public void doZosmfCallWithEmptyHeader() {
         String emptyToken = " ";
-        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Token is not valid'";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
@@ -155,20 +155,18 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage)
-            );
+                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
     }
 
 
     @Test
     public void doZosmfCallWithEmptyCookie() {
         String emptyToken = " ";
-        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Token is not valid'";
 
         given()
-            .cookie("apimlAuthenticationToken", token)
+            .cookie("apimlAuthenticationToken", emptyToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
             .log().body()
         .when()
@@ -176,7 +174,6 @@ public class ZosmfSsoIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage)
-            );
+                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
     }
 }
