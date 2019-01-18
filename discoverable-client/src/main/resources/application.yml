@@ -20,6 +20,8 @@ apiml:
         port: 10012  # Default port name for discoverable-clinet service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         preferIpAddress: false
+    gateway:
+        gatewayHostname: https://localhost:10010/
 
 spring:
     application:
@@ -55,7 +57,7 @@ eureka:
         nonSecurePortEnabled: false
         securePortEnabled: true
         preferIpAddress: ${apiml.service.preferIpAddress}
-        homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
+        homePageUrl: ${apiml.gateway.gatewayHostname}ui/v1${server.servlet.contextPath}
         statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
         healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
         metadata-map:
