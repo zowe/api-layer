@@ -19,15 +19,19 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ApimlHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
+    private final DiscoveryClientRouteLocator discoveryClientRouteLocator;
 
     @Autowired
-    public ApimlHealthIndicator(DiscoveryClient discoveryClient) {
+    public ApimlHealthIndicator(DiscoveryClient discoveryClient,
+            DiscoveryClientRouteLocator discoveryClientRouteLocator) {
         this.discoveryClient = discoveryClient;
+        this.discoveryClientRouteLocator = discoveryClientRouteLocator;
     }
 
     private Status toStatus(boolean up) {
@@ -38,7 +42,8 @@ public class ApimlHealthIndicator extends AbstractHealthIndicator {
     protected void doHealthCheck(Health.Builder builder) throws Exception {
         boolean apiCatalogUp = this.discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId()).size() > 0;
         boolean discoveryUp = this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).size() > 0;
-        boolean authUp = this.discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId()).size() > 0;
+        boolean authUp = (this.discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId()).size() > 0)
+                && (discoveryClientRouteLocator.getMatchingRoute("/api/v1/gateway/auth/login") != null);
         boolean apimlUp = discoveryUp && authUp;
         builder.status(toStatus(apimlUp)).withDetail("apicatalog", toStatus(apiCatalogUp).getCode())
                 .withDetail("discovery", toStatus(discoveryUp).getCode())
