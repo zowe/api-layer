@@ -23,6 +23,8 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.zuul.filters.Route;
+import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 
 public class ApimlHealthIndicatorTest {
 
@@ -34,7 +36,10 @@ public class ApimlHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
                 Arrays.asList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10014, true)));
 
-        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient);
+        DiscoveryClientRouteLocator discoveryClientRouteLocator = mock(DiscoveryClientRouteLocator.class);
+        when(discoveryClientRouteLocator.getMatchingRoute("/api/v1/gateway/auth/login")).thenReturn(new Route("", "", "", null, false, null));
+
+        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient, discoveryClientRouteLocator);
         Health.Builder builder = new Health.Builder();
         apimlHealthIndicator.doHealthCheck(builder);
         assertEquals(builder.build().getStatus(), Status.UP);
@@ -47,7 +52,10 @@ public class ApimlHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
                 Arrays.asList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10014, true)));
 
-        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient);
+        DiscoveryClientRouteLocator discoveryClientRouteLocator = mock(DiscoveryClientRouteLocator.class);
+        when(discoveryClientRouteLocator.getMatchingRoute("/api/v1/gateway/auth/login")).thenReturn(null);
+        
+        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient, discoveryClientRouteLocator);
         Health.Builder builder = new Health.Builder();
         apimlHealthIndicator.doHealthCheck(builder);
         assertEquals(builder.build().getStatus(), Status.DOWN);
