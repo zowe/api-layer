@@ -31,46 +31,18 @@ import static org.awaitility.Awaitility.await;
  */
 @Slf4j
 public class ApiMediationLayerStartupChecker {
-    private static final String CHECK_ENDPOINT = "/application/routes";
-    private static final String[] ROUTES_TO_CHECK = new String[] {
-        "/api/v1/apicatalog/**",
-        "/api/v1/discoverableclient/**",
-        "/api/v1/staticclient/**"
-    };
+    public ApiMediationLayerStartupChecker() {
+    }
 
-
-    public ApiMediationLayerStartupChecker() { }
-
-    /**
-     * Waits x minutes until the discoverable-client and api-catalog services are started.
-     */
     public void waitUntilReady() {
-        await().atMost(3, MINUTES).pollInterval(10, SECONDS).until(this::isReady);
+        await().atMost(3, MINUTES).pollDelay(0, SECONDS).pollInterval(10, SECONDS).until(this::isReady);
     }
 
     private boolean isReady() {
-        return severalSuccessfulResponse(3);
-    }
-
-    private boolean severalSuccessfulResponse(int times) {
-        for (int i = 0; i < times; i++) {
-            if (!successfulResponse()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean successfulResponse() {
-        return checkServiceRouting();
-    }
-
-    private boolean checkServiceRouting() {
-        log.info("Checking for API to be available for routing...");
+        log.info("Checking of the API Mediation Layer is ready to be used...");
 
         try {
-            HttpGet request = HttpRequestUtils.getRequest(CHECK_ENDPOINT);
+            HttpGet request = HttpRequestUtils.getRequest("/application/health");
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 log.warn("Unexpected HTTP status code: {}", response.getStatusLine().getStatusCode());
@@ -78,13 +50,9 @@ public class ApiMediationLayerStartupChecker {
             }
             final String jsonResponse = EntityUtils.toString(response.getEntity());
             DocumentContext documentContext = JsonPath.parse(jsonResponse);
-            for (String route : ROUTES_TO_CHECK) {
-                if (documentContext.read(route) == null) {
-                    log.warn("Route '{}' is not found", route);
-                    return false;
-                }
-            }
-            return true;
+            return documentContext.read("$.status").equals("UP")
+                    && documentContext.read("$.details.discoveryComposite.details.discoveryClient.details.services")
+                            .toString().contains("discoverableclient");
         } catch (IOException | PathNotFoundException e) {
             log.warn("Check failed: {}", e.getMessage());
         }
