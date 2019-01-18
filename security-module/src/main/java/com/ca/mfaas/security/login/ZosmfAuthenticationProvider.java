@@ -64,11 +64,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         String user = authentication.getPrincipal().toString();
         String password = authentication.getCredentials().toString();
 
-        String zosmf = securityConfigurationProperties.getZosmfServiceId();
-        if (zosmf == null || zosmf.isEmpty()) {
-            log.error("zOSMF service name not found. Set property mfaas.security.zosmfServiceId to your service name.");
-            throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
-        }
+        String zosmf = securityConfigurationProperties.validatedZosmfServiceId();
 
         String uri = getURI(zosmf);
 
@@ -113,8 +109,8 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         }
 
         if (uri == null) {
-            log.error("zOSMF instance '{}' not found or incorrectly configured.", zosmf);
-            throw new AuthenticationServiceException("zOSMF instance not found or incorrectly configured.");
+            log.error("z/OSMF instance '{}' not found or incorrectly configured.", zosmf);
+            throw new AuthenticationServiceException("z/OSMF instance not found or incorrectly configured.");
         }
 
         return uri;
@@ -138,15 +134,15 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         try {
             zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);
         } catch (IOException e) {
-            log.error("Error parsing zOSMF response.");
-            throw new AuthenticationServiceException("zOSMF domain cannot be read.");
+            log.error("Error parsing z/OSMF response.");
+            throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
         }
 
         if (zosmfNode != null && zosmfNode.has(ZOSMF_DOMAIN)) {
             return zosmfNode.get(ZOSMF_DOMAIN).asText();
         } else {
-            log.error("zOSMF response does not contain field '{}'.", ZOSMF_DOMAIN);
-            throw new AuthenticationServiceException("zOSMF domain cannot be read.");
+            log.error("z/OSMF response does not contain field '{}'.", ZOSMF_DOMAIN);
+            throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
         }
     }
 

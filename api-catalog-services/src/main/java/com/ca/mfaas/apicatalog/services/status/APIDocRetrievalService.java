@@ -14,7 +14,7 @@ import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
-import com.ca.mfaas.product.family.ProductFamilyType;
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
@@ -158,7 +158,7 @@ public class APIDocRetrievalService {
      */
     public String getGatewayUrl() {
         if (this.gatewayUrl == null) {
-            InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId());
+            InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
             if (gatewayInstance == null) {
                 String msg = "Cannot obtain information about API Gateway from Discovery Service";
                 log.error(msg);
