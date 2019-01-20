@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.startup.impl;
 
+import com.ca.mfaas.utils.config.ConfigReader;
+import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import com.ca.mfaas.utils.http.HttpClientUtils;
 import com.ca.mfaas.utils.http.HttpRequestUtils;
 import com.jayway.jsonpath.DocumentContext;
@@ -31,7 +33,10 @@ import static org.awaitility.Awaitility.await;
  */
 @Slf4j
 public class ApiMediationLayerStartupChecker {
+    private final GatewayServiceConfiguration gatewayConfiguration;
+
     public ApiMediationLayerStartupChecker() {
+        gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     }
 
     public void waitUntilReady() {
@@ -40,7 +45,20 @@ public class ApiMediationLayerStartupChecker {
 
     private boolean isReady() {
         log.info("Checking of the API Mediation Layer is ready to be used...");
+        return severalSuccessfulResponses(3);
+    }
 
+    private boolean severalSuccessfulResponses(int times) {
+        for (int i = 0; i < times; i++) {
+            if (!successfulResponse()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean successfulResponse() {
         try {
             HttpGet request = HttpRequestUtils.getRequest("/application/health");
             final HttpResponse response = HttpClientUtils.client().execute(request);
@@ -50,12 +68,21 @@ public class ApiMediationLayerStartupChecker {
             }
             final String jsonResponse = EntityUtils.toString(response.getEntity());
             DocumentContext documentContext = JsonPath.parse(jsonResponse);
-            return documentContext.read("$.status").equals("UP")
-                    && documentContext.read("$.details.discoveryComposite.details.discoveryClient.details.services")
-                            .toString().contains("discoverableclient");
+            return documentContext.read("$.status").equals("UP") && allInstancesUp(documentContext)
+                    && testApplicationUp(documentContext);
         } catch (IOException | PathNotFoundException e) {
             log.warn("Check failed: {}", e.getMessage());
         }
         return false;
+    }
+
+    private boolean testApplicationUp(DocumentContext documentContext) {
+        return documentContext.read("$.details.discoveryComposite.details.discoveryClient.details.services").toString()
+                .contains("discoverableclient");
+    }
+
+    private boolean allInstancesUp(DocumentContext documentContext) {
+        return documentContext.read("$.details.apiml.details.gatewayCount")
+                .equals(Integer.valueOf(gatewayConfiguration.getInstances()));
     }
 }

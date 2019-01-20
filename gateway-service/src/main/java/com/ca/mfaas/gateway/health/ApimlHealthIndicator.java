@@ -40,6 +40,7 @@ public class ApimlHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
+        int gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
         boolean apiCatalogUp = this.discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId()).size() > 0;
         boolean discoveryUp = this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).size() > 0;
         boolean authUp = (this.discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId()).size() > 0)
@@ -47,6 +48,7 @@ public class ApimlHealthIndicator extends AbstractHealthIndicator {
         boolean apimlUp = discoveryUp && authUp;
         builder.status(toStatus(apimlUp)).withDetail("apicatalog", toStatus(apiCatalogUp).getCode())
                 .withDetail("discovery", toStatus(discoveryUp).getCode())
-                .withDetail("auth", toStatus(authUp).getCode());
+                .withDetail("auth", toStatus(authUp).getCode())
+                .withDetail("gatewayCount", gatewayCount);
     }
 }
