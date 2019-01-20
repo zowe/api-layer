@@ -14,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 
@@ -34,10 +35,25 @@ public class AuthHealthIndicatorTest {
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(ZOSMF))
                 .thenReturn(Arrays.asList(new DefaultServiceInstance(ZOSMF, "host", 443, true)));
-        
-        AuthHealthIndicator authHealthIndicator = new AuthHealthIndicator(discoveryClient, securityConfigurationProperties);
+
+        AuthHealthIndicator authHealthIndicator = new AuthHealthIndicator(discoveryClient,
+                securityConfigurationProperties);
         Health.Builder builder = new Health.Builder();
         authHealthIndicator.doHealthCheck(builder);
         assertEquals(builder.build().getStatus(), Status.UP);
+    }
+
+    @Test
+    public void testStatusIsDownWhenNoZosmfIsAvailable() throws Exception {
+        SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+        securityConfigurationProperties.setZosmfServiceId(ZOSMF);
+        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.emptyList());
+
+        AuthHealthIndicator authHealthIndicator = new AuthHealthIndicator(discoveryClient,
+                securityConfigurationProperties);
+        Health.Builder builder = new Health.Builder();
+        authHealthIndicator.doHealthCheck(builder);
+        assertEquals(builder.build().getStatus(), Status.DOWN);
     }
 }
