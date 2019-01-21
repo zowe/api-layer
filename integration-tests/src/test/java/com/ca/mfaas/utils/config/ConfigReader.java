@@ -37,7 +37,7 @@ public class ConfigReader {
                     } catch (IOException e) {
                         log.info("Can't read service configuration from resource file, using default: http://localhost:10010");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", 10010, "qadba01", "auto01");
+                            = new GatewayServiceConfiguration("https", "localhost", 10010, "user", "password", 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
                         ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = new ApiCatalogServiceConfiguration("user", "user");
                         TlsConfiguration tlsConfiguration = new TlsConfiguration("localhost", "password", "PKCS12",
@@ -52,6 +52,7 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setPort(Integer.parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort()))));
                     configuration.getGatewayServiceConfiguration().setUser(System.getProperty("gateway.user", configuration.getGatewayServiceConfiguration().getUser()));
                     configuration.getGatewayServiceConfiguration().setPassword(System.getProperty("gateway.password", configuration.getGatewayServiceConfiguration().getPassword()));
+                    configuration.getGatewayServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
 
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
