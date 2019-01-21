@@ -46,6 +46,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    //@formatter:off
     public void doZosmfCallWithValidToken() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
@@ -96,6 +97,22 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    public void doZosmfCallWithValidBasicHeader() {
+        String dsname1 = "SYS1.PARMLIB";
+        String dsname2 = "SYS1.PROCLIB";
+
+        given()
+            .auth().preemptive().basic(USERNAME, PASSWORD)
+            .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+        .when()
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK))
+            .body(
+                "items.dsname", hasItems(dsname1, dsname2));
+    }
+
+    @Test
     public void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
         String expectedMessage = "Authentication problem: 'Token is not valid'";
@@ -103,7 +120,6 @@ public class ZosmfSsoIntegrationTest {
         given()
             .header("Authorization", "Bearer " + invalidToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .log().body()
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
@@ -120,10 +136,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .log().body()
-            .when()
+        .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-            .then()
+        .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
@@ -151,7 +166,6 @@ public class ZosmfSsoIntegrationTest {
         given()
             .header("Authorization", "Bearer " + emptyToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .log().body()
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
@@ -168,7 +182,6 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie("apimlAuthenticationToken", emptyToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .log().body()
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
@@ -176,4 +189,5 @@ public class ZosmfSsoIntegrationTest {
             .body(
                 "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
     }
+    //@formatter:on
 }
