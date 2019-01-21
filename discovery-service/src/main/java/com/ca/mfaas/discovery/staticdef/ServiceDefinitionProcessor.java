@@ -178,7 +178,7 @@ public class ServiceDefinitionProcessor {
             .setMetadata(createMetadata(service, url, tile));
 
         if (service.getHomePageRelativeUrl() != null) {
-            builder.setHomePageUrl(null, instanceBaseUrl + service.getHomePageRelativeUrl());
+            builder.setHomePageUrl(null, service.getHomePageRelativeUrl());
         }
 
         if (service.getStatusPageRelativeUrl() != null) {
