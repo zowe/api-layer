@@ -110,7 +110,7 @@ public class QueryIntegrationTest {
     @Test
     public void doQueryWithEmptyHeader() {
         String emptyToken = " ";
-        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Token is not valid' for URL '/apicatalog/auth/query'";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
