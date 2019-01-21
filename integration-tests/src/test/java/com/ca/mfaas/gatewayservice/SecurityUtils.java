@@ -40,30 +40,32 @@ public class SecurityUtils {
     private static String zosmfHost = zosmfServiceConfiguration.getHost();
     private static int zosmfPort = zosmfServiceConfiguration.getPort();
 
+    //@formatter:off
     public static String gatewayToken(String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
         return given()
-                    .contentType(JSON)
-                    .body(loginRequest)
-                .when()
-                   .post(String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH, GATEWAY_LOGIN_ENDPOINT))
-                .then()
-                  .statusCode(is(SC_OK))
-                  .cookie(GATEWAY_TOKEN, not(isEmptyString()))
-                  .extract().cookie(GATEWAY_TOKEN);
+            .contentType(JSON)
+            .body(loginRequest)
+        .when()
+            .post(String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH, GATEWAY_LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK))
+            .cookie(GATEWAY_TOKEN, not(isEmptyString()))
+            .extract().cookie(GATEWAY_TOKEN);
     }
 
     public static String zosmfToken(String username, String password) {
         return given()
-                    .auth().preemptive().basic(username, password)
-                    .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-                    .log().all()
-              .when()
-                    .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_LOGIN_ENDPOINT))
-              .then()
-                    .statusCode(is(SC_OK))
-                    .cookie(ZOSMF_TOKEN, not(isEmptyString()))
-                    .extract().cookie(ZOSMF_TOKEN);
+            .auth().preemptive().basic(username, password)
+            .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+            .log().all()
+        .when()
+            .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK))
+            .cookie(ZOSMF_TOKEN, not(isEmptyString()))
+            .extract().cookie(ZOSMF_TOKEN);
     }
+    //@formatter:on
 }
