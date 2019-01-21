@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,14 +33,16 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
     @Override
     public ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException) {
-            ApiMessage message = null;
-            Throwable cause = exc.getCause();
-            if (cause instanceof TokenExpireException) {
-                message = errorService.createApiMessage("com.ca.mfaas.security.tokenIsExpiredWithoutUrl", cause.getMessage());
-            } else if (cause instanceof TokenNotValidException) {
-                message = errorService.createApiMessage("com.ca.mfaas.security.tokenIsNotValidWithoutUrl", cause.getMessage());
+            if (exc.getCause() instanceof AuthenticationException) {
+                ApiMessage message = null;
+                Throwable cause = exc.getCause();
+                if (cause instanceof TokenExpireException) {
+                    message = errorService.createApiMessage("com.ca.mfaas.security.tokenIsExpiredWithoutUrl", cause.getMessage());
+                } else if (cause instanceof TokenNotValidException) {
+                    message = errorService.createApiMessage("com.ca.mfaas.security.tokenIsNotValidWithoutUrl", cause.getMessage());
+                }
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(message);
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(message);
             }
 
         return null;
