@@ -1,18 +1,19 @@
 ---
 name: Bug report
 about: Create a report to help us improve
+title: ''
+labels: bug
+assignees: petr-galik
 
 ---
 
 **Describe the bug**
 A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Steps to Reproduce**
+
+1.
+2.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
@@ -24,16 +25,15 @@ If applicable, add screenshots to help explain your problem.
 If applicable, add server logs collected at the time of your problem.
 
 **Details**
- - Version: [e.g. 0.9.1]
- - Build number: [e.g. #23]
+ - Version and build number: [e.g. 0.4.4-SNAPSHOT build # 155]
  - Test environment: [e.g. A - see https://cawiki.ca.com/x/8hFALw for CA environments]
 
-**API Catalog Web UI (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**API Catalog Web UI (in case of API Catalog issue):**
+ - OS: [e.g. macOS, Windows]
+ - Browser [e.g. Chrome, Safari]
+ - Version [e.g. 71.0.3578.98]
 
-**REST API client (please complete the following information):**
+**REST API client (in case of REST API issue):**
  - Technology: [e.g. Spring Boot, Node.js]
  - OS: [e.g. Windows 10]
 

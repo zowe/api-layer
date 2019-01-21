@@ -4,6 +4,7 @@ gatewayServiceConfiguration:
     port: 10010
     user: notused
     password: notused
+    instances: 1
 discoveryServiceConfiguration:
     scheme: https
     user: eureka
@@ -24,3 +25,7 @@ tlsConfiguration:
     trustStoreType: PKCS12
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: ca32.ca.com
+    port: 1443

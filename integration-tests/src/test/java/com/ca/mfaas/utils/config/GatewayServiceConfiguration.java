@@ -22,4 +22,5 @@ public class GatewayServiceConfiguration {
     private int port;
     private String user;
     private String password;
+    private int instances;
 }

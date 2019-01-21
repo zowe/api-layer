@@ -11,7 +11,7 @@ package com.ca.mfaas.apicatalog.services.status;
 
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
-import com.ca.mfaas.product.family.ProductFamilyType;
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Test;
@@ -50,9 +50,9 @@ public class LocalApiDocServiceTest {
         String apiDoc = "api doc goes here";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
 
-        when(instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId()))
+        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId()))
             .thenReturn(
-                getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
+                getStandardInstance(CoreService.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 
         String url =  "https://localhost:9090/api/v1/api-doc/service1";
         when(
@@ -70,9 +70,9 @@ public class LocalApiDocServiceTest {
         String apiDoc = "{}";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.NOT_FOUND);
 
-        when(instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId()))
+        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId()))
             .thenReturn(
-                getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
+                getStandardInstance(CoreService.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 
         String url =  "https://localhost:9090/api/v1/api-doc/service1";
         when(
@@ -88,9 +88,9 @@ public class LocalApiDocServiceTest {
         String apiDoc = "{}";
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.INTERNAL_SERVER_ERROR);
 
-        when(instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId()))
+        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId()))
             .thenReturn(
-                getStandardInstance(ProductFamilyType.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
+                getStandardInstance(CoreService.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP));
 
         String url =  "https://localhost:9090/api/v1/api-doc/service1";
         when(

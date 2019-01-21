@@ -7,12 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog.services.status;
+package com.ca.mfaas.utils.config;
 
-public enum CONTAINER_STATUS_TYPE {
-    RUNNING,
-    STOPPED,
-    ERROR,
-    UNKNOWN,
-    WARNING
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class ZosmfServiceConfiguration {
+    private String scheme;
+    private String host;
+    private int port;
 }
