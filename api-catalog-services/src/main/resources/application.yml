@@ -152,6 +152,9 @@ management:
     health:
         defaults:
             enabled: false
+    endpoint:
+        health:
+            showDetails: always
 
 ---
 spring:

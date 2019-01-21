@@ -13,7 +13,7 @@ import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
-import com.ca.mfaas.product.family.ProductFamilyType;
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.registry.ApplicationWrapper;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -83,7 +83,7 @@ public class InstanceRetrievalService {
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
         log.info("Initialising API Catalog with Gateway services.");
         try {
-            String serviceId = ProductFamilyType.API_CATALOG.getServiceId();
+            String serviceId = CoreService.API_CATALOG.getServiceId();
             InstanceInfo apiCatalogInstance = getInstanceInfo(serviceId);
             if (apiCatalogInstance == null) {
                 String msg = "API Catalog Instance not retrieved from gateway, retrying...";
