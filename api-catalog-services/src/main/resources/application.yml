@@ -1,6 +1,6 @@
 apiml:
     security:
-        zosmfServiceId: zosmf
+        zosmfServiceId: zosmfca32
 
 spring:
     application:
