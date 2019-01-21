@@ -59,7 +59,6 @@ public class SecurityUtils {
         return given()
             .auth().preemptive().basic(username, password)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-            .log().all()
         .when()
             .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_LOGIN_ENDPOINT))
         .then()
