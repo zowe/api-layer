@@ -33,6 +33,8 @@ spring:
     output:
         ansi:
             enabled: detect
+    main:
+        allow-bean-definition-overriding: true
 
 server:
     address: ${apiml.service.ipAddress}

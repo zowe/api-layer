@@ -9,12 +9,16 @@
  */
 package com.ca.mfaas.client.configuration;
 
+import com.ca.mfaas.enable.EnableApiDiscovery;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ComponentScan(value = { "com.ca.mfaas.client", "com.ca.mfaas.enable", "com.ca.mfaas.product.web" })
+@EnableApiDiscovery
 public class ApplicationConfiguration {
     @Bean
     public ErrorService errorService() {

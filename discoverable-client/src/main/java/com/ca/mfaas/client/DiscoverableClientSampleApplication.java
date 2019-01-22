@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.client;
 
-import com.ca.mfaas.enable.EnableApiDiscovery;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
@@ -18,14 +17,11 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
-@EnableApiDiscovery
 @EnableConfigurationProperties
 @EnableWebSocket
-@ComponentScan(value = { "com.ca.mfaas.client", "com.ca.mfaas.enable", "com.ca.mfaas.product.web" })
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
