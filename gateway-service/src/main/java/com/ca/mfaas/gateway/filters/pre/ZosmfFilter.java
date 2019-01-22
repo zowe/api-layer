@@ -53,16 +53,17 @@ public class ZosmfFilter extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
 
         String jwtToken = tokenService.getToken(context.getRequest());
-        String ltpaToken = tokenService.getLtpaToken(jwtToken);
+        if (jwtToken != null) {
+            String ltpaToken = tokenService.getLtpaToken(jwtToken);
 
-        String cookie = context.getZuulRequestHeaders().get(COOKIE_HEADER);
-        if (cookie != null) {
-            cookie += "; " + ltpaToken;
+            String cookie = context.getZuulRequestHeaders().get(COOKIE_HEADER);
+            if (cookie != null) {
+                cookie += "; " + ltpaToken;
+            } else {
+                cookie = ltpaToken;
+            }
+            context.addZuulRequestHeader(COOKIE_HEADER, cookie);
         }
-        else {
-            cookie = ltpaToken;
-        }
-        context.addZuulRequestHeader(COOKIE_HEADER, cookie);
         return null;
     }
 }

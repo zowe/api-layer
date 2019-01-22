@@ -14,12 +14,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class EnvironmentConfiguration {
-    private GatewayServiceConfiguration gatewayServiceConfiguration;
-    private DiscoveryServiceConfiguration discoveryServiceConfiguration;
-    private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
-    private TlsConfiguration tlsConfiguration;
-    private ZosmfServiceConfiguration zosmfServiceConfiguration;
+@NoArgsConstructor
+public class ZosmfServiceConfiguration {
+    private String scheme;
+    private String host;
+    private int port;
 }

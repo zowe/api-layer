@@ -42,7 +42,6 @@ dependencies {
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_websocket
     compile libraries.spring_boot_starter_thymeleaf
-    compile libraries.spring_boot_devtools
     compile libraries.tomcat_coyote
     compile libraries.tomcat_embed_core
     compile libraries.spring_cloud_starter_eureka
