@@ -22,6 +22,9 @@ case $RELEASE_TYPE in
    echo "Make MAJOR release"
    ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.scope=major $AUTH
    ;;
+   "SPECIFIC_RELEASE")
+   echo "Make specific release"
+   ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=$RELEASE_VERSION -Prelease.newVersion=$NEW_VERSION $AUTH
 esac
 
 echo "End of publish and release"

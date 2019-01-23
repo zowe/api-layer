@@ -1,6 +1,6 @@
 apiml:
     security:
-        zosmfServiceId: zosmf
+        zosmfServiceId: zosmfca32
 
 spring:
     application:
@@ -44,7 +44,7 @@ mfaas:
         eurekaUserName: ${environment.eurekaUserId}
         eurekaUserPassword: ${environment.eurekaPassword}
         endpoints:
-            homePage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}
+            homePage: ${mfaas.gateway.gatewayHostname}/ui/v1${mfaas.server.contextPath}
             statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
             healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
         info:
@@ -152,6 +152,9 @@ management:
     health:
         defaults:
             enabled: false
+    endpoint:
+        health:
+            showDetails: always
 
 ---
 spring:

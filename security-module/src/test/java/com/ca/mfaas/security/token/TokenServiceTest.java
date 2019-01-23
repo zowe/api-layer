@@ -158,7 +158,7 @@ public class TokenServiceTest {
         TokenService tokenService = new TokenService(securityConfigurationProperties);
         tokenService.setSecret(SECRET);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_TYPE_PREFIX + TEST_TOKEN);
+        request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_TYPE_PREFIX + " " + TEST_TOKEN);
 
         assertEquals(TEST_TOKEN, tokenService.getToken(request));
     }

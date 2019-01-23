@@ -21,4 +21,5 @@ public class EnvironmentConfiguration {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
+    private ZosmfServiceConfiguration zosmfServiceConfiguration;
 }

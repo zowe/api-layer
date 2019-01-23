@@ -10,11 +10,15 @@
 package com.ca.mfaas.security.config;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
 @Data
 @Component
+@Slf4j
 @ConfigurationProperties(prefix = "apiml.security", ignoreUnknownFields = false)
 public class SecurityConfigurationProperties {
     public SecurityConfigurationProperties() {
@@ -48,5 +52,13 @@ public class SecurityConfigurationProperties {
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
         private Integer cookieMaxAge = 24 * 60 * 60;
+    }
+
+    public String validatedZosmfServiceId() {
+        if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
+            log.error("z/OSMF service name not found. Set property apiml.security.zosmfServiceId to your service name.");
+            throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
+        }        
+        return zosmfServiceId;
     }
 }

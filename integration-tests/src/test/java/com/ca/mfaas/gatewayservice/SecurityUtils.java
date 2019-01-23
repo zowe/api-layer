@@ -10,10 +10,10 @@
 package com.ca.mfaas.gatewayservice;
 
 
-
 import com.ca.mfaas.security.login.LoginRequest;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
+import com.ca.mfaas.utils.config.ZosmfServiceConfiguration;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -23,28 +23,48 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 public class SecurityUtils {
-    private final static String TOKEN = "apimlAuthenticationToken";
-    private final static String LOGIN_ENDPOINT = "/auth/login";
+    private final static String GATEWAY_TOKEN = "apimlAuthenticationToken";
+    private final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
+    private final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
+    public final static String ZOSMF_TOKEN = "LtpaToken2";
+    private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
 
     private static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-    private static String scheme = serviceConfiguration.getScheme();
-    private static String host = serviceConfiguration.getHost();
-    private static int port = serviceConfiguration.getPort();
-    private static String basePath = "/api/v1/gateway";
+    private static ZosmfServiceConfiguration zosmfServiceConfiguration = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration();
 
+    private static String gatewayScheme = serviceConfiguration.getScheme();
+    private static String gatewayHost = serviceConfiguration.getHost();
+    private static int gatewayPort = serviceConfiguration.getPort();
+
+    private static String zosmfScheme = zosmfServiceConfiguration.getScheme();
+    private static String zosmfHost = zosmfServiceConfiguration.getHost();
+    private static int zosmfPort = zosmfServiceConfiguration.getPort();
+
+    //@formatter:off
     public static String gatewayToken(String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
-        String token = given()
+        return given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
-            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-            .then()
+        .when()
+            .post(String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH, GATEWAY_LOGIN_ENDPOINT))
+        .then()
             .statusCode(is(SC_OK))
-            .cookie(TOKEN, not(isEmptyString()))
-            .extract().cookie(TOKEN);
-
-        return token;
+            .cookie(GATEWAY_TOKEN, not(isEmptyString()))
+            .extract().cookie(GATEWAY_TOKEN);
     }
+
+    public static String zosmfToken(String username, String password) {
+        return given()
+            .auth().preemptive().basic(username, password)
+            .header("X-CSRF-ZOSMF-HEADER", "zosmf")
+        .when()
+            .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK))
+            .cookie(ZOSMF_TOKEN, not(isEmptyString()))
+            .extract().cookie(ZOSMF_TOKEN);
+    }
+    //@formatter:on
 }

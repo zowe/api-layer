@@ -130,7 +130,7 @@ public class ZosmfAuthenticationProviderTest {
             = new ZosmfAuthenticationProvider(securityConfigurationProperties, tokenService, discovery, mapper, restTemplate);
 
         exception.expect(AuthenticationServiceException.class);
-        exception.expectMessage("zOSMF instance not found or incorrectly configured.");
+        exception.expectMessage("z/OSMF instance not found or incorrectly configured.");
 
         zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
     }
@@ -165,7 +165,7 @@ public class ZosmfAuthenticationProviderTest {
             = new ZosmfAuthenticationProvider(securityConfigurationProperties, tokenService, discovery, mapper, restTemplate);
 
         exception.expect(AuthenticationServiceException.class);
-        exception.expectMessage("zOSMF domain cannot be read.");
+        exception.expectMessage("z/OSMF domain cannot be read.");
 
         zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
     }
@@ -191,7 +191,7 @@ public class ZosmfAuthenticationProviderTest {
             = new ZosmfAuthenticationProvider(securityConfigurationProperties, tokenService, discovery, mapper, restTemplate);
 
         exception.expect(AuthenticationServiceException.class);
-        exception.expectMessage("zOSMF domain cannot be read.");
+        exception.expectMessage("z/OSMF domain cannot be read.");
 
         zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
     }
