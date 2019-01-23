@@ -11,6 +11,7 @@ describe('>>> Footer component tests', () => {
     });
 
     it('should display link to ca support', () => {
+        process.env.REACT_APP_CA_ENV = true;
         const footer = enzyme.shallow(<Footer />);
         expect(footer.find('Link').length).toBeDefined();
     });
@@ -24,5 +25,14 @@ describe('>>> Footer component tests', () => {
                 .first()
                 .props().href
         ).toEqual('https://support.ca.com/us.html');
+    });
+
+    it('should show the copyright', () => {
+        process.env.REACT_APP_CA_ENV = true;
+        const footer = enzyme.shallow(<Footer />);
+        const copyright = footer.find('p').text();
+        expect(copyright).toBe(
+            'Copyright © 2019 Broadcom. All Rights Reserved. The term "Broadcom" refers to Broadcom Inc. and/or its subsidiaries.'
+        );
     });
 });

@@ -24,7 +24,13 @@ footer {
 }
 
 .left {
-    padding: 16px 0;
+    padding: calc(32px/2) 0;
+    display: flex;
+    flex-direction: row;
+}
+
+.left img {
+    margin-right: calc(32px/2);
 }
 
 #footerLogo {
