@@ -15,7 +15,8 @@ export default class Dashboard extends Component {
     }
 
     componentWillUnmount() {
-        const { fetchTilesStop } = this.props;
+        const { fetchTilesStop, clear } = this.props;
+        clear();
         fetchTilesStop();
     }
 

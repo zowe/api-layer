@@ -7,7 +7,7 @@ import {
     fetchTilesStop,
 } from '../../actions/catalog-tile-actions';
 import { clearService } from '../../actions/selected-service-actions';
-import { filterText } from '../../actions/filter-actions';
+import { filterText, clear } from '../../actions/filter-actions';
 import { createLoadingSelector, getVisibleTiles } from '../../selectors/selectors';
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);
@@ -26,6 +26,7 @@ const mapDispatchToProps = {
     fetchTilesFailed,
     fetchTilesStop,
     filterText,
+    clear,
 };
 
 export default connect(
