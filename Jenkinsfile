@@ -133,7 +133,7 @@ pipeline {
                 stage ('Build API Catalog') {
                     steps {
                         timeout(time: 10, unit: 'MINUTES') {
-                            sh './gradlew :api-catalog-services:build'
+                            sh 'echo build api-catalog... #./gradlew :api-catalog-services:build'
                         }
                     }
                 }
@@ -159,31 +159,31 @@ pipeline {
                 stage('Build and unit test with coverage') {
                     steps {
                         timeout(time: 20, unit: 'MINUTES') {
-                            sh './gradlew build coverage'
+                            sh './gradlew build'
                         }
                     }
                 }
 
-                stage('Publish coverage reports') {
-                    steps {
-                           publishHTML(target: [
-                               allowMissing         : false,
-                               alwaysLinkToLastBuild: false,
-                               keepAll              : true,
-                               reportDir            : 'build/reports/jacoco/jacocoFullReport/html',
-                               reportFiles          : 'index.html',
-                               reportName           : "Java Coverage Report"
-                           ])
-                            publishHTML(target: [
-                                allowMissing         : false,
-                                alwaysLinkToLastBuild: false,
-                                keepAll              : true,
-                                reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
-                                reportFiles          : 'index.html',
-                                reportName           : "UI JavaScript Test Coverage"
-                            ])
-                    }
-                }
+//                stage('Publish coverage reports') {
+//                    steps {
+////                           publishHTML(target: [
+////                               allowMissing         : false,
+////                               alwaysLinkToLastBuild: false,
+////                               keepAll              : true,
+////                               reportDir            : 'build/reports/jacoco/jacocoFullReport/html',
+////                               reportFiles          : 'index.html',
+////                               reportName           : "Java Coverage Report"
+////                           ])
+////                            publishHTML(target: [
+////                                allowMissing         : false,
+////                                alwaysLinkToLastBuild: false,
+////                                keepAll              : true,
+////                                reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
+////                                reportFiles          : 'index.html',
+////                                reportName           : "UI JavaScript Test Coverage"
+////                            ])
+//                    }
+//                }
 
                 /************************************************************************
                 * STAGE
@@ -209,18 +209,18 @@ pipeline {
                         }
                     }
                 }
-                stage('Publish UI test results') {
-                    steps {
-                        publishHTML(target: [
-                            allowMissing         : false,
-                            alwaysLinkToLastBuild: false,
-                            keepAll              : true,
-                            reportDir            : 'api-catalog-ui/frontend/test-results',
-                            reportFiles          : 'test-report-unit.html',
-                            reportName           : "UI Unit Test Results"
-                        ])
-                    }
-                }
+//                stage('Publish UI test results') {
+//                    steps {
+//                        publishHTML(target: [
+//                            allowMissing         : false,
+//                            alwaysLinkToLastBuild: false,
+//                            keepAll              : true,
+//                            reportDir            : 'api-catalog-ui/frontend/test-results',
+//                            reportFiles          : 'test-report-unit.html',
+//                            reportName           : "UI Unit Test Results"
+//                        ])
+//                    }
+//                }
 
                 stage('Publish snapshot version to Artifactory for master') {
                     when {
@@ -237,22 +237,22 @@ pipeline {
             }
         }
 
-        stage ('Javascript Test and Coverage') {
-            when { expression { changeClass in ['full', 'api-catalog'] } }
-            steps {
-                sh './gradlew :api-catalog-ui:startMockedBackend &'
-                sh './gradlew :api-catalog-ui:javaScriptCoverage'
-            }
-        }
+//        stage ('Javascript Test and Coverage') {
+//            when { expression { changeClass in ['full', 'api-catalog'] } }
+//            steps {
+//                sh './gradlew :api-catalog-ui:startMockedBackend &'
+//                sh './gradlew :api-catalog-ui:javaScriptCoverage'
+//            }
+//        }
 
-        stage ('Codecov') {
-            when { expression { changeClass in ['full', 'api-catalog'] } }
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
-                    sh 'curl -s https://codecov.io/bash | bash -s'
-                }
-            }
-        }
+//        stage ('Codecov') {
+//            when { expression { changeClass in ['full', 'api-catalog'] } }
+//            steps {
+//                withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
+//                    sh 'curl -s https://codecov.io/bash | bash -s'
+//                }
+//            }
+//        }
     }
 
     post {
@@ -262,7 +262,7 @@ pipeline {
         }
 
         success {
-            archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
+//            archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
