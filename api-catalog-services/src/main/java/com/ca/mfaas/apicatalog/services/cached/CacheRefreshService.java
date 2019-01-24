@@ -13,7 +13,6 @@ import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
-import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.enable.model.ApiDocConfigException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
@@ -167,16 +166,6 @@ public class CacheRefreshService {
     private void processInstance(Set<String> containersUpdated, InstanceInfo instance, Application application) {
         if (InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             application.removeInstance(instance);
-
-            // invalidate API doc cache so next request will trigger a retrieval
-        } else {
-            // refresh API Doc by requesting it from updated instance
-            CompletableFuture
-                .supplyAsync(() -> retrieveApiDocFromInstance(instance, API_VERSION))
-                .exceptionally(ex -> {
-                    throw new ApiDocNotFoundException("Could not retrieve API Doc: " + ex.getMessage(), ex);
-                })
-                .thenAccept(apiDoc -> updateApiDocCache(instance.getAppName().toLowerCase(), API_VERSION, apiDoc));
         }
 
         // Update the service cache
@@ -184,16 +173,6 @@ public class CacheRefreshService {
 
         // update any containers which contain this service
         updateContainers(containersUpdated, instance.getAppName(), application);
-    }
-
-    /**
-     * Get the API doc from a particular instance
-     * @param instance he instance
-     * @param version the API doc version
-     * @return the Api Doc as a String
-     */
-    private String retrieveApiDocFromInstance(InstanceInfo instance, String version) {
-        return apiDocRetrievalService.retrieveApiDocFromInstance(instance, version);
     }
 
     /**

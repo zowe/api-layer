@@ -126,7 +126,7 @@ public class ApiDocController {
         "        }\n" +
         "      }\n" +
         "    },\n" +
-        "    \"/v1/pets/{id}\": {\n" +
+        "    \"/v2/pets/{id}\": {\n" +
         "      \"get\": {\n" +
         "        \"description\": \"Returns a user based on a single ID, if the user does not have access to the pet\",\n" +
         "        \"operationId\": \"findPetById\",\n" +

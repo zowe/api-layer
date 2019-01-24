@@ -1,3 +1,14 @@
+#login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-spinner {
+    align-self: flex-end;
+    position: relative;
+    right: 6rem;
+}
+
 .login-object {
     overflow: hidden;
     background-image: url("../../assets/images/login_background.jpg");

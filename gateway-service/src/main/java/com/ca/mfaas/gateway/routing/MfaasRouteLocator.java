@@ -13,6 +13,8 @@ import com.ca.mfaas.gateway.filters.pre.FilterUtils;
 import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
+import com.ca.mfaas.product.constants.CoreService;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -64,16 +66,21 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     staticServices.put(serviceId, route);
                 }
             }
-            // Add routes for discovery services by default
+            // Add routes for discovered services and itself by default
             List<String> services = this.discovery.getServices();
+            if (!services.contains(CoreService.GATEWAY.getServiceId())) {
+                services.add(CoreService.GATEWAY.getServiceId());
+            }
             String[] ignored = this.properties.getIgnoredServices()
                 .toArray(new String[0]);
             Set<String> removedRoutes = new HashSet<>();
             for (String serviceId : services) {
                 // Ignore specifically ignored services and those that were manually
                 // configured
+                String targetServiceId = changeServiceId(serviceId);
+
                 RoutedServices routedServices = new RoutedServices();
-                List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
+                List<ServiceInstance> serviceInstances = this.discovery.getInstances(targetServiceId);
 
                 if (serviceInstances == null) {
                     log.error("Cannot find any instances of service: " + serviceId);
@@ -100,7 +107,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     if (!PatternMatchUtils.simpleMatch(ignored, serviceId)
                         && !routesMap.containsKey(key) && !removedRoutes.contains(key)) {
                         // Not ignored
-                        routesMap.put(key, new ZuulProperties.ZuulRoute(key, serviceId));
+                        routesMap.put(key, new ZuulProperties.ZuulRoute(key, targetServiceId));
                     }
                 }
             }
@@ -123,7 +130,14 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
         return values;
     }
 
-    @SuppressWarnings("squid:S3776") //Suppress complexity warning
+    private String changeServiceId(String serviceId) {
+        if (serviceId.equals(CoreService.GATEWAY.getServiceId())) {
+            return CoreService.API_CATALOG.getServiceId();
+        }
+        return serviceId;
+    }
+
+    @SuppressWarnings("squid:S3776") // Suppress complexity warning
     private List<String> createRouteKeys(List<ServiceInstance> serviceInstance,
                                          RoutedServices routes, String serviceId) {
         List<String> keys = new ArrayList<>();

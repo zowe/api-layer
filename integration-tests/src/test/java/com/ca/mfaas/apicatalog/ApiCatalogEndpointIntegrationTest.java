@@ -21,7 +21,6 @@ import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -34,12 +33,7 @@ import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Slf4j
 public class ApiCatalogEndpointIntegrationTest {
@@ -62,7 +56,7 @@ public class ApiCatalogEndpointIntegrationTest {
         scheme = gatewayServiceConfiguration.getScheme();
         host = gatewayServiceConfiguration.getHost();
         port = gatewayServiceConfiguration.getPort();
-        baseHost = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).build().toString();
+        baseHost = host + ":" + port;
     }
 
     @Test
@@ -103,11 +97,11 @@ public class ApiCatalogEndpointIntegrationTest {
         assertFalse(apiCatalogSwagger, paths.isEmpty());
         assertFalse(apiCatalogSwagger, definitions.isEmpty());
         assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
-        assertEquals(apiCatalogSwagger, "", swaggerBasePath);
-        assertNull(apiCatalogSwagger, paths.get("/api/v1/apicatalog/status/updates"));
-        assertNotNull(apiCatalogSwagger, paths.get("/api/v1/apicatalog/containers/{id}"));
-        assertNotNull(apiCatalogSwagger, paths.get("/api/v1/apicatalog/containers"));
-        assertNotNull(apiCatalogSwagger, paths.get("/api/v1/apicatalog/apidoc/{service-id}/{api-version}"));
+        assertEquals(apiCatalogSwagger, "/api/v1/apicatalog", swaggerBasePath);
+        assertNull(apiCatalogSwagger, paths.get("/status/updates"));
+        assertNotNull(apiCatalogSwagger, paths.get("/containers/{id}"));
+        assertNotNull(apiCatalogSwagger, paths.get("/containers"));
+        assertNotNull(apiCatalogSwagger, paths.get("/apidoc/{service-id}/{api-version}"));
         assertNotNull(apiCatalogSwagger, definitions.get("APIContainer"));
         assertNotNull(apiCatalogSwagger, definitions.get("APIService"));
         assertNotNull(apiCatalogSwagger, definitions.get("TimeZone"));
@@ -139,11 +133,12 @@ public class ApiCatalogEndpointIntegrationTest {
 
     /**
      * Execute the endpoint and check the response for a return code
-     * @param endpoint execute thus
+     *
+     * @param endpoint   execute thus
      * @param returnCode check for this
      * @return response
      * @throws URISyntaxException oops
-     * @throws IOException oops
+     * @throws IOException        oops
      */
     private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
         HttpGet request = HttpRequestUtils.getRequest(endpoint);

@@ -5,6 +5,9 @@ let browser;
 let page;
 const baseUrl = process.env.REACT_APP_CATALOG_URL_TEST;
 console.log('API Catalog Base URL:', baseUrl);
+const username = process.env.REACT_APP_CATALOG_USERNAME;
+const password = process.env.REACT_APP_CATALOG_PASSWORD;
+console.log('API Catalog User ID:', username);
 const loginUrl = `${baseUrl}/#/login`;
 const dashboardUrl = `${baseUrl}/#/dashboard`;
 const defaultDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer`;
@@ -31,6 +34,8 @@ describe('>>> e2e tests', async () => {
         const [res] = await Promise.all([page.waitForNavigation(), page.goto(loginUrl)]);
         await page.waitForSelector('[data-testid="username"]');
         await page.waitForSelector('[data-testid="password"]');
+        await page.type('[data-testid="username"]', username),
+        await page.type('[data-testid="password"]', password),
         await page.click('[data-testid="submit"]');
         await page.waitForSelector('div.filtering-container > h2');
         const dashboardTitle = await page.$('div.filtering-container > h2');
@@ -44,10 +49,10 @@ describe('>>> e2e tests', async () => {
         const [res] = await Promise.all([
             page.waitForNavigation(),
             page.goto(dashboardUrl),
-            page.waitForSelector('div.product-name > a:nth-child(2) > h3'),
+            page.waitForSelector('.header > .product-name > a:nth-child(2) > h3'),
             page.waitForSelector('div.filtering-container > h2'),
         ]);
-        const productTitle = await page.$('div.product-name > a:nth-child(2) > h3');
+        const productTitle = await page.$('.header > .product-name > a:nth-child(2) > h3');
         const productTitleText = await page.evaluate(el => el.innerText, productTitle);
         const dashboardTitle = await page.$('div.filtering-container > h2');
         const dashboardTitleText = await page.evaluate(el => el.innerText, dashboardTitle);
@@ -113,7 +118,9 @@ describe('>>> e2e tests', async () => {
         const tabTitleText = await page.evaluate(el => el.innerText, tab);
         const descriptionText = await page.evaluate(el => el.innerText, description);
         expect(tabTitleText).toBe('API Mediation Layer API');
-        expect(descriptionText).toBe('The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.');
+        expect(descriptionText).toBe(
+            'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.'
+        );
     });
 
     it('Should display the back button', async () => {
@@ -133,23 +140,25 @@ describe('>>> e2e tests', async () => {
         await page.waitForSelector(
             '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
         );
+        await page.waitForSelector('pre.base-url');
         const serviceTitle = await page.$(
             '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2'
         );
         await page.waitFor(2000);
-        const serviceUrl = await page.$(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > a > span'
-        );
+        const serviceUrl = await page.$('pre.base-url');
         const serviceDescription = await page.$(
             '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
         );
         const serviceTitleText = await page.evaluate(el => el.innerText, serviceTitle);
         const serviceDescriptionText = await page.evaluate(el => el.innerText, serviceDescription);
+        const serviceUrlText = await page.evaluate(el => el.innerText, serviceUrl);
         const expectedTitleValue = 'API Catalog\n' + ' 1.0.0 ';
+        const expectedUrl = `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/apicatalog ]`;
         const expectedDescriptionValue =
             'REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.';
         expect(serviceTitleText).toBe(expectedTitleValue);
         expect(serviceDescriptionText).toBe(expectedDescriptionValue);
+        expect(serviceUrlText).toBe(expectedUrl);
     });
 
     it('Should go back to the dashboard page, check the URL and check if the search bar works', async () => {

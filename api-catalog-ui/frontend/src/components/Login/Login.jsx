@@ -1,18 +1,19 @@
 import React from 'react';
-import { Button, FormField, Text, TextInput } from 'mineral-ui';
+import { Button, FormField, TextInput } from 'mineral-ui';
 import { IconDanger } from 'mineral-ui-icons';
 
 import logoImage from '../../assets/images/api-catalog-logo.png';
 import './Login.css';
 import './LoginWebflow.css';
+import Spinner from '../Spinner/Spinner';
 
 export default class Login extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            username: 'user',
-            password: 'user',
+            username: '',
+            password: '',
         };
 
         this.handleChange = this.handleChange.bind(this);
@@ -25,7 +26,8 @@ export default class Login extends React.Component {
 
     isDisabled = () => {
         const { username, password } = this.state;
-        return !(username.trim().length > 0 && password.trim().length > 0);
+        const { isFetching } = this.props;
+        return !(username.trim().length > 0 && password.trim().length > 0 && !isFetching);
     };
 
     handleError = authentication => {
@@ -72,7 +74,7 @@ export default class Login extends React.Component {
 
     render() {
         const { username, password } = this.state;
-        const { authentication } = this.props;
+        const { authentication, isFetching } = this.props;
         let messageText;
         if (
             authentication !== undefined &&
@@ -106,13 +108,7 @@ export default class Login extends React.Component {
                                         className="form"
                                         onSubmit={this.handleSubmit}
                                     >
-                                        <Text color="#ad5f00">
-                                            Use the supplied username: <b>user</b> <br /> and password: <b>user</b>
-                                        </Text>
-                                        <FormField
-                                            label="Username"
-                                            className="formfield"
-                                        >
+                                        <FormField label="Username" className="formfield">
                                             <TextInput
                                                 id="username"
                                                 data-testid="username"
@@ -123,10 +119,7 @@ export default class Login extends React.Component {
                                                 onChange={this.handleChange}
                                             />
                                         </FormField>
-                                        <FormField
-                                            label="Password"
-                                            className="formfield"
-                                        >
+                                        <FormField label="Password" className="formfield">
                                             <TextInput
                                                 id="password"
                                                 data-testid="password"
@@ -149,6 +142,15 @@ export default class Login extends React.Component {
                                             >
                                                 Sign in
                                             </Button>
+                                        </FormField>
+                                        <FormField className="formfield form-spinner" label="">
+                                            <Spinner
+                                                isLoading={isFetching}
+                                                css={{
+                                                    position: 'relative',
+                                                    top: '70px',
+                                                }}
+                                            />
                                         </FormField>
                                         {messageText !== undefined &&
                                             messageText !== null && (

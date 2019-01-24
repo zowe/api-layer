@@ -14,7 +14,7 @@ import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
-import com.ca.mfaas.product.family.ProductFamilyType;
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
@@ -104,7 +104,8 @@ public class APIDocRetrievalService {
             // Handle errors (request may fail if service is unavailable)
             return handleResponse(serviceId, response);
         } catch (Exception e) {
-            log.error("General exception thrown when retrieving API documentation for service {} version {}: {}", serviceId, apiVersion, e.getMessage());
+            log.error("General exception thrown when retrieving API documentation for service {} version {} at {}: {}",
+                serviceId, apiVersion, apiDocUrl, e.getMessage());
             // more specific exceptions
             throw new ApiDocNotFoundException(e.getMessage());
         }
@@ -124,40 +125,6 @@ public class APIDocRetrievalService {
         }
 
         return apiInfo.get(0);
-    }
-
-    /**
-     * Retrieve the API docs for a registered service (all versions)
-     *
-     * @param instance retrieve API doc for this instance
-     * @param apiVersion the version of the API
-     * @return the api docs as a string
-     */
-    public String retrieveApiDocFromInstance(@NonNull InstanceInfo instance, String apiVersion) {
-        log.info("Attempting to retrieve API doc for instance: " + instance.getInstanceId());
-        try {
-            // Create the request header
-            HttpEntity<?> entity = createRequest();
-            ResponseEntity<String> response;
-
-            // Always retrieve api doc via the gateway
-            String instanceApiDocEndpoint = getGatewayUrl() + "/api/" + apiVersion + "/" + instance.getAppName().toLowerCase() + "/api-doc";
-
-            log.info("Sending API Doc info request to: " + instanceApiDocEndpoint);
-            response = restTemplate.exchange(
-                    instanceApiDocEndpoint,
-                    HttpMethod.GET,
-                    entity,
-                    String.class);
-
-            // Handle errors (request may fail if service is unavailable)
-            return response.getBody();
-        } catch (Exception e) {
-            log.error("Exception thrown when retrieving API Doc: " + e.getMessage(), e);
-            // more specific exceptions
-            throw new ApiDocNotFoundException("Request for API Doc to instance: " + instance.getInstanceId() +
-                " failed with error: " + e.getMessage(), e);
-        }
     }
 
     /**
@@ -191,7 +158,7 @@ public class APIDocRetrievalService {
      */
     public String getGatewayUrl() {
         if (this.gatewayUrl == null) {
-            InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(ProductFamilyType.GATEWAY.getServiceId());
+            InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
             if (gatewayInstance == null) {
                 String msg = "Cannot obtain information about API Gateway from Discovery Service";
                 log.error(msg);

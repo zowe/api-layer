@@ -10,9 +10,14 @@
 package com.ca.mfaas.security.token;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.security.query.QueryResponse;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 import java.util.Date;
 import java.util.UUID;
@@ -20,30 +25,53 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class TokenService {
+    static final String LTPA_CLAIM_NAME = "ltpa";
+    static final String DOMAIN_CLAIM_NAME = "dom";
+    static final String BEARER_TYPE_PREFIX = "Bearer";
+
     private final SecurityConfigurationProperties securityConfigurationProperties;
+
+    private String secret;
 
     public TokenService(SecurityConfigurationProperties securityConfigurationProperties) {
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
+    public String getSecret() {
+        if (secret == null) {
+            throw new NullPointerException("The secret key for JWT token service is null");
+        }
+        return secret;
+    }
+
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
+
     public String createToken(String username) {
+        return createToken(username, "", "");
+    }
+
+    public String createToken(String username, String domain, String ltpaToken) {
         long now = System.currentTimeMillis();
         long expiration = calculateExpiration(now, username);
 
         return Jwts.builder()
             .setSubject(username)
+            .claim(DOMAIN_CLAIM_NAME, domain)
+            .claim(LTPA_CLAIM_NAME, ltpaToken)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.HS512, securityConfigurationProperties.getTokenProperties().getSecret())
+            .signWith(SignatureAlgorithm.HS512, getSecret())
             .compact();
     }
 
     TokenAuthentication validateToken(TokenAuthentication token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(securityConfigurationProperties.getTokenProperties().getSecret())
+                .setSigningKey(getSecret())
                 .parseClaimsJws(token.getCredentials())
                 .getBody();
 
@@ -62,6 +90,56 @@ public class TokenService {
             log.debug("Token is not valid due to: {}", exception.getMessage());
             throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid");
         }
+    }
+
+    public QueryResponse parseToken(String token) {
+        Claims claims = Jwts.parser()
+            .setSigningKey(getSecret())
+            .parseClaimsJws(token)
+            .getBody();
+
+        return new QueryResponse(claims.get(DOMAIN_CLAIM_NAME, String.class),
+            claims.getSubject(), claims.getIssuedAt(), claims.getExpiration());
+    }
+
+    public String getLtpaToken(String jwtToken) {
+        try {
+            Claims claims = Jwts.parser()
+                .setSigningKey(getSecret())
+                .parseClaimsJws(jwtToken)
+                .getBody();
+            return claims.get(LTPA_CLAIM_NAME, String.class);
+        } catch (ExpiredJwtException exception) {
+            log.debug("Authentication: Token with id '{}' for user '{}' is expired", exception.getClaims().getId(), exception.getClaims().getSubject());
+            throw new TokenExpireException("Token is expired");
+        } catch (JwtException exception) {
+            log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
+            throw new TokenNotValidException("Token is not valid");
+        } catch (Exception exception) {
+            log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
+            throw new TokenNotValidException("Token is not valid");
+        }
+    }
+
+    public String getToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        return extractTokenFromAuthoritationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+    }
+
+    private String extractTokenFromAuthoritationHeader(String header) {
+        if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
+            return header.replaceFirst(BEARER_TYPE_PREFIX + " ", "");
+        }
+
+        return null;
     }
 
     private long calculateExpiration(long now, String username) {

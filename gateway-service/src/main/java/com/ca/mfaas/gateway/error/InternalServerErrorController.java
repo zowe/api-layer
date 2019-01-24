@@ -11,6 +11,7 @@ package com.ca.mfaas.gateway.error;
 
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.gateway.error.check.ErrorCheck;
+import com.ca.mfaas.gateway.error.check.SecurityTokenErrorCheck;
 import com.ca.mfaas.gateway.error.check.TimeoutErrorCheck;
 import com.ca.mfaas.gateway.error.check.TlsErrorCheck;
 import com.ca.mfaas.rest.response.ApiMessage;
@@ -51,6 +52,7 @@ public class InternalServerErrorController implements ErrorController {
         this.errorService = errorService;
         errorChecks.add(new TlsErrorCheck(errorService));
         errorChecks.add(new TimeoutErrorCheck(errorService));
+        errorChecks.add(new SecurityTokenErrorCheck(errorService));
     }
 
     @Override
