@@ -11,15 +11,6 @@ const sampleClient = require('../assets/apidoc/sample');
 
 let allUP = false;
 
-function sleep(milliseconds) {
-    const start = new Date().getTime();
-    for (let i = 0; i < 1e7; i + 1) {
-        if (new Date().getTime() - start > milliseconds) {
-            break;
-        }
-    }
-}
-
 const appRouter = app => {
     // NOTE: The root route
     app.get('/', (req, res) => {
@@ -27,7 +18,8 @@ const appRouter = app => {
     });
 
     app.post('/api/v1/apicatalog/auth/login', (req, res) => {
-        res.status(200).send(loginSuccess);
+        res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+        setTimeout(() => res.status(200).send(loginSuccess), 2000);
     });
 
     app.post('/api/v1/apicatalog/auth/logout', (req, res) => {
@@ -55,13 +47,13 @@ const appRouter = app => {
     });
 
     app.get('/api/v1/apicatalog/containers/:serviceID', (req, res) => {
-        const apiCatalog = apicatalog;
+        const ApiCatalog = apicatalog;
         const caDemoApps = cademoapps;
         const Testinson = testinson;
         console.log(`Fetching:${req.params.serviceID}`);
         switch (req.params.serviceID) {
             case 'apicatalog':
-                res.status(200).send(apiCatalog);
+                res.status(200).send(ApiCatalog);
                 break;
             case 'cademoapps':
                 res.status(200).send(caDemoApps);
