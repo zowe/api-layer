@@ -4,6 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ErrorContainer from '../Error/ErrorContainer';
 import '../../webflow.css';
+import './App.css';
 import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
@@ -20,12 +21,12 @@ class App extends Component {
         return (
             <div className="App">
                 <BigShield history={history}>
-                    <div className="content">
-                        <ToastContainer />
-                        <ErrorContainer />
-                        <Suspense fallback={<Spinner isLoading={isLoading} />}>
-                            <Router history={history}>
-                                <>
+                    <ToastContainer />
+                    <ErrorContainer />
+                    <Suspense fallback={<Spinner isLoading={isLoading} />}>
+                        <Router history={history}>
+                            <>
+                                <div className="content">
                                     <Route path="/(dashboard|tile/.*)/" component={HeaderContainer} />
                                     <Switch>
                                         <Route path="/" exact render={() => <Redirect replace to="/login" />} />
@@ -59,11 +60,11 @@ class App extends Component {
                                             )}
                                         />
                                     </Switch>
-                                    <Route path="/(dashboard|tile/.*)/" component={Footer} />
-                                </>
-                            </Router>
-                        </Suspense>
-                    </div>
+                                </div>
+                                <Route path="/(dashboard|tile/.*)/" component={Footer} />
+                            </>
+                        </Router>
+                    </Suspense>
                     {/* {authentication.showHeader !== undefined && authentication.showHeader === true && <Footer />} */}
                 </BigShield>
             </div>
