@@ -76,6 +76,7 @@ public class PostFilterApiDocTransformTest {
             statusCode(200).
             body("swagger", equalTo("2.0"));
     }
+
     @Test
     public void whenPostFilterApplied_thenSwaggerVersionModified_oneGWUrl() throws IOException {
         final RequestContext ctx = RequestContext.getCurrentContext();
