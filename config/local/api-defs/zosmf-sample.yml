@@ -14,7 +14,7 @@
 #   http --verify=keystore/local_ca/localca.cer GET https://localhost:10010/api/zosmfca32/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
 #
 services:
-    - serviceId: zosmf  # unique lowercase ID of the service
+    - serviceId: zosmfca32  # unique lowercase ID of the service
       title: IBM z/OSMF on CA32
       description: IBM z/OS Management Facility REST API service on CA32
       catalogUiTileId: zosmf

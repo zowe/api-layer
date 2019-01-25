@@ -78,7 +78,7 @@ logs/
 
 # Gradle
 .gradle/
-!gradle/wrapper/gradle-wrapper.jar
+gradle/wrapper/gradle-wrapper.jar
 api-catalog-ui/frontend/test-results/*.xml
 api-catalog-ui/frontend/debug.log
 
