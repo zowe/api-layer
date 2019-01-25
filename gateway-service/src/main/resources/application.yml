@@ -58,6 +58,7 @@ server:
 
 zuul:
     sslHostnameValidationEnabled: false
+    addProxyHeaders: false
     traceRequestBody: true
     ignoreSecurityHeaders: false
     includeDebugHeader: false
