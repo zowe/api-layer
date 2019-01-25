@@ -18,6 +18,7 @@ import io.swagger.util.Json;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import javax.validation.UnexpectedTypeException;
@@ -53,8 +54,10 @@ public class PostFilterApiDocTransformTest {
         ctx.set(SERVICE_ID_KEY, SERVICE_ID);
         ctx.setResponseBody(ApiDocController.apiDocResult);
         ctx.setResponseDataStream(IOUtils.toInputStream(ApiDocController.apiDocResult));
+        MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setStatus(200);
+        ctx.setRequest(request);
         ctx.setResponse(response);
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(
@@ -87,7 +90,30 @@ public class PostFilterApiDocTransformTest {
         Swagger swagger = Json.mapper().readValue(body, Swagger.class);
         assertEquals("Base path for only one Gateway Url is not correct.", BASE_PATH, swagger.getBasePath());
         swagger.getPaths().forEach((endPoint, path) -> {
-            assertTrue(endPoint + " does not contains 'pets'.", endPoint.contains(ENDPOINT));
+            assertTrue(endPoint + " does not equal '/pets'", endPoint.equals("/" + ENDPOINT));
+            assertFalse(endPoint + " contains base path '" + BASE_PATH + "'.", endPoint.contains(SERVICE_ID));
+        });
+    }
+
+    @Test
+    public void whenPostFilterApplied_thenSwaggerVersionModified_oneGWUrl_noContextPath() throws IOException {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        ctx.setResponseBody(ApiDocController.apiDocResultWithNoContextPath);
+        response.setStatus(200);
+        ctx.setResponse(response);
+        assertTrue(this.filter.shouldFilter());
+        RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(
+            new RoutedService("noContextPath", "api/v1", "/v1"));
+        this.filter.addRoutedServices(SERVICE_ID, routedServices);
+        this.filter.run();
+        String body = ctx.getResponseBody();
+        assertEquals(apiDocEndpoint, ctx.get(REQUEST_URI_KEY));
+        Swagger swagger = Json.mapper().readValue(body, Swagger.class);
+        assertEquals("Base path for only one Gateway Url is not correct.", BASE_PATH, swagger.getBasePath());
+        swagger.getPaths().forEach((endPoint, path) -> {
+            assertTrue(endPoint + " does not equal '/pets'.", endPoint.equals("/" + ENDPOINT));
             assertFalse(endPoint + " contains base path '" + BASE_PATH + "'.", endPoint.contains(SERVICE_ID));
         });
     }
