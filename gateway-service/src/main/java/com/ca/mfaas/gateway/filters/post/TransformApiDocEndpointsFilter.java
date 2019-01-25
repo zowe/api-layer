@@ -24,6 +24,7 @@ import io.swagger.models.Swagger;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 import javax.validation.UnexpectedTypeException;
@@ -224,7 +225,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
                 log.trace("Base Path: " + swagger.getBasePath());
 
                 // Retrieve route which matches endpoint
-                String endPoint = swagger.getBasePath() + originalEndpoint;
+                String endPoint = swagger.getBasePath().equals(SEPARATOR) ? originalEndpoint : swagger.getBasePath() + originalEndpoint;
                 RoutedService route = getRouteServiceForEndpoint(endPoint, finalServiceId);
 
                 String updatedShortEndPoint = null;
@@ -256,9 +257,9 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
         }
 
         // update scheme and host
-        String scheme = context.getZuulRequestHeaders().get(X_FORWARDED_PROTO_HEADER.toLowerCase());
+        String scheme = context.getRequest().getScheme();
         swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
-        swagger.setHost(context.getZuulRequestHeaders().get(X_FORWARDED_HOST_HEADER.toLowerCase()));
+        swagger.setHost(context.getRequest().getHeader(HttpHeaders.HOST.toLowerCase()));
 
         // Convert to JSON and set content body
         try {

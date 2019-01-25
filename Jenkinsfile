@@ -120,6 +120,17 @@ pipeline {
                 sh "echo ${changeClass} > .change_class"
             }
         }
+        /**
+        *  Stage: Bootstrap Gradlew
+        *  ========================
+        *
+        *  Downloads gradle-wrapper.jar to the gradle/wrapper/ directory.
+        **/
+        stage('Bootstrap Gradlew') {
+            steps {
+                sh './bootstrap_gradlew.sh'
+            }
+        }
 
         stage ('API Catalog build') {
             when { expression { changeClass in ['api-catalog'] } }
