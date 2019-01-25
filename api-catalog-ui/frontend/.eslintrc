@@ -20,6 +20,7 @@
         "jquery": true
     },
     "rules": {
+        "class-methods-use-this": 0,
         "import/no-extraneous-dependencies": 1,
         "import/no-named-as-default": 1,
         "no-unused-vars": [
