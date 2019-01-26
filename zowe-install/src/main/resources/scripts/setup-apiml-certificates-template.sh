@@ -3,7 +3,7 @@
 # Variables to be replaced:
 # - HOSTNAME - The hostname of the system running API Mediation (defaults to localhost)
 # - IPADDRESS - The IP Address of the system running API Mediation
-# - VERIFY_CERTIFICATES - true/false - Should APIML verifify certificates of services
+# - VERIFY_CERTIFICATES - true/false - Should APIML verify certificates of services
 # - ZOSMF_KEYRING - Name of the z/OSMF keyring
 # - ZOSMF_USER - z/OSMF server user ID
 # - EXTERNAL_CERTIFICATE - optional - Path to a PKCS12 keystore with a server certificate for APIML
