@@ -3,6 +3,9 @@
 # Variables to be replaced:
 # - HOSTNAME - The hostname of the system running API Mediation (defaults to localhost)
 # - IPADDRESS - The IP Address of the system running API Mediation
+# - VERIFY_CERTIFICATES - true/false - Should APIML verify certificates of services
+# - ZOSMF_KEYRING - Name of the z/OSMF keyring
+# - ZOSMF_USER - z/OSMF server user ID
 # - EXTERNAL_CERTIFICATE - optional - Path to a PKCS12 keystore with a server certificate for APIML
 # - EXTERNAL_CERTIFICATE_ALIAS - optional - Alias of the certificate in the keystore
 # - EXTERNAL_CERTIFICATE_AUTHORITIES - optional - Public certificates of trusted CAs
@@ -57,16 +60,18 @@ if [ "$RC" -ne "0" ]; then
     exit 1
 fi
 
-scripts/apiml_cm.sh --verbose --log $LOG_FILE --action trust-zosmf
-RC=$?
+if [[ "**VERIFY_CERTIFICATES**" == "true" ]]; then
+  scripts/apiml_cm.sh --verbose --log $LOG_FILE --action trust-zosmf
+  RC=$?
 
-echo "apiml_cm.sh --action trust-zosmf returned: $RC" >> $LOG_FILE
-if [ "$RC" -ne "0" ]; then
-    (>&2 echo "apiml_cm.sh --action trust-zosmf has failed. See $LOG_FILE for more details")
-    (>&2 echo "WARNING: z/OSMF is not trusted by the API Mediation Layer. Follow instructions in Zowe documentation about manual steps to trust z/OSMF")
-    (>&2 echo "  Issue following commands as a user that has permissions to export public certificates from z/OSMF keyring:")
-    (>&2 echo "    cd **ZOWE_ROOT_DIR**/api-mediation")
-    (>&2 echo "    scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR")
+  echo "apiml_cm.sh --action trust-zosmf returned: $RC" >> $LOG_FILE
+  if [ "$RC" -ne "0" ]; then
+      (>&2 echo "apiml_cm.sh --action trust-zosmf has failed. See $LOG_FILE for more details")
+      (>&2 echo "WARNING: z/OSMF is not trusted by the API Mediation Layer. Follow instructions in Zowe documentation about manual steps to trust z/OSMF")
+      (>&2 echo "  Issue following commands as a user that has permissions to export public certificates from z/OSMF keyring:")
+      (>&2 echo "    cd **ZOWE_ROOT_DIR**/api-mediation")
+      (>&2 echo "    scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring **ZOSMF_KEYRING** --zosmf-userid **ZOSMF_USER**")
+  fi
 fi
 
 echo "</setup-apiml-certificates.sh>" >> $LOG_FILE
