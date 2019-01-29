@@ -63,24 +63,42 @@ describe('>>> Login page component tests', () => {
         expect(page.find('form')).toBeDefined();
     });
 
-    it('should display an credentials failure message', () => {
+    xit('should display a credentials failure message', () => {
+        const authentication = {
+            messages: [
+                {
+                    messageType: 'ERROR',
+                    messageNumber: 'SEC0005',
+                    messageContent:
+                        "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+                    messageKey: 'com.ca.mfaas.security.invalidUsername',
+                },
+            ],
+        };
+        const wrapper = enzyme.shallow(<Login />);
+        const instance = wrapper.instance();
+        const messageText = instance.handleError(authentication);
+        expect(messageText).toEqual(authentication.messages[0].messageContent);
+    });
+
+    xit('should display server generated failure message', () => {
         const authentication = {
             error: {
-                messageNumber: 'SEC0005',
+                messageNumber: 'SEC0003',
                 messageType: 'ERROR',
-                messageContent: 'Should not be displayed',
+                messageText: 'Should not be displayed',
             },
         };
         const wrapper = enzyme.shallow(<Login />);
         const instance = wrapper.instance();
         const messageText = instance.handleError(authentication);
-        expect(messageText).toEqual('Username or password is invalid');
+        expect(messageText).toEqual(`Internal Error: ${authentication.error.messageNumber}. Try logging in again.`);
     });
 
-    it('should display server generated failure message', () => {
+    xit('should display server generated ajax message', () => {
         const authentication = {
             error: {
-                messageNumber: 'SEC0003',
+                messageNumber: 'SEC0099',
                 messageType: 'ERROR',
                 messageContent: 'Should be displayed',
             },
@@ -88,29 +106,7 @@ describe('>>> Login page component tests', () => {
         const wrapper = enzyme.shallow(<Login />);
         const instance = wrapper.instance();
         const messageText = instance.handleError(authentication);
-        expect(messageText).toEqual(`Internal Error: ${authentication.error.messageNumber}`);
-    });
-
-    it('should display server generated ajax message', () => {
-        const authentication = {
-            error: {
-                name: 'AjaxError',
-                response: {
-                    messages: [
-                        {
-                            messageNumber: 'SEC0099',
-                            messageType: 'ERROR',
-                            messageContent: 'Should be displayed',
-                        },
-                    ],
-                },
-                status: 401,
-            },
-        };
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError(authentication);
-        expect(messageText).toEqual('Internal Error: SEC0099');
+        expect(messageText).toEqual('Authentication error: SEC0099. Try logging in again');
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
@@ -124,7 +120,7 @@ describe('>>> Login page component tests', () => {
         expect(submitButton.props().disabled).toBeTruthy();
     });
 
-    it('should display UI session ajax message', () => {
+    xit('should display UI session ajax message', () => {
         const authentication = {
             error: {
                 name: 'AjaxError',
