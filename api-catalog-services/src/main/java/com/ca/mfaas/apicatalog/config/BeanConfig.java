@@ -24,13 +24,4 @@ public class BeanConfig {
     public ErrorService errorService() {
         return new ErrorServiceImpl("/messages.yml");
     }
-
-    @Bean
-    public RestTemplate apiRestClient() {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getMessageConverters()
-            .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-
-        return restTemplate;
-    }
 }

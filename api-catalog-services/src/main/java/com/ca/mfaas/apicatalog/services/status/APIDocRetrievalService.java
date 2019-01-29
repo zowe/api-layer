@@ -49,7 +49,7 @@ public class APIDocRetrievalService {
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Autowired
-    public APIDocRetrievalService(@Qualifier("apiRestClient") RestTemplate restTemplate,
+    public APIDocRetrievalService(RestTemplate restTemplate,
                                   InstanceRetrievalService instanceRetrievalService) {
         this.restTemplate = restTemplate;
         this.instanceRetrievalService = instanceRetrievalService;

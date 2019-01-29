@@ -28,6 +28,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -38,6 +39,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.validation.constraints.NotBlank;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -62,11 +64,13 @@ public class InstanceRetrievalService {
     public InstanceRetrievalService(CachedProductFamilyService cachedProductFamilyService,
                                     MFaaSConfigPropertiesContainer propertiesContainer,
                                     CachedServicesService cachedServicesService,
-                                    @Qualifier("apiRestClient") RestTemplate restTemplate) {
+                                    RestTemplate restTemplate) {
         this.cachedProductFamilyService = cachedProductFamilyService;
         this.propertiesContainer = propertiesContainer;
         this.cachedServicesService = cachedServicesService;
         this.restTemplate = restTemplate;
+
+        configureUnicode(restTemplate);
     }
 
     /**
@@ -368,4 +372,8 @@ public class InstanceRetrievalService {
         log.info("API Catalog initialised with running services..");
     }
 
+    private void configureUnicode(RestTemplate restTemplate) {
+        restTemplate.getMessageConverters()
+            .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+    }
 }
