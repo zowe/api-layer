@@ -1,0 +1,10 @@
+{
+    "messages": [
+        {
+            "messageType": "ERROR",
+            "messageNumber": "SEC0005",
+            "messageContent": "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+            "messageKey": "com.ca.mfaas.security.invalidUsername"
+        }
+    ]
+}

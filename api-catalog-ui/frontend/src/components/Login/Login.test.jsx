@@ -63,54 +63,56 @@ describe('>>> Login page component tests', () => {
         expect(page.find('form')).toBeDefined();
     });
 
-    it('should display an credentials failure message', () => {
-        const authentication = {
-            error: {
-                messageNumber: 'SEC0005',
-                messageType: 'ERROR',
-                messageContent: 'Should not be displayed',
-            },
-        };
+    it('should display a credentials failure message', () => {
         const wrapper = enzyme.shallow(<Login />);
         const instance = wrapper.instance();
-        const messageText = instance.handleError(authentication);
-        expect(messageText).toEqual('Username or password is invalid');
+        const messageText = instance.handleError({
+            messageType: 'ERROR',
+            messageNumber: 'SEC0005',
+            messageContent:
+                "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+            messageKey: 'com.ca.mfaas.security.invalidUsername',
+        });
+        expect(messageText).toEqual('Username or password is invalid.');
+    });
+
+    it('should display authetication required', () => {
+        const wrapper = enzyme.shallow(<Login />);
+        const instance = wrapper.instance();
+        const messageText = instance.handleError({
+            messageType: 'ERROR',
+            messageNumber: 'SEC0001',
+            messageContent:
+                "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+            messageKey: 'com.ca.mfaas.security.authenticationRequired',
+        });
+        expect(messageText).toEqual('Authentication is required.');
+    });
+
+    it('should display session has expired', () => {
+        const wrapper = enzyme.shallow(<Login />);
+        const instance = wrapper.instance();
+        const messageText = instance.handleError({
+            messageType: 'ERROR',
+            messageNumber: 'SEC0004',
+            messageContent:
+                "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+            messageKey: 'com.ca.mfaas.security.sessionExpired',
+        });
+        expect(messageText).toEqual('Session has expired, please login again.');
     });
 
     it('should display server generated failure message', () => {
-        const authentication = {
-            error: {
-                messageNumber: 'SEC0003',
-                messageType: 'ERROR',
-                messageContent: 'Should be displayed',
-            },
-        };
         const wrapper = enzyme.shallow(<Login />);
         const instance = wrapper.instance();
-        const messageText = instance.handleError(authentication);
-        expect(messageText).toEqual(`Internal Error: ${authentication.error.messageNumber}`);
-    });
-
-    it('should display server generated ajax message', () => {
-        const authentication = {
-            error: {
-                name: 'AjaxError',
-                response: {
-                    messages: [
-                        {
-                            messageNumber: 'SEC0099',
-                            messageType: 'ERROR',
-                            messageContent: 'Should be displayed',
-                        },
-                    ],
-                },
-                status: 401,
-            },
-        };
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError(authentication);
-        expect(messageText).toEqual('Internal Error: SEC0099');
+        const messageText = instance.handleError({
+            messageType: 'ERROR',
+            messageNumber: 'SEC00099',
+            messageContent:
+                "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+            messageKey: 'com.ca.mfaas.security.otherError',
+        });
+        expect(messageText).toEqual(`Authentication Error: SEC00099. Try to log in again.`);
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
@@ -122,27 +124,5 @@ describe('>>> Login page component tests', () => {
         expect(submitButton).toBeDefined();
         expect(spinner).toBeDefined();
         expect(submitButton.props().disabled).toBeTruthy();
-    });
-
-    it('should display UI session ajax message', () => {
-        const authentication = {
-            error: {
-                name: 'AjaxError',
-                response: {
-                    messages: [
-                        {
-                            messageNumber: 'SEC0004',
-                            messageType: 'ERROR',
-                            messageContent: 'Should not be displayed',
-                        },
-                    ],
-                },
-                status: 401,
-            },
-        };
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError(authentication);
-        expect(messageText).toEqual('Session has expired, please login again');
     });
 });

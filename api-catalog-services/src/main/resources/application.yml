@@ -19,7 +19,6 @@ logging:
     level:
         ROOT: INFO
         com.ca.mfaas: INFO
-        com.ca.mfaas.security: DEBUG
         org.springframework: WARN
         org.apache.catalina: WARN
         com.netflix: WARN
