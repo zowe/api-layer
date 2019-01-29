@@ -20,6 +20,7 @@ import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -48,7 +49,7 @@ public class APIDocRetrievalService {
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Autowired
-    public APIDocRetrievalService(RestTemplate restTemplate,
+    public APIDocRetrievalService(@Qualifier("apiRestClient") RestTemplate restTemplate,
                                   InstanceRetrievalService instanceRetrievalService) {
         this.restTemplate = restTemplate;
         this.instanceRetrievalService = instanceRetrievalService;

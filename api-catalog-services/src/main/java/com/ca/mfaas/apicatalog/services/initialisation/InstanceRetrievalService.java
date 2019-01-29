@@ -26,6 +26,7 @@ import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
@@ -61,7 +62,7 @@ public class InstanceRetrievalService {
     public InstanceRetrievalService(CachedProductFamilyService cachedProductFamilyService,
                                     MFaaSConfigPropertiesContainer propertiesContainer,
                                     CachedServicesService cachedServicesService,
-                                    RestTemplate restTemplate) {
+                                    @Qualifier("apiRestClient") RestTemplate restTemplate) {
         this.cachedProductFamilyService = cachedProductFamilyService;
         this.propertiesContainer = propertiesContainer;
         this.cachedServicesService = cachedServicesService;
