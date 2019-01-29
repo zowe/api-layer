@@ -1,3 +1,5 @@
+const path = require('path');
+
 // * Tile info
 let containers = require('../assets/containers');
 const apicatalog = require('../assets/services/apicatalog');
@@ -19,7 +21,7 @@ function validateCredentials({ username, password }) {
 const appRouter = app => {
     // NOTE: The root route
     app.get('/', (req, res) => {
-        res.status(200).send('Welcome to our Mocked backend!');
+        res.sendFile(path.join(`${__dirname}/../assets/hello/hello.html`));
     });
 
     app.post('/api/v1/apicatalog/auth/login', async (req, res) => {
