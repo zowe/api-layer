@@ -42,6 +42,8 @@ spring:
             ipAddress: ${apiml.service.ipAddress}
     mvc:
         throw-exception-if-no-handler-found: true
+        favicon:
+            enabled: false
     output:
         ansi:
             enabled: detect
