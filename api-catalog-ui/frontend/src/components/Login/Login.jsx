@@ -49,7 +49,7 @@ export default class Login extends React.Component {
                     messageText = 'Username or password is invalid.';
                     break;
                 default:
-                    messageText = `Authentication error: ${error.messageNumber}. Try to log in again.`;
+                    messageText = `Authentication Error: ${error.messageNumber}. Try to log in again.`;
                     break;
             }
         }
