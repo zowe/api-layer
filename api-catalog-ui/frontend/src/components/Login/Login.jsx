@@ -40,17 +40,16 @@ export default class Login extends React.Component {
         ) {
             switch (error.messageNumber) {
                 case 'SEC0001':
-                    messageText = 'Authentication is required';
+                    messageText = 'Authentication is required.';
                     break;
                 case 'SEC0004':
-                    messageText = 'Session has expired, please login again';
+                    messageText = 'Session has expired, please login again.';
                     break;
                 case 'SEC0005':
-                    messageText = 'Username or password is invalid';
-                    console.log(messageText);
+                    messageText = 'Username or password is invalid.';
                     break;
                 default:
-                    messageText = `Authentication error: ${error.messageNumber}. Try logging again.`;
+                    messageText = `Authentication error: ${error.messageNumber}. Try to log in again.`;
                     break;
             }
         }
