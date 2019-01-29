@@ -18,8 +18,11 @@ const excludedMessageCodes = ['MFS0103'];
 function checkOrigin() {
     // only allow the gateway url to authenticate the user
     let allowOrigin = process.env.REACT_APP_GATEWAY_URL;
-    if (process.env.REACT_APP_GATEWAY_URL === null || process.env.REACT_APP_GATEWAY_URL === undefined
-        || process.env.REACT_APP_GATEWAY_URL === '') {
+    if (
+        process.env.REACT_APP_GATEWAY_URL === null ||
+        process.env.REACT_APP_GATEWAY_URL === undefined ||
+        process.env.REACT_APP_GATEWAY_URL === ''
+    ) {
         allowOrigin = window.location.origin;
     }
     if (allowOrigin === null || allowOrigin === undefined) {
@@ -34,7 +37,8 @@ function checkOrigin() {
  * @returns the URL to call
  */
 function getUrl(action) {
-    let url = process.env.REACT_APP_CATALOG_HOME + process.env.REACT_APP_CATALOG_UPDATE;
+    let url =
+        process.env.REACT_APP_GATEWAY_URL + process.env.REACT_APP_CATALOG_HOME + process.env.REACT_APP_CATALOG_UPDATE;
     if (action.payload !== undefined) {
         url += `/${action.payload}`;
     }

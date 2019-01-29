@@ -30,28 +30,27 @@ export default class Login extends React.Component {
         return !(username.trim().length > 0 && password.trim().length > 0 && !isFetching);
     };
 
-    handleError = authentication => {
+    handleError = error => {
         let messageText;
         if (
-            authentication.error.name !== undefined &&
-            authentication.error.name !== null &&
-            authentication.error.name === 'AjaxError'
+            error.messageNumber !== undefined &&
+            error.messageNumber !== null &&
+            error.messageType !== undefined &&
+            error.messageType !== null
         ) {
-            const {
-                response: { messages },
-            } = authentication.error;
-            const [error] = messages;
-            if (error.messageNumber === 'SEC0004') {
-                messageText = 'Session has expired, please login again';
-            } else {
-                messageText = `Internal Error: ${error.messageNumber}`;
-            }
-        }
-        if (authentication.error.messageType !== undefined && authentication.error.messageType !== null) {
-            if (authentication.error.messageNumber === 'SEC0005') {
-                messageText = 'Username or password is invalid';
-            } else {
-                messageText = `Internal Error: ${authentication.error.messageNumber}`;
+            switch (error.messageNumber) {
+                case 'SEC0001':
+                    messageText = 'Authentication is required.';
+                    break;
+                case 'SEC0004':
+                    messageText = 'Session has expired, please login again.';
+                    break;
+                case 'SEC0005':
+                    messageText = 'Username or password is invalid.';
+                    break;
+                default:
+                    messageText = `Authentication Error: ${error.messageNumber}. Try to log in again.`;
+                    break;
             }
         }
         return messageText;
@@ -82,7 +81,7 @@ export default class Login extends React.Component {
             authentication.error !== undefined &&
             authentication.error !== null
         ) {
-            messageText = this.handleError(authentication);
+            messageText = this.handleError(authentication.error);
         }
         return (
             <div className="login-object">
@@ -154,7 +153,7 @@ export default class Login extends React.Component {
                                         </FormField>
                                         {messageText !== undefined &&
                                             messageText !== null && (
-                                                <FormField className="error-message">
+                                                <FormField className="error-message" label="">
                                                     <div id="error-message">
                                                         <p className="error-message-content">
                                                             <IconDanger color="#de1b1b" size="2rem" /> {messageText}
