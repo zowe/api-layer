@@ -76,7 +76,7 @@ eureka:
                 api-info:
                     apiVersionProperties:
                         v1:
-                            title: Service Integration Enabler V2 Sample Application API
+                            title: Service Integration Enabler V2 Sample Application API © #Copyright is for UTF8 encoding check
                             description: API of sample API service showing how to integrate a Spring Boot v2.x application
                             version: 1.0.0
                             basePackage: com.ca.mfaas.client.api
@@ -88,7 +88,7 @@ eureka:
                         version: 1.0.1
                     enableApiDoc: true
                     service:
-                        title: Service Integration Enabler V2 Sample Application (Spring Boot 2.x)
+                        title: Service Integration Enabler V2 Sample Application (Spring Boot 2.x) © #Copyright is for UTF8 encoding check
                         description: Sample API service showing how to integrate a Spring Boot v2.x application
     client:
         fetchRegistry: true
