@@ -72,7 +72,17 @@ public class APIDocRetrievalService {
                     return swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, api);
                 }
                 else {
-                    apiDocUrl = api.getSwaggerUrl();
+                    String gwVersion = api.getGatewayUrl();
+                    if (gwVersion == null) {
+                        gwVersion = "/api/v1";
+                    }
+
+                    Map<String,String> metadata = instanceInfo.getMetadata();
+                    String serviceUrl = metadata.get("routed-services.api-v1.service-url");
+                    String gatewayUrl = metadata.get("apiml.apiInfo.1.gatewayUrl");
+                    String swaggerId = serviceUrl.replace(gatewayUrl, "");
+
+                    apiDocUrl = getGatewayUrl() + gwVersion + "/api-doc" + swaggerId;
                 }
             }
         }
