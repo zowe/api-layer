@@ -52,7 +52,11 @@
         "test:e2e:ci": "cross-env REACT_APP_CATALOG_URL_TEST=${API_CATALOG_BASE_URL} REACT_APP_CATALOG_USERNAME=${MF_USERID} REACT_APP_CATALOG_PASSWORD=${MF_PASSWORD} CI=true react-scripts test --env=jsdom src/e2e/*.test.jsx --reporters=default --reporters=jest-junit",
         "galen": "galen",
         "test:galen": "galen test src\\responsive-tests\\tests/ --htmlreport report",
-        "coverage": "npm test -- --coverage"
+        "coverage": "npm test -- --coverage",
+        "cy:open": "cypress open",
+        "cy:e2e": "cypress run --spec cypress/integration/e2e/**/*.test.js --env baseURL=https://ca3x.ca.com:10010/ui/v1/apicatalog/#/,username=${MF_USERID},password=${MF_PASSWORD}",
+        "cy:e2e:open": "cypress open --env baseURL=https://ca3x.ca.com:10010/",
+        "cy:integration": "cypress run --spec cypress/integration/integration/**/*.test.js --env baseURL=https://ca3x.ca.com:10010/ui/v1/apicatalog/#/,username=user,password=user"
     },
     "jest-junit": {
         "suiteName": "E2E API Catalog UI Tests",
@@ -79,6 +83,7 @@
         "concurrently": "4.1.0",
         "cors": "2.8.5",
         "cross-env": "5.2.0",
+        "cypress": "^3.1.4",
         "enzyme": "3.7.0",
         "enzyme-adapter-react-16": "1.7.0",
         "eslint-config-prettier": "3.3.0",
@@ -98,7 +103,8 @@
         "prettier": "1.14.2",
         "puppeteer": "1.10.0",
         "react-testing-library": "5.3.0",
-        "source-map-explorer": "1.6.0"
+        "source-map-explorer": "1.6.0",
+        "start-server-and-test": "^1.7.11"
     },
     "jest": {
         "collectCoverageFrom": [
