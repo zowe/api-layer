@@ -94,7 +94,7 @@ public class CachedProductFamilyTest {
         service.getContainer("demoapp", instance1);
 
         InstanceInfo instance2 = getStandardInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
-        service.addServiceToContainer("demoapp", instance2);
+        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
 
         APIService containerService = service.getContainerService("demoapp", instance1);
         Assert.assertEquals("service1", containerService.getServiceId());
@@ -137,7 +137,7 @@ public class CachedProductFamilyTest {
         APIContainer originalContainer = service.getContainer("demoapp", instance);
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
 
-        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance);
+        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance,"https://localhost:8080/demoapp");
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
@@ -163,7 +163,7 @@ public class CachedProductFamilyTest {
         instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         Thread.sleep(100);
 
-        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance);
+        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance,"https://localhost:8080/demoapp");
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
@@ -201,7 +201,7 @@ public class CachedProductFamilyTest {
         instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         Thread.sleep(100);
 
-        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance);
+        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance,"https://localhost:8080/demoapp");
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
@@ -227,7 +227,7 @@ public class CachedProductFamilyTest {
 
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
-        service.createContainerFromInstance("demoapp", instance);
+        service.createContainerFromInstance("demoapp", instance,"https://localhost:8080/demoapp");
     }
 
     @Test
@@ -246,7 +246,7 @@ public class CachedProductFamilyTest {
         CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService,getProperties());
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2);
+        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
 
         List<APIContainer> containersForService = service.getContainersForService("service1");
         Assert.assertEquals(1, service.getContainerCount());
@@ -276,7 +276,7 @@ public class CachedProductFamilyTest {
         CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService,getProperties());
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2);
+        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
 
         APIContainer container = service.retrieveContainer("demoapp");
         Assert.assertNotNull(container);
@@ -305,7 +305,7 @@ public class CachedProductFamilyTest {
         CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService, getProperties());
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2);
+        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
 
         APIContainer container = service.retrieveContainer("demoapp");
         Assert.assertNotNull(container);
