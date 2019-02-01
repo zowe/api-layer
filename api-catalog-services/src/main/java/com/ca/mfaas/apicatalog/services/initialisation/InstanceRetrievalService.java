@@ -257,10 +257,20 @@ public class InstanceRetrievalService {
         cachedServicesService.updateService(application.getName(), application);
         application.getInstances().forEach(instanceInfo -> {
             String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
-            if (productFamilyId != null) {
-                log.debug("Initialising product family (creating tile for) : " + productFamilyId);
-                cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo);
+            String homePage = "";
+            if (instanceInfo.getHomePageUrl() != null) {
+                InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
+                homePage = gatewayInstance.getHomePageUrl() + "ui/v1/" + instanceInfo.getVIPAddress();
             }
+            else
+                homePage = instanceInfo.getHomePageUrl();
+
+            if (productFamilyId != null) {
+
+                log.debug("Initialising product family (creating tile for) : " + productFamilyId);
+                cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo, homePage);
+            }
+
         });
     }
 
@@ -363,7 +373,9 @@ public class InstanceRetrievalService {
         String productFamilyId = apiCatalogInstance.getMetadata().get("mfaas.discovery.catalogUiTile.id");
         if (productFamilyId != null) {
             log.debug("Initialising product family (creating tile for) : " + productFamilyId);
-            cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance);
+            InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
+            String homePage = gatewayInstance.getHomePageUrl() + "ui/v1/" + apiCatalogInstance.getVIPAddress();
+            cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance, homePage);
         }
 
         updateCacheWithAllInstances();

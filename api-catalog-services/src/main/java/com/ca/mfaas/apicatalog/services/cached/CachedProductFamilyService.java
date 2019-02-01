@@ -38,7 +38,6 @@ import static java.util.stream.Collectors.toList;
 public class CachedProductFamilyService {
 
     private final MFaaSConfigPropertiesContainer propertiesContainer;
-
     private final Map<String, APIContainer> products = new HashMap<>();
     private final CachedServicesService cachedServicesService;
 
@@ -99,10 +98,10 @@ public class CachedProductFamilyService {
     }
 
     @CachePut(key = "#productFamilyId")
-    public void addServiceToContainer(final String productFamilyId, final InstanceInfo instanceInfo) {
+    public void addServiceToContainer(final String productFamilyId, final InstanceInfo instanceInfo, final String homePage) {
         APIContainer apiContainer = products.get(productFamilyId);
         // fix - throw error if null
-        apiContainer.addService(createAPIServiceFromInstance(instanceInfo));
+        apiContainer.addService(createAPIServiceFromInstance(instanceInfo, homePage));
         products.put(productFamilyId, apiContainer);
     }
 
@@ -122,7 +121,7 @@ public class CachedProductFamilyService {
      */
     @Cacheable(key = "#productFamilyId", sync = true)
     public APIContainer getContainer(final String productFamilyId, @NonNull InstanceInfo instanceInfo) {
-        return createContainerFromInstance(productFamilyId, instanceInfo);
+        return createContainerFromInstance(productFamilyId, instanceInfo, null);
     }
 
     /**
@@ -156,12 +155,12 @@ public class CachedProductFamilyService {
      * @param instanceInfo    the service instance
      */
     @CachePut(key = "#productFamilyId")
-    public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
+    public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo, String homePage) {
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
-            container = createNewContainerFromService(productFamilyId, instanceInfo);
+            container = createNewContainerFromService(productFamilyId, instanceInfo, homePage);
         } else {
-            addServiceToContainer(productFamilyId, instanceInfo);
+            addServiceToContainer(productFamilyId, instanceInfo, homePage);
             container = products.get(productFamilyId);
             checkIfContainerShouldBeUpdatedFromInstance(productFamilyId, instanceInfo, container);
         }
@@ -175,7 +174,7 @@ public class CachedProductFamilyService {
      * @param instanceInfo    instance
      * @return a new container
      */
-    private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo instanceInfo) {
+    private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo instanceInfo, String homePage) {
         APIContainer container;
         String title = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.title");
         String description = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.description");
@@ -189,7 +188,7 @@ public class CachedProductFamilyService {
         log.debug("updated Container cache with product family: " + productFamilyId + ": " + title);
 
         // create API Service from instance and update container last changed date
-        container.addService(createAPIServiceFromInstance(instanceInfo));
+        container.addService(createAPIServiceFromInstance(instanceInfo, homePage));
         products.put(productFamilyId, container);
         return container;
     }
@@ -238,9 +237,8 @@ public class CachedProductFamilyService {
      * @param instanceInfo the service instance
      * @return a APIService object
      */
-    private APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
+    public APIService createAPIServiceFromInstance(InstanceInfo instanceInfo, String homePage) {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
-        String homePage = instanceInfo.getHomePageUrl();
 
         log.info("Service homepage set to: " + homePage);
 
@@ -258,7 +256,7 @@ public class CachedProductFamilyService {
      */
     @CacheEvict(key = "#productFamilyId")
     public void updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
-        createContainerFromInstance(productFamilyId, instanceInfo);
+        createContainerFromInstance(productFamilyId, instanceInfo, null);
     }
 
     /**

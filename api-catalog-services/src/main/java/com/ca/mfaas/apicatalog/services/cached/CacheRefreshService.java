@@ -274,7 +274,7 @@ public class CacheRefreshService {
             log.error("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
                 " must contain an entry for mfaas.discovery.catalogUiTile.id");
         } else {
-            APIContainer container = cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo);
+            APIContainer container = cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo, null);
             log.debug("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());
             containersUpdated.add(productFamilyId);
         }
