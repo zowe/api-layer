@@ -11,7 +11,7 @@ services:
       description: Sample to demonstrate how to add an API service with Swagger to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
         - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
-      homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
+      homePageRelativeUrl: /staticclient # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
       routes:
