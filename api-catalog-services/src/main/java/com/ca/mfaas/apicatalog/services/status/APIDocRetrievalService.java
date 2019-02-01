@@ -16,6 +16,9 @@ import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +62,7 @@ public class APIDocRetrievalService {
     public ResponseEntity<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         log.info("Attempting to retrieve API doc for service {} version {}",  serviceId, apiVersion);
 
+        boolean isStaticService = false;
         String apiDocUrl = null;
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
         InstanceInfo gateway = instanceRetrievalService.getInstanceInfo("gateway");
@@ -67,6 +71,7 @@ public class APIDocRetrievalService {
             List<ApiInfo> apiInfo = metadataParser.parseApiInfo(instanceInfo.getMetadata());
 
             if (apiInfo != null) {
+                isStaticService = true;
                 ApiInfo api = findApi(apiInfo, apiVersion);
                 if (api.getSwaggerUrl() == null) {
                     return swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, api);
@@ -82,7 +87,7 @@ public class APIDocRetrievalService {
                     String gatewayUrl = metadata.get("apiml.apiInfo.1.gatewayUrl");
                     String swaggerId = serviceUrl.replace(gatewayUrl, "");
 
-                    apiDocUrl = getGatewayUrl() + gwVersion + "/api-doc" + swaggerId;
+                    apiDocUrl = getGatewayUrl() + "/" + gwVersion + "/api-doc" + swaggerId;
                 }
             }
         }
@@ -106,6 +111,21 @@ public class APIDocRetrievalService {
                 entity,
                 String.class);
 
+            if (isStaticService && response.hasBody()) {
+                String body = response.getBody();
+                String newBaseURL = String.format("/api/%s/%s", apiVersion, serviceId);
+
+                JsonParser parser = new JsonParser();
+                JsonElement jsonTree = parser.parse(body);
+
+                JsonObject jsonObject = jsonTree.getAsJsonObject();
+                jsonObject.remove("basePath");
+                jsonObject.addProperty("basePath", newBaseURL);
+
+                body = jsonObject.toString();
+
+                response = new ResponseEntity<>(body, response.getStatusCode());
+            }
             // Handle errors (request may fail if service is unavailable)
             return handleResponse(serviceId, response);
         } catch (Exception e) {
@@ -161,7 +181,7 @@ public class APIDocRetrievalService {
      * return or retrieve the location of the Gateway
      * @return the location of the Gateway (full URL)
      */
-    public String getGatewayUrl() {
+    private String getGatewayUrl() {
         if (this.gatewayUrl == null) {
             InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
             if (gatewayInstance == null) {
