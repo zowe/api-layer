@@ -110,6 +110,10 @@
     width: 100%;
 }
 
+div.content-description-container > div > div:nth-child(2) > div {
+    width: fit-content;
+}
+
 /*@media (min-width: 972px) {*/
     .api-description-container {
         background-image: url(../../assets/images/detail-Illustration.svg);
