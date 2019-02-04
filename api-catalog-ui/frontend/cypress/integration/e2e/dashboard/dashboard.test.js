@@ -6,8 +6,8 @@ function login() {
     cy.visit(`${Cypress.env('baseURL')}ui/v1/apicatalog/#/`);
     cy.url().should('contain', '/login');
 
-    const username = Cypress.env('username') || 'aicji01';
-    const password = Cypress.env('password') || 'tr33iola';
+    const username = Cypress.env('username');
+    const password = Cypress.env('password');
 
     cy.get('button[type="submit"').as('submitButton');
 

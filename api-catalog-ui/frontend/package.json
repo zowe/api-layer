@@ -54,9 +54,9 @@
         "test:galen": "galen test src\\responsive-tests\\tests/ --htmlreport report",
         "coverage": "npm test -- --coverage",
         "cy:open": "cypress open",
-        "cy:e2e": "cypress run --spec cypress/integration/e2e/**/*.test.js --env baseURL=https://ca3x.ca.com:10010/ui/v1/apicatalog/#/,username=${MF_USERID},password=${MF_PASSWORD}",
+        "cy:e2e": "cypress run --spec cypress/integration/e2e/**/*.test.js --env baseURL=https://ca3x.ca.com:10010/,username=${MF_USERID},password=${MF_PASSWORD}",
         "cy:e2e:open": "cypress open --env baseURL=https://ca3x.ca.com:10010/",
-        "cy:integration": "cypress run --spec cypress/integration/integration/**/*.test.js --env baseURL=https://ca3x.ca.com:10010/ui/v1/apicatalog/#/,username=user,password=user"
+        "cy:integration": "cypress run --spec cypress/integration/integration/**/*.test.js --env username=user,password=user"
     },
     "jest-junit": {
         "suiteName": "E2E API Catalog UI Tests",
