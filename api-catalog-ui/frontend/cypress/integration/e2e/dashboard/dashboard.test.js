@@ -1,24 +1,59 @@
-import { PAUSE } from 'redux-persist';
-
 /* eslint-disable no-undef */
 /* eslint-disable spaced-comment */
 /// <reference types="Cypress" />
 
-describe('>>> Dashboard test', () => {
-    beforeEach(() => {
-        cy.request('POST', `${Cypress.env('baseURL')}api/v1/apicatalog/auth/login`, {
-            user: Cypress.env('username'),
-            password: Cypress.env('password'),
-        });
-    });
+function checkOrigin() {
+    // only allow the gateway url to authenticate the user
+    let allowOrigin = process.env.REACT_APP_GATEWAY_URL;
+    if (
+        process.env.REACT_APP_GATEWAY_URL === null ||
+        process.env.REACT_APP_GATEWAY_URL === undefined ||
+        process.env.REACT_APP_GATEWAY_URL === ''
+    ) {
+        allowOrigin = window.location.origin;
+    }
+    if (allowOrigin === null || allowOrigin === undefined) {
+        throw new Error('Allow Origin is not set for Login/Logout process');
+    }
+    return allowOrigin;
+}
 
-    it('should vidit dashboard', () => {
-        cy.visit(`${Cypress.env('baseURL')}ui/v1/apicatalog/#/dashboard`);
+describe('>>> Dashboard test', () => {
+    // beforeEach(() => {
+    //     const credentials = {
+    //         user: Cypress.env('username') || 'aicji01',
+    //         password: Cypress.env('password') || 'tr33iola',
+    //     };
+    //     const url = `${Cypress.env('baseURL')}api/v1/gateway/auth/login`;
+    //     const requestOptions = {
+    //         method: 'POST',
+    //         url, // baseUrl is prepended to url
+    //         form: true, // indicates the body should be form urlencoded and sets Content-Type: application/x-www-form-urlencoded headers
+    //         body: JSON.stringify(credentials),
+    //     };
+    //     cy.request(requestOptions).then(res => console.log('Auth response: ', res));
+    // });
+
+    it('should log in', () => {
+        cy.visit(`${Cypress.env('baseURL')}ui/v1/apicatalog/#/`);
+        cy.url().should('contain', '/login');
+
+        const username = Cypress.env('username') || 'aicji01';
+        const password = Cypress.env('password') || 'tr33iola';
+
+        cy.get('button[type="submit"').as('submitButton');
+
+        cy.get('#username').type(username);
+        cy.get('#password').type(password);
+
+        cy.get('@submitButton').click();
+
         cy.url().should('contain', '/dashboard');
+        cy.get('.header').should('exist');
     });
 
     it('should display tiles on dashboard', () => {
-        // cy.visit(`${Cypress.env('baseURL')}dashboard`);
+        cy.visit(`${Cypress.env('baseURL')}ui/v1/apicatalog/#/dashboard`);
         cy.url().should('contain', '/dashboard');
         cy.get('.grid-tile').should('have.length.gte', 1);
     });
