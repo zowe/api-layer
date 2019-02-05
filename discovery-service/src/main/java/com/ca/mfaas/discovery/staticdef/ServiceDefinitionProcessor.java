@@ -19,6 +19,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.Null;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -124,45 +125,47 @@ public class ServiceDefinitionProcessor {
         List<String> errors = new ArrayList<>();
 
         for (Service service : services) {
-            String serviceId = service.getServiceId();
+            try {
+                String serviceId = service.getServiceId();
 
-            CatalogUiTile tile = null;
-            if (service.getCatalogUiTileId() != null) {
-                tile = tiles.get(service.getCatalogUiTileId());
-                if (tile == null) {
-                    errors.add(String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), serviceId));
+                CatalogUiTile tile = null;
+                if (service.getCatalogUiTileId() != null) {
+                    tile = tiles.get(service.getCatalogUiTileId());
+                    if (tile == null) {
+                        errors.add(String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), serviceId));
+                    } else {
+                        tile.setId(service.getCatalogUiTileId());
+                    }
                 }
-                else {
-                    tile.setId(service.getCatalogUiTileId());
-                }
-            }
 
-            for (String instanceBaseUrl : service.getInstanceBaseUrls()) {
-                try {
-                    URL url = new URL(instanceBaseUrl);
-                    if (url.getHost().isEmpty()) {
-                        errors.add(String.format("The URL %s does not contain a hostname. The instance will not be created", instanceBaseUrl));
+                for (String instanceBaseUrl : service.getInstanceBaseUrls()) {
+                    try {
+                        URL url = new URL(instanceBaseUrl);
+                        if (url.getHost().isEmpty()) {
+                            errors.add(String.format("The URL %s does not contain a hostname. The instance will not be created", instanceBaseUrl));
+                        } else if (url.getPort() == -1) {
+                            errors.add(String.format("The URL %s does not contain a port number. The instance will not be created", instanceBaseUrl));
+                        } else {
+                            InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
+                            String instanceId = String.format("%s%s:%s:%s", STATIC_INSTANCE_ID_PREFIX, url.getHost(), serviceId, url.getPort());
+                            String ipAddress = InetAddress.getByName(url.getHost()).getHostAddress();
+                            setInstanceAttributes(builder, service, serviceId, instanceId, instanceBaseUrl, url, ipAddress, tile);
+                            setPort(builder, service, instanceBaseUrl, url);
+                            log.info("Adding static instance {} for service ID {} mapped to URL {}", instanceId, serviceId,
+                                url);
+                            instances.add(builder.build());
+                        }
+                    } catch (MalformedURLException e) {
+                        errors.add(String.format("The URL %s is malformed. The instance will not be created: %s",
+                            instanceBaseUrl, e.getMessage()));
+                    } catch (UnknownHostException e) {
+                        errors.add(String.format("The hostname of URL %s is unknown. The instance will not be created: %s",
+                            instanceBaseUrl, e.getMessage()));
                     }
-                    else if (url.getPort() == -1) {
-                        errors.add(String.format("The URL %s does not contain a port number. The instance will not be created", instanceBaseUrl));
-                    }
-                    else {
-                        InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
-                        String instanceId = String.format("%s%s:%s:%s", STATIC_INSTANCE_ID_PREFIX, url.getHost(), serviceId, url.getPort());
-                        String ipAddress = InetAddress.getByName(url.getHost()).getHostAddress();
-                        setInstanceAttributes(builder, service, serviceId, instanceId, instanceBaseUrl, url, ipAddress, tile);
-                        setPort(builder, service, instanceBaseUrl, url);
-                        log.info("Adding static instance {} for service ID {} mapped to URL {}", instanceId, serviceId,
-                            url);
-                        instances.add(builder.build());
-                    }
-                } catch (MalformedURLException e) {
-                    errors.add(String.format("The URL %s is malformed. The instance will not be created: %s",
-                        instanceBaseUrl, e.getMessage()));
-                } catch (UnknownHostException e) {
-                    errors.add(String.format("The hostname of URL %s is unknown. The instance will not be created: %s",
-                        instanceBaseUrl, e.getMessage()));
                 }
+
+            } catch (NullPointerException e) {
+                errors.add(String.format("The instanceBaseUrl of %s is not defined. The instance will not be created: %s", service.getServiceId(), e.getMessage()));
             }
         }
         return new ProcessServicesDataResult(errors, instances);
