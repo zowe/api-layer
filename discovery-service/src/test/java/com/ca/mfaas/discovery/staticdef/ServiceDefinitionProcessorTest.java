@@ -200,5 +200,27 @@ public class ServiceDefinitionProcessorTest {
         assertEquals(1, instances.size());
         assertEquals(6, result.getInstances().get(0).getMetadata().size());
     }
+
+    @Test
+    public void testCreateInstancesWithUndefinedInstanceBaseUrl() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            Collections.singletonList(yaml));
+        List<InstanceInfo> instances = result.getInstances();
+        System.out.println("testProcessServicesDataWithWrongUrlMissingPort - result.getErrors():" + result.getErrors());
+        assertThat(instances.size(), is(0));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created: null"));
+    }
 }
 
