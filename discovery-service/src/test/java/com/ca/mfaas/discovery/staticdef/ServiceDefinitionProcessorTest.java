@@ -224,7 +224,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void TestCreateInstancesWithMultipleStaticDefinitions() {
+    public void testCreateInstancesWithMultipleStaticDefinitions() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String yaml =
             "services:\n" +
@@ -253,7 +253,7 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(yaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("TestCreateInstancesWithMultipleStaticDefinitions - result.getErrors():" + result.getErrors());
+        System.out.println("testCreateInstancesWithMultipleStaticDefinitions - result.getErrors():" + result.getErrors());
         assertThat(instances.size(), is(2));
         assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
 
