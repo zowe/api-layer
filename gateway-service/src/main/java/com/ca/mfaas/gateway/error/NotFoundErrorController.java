@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.error;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.core.Ordered;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 
+@Slf4j
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NotFoundErrorController implements ErrorController {
@@ -45,6 +47,7 @@ public class NotFoundErrorController implements ErrorController {
     public ResponseEntity<ApiMessage> notFound400HttpResponse(HttpServletRequest request) {
         ApiMessage message = errorService.createApiMessage("com.ca.mfaas.common.endPointNotFound",
                 ErrorUtils.getGatewayUri(request));
+        log.trace(String.format("Requested endpoint '%s' does not exist.", ErrorUtils.getGatewayUri(request)));
         return ResponseEntity.status(ErrorUtils.getErrorStatus(request)).body(message);
     }
 }
