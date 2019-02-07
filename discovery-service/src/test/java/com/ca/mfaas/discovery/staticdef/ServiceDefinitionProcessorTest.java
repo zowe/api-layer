@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -256,6 +257,57 @@ public class ServiceDefinitionProcessorTest {
         System.out.println("testCreateInstancesWithMultipleStaticDefinitions - result.getErrors():" + result.getErrors());
         assertThat(instances.size(), is(2));
         assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
+
+    }
+
+    @Test
+    public void testCreateInstancesWithMultipleYmls() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "       - https://localhost:10012/casamplerestapiservice\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        String yaml2 =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice2\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "       - \n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        String yaml3 =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice3\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "       - https://localhost:10012/casamplerestapiservice3\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+
+
+        List<String> yamlList = Arrays.asList(yaml, yaml2, yaml3);
+
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            yamlList);
+        List<InstanceInfo> instances = result.getInstances();
+        System.out.println("testCreateInstancesWithMultipleYmls - result.getErrors():" + result.getErrors());
+        assertThat(instances.size(), is(2));
 
     }
 }
