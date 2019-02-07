@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.metadata;
 
+import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.product.model.ApiInfo;
 
 import java.util.ArrayList;
@@ -53,4 +54,6 @@ public class EurekaMetadataParser {
             return new ArrayList<ApiInfo>(apiInfo.values());
         }
     }
+
+    public RoutedService parseRoutes()
 }

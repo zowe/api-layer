@@ -1,8 +1,13 @@
 package com.ca.mfaas.apicatalog.services.status;
 
+import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
+import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
+import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -10,18 +15,16 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 public class APIDocRetrievalService {
     private final RestTemplate restTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
+    private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+    private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Autowired
     public APIDocRetrievalService(RestTemplate restTemplate, InstanceRetrievalService instanceRetrievalService) {
@@ -37,15 +40,78 @@ public class APIDocRetrievalService {
      * @return the api docs as a string
      */
     public ResponseEntity<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
+        String apiDocUrl;
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
 
+        if (instanceInfo == null) {
+            throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + " .");
+        }
+
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+
+        if (apiInfoList != null) {
+            ApiInfo apiInfo = findApi(apiInfoList, apiVersion);
+            if (apiInfo != null && apiInfo.getSwaggerUrl() != null) {
+                apiDocUrl = apiInfo.getSwaggerUrl();
+            } else {
+                InstanceInfo gateway = instanceRetrievalService.getInstanceInfo("gateway");
+                if (gateway != null) {
+                    return swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, apiInfo);
+                } else {
+                    throw new ApiDocNotFoundException("Could not load gateway instance for service " + serviceId + " .");
+                }
+            }
+        } else {
+            apiDocUrl = createApiDocUrlFromRouting(instanceInfo);
+        }
+
+        if(apiDocUrl == null) {
+            throw new ApiDocNotFoundException("No API Documentation defined for service " + serviceId + " .");
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+            apiDocUrl,
+            HttpMethod.GET,
+            new HttpEntity<>(headers),
+            String.class);
+
+        return response;
+    }
+
+    private ApiInfo findApi(List<ApiInfo> apiInfo, String apiVersion) {
+        String expectedGatewayUrl = "api";
+
+        if (apiVersion != null) {
+            expectedGatewayUrl = "api/" + apiVersion;
+        }
+
+        for (ApiInfo api : apiInfo) {
+            if (api.getGatewayUrl().equals(expectedGatewayUrl)) {
+                return api;
+            }
+        }
+
+        return apiInfo.get(0);
+    }
+
+    @Deprecated
+    private String createApiDocUrlFromRouting(InstanceInfo instanceInfo) {
         String scheme;
-        int port = instanceInfo.getSecurePort();
-        if (port != 0) {
+        int port;
+        if (instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)) {
             scheme = "https";
+            port = instanceInfo.getSecurePort();
         } else {
             scheme = "http";
             port = instanceInfo.getPort();
+        }
+
+        String path = instanceInfo.getMetadata().get("routed-services.api-doc.service-url");
+        if (path == null) {
+            return null;
         }
 
         UriComponents uri = UriComponentsBuilder
@@ -53,18 +119,9 @@ public class APIDocRetrievalService {
             .scheme(scheme)
             .host(instanceInfo.getHostName())
             .port(port)
-            .path(instanceInfo.getMetadata().get("routed-services.api-doc.service-url"))
+            .path(path)
             .build();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
-
-        ResponseEntity<String> response = restTemplate.exchange(
-            uri.toUri(),
-            HttpMethod.GET,
-            new HttpEntity<>(headers),
-            String.class);
-
-        return response;
+        return uri.toUriString();
     }
 }

@@ -11,6 +11,7 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocCacheKey;
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
+import com.ca.mfaas.apicatalog.swagger.TransformApiDocService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,10 +26,9 @@ import java.util.Map;
 @Slf4j
 @Service
 public class CachedApiDocService {
-
     private static Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
-
     private final APIDocRetrievalService apiDocRetrievalService;
+    private final TransformApiDocService transformApiDocService = new TransformApiDocService();
 
     @Autowired
     public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService) {
@@ -49,8 +49,8 @@ public class CachedApiDocService {
             if (response == null || response.getBody() == null || response.getStatusCode().isError()) {
                 return null;
             } else {
-                CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), response.getBody());
-                apiDoc = response.getBody();
+                apiDoc = transformApiDocService.transformApiDoc(serviceId, response.getBody());
+                CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
             }
         }
         return apiDoc;
