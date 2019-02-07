@@ -282,7 +282,7 @@ public class ServiceDefinitionProcessorTest {
                 "      description: Description\n" +
                 "      catalogUiTileId: tileid\n" +
                 "      instanceBaseUrls:\n" +
-                "       - \n" +
+                "        \n" +
                 "catalogUiTiles:\n" +
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
@@ -302,12 +302,13 @@ public class ServiceDefinitionProcessorTest {
 
 
         List<String> yamlList = Arrays.asList(yaml, yaml2, yaml3);
-
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+        List<String> yamlNameList = Arrays.asList("yaml", "yaml1", "yaml2");
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(yamlNameList,
             yamlList);
         List<InstanceInfo> instances = result.getInstances();
         System.out.println("testCreateInstancesWithMultipleYmls - result.getErrors():" + result.getErrors());
         assertThat(instances.size(), is(2));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
 
     }
 }
