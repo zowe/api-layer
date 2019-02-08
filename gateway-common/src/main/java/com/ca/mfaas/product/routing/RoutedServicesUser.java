@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.services.routing;
+package com.ca.mfaas.product.routing;
 
 /**
  * Class that implements it is using information about routed services.

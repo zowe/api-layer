@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.services.routing;
+package com.ca.mfaas.product.routing;
 
 import lombok.Data;
 

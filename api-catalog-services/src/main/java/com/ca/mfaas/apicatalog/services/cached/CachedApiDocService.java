@@ -28,11 +28,12 @@ import java.util.Map;
 public class CachedApiDocService {
     private static Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
     private final APIDocRetrievalService apiDocRetrievalService;
-    private final TransformApiDocService transformApiDocService = new TransformApiDocService();
+    private final TransformApiDocService transformApiDocService;
 
     @Autowired
-    public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService) {
+    public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService, TransformApiDocService transformApiDocService) {
         this.apiDocRetrievalService = apiDocRetrievalService;
+        this.transformApiDocService = transformApiDocService;
     }
 
     /**

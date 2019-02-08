@@ -1,9 +1,19 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 package com.ca.mfaas.apicatalog.services.status;
 
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
@@ -54,7 +64,7 @@ public class APIDocRetrievalService {
             if (apiInfo != null && apiInfo.getSwaggerUrl() != null) {
                 apiDocUrl = apiInfo.getSwaggerUrl();
             } else {
-                InstanceInfo gateway = instanceRetrievalService.getInstanceInfo("gateway");
+                InstanceInfo gateway = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
                 if (gateway != null) {
                     return swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, apiInfo);
                 } else {
@@ -65,20 +75,18 @@ public class APIDocRetrievalService {
             apiDocUrl = createApiDocUrlFromRouting(instanceInfo);
         }
 
-        if(apiDocUrl == null) {
+        if (apiDocUrl == null) {
             throw new ApiDocNotFoundException("No API Documentation defined for service " + serviceId + " .");
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 
-        ResponseEntity<String> response = restTemplate.exchange(
+        return restTemplate.exchange(
             apiDocUrl,
             HttpMethod.GET,
             new HttpEntity<>(headers),
             String.class);
-
-        return response;
     }
 
     private ApiInfo findApi(List<ApiInfo> apiInfo, String apiVersion) {

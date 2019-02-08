@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
-import com.ca.mfaas.gateway.services.routing.RoutedService;
-import com.ca.mfaas.gateway.services.routing.RoutedServices;
+import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.zuul.context.RequestContext;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.swagger.models.Swagger;

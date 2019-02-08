@@ -9,13 +9,12 @@
  */
 package com.ca.mfaas.apicatalog.metadata;
 
-import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.utils.UrlUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class EurekaMetadataParser {
@@ -29,21 +28,21 @@ public class EurekaMetadataParser {
                     apiInfo.putIfAbsent(keys[2], new ApiInfo());
                     ApiInfo api = apiInfo.get(keys[2]);
                     switch (keys[3]) {
-                    case "apiId":
-                        api.setApiId(entry.getValue());
-                        break;
-                    case "gatewayUrl":
-                        api.setGatewayUrl(entry.getValue());
-                        break;
-                    case "version":
-                        api.setVersion(entry.getValue());
-                        break;
-                    case "swaggerUrl":
-                        api.setSwaggerUrl(entry.getValue());
-                        break;
-                    case "documentationUrl":
-                        api.setDocumentationUrl(entry.getValue());
-                        break;
+                        case "apiId":
+                            api.setApiId(entry.getValue());
+                            break;
+                        case "gatewayUrl":
+                            api.setGatewayUrl(entry.getValue());
+                            break;
+                        case "version":
+                            api.setVersion(entry.getValue());
+                            break;
+                        case "swaggerUrl":
+                            api.setSwaggerUrl(entry.getValue());
+                            break;
+                        case "documentationUrl":
+                            api.setDocumentationUrl(entry.getValue());
+                            break;
                     }
                 }
         }
@@ -55,5 +54,28 @@ public class EurekaMetadataParser {
         }
     }
 
-    public RoutedService parseRoutes()
+    public RoutedServices parseRoutes(Map<String, String> eurekaMetadata) {
+        RoutedServices routes = new RoutedServices();
+        Map<String, String> routeMap = new HashMap<>();
+        Map<String, String> orderedMetadata = new TreeMap<>(eurekaMetadata);
+
+        for (Map.Entry<String, String> metadata : orderedMetadata.entrySet()) {
+            String[] keys = metadata.getKey().split("\\.");
+            if (keys.length == 3 && keys[0].equals(RoutedServices.ROUTED_SERVICES_PARAMETER)) {
+
+                if (keys[2].equals(RoutedServices.GATEWAY_URL_PARAMETER)) {
+                    String gatewayURL = UrlUtils.removeFirstAndLastSlash(metadata.getValue());
+                    routeMap.put(keys[1], gatewayURL);
+                }
+
+                if (keys[2].equals(RoutedServices.SERVICE_URL_PARAMETER) && routeMap.containsKey(keys[1])) {
+                    String serviceURL = UrlUtils.addFirstSlash(metadata.getValue());
+                    routes.addRoutedService(new RoutedService(keys[1], routeMap.get(keys[1]), serviceURL));
+                    routeMap.remove(keys[1]);
+                }
+            }
+        }
+
+        return routes;
+    }
 }

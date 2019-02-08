@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
+import com.ca.mfaas.apicatalog.swagger.TransformApiDocService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -25,9 +26,10 @@ public class CachedApiDocServiceTest {
         String expectedApiDoc = "This is some api doc";
         ResponseEntity<String> response = new ResponseEntity<>(expectedApiDoc, HttpStatus.OK);
         APIDocRetrievalService apiDocRetrievalService = Mockito.mock(APIDocRetrievalService.class);
+        TransformApiDocService transformApiDocService = Mockito.mock(TransformApiDocService.class);
         when(apiDocRetrievalService.retrieveApiDoc("service2", "2.0.0")).thenReturn(response);
 
-        CachedApiDocService cachedApiDocService = new CachedApiDocService(apiDocRetrievalService);
+        CachedApiDocService cachedApiDocService = new CachedApiDocService(apiDocRetrievalService, transformApiDocService);
         String apiDoc = cachedApiDocService.getApiDocForService("service2", "2.0.0");
         Assert.assertNotNull(apiDoc);
         Assert.assertEquals(expectedApiDoc, apiDoc);
@@ -38,9 +40,10 @@ public class CachedApiDocServiceTest {
         String expectedApiDoc = "This is some api doc";
         ResponseEntity<String> response = new ResponseEntity<>(expectedApiDoc, HttpStatus.OK);
         APIDocRetrievalService apiDocRetrievalService = Mockito.mock(APIDocRetrievalService.class);
+        TransformApiDocService transformApiDocService = Mockito.mock(TransformApiDocService.class);
         when(apiDocRetrievalService.retrieveApiDoc("service1", "1.0.0")).thenReturn(response);
 
-        CachedApiDocService cachedApiDocService = new CachedApiDocService(apiDocRetrievalService);
+        CachedApiDocService cachedApiDocService = new CachedApiDocService(apiDocRetrievalService, transformApiDocService);
 
         String apiDoc = cachedApiDocService.getApiDocForService("service1", "1.0.0");
         Assert.assertNotNull(apiDoc);
