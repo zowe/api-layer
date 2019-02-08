@@ -49,10 +49,10 @@ export default class Login extends React.Component {
                     messageText = `Username or password is invalid (${error.messageNumber})`;
                     break;
                 case 'MFS0104':
-                    messageText = `The request is taking too long, please try again later (${error.messageNumber})`;
+                    messageText = `Request timeout, please try again later (${error.messageNumber})`;
                     break;
                 default:
-                    messageText = `Unexpected Error: ${error.messageNumber}, plase try to log in again later`;
+                    messageText = `Unexpected error, please try again later (${error.messageNumber})`;
                     break;
             }
         }

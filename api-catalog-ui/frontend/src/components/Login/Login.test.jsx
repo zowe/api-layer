@@ -112,7 +112,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.otherError',
         });
-        expect(messageText).toEqual('Unexpected Error: SEC00099, plase try to log in again later');
+        expect(messageText).toContain(`SEC00099`);
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
