@@ -141,9 +141,9 @@ public class ServiceDefinitionProcessor {
                     try {
                         URL url = new URL(instanceBaseUrl);
                         if (url.getHost().isEmpty()) {
-                            errors.add(String.format("The URL %s does not contain a hostname. The instance will not be created", instanceBaseUrl));
+                            errors.add(String.format("The URL %s does not contain a hostname. The instance of %s will not be created", instanceBaseUrl, service.getServiceId()));
                         } else if (url.getPort() == -1) {
-                            errors.add(String.format("The URL %s does not contain a port number. The instance will not be created", instanceBaseUrl));
+                            errors.add(String.format("The URL %s does not contain a port number. The instance of %s will not be created", instanceBaseUrl, service.getServiceId()));
                         } else {
                             InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
                             String instanceId = String.format("%s%s:%s:%s", STATIC_INSTANCE_ID_PREFIX, url.getHost(), serviceId, url.getPort());

@@ -158,7 +158,7 @@ public class ServiceDefinitionProcessorTest {
         System.out.println("testProcessServicesDataWithWrongUrlMissingHostname - result.getErrors():" + result.getErrors());
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("The URL https:///casamplerestapiservice/ does not contain a hostname"));
+        assertTrue(result.getErrors().get(0).contains("The URL https:///casamplerestapiservice/ does not contain a hostname. The instance of casamplerestapiservice will not be created"));
     }
 
     @Test
@@ -174,7 +174,7 @@ public class ServiceDefinitionProcessorTest {
         System.out.println("testProcessServicesDataWithWrongUrlMissingPort - result.getErrors():" + result.getErrors());
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("The URL https://host/casamplerestapiservice/ does not contain a port number"));
+        assertTrue(result.getErrors().get(0).contains("The URL https://host/casamplerestapiservice/ does not contain a port number. The instance of casamplerestapiservice will not be created"));
     }
 
     @Test
