@@ -10,8 +10,7 @@
 package com.ca.mfaas.apicatalog.swagger;
 
 import com.ca.mfaas.apicatalog.exceptions.ApiDocTransformationException;
-import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
@@ -20,10 +19,8 @@ import com.netflix.appinfo.InstanceInfo;
 import io.swagger.models.Path;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
-import io.swagger.models.Tag;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.UnexpectedTypeException;
@@ -41,19 +38,11 @@ public class TransformApiDocService {
     private static final String HARDCODED_VERSION = "/v1";
     private static final String SEPARATOR = "/";
 
-    private final InstanceRetrievalService instanceRetrievalService;
-    private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
-
-    @Autowired
-    public TransformApiDocService(InstanceRetrievalService instanceRetrievalService) {
-        this.instanceRetrievalService = instanceRetrievalService;
-    }
-
-    public String transformApiDoc(String serviceId, String apiDoc) {
+    public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
         Swagger swagger;
 
         try {
-            swagger = Json.mapper().readValue(apiDoc, Swagger.class);
+            swagger = Json.mapper().readValue(apiDocInfo.getApiDocResponse().getBody(), Swagger.class);
         } catch (IOException e) {
             log.error("Could not convert response body to a Swagger object.", e);
             throw new UnexpectedTypeException("Response is not a Swagger type object.");
@@ -61,12 +50,8 @@ public class TransformApiDocService {
 
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
-        InstanceInfo gatewayInfo = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
-        InstanceInfo serviceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
-        RoutedServices routes = metadataParser.parseRoutes(serviceInfo.getMetadata());
-
-        updateSchemeHostAndLink(swagger, serviceId, gatewayInfo, hidden);
-        updatePaths(swagger, serviceId, routes, hidden);
+        updateSchemeHostAndLink(swagger, serviceId, apiDocInfo.getGatewayInfo(), hidden);
+        updatePaths(swagger, serviceId, apiDocInfo, hidden);
 
         try {
             return Json.mapper().writeValueAsString(swagger);
@@ -101,7 +86,7 @@ public class TransformApiDocService {
         }
     }
 
-    private void updatePaths(Swagger swagger, String serviceId, RoutedServices routes, boolean hidden) {
+    private void updatePaths(Swagger swagger, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
         Map<String, Path> updatedShortPaths = new HashMap<>();
         Map<String, Path> updatedLongPaths = new HashMap<>();
         Map<String, Path> updatedPaths;
@@ -117,7 +102,14 @@ public class TransformApiDocService {
 
                 // Retrieve route which matches endpoint
                 String endPoint = swagger.getBasePath().equals(SEPARATOR) ? originalEndpoint : swagger.getBasePath() + originalEndpoint;
-                RoutedService route = routes.getBestMatchingServiceUrl(endPoint, true);
+
+                RoutedService route;
+                if (apiDocInfo.getApiInfo() != null) {
+                    String gatewayUrl = apiDocInfo.getApiInfo().getGatewayUrl();
+                    route = apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
+                } else {
+                    route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, true);
+                }
 
                 String updatedShortEndPoint = null;
                 String updatedLongEndPoint = null;

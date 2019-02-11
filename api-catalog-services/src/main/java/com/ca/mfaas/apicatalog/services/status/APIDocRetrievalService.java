@@ -10,11 +10,13 @@
 package com.ca.mfaas.apicatalog.services.status;
 
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
+import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -49,24 +51,27 @@ public class APIDocRetrievalService {
      * @param apiVersion the version of the API
      * @return the api docs as a string
      */
-    public ResponseEntity<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
+    public ApiDocInfo retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         String apiDocUrl;
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
+        InstanceInfo gateway = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
 
         if (instanceInfo == null) {
             throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + " .");
         }
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
+        ApiInfo apiInfo = null;
         if (apiInfoList != null) {
-            ApiInfo apiInfo = findApi(apiInfoList, apiVersion);
+            apiInfo = findApi(apiInfoList, apiVersion);
             if (apiInfo != null && apiInfo.getSwaggerUrl() != null) {
                 apiDocUrl = apiInfo.getSwaggerUrl();
             } else {
-                InstanceInfo gateway = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
                 if (gateway != null) {
-                    return swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, apiInfo);
+                    ResponseEntity<String> response = swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, apiInfo);
+                    return new ApiDocInfo(apiInfo, response, routes, gateway);
                 } else {
                     throw new ApiDocNotFoundException("Could not load gateway instance for service " + serviceId + " .");
                 }
@@ -82,11 +87,13 @@ public class APIDocRetrievalService {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 
-        return restTemplate.exchange(
+        ResponseEntity<String> response = restTemplate.exchange(
             apiDocUrl,
             HttpMethod.GET,
             new HttpEntity<>(headers),
             String.class);
+
+        return new ApiDocInfo(apiInfo, response, routes, gateway);
     }
 
     private ApiInfo findApi(List<ApiInfo> apiInfo, String apiVersion) {

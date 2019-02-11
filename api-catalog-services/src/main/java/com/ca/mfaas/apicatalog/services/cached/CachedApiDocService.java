@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocCacheKey;
+import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
 import com.ca.mfaas.apicatalog.swagger.TransformApiDocService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,11 +47,11 @@ public class CachedApiDocService {
     public String getApiDocForService(final String serviceId, final String apiVersion) {
         String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
         if (apiDoc == null) {
-            ResponseEntity<String> response = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
-            if (response == null || response.getBody() == null || response.getStatusCode().isError()) {
+            ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
+            if (apiDocInfo.getApiDocResponse() == null || apiDocInfo.getApiDocResponse().getBody() == null || apiDocInfo.getApiDocResponse().getStatusCode().isError()) {
                 return null;
             } else {
-                apiDoc = transformApiDocService.transformApiDoc(serviceId, response.getBody());
+                apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
             }
         }
