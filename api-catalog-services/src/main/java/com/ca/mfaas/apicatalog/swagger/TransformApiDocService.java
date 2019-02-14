@@ -13,9 +13,7 @@ import com.ca.mfaas.apicatalog.exceptions.ApiDocTransformationException;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.routing.RoutedService;
-import com.ca.mfaas.product.routing.RoutedServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.netflix.appinfo.InstanceInfo;
 import io.swagger.models.Path;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
@@ -28,6 +26,9 @@ import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Transforms API documentation to documentation relative to Gateway, not the service instance
+ */
 @Slf4j
 @Service
 public class TransformApiDocService {
@@ -38,6 +39,13 @@ public class TransformApiDocService {
     private static final String HARDCODED_VERSION = "/v1";
     private static final String SEPARATOR = "/";
 
+    /**
+     * Does transformation API documentation
+     *
+     * @param serviceId  the unique service id
+     * @param apiDocInfo the API doc and additional information about transformation
+     * @return the transformed API documentation relative to Gateway
+     */
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
         Swagger swagger;
 
@@ -50,7 +58,7 @@ public class TransformApiDocService {
 
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
-        updateSchemeHostAndLink(swagger, serviceId, apiDocInfo.getGatewayInfo(), hidden);
+        updateSchemeHostAndLink(swagger, serviceId, apiDocInfo, hidden);
         updatePaths(swagger, serviceId, apiDocInfo, hidden);
 
         try {
@@ -61,31 +69,34 @@ public class TransformApiDocService {
         }
     }
 
-    private void updateSchemeHostAndLink(Swagger swagger, String serviceId, InstanceInfo instanceInfo, boolean hidden) {
-        String scheme = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ? "https" : "http";
-
-        String host = instanceInfo.getHostName();
-        if (scheme.equals("http")) {
-            if (instanceInfo.getPort() != 80) {
-                host += ":" + instanceInfo.getPort();
-            }
-        } else {
-            if (instanceInfo.getPort() != 443) {
-                host += ":" + instanceInfo.getSecurePort();
-            }
-        }
-
-        String link = scheme + "://" + host + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
+    /**
+     * Updates scheme and hostname, and adds API doc link to Swagger
+     *
+     * @param swagger    the API doc
+     * @param serviceId  the unique service id
+     * @param apiDocInfo the service information
+     * @param hidden     do not add link for automatically generated API doc
+     */
+    private void updateSchemeHostAndLink(Swagger swagger, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
+        String link = apiDocInfo.getGatewayScheme() + "://" + apiDocInfo.getGatewayHost() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
             CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
         String swaggerLink = "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
 
-        swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
-        swagger.setHost(host);
+        swagger.setSchemes(Collections.singletonList(Scheme.forValue(apiDocInfo.getGatewayScheme())));
+        swagger.setHost(apiDocInfo.getGatewayHost());
         if (!hidden) {
             swagger.getInfo().setDescription(swagger.getInfo().getDescription() + swaggerLink);
         }
     }
 
+    /**
+     * Updates BasePath and Paths in Swagger
+     *
+     * @param swagger    the API doc
+     * @param serviceId  the unique service id
+     * @param apiDocInfo the service information
+     * @param hidden     do not set Paths for automatically generated API doc
+     */
     private void updatePaths(Swagger swagger, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
         Map<String, Path> updatedShortPaths = new HashMap<>();
         Map<String, Path> updatedLongPaths = new HashMap<>();

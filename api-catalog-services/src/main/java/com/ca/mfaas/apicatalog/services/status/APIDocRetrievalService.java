@@ -18,6 +18,7 @@ import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
+import javafx.util.Pair;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Retrieves the API documentation for a registered service
+ */
 @Slf4j
 @Service
 public class APIDocRetrievalService {
@@ -39,17 +43,26 @@ public class APIDocRetrievalService {
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Autowired
-    public APIDocRetrievalService(RestTemplate restTemplate, InstanceRetrievalService instanceRetrievalService) {
+    public APIDocRetrievalService(
+        RestTemplate restTemplate, InstanceRetrievalService instanceRetrievalService) {
         this.restTemplate = restTemplate;
         this.instanceRetrievalService = instanceRetrievalService;
     }
 
     /**
-     * Retrieve the API docs for a registered service (all versions)
+     * Retrieve the API docs for a registered service
+     * <p>
+     * API doc URL is taken from the application metadata in the following
+     * order:
+     * <p>
+     * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
+     * 2. 'apiml.apiInfo' is present & 'swaggerUrl' is not, ApiDoc info is automatically generated
+     * 3. URL is constructed from 'routed-services.api-doc.service-url'. This method is deprecated and used for
+     * backwards compatibility only
      *
      * @param serviceId  the unique service id
      * @param apiVersion the version of the API
-     * @return the api docs as a string
+     * @return the API doc and related information for transformation
      */
     public ApiDocInfo retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         String apiDocUrl;
@@ -60,22 +73,26 @@ public class APIDocRetrievalService {
             throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + " .");
         }
 
+        if (gateway == null) {
+            throw new ApiDocNotFoundException("Could not load gateway instance for service " + serviceId + ".");
+        }
+
+        Pair<String, String> gatewayAddress = getGatewayAddress(gateway);
+
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
         ApiInfo apiInfo = null;
         if (apiInfoList != null) {
             apiInfo = findApi(apiInfoList, apiVersion);
+
             if (apiInfo != null && apiInfo.getSwaggerUrl() != null) {
                 apiDocUrl = apiInfo.getSwaggerUrl();
             } else {
-                if (gateway != null) {
-                    ResponseEntity<String> response = swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, apiInfo);
-                    return new ApiDocInfo(apiInfo, response, routes, gateway);
-                } else {
-                    throw new ApiDocNotFoundException("Could not load gateway instance for service " + serviceId + " .");
-                }
+                ResponseEntity<String> response = swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, apiInfo);
+                return new ApiDocInfo(apiInfo, response, routes, gatewayAddress.getKey(), gatewayAddress.getValue());
             }
+
         } else {
             apiDocUrl = createApiDocUrlFromRouting(instanceInfo);
         }
@@ -93,9 +110,20 @@ public class APIDocRetrievalService {
             new HttpEntity<>(headers),
             String.class);
 
-        return new ApiDocInfo(apiInfo, response, routes, gateway);
+        if (response.getStatusCode().isError()) {
+            throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId + " server error: '" + response.getBody() + "'.");
+        }
+
+        return new ApiDocInfo(apiInfo, response, routes, gatewayAddress.getKey(), gatewayAddress.getValue());
     }
 
+    /**
+     * Find ApiInfo for the corresponding version, if not found the first one is returned
+     *
+     * @param apiInfo    the list of APIs information
+     * @param apiVersion the version to be find
+     * @return the information about API
+     */
     private ApiInfo findApi(List<ApiInfo> apiInfo, String apiVersion) {
         String expectedGatewayUrl = "api";
 
@@ -112,6 +140,38 @@ public class APIDocRetrievalService {
         return apiInfo.get(0);
     }
 
+    /**
+     * Obtains Gateway scheme and hostname
+     *
+     * @param gateway the information about Gateway instance
+     * @return the pair containing Gateway scheme and hostname
+     */
+    private Pair<String, String> getGatewayAddress(InstanceInfo gateway) {
+        String scheme = gateway.isPortEnabled(InstanceInfo.PortType.SECURE) ? "https" : "http";
+
+        String host = gateway.getHostName();
+        if (scheme.equals("http")) {
+            if (gateway.getPort() != 80) {
+                host += ":" + gateway.getPort();
+            }
+        } else {
+            if (gateway.getPort() != 443) {
+                host += ":" + gateway.getSecurePort();
+            }
+        }
+
+        return new Pair<>(scheme, host);
+    }
+
+    /**
+     * Creates URL from the routing metadata 'routed-services.api-doc.service-url' when 'apiml.apiInfo.swaggerUrl' is
+     * not present
+     *
+     * @param instanceInfo the information about service instance
+     * @return the URL of API doc endpoint
+     * @deprecated Added to support services which were on-boarded before 'apiml.apiInfo.swaggerUrl' parameter was
+     * introduced. It will be removed when all services will be using the new configuration style.
+     */
     @Deprecated
     private String createApiDocUrlFromRouting(InstanceInfo instanceInfo) {
         String scheme;

@@ -10,10 +10,17 @@
 package com.ca.mfaas.product.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/** Represents one API provided by a service */
-@Data public class ApiInfo {
+/**
+ * Represents one API provided by a service
+ */
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+public class ApiInfo {
     @JsonProperty(required = true)
     private String apiId;
     private String gatewayUrl;
