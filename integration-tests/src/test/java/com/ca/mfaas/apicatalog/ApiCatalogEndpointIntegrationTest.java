@@ -127,7 +127,7 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
-    public void whenInvalidApiDocVersion_thenInvalidResponse() throws Exception {
+    public void whenInvalidApiDocVersion_thenReturnFirstDoc() throws Exception {
         final HttpResponse response = getResponse(invalidApiCatalogApiDocEndpoint, HttpStatus.SC_OK);
 
         // When
