@@ -128,7 +128,13 @@ public class ApiCatalogEndpointIntegrationTest {
 
     @Test
     public void whenInvalidApiDocVersion_thenInvalidResponse() throws Exception {
-        getResponse(invalidApiCatalogApiDocEndpoint, HttpStatus.SC_INTERNAL_SERVER_ERROR);
+        final HttpResponse response = getResponse(invalidApiCatalogApiDocEndpoint, HttpStatus.SC_OK);
+
+        // When
+        final String jsonResponse = EntityUtils.toString(response.getEntity());
+        String swaggerBasePath = JsonPath.parse(jsonResponse).read("$.basePath");
+
+        assertEquals( "/api/v1/apicatalog", swaggerBasePath);
     }
 
     /**
