@@ -17,6 +17,7 @@ logging:
         com.ca.mfaas.gateway.ws: INFO
         com.ca.mfaas.gateway.error: INFO
         org.eclipse.jetty: WARN
+        org.springframework.web.servlet.PageNotFound: ERROR
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
