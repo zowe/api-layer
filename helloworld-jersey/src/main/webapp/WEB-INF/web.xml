@@ -41,6 +41,10 @@
         <servlet-name>Jersey2Config</servlet-name>
         <servlet-class>io.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
         <init-param>
+            <param-name>swagger.api.title</param-name>
+            <param-value>Hello World Jersey</param-value>
+        </init-param>
+        <init-param>
             <param-name>api.version</param-name>
             <param-value>1.0.0</param-value>
         </init-param>

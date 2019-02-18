@@ -16,6 +16,7 @@ import com.ca.mfaas.eurekaservice.client.config.Route;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 
@@ -28,9 +29,6 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import io.swagger.jaxrs.config.SwaggerContextService;
-import io.swagger.models.Info;
-import io.swagger.models.Swagger;
 import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,12 +139,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             default:
                 throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
         }
-        Info info = new Info()
-            .title(config.getApiInfo().getTitle())
-            .description(config.getApiInfo().getDescription())
-            .version(config.getApiInfo().getVersion());
-        Swagger swagger = new Swagger().info(info);
-        new SwaggerContextService().updateSwagger(swagger);
+
         constructApiDocLocation(config);
 
         return result;
@@ -177,13 +170,14 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         metadata.put("mfaas.discovery.service.title", config.getTitle());
         metadata.put("mfaas.discovery.service.description", config.getDescription());
 
-        // fill api metadata
-        metadata.put("mfaas.api-info.apiVersionProperties.v1.title", config.getApiInfo().getTitle());
-        metadata.put("mfaas.api-info.apiVersionProperties.v1.description", config.getApiInfo().getDescription());
-        metadata.put("mfaas.api-info.apiVersionProperties.v1.version", config.getApiInfo().getVersion());
+        // fill api-doc info
+        for (ApiInfo apiInfo : config.getApiInfo()) {
+            metadata.putAll(apiInfo.generateMetadata(config.getServiceId()));
+        }
 
         return metadata;
     }
+
     private static void constructApiDocLocation(ApiMediationServiceConfig config) {
         String hostname;
         String serviceId = config.getServiceId();
@@ -202,7 +196,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 .setScheme("https")
                 .setHost(hostname)
                 .setPort(port)
-                .setPath( "/" + serviceId + "/" + "swagger.json").build();
+                .setPath("/" + serviceId + "/" + "swagger.json").build();
         } catch (URISyntaxException e) {
             log.error("Could not construct API Doc endpoint. API Doc cannot be accessed via /api-doc endpoint.\n"
                 + e.getMessage(), e);
@@ -212,6 +206,5 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     public static URI getApiDocEndpoint() {
         return apiDocEndpoint;
     }
-
 
 }

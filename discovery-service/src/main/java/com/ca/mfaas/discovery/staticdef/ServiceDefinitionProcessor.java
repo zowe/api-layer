@@ -131,8 +131,7 @@ public class ServiceDefinitionProcessor {
                 tile = tiles.get(service.getCatalogUiTileId());
                 if (tile == null) {
                     errors.add(String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), serviceId));
-                }
-                else {
+                } else {
                     tile.setId(service.getCatalogUiTileId());
                 }
             }
@@ -142,11 +141,9 @@ public class ServiceDefinitionProcessor {
                     URL url = new URL(instanceBaseUrl);
                     if (url.getHost().isEmpty()) {
                         errors.add(String.format("The URL %s does not contain a hostname. The instance will not be created", instanceBaseUrl));
-                    }
-                    else if (url.getPort() == -1) {
+                    } else if (url.getPort() == -1) {
                         errors.add(String.format("The URL %s does not contain a port number. The instance will not be created", instanceBaseUrl));
-                    }
-                    else {
+                    } else {
                         InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
                         String instanceId = String.format("%s%s:%s:%s", STATIC_INSTANCE_ID_PREFIX, url.getHost(), serviceId, url.getPort());
                         String ipAddress = InetAddress.getByName(url.getHost()).getHostAddress();
@@ -168,7 +165,7 @@ public class ServiceDefinitionProcessor {
         return new ProcessServicesDataResult(errors, instances);
     }
 
-    private void setInstanceAttributes(InstanceInfo.Builder builder,Service service, String serviceId,
+    private void setInstanceAttributes(InstanceInfo.Builder builder, Service service, String serviceId,
                                        String instanceId, String instanceBaseUrl, URL url, String ipAddress, CatalogUiTile tile) {
         builder.setAppName(serviceId).setInstanceId(instanceId).setHostName(url.getHost()).setIPAddr(ipAddress)
             .setDataCenterInfo(DEFAULT_INFO).setVIPAddress(serviceId).setSecureVIPAddress(serviceId)
@@ -231,38 +228,12 @@ public class ServiceDefinitionProcessor {
             mt.put("mfaas.discovery.catalogUiTile.description", tile.getDescription());
 
             if (service.getApiInfo() != null) {
-                int i = 0;
-                for (ApiInfo apiInfo: service.getApiInfo()) {
-                    i++;
-
-                    mt.put(String.format("apiml.apiInfo.%d.gatewayUrl", i), apiInfo.getGatewayUrl());
-                    mt.put(String.format("apiml.apiInfo.%d.version", i), apiInfo.getVersion());
-
-                    if (apiInfo.getSwaggerUrl() != null) {
-                        try {
-                            new URL(apiInfo.getSwaggerUrl());
-                        } catch (MalformedURLException e) {
-                            throw new InvalidParameterException(
-                                String.format("The Swagger URL \"%s\" for service %s is not valid: %s",
-                                service.getServiceId(), apiInfo.getSwaggerUrl(), e.getMessage()));
-                        }
-                        mt.put(String.format("apiml.apiInfo.%d.swaggerUrl", i), apiInfo.getSwaggerUrl());
-                    }
-
-                    if (apiInfo.getDocumentationUrl() != null) {
-                        try {
-                            new URL(apiInfo.getDocumentationUrl());
-                        } catch (MalformedURLException e) {
-                            throw new InvalidParameterException(
-                                String.format("The documentation URL \"%s\" for service %s is not valid: %s",
-                                service.getServiceId(), apiInfo.getDocumentationUrl(), e.getMessage()));
-                        }
-                        mt.put(String.format("apiml.apiInfo.%d.documentationUrl", i), apiInfo.getDocumentationUrl());
-                    }
+                for (ApiInfo apiInfo : service.getApiInfo()) {
+                    mt.putAll(apiInfo.generateMetadata(service.getServiceId()));
                 }
             }
-        }
-        else {
+
+        } else {
             mt.put("mfaas.discovery.enableApiDoc", "false");
         }
 
