@@ -181,6 +181,7 @@ logging:
         org.apache.catalina: INFO
         com.netflix: INFO
         org.hibernate: INFO
+        org.springframework.web.servlet.PageNotFound: WARN
 
 ---
 spring:
