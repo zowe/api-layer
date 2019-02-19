@@ -25,7 +25,7 @@ describe('>>> Login page component tests', () => {
         expect(loginMock).toHaveBeenCalled();
     });
 
-    it('should disable login button if username and password are empty', () => {
+    it('should display message if username and password are empty and submited', () => {
         const page = enzyme.shallow(<Login />);
 
         page.find('TextInput')
@@ -37,8 +37,10 @@ describe('>>> Login page component tests', () => {
             .simulate('change', { target: { name: 'password', value: '' } });
 
         const button = page.find('Button');
+        button.simulate('click');
+        const errorMessage = page.find('p.error-message-content');
         expect(button).toBeDefined();
-        expect(button.props().disabled).toBeTruthy();
+        expect(errorMessage).toBeDefined();
     });
 
     it('should enable login button if username and password are populated', () => {
@@ -74,6 +76,17 @@ describe('>>> Login page component tests', () => {
             messageKey: 'com.ca.mfaas.security.invalidUsername',
         });
         expect(messageText).toEqual('Username or password is invalid (SEC0005)');
+    });
+
+    it('should display a no credentials message', () => {
+        const wrapper = enzyme.shallow(<Login />);
+        const instance = wrapper.instance();
+        const messageText = instance.handleError({
+            messageType: 'ERROR',
+            messageNumber: 'UI0001',
+            message: 'Please provide a valid username and password',
+        });
+        expect(messageText).toEqual('Please provide a valid username and password');
     });
 
     it('should display authetication required', () => {
@@ -124,5 +137,12 @@ describe('>>> Login page component tests', () => {
         expect(submitButton).toBeDefined();
         expect(spinner).toBeDefined();
         expect(submitButton.props().disabled).toBeTruthy();
+    });
+
+    it('should display UI errorMessage', () => {
+        const page = enzyme.shallow(<Login errorMessage="Cus bus" />);
+        const errorMessage = page.find('p.error-message-content').first();
+
+        expect(errorMessage).toBeDefined();
     });
 });

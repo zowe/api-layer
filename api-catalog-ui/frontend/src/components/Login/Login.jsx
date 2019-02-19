@@ -14,20 +14,16 @@ export default class Login extends React.Component {
         this.state = {
             username: '',
             password: '',
+            errorMessage: '',
         };
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    onLoad(feedItem) {
-        this.setState(({ loadedItems }) => ({ loadedItems: loadedItems.concat(feedItem) }));
-    }
-
     isDisabled = () => {
-        const { username, password } = this.state;
         const { isFetching } = this.props;
-        return !(username.trim().length > 0 && password.trim().length > 0 && !isFetching);
+        return isFetching;
     };
 
     handleError = error => {
@@ -51,6 +47,10 @@ export default class Login extends React.Component {
                 case 'MFS0104':
                     messageText = `Request timeout, please try again later (${error.messageNumber})`;
                     break;
+                case 'UI0001':
+                    messageText = error.message;
+                    this.setState({ errorMessage: messageText });
+                    break;
                 default:
                     messageText = `Unexpected error, please try again later (${error.messageNumber})`;
                     break;
@@ -69,13 +69,20 @@ export default class Login extends React.Component {
 
         const { username, password } = this.state;
         const { login } = this.props;
+
         if (username && password) {
             login({ username, password });
+        } else if (!username || !password) {
+            this.handleError({
+                messageType: 'ERROR',
+                messageNumber: 'UI0001',
+                message: 'Please provide a valid username and password',
+            });
         }
     }
 
     render() {
-        const { username, password } = this.state;
+        const { username, password, errorMessage } = this.state;
         const { authentication, isFetching } = this.props;
         let messageText;
         if (
@@ -85,6 +92,8 @@ export default class Login extends React.Component {
             authentication.error !== null
         ) {
             messageText = this.handleError(authentication.error);
+        } else if (errorMessage) {
+            messageText = errorMessage;
         }
         return (
             <div className="login-object">
@@ -119,6 +128,7 @@ export default class Login extends React.Component {
                                                 size="jumbo"
                                                 value={username}
                                                 onChange={this.handleChange}
+                                                autocomplete
                                             />
                                         </FormField>
                                         <FormField label="Password" className="formfield">
@@ -131,6 +141,7 @@ export default class Login extends React.Component {
                                                 value={password}
                                                 onChange={this.handleChange}
                                                 caption="Default: password"
+                                                autocomplete
                                             />
                                         </FormField>
                                         <FormField className="formfield" label="">
