@@ -49,5 +49,7 @@ public class TransformApiDocServiceTest {
         ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, response, routedServices, "https", "localhost:10010");
         String transformApiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
         Assert.assertTrue(transformApiDoc.contains("schemes\":[\"https\"]"));
+        Assert.assertTrue(transformApiDoc.contains("https://localhost:10010/api/v1/apicatalog/apidoc/Service/v1"));
+        Assert.assertTrue(transformApiDoc.contains("host\":\"localhost:10010"));
     }
 }
