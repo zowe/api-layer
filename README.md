@@ -24,6 +24,13 @@ Following tools are required to build and develop API Mediation Layer:
   
 
 ## Quick start
+Bootstrap gradle to get wrapper:
+
+    UNIX
+    ./bootstrap_gradlew.sh
+    
+    Windows
+    ./bootstrap_gradlew.bat
 
 Build all modules:
 
