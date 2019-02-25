@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -57,7 +58,7 @@ public class ApiDocController {
     public ApiDocController(
         @Value("${eureka.instance.metadata-map.mfaas.discovery.enableApiDoc:true}") boolean apiDocEnabled,
         @Value("${eureka.instance.metadata-map.mfaas.api-info.swagger.location:}") String swaggerLocation,
-        LocalApiDocService localApiDocService)  {
+        @Nullable LocalApiDocService localApiDocService)  {
         this.apiDocEnabled = apiDocEnabled;
         this.swaggerLocation = swaggerLocation;
         this.localApiDocService = localApiDocService;
