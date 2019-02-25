@@ -1,16 +1,29 @@
 const nixt = require("nixt");
 const path = require("path");
+const fs = require('fs');
 
 var script =  "bash " + path.join(__dirname, "apiml_cm.sh");
 script = script.replace(/\\/g,"/");
-const testDir = path.join(__dirname, ".apiml_cm_test");
+var testDir = path.join(__dirname, ".apiml_cm_test");
+testDir = testDir.replace(/\\/g,"/");
 console.log(testDir);
 
 describe(script, function() {
     beforeEach(function(done) {
-        nixt()
-            .exec(`rm -Rf ${testDir}`).run(`mkdir ${testDir}`)
-            .end(done);
+        if (fs.existsSync(testDir)) {
+            nixt()
+                .exec(`rm -rf ${testDir}`)
+                .mkdir(testDir)
+                .run(script)
+                .end(done);
+        }
+        else {
+            nixt()
+                .mkdir(testDir)
+                .run(script)
+                .end(done);
+        }
+
     });
 
     describe("general", function() {
@@ -35,8 +48,9 @@ describe(script, function() {
             this.timeout(60000);
             nixt()
                 .cwd(testDir)
-                .exec('mkdir -p keystore/local_ca')
-                .exec('mkdir -p keystore/localhost')
+                .mkdir(testDir + '/keystore')
+                .mkdir(testDir + '/keystore/localhost')
+                .mkdir(testDir + '/keystore/local_ca')
                 .run(`${script} --action setup`)
                 .code(0)
                 .exist('keystore/localhost/localhost.keystore.p12')
