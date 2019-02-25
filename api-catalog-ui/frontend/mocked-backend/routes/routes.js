@@ -1,9 +1,12 @@
+const path = require('path');
+
 // * Tile info
 let containers = require('../assets/containers');
 const apicatalog = require('../assets/services/apicatalog');
 const testinson = require('../assets/services/testinson');
 const cademoapps = require('../assets/services/cademoapps');
 const loginSuccess = require('../assets/services/login_success');
+const invalidCredentials = require('../assets/services/user-name-invalid.json');
 
 const apiCatalog = require('../assets/apidoc/apicatalog.json');
 const discoverableClient = require('../assets/apidoc/discoverableclient');
@@ -11,15 +14,27 @@ const sampleClient = require('../assets/apidoc/sample');
 
 let allUP = false;
 
+function validateCredentials({ username, password }) {
+    return username === 'user' && password === 'user';
+}
+
 const appRouter = app => {
     // NOTE: The root route
     app.get('/', (req, res) => {
-        res.status(200).send('Welcome to our Mocked backend!');
+        res.sendFile(path.join(`${__dirname}/../assets/hello/hello.html`));
     });
 
-    app.post('/api/v1/apicatalog/auth/login', (req, res) => {
+    app.post('/api/v1/apicatalog/auth/login', async (req, res) => {
         res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-        setTimeout(() => res.status(200).send(loginSuccess), 2000);
+
+        const credentials = req.body;
+
+        if (validateCredentials(credentials)) {
+            setTimeout(() => res.status(200).send(loginSuccess), 2000);
+        } else {
+            console.log(invalidCredentials);
+            res.status(401).send(invalidCredentials);
+        }
     });
 
     app.post('/api/v1/apicatalog/auth/logout', (req, res) => {

@@ -89,21 +89,13 @@ describe('>>> Detailed Page component tests', () => {
         expect(historyMock.push.mock.calls[0]).toEqual(['/dashboard']);
     });
 
-    xit('should load spinner when waiting for data', () => {
-        const historyMock = {
-            push: jest.fn(),
-            listen: jest.fn(),
-            location: {
-                pathname: '/a/b',
-            },
-        };
+    it('should load spinner when waiting for data', () => {
         const isLoading = true;
-        const wrapper = mount(
+        const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
                 fetchTilesStart={jest.fn()}
                 fetchTilesStop={jest.fn()}
-                history={historyMock}
                 match={match}
                 isLoading={isLoading}
             />

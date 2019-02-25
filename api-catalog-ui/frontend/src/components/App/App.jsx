@@ -29,7 +29,7 @@ class App extends Component {
                                 <div className="content">
                                     <Route path="/(dashboard|tile/.*)/" component={HeaderContainer} />
                                     <Switch>
-                                        <Route path="/" exact render={() => <Redirect replace to="/login" />} />
+                                        <Route path="/" exact render={() => <Redirect replace to="/dashboard" />} />
                                         <Route
                                             path="/login"
                                             exact

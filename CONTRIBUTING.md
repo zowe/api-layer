@@ -15,7 +15,7 @@ your teams' backlog.
 
 ### Report Bugs
 
-Report bugs at <https://github.com/gizafoundation/api-layer>.
+Report bugs at <https://github.com/zowe/api-layer>.
 
 If you are reporting a bug, please include:
 
@@ -40,7 +40,7 @@ Ready to contribute? Here's how to set up the project for local development.
 
 We are following [GitHub Flow workflow](https://guides.github.com/introduction/flow/) with the `master` branch.
 
-Members of core development team (<https://github.com/gizafoundation/api-layer>) are
+Members of core development team (<https://github.com/zowe/api-layer>) are
 allowed to create branches in the repository.
 
 1. Clone the repository:
@@ -49,15 +49,15 @@ allowed to create branches in the repository.
     
         1. Clone the repository locally (creates `api-layer` directory):
 
-                $ git clone https://github.com/gizafoundation/api-layer
+                $ git clone https://github.com/zowe/api-layer
 
     - _Other contributors_:
         
-        1. Fork the repository on GitHub - <https://github.com/gizafoundation/api-layer>.
+        1. Fork the repository on GitHub - <https://github.com/zowe/api-layer>.
     
         2. Clone your fork locally (creates `api-layer` directory):
 
-                $ git clone https://github.com/gizafoundation/api-layer
+                $ git clone https://github.com/zowe/api-layer
 
 2.  Create a branch for local development:
 
@@ -99,11 +99,11 @@ Before you submit a pull request, check that it meets these guidelines:
 Core Development Team
 =====================
 
-Members of core development team (<https://github.com/gizafoundation/api-layer>) are
+Members of core development team (<https://github.com/zowe/api-layer>) are
 allowed to create branches in the master repository.
 
 1.  Clone the repository locally (creates `api-layer` directory):
 
-        $ git clone https://github.com/gizafoundation/api-layer
+        $ git clone https://github.com/zowe/api-layer
 
 2.  Other instructions are same above.

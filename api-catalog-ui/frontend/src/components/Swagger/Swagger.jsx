@@ -3,14 +3,16 @@ import SwaggerUi, { presets } from 'swagger-ui';
 import './Swagger.css';
 
 export default class SwaggerUI extends Component {
-
     componentDidMount() {
         this.retrieveSwagger();
     }
 
     componentDidUpdate(prevProps) {
         const { selectedService } = this.props;
-        if (selectedService.serviceId !== prevProps.selectedService.serviceId || selectedService.tileId !== prevProps.selectedService.tileId) {
+        if (
+            selectedService.serviceId !== prevProps.selectedService.serviceId ||
+            selectedService.tileId !== prevProps.selectedService.tileId
+        ) {
             this.retrieveSwagger();
         }
     }
@@ -36,7 +38,11 @@ export default class SwaggerUI extends Component {
     retrieveSwagger = () => {
         const { selectedService } = this.props;
 
-        if (selectedService.apiDoc !== null && selectedService.apiDoc !== undefined && selectedService.apiDoc.length !== 0) {
+        if (
+            selectedService.apiDoc !== null &&
+            selectedService.apiDoc !== undefined &&
+            selectedService.apiDoc.length !== 0
+        ) {
             try {
                 const swagger = JSON.parse(selectedService.apiDoc);
                 SwaggerUi({
@@ -54,22 +60,21 @@ export default class SwaggerUI extends Component {
     render() {
         const { selectedService } = this.props;
         let error = false;
-        if (selectedService.apiDoc === undefined || selectedService.apiDoc === null || selectedService.apiDoc.length === 0) {
+        if (
+            selectedService.apiDoc === undefined ||
+            selectedService.apiDoc === null ||
+            selectedService.apiDoc.length === 0
+        ) {
             error = true;
         }
         return (
             <div style={{ width: '100%', background: '#ffffff' }}>
                 {error && (
-                    <div style={{ width: '100%', background: '#ffffff', paddingLeft: 50, paddingTop: 30 }}>
-                        <h2 style={{ color: '#de1b1b' }}>Api Documentation for
-                            service "{selectedService.title}" (Service Id: {selectedService.serviceId}) could not be retrieved or is
-                            not defined.</h2>
-                        <h5 style={{ color: '#de1b1b' }}>See console for details</h5>
+                    <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
+                        <h4 style={{ color: '#de1b1b' }}>API documentation could not be retrieved</h4>
                     </div>
                 )}
-                {!error && (
-                    <div id="swaggerContainer" data-testid="swagger"/>
-                )}
+                {!error && <div id="swaggerContainer" data-testid="swagger" />}
             </div>
         );
     }
