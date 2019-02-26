@@ -26,7 +26,9 @@
         "discovery-service-2": "java -jar discovery-service/build/libs/discovery-service.jar --spring.profiles.active=https --spring.config.additional-location=file:./config/local-multi/discovery-service-2.yml",
         "api-catalog-service-1": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local-multi/api-catalog-service.yml",
         "discoverable-client-1": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local-multi/discoverable-client.yml",
-        "test": "./gradlew runAllIntegrationTests"
+        "test": "./gradlew runAllIntegrationTests",
+        "test-scripts": "mocha scripts",
+        "test-scripts-ci": "TEST_DIR=./scripts/test-results jenkins-mocha --no-coverage scripts"
     },
     "repository": {
         "type": "git",
@@ -38,5 +40,11 @@
         "url": "https://github.com/zowe/api-layer/issues"
     },
     "homepage": "https://github.com/zowe/api-layer#readme",
-    "dependencies": {}
+    "dependencies": {},
+    "devDependencies": {
+        "concurrently": "^4.1.0",
+        "jenkins-mocha": "^6.0.0",
+        "mocha": "^5.2.0",
+        "nixt": "^0.5.1"
+    }
 }
