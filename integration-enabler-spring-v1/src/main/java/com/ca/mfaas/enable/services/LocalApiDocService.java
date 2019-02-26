@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.enable.services;
 
+import com.ca.mfaas.enable.conditions.ConditionalOnMissingProperty;
 import io.swagger.models.Swagger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import springfox.documentation.swagger2.mappers.ServiceModelToSwagger2Mapper;
 import java.util.*;
 
 @Component
+@ConditionalOnMissingProperty("eureka.instance.metadata-map.mfaas.api-info.swagger.location")
 public class LocalApiDocService {
 
     private final DocumentationCache documentationCache;
