@@ -14,6 +14,7 @@ import com.ca.mfaas.enable.services.LocalApiDocService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.util.FileCopyUtils;
@@ -38,6 +39,7 @@ import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 @Slf4j
 @RestController
 @RequestMapping("/")
+@ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
 public class ApiDocController {
 
     private final boolean apiDocEnabled;
