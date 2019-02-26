@@ -17,11 +17,15 @@ import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import javax.validation.UnexpectedTypeException;
 
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -33,6 +37,9 @@ public class TransformApiDocServiceTest {
     public void setUp() {
         transformApiDocService = new TransformApiDocService();
     }
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void shouldTransformApiDoc() {
@@ -52,5 +59,23 @@ public class TransformApiDocServiceTest {
         Assert.assertTrue(transformApiDoc.contains("https://localhost:10010/api/v1/apicatalog/apidoc/Service/v1"));
         Assert.assertTrue(transformApiDoc.contains("host\":\"localhost:10010"));
         Assert.assertTrue(transformApiDoc.contains("basePath\":\"/api/v1/Service"));
+    }
+
+    @Test
+    public void testFailedTransformationOfAPIDocWhenInvalidSwagger() {
+        String serviceId = "Service";
+        String swagger = "{\"swagger\":\"2.0\",\"info\":{\"description\":\"REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.\",\"version\":\"1.0.0\",\"title\":\"API Catalog\"},\"basePath\":\"/apicatalog\",\"tags\":[{\"name\":\"API Catalog\",\"description\":\"Current state information\"},{\"name\":\"API Documentation\",\"description\":\"Service documentation\"}],\"paths\":{\"/apidoc/{service-id}/{api-version}";
+        ResponseEntity<String> response = new ResponseEntity<>(swagger, HttpStatus.OK);
+        final RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+        final RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+
+        final RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(routedService);
+        routedServices.addRoutedService(routedService2);
+        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", null);
+        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, response, routedServices, "https", "localhost:10010");
+        exceptionRule.expect(UnexpectedTypeException.class);
+        exceptionRule.expectMessage("Response is not a Swagger type object.");
+        transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
     }
 }
