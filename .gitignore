@@ -59,6 +59,8 @@ pip-log.txt
 .tox
 nosetests.xml
 .coverage
+scripts/test-results/xunit.xml
+.apiml_cm_test/
 
 # Translations
 *.mo

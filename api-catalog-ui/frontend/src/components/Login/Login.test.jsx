@@ -75,7 +75,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.invalidUsername',
         });
-        expect(messageText).toEqual('Username or password is invalid.');
+        expect(messageText).toEqual('Username or password is invalid (SEC0005)');
     });
 
     it('should display a no credentials message', () => {
@@ -99,7 +99,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.authenticationRequired',
         });
-        expect(messageText).toEqual('Authentication is required.');
+        expect(messageText).toEqual('Authentication is required (SEC0001)');
     });
 
     it('should display session has expired', () => {
@@ -112,7 +112,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.sessionExpired',
         });
-        expect(messageText).toEqual('Session has expired, please login again.');
+        expect(messageText).toEqual('Session has expired, please login again (SEC0004)');
     });
 
     it('should display server generated failure message', () => {
@@ -125,7 +125,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.otherError',
         });
-        expect(messageText).toEqual(`Authentication Error: SEC00099. Try to log in again.`);
+        expect(messageText).toContain(`SEC00099`);
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
