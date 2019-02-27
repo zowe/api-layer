@@ -156,4 +156,33 @@ public class LocalApiDocServiceTest {
             .setMetadata(metadata)
             .build();
     }
+
+
+    @Test
+    public void testFailedRetrievalOfAPIDocWhenMetadataNotDefined() {
+
+        String serviceId = "service1";
+        String version = "v1";
+
+        String responseBody = "api-doc body";
+        Map<String, String> metadata = new HashMap<>();
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
+            .setAppName(serviceId)
+            .setHostName(HOSTNAME)
+            .setPort(PORT)
+            .setStatus(InstanceInfo.InstanceStatus.UP)
+            .setMetadata(metadata)
+            .build();
+        when(instanceRetrievalService.getInstanceInfo(serviceId))
+            .thenReturn(instanceInfo);
+        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId()))
+            .thenReturn(instanceInfo);
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+        exceptionRule.expect(ApiDocNotFoundException.class);
+        exceptionRule.expectMessage("No API Documentation defined for service " + serviceId + " .");
+        apiDocRetrievalService.retrieveApiDoc(serviceId, version);
+    }
 }
