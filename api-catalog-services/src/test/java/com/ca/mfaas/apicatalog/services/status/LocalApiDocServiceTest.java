@@ -294,11 +294,14 @@ public class LocalApiDocServiceTest {
             .thenReturn(instanceInfo);
         when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId()))
             .thenReturn(instanceInfo);
-
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
-        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+        when(restTemplate.exchange("https://" + HOSTNAME + ":" + SECURE_PORT + "/" + serviceId + API_DOC, HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
         ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(serviceId, version);
+        assertNotNull(actualResponse);
+        assertNotNull(actualResponse.getApiDocResponse());
+        assertEquals(responseBody, actualResponse.getApiDocResponse().getBody());
+        assertEquals(HttpStatus.OK, actualResponse.getApiDocResponse().getStatusCode());
     }
 
 }
