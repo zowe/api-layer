@@ -56,7 +56,7 @@
     </servlet>
 
     <listener>
-        <listener-class> com.ca.hwsjersey.listener.ApiDiscoveryListener</listener-class>
+        <listener-class>com.ca.hwsjersey.listener.ApiDiscoveryListener</listener-class>
     </listener>
 
 </web-app>

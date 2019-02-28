@@ -3,9 +3,9 @@ title: Hello Spring REST API
 eureka:
     hostname: localhost
     ipAddress: 127.0.0.1
-    port: 10020
+    port: 10021
 description: Example for exposing a Spring REST API
-baseUrl: http://localhost:10020/hellospring
+baseUrl: http://localhost:10021/hellospring
 homePageRelativeUrl:
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
@@ -28,9 +28,9 @@ routes:
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellospring/api-doc
 apiInfo:
-    title: Hello World Spring
-    description: REST API for a Spring Application
-    version: 1.0.0
+    - apiId: org.zowe.hellospring
+      gatewayUrl: api/v1
+      swaggerUrl: http://localhost:10021/hellospring/api-doc
 catalogUiTile:
     id: cademoapps
     title: Sample API Mediation Layer Applications

@@ -31,7 +31,6 @@ routes:
 apiInfo:
     - apiId: org.zowe.hellojersey
       gatewayUrl: api/v1
-#      swaggerUrl: https://localhost:10016/hellojersey/api-doc
       swaggerUrl: https://localhost:10016/hellojersey/swagger.json
 catalogUiTile:
     id: cademoapps

@@ -42,7 +42,7 @@ tomcat {
     httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
     ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
 
-    httpPort = 10020
+    httpPort = 10021
     ajpPort = 8010
     stopPort = 8082
 

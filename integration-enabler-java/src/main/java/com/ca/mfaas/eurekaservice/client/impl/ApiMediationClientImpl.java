@@ -29,13 +29,10 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +41,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     private static final Logger log = LoggerFactory.getLogger(ApiMediationClientImpl.class);
 
     private EurekaClient eurekaClient;
-    private static URI apiDocEndpoint;
 
     @Override
     public synchronized void register(ApiMediationServiceConfig config) {
@@ -140,8 +136,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
         }
 
-        constructApiDocLocation(config);
-
         return result;
     }
 
@@ -177,34 +171,4 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         return metadata;
     }
-
-    private static void constructApiDocLocation(ApiMediationServiceConfig config) {
-        String hostname;
-        String serviceId = config.getServiceId();
-        int port;
-        URL baseUrl;
-        try {
-            baseUrl = new URL(config.getBaseUrl());
-            hostname = baseUrl.getHost();
-            port = baseUrl.getPort();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
-        }
-
-        try {
-            apiDocEndpoint = new URIBuilder()
-                .setScheme("https")
-                .setHost(hostname)
-                .setPort(port)
-                .setPath("/" + serviceId + "/" + "swagger.json").build();
-        } catch (URISyntaxException e) {
-            log.error("Could not construct API Doc endpoint. API Doc cannot be accessed via /api-doc endpoint.\n"
-                + e.getMessage(), e);
-        }
-    }
-
-    public static URI getApiDocEndpoint() {
-        return apiDocEndpoint;
-    }
-
 }
