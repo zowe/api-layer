@@ -36,9 +36,11 @@ import static org.mockito.Mockito.when;
 public class LocalApiDocServiceTest {
     private static final String HOSTNAME = "localhost";
     private static final int PORT = 10000;
+    private static final int SECURE_PORT = 10001;
     private static final String SWAGGER_URL = "https://service/api-doc";
     private static final String GATEWAY_URL = "api/v1";
     private static final String API_ID = "test.app";
+    private static final String API_DOC = "/api-doc";
 
     @Mock
     private RestTemplate restTemplate;
@@ -262,6 +264,41 @@ public class LocalApiDocServiceTest {
 
         assertEquals(HOSTNAME + ":" + PORT, actualResponse.getGatewayHost());
         assertEquals("http", actualResponse.getGatewayScheme());
+    }
+
+    @Test
+    public void shouldCreateApiDocUrlFromRouting() {
+
+        String serviceId = "service1";
+        String version = "v1";
+        String responseBody = "api-doc body";
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("apiml.apiInfo.apiId", API_ID);
+        metadata.put("apiml.apiInfo.gatewayUrl", GATEWAY_URL);
+        metadata.put("apiml.apiInfo.version", version);
+        metadata.put("apiml.apiInfo.swaggerUrl", SWAGGER_URL);
+        metadata.put("routed-services.api-v1.gateway-url", "api");
+        metadata.put("routed-services.api-v1.service-url", "/");
+        metadata.put("routed-services.api-doc.service-url", '/' + serviceId + API_DOC);
+        InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
+            .setAppName(serviceId)
+            .setHostName(HOSTNAME)
+            .setSecurePort(SECURE_PORT)
+            .enablePort(InstanceInfo.PortType.UNSECURE, false)
+            .enablePort(InstanceInfo.PortType.SECURE, true)
+            .setStatus(InstanceInfo.InstanceStatus.UP)
+            .setMetadata(metadata)
+            .build();
+
+        when(instanceRetrievalService.getInstanceInfo(serviceId))
+            .thenReturn(instanceInfo);
+        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId()))
+            .thenReturn(instanceInfo);
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(serviceId, version);
     }
 
 }
