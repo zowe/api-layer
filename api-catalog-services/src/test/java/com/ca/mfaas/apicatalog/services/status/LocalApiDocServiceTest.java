@@ -157,6 +157,23 @@ public class LocalApiDocServiceTest {
             .build();
     }
 
+    private InstanceInfo getStandardInstance2(String serviceId, String version, InstanceInfo.InstanceStatus status) {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("apiml.apiInfo.1.apiId", API_ID);
+        metadata.put("apiml.apiInfo.1.gatewayUrl", GATEWAY_URL);
+        metadata.put("apiml.apiInfo.1.version", version);
+        metadata.put("apiml.apiInfo.1.swaggerUrl", null);
+        metadata.put("routed-services.api-v1.gateway-url", "api");
+        metadata.put("routed-services.api-v1.service-url", "/");
+
+        return InstanceInfo.Builder.newBuilder()
+            .setAppName(serviceId)
+            .setHostName(HOSTNAME)
+            .setPort(PORT)
+            .setStatus(status)
+            .setMetadata(metadata)
+            .build();
+    }
 
     @Test
     public void testFailedRetrievalOfAPIDocWhenMetadataNotDefined() {
@@ -185,4 +202,66 @@ public class LocalApiDocServiceTest {
         exceptionRule.expectMessage("No API Documentation defined for service " + serviceId + " .");
         apiDocRetrievalService.retrieveApiDoc(serviceId, version);
     }
+
+    @Test
+    public void shouldGenerateSubstituteSwaggerIfSwaggerUrlNull() {
+
+        String serviceId = "service1";
+        String version = "v1";
+        String generatedResponseBody = "{\n" +
+            "    \"swagger\": \"2.0\",\n" +
+            "    \"info\": {\n" +
+            "        \"title\": \"$title\"\n" +
+            "      , \"description\": \"$description\"\n" +
+            "      , \"version\": \"v1\"\n" +
+            "    },\n" +
+            "    \"host\": \"localhost:10000\",\n" +
+            "    \"basePath\": \"/api/v1/service1\",\n" +
+            "    \"schemes\": [\"http\"],\n" +
+            "    \"tags\": [\n" +
+            "        {\n" +
+            "            \"name\": \"apimlHidden\"\n" +
+            "        }\n" +
+            "    ],\n" +
+            "    \"paths\": {\n" +
+            "        \"/apimlHidden\": {\n" +
+            "            \"get\": {\n" +
+            "                \"tags\": [\"apimlHidden\"],\n" +
+            "                \"responses\": {\n" +
+            "                    \"200\": {\n" +
+            "                        \"description\": \"OK\"\n" +
+            "                    }\n" +
+            "                }\n" +
+            "            }\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        String responseBody = "api-doc body";
+        generatedResponseBody = generatedResponseBody.replaceAll("\\s+","");
+        when(instanceRetrievalService.getInstanceInfo(serviceId))
+            .thenReturn(getStandardInstance2(serviceId, version, InstanceInfo.InstanceStatus.UP));
+        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId()))
+            .thenReturn(getStandardInstance2(CoreService.GATEWAY.getServiceId(), version, InstanceInfo.InstanceStatus.UP));
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(serviceId, version);
+        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+        assertEquals(version, actualResponse.getApiInfo().getVersion());
+        assertEquals(null, actualResponse.getApiInfo().getSwaggerUrl());
+
+        assertNotNull(actualResponse);
+        assertNotNull(actualResponse.getApiDocResponse());
+        assertEquals(generatedResponseBody, actualResponse.getApiDocResponse().getBody().replaceAll("\\s+",""));
+        assertEquals(HttpStatus.OK, actualResponse.getApiDocResponse().getStatusCode());
+
+        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+
+        assertEquals(HOSTNAME + ":" + PORT, actualResponse.getGatewayHost());
+        assertEquals("http", actualResponse.getGatewayScheme());
+    }
+
 }
