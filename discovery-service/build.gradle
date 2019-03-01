@@ -29,10 +29,6 @@ dependencies {
     compile libraries.jackson_dataformat_yaml
     compile libraries.swagger_annotations
 
-    compileOnly libraries.lombok
-    annotationProcessor(libraries.lombok)
-
-    testCompile libraries.lombok
     testCompile libraries.spring_boot_starter_test
 }
 

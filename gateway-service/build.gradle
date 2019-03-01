@@ -37,16 +37,11 @@ dependencies {
     compile libraries.swagger_models
     compile libraries.jetty_websocket_client
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
-
-
-    compileOnly(libraries.lombok)
-    annotationProcessor(libraries.lombok)
-
+    
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
     testRuntime libraries.http_client
     testCompile libraries.rest_assured
-    testCompile(libraries.lombok)
 }
 
 bootJar.archiveName = "${bootJar.baseName}.jar"

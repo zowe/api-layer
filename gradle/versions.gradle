@@ -3,7 +3,6 @@ ext {
     springCloudVersion = '2.0.1.RELEASE'
     springSecurityVersion = '5.1.0.RELEASE'
 
-    lombokVersion = '1.16.20'
     slf4jVersion = '1.7.25'
     jsonPathVersion = '2.4.0'
     springFoxVersion = '2.8.0'
@@ -48,7 +47,6 @@ ext {
     jerseyVersion = '2.26'
 
     libraries = [
-        lombok                             : "org.projectlombok:lombok:${lombokVersion}",
         slf4j_simple                       : "org.slf4j:slf4j-simple:${slf4jVersion}",
         slf4j_api                          : "org.slf4j:slf4j-api:${slf4jVersion}",
         spring_boot_gradle_plugin          : "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}",

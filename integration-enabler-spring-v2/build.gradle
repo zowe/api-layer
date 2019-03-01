@@ -32,8 +32,6 @@ dependencies {
     compile libraries.spring_cloud_starter_eureka
     compile libraries.spring_boot_starter_actuator
 
-    compileOnly libraries.lombok
-    annotationProcessor(libraries.lombok)
     compileOnly libraries.spring_boot_starter_web
     compileOnly libraries.javax_servlet_api
 
@@ -43,7 +41,6 @@ dependencies {
     testCompile libraries.power_mock_junit4_rule
     testCompile libraries.spring_boot_starter_web
     testCompile libraries.spring_boot_starter_test
-    testCompile libraries.lombok
     testCompile libraries.javax_servlet_api
     testCompile libraries.snakeyaml
     testCompile libraries.javax_servlet_api

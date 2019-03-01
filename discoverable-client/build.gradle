@@ -31,11 +31,7 @@ dependencies {
     compile('org.webjars:bootstrap:4.1.3')
     compile('org.webjars:jquery:3.3.1-1')
 
-    compileOnly libraries.lombok
-    annotationProcessor(libraries.lombok)
-
     testCompile libraries.spring_boot_starter_test
-    testCompile libraries.lombok
 }
 
 bootJar.archiveName = "${bootJar.baseName}.jar"

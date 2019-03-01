@@ -30,14 +30,11 @@ dependencies {
 
     compileOnly libraries.slf4j_api
     compileOnly libraries.javax_servlet_api
-    compileOnly(libraries.lombok)
-    annotationProcessor(libraries.lombok)
 
     testCompile libraries.junit
     testCompile libraries.hamcrest
     testCompile libraries.mockito_core
     testCompile libraries.logback_classic
     testCompile libraries.spring_security_test
-    testCompile(libraries.lombok)
     testCompile libraries.javax_servlet_api
 }
