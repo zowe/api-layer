@@ -21,11 +21,6 @@ Parts:
         * [Token-based authentication using Spring Boot and JWT](https://github.com/svlada/springboot-security-jwt)
 
 ### Documentation for L2 Support
-Personas:
-* Vasyl
-* Seva
-* Chris
-
 > General idea: troubleshooting guides like cookbook, or something in this style.
 
 
