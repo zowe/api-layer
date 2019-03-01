@@ -1,5 +1,5 @@
-import { connect } from 'react-redux';
-import { clearAllErrors } from '../../actions/error-actions';
+import {connect} from 'react-redux';
+import {clearAllErrors} from '../../actions/error-actions';
 import Error from './Error';
 
 const mapStateToProps = state => ({

@@ -30,7 +30,7 @@ public @interface ConditionalOnMissingProperty {
     String[] value();
 
     @Order(Ordered.HIGHEST_PRECEDENCE + 40)
-    @SuppressWarnings({"Duplicates","squid:S134"})
+    @SuppressWarnings({"Duplicates", "squid:S134"})
     class OnMissingPropertyCondition extends SpringBootCondition {
 
         @Override
@@ -67,7 +67,8 @@ public @interface ConditionalOnMissingProperty {
 
         /**
          * Check the value of the property, an empty or null value should be considered as a no match
-         * @param context condition context
+         *
+         * @param context      condition context
          * @param propertyName the property
          * @return not match found or match with a value
          */

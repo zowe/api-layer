@@ -1,4 +1,4 @@
-import { Text } from 'mineral-ui';
+import {Text} from 'mineral-ui';
 import React from 'react';
 import renderHTML from 'react-render-html';
 import uuidv4 from 'uuid/v4';
@@ -28,7 +28,7 @@ function extractAjaxError(error) {
     } else {
         return null;
     }
-    return { msg, clr };
+    return {msg, clr};
 }
 
 const formatError = error => {
@@ -39,7 +39,7 @@ const formatError = error => {
     } else if (error.id !== undefined && error.timestamp !== undefined) {
         const extractedAjaxError = extractAjaxError(error.error);
         if (extractedAjaxError) {
-            const { msg, clr } = extractedAjaxError;
+            const {msg, clr} = extractedAjaxError;
             message = msg;
             color = clr;
         } else if (error.key !== null && error.key !== undefined) {
@@ -60,7 +60,7 @@ const formatError = error => {
         }
     } else if (error.name !== undefined && error.name === 'AjaxError') {
         const extractedAjaxError = extractAjaxError(error);
-        const { msg, clr } = extractedAjaxError;
+        const {msg, clr} = extractedAjaxError;
         message = msg;
         color = clr;
     } else {

@@ -46,8 +46,9 @@ public class ApiDocController {
     /**
      * API Doc retrieval controller
      * Autowire in dependencies to contoller
-     * @param apiDocEnabled does the service have API Documentation
-     * @param swaggerLocation optional parameter to tell the controller where to load a static swagger file
+     *
+     * @param apiDocEnabled      does the service have API Documentation
+     * @param swaggerLocation    optional parameter to tell the controller where to load a static swagger file
      * @param localApiDocService retrieve the API doc locally and not through the gateway
      */
     @Autowired
@@ -62,6 +63,7 @@ public class ApiDocController {
 
     /**
      * Retrieve the API doc for the given group (or default to the first alphanumeric version tag)
+     *
      * @param apiDocGroup the group to retrieve
      * @return the API doc for a group
      * @throws IOException when retrieving the doc fails
@@ -77,6 +79,7 @@ public class ApiDocController {
 
     /**
      * Is API Doc enabled for the implementing service
+     *
      * @return true if enabled
      */
     @GetMapping(value = "/api-doc/enabled", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -86,6 +89,7 @@ public class ApiDocController {
 
     /**
      * Load the swagger/api doc info from a local resource file
+     *
      * @return the swagger as a String
      * @throws IOException when reading the file fails
      */

@@ -1,15 +1,27 @@
 buildscript {
+
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
     ext {
         springBootVersion = "1.5.9.RELEASE"
         springCloudVersion = "1.4.0.RELEASE"
     }
-    repositories mavenRepositories
+
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
 
-apply plugin: 'io.spring.dependency-management'
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+
+repositories {
+    mavenCentral()
+}
 
 jar {
     baseName = "enabler-springboot-${springBootVersion}"
@@ -25,7 +37,8 @@ dependencies {
     compile "io.springfox:springfox-spring-web:2.7.0"
 
     compileOnly libraries.javax_servlet_api
-    compileOnly libraries.lombok
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
     testCompile libraries.javax_servlet_api
@@ -33,5 +46,5 @@ dependencies {
     testCompile libraries.powermock_api_mockito2
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule
-    testCompile libraries.lombok
+    testCompile(libraries.lombok)
 }

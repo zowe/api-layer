@@ -11,12 +11,12 @@ package com.ca.mfaas.utils.http;
 
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.slf4j.Logger;
 
 import javax.net.ssl.SSLContext;
 
@@ -24,8 +24,9 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 
-@Slf4j
 public class HttpClientUtils {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(HttpClientUtils.class);
+
     private HttpClientUtils() {
     }
 
@@ -65,6 +66,6 @@ public class HttpClientUtils {
 
     private static HttpClientBuilder httpsClient() {
         return HttpClients.custom().setSSLContext(ignoreSslContext())
-                .setSSLHostnameVerifier(new NoopHostnameVerifier());
+            .setSSLHostnameVerifier(new NoopHostnameVerifier());
     }
 }

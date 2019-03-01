@@ -27,7 +27,8 @@ import java.net.URI;
 public class HttpSecurityUtils {
     private static final String API_CATALOG_LOGIN_ENDPOINT = "/api/v1/apicatalog/auth/login";
 
-    private HttpSecurityUtils() {}
+    private HttpSecurityUtils() {
+    }
 
     public static String getCookieForApiCatalog() throws IOException {
         ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();

@@ -18,10 +18,10 @@ springBoot {
         properties {
             // Generate extra build info:
             additionalProperties = [
-                by: System.properties['user.name'],
+                by             : System.properties['user.name'],
                 operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
-                number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
-                machine: InetAddress.localHost.hostName
+                number         : System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
+                machine        : InetAddress.localHost.hostName
             ]
         }
     }

@@ -1,5 +1,5 @@
-- username: someuser
-  password: somepassword
+-   username: someuser
+    password: somepassword
 
-- username: otheruser
-  password: otherpassword
+-   username: otheruser
+    password: otherpassword

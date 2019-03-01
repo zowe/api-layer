@@ -18,6 +18,7 @@ public interface StatusChangeEvent {
 
     /**
      * Create a String time stamp for this event
+     *
      * @return a timestamp
      */
     default String setTimeStamp() {

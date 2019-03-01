@@ -19,7 +19,7 @@ public class TokenFilter extends AbstractSecureContentFilter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public TokenFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler,
-        SecurityConfigurationProperties securityConfigurationProperties) {
+                       SecurityConfigurationProperties securityConfigurationProperties) {
         super(authenticationManager, failureHandler);
         this.securityConfigurationProperties = securityConfigurationProperties;
     }

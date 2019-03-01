@@ -34,13 +34,13 @@ dependencies {
 
     def tomcatVersion = '8.5.16'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
-           "org.apache.tomcat.embed:tomcat-embed-logging-juli:8.5.2",
-           "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+        "org.apache.tomcat.embed:tomcat-embed-logging-juli:8.5.2",
+        "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
 }
 
 tomcat {
     httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'
-    ajpProtocol  = 'org.apache.coyote.ajp.AjpNio2Protocol'
+    ajpProtocol = 'org.apache.coyote.ajp.AjpNio2Protocol'
 
     httpPort = 10020
     ajpPort = 8010

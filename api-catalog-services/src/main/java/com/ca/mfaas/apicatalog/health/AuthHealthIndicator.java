@@ -9,16 +9,15 @@
  */
 package com.ca.mfaas.apicatalog.health;
 
-import static org.springframework.boot.actuate.health.Status.DOWN;
-import static org.springframework.boot.actuate.health.Status.UP;
-
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
+
+import static org.springframework.boot.actuate.health.Status.DOWN;
+import static org.springframework.boot.actuate.health.Status.UP;
 
 @Component
 public class AuthHealthIndicator extends AbstractHealthIndicator {
@@ -27,7 +26,7 @@ public class AuthHealthIndicator extends AbstractHealthIndicator {
 
     @Autowired
     public AuthHealthIndicator(DiscoveryClient discoveryClient,
-            SecurityConfigurationProperties securityConfigurationProperties) {
+                               SecurityConfigurationProperties securityConfigurationProperties) {
         this.discoveryClient = discoveryClient;
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
@@ -35,7 +34,7 @@ public class AuthHealthIndicator extends AbstractHealthIndicator {
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
         boolean authUp = this.discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId())
-                .size() > 0;
+            .size() > 0;
         builder.status(authUp ? UP : DOWN).withDetail("auth", authUp ? UP.getCode() : DOWN.getCode());
     }
 }

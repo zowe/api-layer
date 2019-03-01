@@ -11,13 +11,13 @@ package com.ca.mfaas.gatewayservice;
 
 import com.ca.mfaas.utils.categories.SlowTests;
 import com.ca.mfaas.utils.http.HttpClientUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;
@@ -28,10 +28,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-@Slf4j
 public class GatewayTimeoutTest {
     private static final String API_V1_GREETING_URI = "/api/v1/discoverableclient/greeting";
     private static final int DEFAULT_TIMEOUT = 30000;
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(GatewayTimeoutTest.class);
 
     @Test
     @Category(SlowTests.class)

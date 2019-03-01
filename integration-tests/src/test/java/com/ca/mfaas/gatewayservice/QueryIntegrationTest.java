@@ -52,9 +52,9 @@ public class QueryIntegrationTest {
     public void doQueryWithValidToken() {
         given()
             .header("Authorization", "Bearer " + token)
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, QUERY_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "userId", equalTo(USERNAME)
@@ -69,13 +69,13 @@ public class QueryIntegrationTest {
         given()
             .header("Authorization", "Bearer " + invalidToken)
             .contentType(JSON)
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, QUERY_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
-        .body(
-            "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage)
-        );
+            .body(
+                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", equalTo(expectedMessage)
+            );
     }
 
     @Test

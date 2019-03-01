@@ -9,32 +9,33 @@ describe('>>> Login page component tests', () => {
     it('should submit username and password input', () => {
         const loginMock = jest.fn();
 
-        const page = enzyme.shallow(<Login login={loginMock} />);
+        const page = enzyme.shallow(<Login login={loginMock}/>);
         page.find('TextInput')
             .first()
-            .simulate('change', { target: { name: 'username', value: 'user' } });
+            .simulate('change', {target: {name: 'username', value: 'user'}});
 
         page.find('TextInput')
             .last()
-            .simulate('change', { target: { name: 'password', value: 'password' } });
+            .simulate('change', {target: {name: 'password', value: 'password'}});
 
         page.find('form').simulate('submit', {
-            preventDefault: () => {},
+            preventDefault: () => {
+            },
         });
 
         expect(loginMock).toHaveBeenCalled();
     });
 
     it('should display message if username and password are empty and submited', () => {
-        const page = enzyme.shallow(<Login />);
+        const page = enzyme.shallow(<Login/>);
 
         page.find('TextInput')
             .first()
-            .simulate('change', { target: { name: 'username', value: '' } });
+            .simulate('change', {target: {name: 'username', value: ''}});
 
         page.find('TextInput')
             .last()
-            .simulate('change', { target: { name: 'password', value: '' } });
+            .simulate('change', {target: {name: 'password', value: ''}});
 
         const button = page.find('Button');
         button.simulate('click');
@@ -44,15 +45,15 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should enable login button if username and password are populated', () => {
-        const page = enzyme.shallow(<Login />);
+        const page = enzyme.shallow(<Login/>);
 
         page.find('TextInput')
             .first()
-            .simulate('change', { target: { name: 'username', value: 'user' } });
+            .simulate('change', {target: {name: 'username', value: 'user'}});
 
         page.find('TextInput')
             .last()
-            .simulate('change', { target: { name: 'password', value: 'password' } });
+            .simulate('change', {target: {name: 'password', value: 'password'}});
 
         const button = page.find('Button');
         expect(button).toBeDefined();
@@ -60,13 +61,13 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should render form', () => {
-        const page = enzyme.shallow(<Login />);
+        const page = enzyme.shallow(<Login/>);
 
         expect(page.find('form')).toBeDefined();
     });
 
     it('should display a credentials failure message', () => {
-        const wrapper = enzyme.shallow(<Login />);
+        const wrapper = enzyme.shallow(<Login/>);
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
@@ -79,7 +80,7 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should display a no credentials message', () => {
-        const wrapper = enzyme.shallow(<Login />);
+        const wrapper = enzyme.shallow(<Login/>);
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
@@ -90,7 +91,7 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should display authetication required', () => {
-        const wrapper = enzyme.shallow(<Login />);
+        const wrapper = enzyme.shallow(<Login/>);
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
@@ -103,7 +104,7 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should display session has expired', () => {
-        const wrapper = enzyme.shallow(<Login />);
+        const wrapper = enzyme.shallow(<Login/>);
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
@@ -116,7 +117,7 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should display server generated failure message', () => {
-        const wrapper = enzyme.shallow(<Login />);
+        const wrapper = enzyme.shallow(<Login/>);
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
@@ -129,7 +130,7 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
-        const wrapper = enzyme.shallow(<Login isFetching />);
+        const wrapper = enzyme.shallow(<Login isFetching/>);
 
         const submitButton = wrapper.find('Button');
         const spinner = wrapper.find('Spinner');
@@ -140,7 +141,7 @@ describe('>>> Login page component tests', () => {
     });
 
     it('should display UI errorMessage', () => {
-        const page = enzyme.shallow(<Login errorMessage="Cus bus" />);
+        const page = enzyme.shallow(<Login errorMessage="Cus bus"/>);
         const errorMessage = page.find('p.error-message-content').first();
 
         expect(errorMessage).toBeDefined();

@@ -10,7 +10,6 @@
 package com.ca.mfaas.apicatalog.controllers.api;
 
 import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
-import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
@@ -34,6 +34,7 @@ public class CatalogApiDocController {
 
     /**
      * Create the controller and autowire in the repository services
+     *
      * @param apiServiceStatusService repo service for registered services
      */
     @Autowired
@@ -44,7 +45,8 @@ public class CatalogApiDocController {
 
     /**
      * Retrieve the api-doc info for this service
-     * @param serviceId the eureka id
+     *
+     * @param serviceId  the eureka id
      * @param apiVersion the version of the api
      * @return api-doc info (as JSON)
      */

@@ -4,19 +4,19 @@
     "pluginVersion": "1.0.0",
     "pluginType": "application",
     "webContent": {
-      "framework": "iframe",
-      "startingPage": "index.html",
-      "launchDefinition": {
-        "pluginShortNameKey": "API Catalog",
-        "pluginShortNameDefault": "API Catalog", 
-        "imageSrc": "images/api-catalog.png"
-      },
-      "descriptionKey": "",
-      "descriptionDefault": "",
-      "isSingleWindowApp": true,
-      "defaultWindowStyle": {
-        "width": 1400,
-        "height": 800
-      }
+        "framework": "iframe",
+        "startingPage": "index.html",
+        "launchDefinition": {
+            "pluginShortNameKey": "API Catalog",
+            "pluginShortNameDefault": "API Catalog",
+            "imageSrc": "images/api-catalog.png"
+        },
+        "descriptionKey": "",
+        "descriptionDefault": "",
+        "isSingleWindowApp": true,
+        "defaultWindowStyle": {
+            "width": 1400,
+            "height": 800
+        }
     }
-  }
+}

@@ -10,14 +10,10 @@
 package com.ca.mfaas.client;
 
 import com.ca.mfaas.enable.EnableApiDiscovery;
-import com.ca.mfaas.product.service.BuildInfo;
-import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
@@ -25,19 +21,11 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableApiDiscovery
 @EnableConfigurationProperties
 @EnableWebSocket
-@ComponentScan(value = { "com.ca.mfaas.client", "com.ca.mfaas.enable", "com.ca.mfaas.product.web" })
-public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
+@ComponentScan(value = {"com.ca.mfaas", "com.ca.mfaas.enable", "com.ca.mfaas.product.web"})
+public class DiscoverableClientSampleApplication {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoverableClientSampleApplication.class);
-        app.setLogStartupInfo(false);
-        new BuildInfo().logBuildInfo();
         app.run(args);
-    }
-
-    @Override
-    public void onApplicationEvent(final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("Discoverable Client Service",
-                ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

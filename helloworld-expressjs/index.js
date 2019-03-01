@@ -77,23 +77,30 @@ function startHttpsService() {
     const app = express();
 
     // Index page with a link to the REST API endpoint:
-    app.get("/", (req, res) =>
-        res.json({
-            links: [
-                {
-                    rel: "hello",
-                    href: `${req.protocol}://${req.get("Host")}/api/v1/hello`
-                }
-            ]
-        })
-    );
+    app.get("/", (req, res) = >
+    res.json({
+        links: [
+            {
+                rel: "hello",
+                href: `${req.protocol}://${req.get("Host")}/api/v1/hello`
+            }
+        ]
+    })
+)
+    ;
 
     // REST API endopint:
-    app.get("/api/v1/hello", (req, res) => res.json({ greeting: "Hello World!" }));
+    app.get("/api/v1/hello", (req, res) = > res.json({greeting: "Hello World!"})
+)
+    ;
 
     // Status and health endpoints for Eureka:
-    app.get("/info", (req, res) => res.json({ serviceId: serviceId, nodeJsVersion: process.version }));
-    app.get("/status", (req, res) => res.json({ status: "UP" }));
+    app.get("/info", (req, res) = > res.json({serviceId: serviceId, nodeJsVersion: process.version})
+)
+    ;
+    app.get("/status", (req, res) = > res.json({status: "UP"})
+)
+    ;
 
     // Static resoures (contains Swagger JSON document with API documentation):
     app.use(express.static("static"));

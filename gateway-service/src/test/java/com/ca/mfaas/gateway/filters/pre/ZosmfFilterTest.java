@@ -9,19 +9,18 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
+import com.ca.mfaas.security.token.TokenService;
+import com.netflix.zuul.context.RequestContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletResponse;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
-
-import com.ca.mfaas.security.token.TokenService;
-import com.netflix.zuul.context.RequestContext;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.mock.web.MockHttpServletResponse;
 
 public class ZosmfFilterTest {
 
@@ -106,5 +105,5 @@ public class ZosmfFilterTest {
 
         assertTrue(ctx.getZuulRequestHeaders().get("cookie").contains(LTPA_TOKEN));
         assertTrue(ctx.getZuulRequestHeaders().get("cookie").contains(MY_COOKIE));
-    }    
+    }
 }

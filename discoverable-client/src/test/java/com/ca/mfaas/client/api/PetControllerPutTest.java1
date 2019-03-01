@@ -40,13 +40,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = {PetController.class}, secure = false)
 @Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
 public class PetControllerPutTest {
+    private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private PetService petService;
-
-    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void putExistingPet() throws Exception {

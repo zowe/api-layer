@@ -26,15 +26,15 @@ import java.io.IOException;
 
 @Component
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
-    private final ObjectMapper mapper;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
     private static final String JSON = "JSON";
     private static final String COOKIE = "COOKIE";
     private static final String COOKIE_RESPONSE = "";
     private static final String AUTHENTICATION_RESPONSE_TYPE_HEADER_NAME = "Auth-Response-Type";
+    private final ObjectMapper mapper;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public SuccessfulLoginHandler(ObjectMapper securityObjectMapper,
-    SecurityConfigurationProperties securityConfigurationProperties) {
+                                  SecurityConfigurationProperties securityConfigurationProperties) {
         this.mapper = securityObjectMapper;
         this.securityConfigurationProperties = securityConfigurationProperties;
     }

@@ -11,11 +11,11 @@ package com.ca.mfaas.utils.http;
 
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,18 +24,21 @@ import java.net.URISyntaxException;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@Slf4j
 public class HttpRequestUtils {
 
-    private HttpRequestUtils() {}
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(HttpRequestUtils.class);
+
+    private HttpRequestUtils() {
+    }
 
     /**
      * Execute the endpoint and check the response for a return code
-     * @param endpoint execute thus
+     *
+     * @param endpoint   execute thus
      * @param returnCode check for this
      * @return response
      * @throws URISyntaxException oops
-     * @throws IOException oops
+     * @throws IOException        oops
      */
     public static HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
         HttpGet request = getRequest(endpoint);

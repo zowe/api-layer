@@ -19,6 +19,7 @@ public class ApiDocNotEnabledException extends RuntimeException {
 
     /**
      * Api Doc exception
+     *
      * @param s message
      */
     public ApiDocNotEnabledException(String s) {
@@ -27,6 +28,7 @@ public class ApiDocNotEnabledException extends RuntimeException {
 
     /**
      * Do not print a stack trace for this exception
+     *
      * @return
      */
     @Override

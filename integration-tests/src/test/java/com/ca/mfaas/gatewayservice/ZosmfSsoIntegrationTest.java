@@ -16,8 +16,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
 
 public class ZosmfSsoIntegrationTest {
@@ -54,9 +57,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .header("Authorization", "Bearer " + token)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
@@ -70,9 +73,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie("apimlAuthenticationToken", token)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
@@ -88,9 +91,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie(SecurityUtils.ZOSMF_TOKEN, ltpa)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
@@ -104,9 +107,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));
@@ -120,9 +123,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .header("Authorization", "Bearer " + invalidToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
@@ -136,9 +139,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
@@ -150,9 +153,9 @@ public class ZosmfSsoIntegrationTest {
 
         given()
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_INTERNAL_SERVER_ERROR))
             .body(
                 "rc", equalTo(rc));
@@ -166,9 +169,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .header("Authorization", "Bearer " + emptyToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .body(
                 "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
     }
@@ -182,9 +185,9 @@ public class ZosmfSsoIntegrationTest {
         given()
             .cookie("apimlAuthenticationToken", emptyToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));

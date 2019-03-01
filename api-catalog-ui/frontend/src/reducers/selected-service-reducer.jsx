@@ -1,4 +1,4 @@
-import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-constants';
+import {CLEAR_SERVICE, SELECT_SERVICE} from '../constants/selected-service-constants';
 
 const defaultState = {
     selectedService: {},

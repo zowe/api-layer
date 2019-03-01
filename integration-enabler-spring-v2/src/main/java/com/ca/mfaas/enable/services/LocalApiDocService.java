@@ -33,15 +33,16 @@ public class LocalApiDocService {
     /**
      * API Doc retrieval controller
      * Autowire in dependencies to contoller
+     *
      * @param documentationCache in memory cache of discovered API Docs
-     * @param jsonSerializer json serializer
-     * @param mapper json mapper
+     * @param jsonSerializer     json serializer
+     * @param mapper             json mapper
      */
     @Autowired
     public LocalApiDocService(
         DocumentationCache documentationCache,
         JsonSerializer jsonSerializer,
-        ServiceModelToSwagger2Mapper mapper)  {
+        ServiceModelToSwagger2Mapper mapper) {
         this.jsonSerializer = jsonSerializer;
         this.mapper = mapper;
         this.documentationCache = documentationCache;
@@ -49,10 +50,11 @@ public class LocalApiDocService {
 
     /**
      * Retrieve the API doc for this service
+     *
      * @param apiDocGroup the API doc group to retrieve (can be null, the apply default)
      * @return the swagger as a string
      */
-    public String getApiDoc(String apiDocGroup)  {
+    public String getApiDoc(String apiDocGroup) {
         String groupName = Optional.ofNullable(apiDocGroup).orElse(Docket.DEFAULT_GROUP_NAME);
         Documentation documentation = documentationCache.documentationByGroup(groupName);
         if (documentation == null) {

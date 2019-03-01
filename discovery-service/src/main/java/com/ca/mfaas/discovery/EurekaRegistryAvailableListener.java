@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Called by Eureka when its service registry is initialized.
- *
+ * <p>
  * It is calling services that require registry to be initialized.
  */
 @Component

@@ -13,10 +13,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>API Mediation Layer</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-    <link rel="icon" type="image/png" href="images/favicon.png">
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <link href="images/favicon.png" rel="icon" type="image/png">
     <style>
         * {
             padding: 0;
@@ -152,7 +152,7 @@
 <nav class="header">
     <div class="product-name">
         <div class="app-icon-container">
-            <img class="logo" th:src="@{/images/gray-logo.png}" alt="API Catalog Product Name"/>
+            <img alt="API Catalog Product Name" class="logo" th:src="@{/images/gray-logo.png}"/>
         </div>
         <h3>API Mediation Layer</h3>
     </div>
@@ -161,12 +161,12 @@
     <h1>API Mediation Layer</h1>
     <ul class="status">
         <li class="list-item">
-            <div class="wrap"><img class="status-icon"
-                                   th:src="@{${'/images/icon-notification-intent-' + catalogIconName + '.png'}}"
-                                   alt="API Catalog status icon"/>
+            <div class="wrap"><img alt="API Catalog status icon"
+                                   class="status-icon"
+                                   th:src="@{${'/images/icon-notification-intent-' + catalogIconName + '.png'}}"/>
                 <a class="active"
-                   th:if="${linkEnabled} == true"
                    th:href="${catalogLink}"
+                   th:if="${linkEnabled} == true"
                    title="Go to the API Catalog">
                     <p class="status-text" th:text="${catalogStatusText}"/>
                 </a>
@@ -176,9 +176,9 @@
             </div>
         </li>
         <li class="list-item">
-            <div class="wrap"><img class="status-icon"
-                                   th:src="@{${'/images/icon-notification-intent-' + discoveryIconName + '.png'}}"
-                                   alt="Discovery service running icon"/>
+            <div class="wrap"><img alt="Discovery service running icon"
+                                   class="status-icon"
+                                   th:src="@{${'/images/icon-notification-intent-' + discoveryIconName + '.png'}}"/>
                 <p class="status-text" th:text="${discoveryStatusText}"/></div>
         </li>
     </ul>

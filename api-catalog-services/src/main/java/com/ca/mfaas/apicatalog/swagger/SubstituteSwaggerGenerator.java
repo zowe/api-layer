@@ -31,7 +31,7 @@ public class SubstituteSwaggerGenerator {
     }
 
     public ResponseEntity<String> generateSubstituteSwaggerForService(InstanceInfo gateway, InstanceInfo service,
-            ApiInfo api) {
+                                                                      ApiInfo api) {
         String title = service.getMetadata().get("mfaas.discovery.service.title");
         String description = service.getMetadata().get("mfaas.discovery.service.description");
         String scheme = gateway.isPortEnabled(PortType.SECURE) ? "https" : "http";
@@ -48,7 +48,7 @@ public class SubstituteSwaggerGenerator {
         }
 
         String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + api.getGatewayUrl()
-                + (api.getGatewayUrl().endsWith("/") ? "" : "/") + service.getAppName().toLowerCase();
+            + (api.getGatewayUrl().endsWith("/") ? "" : "/") + service.getAppName().toLowerCase();
 
         Template t = ve.getTemplate("substitute_swagger.json");
         VelocityContext context = new VelocityContext();

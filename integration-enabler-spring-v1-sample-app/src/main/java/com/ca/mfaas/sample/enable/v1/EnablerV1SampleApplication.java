@@ -16,7 +16,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan({"com.ca.mfaas.sample.enable","com.ca.mfaas.enable"})
+@ComponentScan({"com.ca.mfaas.sample.enable", "com.ca.mfaas.enable"})
 @EnableApiDiscovery
 @EnableConfigurationProperties
 public class EnablerV1SampleApplication {

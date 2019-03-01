@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 
-import { getVisibleTiles } from './selectors';
+import {getVisibleTiles} from './selectors';
 
 const tiles = [
     {

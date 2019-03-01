@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 package com.ca.mfaas.client;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.TestPropertySource;

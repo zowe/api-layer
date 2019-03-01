@@ -15,6 +15,7 @@ package com.ca.mfaas.client.exception;
 public class PetIdMismatchException extends RuntimeException {
     private final Long pathId;
     private final Long bodyId;
+
     public PetIdMismatchException(String message, Long pathId, Long bodyId) {
         super(message);
         this.pathId = pathId;

@@ -28,7 +28,7 @@ public class DiscoveryInfo {
     public DiscoveryInfo(String hostName, Boolean secure, String serviceName,
                          Integer port, String serviceType, String serviceTitle,
                          Boolean enableApiDoc, String description
-                         ) {
+    ) {
         this.hostName = hostName;
         this.secure = secure;
         this.serviceName = serviceName;
@@ -41,7 +41,7 @@ public class DiscoveryInfo {
 
     }
 
-    public String getHostName () {
+    public String getHostName() {
         return hostName;
     }
 
@@ -53,23 +53,23 @@ public class DiscoveryInfo {
         return serviceName;
     }
 
-    public Integer getPort () {
+    public Integer getPort() {
         return port;
     }
 
-    public String getServiceType () {
+    public String getServiceType() {
         return serviceType;
     }
 
-    public String getServiceTitle () {
+    public String getServiceTitle() {
         return serviceTitle;
     }
 
-    public Boolean getEnableApiDoc () {
+    public Boolean getEnableApiDoc() {
         return enableApiDoc;
     }
 
-    public String getDescription () {
+    public String getDescription() {
         return description;
     }
 

@@ -21,8 +21,7 @@ function openWebsocket() {
         // UI applications accessed via the gateway will use a URL with "/ui/" at the beginning,
         // so we need to replace it with "/ws/":
         wsUri += loc.pathname.replace("/ui/", "/ws/") + "uppercase";
-    }
-    else {
+    } else {
         wsUri += loc.pathname + "ws/uppercase";
     }
     console.log("Opening Websocket connection " + wsUri);

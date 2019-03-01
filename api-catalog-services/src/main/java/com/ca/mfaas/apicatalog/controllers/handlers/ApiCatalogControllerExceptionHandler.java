@@ -31,6 +31,7 @@ public class ApiCatalogControllerExceptionHandler {
 
     /**
      * Constructor for {@link ApiCatalogControllerExceptionHandler}.
+     *
      * @param errorService service for creation {@link ApiMessage} by key and list of parameters.
      */
     @Autowired
@@ -40,6 +41,7 @@ public class ApiCatalogControllerExceptionHandler {
 
     /**
      * Could not retrieve container details
+     *
      * @param exception ContainerStatusRetrievalException
      * @return 500 and the message 'Could not retrieve container statuses, <optional text>'
      */

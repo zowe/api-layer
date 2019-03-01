@@ -1,5 +1,4 @@
-import { ThemeProvider } from 'mineral-ui';
-import { debounce } from 'lodash';
+import {ThemeProvider} from 'mineral-ui';
 /* eslint-disable no-undef */
 import * as React from 'react';
 // tslint:disable-next-line:no-implicit-dependencies
@@ -10,7 +9,7 @@ describe('>>> Search bar component tests', () => {
     it('should render all fields with initial state', () => {
         const wrapper = enzyme.mount(
             <ThemeProvider>
-                <SearchCriteria />
+                <SearchCriteria/>
             </ThemeProvider>
         );
         expect(wrapper.find('.header')).toBeDefined();
@@ -22,16 +21,16 @@ describe('>>> Search bar component tests', () => {
     });
 
     it('should clear search criteria', () => {
-        const wrapper = enzyme.shallow(<SearchCriteria />);
-        wrapper.setState({ criteria: 'foo' });
+        const wrapper = enzyme.shallow(<SearchCriteria/>);
+        wrapper.setState({criteria: 'foo'});
         const instance = wrapper.instance();
         instance.clearSearch();
         expect(wrapper.state().criteria).toEqual('');
     });
 
     it('should handle search criteria', () => {
-        const wrapper = enzyme.shallow(<SearchCriteria />);
-        wrapper.setState({ criteria: '' });
+        const wrapper = enzyme.shallow(<SearchCriteria/>);
+        wrapper.setState({criteria: ''});
         const instance = wrapper.instance();
         const e = {
             currentTarget: {
@@ -43,8 +42,8 @@ describe('>>> Search bar component tests', () => {
     });
 
     it('should handle search criteria', () => {
-        const wrapper = enzyme.shallow(<SearchCriteria />);
-        wrapper.setState({ criteria: '' });
+        const wrapper = enzyme.shallow(<SearchCriteria/>);
+        wrapper.setState({criteria: ''});
         const instance = wrapper.instance();
         const e = {
             currentTarget: {

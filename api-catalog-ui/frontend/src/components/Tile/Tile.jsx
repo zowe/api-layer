@@ -1,12 +1,12 @@
-import { CardStatus } from 'mineral-ui';
-import Card, { CardBlock, CardTitle } from 'mineral-ui/Card';
-import React, { Component } from 'react';
+import {CardStatus} from 'mineral-ui';
+import Card, {CardBlock, CardTitle} from 'mineral-ui/Card';
+import React, {Component} from 'react';
 
 import './Tile.css';
 
 export default class Tile extends Component {
     getStatusFromServiceTotals = tile => {
-        const { status } = tile;
+        const {status} = tile;
         let tileStatus = status;
         if (tileStatus === 'UP' && tile.totalServices !== tile.activeServices) {
             tileStatus = 'WARNING';
@@ -51,7 +51,7 @@ export default class Tile extends Component {
     };
 
     handleClick = () => {
-        const { tile, history } = this.props;
+        const {tile, history} = this.props;
         const tileRoute = `/tile/${tile.id}`;
         history.push(tileRoute);
     };
@@ -66,7 +66,7 @@ export default class Tile extends Component {
     };
 
     render() {
-        const { tile } = this.props;
+        const {tile} = this.props;
 
         return (
             <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">

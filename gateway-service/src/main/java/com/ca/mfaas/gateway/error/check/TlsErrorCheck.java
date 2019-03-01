@@ -13,9 +13,7 @@ import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.gateway.error.ErrorUtils;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,7 +47,7 @@ public class TlsErrorCheck implements ErrorCheck {
 
     private ResponseEntity<ApiMessage> tlsErrorResponse(HttpServletRequest request, String message) {
         ApiMessage apiMessage = errorService.createApiMessage("apiml.common.tlsError", ErrorUtils.getGatewayUri(request),
-                message);
+            message);
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(apiMessage);
     }
 }

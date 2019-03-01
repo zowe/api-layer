@@ -52,7 +52,7 @@ public class CookieFilterTest {
         String token = "token";
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
         Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
-        Cookie[] cookies = new Cookie[]{ cookie };
+        Cookie[] cookies = new Cookie[]{cookie};
 
         when(request.getCookies()).thenReturn(cookies);
 
@@ -69,7 +69,7 @@ public class CookieFilterTest {
         String notValidToken = "token";
         TokenAuthentication tokenAuthentication = new TokenAuthentication(notValidToken);
         Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), notValidToken);
-        Cookie[] cookies = new Cookie[]{ cookie };
+        Cookie[] cookies = new Cookie[]{cookie};
         BadCredentialsException exception = new BadCredentialsException("Bad token");
 
         when(request.getCookies()).thenReturn(cookies);
@@ -99,7 +99,7 @@ public class CookieFilterTest {
     public void authenticationWithWrongCookie() throws ServletException, IOException {
         String token = "token";
         Cookie cookie = new Cookie("someCookie", token);
-        Cookie[] cookies = new Cookie[]{ cookie };
+        Cookie[] cookies = new Cookie[]{cookie};
 
         when(request.getCookies()).thenReturn(cookies);
 

@@ -6,7 +6,7 @@ allprojects {
         configFile = rootProject.file('codequality/checkstyle/checkstyle.xml')
         configProperties = [
             'configDir': rootProject.file('codequality/checkstyle'),
-            'baseDir': rootDir,
+            'baseDir'  : rootDir,
         ]
     }
 

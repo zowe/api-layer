@@ -31,13 +31,14 @@ public class Pet {
     @ApiModelProperty(value = "The id is of the pet", example = "1")
     private Long id;
 
-    @NotEmpty(groups = { New.class, Existing.class }, message = "Name should not be empty string")
+    @NotEmpty(groups = {New.class, Existing.class}, message = "Name should not be empty string")
     @ApiModelProperty(value = "The name of the pet", example = "Falco")
     private String name;
 
     /**
      * Pet object
-     * @param id Pet ID
+     *
+     * @param id   Pet ID
      * @param name Pet name
      */
     public Pet(@JsonProperty("id") Long id,
@@ -48,6 +49,7 @@ public class Pet {
 
     /**
      * Gets Pet ID
+     *
      * @return Pet ID
      */
     public Long getId() {
@@ -55,15 +57,8 @@ public class Pet {
     }
 
     /**
-     * Gets Pet name
-     * @return Pet name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
      * Sets Pet ID
+     *
      * @param id Pet ID
      */
     public void setId(Long id) {
@@ -71,7 +66,17 @@ public class Pet {
     }
 
     /**
+     * Gets Pet name
+     *
+     * @return Pet name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
      * Sets Pet name
+     *
      * @param name Pet name
      */
     public void setName(String name) {

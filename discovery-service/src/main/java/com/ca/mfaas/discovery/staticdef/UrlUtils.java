@@ -10,7 +10,8 @@
 package com.ca.mfaas.discovery.staticdef;
 
 public class UrlUtils {
-    private UrlUtils() { }
+    private UrlUtils() {
+    }
 
     public static String trimSlashes(String string) {
         return string.replaceAll("^/|/$", "");

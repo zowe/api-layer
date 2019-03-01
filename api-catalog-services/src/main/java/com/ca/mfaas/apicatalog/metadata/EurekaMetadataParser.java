@@ -24,25 +24,25 @@ public class EurekaMetadataParser {
         for (Entry<String, String> entry : eurekaMetadata.entrySet()) {
             String[] keys = entry.getKey().split("\\.");
             if (keys.length == 4)
-                if (keys[0].equals("apiml") && keys[1].equals("apiInfo")) {
+                if (keys[0].equals("apiml") && keys[1].equals("shortApiInfo")) {
                     apiInfo.putIfAbsent(keys[2], new ApiInfo());
                     ApiInfo api = apiInfo.get(keys[2]);
                     switch (keys[3]) {
-                    case "apiId":
-                        api.setApiId(entry.getValue());
-                        break;
-                    case "gatewayUrl":
-                        api.setGatewayUrl(entry.getValue());
-                        break;
-                    case "version":
-                        api.setVersion(entry.getValue());
-                        break;
-                    case "swaggerUrl":
-                        api.setSwaggerUrl(entry.getValue());
-                        break;
-                    case "documentationUrl":
-                        api.setDocumentationUrl(entry.getValue());
-                        break;
+                        case "apiId":
+                            api.setApiId(entry.getValue());
+                            break;
+                        case "gatewayUrl":
+                            api.setGatewayUrl(entry.getValue());
+                            break;
+                        case "version":
+                            api.setVersion(entry.getValue());
+                            break;
+                        case "swaggerUrl":
+                            api.setSwaggerUrl(entry.getValue());
+                            break;
+                        case "documentationUrl":
+                            api.setDocumentationUrl(entry.getValue());
+                            break;
                     }
                 }
         }

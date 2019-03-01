@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiInfo {
+public class ShortApiInfo {
     private String title;
     private String description;
     private String version;

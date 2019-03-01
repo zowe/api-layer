@@ -45,14 +45,17 @@ public class PetControllerExceptionHandler {
 
     /**
      * Constructor for {@link PetControllerExceptionHandler}.
+     *
      * @param errorService service for creation {@link ApiMessage} by key and list of parameters.
      */
     @Autowired
     public PetControllerExceptionHandler(ErrorService errorService) {
         this.errorService = errorService;
     }
+
     /**
      * The handlePetNotFound method creates a response when the pet with a provided ID is not found
+     *
      * @param exception PetNotFoundException
      * @return 404 and the message 'Pet with provided ID not found'
      */
@@ -69,6 +72,7 @@ public class PetControllerExceptionHandler {
 
     /**
      * The handleIdMismatch method creates a response when the pet ID in the request body and the pet ID in the URL are different
+     *
      * @param exception PetIdMismatchException
      * @return 400 and the message 'Invalid ID'
      */
@@ -84,6 +88,7 @@ public class PetControllerExceptionHandler {
 
     /**
      * The handleIdTypeMismatch method creates a response when the pet ID is invalid
+     *
      * @param exception TypeMismatchException
      * @return 400 and the message 'The pet ID is invalid: it is not an integer'
      */
@@ -101,6 +106,7 @@ public class PetControllerExceptionHandler {
 
     /**
      * The handleMethodArgumentNotValid method creates a response with a list of messages that contains the fields with errors
+     *
      * @param exception MethodArgumentNotValidException
      * @return 400 and a list of messages with invalid fields
      */
@@ -127,6 +133,7 @@ public class PetControllerExceptionHandler {
 
     /**
      * The handleUnrecognizedProperty method creates a response when the request body does not correspond to the model object
+     *
      * @param exception UnrecognizedPropertyException
      * @return 400 and the message 'Unrecognized field '%s''
      */
@@ -142,6 +149,7 @@ public class PetControllerExceptionHandler {
 
     /**
      * The jsonParseException method creates a response when the provided body is not a valid JSON
+     *
      * @param exception JsonParseException
      * @return 400 and the message 'Request is not valid JSON'
      */
@@ -158,6 +166,7 @@ public class PetControllerExceptionHandler {
 
     /**
      * The handleInvalidFormatException method creates a response when the field is in the wrong format
+     *
      * @param exception InvalidFormatException
      * @return 400 and the message 'Field name has wrong format'
      */

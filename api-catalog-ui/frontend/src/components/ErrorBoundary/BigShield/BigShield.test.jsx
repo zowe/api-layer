@@ -9,7 +9,8 @@ const Child = () => {
 
 const pauseErrorLogging = codeToRun => {
     const logger = console.error;
-    console.error = () => {};
+    console.error = () => {
+    };
 
     codeToRun();
 
@@ -24,7 +25,7 @@ describe('>>> BigShield component tests', () => {
         pauseErrorLogging(() => {
             const wrapper = enzyme.mount(
                 <BigShield>
-                    <Child />
+                    <Child/>
                 </BigShield>
             );
             expect(wrapper.text()).toBe(errorMessage);

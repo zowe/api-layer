@@ -53,7 +53,7 @@ public class RoutedServices {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("[");
-        for (String gatewayUrl: routedService.keySet()) {
+        for (String gatewayUrl : routedService.keySet()) {
             builder.append(gatewayUrl);
             builder.append(" -> ");
             builder.append(routedService.get(gatewayUrl).toString());

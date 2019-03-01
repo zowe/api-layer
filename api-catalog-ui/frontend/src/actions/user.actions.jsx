@@ -1,18 +1,18 @@
 import userConstants from '../constants/user.constants';
-import { userService } from '../services';
+import {userService} from '../services';
 import history from '../helpers/history';
 
 function login(credentials) {
     function request(user) {
-        return { type: userConstants.USERS_LOGIN_REQUEST, user };
+        return {type: userConstants.USERS_LOGIN_REQUEST, user};
     }
 
     function success(user) {
-        return { type: userConstants.USERS_LOGIN_SUCCESS, user };
+        return {type: userConstants.USERS_LOGIN_SUCCESS, user};
     }
 
     function failure(error) {
-        return { type: userConstants.USERS_LOGIN_FAILURE, error };
+        return {type: userConstants.USERS_LOGIN_FAILURE, error};
     }
 
     return dispatch => {
@@ -32,15 +32,17 @@ function login(credentials) {
 
 function logout() {
     function request() {
-        return { type: userConstants.USERS_LOGOUT_REQUEST };
+        return {type: userConstants.USERS_LOGOUT_REQUEST};
     }
+
     function success() {
-        return { type: userConstants.USERS_LOGOUT_SUCCESS };
+        return {type: userConstants.USERS_LOGOUT_SUCCESS};
     }
 
     function failure(error) {
-        return { type: userConstants.USERS_LOGOUT_FAILURE, error };
+        return {type: userConstants.USERS_LOGOUT_FAILURE, error};
     }
+
     return dispatch => {
         dispatch(request());
         userService.logout().then(
@@ -57,8 +59,9 @@ function logout() {
 
 function authenticationFailure(error) {
     function failure(error) {
-        return { type: userConstants.AUTHENTICATION_FAILURE, error };
+        return {type: userConstants.AUTHENTICATION_FAILURE, error};
     }
+
     return dispatch => {
         dispatch(failure(error));
         history.push('/login');

@@ -9,12 +9,12 @@
  */
 package com.ca.mfaas.gateway.error;
 
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.RequestDispatcher;
+
+import static org.junit.Assert.assertEquals;
 
 public class ErrorUtilsTest {
     @Test

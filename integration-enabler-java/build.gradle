@@ -1,12 +1,33 @@
+buildscript {
+
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     compile(project(':common-service-core'))
 
-    compile libraries.jackson_annotations
-    compile libraries.jackson_dataformat_yaml
-    compile libraries.eureka_client
-    compile group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.5.10'
-    compileOnly libraries.lombok
+    compile(libraries.jackson_annotations)
+    compile(libraries.jackson_dataformat_yaml)
+    compile(libraries.eureka_client)
+    compile(group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.5.10')
+    compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
-    testCompile libraries.junit
-    testCompile libraries.logback_classic
+    testCompile(libraries.junit)
+    testCompile(libraries.logback_classic)
+    testCompile(libraries.lombok)
 }

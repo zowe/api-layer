@@ -14,10 +14,12 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class ErrorMessageStorageTest {
     private ErrorMessageStorage errorMessageStorage = new ErrorMessageStorage();
+
     @Test
     public void getKeyTest() {
         ErrorMessages messages = new ErrorMessages(Arrays.asList(

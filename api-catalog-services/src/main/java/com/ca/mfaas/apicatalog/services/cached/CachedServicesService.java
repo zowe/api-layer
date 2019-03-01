@@ -29,6 +29,7 @@ public class CachedServicesService {
 
     /**
      * return all cached service instances
+     *
      * @return instances
      */
     public Applications getAllCachedServices() {
@@ -41,6 +42,7 @@ public class CachedServicesService {
 
     /**
      * return all cached service instances
+     *
      * @param serviceId the service identifier
      * @return instances for this service (might be empty instances collection)
      */
@@ -50,7 +52,8 @@ public class CachedServicesService {
 
     /**
      * Update this service with the application object
-     * @param serviceId the service name (lowercase)
+     *
+     * @param serviceId   the service name (lowercase)
      * @param application updated application with running instances
      */
     public void updateService(@NonNull final String serviceId, final Application application) {

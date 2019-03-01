@@ -11,8 +11,11 @@ package com.ca.mfaas.discovery.staticdef;
 
 import lombok.Data;
 
-/** Represents one API Catalog UI tile (groups services together) */
-@Data public class CatalogUiTile {
+/**
+ * Represents one API Catalog UI tile (groups services together)
+ */
+@Data
+public class CatalogUiTile {
     private String id;
     private String title;
     private String description;

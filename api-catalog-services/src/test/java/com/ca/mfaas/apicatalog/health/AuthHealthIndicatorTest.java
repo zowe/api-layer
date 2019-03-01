@@ -9,20 +9,19 @@
  */
 package com.ca.mfaas.apicatalog.health;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.Collections;
-
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-
 import org.junit.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+
+import java.util.Arrays;
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AuthHealthIndicatorTest {
 
@@ -34,10 +33,10 @@ public class AuthHealthIndicatorTest {
         securityConfigurationProperties.setZosmfServiceId(ZOSMF);
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(ZOSMF))
-                .thenReturn(Arrays.asList(new DefaultServiceInstance(ZOSMF, "host", 443, true)));
+            .thenReturn(Arrays.asList(new DefaultServiceInstance(ZOSMF, "host", 443, true)));
 
         AuthHealthIndicator authHealthIndicator = new AuthHealthIndicator(discoveryClient,
-                securityConfigurationProperties);
+            securityConfigurationProperties);
         Health.Builder builder = new Health.Builder();
         authHealthIndicator.doHealthCheck(builder);
         assertEquals(builder.build().getStatus(), Status.UP);
@@ -51,7 +50,7 @@ public class AuthHealthIndicatorTest {
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.emptyList());
 
         AuthHealthIndicator authHealthIndicator = new AuthHealthIndicator(discoveryClient,
-                securityConfigurationProperties);
+            securityConfigurationProperties);
         Health.Builder builder = new Health.Builder();
         authHealthIndicator.doHealthCheck(builder);
         assertEquals(builder.build().getStatus(), Status.DOWN);

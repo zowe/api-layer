@@ -34,18 +34,18 @@ public class SampleControllerUnitTests {
     public void init() {
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders
-                .standaloneSetup(suspectsController)
-                .build();
+            .standaloneSetup(suspectsController)
+            .build();
     }
 
     @Test
     public void test_get_all_samples() throws Exception {
         mockMvc.perform(get("/api/v1/samples"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-                .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[0].name", is("one")))
-                .andExpect(jsonPath("$[0].details", is("first one")))
-                .andExpect(jsonPath("$[0].index", is(1)));
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$", hasSize(4)))
+            .andExpect(jsonPath("$[0].name", is("one")))
+            .andExpect(jsonPath("$[0].details", is("first one")))
+            .andExpect(jsonPath("$[0].index", is(1)));
     }
 }

@@ -1,5 +1,5 @@
 const loadingReducer = (state = {}, action) => {
-    const { type } = action;
+    const {type} = action;
     const matches = /(.*)_(REQUEST|SUCCESS|FAILURE|FAILED)/.exec(type);
 
     // not a *_REQUEST / *_SUCCESS /  *_FAILURE actions, so we ignore them

@@ -36,7 +36,8 @@ import java.util.*;
 
 import static com.ca.mfaas.product.constants.ApimConstants.API_DOC_NORMALISED;
 import static com.netflix.zuul.context.RequestContext.getCurrentContext;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.REQUEST_URI_KEY;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 /**
  * Transform api-doc endpoints to ones that are relative to the gateway, not the service instance
@@ -274,7 +275,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
     /**
      * Get the transformation routes for the endpoint
      *
-     * @param endPoint the endpoint
+     * @param endPoint  the endpoint
      * @param serviceId the service id
      * @return modified content
      */

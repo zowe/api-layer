@@ -3,7 +3,7 @@ import * as enzyme from 'enzyme';
 import 'jest-enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 
-enzyme.configure({ adapter: new Adapter() });
+enzyme.configure({adapter: new Adapter()});
 /*
 
 const { JSDOM } = require('jsdom');

@@ -27,8 +27,8 @@ public class StaticClientEndpointsTest {
         final HttpResponse response = HttpRequestUtils.getResponse(GREET, SC_OK);
         final HttpResponse staticResponse = HttpRequestUtils.getResponse(STATIC_GREET, SC_OK);
         String regExp = "\"date\":\".+\",";
-        String hello = EntityUtils.toString(response.getEntity()).replaceAll(regExp,"");
-        String staticHello = EntityUtils.toString(staticResponse.getEntity()).replaceAll(regExp,"");
+        String hello = EntityUtils.toString(response.getEntity()).replaceAll(regExp, "");
+        String staticHello = EntityUtils.toString(staticResponse.getEntity()).replaceAll(regExp, "");
 
         // Then
         assertEquals(response.getStatusLine().getStatusCode(), staticResponse.getStatusLine().getStatusCode());

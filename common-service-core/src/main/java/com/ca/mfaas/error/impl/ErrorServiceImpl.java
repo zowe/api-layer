@@ -56,6 +56,7 @@ public class ErrorServiceImpl implements ErrorService {
 
     /**
      * Constructor that creates common messages and messages from file.
+     *
      * @param messagesFilePath path to file with messages.
      */
     @SuppressWarnings("squid:S00112")
@@ -72,7 +73,8 @@ public class ErrorServiceImpl implements ErrorService {
 
     /**
      * Creates {@link ApiMessage} with key and list of parameters.
-     * @param key of message in messages.yml file
+     *
+     * @param key        of message in messages.yml file
      * @param parameters for message
      * @return {@link ApiMessage}
      */
@@ -84,7 +86,8 @@ public class ErrorServiceImpl implements ErrorService {
 
     /**
      * Creates {@link ApiMessage} with list of {@link Message}.
-     * @param key of message in messages.yml file
+     *
+     * @param key        of message in messages.yml file
      * @param parameters list that contains arrays of parameters
      * @return {@link ApiMessage}
      */
@@ -99,7 +102,8 @@ public class ErrorServiceImpl implements ErrorService {
 
     /**
      * Internal method that call {@link ErrorMessageStorage} to get message by key.
-     * @param key of message.
+     *
+     * @param key        of message.
      * @param parameters array of parametes for message.
      * @return
      */

@@ -1,8 +1,8 @@
-import { toast } from 'react-toastify';
+import {toast} from 'react-toastify';
 import {
     FETCH_TILES_FAILED,
-    FETCH_TILES_RETRY,
     FETCH_TILES_REQUEST,
+    FETCH_TILES_RETRY,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
 } from '../constants/catalog-tile-constants';

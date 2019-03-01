@@ -42,9 +42,9 @@ public class HelloWorldJerseyEndpointTest {
         URI uri = HttpRequestUtils.getUriFromGateway(UI_V1_PATH);
 
         given()
-        .when()
+            .when()
             .get(uri)
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .contentType(is("text/html;charset=UTF-8"));
     }
@@ -54,9 +54,9 @@ public class HelloWorldJerseyEndpointTest {
         URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_PATH);
 
         given()
-        .when()
+            .when()
             .get(uri)
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .contentType(is(JSON_CONTENT_TYPE));
     }
@@ -67,9 +67,9 @@ public class HelloWorldJerseyEndpointTest {
         URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
         given()
-        .when()
+            .when()
             .get(uri)
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .contentType(is(JSON_CONTENT_TYPE))
             .body("status", is("UP"));
@@ -80,9 +80,9 @@ public class HelloWorldJerseyEndpointTest {
         URI uri = HttpRequestUtils.getUriFromGateway(API_DOC_PATH);
 
         given()
-        .when()
+            .when()
             .get(uri)
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .contentType(is(JSON_CONTENT_TYPE))
             .body("info.description", is("REST API for a JavaEE Jersey Application"));
@@ -93,9 +93,9 @@ public class HelloWorldJerseyEndpointTest {
         URI uri = HttpRequestUtils.getUriFromGateway(GREETING_PATH);
 
         given()
-        .when()
+            .when()
             .get(uri)
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body("content", is("Hello, World!"));
     }
@@ -105,9 +105,9 @@ public class HelloWorldJerseyEndpointTest {
         URI uri = HttpRequestUtils.getUriFromGateway(GREETING_WITH_NAME_PATH);
 
         given()
-        .when()
+            .when()
             .get(uri)
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body("content", is("Hello, Petr!"));
     }

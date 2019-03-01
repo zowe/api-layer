@@ -5,49 +5,49 @@
 # It is loaded by the Discovery Service during its startup.
 #
 services:
-    - serviceId: staticclient  # unique lowercase ID of the service
-      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
-      title: Statically Defined API Service  # Title of the service in the API catalog
-      description: Sample to demonstrate how to add an API service with Swagger to API Catalog using a static YAML definition  # Description of the service in the API catalog
-      instanceBaseUrls:  # list of base URLs for each instance
-        - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
-      homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
-      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
-      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
-      routes:
-        - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
-          serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
-        - gatewayUrl: ui/v1
-          serviceRelativeUrl: /
-        - gatewayUrl: ws/v1
-          serviceRelativeUrl: /ws
-      # List of APIs provided by the service (currenly only one is supported):
-      apiInfo:
-        - apiId: org.zowe.discoverableclient
-          gatewayUrl: api/v1
-          swaggerUrl: https://localhost:10012/discoverableclient/api-doc
+    -   serviceId: staticclient  # unique lowercase ID of the service
+        catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+        title: Statically Defined API Service  # Title of the service in the API catalog
+        description: Sample to demonstrate how to add an API service with Swagger to API Catalog using a static YAML definition  # Description of the service in the API catalog
+        instanceBaseUrls:  # list of base URLs for each instance
+            - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+        homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
+        statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+        healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+        routes:
+            -   gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+                serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
+            -   gatewayUrl: ui/v1
+                serviceRelativeUrl: /
+            -   gatewayUrl: ws/v1
+                serviceRelativeUrl: /ws
+        # List of APIs provided by the service (currenly only one is supported):
+        apiInfo:
+            -   apiId: org.zowe.discoverableclient
+                gatewayUrl: api/v1
+                swaggerUrl: https://localhost:10012/discoverableclient/api-doc
 
-    - serviceId: staticclient2  # unique lowercase ID of the service
-      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
-      title: Staticaly Defined Service 2  # Title of the service in the API catalog
-      description: Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition  # Description of the service in the API catalog
-      instanceBaseUrls:  # list of base URLs for each instance
-        - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
-      homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
-      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
-      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
-      routes:
-        - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
-          serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
-        - gatewayUrl: ui/v1
-          serviceRelativeUrl: /
-        - gatewayUrl: ws/v1
-          serviceRelativeUrl: /ws
-      # List of APIs provided by the service (currenly only one is supported):
-      apiInfo:
-        - apiId: org.zowe.discoverableclient
-          gatewayUrl: api/v1
-          version: 1.0.0
+    -   serviceId: staticclient2  # unique lowercase ID of the service
+        catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+        title: Staticaly Defined Service 2  # Title of the service in the API catalog
+        description: Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition  # Description of the service in the API catalog
+        instanceBaseUrls:  # list of base URLs for each instance
+            - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+        homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
+        statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+        healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+        routes:
+            -   gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+                serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
+            -   gatewayUrl: ui/v1
+                serviceRelativeUrl: /
+            -   gatewayUrl: ws/v1
+                serviceRelativeUrl: /ws
+        # List of APIs provided by the service (currenly only one is supported):
+        apiInfo:
+            -   apiId: org.zowe.discoverableclient
+                gatewayUrl: api/v1
+                version: 1.0.0
 
 # List of tiles that can be used by services defined in the YAML file:
 catalogUiTiles:

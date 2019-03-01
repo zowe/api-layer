@@ -37,8 +37,9 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
 
     /**
      * Ribbon load balancer
-     * @param secureHttpClient custom http client for our certificates
-     * @param config configuration details
+     *
+     * @param secureHttpClient   custom http client for our certificates
+     * @param config             configuration details
      * @param serverIntrospector introspector
      */
     public GatewayRibbonLoadBalancingHttpClient(CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector) {

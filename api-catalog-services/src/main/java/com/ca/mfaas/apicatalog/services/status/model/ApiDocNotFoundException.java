@@ -26,6 +26,7 @@ public class ApiDocNotFoundException extends RuntimeException {
 
     /**
      * Do not print a stack trace for this exception
+     *
      * @return
      */
     @Override

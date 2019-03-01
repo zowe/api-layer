@@ -1,7 +1,7 @@
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import { fetchTilesStop } from '../../actions/catalog-tile-actions';
-import { selectService } from '../../actions/selected-service-actions';
+import {connect} from 'react-redux';
+import {withRouter} from 'react-router-dom';
+import {fetchTilesStop} from '../../actions/catalog-tile-actions';
+import {selectService} from '../../actions/selected-service-actions';
 import ServiceTab from './ServiceTab';
 
 const mapStateToProps = state => ({

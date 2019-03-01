@@ -32,7 +32,7 @@ public class ApiMediationServiceConfig {
     private Boolean securePortEnabled;
     @Singular
     private List<Route> routes;
-    private ApiInfo apiInfo;
+    private ShortApiInfo shortApiInfo;
     private CatalogUiTile catalogUiTile;
     private Ssl ssl;
     private Eureka eureka;

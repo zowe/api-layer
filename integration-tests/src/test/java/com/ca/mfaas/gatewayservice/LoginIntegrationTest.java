@@ -22,7 +22,10 @@ import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
@@ -63,9 +66,9 @@ public class LoginIntegrationTest {
         String token = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(COOKIE_NAME);
@@ -131,15 +134,15 @@ public class LoginIntegrationTest {
     public void doLoginWithInvalidLoginRequest() {
         String expectedMessage = "Login object has wrong format";
         JSONObject loginRequest = new JSONObject()
-            .put("user","apimltst")
-            .put("pass","test");
+            .put("user", "apimltst")
+            .put("pass", "test");
 
         given()
             .contentType(JSON)
             .body(loginRequest.toString())
-        .when()
+            .when()
             .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
                 "messages.find { it.messageNumber == 'SEC0002' }.messageContent", equalTo(expectedMessage)
@@ -155,9 +158,9 @@ public class LoginIntegrationTest {
         given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'SEC0005' }.messageContent", equalTo(expectedMessage)

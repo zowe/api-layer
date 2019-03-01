@@ -21,9 +21,9 @@ public class ContainerStatusChangeEvent implements StatusChangeEvent {
     private final String status;
     private final int totalServices;
     private final int activeServices;
-    private Set<APIService> services;
     private final STATUS_EVENT_TYPE statusEventType;
     private final String timeStamp;
+    private Set<APIService> services;
 
     public ContainerStatusChangeEvent(String containerId, String title, String status,
                                       int totalServices, int activeServices,

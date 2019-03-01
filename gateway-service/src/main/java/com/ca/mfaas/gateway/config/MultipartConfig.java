@@ -15,10 +15,11 @@ import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.Arrays;
 
 @Configuration
-public class MultipartConfig    {
+public class MultipartConfig {
 
     @Bean
     public MultipartResolver multipartResolver() {

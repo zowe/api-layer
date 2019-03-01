@@ -1,8 +1,7 @@
 /* eslint-disable no-undef */
 import * as React from 'react';
-import { shallow } from 'enzyme';
+import {shallow} from 'enzyme';
 import Tile from './Tile';
-import DetailPage from '../DetailPage/DetailPage';
 
 const match = {
     params: {
@@ -44,13 +43,13 @@ describe('>>> Tile component tests', () => {
     });
 
     it('should display API Mediation Layer API tile with correct title', () => {
-        const instance = shallow(<Tile tile={sampleTile} />);
+        const instance = shallow(<Tile tile={sampleTile}/>);
         expect(instance.find('API Mediation Layer API')).not.toBeNull();
     });
 
     it('method getTileStatus() should return correct values', () => {
         resetSampleTile();
-        const wrapper = shallow(<Tile tile={sampleTile} />);
+        const wrapper = shallow(<Tile tile={sampleTile}/>);
         const instance = wrapper.instance();
         expect(instance.getTileStatus(sampleTile)).toBe('success');
         sampleTile.status = 'DOWN';
@@ -66,7 +65,7 @@ describe('>>> Tile component tests', () => {
 
     it('method getTileStatusText() should return correct values', () => {
         resetSampleTile();
-        const wrapper = shallow(<Tile tile={sampleTile} />);
+        const wrapper = shallow(<Tile tile={sampleTile}/>);
         const instance = wrapper.instance();
         expect(instance.getTileStatusText(sampleTile)).toBe('All services are running');
         sampleTile.totalServices = 2;
@@ -85,8 +84,8 @@ describe('>>> Tile component tests', () => {
     });
 
     it('should handle tile click', () => {
-        const historyMock = { push: jest.fn() };
-        const wrapper = shallow(<Tile tile={sampleTile} history={historyMock} match={match} />);
+        const historyMock = {push: jest.fn()};
+        const wrapper = shallow(<Tile tile={sampleTile} history={historyMock} match={match}/>);
         wrapper.find('Card').simulate('click');
         expect(historyMock.push.mock.calls[0]).toEqual([`/tile/${sampleTile.id}`]);
     });
@@ -96,7 +95,7 @@ describe('>>> Tile component tests', () => {
             'Yourself required no at thoughts delicate landlord it be. Branched dashwood do is whatever it. Farther be chapter at visited married in it pressed. By distrusts procuring be oh frankness existence believing instantly if. Doubtful on an juvenile as of servants insisted. Judge why maids led sir whose guest drift her point. Him comparison especially friendship was who sufficient attachment favourable how. Luckily but minutes ask picture man perhaps are inhabit. How her good all sang more why. ';
         const expected =
             'Yourself required no at thoughts delicate landlord it be. Branched dashwood do is whatever it. Farther be chapter at visited married in it pressed. By distrusts procuring be oh ...';
-        const wrapper = shallow(<Tile tile={sampleTile} />);
+        const wrapper = shallow(<Tile tile={sampleTile}/>);
         const instance = wrapper.instance();
         expect(instance.shortenDescription(description)).toEqual(expected);
         expect(instance.shortenDescription(description).length).toEqual(180);

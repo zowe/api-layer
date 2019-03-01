@@ -1,4 +1,4 @@
-import { combineReducers } from 'redux';
+import {combineReducers} from 'redux';
 import tilesReducer from './fetch-tile-reducer';
 import filtersReducer from './filter-reducer';
 import loadingReducer from './loading-reducer';

@@ -47,8 +47,8 @@ public class ApiCatalogController {
     /**
      * Create the controller and autowire in the repository services
      *
-     * @param cachedProductFamilyService  cached service for containers
-     * @param cachedApiDocService     Cached state opf containers and services
+     * @param cachedProductFamilyService cached service for containers
+     * @param cachedApiDocService        Cached state opf containers and services
      */
     @Autowired
     public ApiCatalogController(CachedProductFamilyService cachedProductFamilyService,

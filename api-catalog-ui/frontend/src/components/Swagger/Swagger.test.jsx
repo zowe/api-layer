@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import * as React from "react";
-import { shallow } from "enzyme";
+import {shallow} from "enzyme";
 import SwaggerUI from "./Swagger";
 
 describe(">>> Swagger component tests", () => {

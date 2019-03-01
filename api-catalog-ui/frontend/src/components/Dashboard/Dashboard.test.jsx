@@ -1,14 +1,14 @@
 /* eslint-disable no-undef */
 import * as React from 'react';
 // tslint:disable-next-line:no-implicit-dependencies
-import { shallow } from 'enzyme';
+import {shallow} from 'enzyme';
 import Dashboard from './Dashboard';
 
 const ajaxError = {
     message: 'ajax Error 404',
     name: 'AjaxError',
     request: '',
-    response: { message: 'error' },
+    response: {message: 'error'},
     responseType: 'json',
     status: 404,
 };

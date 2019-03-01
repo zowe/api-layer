@@ -39,6 +39,8 @@ import static org.mockito.Mockito.when;
 
 public class StaticServicesRegistrationServiceTest {
 
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
     private PeerAwareInstanceRegistry mockRegistry;
 
     @Before
@@ -48,9 +50,6 @@ public class StaticServicesRegistrationServiceTest {
         when(mockEurekaServerContext.getRegistry()).thenReturn(mockRegistry);
         EurekaServerContextHolder.initialize(mockEurekaServerContext);
     }
-
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
     public void testFindServicesInDirectoryNoFiles() {

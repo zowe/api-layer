@@ -1,4 +1,4 @@
-ext.springBootEnablers= [
+ext.springBootEnablers = [
     'integration-enabler-spring-v1',
     'integration-enabler-spring-v2'
 ]
@@ -12,7 +12,7 @@ ext.javaLibraries = [
     'gateway-common'
 ]
 
-ext.serviceJars = [ 'zowe-install' ]
+ext.serviceJars = ['zowe-install']
 ext.enablers = ext.springBootEnablers + ext.javaEnablers
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
 

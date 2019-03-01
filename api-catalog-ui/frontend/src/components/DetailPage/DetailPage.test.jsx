@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import * as React from 'react';
 // tslint:disable-next-line:no-implicit-dependencies
-import { mount, shallow } from 'enzyme';
+import {shallow} from 'enzyme';
 import DetailPage from './DetailPage';
 
 const tile = {
@@ -75,7 +75,7 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should handle a back button click', () => {
-        const historyMock = { push: jest.fn() };
+        const historyMock = {push: jest.fn()};
         const wrapper = shallow(
             <DetailPage
                 tiles={[tile]}
@@ -105,7 +105,7 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should display tile title', () => {
-        const historyMock = { push: jest.fn() };
+        const historyMock = {push: jest.fn()};
         const isLoading = false;
         const wrapper = shallow(
             <DetailPage
@@ -122,7 +122,7 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should display tile description', () => {
-        const historyMock = { push: jest.fn() };
+        const historyMock = {push: jest.fn()};
         const isLoading = false;
         const wrapper = shallow(
             <DetailPage
@@ -139,7 +139,7 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
-        const historyMock = { push: jest.fn() };
+        const historyMock = {push: jest.fn()};
         const isLoading = false;
         const fetchTilesStop = jest.fn();
         const fetchTilesError = {
@@ -160,7 +160,7 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should set comms failed message when there is a Tile fetch 404 or 500 error', () => {
-        const historyMock = { push: jest.fn() };
+        const historyMock = {push: jest.fn()};
         const isLoading = false;
         const fetchTilesStop = jest.fn();
         const fetchTilesError = {
@@ -181,7 +181,7 @@ describe('>>> Detailed Page component tests', () => {
     });
 
     it('should clear the selected service, stop and restart fetching if a different tile is selected ', () => {
-        const historyMock = { push: jest.fn() };
+        const historyMock = {push: jest.fn()};
         const isLoading = false;
         const fetchTilesError = null;
         const fetchTilesStop = jest.fn();

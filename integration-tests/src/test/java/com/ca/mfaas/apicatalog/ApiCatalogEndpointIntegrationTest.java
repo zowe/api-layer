@@ -16,7 +16,6 @@ import com.ca.mfaas.utils.http.HttpRequestUtils;
 import com.ca.mfaas.utils.http.HttpSecurityUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -27,16 +26,22 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-@Slf4j
 public class ApiCatalogEndpointIntegrationTest {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ApiCatalogEndpointIntegrationTest.class);
     private String getAllContainersEndpoint = "/api/v1/apicatalog/containers";
     private String invalidContainerEndpoint = "/api/v1/apicatalog/containerz";
     private String invalidStatusUpdatesEndpoint = "/api/v1/apicatalog/statuz/updatez";

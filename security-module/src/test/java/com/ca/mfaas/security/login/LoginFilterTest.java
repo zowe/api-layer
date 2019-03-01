@@ -42,6 +42,8 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
 public class LoginFilterTest {
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
     private LoginFilter loginFilter;
     private String authEndpoint;
     private AuthenticationSuccessHandler successHandler;
@@ -50,9 +52,6 @@ public class LoginFilterTest {
     private AuthenticationManager authenticationManager;
     private HttpServletRequest request = mock(HttpServletRequest.class);
     private HttpServletResponse response = mock(HttpServletResponse.class);
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() {

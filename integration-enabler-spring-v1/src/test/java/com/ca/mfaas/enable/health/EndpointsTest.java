@@ -55,9 +55,9 @@ public class EndpointsTest {
      */
     @Test
     public void info()
-            throws Exception {
+        throws Exception {
         this.mvc.perform(MockMvcRequestBuilders.get("/application/info"))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+            .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     /**

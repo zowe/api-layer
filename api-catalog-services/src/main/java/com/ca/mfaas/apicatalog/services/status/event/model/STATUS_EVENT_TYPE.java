@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.status.event.model;
 
-public enum  STATUS_EVENT_TYPE {
+public enum STATUS_EVENT_TYPE {
     CREATED_CONTAINER,
     RENEW,
     CANCEL

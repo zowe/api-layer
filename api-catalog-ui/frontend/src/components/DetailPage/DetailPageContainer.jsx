@@ -1,12 +1,12 @@
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import {
     fetchTilesFailed,
     fetchTilesStart,
     fetchTilesStop,
     fetchTilesSuccess,
 } from '../../actions/catalog-tile-actions';
-import { clearService } from '../../actions/selected-service-actions';
-import { createLoadingSelector } from '../../selectors/selectors';
+import {clearService} from '../../actions/selected-service-actions';
+import {createLoadingSelector} from '../../selectors/selectors';
 import DetailPage from './DetailPage';
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);

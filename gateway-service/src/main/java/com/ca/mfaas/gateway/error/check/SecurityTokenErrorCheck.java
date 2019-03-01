@@ -43,7 +43,7 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
                 }
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(message);
             }
-            }
+        }
 
         return null;
     }

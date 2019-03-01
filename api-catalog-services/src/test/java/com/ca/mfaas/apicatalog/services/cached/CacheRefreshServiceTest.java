@@ -25,7 +25,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -80,7 +79,7 @@ public class CacheRefreshServiceTest {
         Applications discoveredServices = new Applications("1", 1L, discoveredState.getApplications());
 
         when(instanceRetrievalService.extractDeltaFromDiscovery()).thenReturn(discoveredServices);
-        Applications cachedServices = new Applications("1", 1L,cachedState.getApplications());
+        Applications cachedServices = new Applications("1", 1L, cachedState.getApplications());
         when(apiServiceStatusService.getCachedApplicationState()).thenReturn(cachedServices);
 
         when(cachedProductFamilyService.createContainerFromInstance("apifive", newInstanceOfService5))
@@ -114,9 +113,9 @@ public class CacheRefreshServiceTest {
         discoveredState.getApplications().add(service3);
 
         // Mock the discovery and cached service query
-        Applications discoveredServices = new Applications("123", 2L,discoveredState.getApplications());
+        Applications discoveredServices = new Applications("123", 2L, discoveredState.getApplications());
         when(instanceRetrievalService.extractDeltaFromDiscovery()).thenReturn(discoveredServices);
-        Applications cachedServices = new Applications("456", 1L,cachedState.getApplications());
+        Applications cachedServices = new Applications("456", 1L, cachedState.getApplications());
         when(apiServiceStatusService.getCachedApplicationState()).thenReturn(cachedServices);
 
         List<APIContainer> updatedContainers = new ArrayList<>();
@@ -158,10 +157,10 @@ public class CacheRefreshServiceTest {
         discoveredState.getApplications().add(service1);
 
         // Mock the discovery and cached service query
-        Applications discoveredServices = new Applications("12323", 2L,discoveredState.getApplications());
+        Applications discoveredServices = new Applications("12323", 2L, discoveredState.getApplications());
         when(instanceRetrievalService.extractDeltaFromDiscovery()).thenReturn(discoveredServices);
         when(cachedApiDocService.getApiDocForService(any(), anyString())).thenReturn("API DOC CACHED");
-        Applications cachedServices = new Applications("4512312316", 1L,cachedState.getApplications());
+        Applications cachedServices = new Applications("4512312316", 1L, cachedState.getApplications());
         when(apiServiceStatusService.getCachedApplicationState()).thenReturn(cachedServices);
 
         List<APIContainer> updatedContainers = new ArrayList<>();
@@ -255,8 +254,8 @@ public class CacheRefreshServiceTest {
                                         InstanceInfo.ActionType actionType,
                                         HashMap<String, String> metadata) {
         return new InstanceInfo(instanceId, serviceId.toUpperCase(), null, "192.168.0.1", null,
-                new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
-                status, null, null, null, null, metadata, null, null, actionType, null);
+            new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
+            status, null, null, null, null, metadata, null, null, actionType, null);
     }
 
 

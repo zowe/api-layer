@@ -16,11 +16,11 @@ import com.ca.mfaas.utils.http.HttpRequestUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 
@@ -31,8 +31,8 @@ import static org.awaitility.Awaitility.await;
 /**
  * Checks and waits until the testing environment is ready to be tested.
  */
-@Slf4j
 public class ApiMediationLayerStartupChecker {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ApiMediationLayerStartupChecker.class);
     private final GatewayServiceConfiguration gatewayConfiguration;
 
     public ApiMediationLayerStartupChecker() {
@@ -69,7 +69,7 @@ public class ApiMediationLayerStartupChecker {
             final String jsonResponse = EntityUtils.toString(response.getEntity());
             DocumentContext documentContext = JsonPath.parse(jsonResponse);
             return documentContext.read("$.status").equals("UP") && allInstancesUp(documentContext)
-                    && testApplicationUp(documentContext);
+                && testApplicationUp(documentContext);
         } catch (IOException | PathNotFoundException e) {
             log.warn("Check failed: {}", e.getMessage());
         }
@@ -78,11 +78,11 @@ public class ApiMediationLayerStartupChecker {
 
     private boolean testApplicationUp(DocumentContext documentContext) {
         return documentContext.read("$.details.discoveryComposite.details.discoveryClient.details.services").toString()
-                .contains("discoverableclient");
+            .contains("discoverableclient");
     }
 
     private boolean allInstancesUp(DocumentContext documentContext) {
         return documentContext.read("$.details.apiml.details.gatewayCount")
-                .equals(Integer.valueOf(gatewayConfiguration.getInstances()));
+            .equals(Integer.valueOf(gatewayConfiguration.getInstances()));
     }
 }

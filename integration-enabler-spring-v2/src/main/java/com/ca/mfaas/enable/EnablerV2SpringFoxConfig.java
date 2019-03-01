@@ -60,7 +60,7 @@ public class EnablerV2SpringFoxConfig {
      * Generate a docket for this API version
      *
      * @param apiVersion the version of the API
-     * @param apiInfo the API Info
+     * @param apiInfo    the API Info
      * @return a SpringFox docket
      * @throws ApiDocConfigException in case of error
      */
@@ -78,7 +78,7 @@ public class EnablerV2SpringFoxConfig {
                     new ApiInfo(apiInfo.getTitle(),
                         apiInfo.getDescription(),
                         apiInfo.getVersion(),
-                       null,
+                        null,
                         null,
                         null,
                         null,

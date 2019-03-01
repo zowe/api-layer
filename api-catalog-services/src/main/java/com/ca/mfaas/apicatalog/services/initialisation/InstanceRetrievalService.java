@@ -26,7 +26,6 @@ import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
@@ -36,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotBlank;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -48,15 +48,14 @@ import java.util.stream.Collectors;
 @Service
 public class InstanceRetrievalService {
 
-    private final CachedProductFamilyService cachedProductFamilyService;
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
-    private final CachedServicesService cachedServicesService;
-    private final RestTemplate restTemplate;
-
     private static final String APPS_ENDPOINT = "apps/";
     private static final String DELTA_ENDPOINT = "delta";
     private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
     private static final String UNKNOWN = "unknown";
+    private final CachedProductFamilyService cachedProductFamilyService;
+    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    private final CachedServicesService cachedServicesService;
+    private final RestTemplate restTemplate;
 
     @Autowired
     public InstanceRetrievalService(CachedProductFamilyService cachedProductFamilyService,

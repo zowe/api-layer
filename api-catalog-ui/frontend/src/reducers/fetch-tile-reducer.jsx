@@ -16,11 +16,11 @@ const tilesReducerDefaultState = {
 const tilesReducer = (state = tilesReducerDefaultState, action) => {
     switch (action.type) {
         case FETCH_TILES_SUCCESS:
-            return { ...state, tiles: [...action.payload], error: null };
+            return {...state, tiles: [...action.payload], error: null};
         case FETCH_TILES_FAILED:
-            return { tiles: state.tiles, id: '', error: action.payload };
+            return {tiles: state.tiles, id: '', error: action.payload};
         case FETCH_TILES_REQUEST:
-            return { tiles: [], id: action.payload, error: null };
+            return {tiles: [], id: action.payload, error: null};
         case FETCH_TILES_RETRY:
             return state;
         case FETCH_TILES_STOP:

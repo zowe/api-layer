@@ -11,23 +11,21 @@ package com.ca.mfaas.security.config;
 
 import com.ca.mfaas.product.web.HttpConfig;
 import com.ca.mfaas.security.token.TokenService;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Component
 @Slf4j
 public class InitializeTokenSecret implements InitializingBean {
-  
+
     @Autowired
     private HttpConfig httpConfig;
 
     @Autowired
     private TokenService tokenService;
- 
+
     @Override
     public void afterPropertiesSet() throws Exception {
         log.info("Initializing token service with secret key");

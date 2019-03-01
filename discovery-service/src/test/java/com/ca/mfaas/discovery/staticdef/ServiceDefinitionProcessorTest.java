@@ -48,13 +48,13 @@ public class ServiceDefinitionProcessorTest {
         assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
         assertEquals("https://localhost:10019/casamplerestapiservice/api/v1/pets", instances.get(0).getHomePageUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/health",
-                instances.get(0).getSecureHealthCheckUrl());
+            instances.get(0).getSecureHealthCheckUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
-                instances.get(0).getStatusPageUrl());
+            instances.get(0).getStatusPageUrl());
         assertEquals("api/v1", instances.get(0).getMetadata().get("routed-services.api-v1.gateway-url"));
         assertEquals("api/v2", instances.get(0).getMetadata().get("routed-services.api-v2.gateway-url"));
         assertEquals("/casamplerestapiservice/api/v1",
-                instances.get(0).getMetadata().get("routed-services.api-v1.service-url"));
+            instances.get(0).getMetadata().get("routed-services.api-v1.service-url"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -81,12 +81,12 @@ public class ServiceDefinitionProcessorTest {
         assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
         assertEquals("https://localhost:10019/casamplerestapiservice/", instances.get(0).getHomePageUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/health",
-                instances.get(0).getSecureHealthCheckUrl());
+            instances.get(0).getSecureHealthCheckUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
-                instances.get(0).getStatusPageUrl());
+            instances.get(0).getStatusPageUrl());
         assertEquals("api/v1", instances.get(0).getMetadata().get("routed-services.api-v1.gateway-url"));
         assertEquals("/casamplerestapiservice/",
-                instances.get(0).getMetadata().get("routed-services.api-v1.service-url"));
+            instances.get(0).getMetadata().get("routed-services.api-v1.service-url"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -182,16 +182,16 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String yaml =
             "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      title: Title\n" +
-            "      description: Description\n" +
-            "      catalogUiTileId: tileid\n" +
-            "      instanceBaseUrls:\n" +
-            "        - https://localhost:10019/casamplerestapiservice/\n" +
-            "catalogUiTiles:\n" +
-            "    tileid:\n" +
-            "        title: Tile Title\n" +
-            "        description: Tile Description\n";
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "        - https://localhost:10019/casamplerestapiservice/\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
 
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(yaml));

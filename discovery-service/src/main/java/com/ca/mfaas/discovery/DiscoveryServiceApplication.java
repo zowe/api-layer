@@ -9,32 +9,21 @@
  */
 package com.ca.mfaas.discovery;
 
-import com.ca.mfaas.product.service.BuildInfo;
-import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
 
 @EnableEurekaServer
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @EnableConfigurationProperties
 @ComponentScan({"com.ca.mfaas.discovery", "com.ca.mfaas.product.config", "com.ca.mfaas.product.discovery", "com.ca.mfaas.product.web"})
-public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
+public class DiscoveryServiceApplication {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
-        app.setLogStartupInfo(false);
-        new BuildInfo().logBuildInfo();
         app.run(args);
-    }
-
-    @Override
-    public void onApplicationEvent(final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

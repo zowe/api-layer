@@ -1,3 +1,23 @@
+buildscript {
+
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     compile(libraries.eureka_client)
     compile(libraries.http_client)
@@ -10,7 +30,9 @@ dependencies {
 
     compileOnly(libraries.javax_servlet_api)
     compileOnly(libraries.lombok)
+    annotationProcessor(libraries.lombok)
 
+    testCompile(libraries.lombok)
     testCompile(libraries.jackson_core)
     testCompile(libraries.jackson_databind)
     testCompile(libraries.javax_servlet_api)
@@ -19,6 +41,4 @@ dependencies {
     testCompile(libraries.junit)
     testCompile(libraries.logback_classic)
     testCompile(libraries.tomcat_embed_core)
-
-    testCompileOnly(libraries.lombok)
 }

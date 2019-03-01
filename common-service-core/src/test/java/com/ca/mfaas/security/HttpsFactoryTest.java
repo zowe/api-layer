@@ -9,13 +9,13 @@
  */
 package com.ca.mfaas.security;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.apache.catalina.LifecycleException;
+import org.junit.Test;
 
 import java.io.IOException;
 
-import org.apache.catalina.LifecycleException;
-import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class HttpsFactoryTest {
 
@@ -27,7 +27,7 @@ public class HttpsFactoryTest {
         assertNotNull(secret);
     }
 
-    @Test(expected = HttpsConfigError.class)    
+    @Test(expected = HttpsConfigError.class)
     public void wrongKeyPasswordConfigurationShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyPassword("WRONG").build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
@@ -43,7 +43,7 @@ public class HttpsFactoryTest {
         assertNotNull(secret);
     }
 
-    @Test(expected = HttpsConfigError.class)    
+    @Test(expected = HttpsConfigError.class)
     public void specificIncorrectAliasShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyAlias("INVALID").build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);

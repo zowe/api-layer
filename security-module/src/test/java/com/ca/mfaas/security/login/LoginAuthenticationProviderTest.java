@@ -28,12 +28,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class LoginAuthenticationProviderTest {
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
     private UserDetailsService userDetailsService = new InMemoryUserDetailsService(encoder);
     private TokenService tokenService = mock(TokenService.class);
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Test
     public void loginWithExistingUser() {

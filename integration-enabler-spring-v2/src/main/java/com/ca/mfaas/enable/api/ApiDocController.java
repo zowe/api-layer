@@ -49,15 +49,16 @@ public class ApiDocController {
     /**
      * API Doc retrieval controller
      * Autowire in dependencies to controller
-     * @param apiDocEnabled does the service have API Documentation
-     * @param swaggerLocation optional parameter to tell the controller where to load a static swagger file
+     *
+     * @param apiDocEnabled      does the service have API Documentation
+     * @param swaggerLocation    optional parameter to tell the controller where to load a static swagger file
      * @param localApiDocService retrieve the API doc locally and not through the gateway
      */
     @Autowired
     public ApiDocController(
         @Value("${eureka.instance.metadata-map.mfaas.discovery.enableApiDoc:true}") boolean apiDocEnabled,
         @Value("${eureka.instance.metadata-map.mfaas.api-info.swagger.location:}") String swaggerLocation,
-        LocalApiDocService localApiDocService)  {
+        LocalApiDocService localApiDocService) {
         this.apiDocEnabled = apiDocEnabled;
         this.swaggerLocation = swaggerLocation;
         this.localApiDocService = localApiDocService;
@@ -65,6 +66,7 @@ public class ApiDocController {
 
     /**
      * Retrieve the API doc for the given group (or default to the first alphanumeric version tag)
+     *
      * @param apiDocGroup the group to retrieve
      * @return the API doc for a group
      * @throws IOException when loading the swagger resource fails
@@ -80,6 +82,7 @@ public class ApiDocController {
 
     /**
      * Load the swagger/api doc info from a local resource file
+     *
      * @return the swagger as a String
      * @throws IOException when reading the file fails
      */
@@ -108,6 +111,7 @@ public class ApiDocController {
 
     /**
      * Load the swagger as a file system file in a jar
+     *
      * @return the swagger as a string
      * @throws IOException if something bad happened
      */
@@ -124,10 +128,11 @@ public class ApiDocController {
 
     /**
      * Is API Doc enabled for the implementing service
+     *
      * @return true if enabled
      */
     @GetMapping(value = "/api-doc/enabled", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public boolean isApiDocEnabled()  {
+    public boolean isApiDocEnabled() {
         return this.apiDocEnabled;
     }
 }

@@ -9,7 +9,8 @@ const Child = () => {
 
 const pauseErrorLogging = codeToRun => {
     const logger = console.error;
-    console.error = () => {};
+    console.error = () => {
+    };
 
     codeToRun();
 
@@ -22,7 +23,7 @@ describe('>>> Shield component tests', () => {
         pauseErrorLogging(() => {
             const wrapper = enzyme.mount(
                 <Shield>
-                    <Child />
+                    <Child/>
                 </Shield>
             );
             expect(wrapper.text()).toBe(errorMessage);

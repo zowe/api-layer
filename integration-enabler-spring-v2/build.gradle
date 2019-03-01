@@ -1,15 +1,26 @@
 buildscript {
-    repositories mavenRepositories
+
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
 
+apply plugin: 'java'
 apply plugin: 'io.spring.dependency-management'
 
 jar {
     baseName = "enabler-springboot-${springBootVersion}"
     archiveName = "${baseName}.jar"
+}
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
@@ -22,6 +33,7 @@ dependencies {
     compile libraries.spring_boot_starter_actuator
 
     compileOnly libraries.lombok
+    annotationProcessor(libraries.lombok)
     compileOnly libraries.spring_boot_starter_web
     compileOnly libraries.javax_servlet_api
 

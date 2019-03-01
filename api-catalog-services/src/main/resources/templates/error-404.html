@@ -2,16 +2,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>404 Not Found</title>
-    <meta charset="utf-8" />
+    <meta charset="utf-8"/>
     <style>
-        body {background-color: #225CBD;}
-        h1, p, a { color: white; }
+        body {
+            background-color: #225CBD;
+        }
+
+        h1, p, a {
+            color: white;
+        }
     </style>
 </head>
 <body>
 <h1>404 Page Not Found</h1>
 <h1 th:text="${errorCode}">404</h1>
 <p th:utext="${errorMessage}">Error java.lang.NullPointerException</p>
-<a href="/ui/v1/apicatalog/#/dashboard" >Go to Dashboard</a>
+<a href="/ui/v1/apicatalog/#/dashboard">Go to Dashboard</a>
 </body>
 </html>

@@ -14,10 +14,15 @@ import lombok.Data;
 /**
  * Represents one routes subservice inside a service.
  */
-@Data class Route {
-    /** The beginning of the path at the gateway. */
+@Data
+class Route {
+    /**
+     * The beginning of the path at the gateway.
+     */
     private String gatewayUrl;
 
-    /** Continuation of the path at the service after the base path of the service. */
+    /**
+     * Continuation of the path at the service after the base path of the service.
+     */
     private String serviceRelativeUrl;
 }

@@ -47,6 +47,7 @@ public class PetServiceImpl implements PetService {
 
     /**
      * Adds pet to the list
+     *
      * @param pet Pet with set ID
      * @return Pet
      */
@@ -59,6 +60,7 @@ public class PetServiceImpl implements PetService {
 
     /**
      * Finds Pet by ID
+     *
      * @param id Pet ID
      * @return Pet
      */
@@ -72,6 +74,7 @@ public class PetServiceImpl implements PetService {
 
     /**
      * Gets all pets from the list
+     *
      * @return list of pets
      */
     @Override
@@ -81,6 +84,7 @@ public class PetServiceImpl implements PetService {
 
     /**
      * Updates Pet by ID
+     *
      * @param pet Pet found by ID
      * @return Pet or null if pet is not found
      */
@@ -97,6 +101,7 @@ public class PetServiceImpl implements PetService {
 
     /**
      * Deletes pet by ID
+     *
      * @param id Pet ID
      */
     @Override

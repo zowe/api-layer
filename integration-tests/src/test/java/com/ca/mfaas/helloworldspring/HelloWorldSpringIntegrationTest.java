@@ -54,19 +54,19 @@ public class HelloWorldSpringIntegrationTest {
     @Test
     public void shouldGetApplicationInfo() {
         given()
-        .when()
+            .when()
             .get(String.format("%s://%s:%s%s", SERVICE_SCHEME, SERVICE_HOST, SERVICE_PORT, APP_INFO))
-        .then()
-                .statusCode(is(SC_OK));
+            .then()
+            .statusCode(is(SC_OK));
     }
 
 
     @Test
     public void shouldGetHealth() {
         given()
-        .when()
+            .when()
             .get(String.format("%s://%s:%s%s", SERVICE_SCHEME, SERVICE_HOST, SERVICE_PORT, APP_HEALTH))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body("status", is("UP"));
     }
@@ -74,9 +74,9 @@ public class HelloWorldSpringIntegrationTest {
     @Test
     public void shouldGetApiDoc() {
         given()
-        .when()
+            .when()
             .get(String.format("%s://%s:%s%s", scheme, host, port, API_DOC_PATH))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body("info.description", is("REST API for a Spring Application"));
     }
@@ -84,9 +84,9 @@ public class HelloWorldSpringIntegrationTest {
     @Test
     public void shouldGetGreeting() {
         given()
-        .when()
+            .when()
             .get(String.format("%s://%s:%s%s", scheme, host, port, GREETING_PATH))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body("content", is("Hello, World!"));
     }
@@ -94,9 +94,9 @@ public class HelloWorldSpringIntegrationTest {
     @Test
     public void shouldGetGreetingWithName() {
         given()
-        .when()
+            .when()
             .get(String.format("%s://%s:%s%s", scheme, host, port, GREETING_WITH_NAME_PATH))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .body("content", is("Hello, petr!"));
     }

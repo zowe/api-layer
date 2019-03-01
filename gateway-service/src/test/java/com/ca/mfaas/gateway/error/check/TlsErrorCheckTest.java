@@ -9,9 +9,6 @@
  */
 package com.ca.mfaas.gateway.error.check;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.error.ErrorUtils;
@@ -19,7 +16,6 @@ import com.ca.mfaas.gateway.error.InternalServerErrorController;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -27,6 +23,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.net.ssl.SSLHandshakeException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TlsErrorCheckTest {
     private static final String TEST_MESSAGE = "Hello";
@@ -44,7 +43,7 @@ public class TlsErrorCheckTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         ZuulException exc = new ZuulException(new SSLHandshakeException(TEST_MESSAGE),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), "TEST");
+            HttpStatus.INTERNAL_SERVER_ERROR.value(), "TEST");
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
 
         ResponseEntity<ApiMessage> response = errorController.error(request);

@@ -61,9 +61,9 @@ public class CachedServicesServiceTest {
     }
 
     private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status,
-            HashMap<String, String> metadata) {
+                                             HashMap<String, String> metadata) {
         return new InstanceInfo(serviceId, serviceId.toUpperCase(), null, "192.168.0.1", null,
-                new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
-                status, null, null, null, null, metadata, null, null, null, null);
+            new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
+            status, null, null, null, null, metadata, null, null, null, null);
     }
 }

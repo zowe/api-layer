@@ -1,6 +1,7 @@
 export const SEND_ERROR = 'SEND_ERROR';
 export const CLEAR_ALL_ERRORS = 'CLEAR_ALL_ERRORS';
 export const GATEWAY_DOWN = 'GATEWAY_DOWN';
+
 export class ApiError {
     key = '';
 

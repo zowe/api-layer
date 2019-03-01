@@ -12,14 +12,13 @@ package com.ca.mfaas.gateway.error.check;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.net.SocketTimeoutException;
-
 import javax.servlet.http.HttpServletRequest;
+
+import java.net.SocketTimeoutException;
 
 /**
  * Checks whether the error was caused by timeout (service not responding).
@@ -41,7 +40,7 @@ public class TimeoutErrorCheck implements ErrorCheck {
             Throwable rootCause = ExceptionUtils.getRootCause(zuulException);
 
             if ((zuulException.nStatusCode == HttpStatus.GATEWAY_TIMEOUT.value())
-                    || zuulException.errorCause.equals(ERROR_CAUSE_TIMEOUT)) {
+                || zuulException.errorCause.equals(ERROR_CAUSE_TIMEOUT)) {
                 Throwable cause = zuulException.getCause();
                 String causeMessage;
                 if (cause != null) {
@@ -50,9 +49,7 @@ public class TimeoutErrorCheck implements ErrorCheck {
                     causeMessage = DEFAULT_MESSAGE;
                 }
                 return gatewayTimeoutResponse(causeMessage);
-            }
-
-            else if (rootCause instanceof SocketTimeoutException) {
+            } else if (rootCause instanceof SocketTimeoutException) {
                 return gatewayTimeoutResponse(rootCause.getMessage());
             }
         }

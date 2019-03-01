@@ -17,7 +17,7 @@ import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 public class WebSocketServerHandler extends AbstractWebSocketHandler {
     @Override
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage)
-            throws Exception {
+        throws Exception {
         String upperCaseText = webSocketMessage.getPayload().toString().toUpperCase();
         webSocketSession.sendMessage(new TextMessage(upperCaseText));
         if (upperCaseText.equals("BYE")) {

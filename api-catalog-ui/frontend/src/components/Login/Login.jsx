@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button, FormField, TextInput } from 'mineral-ui';
-import { IconDanger } from 'mineral-ui-icons';
+import {Button, FormField, TextInput} from 'mineral-ui';
+import {IconDanger} from 'mineral-ui-icons';
 
 import logoImage from '../../assets/images/api-catalog-logo.png';
 import './Login.css';
@@ -22,7 +22,7 @@ export default class Login extends React.Component {
     }
 
     isDisabled = () => {
-        const { isFetching } = this.props;
+        const {isFetching} = this.props;
         return isFetching;
     };
 
@@ -49,7 +49,7 @@ export default class Login extends React.Component {
                     break;
                 case 'UI0001':
                     messageText = error.message;
-                    this.setState({ errorMessage: messageText });
+                    this.setState({errorMessage: messageText});
                     break;
                 default:
                     messageText = `Unexpected error, please try again later (${error.messageNumber})`;
@@ -60,18 +60,18 @@ export default class Login extends React.Component {
     };
 
     handleChange(e) {
-        const { name, value } = e.target;
-        this.setState({ [name]: value });
+        const {name, value} = e.target;
+        this.setState({[name]: value});
     }
 
     handleSubmit(e) {
         e.preventDefault();
 
-        const { username, password } = this.state;
-        const { login } = this.props;
+        const {username, password} = this.state;
+        const {login} = this.props;
 
         if (username && password) {
-            login({ username, password });
+            login({username, password});
         } else if (!username || !password) {
             this.handleError({
                 messageType: 'ERROR',
@@ -82,8 +82,8 @@ export default class Login extends React.Component {
     }
 
     render() {
-        const { username, password, errorMessage } = this.state;
-        const { authentication, isFetching } = this.props;
+        const {username, password, errorMessage} = this.state;
+        const {authentication, isFetching} = this.props;
         let messageText;
         if (
             authentication !== undefined &&
@@ -101,7 +101,7 @@ export default class Login extends React.Component {
                     {' '}
                     <div className="title-container">
                         <div className="logo-container">
-                            <img src={logoImage} alt="" />
+                            <img src={logoImage} alt=""/>
                         </div>
                         <div className="product-title">
                             <div className="text-block-2">API Catalog</div>
@@ -166,15 +166,15 @@ export default class Login extends React.Component {
                                             />
                                         </FormField>
                                         {messageText !== undefined &&
-                                            messageText !== null && (
-                                                <FormField className="error-message" label="">
-                                                    <div id="error-message">
-                                                        <p className="error-message-content">
-                                                            <IconDanger color="#de1b1b" size="2rem" /> {messageText}
-                                                        </p>
-                                                    </div>
-                                                </FormField>
-                                            )}
+                                        messageText !== null && (
+                                            <FormField className="error-message" label="">
+                                                <div id="error-message">
+                                                    <p className="error-message-content">
+                                                        <IconDanger color="#de1b1b" size="2rem"/> {messageText}
+                                                    </p>
+                                                </div>
+                                            </FormField>
+                                        )}
                                     </form>
                                 </div>
                             </div>

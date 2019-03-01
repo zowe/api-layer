@@ -14,7 +14,6 @@ import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import com.ca.mfaas.product.constants.CoreService;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -24,14 +23,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapp
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 @Slf4j
 class MfaasRouteLocator extends DiscoveryClientRouteLocator {
@@ -91,7 +83,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     keys.add("/" + mapRouteToService(serviceId) + "/**");
                 }
 
-                for (RoutedServicesUser routedServicesUser: routedServicesUsers) {
+                for (RoutedServicesUser routedServicesUser : routedServicesUsers) {
                     routedServicesUser.addRoutedServices(serviceId, routedServices);
                 }
 

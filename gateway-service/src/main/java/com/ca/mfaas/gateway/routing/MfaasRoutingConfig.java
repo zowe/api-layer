@@ -18,7 +18,6 @@ import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.token.TokenService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;

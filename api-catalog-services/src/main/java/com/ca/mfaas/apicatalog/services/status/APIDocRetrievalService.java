@@ -21,7 +21,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -35,12 +34,11 @@ import java.util.stream.Collectors;
 @DependsOn("instanceRetrievalService")
 public class APIDocRetrievalService {
 
-    private String gatewayUrl;
-
     private final RestTemplate restTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
+    private String gatewayUrl;
 
     @Autowired
     public APIDocRetrievalService(RestTemplate restTemplate,
@@ -57,7 +55,7 @@ public class APIDocRetrievalService {
      * @return the api docs as a string
      */
     public ResponseEntity<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
-        log.info("Attempting to retrieve API doc for service {} version {}",  serviceId, apiVersion);
+        log.info("Attempting to retrieve API doc for service {} version {}", serviceId, apiVersion);
 
         String apiDocUrl = null;
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
@@ -70,8 +68,7 @@ public class APIDocRetrievalService {
                 ApiInfo api = findApi(apiInfo, apiVersion);
                 if (api.getSwaggerUrl() == null) {
                     return swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, api);
-                }
-                else {
+                } else {
                     apiDocUrl = api.getSwaggerUrl();
                 }
             }
@@ -113,7 +110,7 @@ public class APIDocRetrievalService {
             expectedGatewayUrl = "api/" + apiVersion;
         }
 
-        for (ApiInfo api: apiInfo) {
+        for (ApiInfo api : apiInfo) {
             if (api.getGatewayUrl().equals(expectedGatewayUrl)) {
                 return api;
             }
@@ -125,6 +122,7 @@ public class APIDocRetrievalService {
     /**
      * Check the instance metadata and locate the v1/api-doc endpoint
      * Fixed version V1 for now
+     *
      * @param instance the instance from which to retrieve the API doc
      * @return the local api-doc endpoint
      */
@@ -149,6 +147,7 @@ public class APIDocRetrievalService {
 
     /**
      * return or retrieve the location of the Gateway
+     *
      * @return the location of the Gateway (full URL)
      */
     public String getGatewayUrl() {

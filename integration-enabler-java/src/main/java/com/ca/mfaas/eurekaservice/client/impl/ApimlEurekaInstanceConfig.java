@@ -12,7 +12,6 @@ package com.ca.mfaas.eurekaservice.client.impl;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.discovery.CommonConstants;
-
 import lombok.Data;
 
 import java.util.Map;

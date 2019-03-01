@@ -11,15 +11,8 @@ package com.ca.mfaas.security;
 
 public class HttpsConfigError extends RuntimeException {
     private static final long serialVersionUID = -4219571432637725973L;
-
-    public enum ErrorCode {
-        UNKNOWN_ERROR, HTTP_CLIENT_INITIALIZATION_FAILED, KEYSTORE_NOT_DEFINED, KEYSTORE_PASSWORD_NOT_DEFINED,
-        TRUSTSTORE_PASSWORD_NOT_DEFINED, SSL_CONTEXT_INITIALIZATION_FAILED, TRUSTSTORE_NOT_DEFINED, WRONG_KEY_ALIAS;
-    }
-
     private final ErrorCode code;
     private final HttpsConfig config;
-
     public HttpsConfigError(ErrorCode code, HttpsConfig config) {
         super();
         this.code = code;
@@ -50,5 +43,10 @@ public class HttpsConfigError extends RuntimeException {
 
     public HttpsConfig getConfig() {
         return this.config;
+    }
+
+    public enum ErrorCode {
+        UNKNOWN_ERROR, HTTP_CLIENT_INITIALIZATION_FAILED, KEYSTORE_NOT_DEFINED, KEYSTORE_PASSWORD_NOT_DEFINED,
+        TRUSTSTORE_PASSWORD_NOT_DEFINED, SSL_CONTEXT_INITIALIZATION_FAILED, TRUSTSTORE_NOT_DEFINED, WRONG_KEY_ALIAS;
     }
 }

@@ -13,5 +13,6 @@ import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 
 public interface ApiMediationClient {
     void register(ApiMediationServiceConfig config);
+
     void unregister();
 }

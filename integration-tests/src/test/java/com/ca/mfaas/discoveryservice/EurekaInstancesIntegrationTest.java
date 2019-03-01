@@ -65,9 +65,9 @@ public class EurekaInstancesIntegrationTest {
         String xml =
             given()
                 .auth().basic(username, password)
-            .when()
+                .when()
                 .get(uri)
-            .then()
+                .then()
                 .statusCode(is(200))
                 .extract().body().asString();
 
@@ -77,7 +77,7 @@ public class EurekaInstancesIntegrationTest {
         String registeredReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.registered-replicas");
         String unavailableReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.unavailable-replicas");
         List<String> servicesList = Arrays.asList(registeredReplicas.split(","));
-        if (instances == 1 ) {
+        if (instances == 1) {
             Assert.assertEquals("", registeredReplicas);
             Assert.assertEquals("", availableReplicas);
             Assert.assertEquals("", unavailableReplicas);
@@ -86,7 +86,7 @@ public class EurekaInstancesIntegrationTest {
                 availableReplicas = availableReplicas.substring(0, availableReplicas.length() - 1);
             }
             Assert.assertNotEquals("", registeredReplicas);
-            Assert.assertNotEquals("",availableReplicas);
+            Assert.assertNotEquals("", availableReplicas);
             Assert.assertEquals("", unavailableReplicas);
             Assert.assertEquals(registeredReplicas, availableReplicas);
             Assert.assertEquals(servicesList.size(), instances - 1);
@@ -96,26 +96,26 @@ public class EurekaInstancesIntegrationTest {
     private SSLConfig getConfiguredSslConfig() {
         try {
             SSLSocketFactory sslSocketFactory = new SSLSocketFactory(SSLContexts.custom()
-                    .loadKeyMaterial(new File(tlsConfiguration.getKeyStore()),
-                            tlsConfiguration.getKeyStorePassword() != null
-                                    ? tlsConfiguration.getKeyStorePassword().toCharArray()
-                                    : null,
-                            tlsConfiguration.getKeyPassword() != null ? tlsConfiguration.getKeyPassword().toCharArray()
-                                    : null,
-                            new PrivateKeyStrategy() {
-                                @Override
-                                public String chooseAlias(Map<String, PrivateKeyDetails> aliases, Socket socket) {
-                                    return tlsConfiguration.getKeyAlias();
-                                }
-                            })
-                    .loadTrustMaterial(new File(tlsConfiguration.getTrustStore()),
-                            tlsConfiguration.getTrustStorePassword() != null
-                                    ? tlsConfiguration.getTrustStorePassword().toCharArray()
-                                    : null)
-                    .build(), SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+                .loadKeyMaterial(new File(tlsConfiguration.getKeyStore()),
+                    tlsConfiguration.getKeyStorePassword() != null
+                        ? tlsConfiguration.getKeyStorePassword().toCharArray()
+                        : null,
+                    tlsConfiguration.getKeyPassword() != null ? tlsConfiguration.getKeyPassword().toCharArray()
+                        : null,
+                    new PrivateKeyStrategy() {
+                        @Override
+                        public String chooseAlias(Map<String, PrivateKeyDetails> aliases, Socket socket) {
+                            return tlsConfiguration.getKeyAlias();
+                        }
+                    })
+                .loadTrustMaterial(new File(tlsConfiguration.getTrustStore()),
+                    tlsConfiguration.getTrustStorePassword() != null
+                        ? tlsConfiguration.getTrustStorePassword().toCharArray()
+                        : null)
+                .build(), SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
             return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
-                | CertificateException | IOException e) {
+            | CertificateException | IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }

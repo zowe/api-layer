@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import SwaggerUi, { presets } from 'swagger-ui';
+import React, {Component} from 'react';
+import SwaggerUi, {presets} from 'swagger-ui';
 import './Swagger.css';
 
 export default class SwaggerUI extends Component {
@@ -8,7 +8,7 @@ export default class SwaggerUI extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { selectedService } = this.props;
+        const {selectedService} = this.props;
         if (
             selectedService.serviceId !== prevProps.selectedService.serviceId ||
             selectedService.tileId !== prevProps.selectedService.tileId
@@ -26,8 +26,8 @@ export default class SwaggerUI extends Component {
                 wrapActions: {
                     updateLoadingStatus: ori => (...args) => {
                         const [loadingStatus] = args;
-                        this.setState({ isLoading: loadingStatus === 'loading' });
-                        this.setState({ loadingStatus });
+                        this.setState({isLoading: loadingStatus === 'loading'});
+                        this.setState({loadingStatus});
                         return ori(...args);
                     },
                 },
@@ -36,7 +36,7 @@ export default class SwaggerUI extends Component {
     });
 
     retrieveSwagger = () => {
-        const { selectedService } = this.props;
+        const {selectedService} = this.props;
 
         if (
             selectedService.apiDoc !== null &&
@@ -58,7 +58,7 @@ export default class SwaggerUI extends Component {
     };
 
     render() {
-        const { selectedService } = this.props;
+        const {selectedService} = this.props;
         let error = false;
         if (
             selectedService.apiDoc === undefined ||
@@ -68,13 +68,13 @@ export default class SwaggerUI extends Component {
             error = true;
         }
         return (
-            <div style={{ width: '100%', background: '#ffffff' }}>
+            <div style={{width: '100%', background: '#ffffff'}}>
                 {error && (
-                    <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
-                        <h4 style={{ color: '#de1b1b' }}>API documentation could not be retrieved</h4>
+                    <div style={{width: '100%', background: '#ffffff', paddingLeft: 55}}>
+                        <h4 style={{color: '#de1b1b'}}>API documentation could not be retrieved</h4>
                     </div>
                 )}
-                {!error && <div id="swaggerContainer" data-testid="swagger" />}
+                {!error && <div id="swaggerContainer" data-testid="swagger"/>}
             </div>
         );
     }

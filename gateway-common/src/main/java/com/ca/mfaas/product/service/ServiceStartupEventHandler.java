@@ -29,8 +29,8 @@ public class ServiceStartupEventHandler {
             @Override
             public void run() {
                 LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-                String[] names = new String[] { "com.netflix.discovery.DiscoveryClient",
-                        "com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient" };
+                String[] names = new String[]{"com.netflix.discovery.DiscoveryClient",
+                    "com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient"};
                 for (String name : names) {
                     Logger logger = loggerContext.getLogger(name);
                     logger.setLevel(Level.ERROR);

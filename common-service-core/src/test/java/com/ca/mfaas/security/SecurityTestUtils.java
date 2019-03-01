@@ -9,27 +9,25 @@
  */
 package com.ca.mfaas.security;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 
-import lombok.extern.slf4j.Slf4j;
+import static org.junit.Assert.fail;
 
-@Slf4j
+//@Slf4j
 public class SecurityTestUtils {
     private static final String STORE_PASSWORD = "password"; // NOSONAR
 
     public static HttpsConfig.HttpsConfigBuilder correctHttpsSettings() throws IOException {
         return SecurityTestUtils.correctHttpsKeyStoreSettings()
-                .trustStore(pathFromRepository("keystore/localhost/localhost.truststore.p12"))
-                .trustStorePassword(STORE_PASSWORD);
+            .trustStore(pathFromRepository("keystore/localhost/localhost.truststore.p12"))
+            .trustStorePassword(STORE_PASSWORD);
     }
 
     public static HttpsConfig.HttpsConfigBuilder correctHttpsKeyStoreSettings() throws IOException {
         return HttpsConfig.builder().protocol("TLSv1.2")
-                .keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost.keystore.p12"))
-                .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD);
+            .keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost.keystore.p12"))
+            .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD);
     }
 
     public static String pathFromRepository(String path) {
@@ -37,9 +35,9 @@ public class SecurityTestUtils {
         try {
             return new File(newPath).getCanonicalPath();
         } catch (IOException e) {
-            log.error("Error opening file {}", newPath, e);
+//            log.error("Error opening file {}", newPath, e);
             fail("Invalid repository path: " + newPath);
             return null;
         }
-    }    
+    }
 }

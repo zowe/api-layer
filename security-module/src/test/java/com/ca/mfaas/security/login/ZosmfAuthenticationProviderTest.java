@@ -21,7 +21,10 @@ import org.mockito.Mockito;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.client.RestTemplate;
@@ -30,10 +33,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import static org.junit.Assert.assertTrue;
 
 public class ZosmfAuthenticationProviderTest {
     private static final String USERNAME = "user";
@@ -46,7 +48,8 @@ public class ZosmfAuthenticationProviderTest {
     private static final String COOKIE = "LtpaToken2=test";
     private static final String DOMAIN = "realm";
     private static final String RESPONSE = "{\"zosmf_saf_realm\": \"" + DOMAIN + "\"}";
-
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
     private UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
     private SecurityConfigurationProperties securityConfigurationProperties;
     private TokenService tokenService;
@@ -54,9 +57,6 @@ public class ZosmfAuthenticationProviderTest {
     private ObjectMapper mapper;
     private RestTemplate restTemplate;
     private ServiceInstance zosmfInstance;
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() {

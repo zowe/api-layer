@@ -17,22 +17,22 @@ import static org.junit.Assert.assertEquals;
 
 public class GreetingControllerTest {
 
-        @Test
-        public void whenSendRequest_GivenAName_sendGreeting() throws Exception {
-            GreetingController greetingController = new GreetingController();
-            Response response = greetingController.defaultGreeting();
-            assertEquals(200, response.getStatus());
-            Greeting greeting = (Greeting) response.getEntity();
-            assertEquals("Hello, World!", greeting.getContent());
-        }
+    @Test
+    public void whenSendRequest_GivenAName_sendGreeting() throws Exception {
+        GreetingController greetingController = new GreetingController();
+        Response response = greetingController.defaultGreeting();
+        assertEquals(200, response.getStatus());
+        Greeting greeting = (Greeting) response.getEntity();
+        assertEquals("Hello, World!", greeting.getContent());
+    }
 
-        @Test
-        public void whenSendRequest_sendDefaultGreeting() throws Exception {
-            final String name = "Andrea";
-            GreetingController greetingController = new GreetingController();
-            Response response = greetingController.greeting(name);
-            assertEquals(200, response.getStatus());
-            Greeting greeting = (Greeting) response.getEntity();
-            assertEquals("Hello, " + name + "!", greeting.getContent());
-        }
+    @Test
+    public void whenSendRequest_sendDefaultGreeting() throws Exception {
+        final String name = "Andrea";
+        GreetingController greetingController = new GreetingController();
+        Response response = greetingController.greeting(name);
+        assertEquals(200, response.getStatus());
+        Greeting greeting = (Greeting) response.getEntity();
+        assertEquals("Hello, " + name + "!", greeting.getContent());
+    }
 }

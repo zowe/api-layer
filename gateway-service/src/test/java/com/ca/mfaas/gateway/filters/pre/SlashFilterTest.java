@@ -18,7 +18,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PROXY_KEY;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 

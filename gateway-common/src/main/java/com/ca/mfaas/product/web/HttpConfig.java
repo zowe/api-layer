@@ -13,9 +13,7 @@ import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,9 +78,9 @@ public class HttpConfig {
     public void init() {
         try {
             HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-                    .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
-                    .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
+                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
+                .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+                .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
 
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
@@ -94,8 +92,7 @@ public class HttpConfig {
             secret = factory.readSecret();
 
             factory.setSystemSslProperties();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error in HTTPS configuration: {}", e.getMessage(), e);
             System.exit(1); // NOSONAR
         }

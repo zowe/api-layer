@@ -9,8 +9,6 @@
  */
 package com.ca.hwsjersey.resource;
 
-import io.swagger.annotations.*;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;

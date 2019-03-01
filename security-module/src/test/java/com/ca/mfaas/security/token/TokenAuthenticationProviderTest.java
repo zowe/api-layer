@@ -25,10 +25,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TokenAuthenticationProviderTest {
-    private TokenService tokenService;
-
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+    private TokenService tokenService;
 
     @Before
     public void setUp() {

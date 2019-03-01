@@ -1,15 +1,17 @@
 buildscript {
+
     repositories {
         maven {
-            setUrl('https://plugins.gradle.org/m2/')
+            url "https://plugins.gradle.org/m2/"
         }
     }
+
     dependencies {
-        classpath 'com.adarshr:gradle-test-logger-plugin:1.4.0'
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
 
-apply plugin: 'com.adarshr.test-logger'
+apply plugin: 'java'
 
 repositories {
     mavenCentral()
@@ -33,17 +35,12 @@ dependencies {
     testCompile libraries.powermock_api_mockito2
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule
-    testCompile libraries.lombok
     testCompile libraries.jsoup
     testCompile libraries.rest_assured
 }
 
 jar {
     baseName = "integration-tests"
-}
-
-testlogger {
-    theme 'standard-parallel'
 }
 
 test.enabled = false

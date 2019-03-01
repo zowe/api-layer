@@ -18,21 +18,23 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.hamcrest.Matchers.is;
 import java.io.File;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 
 @Category(LocalDeploymentTest.class)
 public class MultipartPutIntegrationTest {
     private static final String MULTIPART_PATH = "/api/v1/discoverableclient/multipart";
     private String configFileName = "example.txt";
     private ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+
     @BeforeClass
     public static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
+
     @Test
     public void shouldDoPutRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
@@ -40,10 +42,10 @@ public class MultipartPutIntegrationTest {
         given().
             contentType("multipart/form-data").
             multiPart(new File(classLoader.getResource(configFileName).getFile())).
-        expect().
+            expect().
             statusCode(200).
             body(is("fileUploadView")).
-        when().
+            when().
             put(uri);
     }
 
@@ -53,9 +55,9 @@ public class MultipartPutIntegrationTest {
         given().
             contentType("multipart/form-data").
             multiPart(new File(classLoader.getResource(configFileName).getFile())).
-        when().
+            when().
             put(uri).
-        then().
+            then().
             statusCode(200);
     }
 }

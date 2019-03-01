@@ -9,22 +9,21 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+import com.netflix.zuul.context.RequestContext;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-import com.netflix.zuul.context.RequestContext;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ConvertAuthTokenInUriToCookieFilterTest {
 

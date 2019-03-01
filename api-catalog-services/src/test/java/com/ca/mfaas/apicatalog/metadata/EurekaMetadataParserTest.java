@@ -23,10 +23,10 @@ public class EurekaMetadataParserTest {
     @Test
     public void testParseApiInfo() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.apiInfo.1.gatewayUrl", "gatewayUrl");
-        metadata.put("apiml.apiInfo.2.gatewayUrl", "gatewayUrl2");
-        metadata.put("apiml.apiInfo.2.swaggerUrl", "swagger");
-        metadata.put("apiml.apiInfo.2.documentationUrl", "doc");
+        metadata.put("apiml.shortApiInfo.1.gatewayUrl", "gatewayUrl");
+        metadata.put("apiml.shortApiInfo.2.gatewayUrl", "gatewayUrl2");
+        metadata.put("apiml.shortApiInfo.2.swaggerUrl", "swagger");
+        metadata.put("apiml.shortApiInfo.2.documentationUrl", "doc");
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
         assertEquals(2, info.size());

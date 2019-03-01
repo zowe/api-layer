@@ -1,7 +1,7 @@
 const eureka = require("eureka-js-client");
 
 function apiLayerServiceModule() {
-    this.registerService = function(options) {
+    this.registerService = function (options) {
         const metadata = {
             "apiml.apiInfo.0.apiId": options.apiInfo[0].apiId,
             "apiml.apiInfo.0.gatewayUrl": options.apiInfo[0].gatewayUrl,
@@ -48,15 +48,16 @@ function apiLayerServiceModule() {
                     default: [options.discoveryServiceUrl]
                 }
             },
-            requestMiddleware: (requestOpts, done) => {
-                requestOpts.pfx = options.tlsOptions.pfx;
-                requestOpts.ca = options.tlsOptions.ca;
-                requestOpts.cert = options.tlsOptions.cert;
-                requestOpts.key = options.tlsOptions.key;
-                requestOpts.passphrase = options.tlsOptions.passphrase;
-                done(requestOpts);
-            }
-        });
+            requestMiddleware: (requestOpts, done) = > {
+            requestOpts.pfx = options.tlsOptions.pfx;
+        requestOpts.ca = options.tlsOptions.ca;
+        requestOpts.cert = options.tlsOptions.cert;
+        requestOpts.key = options.tlsOptions.key;
+        requestOpts.passphrase = options.tlsOptions.passphrase;
+        done(requestOpts);
+    }
+    })
+        ;
 
         client.start();
         return client;

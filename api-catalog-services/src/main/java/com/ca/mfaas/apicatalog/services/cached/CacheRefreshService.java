@@ -23,9 +23,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.concurrent.*;
-
 /**
  * Refresh the cache with the latest state of the discovery service
  * Use deltas to get latest changes from Eureka
@@ -37,14 +34,13 @@ public class CacheRefreshService {
 
     // until versioning is implemented, only v1 API docs are supported
     private static final String API_VERSION = "v1";
+    private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final APIServiceStatusService apiServiceStatusService;
     private final InstanceRetrievalService instanceRetrievalService;
     private final APIDocRetrievalService apiDocRetrievalService;
     private final CachedApiDocService cachedApiDocService;
-
-    private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
 
     @Autowired
     public CacheRefreshService(CachedProductFamilyService cachedProductFamilyService,
@@ -116,7 +112,8 @@ public class CacheRefreshService {
 
     /**
      * Check each delta instance and consider it for processing
-     * @param cachedServices the collection of cached services
+     *
+     * @param cachedServices     the collection of cached services
      * @param deltaFromDiscovery changed instances
      */
     private Set<String> processServiceInstances(Applications cachedServices, Applications deltaFromDiscovery) {
@@ -135,10 +132,11 @@ public class CacheRefreshService {
 
     /**
      * Get this instance service details and check if it should be processed
-     * @param containersUpdated which containers were updated
-     * @param cachedServices existing services
+     *
+     * @param containersUpdated  which containers were updated
+     * @param cachedServices     existing services
      * @param deltaFromDiscovery changed service instances
-     * @param instance this instance
+     * @param instance           this instance
      */
     private void processServiceInstance(Set<String> containersUpdated, Applications cachedServices,
                                         Applications deltaFromDiscovery, InstanceInfo instance) {
@@ -159,9 +157,10 @@ public class CacheRefreshService {
 
     /**
      * Go ahead amd retrieve this instances API doc and update the cache
+     *
      * @param containersUpdated which containers were updated
-     * @param instance the instance
-     * @param application the service
+     * @param instance          the instance
+     * @param application       the service
      */
     private void processInstance(Set<String> containersUpdated, InstanceInfo instance, Application application) {
         if (InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
@@ -177,9 +176,10 @@ public class CacheRefreshService {
 
     /**
      * Update the API Doc cache for a service
+     *
      * @param serviceId the service Id
-     * @param version the API Doc version
-     * @param apiDoc the API Doc
+     * @param version   the API Doc version
+     * @param apiDoc    the API Doc
      */
     private void updateApiDocCache(String serviceId, String version, String apiDoc) {
         try {
@@ -264,9 +264,10 @@ public class CacheRefreshService {
 
     /**
      * Update the container
+     *
      * @param containersUpdated what containers were updated
-     * @param serviceId the service
-     * @param instanceInfo the instance
+     * @param serviceId         the service
+     * @param instanceInfo      the instance
      */
     private void updateContainer(Set<String> containersUpdated, String serviceId, InstanceInfo instanceInfo) {
         String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");

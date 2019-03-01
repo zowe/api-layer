@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.ca.mfaas.product.model.ApiInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 
@@ -17,11 +16,12 @@ import java.util.List;
 
 /**
  * Represents one services with multiple instances.
- *
+ * <p>
  * Each instance can have different base URL (http(s)://hostname:port/contextPath/).
  * The other URLs are relative to it.
  */
- @Data class Service {
+@Data
+class Service {
     private String serviceId;
     private String title;
     private String description;
@@ -32,5 +32,4 @@ import java.util.List;
     private String healthCheckRelativeUrl;
     @JsonAlias({"routedServices"})
     private List<Route> routes;
-    private List<ApiInfo> apiInfo;
 }

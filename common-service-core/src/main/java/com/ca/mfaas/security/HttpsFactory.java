@@ -11,11 +11,9 @@ package com.ca.mfaas.security;
 
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -28,25 +26,20 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.Key;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Objects;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 
 @Slf4j
 @Data
@@ -62,18 +55,22 @@ public class HttpsFactory {
         this.secureSslContext = null;
     }
 
+    public static String replaceFourSlashes(String storeUri) {
+        return storeUri == null ? null : storeUri.replaceFirst("////", "//");
+    }
+
     public CloseableHttpClient createSecureHttpClient() {
         Registry<ConnectionSocketFactory> socketFactoryRegistry;
         RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
-                .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
+            .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
 
         socketFactoryRegistryBuilder.register("https", createSslSocketFactory());
         socketFactoryRegistry = socketFactoryRegistryBuilder.build();
 
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
-                Objects.requireNonNull(socketFactoryRegistry));
+            Objects.requireNonNull(socketFactoryRegistry));
         return HttpClientBuilder.create().setConnectionManager(connectionManager).disableCookieManagement()
-                .disableAuthCaching().build();
+            .disableAuthCaching().build();
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
@@ -94,19 +91,19 @@ public class HttpsFactory {
             return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
             throw new HttpsConfigError("Error initializing SSL/TLS context: " + e.getMessage(), e,
-                    ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
+                ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
         }
     }
 
     private void loadTrustMaterial(SSLContextBuilder sslContextBuilder)
-            throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         if (config.getTrustStore() != null) {
             sslContextBuilder.setKeyStoreType(config.getTrustStoreType()).setProtocol(config.getProtocol());
 
             if (!config.getTrustStore().startsWith(SAFKEYRING)) {
                 if (config.getTrustStorePassword() == null) {
                     throw new HttpsConfigError("server.ssl.trustStorePassword configuration parameter is not defined",
-                            ErrorCode.TRUSTSTORE_PASSWORD_NOT_DEFINED, config);
+                        ErrorCode.TRUSTSTORE_PASSWORD_NOT_DEFINED, config);
                 }
 
                 log.info("Loading trust store file: " + config.getTrustStore());
@@ -116,13 +113,13 @@ public class HttpsFactory {
             } else {
                 log.info("Loading trust store key ring: " + config.getTrustStore());
                 sslContextBuilder.loadTrustMaterial(keyRingUrl(config.getTrustStore()),
-                        config.getTrustStorePassword() == null ? null : config.getTrustStorePassword().toCharArray());
+                    config.getTrustStorePassword() == null ? null : config.getTrustStorePassword().toCharArray());
             }
         } else {
             if (config.isTrustStoreRequired()) {
                 throw new HttpsConfigError(
-                        "server.ssl.trustStore configuration parameter is not defined but trust store is required",
-                        ErrorCode.TRUSTSTORE_NOT_DEFINED, config);
+                    "server.ssl.trustStore configuration parameter is not defined but trust store is required",
+                    ErrorCode.TRUSTSTORE_NOT_DEFINED, config);
             } else {
                 log.info("No trust store is defined");
             }
@@ -132,13 +129,13 @@ public class HttpsFactory {
     private URL keyRingUrl(String uri) throws MalformedURLException {
         if (!uri.startsWith(SAFKEYRING + ":////")) {
             throw new MalformedURLException("Incorrect key ring format: " + config.getTrustStore()
-                    + ". Make sure you use format safkeyring:////userId/keyRing");
+                + ". Make sure you use format safkeyring:////userId/keyRing");
         }
         return new URL(replaceFourSlashes(uri));
     }
 
     private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException,
-            KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
+        KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
         if (config.getKeyStore() != null) {
             sslContextBuilder.setKeyStoreType(config.getKeyStoreType()).setProtocol(config.getProtocol());
 
@@ -153,28 +150,28 @@ public class HttpsFactory {
     }
 
     private void loadKeystoreMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
-            NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         if (config.getKeyStore() == null) {
             throw new HttpsConfigError("server.ssl.keyStore configuration parameter is not defined",
-                    ErrorCode.KEYSTORE_NOT_DEFINED, config);
+                ErrorCode.KEYSTORE_NOT_DEFINED, config);
         }
         if (config.getKeyStorePassword() == null) {
             throw new HttpsConfigError("server.ssl.keyStorePassword configuration parameter is not defined",
-                    ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
+                ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
         }
         log.info("Loading key store file: " + config.getKeyStore());
         File keyStoreFile = new File(config.getKeyStore());
         sslContextBuilder.loadKeyMaterial(keyStoreFile,
-                config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
-                config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray());
+            config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
+            config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray());
     }
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
-            NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+        NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         log.info("Loading trust key ring: " + config.getKeyStore());
         sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()),
-                config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
-                config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray(), null);
+            config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
+            config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray(), null);
     }
 
     private synchronized SSLContext createSecureSslContext() {
@@ -188,10 +185,10 @@ public class HttpsFactory {
                 validateSslConfig();
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                    | UnrecoverableKeyException | KeyManagementException e) {
+                | UnrecoverableKeyException | KeyManagementException e) {
                 log.error("Error initializing HTTP client: {}", e.getMessage(), e);
                 throw new HttpsConfigError("Error initializing HTTP client: " + e.getMessage(), e,
-                        ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
+                    ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
         } else {
             return secureSslContext;
@@ -205,8 +202,7 @@ public class HttpsFactory {
             if (config.getKeyStore().startsWith(SAFKEYRING)) {
                 URL url = keyRingUrl(config.getKeyStore());
                 istream = url.openStream();
-            }
-            else {
+            } else {
                 File keyStoreFile = new File(config.getKeyStore());
                 istream = new FileInputStream(keyStoreFile);
             }
@@ -219,7 +215,7 @@ public class HttpsFactory {
 
     private ConnectionSocketFactory createSecureSslSocketFactory() {
         return new SSLConnectionSocketFactory(createSecureSslContext(),
-                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
     }
 
     public SSLContext createSslContext() {
@@ -246,10 +242,6 @@ public class HttpsFactory {
         setSystemProperty("javax.net.ssl.trustStore", replaceFourSlashes(config.getTrustStore()));
         setSystemProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword());
         setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
-    }
-
-    public static String replaceFourSlashes(String storeUri) {
-        return storeUri == null ? null : storeUri.replaceFirst("////", "//");
     }
 
     public HostnameVerifier createHostnameVerifier() {
@@ -302,7 +294,7 @@ public class HttpsFactory {
             if (config.getKeyAlias() != null) {
                 key = ks.getKey(config.getKeyAlias(), keyPassword);
             } else {
-                for (Enumeration<String> e = ks.aliases(); e.hasMoreElements();) {
+                for (Enumeration<String> e = ks.aliases(); e.hasMoreElements(); ) {
                     String alias = e.nextElement();
                     try {
                         key = ks.getKey(alias, keyPassword);
@@ -314,15 +306,15 @@ public class HttpsFactory {
             }
             if (key == null) {
                 throw new UnrecoverableKeyException(String.format(
-                        "No key with private key entry could be used in the keystore. Provided key alias: %s",
-                        config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
+                    "No key with private key entry could be used in the keystore. Provided key alias: %s",
+                    config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
             }
             return Base64.getEncoder().encodeToString(key.getEncoded());
         } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                | UnrecoverableKeyException e) {
+            | UnrecoverableKeyException e) {
             log.error("Error reading secret key: {}", e.getMessage(), e);
             throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
-                    ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
+                ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
         }
     }
 }

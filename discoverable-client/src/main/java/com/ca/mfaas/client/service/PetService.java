@@ -18,8 +18,12 @@ import java.util.List;
  */
 public interface PetService {
     Pet save(Pet pet);
+
     Pet getById(Long id);
+
     List<Pet> getAll();
+
     Pet update(Pet pet);
+
     void deleteById(Long id);
 }

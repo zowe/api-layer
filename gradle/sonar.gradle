@@ -18,7 +18,7 @@ sonarqube {
             property "sonar.analysis.mode", "preview"
             property "sonar.github.pullRequest", pullRequest
             property "sonar.github.repository", "zowe/api-layer"
-            property "sonar.github.oauth",  project.hasProperty('sonar.github.oauth') ? project.getProperty('sonar.github.oauth') : null
+            property "sonar.github.oauth", project.hasProperty('sonar.github.oauth') ? project.getProperty('sonar.github.oauth') : null
         }
     }
 }

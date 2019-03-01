@@ -23,8 +23,8 @@ import javax.ws.rs.core.Response;
 @Path("/")
 public class ApiDocController {
 
-    private Client client = javax.ws.rs.client.ClientBuilder.newClient();
     private static final Logger log = LoggerFactory.getLogger(ApiDocController.class);
+    private Client client = javax.ws.rs.client.ClientBuilder.newClient();
 
     @GET
     @Path("/api-doc")
@@ -36,9 +36,9 @@ public class ApiDocController {
         }
         try {
             String apiDoc = client.target(ApiMediationClientImpl.getApiDocEndpoint())
-                    .request()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .get(String.class);
+                .request()
+                .accept(MediaType.APPLICATION_JSON)
+                .get(String.class);
             return Response.ok(apiDoc).build();
         } catch (Exception e) {
             log.error(e.getMessage(), e);

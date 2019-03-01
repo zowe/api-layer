@@ -25,15 +25,15 @@ public class DiscoveryInfoTest {
         final Boolean enableApiDoc = true;
         final String description = "description";
 
-    DiscoveryInfo discoveryInfo = new DiscoveryInfo(hostName, secure, serviceName, port, serviceType, serviceTitle, enableApiDoc, description);
-    assertEquals(discoveryInfo.getHostName(), hostName);
-    assertEquals(discoveryInfo.getSecure(), secure);
-    assertEquals(discoveryInfo.getServiceName(), serviceName);
-    assertEquals(discoveryInfo.getPort(), port);
-    assertEquals(discoveryInfo.getServiceType(), serviceType);
-    assertEquals(discoveryInfo.getServiceTitle(), serviceTitle);
-    assertEquals(discoveryInfo.getEnableApiDoc(), enableApiDoc);
-    assertEquals(discoveryInfo.getDescription(), description);
+        DiscoveryInfo discoveryInfo = new DiscoveryInfo(hostName, secure, serviceName, port, serviceType, serviceTitle, enableApiDoc, description);
+        assertEquals(discoveryInfo.getHostName(), hostName);
+        assertEquals(discoveryInfo.getSecure(), secure);
+        assertEquals(discoveryInfo.getServiceName(), serviceName);
+        assertEquals(discoveryInfo.getPort(), port);
+        assertEquals(discoveryInfo.getServiceType(), serviceType);
+        assertEquals(discoveryInfo.getServiceTitle(), serviceTitle);
+        assertEquals(discoveryInfo.getEnableApiDoc(), enableApiDoc);
+        assertEquals(discoveryInfo.getDescription(), description);
 
     }
 

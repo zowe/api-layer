@@ -13,7 +13,6 @@ import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import lombok.extern.slf4j.Slf4j;
-
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
@@ -80,26 +79,23 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
                 ServiceInstance serviceInstance = findServiceInstance(serviceId);
                 if (serviceInstance != null) {
                     openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
-                }
-                else {
+                } else {
                     webSocketSession.close(CloseStatus.SERVICE_RESTARTED.withReason(
                         String.format("Requested service %s does not have available instance", serviceId)));
                 }
-            }
-            else {
+            } else {
                 webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(
                     String.format("Requested service %s is not known by the gateway", serviceId)));
             }
-        }
-        else {
+        } else {
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason("Invalid URL format"));
         }
     }
 
     private void openWebSocketConnection(RoutedService service, ServiceInstance serviceInstance, Object uri,
-            String path, WebSocketSession webSocketSession) throws IOException {
+                                         String path, WebSocketSession webSocketSession) throws IOException {
         String targetUrl = (serviceInstance.isSecure() ? "wss" : "ws") + "://" + serviceInstance.getHost() + ":"
-                + serviceInstance.getPort() + service.getServiceUrl() + "/" + path;
+            + serviceInstance.getPort() + service.getServiceUrl() + "/" + path;
         log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, jettySslContextFactory, this));
         try {
             WebSocketRoutedSession session = new WebSocketRoutedSession(webSocketSession, targetUrl, jettySslContextFactory);
@@ -115,8 +111,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         if (!serviceInstances.isEmpty()) {
             // TODO: This just a simple implementation that will be replaced by more sophisticated mechanism in future
             return serviceInstances.get(0);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -128,15 +123,14 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             session.close(status);
             getRoutedSession(session).close(status);
             routedSessions.remove(session.getId());
-        }
-        catch (NullPointerException | IOException e) {
+        } catch (NullPointerException | IOException e) {
             log.debug("Error closing WebSocket connection: {}", e.getMessage(), e);
         }
     }
 
     @Override
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage)
-            throws Exception {
+        throws Exception {
         log.debug("handleMessage(session={},message={})", webSocketSession, webSocketMessage);
         WebSocketRoutedSession session = getRoutedSession(webSocketSession);
         if (session != null) {

@@ -23,10 +23,10 @@ ssl:
     trustStorePassword: password
     trustStoreType: PKCS12
 routes:
-    - gatewayUrl: api/v1
-      serviceUrl: /hellospring/api/v1
-    - gatewayUrl: api/v1/api-doc
-      serviceUrl: /hellospring/api-doc
+    -   gatewayUrl: api/v1
+        serviceUrl: /hellospring/api/v1
+    -   gatewayUrl: api/v1/api-doc
+        serviceUrl: /hellospring/api-doc
 apiInfo:
     title: Hello World Spring
     description: REST API for a Spring Application

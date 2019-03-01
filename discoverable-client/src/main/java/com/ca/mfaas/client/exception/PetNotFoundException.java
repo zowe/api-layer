@@ -14,6 +14,7 @@ package com.ca.mfaas.client.exception;
  */
 public class PetNotFoundException extends RuntimeException {
     private final Long id;
+
     public PetNotFoundException(String message, Long id) {
         super(message);
         this.id = id;

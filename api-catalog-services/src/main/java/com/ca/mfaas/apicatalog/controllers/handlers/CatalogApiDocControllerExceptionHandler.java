@@ -32,6 +32,7 @@ public class CatalogApiDocControllerExceptionHandler {
 
     /**
      * Constructor for {@link CatalogApiDocControllerExceptionHandler}.
+     *
      * @param errorService service for creation {@link ApiMessage} by key and list of parameters.
      */
     @Autowired
@@ -41,6 +42,7 @@ public class CatalogApiDocControllerExceptionHandler {
 
     /**
      * Could not retrieve the API Documentation
+     *
      * @param exception InvalidFormatException
      * @return 500 and the message 'TBD'
      */
@@ -55,6 +57,7 @@ public class CatalogApiDocControllerExceptionHandler {
 
     /**
      * Could not retrieve the API Documentation as the Gateway was not available
+     *
      * @param exception InvalidFormatException
      * @return 404 and the message 'TBD'
      */

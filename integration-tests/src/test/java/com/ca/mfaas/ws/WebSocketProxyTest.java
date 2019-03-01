@@ -28,10 +28,9 @@ import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.Assert.assertEquals;
 
 public class WebSocketProxyTest {
-    private GatewayServiceConfiguration serviceConfiguration;
-
     private final static int WAIT_TIMEOUT_MS = 10000;
     private final static String UPPERCASE_URL = "/ws/v1/discoverableclient/uppercase";
+    private GatewayServiceConfiguration serviceConfiguration;
 
     @Before
     public void setUp() {
@@ -72,7 +71,7 @@ public class WebSocketProxyTest {
     }
 
     private WebSocketSession appendingWebSocketSession(String url, StringBuilder response, int countToNotify)
-            throws Exception {
+        throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
         client.getUserProperties().put(SSL_CONTEXT_PROPERTY, HttpClientUtils.ignoreSslContext());
         return client.doHandshake(appendResponseHandler(response, countToNotify), url).get();
@@ -122,14 +121,14 @@ public class WebSocketProxyTest {
     public void shouldFailIfServiceIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(
-                discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), response, 1);
+            discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), response, 1);
 
         synchronized (response) {
             response.wait(WAIT_TIMEOUT_MS);
         }
 
         assertEquals("CloseStatus[code=1003, reason=Requested service wrong-service is not known by the gateway]",
-                response.toString());
+            response.toString());
     }
 
     @Test

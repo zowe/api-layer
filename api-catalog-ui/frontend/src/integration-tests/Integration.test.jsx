@@ -1,20 +1,20 @@
 /* eslint-disable no-undef */
 
 import React from 'react';
-import { render, fireEvent, cleanup, wait, within, waitForElement } from 'react-testing-library';
-import { applyMiddleware, compose, createStore } from 'redux';
-import { Provider } from 'react-redux';
+import {cleanup, fireEvent, render, wait, waitForElement, within} from 'react-testing-library';
+import {applyMiddleware, compose, createStore} from 'redux';
+import {Provider} from 'react-redux';
 
-import { createEpicMiddleware } from 'redux-observable';
-import { ajax } from 'rxjs/ajax';
-import { HashRouter } from 'react-router-dom';
-import { ThemeProvider } from 'mineral-ui';
-import { rootReducer } from '../reducers';
-import { rootEpic } from '../epics';
+import {createEpicMiddleware} from 'redux-observable';
+import {ajax} from 'rxjs/ajax';
+import {HashRouter} from 'react-router-dom';
+import {ThemeProvider} from 'mineral-ui';
+import {rootReducer} from '../reducers';
+import {rootEpic} from '../epics';
 import AppContainer from '../components/App/AppContainer';
 import DashboardContainer from '../components/Dashboard/DashboardContainer';
 
-function renderWithRedux(ui, { initialState, store = createStore(reducer, initialState) } = {}) {
+function renderWithRedux(ui, {initialState, store = createStore(reducer, initialState)} = {}) {
     return {
         ...render(
             <HashRouter>
@@ -31,7 +31,7 @@ function renderWithRedux(ui, { initialState, store = createStore(reducer, initia
 }
 
 const epicMiddleware = createEpicMiddleware({
-    dependencies: { ajax },
+    dependencies: {ajax},
 });
 const composeEnhancers = compose;
 
@@ -49,8 +49,8 @@ describe('>>> Integration tests', () => {
             push: jest.fn(),
             pathname: '/',
         };
-        const { getByTestId, queryAllByTestId } = renderWithRedux(
-            <AppContainer authentication={authentication} history={history} />,
+        const {getByTestId, queryAllByTestId} = renderWithRedux(
+            <AppContainer authentication={authentication} history={history}/>,
             {
                 store: mockStore,
             }
@@ -77,8 +77,8 @@ describe('>>> Integration tests', () => {
             push: jest.fn(),
             pathname: '/',
         };
-        const { getByTestId, queryAllByTestId } = renderWithRedux(
-            <AppContainer authentication={authentication} history={history} />,
+        const {getByTestId, queryAllByTestId} = renderWithRedux(
+            <AppContainer authentication={authentication} history={history}/>,
             {
                 store: mockStore,
             }
@@ -89,9 +89,9 @@ describe('>>> Integration tests', () => {
         expect(loginForm.length).toEqual(1);
 
         const username = getByTestId('username');
-        fireEvent.change(username, { target: { value: 'user' } });
+        fireEvent.change(username, {target: {value: 'user'}});
         const password = getByTestId('password');
-        fireEvent.change(password, { target: { value: 'user' } });
+        fireEvent.change(password, {target: {value: 'user'}});
         const submitButton = getByTestId('submit');
         fireEvent.click(submitButton);
     });
@@ -104,8 +104,8 @@ describe('>>> Integration tests', () => {
             push: jest.fn(),
             pathname: '/dashboard',
         };
-        const { getByText, container, getByTestId, queryAllByTestId } = renderWithRedux(
-            <DashboardContainer authentication={authentication} history={history} />,
+        const {getByText, container, getByTestId, queryAllByTestId} = renderWithRedux(
+            <DashboardContainer authentication={authentication} history={history}/>,
             {
                 store: mockStore,
             }
@@ -127,8 +127,8 @@ describe('>>> Integration tests', () => {
             push: jest.fn(),
             pathname: '/dashboard',
         };
-        const { queryAllByTestId, getByTestId } = renderWithRedux(
-            <DashboardContainer authentication={authentication} history={history} />,
+        const {queryAllByTestId, getByTestId} = renderWithRedux(
+            <DashboardContainer authentication={authentication} history={history}/>,
             {
                 store: mockStore,
             }
@@ -138,7 +138,7 @@ describe('>>> Integration tests', () => {
         const searchBar = getByTestId('search-bar');
         expect(searchBar.length).toEqual(1);
         const searchCriteria = 'API Mediation Layer API';
-        fireEvent.change(searchBar, { target: { value: searchCriteria } });
+        fireEvent.change(searchBar, {target: {value: searchCriteria}});
 
         await wait(() => getByTestId('tile'));
         const tiles = queryAllByTestId('tile');
@@ -153,8 +153,8 @@ describe('>>> Integration tests', () => {
             push: jest.fn(),
             pathname: '/dashboard',
         };
-        const { getByPlaceholderText, queryAllByTestId, getByText, getByTestId } = renderWithRedux(
-            <DashboardContainer authentication={authentication} history={history} />,
+        const {getByPlaceholderText, queryAllByTestId, getByText, getByTestId} = renderWithRedux(
+            <DashboardContainer authentication={authentication} history={history}/>,
             {
                 store: mockStore,
             }
@@ -163,7 +163,7 @@ describe('>>> Integration tests', () => {
         await wait(() => getByPlaceholderText('Search for APIs'));
         const searchBar = getByPlaceholderText('Search for APIs');
         const searchCriteria = "Don't panic!";
-        fireEvent.change(searchBar, { target: { value: searchCriteria } });
+        fireEvent.change(searchBar, {target: {value: searchCriteria}});
 
         await wait(() => getByText('No tiles found matching search criteria'));
         let tiles = queryAllByTestId('tile');
@@ -185,8 +185,8 @@ describe('>>> Integration tests', () => {
             push: jest.fn(),
             pathname: '/dashboard',
         };
-        const { queryAllByTestId, getByText, getByTestId } = renderWithRedux(
-            <DashboardContainer authentication={authentication} history={history} />,
+        const {queryAllByTestId, getByText, getByTestId} = renderWithRedux(
+            <DashboardContainer authentication={authentication} history={history}/>,
             {
                 store: mockStore,
             }
@@ -225,8 +225,8 @@ describe('>>> Integration tests', () => {
             push: jest.fn(),
             pathname: '/dashboard',
         };
-        const { getByTestId, queryAllByText } = renderWithRedux(
-            <DashboardContainer authentication={authentication} history={history} />,
+        const {getByTestId, queryAllByText} = renderWithRedux(
+            <DashboardContainer authentication={authentication} history={history}/>,
             {
                 store: mockStore,
             }
@@ -251,8 +251,8 @@ describe('>>> Integration tests', () => {
             push: jest.fn(),
             pathname: '/dashboard',
         };
-        const { getByText, getByTestId } = renderWithRedux(
-            <DashboardContainer authentication={authentication} history={history} />,
+        const {getByText, getByTestId} = renderWithRedux(
+            <DashboardContainer authentication={authentication} history={history}/>,
             {
                 store: mockStore,
             }

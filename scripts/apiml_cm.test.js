@@ -2,22 +2,21 @@ const nixt = require("nixt");
 const path = require("path");
 const fs = require('fs');
 
-var script =  "bash " + path.join(__dirname, "apiml_cm.sh");
-script = script.replace(/\\/g,"/");
+var script = "bash " + path.join(__dirname, "apiml_cm.sh");
+script = script.replace(/\\/g, "/");
 var testDir = path.join(__dirname, ".apiml_cm_test");
-testDir = testDir.replace(/\\/g,"/");
+testDir = testDir.replace(/\\/g, "/");
 console.log(testDir);
 
-describe(script, function() {
-    beforeEach(function(done) {
+describe(script, function () {
+    beforeEach(function (done) {
         if (fs.existsSync(testDir)) {
             nixt()
                 .exec(`rm -rf ${testDir}`)
                 .mkdir(testDir)
                 .run(script)
                 .end(done);
-        }
-        else {
+        } else {
             nixt()
                 .mkdir(testDir)
                 .run(script)
@@ -26,15 +25,15 @@ describe(script, function() {
 
     });
 
-    describe("general", function() {
-        it("should return usage when there is no argument", function(done) {
+    describe("general", function () {
+        it("should return usage when there is no argument", function (done) {
             nixt()
                 .run(script)
                 .code(1)
                 .stdout(/usage:/)
                 .end(done);
         });
-        it("should return usage when there is wrong action", function(done) {
+        it("should return usage when there is wrong action", function (done) {
             nixt()
                 .run(`${script} --action wrong`)
                 .code(1)
@@ -43,8 +42,8 @@ describe(script, function() {
                 .end(done);
         });
     });
-    describe("setup", function() {
-        it("should create local CA and APIML stores", function(done) {
+    describe("setup", function () {
+        it("should create local CA and APIML stores", function (done) {
             this.timeout(60000);
             nixt()
                 .cwd(testDir)

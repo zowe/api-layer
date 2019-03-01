@@ -10,7 +10,6 @@
 package com.ca.mfaas.gateway.error.check;
 
 import com.ca.mfaas.rest.response.ApiMessage;
-
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;

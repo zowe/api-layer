@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.ca.mfaas.product.model.ApiInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -27,7 +26,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,12 +40,6 @@ public class ServiceDefinitionProcessor {
     private static final DataCenterInfo DEFAULT_INFO = () -> DataCenterInfo.Name.MyOwn;
 
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
-
-    @Data
-    class ProcessServicesDataResult {
-        private final List<String> errors;
-        private final List<InstanceInfo> instances;
-    }
 
     public List<InstanceInfo> findServices(String staticApiDefinitionsDirectory) {
         List<InstanceInfo> instances = new ArrayList<>();
@@ -170,7 +162,7 @@ public class ServiceDefinitionProcessor {
         return new ProcessServicesDataResult(errors, instances);
     }
 
-    private void setInstanceAttributes(InstanceInfo.Builder builder,Service service, String serviceId,
+    private void setInstanceAttributes(InstanceInfo.Builder builder, Service service, String serviceId,
                                        String instanceId, String instanceBaseUrl, URL url, String ipAddress, CatalogUiTile tile) {
         builder.setAppName(serviceId).setInstanceId(instanceId).setHostName(url.getHost()).setIPAddr(ipAddress)
             .setDataCenterInfo(DEFAULT_INFO).setVIPAddress(serviceId).setSecureVIPAddress(serviceId)
@@ -211,10 +203,8 @@ public class ServiceDefinitionProcessor {
 
     private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) {
         Map<String, String> mt = new HashMap<>();
-
         mt.put("mfaas.discovery.service.title", service.getTitle());
         mt.put("mfaas.discovery.service.description", service.getDescription());
-
         if (service.getRoutes() != null) {
             for (Route rs : service.getRoutes()) {
                 String gatewayUrl = UrlUtils.trimSlashes(rs.getGatewayUrl());
@@ -231,43 +221,14 @@ public class ServiceDefinitionProcessor {
             mt.put("mfaas.discovery.catalogUiTile.version", DEFAULT_TILE_VERSION);
             mt.put("mfaas.discovery.catalogUiTile.title", tile.getTitle());
             mt.put("mfaas.discovery.catalogUiTile.description", tile.getDescription());
-
-            if (service.getApiInfo() != null) {
-                int i = 0;
-                for (ApiInfo apiInfo: service.getApiInfo()) {
-                    i++;
-
-                    mt.put(String.format("apiml.apiInfo.%d.gatewayUrl", i), apiInfo.getGatewayUrl());
-                    mt.put(String.format("apiml.apiInfo.%d.version", i), apiInfo.getVersion());
-
-                    if (apiInfo.getSwaggerUrl() != null) {
-                        try {
-                            new URL(apiInfo.getSwaggerUrl());
-                        } catch (MalformedURLException e) {
-                            throw new InvalidParameterException(
-                                String.format("The Swagger URL \"%s\" for service %s is not valid: %s",
-                                service.getServiceId(), apiInfo.getSwaggerUrl(), e.getMessage()));
-                        }
-                        mt.put(String.format("apiml.apiInfo.%d.swaggerUrl", i), apiInfo.getSwaggerUrl());
-                    }
-
-                    if (apiInfo.getDocumentationUrl() != null) {
-                        try {
-                            new URL(apiInfo.getDocumentationUrl());
-                        } catch (MalformedURLException e) {
-                            throw new InvalidParameterException(
-                                String.format("The documentation URL \"%s\" for service %s is not valid: %s",
-                                service.getServiceId(), apiInfo.getDocumentationUrl(), e.getMessage()));
-                        }
-                        mt.put(String.format("apiml.apiInfo.%d.documentationUrl", i), apiInfo.getDocumentationUrl());
-                    }
-                }
-            }
-        }
-        else {
-            mt.put("mfaas.discovery.enableApiDoc", "false");
         }
 
         return mt;
+    }
+
+    @Data
+    class ProcessServicesDataResult {
+        private final List<String> errors;
+        private final List<InstanceInfo> instances;
     }
 }

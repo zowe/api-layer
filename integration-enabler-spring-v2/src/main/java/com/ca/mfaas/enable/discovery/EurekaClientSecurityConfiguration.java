@@ -18,9 +18,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.security.NoSuchAlgorithmException;
-
 import javax.annotation.PostConstruct;
+
+import java.security.NoSuchAlgorithmException;
 
 @Configuration
 @Slf4j
@@ -66,9 +66,9 @@ public class EurekaClientSecurityConfiguration {
     @PostConstruct
     public void init() {
         HttpsConfig httpsConfig = HttpsConfig.builder().keyAlias(keyAlias).protocol(protocol).keyStore(keyStore).keyPassword(keyPassword)
-                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
-                .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
-                .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
+            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
+            .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
+            .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
 
         log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 

@@ -26,8 +26,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.*;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -103,7 +101,6 @@ public class ApiServiceStatusServiceTest {
     }
 
 
-
     @Test
     public void testGetRecentlyChangedEvents() {
         List<APIContainer> containers = createContainers();
@@ -137,9 +134,9 @@ public class ApiServiceStatusServiceTest {
     }
 
     private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status,
-            HashMap<String, String> metadata, String ipAddress, int port) {
+                                             HashMap<String, String> metadata, String ipAddress, int port) {
         return new InstanceInfo(serviceId + ":" + port, serviceId.toUpperCase(), null, ipAddress, null,
-                new InstanceInfo.PortWrapper(true, port), null, null, null, null, null, null, null, 0, null, "hostname",
-                status, null, null, null, null, metadata, null, null, null, null);
+            new InstanceInfo.PortWrapper(true, port), null, null, null, null, null, null, null, 0, null, "hostname",
+            status, null, null, null, null, metadata, null, null, null, null);
     }
 }

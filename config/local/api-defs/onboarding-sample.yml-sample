@@ -8,7 +8,7 @@ services:
       routes:
         - gatewayUrl: api/v2
           serviceRelativeUrl: /v2
-      apiInfo:
+      shortApiInfo:
         - apiId: swagger.io.petstore
           gatewayUrl: api/v2
           swaggerUrl: http://localhost:8080/v2/swagger.json

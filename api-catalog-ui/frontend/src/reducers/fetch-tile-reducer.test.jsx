@@ -3,11 +3,11 @@ import tilesReducer from './fetch-tile-reducer';
 import {
     FETCH_TILES_FAILED,
     FETCH_TILES_REQUEST,
+    FETCH_TILES_RETRY,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
-    FETCH_TILES_RETRY,
 } from '../constants/catalog-tile-constants';
-import { fetchTilesFailed, fetchTilesStart, fetchTilesStop, fetchTilesSuccess } from '../actions/catalog-tile-actions';
+import {fetchTilesFailed, fetchTilesStart, fetchTilesStop, fetchTilesSuccess} from '../actions/catalog-tile-actions';
 
 describe('>>> Tile reducer tests', () => {
     const sampleTile = {

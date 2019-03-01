@@ -41,6 +41,7 @@ public class PetController {
 
     /**
      * Constructor for {@link PetController}.
+     *
      * @param petService service for working with {@link Pet} objects.
      */
     @Autowired
@@ -60,7 +61,7 @@ public class PetController {
     @ApiOperation(
         value = "List all existing pets",
         notes = "Returns information about all existing pets")
-    @ApiResponses( value = {
+    @ApiResponses(value = {
         @ApiResponse(code = 200, message = "List of pets", response = Pet.class, responseContainer = "List")
     })
     public List<Pet> getAllPets() {

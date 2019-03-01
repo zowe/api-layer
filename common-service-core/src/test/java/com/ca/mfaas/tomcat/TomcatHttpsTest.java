@@ -9,15 +9,11 @@
  */
 package com.ca.mfaas.tomcat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsConfigError;
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.ca.mfaas.security.HttpsFactory;
-
+import com.ca.mfaas.security.SecurityTestUtils;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.http.HttpResponse;
@@ -26,11 +22,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 
-import java.io.IOException;
-
 import javax.net.ssl.SSLHandshakeException;
 
-import com.ca.mfaas.security.SecurityTestUtils;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TomcatHttpsTest {
     private static final String EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN = "excepted SSLHandshakeException exception not thrown";
@@ -57,7 +55,7 @@ public class TomcatHttpsTest {
     @Test
     public void trustStoreWithDifferentCertificateAuthorityShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings()
-                .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
+            .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
@@ -69,14 +67,14 @@ public class TomcatHttpsTest {
     @Test
     public void trustStoreWithDifferentCertificateAuthorityShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().verifySslCertificatesOfServices(false)
-                .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
+            .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
         startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
     @Test
     public void trustStoreInInvalidFormatShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings()
-                .trustStore(SecurityTestUtils.pathFromRepository("README.md")).build();
+            .trustStore(SecurityTestUtils.pathFromRepository("README.md")).build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN);

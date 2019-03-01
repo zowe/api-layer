@@ -29,12 +29,14 @@ public class MfaasController {
     }
 
     @GetMapping("/application/health")
-    public @ResponseBody Health getHealth() {
+    public @ResponseBody
+    Health getHealth() {
         return new Health("UP");
     }
 
     @GetMapping("/application/info")
-    public @ResponseBody ResponseEntity<EmptyJsonResponse> getDiscoveryInfo() {
+    public @ResponseBody
+    ResponseEntity<EmptyJsonResponse> getDiscoveryInfo() {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json;charset=UTF-8");
         return new ResponseEntity<>(new EmptyJsonResponse(), headers, HttpStatus.OK);

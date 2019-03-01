@@ -3,46 +3,46 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="ie=edge" http-equiv="X-UA-Compatible">
     <title>Document</title>
 </head>
 
 <body>
-    <h1>Welcome to mocked backend</h1>
+<h1>Welcome to mocked backend</h1>
 
-    <h2>These are the available endpoints</h2>
+<h2>These are the available endpoints</h2>
 
-    <ul>
-        <li>
-            <code>/api/v1/apicatalog/auth/login</code> - Enables you to log in. Use <b>user</b> as username and
-            password.
-            The login process takes 2 seconds to simulate slow
-            network.
-        </li>
-        <li>
-            <code>/api/v1/apicatalog/auth/logout</code> - Logs out the currently logged user.
-        </li>
-        <li>
-            <code>/api/v1/apicatalog/containers</code> - Serves a static json (`mocked-backend/assets/containers`).
-        </li>
-        <li>
-            <code>/api/v1/apicatalog/containers/some-down</code> - Simple get endpoint that toggles the status of some
-            tiles.
-        </li>
-        <li>
-            <code>/api/v1/apicatalog/containers/:serviceID</code> - Serves the same information as <code>/api/v1/apicatalog/containers</code>
-            but for a specific serviceID.
-        </li>
-        <li>
-            <code>/api/v1/apicatalog/apidoc/:serviceID/:version</code> - Serves apidoc for a specific serviceID and
-            version.
-        </li>
-    </ul>
+<ul>
+    <li>
+        <code>/api/v1/apicatalog/auth/login</code> - Enables you to log in. Use <b>user</b> as username and
+        password.
+        The login process takes 2 seconds to simulate slow
+        network.
+    </li>
+    <li>
+        <code>/api/v1/apicatalog/auth/logout</code> - Logs out the currently logged user.
+    </li>
+    <li>
+        <code>/api/v1/apicatalog/containers</code> - Serves a static json (`mocked-backend/assets/containers`).
+    </li>
+    <li>
+        <code>/api/v1/apicatalog/containers/some-down</code> - Simple get endpoint that toggles the status of some
+        tiles.
+    </li>
+    <li>
+        <code>/api/v1/apicatalog/containers/:serviceID</code> - Serves the same information as <code>/api/v1/apicatalog/containers</code>
+        but for a specific serviceID.
+    </li>
+    <li>
+        <code>/api/v1/apicatalog/apidoc/:serviceID/:version</code> - Serves apidoc for a specific serviceID and
+        version.
+    </li>
+</ul>
 
-    The endpoints above reflect the real services with the <code>/api/v1/apicatalog/containers/some-down</code> being
-    an
-    exception.
+The endpoints above reflect the real services with the <code>/api/v1/apicatalog/containers/some-down</code> being
+an
+exception.
 </body>
 
 </html>

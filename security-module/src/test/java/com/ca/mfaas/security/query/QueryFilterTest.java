@@ -34,10 +34,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class QueryFilterTest {
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
     private final HttpServletRequest request = mock(HttpServletRequest.class);
     private final HttpServletResponse response = mock(HttpServletResponse.class);
     private SecurityConfigurationProperties securityConfigurationProperties;
@@ -45,9 +50,6 @@ public class QueryFilterTest {
     private AuthenticationSuccessHandler authenticationSuccessHandler;
     private AuthenticationFailureHandler failureHandler;
     private AuthenticationManager authenticationManager;
-
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() {

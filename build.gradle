@@ -5,55 +5,20 @@ buildscript {
         licenseGradlePluginVerion = '0.13.1'
     }
 
-    ext.mavenRepositories = {
+    repositories {
         maven {
-            url artifactoryMavenSnapshotRepo
-            credentials {
-                username mavenUser
-                password mavenPassword
-            }
-        }
-        maven {
-            url artifactoryMavenRepo
-            credentials {
-                username mavenUser
-                password mavenPassword
-            }
+            url "https://plugins.gradle.org/m2/"
         }
     }
-
-    repositories mavenRepositories
 
     dependencies {
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
 apply from: 'gradle/versions.gradle'
 apply from: 'gradle/code-quality.gradle'
-
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'com.github.hierynomus.license'
-
-    repositories mavenRepositories
-
-    sourceCompatibility = 1.8
-    version = version
-}
-
-subprojects {
-    license {
-        header rootProject.file('.licence/EPL-2.0-licence-header.txt')
-        ext.year = Calendar.getInstance().get(Calendar.YEAR)
-        excludes(["**/*.yml", "**/*.json", "**/static", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks"])
-        mapping {
-            java = 'SLASHSTAR_STYLE'
-        }
-    }
-
-    tasks.withType(Test) {
-        maxParallelForks = Runtime.runtime.availableProcessors()
-    }
-
-}

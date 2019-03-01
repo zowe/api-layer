@@ -10,16 +10,16 @@ environment:
 
 
 server:
-  port: 0
-  ssl:
-    enabled: false
+    port: 0
+    ssl:
+        enabled: false
 spring:
-  application:
-    name: usual-suspects
+    application:
+        name: usual-suspects
 eureka:
     client:
         enabled: false
 management:
-  security:
-    enabled: false
+    security:
+        enabled: false
 

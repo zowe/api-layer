@@ -9,11 +9,7 @@
  */
 package com.ca.mfaas.gateway.health;
 
-import static org.springframework.boot.actuate.health.Status.DOWN;
-import static org.springframework.boot.actuate.health.Status.UP;
-
 import com.ca.mfaas.product.constants.CoreService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -22,6 +18,9 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.stereotype.Component;
 
+import static org.springframework.boot.actuate.health.Status.DOWN;
+import static org.springframework.boot.actuate.health.Status.UP;
+
 @Component
 public class ApimlHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
@@ -29,7 +28,7 @@ public class ApimlHealthIndicator extends AbstractHealthIndicator {
 
     @Autowired
     public ApimlHealthIndicator(DiscoveryClient discoveryClient,
-            DiscoveryClientRouteLocator discoveryClientRouteLocator) {
+                                DiscoveryClientRouteLocator discoveryClientRouteLocator) {
         this.discoveryClient = discoveryClient;
         this.discoveryClientRouteLocator = discoveryClientRouteLocator;
     }
@@ -44,11 +43,11 @@ public class ApimlHealthIndicator extends AbstractHealthIndicator {
         boolean apiCatalogUp = this.discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId()).size() > 0;
         boolean discoveryUp = this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).size() > 0;
         boolean authUp = (this.discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId()).size() > 0)
-                && (discoveryClientRouteLocator.getMatchingRoute("/api/v1/gateway/auth/login") != null);
+            && (discoveryClientRouteLocator.getMatchingRoute("/api/v1/gateway/auth/login") != null);
         boolean apimlUp = discoveryUp && authUp;
         builder.status(toStatus(apimlUp)).withDetail("apicatalog", toStatus(apiCatalogUp).getCode())
-                .withDetail("discovery", toStatus(discoveryUp).getCode())
-                .withDetail("auth", toStatus(authUp).getCode())
-                .withDetail("gatewayCount", gatewayCount);
+            .withDetail("discovery", toStatus(discoveryUp).getCode())
+            .withDetail("auth", toStatus(authUp).getCode())
+            .withDetail("gatewayCount", gatewayCount);
     }
 }

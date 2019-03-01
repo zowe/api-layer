@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
-import { sendError, clearAllErrors } from '../actions/error-actions';
-import { SEND_ERROR, CLEAR_ALL_ERRORS, ApiError, MessageType } from '../constants/error-constants';
+import {clearAllErrors, sendError} from '../actions/error-actions';
+import {ApiError, CLEAR_ALL_ERRORS, MessageType, SEND_ERROR} from '../constants/error-constants';
 import errorReducer from './error-reducer';
 
 describe('>>> Error reducer tests', () => {
@@ -15,7 +15,7 @@ describe('>>> Error reducer tests', () => {
 
     it('should create an action to send a message', () => {
         const error = new ApiError('ABC123', 123, new MessageType(40, 'ERROR', 'E'), 'Bad stuff happened');
-        const err = { id: '123', timestamp: '456', error };
+        const err = {id: '123', timestamp: '456', error};
 
         const expectedAction = {
             type: SEND_ERROR,
@@ -32,7 +32,7 @@ describe('>>> Error reducer tests', () => {
             errors: [],
         };
 
-        expect(errorReducer({ errors: [] }, { type: CLEAR_ALL_ERRORS, payload: null })).toEqual(expectedState);
+        expect(errorReducer({errors: []}, {type: CLEAR_ALL_ERRORS, payload: null})).toEqual(expectedState);
     });
 
     it('should handle SEND_ERROR', () => {
@@ -41,6 +41,6 @@ describe('>>> Error reducer tests', () => {
             errors: [error],
         };
 
-        expect(errorReducer({ errors: [] }, { type: SEND_ERROR, payload: error })).toEqual(expectedState);
+        expect(errorReducer({errors: []}, {type: SEND_ERROR, payload: error})).toEqual(expectedState);
     });
 });

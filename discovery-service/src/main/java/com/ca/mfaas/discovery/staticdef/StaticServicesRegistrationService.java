@@ -25,20 +25,17 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Responsible for registration of statically defined APIs into Eureka and updating their status.
- *
+ * <p>
  * The service called by {@link EurekaRegistryAvailableListener} that calls method {@link #registerServices()}.
  */
 @Slf4j
 @Component
 public class StaticServicesRegistrationService {
+    private final ServiceDefinitionProcessor serviceDefinitionProcessor;
+    private final List<InstanceInfo> staticInstances = new CopyOnWriteArrayList<>();
+    private final Timer renewalTimer = new Timer();
     @Value("${apiml.discovery.staticApiDefinitionsDirectory:#{null}}")
     private String staticApiDefinitionsDirectory;
-
-    private final ServiceDefinitionProcessor serviceDefinitionProcessor;
-
-    private final List<InstanceInfo> staticInstances = new CopyOnWriteArrayList<>();
-
-    private final Timer renewalTimer = new Timer();
 
     @Autowired
     public StaticServicesRegistrationService(ServiceDefinitionProcessor serviceDefinitionProcessor) {
@@ -88,7 +85,7 @@ public class StaticServicesRegistrationService {
         Set<String> registeredIds = registerServices(staticApiDefinitionsDirectory);
 
         PeerAwareInstanceRegistry registry = getRegistry();
-        for (InstanceInfo info: oldStaticInstances) {
+        for (InstanceInfo info : oldStaticInstances) {
             if (!registeredIds.contains(info.getInstanceId())) {
                 log.info("Instance {} is not defined in the new static API definitions. It will be removed", info.getInstanceId());
                 registry.cancel(info.getAppName(), info.getId(), false);

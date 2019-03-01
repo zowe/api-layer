@@ -1,5 +1,5 @@
-import { connect } from 'react-redux';
-import { userActions } from '../../actions/user.actions';
+import {connect} from 'react-redux';
+import {userActions} from '../../actions/user.actions';
 import Header from './Header';
 
 const mapStateToProps = () => ({});

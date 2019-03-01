@@ -35,8 +35,8 @@ describe('>>> e2e tests', async () => {
         await page.waitForSelector('[data-testid="username"]');
         await page.waitForSelector('[data-testid="password"]');
         await page.type('[data-testid="username"]', username),
-        await page.type('[data-testid="password"]', password),
-        await page.click('[data-testid="submit"]');
+            await page.type('[data-testid="password"]', password),
+            await page.click('[data-testid="submit"]');
         await page.waitForSelector('div.filtering-container > h2');
         const dashboardTitle = await page.$('div.filtering-container > h2');
         const dashboardTitleText = await page.evaluate(el => el.innerText, dashboardTitle);

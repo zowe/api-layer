@@ -23,10 +23,10 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 public class SecurityUtils {
+    public final static String ZOSMF_TOKEN = "LtpaToken2";
     private final static String GATEWAY_TOKEN = "apimlAuthenticationToken";
     private final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
     private final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
-    public final static String ZOSMF_TOKEN = "LtpaToken2";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
 
     private static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
@@ -47,9 +47,9 @@ public class SecurityUtils {
         return given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .post(String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH, GATEWAY_LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .cookie(GATEWAY_TOKEN, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN);
@@ -59,9 +59,9 @@ public class SecurityUtils {
         return given()
             .auth().preemptive().basic(username, password)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .cookie(ZOSMF_TOKEN, not(isEmptyString()))
             .extract().cookie(ZOSMF_TOKEN);

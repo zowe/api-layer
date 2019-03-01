@@ -24,14 +24,14 @@ ssl:
     trustStorePassword: password
     trustStoreType: PKCS12
 routes:
-    - gatewayUrl: api/v1
-      serviceUrl: /hellojersey/api/v1
-    - gatewayUrl: api/v1/api-doc
-      serviceUrl: /hellojersey/api-doc
-    - gatewayUrl: ui/v1
-      serviceUrl: /hellojersey/
-    - gatewayUrl: app
-      serviceUrl: /hellojersey/application
+    -   gatewayUrl: api/v1
+        serviceUrl: /hellojersey/api/v1
+    -   gatewayUrl: api/v1/api-doc
+        serviceUrl: /hellojersey/api-doc
+    -   gatewayUrl: ui/v1
+        serviceUrl: /hellojersey/
+    -   gatewayUrl: app
+        serviceUrl: /hellojersey/application
 apiInfo:
     title: Hello World Jersey
     description: REST API for a Jersey Application

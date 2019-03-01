@@ -1,5 +1,5 @@
-import { Link, Text, Tooltip } from 'mineral-ui';
-import React, { Component } from 'react';
+import {Link, Text, Tooltip} from 'mineral-ui';
+import React, {Component} from 'react';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import '../Swagger/Swagger.css';
 import SwaggerContainer from '../Swagger/SwaggerContainer';
@@ -10,7 +10,7 @@ export default class ServiceTab extends Component {
         const message = 'The API documentation was retrieved but could not be displayed.';
         const {
             match: {
-                params: { tileID, serviceId },
+                params: {tileID, serviceId},
             },
             tiles,
             selectService,
@@ -39,17 +39,17 @@ export default class ServiceTab extends Component {
         return (
             <React.Fragment>
                 {invalidService && (
-                    <Text element="h3" style={{ margin: '0 auto', background: '#ffff', width: '100vh' }}>
-                        <br />
-                        <br />
-                        <p style={{ marginLeft: '122px' }}>This tile does not contain service "{serviceId}"</p>
+                    <Text element="h3" style={{margin: '0 auto', background: '#ffff', width: '100vh'}}>
+                        <br/>
+                        <br/>
+                        <p style={{marginLeft: '122px'}}>This tile does not contain service "{serviceId}"</p>
                     </Text>
                 )}
                 <Shield title={message}>
                     {selectedService !== null && (
                         <React.Fragment>
-                            <div style={{ background: '#ffff' }}>
-                                <div style={{ margin: '20px 0px 0px 55px', background: '#ffff', width: '100vh' }}>
+                            <div style={{background: '#ffff'}}>
+                                <div style={{margin: '20px 0px 0px 55px', background: '#ffff', width: '100vh'}}>
                                     <Text element="h2" color="#3b4151" fontWeight="bold">
                                         {selectedService.title}
                                     </Text>
@@ -79,10 +79,10 @@ export default class ServiceTab extends Component {
                                             )}
                                         </React.Fragment>
                                     )}
-                                    <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
+                                    <Text style={{marginTop: '15px'}}>{selectedService.description}</Text>
                                 </div>
                             </div>
-                            <SwaggerContainer />
+                            <SwaggerContainer/>
                         </React.Fragment>
                     )}
                 </Shield>

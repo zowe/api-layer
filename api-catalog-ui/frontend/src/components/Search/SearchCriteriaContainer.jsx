@@ -1,5 +1,5 @@
-import { connect } from 'react-redux';
-import { filterText, clear } from '../../actions/filter-actions';
+import {connect} from 'react-redux';
+import {clear, filterText} from '../../actions/filter-actions';
 import SearchCriteria from './SearchCriteria';
 
 const mapStateToProps = state => ({
