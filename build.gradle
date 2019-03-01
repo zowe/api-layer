@@ -1,6 +1,3 @@
-import java.util.regex.Matcher
-
-//noinspection GroovyAssignabilityCheck
 group 'com.ca.mfaas'
 
 buildscript {
@@ -28,43 +25,21 @@ buildscript {
     repositories mavenRepositories
 
     dependencies {
-        classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.5'
-        classpath 'com.palantir:jacoco-coverage:0.4.0'
-        classpath 'net.researchgate:gradle-release:2.7.0'
         classpath "gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:${licenseGradlePluginVerion}"
-        classpath 'org.owasp:dependency-check-gradle:3.3.4'
     }
 }
 
-apply plugin: 'com.palantir.jacoco-full-report'
-apply from: 'gradle/publish.gradle'
-apply from: 'gradle/sonar.gradle'
-apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/versions.gradle'
 apply from: 'gradle/code-quality.gradle'
 
 allprojects {
     apply plugin: 'java'
-    apply plugin: 'idea'
-    apply plugin: 'maven'
     apply plugin: 'com.github.hierynomus.license'
-    apply plugin: 'org.owasp.dependencycheck'
 
     repositories mavenRepositories
 
     sourceCompatibility = 1.8
     version = version
-
-    idea {
-        module {
-            //noinspection GroovyAssignabilityCheck
-            outputDir file('build/classes/main')
-            //noinspection GroovyAssignabilityCheck
-            testOutputDir file('build/classes/test')
-            downloadJavadoc = true
-            downloadSources = true
-        }
-    }
 }
 
 subprojects {
@@ -82,107 +57,3 @@ subprojects {
     }
 
 }
-
-configurations {
-    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    all*.exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-kotlin'
-}
-
-task buildBackendCore(dependsOn: [':gateway-service:build', ':discovery-service:build',
-                                  ':api-catalog-services:build', ':helloworld-service:build']) {
-    description "Build core backend components (no UI)"
-    group "build"
-}
-
-task runIntegrationTests(dependsOn: ":integration-tests:runIntegrationTests") {
-    description "Run integration tests"
-    group "Integration tests"
-}
-
-task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTests") {
-    description "Run all integration tests"
-    group "Integration tests"
-}
-
-task jacocoSubProjects() {
-    subprojects.findAll { it.name in javaProjectsWithUnitTests }.each { dependsOn("${it.name}:jacocoTestReport") }
-}
-
-jacocoTestReport {
-    dependsOn test
-    reports {
-        xml.enabled true
-        html.enabled true
-    }
-}
-
-task mergeCoverage() {
-    dependsOn test, jacocoFullReport
-}
-
-task coverage() {
-    mergeCoverage.mustRunAfter jacocoSubProjects
-    dependsOn mergeCoverage, jacocoSubProjects, jacocoTestReport, ":api-catalog-ui:javaScriptCoverage"
-}
-
-task publishAllVersions {
-    group 'Zowe Publishing'
-    description 'Publish ZIP file and SDK libraries to Zowe Artifactory'
-    doLast {
-        println 'Published ZIP file and libraries'
-    }
-}
-
-publishAllVersions.dependsOn publishSdkArtifacts
-
-//-----------Release part start
-apply plugin: 'net.researchgate.release'
-
-ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
-
-release {
-    failOnCommitNeeded = true
-    failOnPublishNeeded = true
-    failOnSnapshotDependencies = true
-    failOnUnversionedFiles = true
-    failOnUpdateNeeded = true
-    revertOnFail = true
-    preCommitText = '[Gradle Release plugin]'
-    preTagCommitMessage = 'Before tag commit'
-    tagCommitMessage = 'Release:'
-    tagTemplate = 'v${version}'
-    newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = 'gradle.properties'
-    buildTasks = ['build']
-
-    if (releaseScope == 'minor') {
-        versionPatterns = [
-            /[.]*\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll(".${(m[0][1] as int) + 1}.0") }
-        ]
-    } else if (releaseScope == 'major') {
-        versionPatterns = [
-            /(\d+)\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}.0.0") }
-        ]
-    } else {
-        versionPatterns = [
-            /(\d+)([^\d]*$)/: { Matcher m, Project p -> m.replaceAll("${(m[0][1] as int) + 1}${m[0][2]}") }
-        ]
-    }
-
-    scmAdapters = [
-        net.researchgate.release.GitAdapter
-    ]
-
-    git {
-        requireBranch = 'master'
-        pushToRemote = 'origin'
-        pushToBranchPrefix = ''
-        commitVersionFileOnly = false
-        signTag = false
-    }
-}
-
-afterReleaseBuild.dependsOn publishAllVersions
-//-----------Release part end
-
-
