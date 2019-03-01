@@ -1,9 +1,8 @@
-# Getting Started
+# Single sign-on Feature Documentation
 
-### Guides
-The following guides illustrates how to use certain features concretely:
-
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/bookmarks/)
+## Table of Content
+* [Documentation for services that want to integrate with API Mediation Layer]()
+* [Documentation for developers(Hard Boiled Team)]()
+* [Documentation for L2 Support]()
+* [Documentation for L1 Support]()
 
