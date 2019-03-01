@@ -18,7 +18,6 @@ import com.ca.mfaas.apicatalog.services.status.event.model.STATUS_EVENT_TYPE;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Applications;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,10 +31,10 @@ import java.util.List;
 
 import static com.ca.mfaas.product.constants.ApimConstants.API_DOC_NORMALISED;
 
-@Slf4j
 @Service
 public class APIServiceStatusService {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(APIServiceStatusService.class);
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final CachedApiDocService cachedApiDocService;

@@ -15,8 +15,8 @@ import com.ca.mfaas.gateway.error.check.SecurityTokenErrorCheck;
 import com.ca.mfaas.gateway.error.check.TimeoutErrorCheck;
 import com.ca.mfaas.gateway.error.check.TlsErrorCheck;
 import com.ca.mfaas.rest.response.ApiMessage;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.context.annotation.Primary;
@@ -35,12 +35,12 @@ import java.util.List;
 /**
  * Handles errors in REST API processing.
  */
-@Slf4j
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
 public class InternalServerErrorController implements ErrorController {
     private static final String PATH = "/internal_error";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(InternalServerErrorController.class);
 
     private final ErrorService errorService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();

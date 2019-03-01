@@ -9,14 +9,15 @@
  */
 package com.ca.mfaas.product.service;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-@Slf4j
 public class BuildInfo {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(BuildInfo.class);
 
     public void logBuildInfo() {
         BuildInfoDetails buildInfo = getBuildInfoDetails();

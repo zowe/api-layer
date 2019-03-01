@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.enable;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -17,12 +16,12 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 
-@Slf4j
 @Configuration
 @ConditionalOnProperty(prefix = "mfaas.discovery", value = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableEurekaClient
 public class EurekaDiscovery {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(EurekaDiscovery.class);
     @Value("${mfaas.discovery.enabled:true}")
     private String discoveryEnabled;
 

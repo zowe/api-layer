@@ -11,7 +11,7 @@ package com.ca.mfaas.enable;
 
 import com.ca.mfaas.enable.model.ApiDocConfigException;
 import com.ca.mfaas.enable.model.ApiPropertiesContainer;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -28,11 +28,12 @@ import java.util.Collections;
 import static springfox.documentation.builders.PathSelectors.regex;
 
 @SuppressWarnings("Duplicates")
-@Slf4j
 @ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
 @Configuration
 @EnableSwagger2
 public class EnablerV2SpringFoxConfig {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(EnablerV2SpringFoxConfig.class);
 
     @Autowired
     public EnablerV2SpringFoxConfig(ApiPropertiesContainer apiPropertiesContainer,

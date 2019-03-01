@@ -9,11 +9,46 @@
  */
 package com.ca.mfaas.apicatalog.services.status.model;
 
-import lombok.Data;
-
 import java.util.List;
 
-@Data
 public class APIServiceInstances {
     private List<String> instances;
+
+    public APIServiceInstances() {
+    }
+
+    public List<String> getInstances() {
+        return this.instances;
+    }
+
+    public void setInstances(List<String> instances) {
+        this.instances = instances;
+    }
+
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof com.ca.mfaas.apicatalog.services.status.model.APIServiceInstances)) return false;
+        final com.ca.mfaas.apicatalog.services.status.model.APIServiceInstances other = (com.ca.mfaas.apicatalog.services.status.model.APIServiceInstances) o;
+        if (!other.canEqual((java.lang.Object) this)) return false;
+        final java.lang.Object this$instances = this.instances;
+        final java.lang.Object other$instances = other.instances;
+        if (this$instances == null ? other$instances != null : !this$instances.equals(other$instances)) return false;
+        return true;
+    }
+
+    protected boolean canEqual(final Object other) {
+        return other instanceof com.ca.mfaas.apicatalog.services.status.model.APIServiceInstances;
+    }
+
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final java.lang.Object $instances = this.instances;
+        result = result * PRIME + ($instances == null ? 43 : $instances.hashCode());
+        return result;
+    }
+
+    public String toString() {
+        return "APIServiceInstances(instances=" + this.instances + ")";
+    }
 }

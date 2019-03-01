@@ -18,7 +18,6 @@ import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
@@ -29,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @DependsOn("instanceRetrievalService")
 public class APIDocRetrievalService {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(APIDocRetrievalService.class);
     private final RestTemplate restTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();

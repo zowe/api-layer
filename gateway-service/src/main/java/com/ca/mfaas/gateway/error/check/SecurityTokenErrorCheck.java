@@ -14,7 +14,7 @@ import com.ca.mfaas.rest.response.ApiMessage;
 import com.ca.mfaas.security.token.TokenExpireException;
 import com.ca.mfaas.security.token.TokenNotValidException;
 import com.netflix.zuul.exception.ZuulException;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +22,8 @@ import org.springframework.security.core.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
 
-@Slf4j
 public class SecurityTokenErrorCheck implements ErrorCheck {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(SecurityTokenErrorCheck.class);
     private final ErrorService errorService;
 
     public SecurityTokenErrorCheck(ErrorService errorService) {

@@ -11,9 +11,6 @@ package com.ca.mfaas.security;
 
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -25,6 +22,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.slf4j.Logger;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -41,11 +39,9 @@ import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Objects;
 
-@Slf4j
-@Data
-@NoArgsConstructor
 public class HttpsFactory {
     private static final String SAFKEYRING = "safkeyring";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(HttpsFactory.class);
 
     private HttpsConfig config;
     private SSLContext secureSslContext;
@@ -53,6 +49,9 @@ public class HttpsFactory {
     public HttpsFactory(HttpsConfig httpsConfig) {
         this.config = httpsConfig;
         this.secureSslContext = null;
+    }
+
+    public HttpsFactory() {
     }
 
     public static String replaceFourSlashes(String storeUri) {
@@ -316,5 +315,54 @@ public class HttpsFactory {
             throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
                 ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
         }
+    }
+
+    public HttpsConfig getConfig() {
+        return this.config;
+    }
+
+    public void setConfig(HttpsConfig config) {
+        this.config = config;
+    }
+
+    public SSLContext getSecureSslContext() {
+        return this.secureSslContext;
+    }
+
+    public void setSecureSslContext(SSLContext secureSslContext) {
+        this.secureSslContext = secureSslContext;
+    }
+
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof HttpsFactory)) return false;
+        final HttpsFactory other = (HttpsFactory) o;
+        if (!other.canEqual((Object) this)) return false;
+        final Object this$config = this.getConfig();
+        final Object other$config = other.getConfig();
+        if (this$config == null ? other$config != null : !this$config.equals(other$config)) return false;
+        final Object this$secureSslContext = this.getSecureSslContext();
+        final Object other$secureSslContext = other.getSecureSslContext();
+        if (this$secureSslContext == null ? other$secureSslContext != null : !this$secureSslContext.equals(other$secureSslContext))
+            return false;
+        return true;
+    }
+
+    protected boolean canEqual(final Object other) {
+        return other instanceof HttpsFactory;
+    }
+
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final Object $config = this.getConfig();
+        result = result * PRIME + ($config == null ? 43 : $config.hashCode());
+        final Object $secureSslContext = this.getSecureSslContext();
+        result = result * PRIME + ($secureSslContext == null ? 43 : $secureSslContext.hashCode());
+        return result;
+    }
+
+    public String toString() {
+        return "HttpsFactory(config=" + this.getConfig() + ", secureSslContext=" + this.getSecureSslContext() + ")";
     }
 }

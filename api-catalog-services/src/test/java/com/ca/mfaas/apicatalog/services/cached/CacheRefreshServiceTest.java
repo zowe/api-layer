@@ -18,7 +18,6 @@ import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import lombok.Data;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -265,11 +264,91 @@ public class CacheRefreshServiceTest {
     }
 
 
-    @Data
     private class ContainerServiceState {
         private List<APIContainer> containers;
         private List<APIService> services;
         private List<InstanceInfo> instances;
         private List<Application> applications;
+
+        public ContainerServiceState() {
+        }
+
+        public List<APIContainer> getContainers() {
+            return this.containers;
+        }
+
+        public void setContainers(List<APIContainer> containers) {
+            this.containers = containers;
+        }
+
+        public List<APIService> getServices() {
+            return this.services;
+        }
+
+        public void setServices(List<APIService> services) {
+            this.services = services;
+        }
+
+        public List<InstanceInfo> getInstances() {
+            return this.instances;
+        }
+
+        public void setInstances(List<InstanceInfo> instances) {
+            this.instances = instances;
+        }
+
+        public List<Application> getApplications() {
+            return this.applications;
+        }
+
+        public void setApplications(List<Application> applications) {
+            this.applications = applications;
+        }
+
+        public boolean equals(final Object o) {
+            if (o == this) return true;
+            if (!(o instanceof com.ca.mfaas.apicatalog.services.cached.CacheRefreshServiceTest.ContainerServiceState))
+                return false;
+            final com.ca.mfaas.apicatalog.services.cached.CacheRefreshServiceTest.ContainerServiceState other = (com.ca.mfaas.apicatalog.services.cached.CacheRefreshServiceTest.ContainerServiceState) o;
+            if (!other.canEqual((java.lang.Object) this)) return false;
+            final java.lang.Object this$containers = this.containers;
+            final java.lang.Object other$containers = other.containers;
+            if (this$containers == null ? other$containers != null : !this$containers.equals(other$containers))
+                return false;
+            final java.lang.Object this$services = this.services;
+            final java.lang.Object other$services = other.services;
+            if (this$services == null ? other$services != null : !this$services.equals(other$services)) return false;
+            final java.lang.Object this$instances = this.instances;
+            final java.lang.Object other$instances = other.instances;
+            if (this$instances == null ? other$instances != null : !this$instances.equals(other$instances))
+                return false;
+            final java.lang.Object this$applications = this.applications;
+            final java.lang.Object other$applications = other.applications;
+            if (this$applications == null ? other$applications != null : !this$applications.equals(other$applications))
+                return false;
+            return true;
+        }
+
+        protected boolean canEqual(final Object other) {
+            return other instanceof com.ca.mfaas.apicatalog.services.cached.CacheRefreshServiceTest.ContainerServiceState;
+        }
+
+        public int hashCode() {
+            final int PRIME = 59;
+            int result = 1;
+            final java.lang.Object $containers = this.containers;
+            result = result * PRIME + ($containers == null ? 43 : $containers.hashCode());
+            final java.lang.Object $services = this.services;
+            result = result * PRIME + ($services == null ? 43 : $services.hashCode());
+            final java.lang.Object $instances = this.instances;
+            result = result * PRIME + ($instances == null ? 43 : $instances.hashCode());
+            final java.lang.Object $applications = this.applications;
+            result = result * PRIME + ($applications == null ? 43 : $applications.hashCode());
+            return result;
+        }
+
+        public String toString() {
+            return "CacheRefreshServiceTest.ContainerServiceState(containers=" + this.containers + ", services=" + this.services + ", instances=" + this.instances + ", applications=" + this.applications + ")";
+        }
     }
 }

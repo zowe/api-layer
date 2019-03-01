@@ -9,14 +9,15 @@
  */
 package com.ca.mfaas.client.ws;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-@Slf4j
 @Component
 public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigurer {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(DiscoverableClientWebSocketConfigurer.class);
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         String webSocketPath = "/ws/uppercase";

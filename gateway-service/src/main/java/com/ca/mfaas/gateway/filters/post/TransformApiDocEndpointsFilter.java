@@ -22,8 +22,8 @@ import io.swagger.models.Path;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
@@ -44,10 +44,10 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  *
  * @author Dave King
  */
-@Slf4j
 public class TransformApiDocEndpointsFilter extends ZuulFilter implements RoutedServicesUser {
 
     private static final String SEPARATOR = "/";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(TransformApiDocEndpointsFilter.class);
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
 
     /**

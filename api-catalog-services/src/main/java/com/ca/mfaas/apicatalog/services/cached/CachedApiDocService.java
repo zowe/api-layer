@@ -11,7 +11,6 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocCacheKey;
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,10 +21,10 @@ import java.util.Map;
 /**
  * Caching service for API Doc Info
  */
-@Slf4j
 @Service
 public class CachedApiDocService {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(CachedApiDocService.class);
     private static Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
 
     private final APIDocRetrievalService apiDocRetrievalService;

@@ -9,10 +9,8 @@
  */
 package com.ca.mfaas.apicatalog.model;
 
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
-@EqualsAndHashCode(callSuper = false)
 public class SemanticVersion implements Comparable<SemanticVersion> {
     @NonNull
     private final int[] numbers;
@@ -36,5 +34,25 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
             }
         }
         return 0;
+    }
+
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof com.ca.mfaas.apicatalog.model.SemanticVersion)) return false;
+        final com.ca.mfaas.apicatalog.model.SemanticVersion other = (com.ca.mfaas.apicatalog.model.SemanticVersion) o;
+        if (!other.canEqual((java.lang.Object) this)) return false;
+        if (!java.util.Arrays.equals(this.numbers, other.numbers)) return false;
+        return true;
+    }
+
+    protected boolean canEqual(final Object other) {
+        return other instanceof com.ca.mfaas.apicatalog.model.SemanticVersion;
+    }
+
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        result = result * PRIME + java.util.Arrays.hashCode(this.numbers);
+        return result;
     }
 }

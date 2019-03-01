@@ -10,20 +10,18 @@
 package com.ca.mfaas.enable.controllers;
 
 
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
-@Data
 @RestController
 @RequestMapping("/")
 public class ContextPathTestController {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ContextPathTestController.class);
     private final String contextPath;
 
     @Autowired
@@ -35,5 +33,33 @@ public class ContextPathTestController {
     @GetMapping(value = "/context")
     public String getContextPath() {
         return this.contextPath;
+    }
+
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof ContextPathTestController)) return false;
+        final ContextPathTestController other = (ContextPathTestController) o;
+        if (!other.canEqual((Object) this)) return false;
+        final Object this$contextPath = this.getContextPath();
+        final Object other$contextPath = other.getContextPath();
+        if (this$contextPath == null ? other$contextPath != null : !this$contextPath.equals(other$contextPath))
+            return false;
+        return true;
+    }
+
+    protected boolean canEqual(final Object other) {
+        return other instanceof ContextPathTestController;
+    }
+
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final Object $contextPath = this.getContextPath();
+        result = result * PRIME + ($contextPath == null ? 43 : $contextPath.hashCode());
+        return result;
+    }
+
+    public String toString() {
+        return "ContextPathTestController(contextPath=" + this.getContextPath() + ")";
     }
 }

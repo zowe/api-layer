@@ -15,7 +15,6 @@ import com.ca.mfaas.apicatalog.services.cached.CachedApiDocService;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,13 +33,13 @@ import java.util.stream.StreamSupport;
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
-@Slf4j
 @RestController
 @RequestMapping("/")
 @Api(tags = {"API Catalog"},
     description = "Current state information")
 public class ApiCatalogController {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ApiCatalogController.class);
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedApiDocService cachedApiDocService;
 

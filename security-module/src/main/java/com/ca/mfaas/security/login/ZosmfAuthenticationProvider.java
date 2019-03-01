@@ -14,7 +14,7 @@ import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
@@ -33,13 +33,13 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
 
-@Slf4j
 @Component
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
     private static final String ZOSMF_END_POINT = "zosmf/info";
     private static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
     private static final String ZOSMF_DOMAIN = "zosmf_saf_realm";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ZosmfAuthenticationProvider.class);
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private final TokenService tokenService;

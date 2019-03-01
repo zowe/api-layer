@@ -13,7 +13,6 @@ import com.ca.mfaas.apicatalog.controllers.api.ApiCatalogController;
 import com.ca.mfaas.apicatalog.exceptions.ContainerStatusRetrievalException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +22,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 /**
  * This class creates responses for exceptional behavior of the ApiCatalogController
  */
-@Slf4j
 @ControllerAdvice(assignableTypes = {ApiCatalogController.class})
 public class ApiCatalogControllerExceptionHandler {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ApiCatalogControllerExceptionHandler.class);
     private final ErrorService errorService;
 
     /**

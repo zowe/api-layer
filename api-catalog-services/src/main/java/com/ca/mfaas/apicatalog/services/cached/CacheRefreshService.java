@@ -17,7 +17,6 @@ import com.ca.mfaas.enable.model.ApiDocConfigException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Service;
  * Refresh the cache with the latest state of the discovery service
  * Use deltas to get latest changes from Eureka
  */
-@Slf4j
 @Service
 @DependsOn("instanceRetrievalService")
 public class CacheRefreshService {
@@ -35,6 +33,7 @@ public class CacheRefreshService {
     // until versioning is implemented, only v1 API docs are supported
     private static final String API_VERSION = "v1";
     private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(CacheRefreshService.class);
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final APIServiceStatusService apiServiceStatusService;

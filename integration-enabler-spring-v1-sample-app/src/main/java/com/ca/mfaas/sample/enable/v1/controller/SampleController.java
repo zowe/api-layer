@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.sample.enable.v1.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,11 +19,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/api/v1")
 @Api(tags = {"V1EnablerSampleApp"})
 public class SampleController {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(SampleController.class);
 
     @GetMapping(value = "/samples", produces = "application/json")
     @ApiOperation(value = "Retrieve all samples",

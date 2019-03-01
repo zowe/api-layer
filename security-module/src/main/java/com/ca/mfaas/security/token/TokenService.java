@@ -12,7 +12,7 @@ package com.ca.mfaas.security.token;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.query.QueryResponse;
 import io.jsonwebtoken.*;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +23,11 @@ import java.util.Date;
 import java.util.UUID;
 
 @Service
-@Slf4j
 public class TokenService {
     static final String LTPA_CLAIM_NAME = "ltpa";
     static final String DOMAIN_CLAIM_NAME = "dom";
     static final String BEARER_TYPE_PREFIX = "Bearer";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(TokenService.class);
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
 

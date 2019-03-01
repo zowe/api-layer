@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.apicatalog.controllers.handlers;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -24,13 +23,13 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Handles errors in REST API processing.
  */
-@Slf4j
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NotFoundErrorController implements ErrorController {
 
 
     private static final String PATH = "/not_found";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(NotFoundErrorController.class);
 
 
     @GetMapping(value = "/not_found")

@@ -11,7 +11,7 @@ package com.ca.mfaas.security.login;
 
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -21,9 +21,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class LoginAuthenticationProvider extends DaoAuthenticationProvider {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(LoginAuthenticationProvider.class);
     private final TokenService tokenService;
 
     public LoginAuthenticationProvider(BCryptPasswordEncoder encoder,

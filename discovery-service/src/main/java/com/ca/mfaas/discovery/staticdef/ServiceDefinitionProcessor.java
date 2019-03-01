@@ -14,8 +14,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -31,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 @Component
 public class ServiceDefinitionProcessor {
 
@@ -40,6 +38,7 @@ public class ServiceDefinitionProcessor {
     private static final DataCenterInfo DEFAULT_INFO = () -> DataCenterInfo.Name.MyOwn;
 
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ServiceDefinitionProcessor.class);
 
     public List<InstanceInfo> findServices(String staticApiDefinitionsDirectory) {
         List<InstanceInfo> instances = new ArrayList<>();
@@ -226,9 +225,56 @@ public class ServiceDefinitionProcessor {
         return mt;
     }
 
-    @Data
     class ProcessServicesDataResult {
         private final List<String> errors;
         private final List<InstanceInfo> instances;
+
+        @java.beans.ConstructorProperties({"errors", "instances"})
+        public ProcessServicesDataResult(List<String> errors, List<InstanceInfo> instances) {
+            this.errors = errors;
+            this.instances = instances;
+        }
+
+        public List<String> getErrors() {
+            return this.errors;
+        }
+
+        public List<InstanceInfo> getInstances() {
+            return this.instances;
+        }
+
+        public boolean equals(final Object o) {
+            if (o == this) return true;
+            if (!(o instanceof ProcessServicesDataResult))
+                return false;
+            final ProcessServicesDataResult other = (ProcessServicesDataResult) o;
+            if (!other.canEqual((Object) this)) return false;
+            final Object this$errors = this.getErrors();
+            final Object other$errors = other.getErrors();
+            if (this$errors == null ? other$errors != null : !this$errors.equals(other$errors)) return false;
+            final Object this$instances = this.getInstances();
+            final Object other$instances = other.getInstances();
+            if (this$instances == null ? other$instances != null : !this$instances.equals(other$instances))
+                return false;
+            return true;
+        }
+
+        protected boolean canEqual(final Object other) {
+            return other instanceof ProcessServicesDataResult;
+        }
+
+        public int hashCode() {
+            final int PRIME = 59;
+            int result = 1;
+            final Object $errors = this.getErrors();
+            result = result * PRIME + ($errors == null ? 43 : $errors.hashCode());
+            final Object $instances = this.getInstances();
+            result = result * PRIME + ($instances == null ? 43 : $instances.hashCode());
+            return result;
+        }
+
+        public String toString() {
+            return "ServiceDefinitionProcessor.ProcessServicesDataResult(errors=" + this.getErrors() + ", instances=" + this.getInstances() + ")";
+        }
     }
 }

@@ -16,7 +16,6 @@ import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
@@ -31,11 +30,11 @@ import static java.util.stream.Collectors.toList;
 /**
  * Caching service for eureka services
  */
-@Slf4j
 @Service
 @CacheConfig(cacheNames = {"products"})
 public class CachedProductFamilyService {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(CachedProductFamilyService.class);
     private final MFaaSConfigPropertiesContainer propertiesContainer;
 
     private final Map<String, APIContainer> products = new HashMap<>();

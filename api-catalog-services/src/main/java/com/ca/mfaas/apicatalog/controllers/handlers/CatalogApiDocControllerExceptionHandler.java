@@ -14,7 +14,6 @@ import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +23,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 /**
  * This class creates responses for exceptional behavior of the CatalogApiDocController
  */
-@Slf4j
 @ControllerAdvice(assignableTypes = {CatalogApiDocController.class})
 public class CatalogApiDocControllerExceptionHandler {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(CatalogApiDocControllerExceptionHandler.class);
     private final ErrorService errorService;
 
     /**

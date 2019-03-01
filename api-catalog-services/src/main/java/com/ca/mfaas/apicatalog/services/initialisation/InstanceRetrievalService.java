@@ -23,7 +23,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.converters.jackson.EurekaJsonJacksonCodec;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -44,7 +43,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class InstanceRetrievalService {
 
@@ -52,6 +50,7 @@ public class InstanceRetrievalService {
     private static final String DELTA_ENDPOINT = "delta";
     private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
     private static final String UNKNOWN = "unknown";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(InstanceRetrievalService.class);
     private final CachedProductFamilyService cachedProductFamilyService;
     private final MFaaSConfigPropertiesContainer propertiesContainer;
     private final CachedServicesService cachedServicesService;

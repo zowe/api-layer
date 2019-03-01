@@ -12,13 +12,12 @@ package com.ca.mfaas.product.service;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 
-@Slf4j
 public class ServiceStartupEventHandler {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(ServiceStartupEventHandler.class);
     public static int DEFAULT_DELAY_FACTOR = 5;
 
     public void onServiceStartup(String serviceName, int delayFactor) {

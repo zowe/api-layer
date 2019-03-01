@@ -12,8 +12,8 @@ package com.ca.mfaas.gateway.ws;
 import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
-import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -38,9 +38,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 @Singleton
-@Slf4j
 public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketProxyServerHandler.class);
     private final Map<String, WebSocketRoutedSession> routedSessions = new ConcurrentHashMap<>();
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
     private final DiscoveryClient discovery;

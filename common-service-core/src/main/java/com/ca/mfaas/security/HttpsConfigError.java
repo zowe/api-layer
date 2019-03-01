@@ -13,6 +13,7 @@ public class HttpsConfigError extends RuntimeException {
     private static final long serialVersionUID = -4219571432637725973L;
     private final ErrorCode code;
     private final HttpsConfig config;
+
     public HttpsConfigError(ErrorCode code, HttpsConfig config) {
         super();
         this.code = code;

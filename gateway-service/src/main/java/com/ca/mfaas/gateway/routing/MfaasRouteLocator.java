@@ -14,7 +14,7 @@ import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import com.ca.mfaas.product.constants.CoreService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -25,8 +25,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 
-@Slf4j
 class MfaasRouteLocator extends DiscoveryClientRouteLocator {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(MfaasRouteLocator.class);
     private final DiscoveryClient discovery;
     private final ZuulProperties properties;
     private final List<RoutedServicesUser> routedServicesUsers;

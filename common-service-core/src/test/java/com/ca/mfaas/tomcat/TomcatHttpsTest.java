@@ -20,6 +20,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+@Ignore
 public class TomcatHttpsTest {
     private static final String EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN = "excepted SSLHandshakeException exception not thrown";
     private static final String EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN = "excepted HttpsConfigError exception not thrown";

@@ -12,7 +12,7 @@ package com.ca.mfaas.client.api;
 import com.ca.mfaas.client.model.Greeting;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,11 +22,11 @@ import java.util.Date;
 /**
  * Version 1 of the controller that returns greetings.
  */
-@Slf4j
 @RestController
 @Api(tags = {"Other Operations"}, description = "General Operations")
 public class GreetingController {
     private static final String TEMPLATE = "Hello, %s!";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(GreetingController.class);
 
     /**
      * Gets a greeting for anyone.

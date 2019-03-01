@@ -13,7 +13,7 @@ import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +26,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 /**
  * Must be run after PreDecorationFilter. This will set Proxy, ServiceId and other variables in RequestContext
  */
-@Slf4j
 public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(LocationFilter.class);
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
 
     @Override

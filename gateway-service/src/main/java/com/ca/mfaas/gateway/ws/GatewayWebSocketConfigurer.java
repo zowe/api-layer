@@ -9,15 +9,15 @@
  */
 package com.ca.mfaas.gateway.ws;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-@Slf4j
 @Component
 public class GatewayWebSocketConfigurer implements WebSocketConfigurer {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(GatewayWebSocketConfigurer.class);
     private WebSocketProxyServerHandler webSocketProxyServerHandler;
 
     @Autowired

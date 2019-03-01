@@ -10,8 +10,8 @@
 package com.ca.mfaas.security.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -34,8 +34,8 @@ import java.util.Collections;
 /**
  * Filter for process authentication request with username and password in JSON format.
  */
-@Slf4j
 public class LoginFilter extends AbstractAuthenticationProcessingFilter {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(LoginFilter.class);
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final ObjectMapper mapper;

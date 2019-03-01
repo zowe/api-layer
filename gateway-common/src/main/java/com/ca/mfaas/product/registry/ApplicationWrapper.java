@@ -10,11 +10,49 @@
 package com.ca.mfaas.product.registry;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Data;
+import com.netflix.discovery.shared.Application;
 
 @JsonDeserialize(as = ApplicationWrapper.class)
-@Data
 public class ApplicationWrapper {
 
     private com.netflix.discovery.shared.Application application;
+
+    public ApplicationWrapper() {
+    }
+
+    public Application getApplication() {
+        return this.application;
+    }
+
+    public void setApplication(Application application) {
+        this.application = application;
+    }
+
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof ApplicationWrapper)) return false;
+        final ApplicationWrapper other = (ApplicationWrapper) o;
+        if (!other.canEqual((Object) this)) return false;
+        final Object this$application = this.getApplication();
+        final Object other$application = other.getApplication();
+        if (this$application == null ? other$application != null : !this$application.equals(other$application))
+            return false;
+        return true;
+    }
+
+    protected boolean canEqual(final Object other) {
+        return other instanceof ApplicationWrapper;
+    }
+
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final Object $application = this.getApplication();
+        result = result * PRIME + ($application == null ? 43 : $application.hashCode());
+        return result;
+    }
+
+    public String toString() {
+        return "ApplicationWrapper(application=" + this.getApplication() + ")";
+    }
 }

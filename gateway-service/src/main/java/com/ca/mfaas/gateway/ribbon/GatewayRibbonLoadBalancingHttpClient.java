@@ -14,11 +14,11 @@ import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.slf4j.Logger;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonApacheHttpRequest;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonApacheHttpResponse;
@@ -29,11 +29,11 @@ import java.net.URI;
 
 import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecureConnectionIfNeeded;
 
-@Slf4j
 public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHttpClient {
 
     private static final String HTTPS = "https";
     private static final String HTTP = "http";
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(GatewayRibbonLoadBalancingHttpClient.class);
 
     /**
      * Ribbon load balancer

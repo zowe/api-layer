@@ -10,20 +10,17 @@
 package com.ca.mfaas.enable.controllers;
 
 
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Slf4j
-@Data
 @RestController
 @RequestMapping("/")
 public class ContextPathTestController {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ContextPathTestController.class);
     private final String contextPath;
 
     @Autowired
@@ -35,5 +32,33 @@ public class ContextPathTestController {
     @GetMapping(value = "/context")
     public String getContextPath() {
         return this.contextPath;
+    }
+
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof com.ca.mfaas.enable.controllers.ContextPathTestController)) return false;
+        final com.ca.mfaas.enable.controllers.ContextPathTestController other = (com.ca.mfaas.enable.controllers.ContextPathTestController) o;
+        if (!other.canEqual((java.lang.Object) this)) return false;
+        final java.lang.Object this$contextPath = this.getContextPath();
+        final java.lang.Object other$contextPath = other.getContextPath();
+        if (this$contextPath == null ? other$contextPath != null : !this$contextPath.equals(other$contextPath))
+            return false;
+        return true;
+    }
+
+    protected boolean canEqual(final Object other) {
+        return other instanceof com.ca.mfaas.enable.controllers.ContextPathTestController;
+    }
+
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        final java.lang.Object $contextPath = this.getContextPath();
+        result = result * PRIME + ($contextPath == null ? 43 : $contextPath.hashCode());
+        return result;
+    }
+
+    public String toString() {
+        return "ContextPathTestController(contextPath=" + this.getContextPath() + ")";
     }
 }

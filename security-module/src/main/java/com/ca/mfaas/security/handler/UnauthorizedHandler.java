@@ -12,7 +12,7 @@ package com.ca.mfaas.security.handler;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,9 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@Slf4j
 @Component
 public class UnauthorizedHandler implements AuthenticationEntryPoint {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(UnauthorizedHandler.class);
     private final ErrorService errorService;
     private final ObjectMapper mapper;
 

@@ -13,7 +13,7 @@ import com.ca.mfaas.security.login.AuthMethodNotSupportedException;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenNotValidException;
 import com.ca.mfaas.security.token.TokenService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -30,8 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@Slf4j
 public class QueryFilter extends AbstractAuthenticationProcessingFilter {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(QueryFilter.class);
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final TokenService tokenService;

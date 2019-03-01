@@ -11,7 +11,7 @@ package com.ca.mfaas.gateway.filters.post;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.Debug;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -26,8 +26,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * @author Dave King
  */
 @Component
-@Slf4j
 public class DebugHeaderFilter extends ZuulFilter {
+
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(DebugHeaderFilter.class);
 
     @Override
     public String filterType() {

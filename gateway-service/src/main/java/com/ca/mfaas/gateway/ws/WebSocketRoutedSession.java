@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.gateway.ws;
 
-import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
+import org.slf4j.Logger;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
@@ -27,9 +27,9 @@ import java.util.concurrent.TimeUnit;
  * {@link WebSocketProxyClientHandler} to copy data from the 'client' to the
  * supplied 'server' session.
  */
-@Slf4j
 public class WebSocketRoutedSession {
     private static final int DEFAULT_TIMEOUT = 30000;
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketRoutedSession.class);
 
     private final WebSocketSession webSocketClientSession;
     private final WebSocketSession webSocketServerSession;

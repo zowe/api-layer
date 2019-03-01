@@ -13,7 +13,7 @@ import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +23,8 @@ import javax.annotation.PostConstruct;
 import java.security.NoSuchAlgorithmException;
 
 @Configuration
-@Slf4j
 public class EurekaClientSecurityConfiguration {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(EurekaClientSecurityConfiguration.class);
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
 

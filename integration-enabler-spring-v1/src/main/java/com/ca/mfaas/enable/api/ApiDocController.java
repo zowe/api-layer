@@ -11,8 +11,6 @@ package com.ca.mfaas.enable.api;
 
 
 import com.ca.mfaas.enable.services.LocalApiDocService;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -32,12 +30,11 @@ import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 /**
  * Controller for handling retrieval of API doc via the gateway
  */
-@Slf4j
-@Data
 @RestController
 @RequestMapping("/")
 public class ApiDocController {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ApiDocController.class);
     private final boolean apiDocEnabled;
     private LocalApiDocService localApiDocService;
     private InMemorySwaggerResourcesProvider swaggerResourcesProvider;
@@ -112,4 +109,69 @@ public class ApiDocController {
         }
     }
 
+    public LocalApiDocService getLocalApiDocService() {
+        return this.localApiDocService;
+    }
+
+    public void setLocalApiDocService(LocalApiDocService localApiDocService) {
+        this.localApiDocService = localApiDocService;
+    }
+
+    public InMemorySwaggerResourcesProvider getSwaggerResourcesProvider() {
+        return this.swaggerResourcesProvider;
+    }
+
+    public void setSwaggerResourcesProvider(InMemorySwaggerResourcesProvider swaggerResourcesProvider) {
+        this.swaggerResourcesProvider = swaggerResourcesProvider;
+    }
+
+    public String getSwaggerLocation() {
+        return this.swaggerLocation;
+    }
+
+    public void setSwaggerLocation(String swaggerLocation) {
+        this.swaggerLocation = swaggerLocation;
+    }
+
+    public boolean equals(final Object o) {
+        if (o == this) return true;
+        if (!(o instanceof com.ca.mfaas.enable.api.ApiDocController)) return false;
+        final com.ca.mfaas.enable.api.ApiDocController other = (com.ca.mfaas.enable.api.ApiDocController) o;
+        if (!other.canEqual((java.lang.Object) this)) return false;
+        if (this.isApiDocEnabled() != other.isApiDocEnabled()) return false;
+        final java.lang.Object this$localApiDocService = this.localApiDocService;
+        final java.lang.Object other$localApiDocService = other.localApiDocService;
+        if (this$localApiDocService == null ? other$localApiDocService != null : !this$localApiDocService.equals(other$localApiDocService))
+            return false;
+        final java.lang.Object this$swaggerResourcesProvider = this.swaggerResourcesProvider;
+        final java.lang.Object other$swaggerResourcesProvider = other.swaggerResourcesProvider;
+        if (this$swaggerResourcesProvider == null ? other$swaggerResourcesProvider != null : !this$swaggerResourcesProvider.equals(other$swaggerResourcesProvider))
+            return false;
+        final java.lang.Object this$swaggerLocation = this.swaggerLocation;
+        final java.lang.Object other$swaggerLocation = other.swaggerLocation;
+        if (this$swaggerLocation == null ? other$swaggerLocation != null : !this$swaggerLocation.equals(other$swaggerLocation))
+            return false;
+        return true;
+    }
+
+    protected boolean canEqual(final Object other) {
+        return other instanceof com.ca.mfaas.enable.api.ApiDocController;
+    }
+
+    public int hashCode() {
+        final int PRIME = 59;
+        int result = 1;
+        result = result * PRIME + (this.isApiDocEnabled() ? 79 : 97);
+        final java.lang.Object $localApiDocService = this.localApiDocService;
+        result = result * PRIME + ($localApiDocService == null ? 43 : $localApiDocService.hashCode());
+        final java.lang.Object $swaggerResourcesProvider = this.swaggerResourcesProvider;
+        result = result * PRIME + ($swaggerResourcesProvider == null ? 43 : $swaggerResourcesProvider.hashCode());
+        final java.lang.Object $swaggerLocation = this.swaggerLocation;
+        result = result * PRIME + ($swaggerLocation == null ? 43 : $swaggerLocation.hashCode());
+        return result;
+    }
+
+    public String toString() {
+        return "ApiDocController(apiDocEnabled=" + this.isApiDocEnabled() + ", localApiDocService=" + this.localApiDocService + ", swaggerResourcesProvider=" + this.swaggerResourcesProvider + ", swaggerLocation=" + this.swaggerLocation + ")";
+    }
 }

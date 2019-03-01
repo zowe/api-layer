@@ -13,8 +13,8 @@ import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.gateway.error.ErrorUtils;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -24,8 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Checks whether the error was caused by timeout (service not responding).
  */
-@Slf4j
 public class TlsErrorCheck implements ErrorCheck {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(TlsErrorCheck.class);
     private final ErrorService errorService;
 
     public TlsErrorCheck(ErrorService errorService) {

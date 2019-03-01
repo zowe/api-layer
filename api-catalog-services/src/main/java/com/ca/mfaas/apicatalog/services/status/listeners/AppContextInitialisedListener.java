@@ -11,16 +11,15 @@ package com.ca.mfaas.apicatalog.services.status.listeners;
 
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class AppContextInitialisedListener {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(AppContextInitialisedListener.class);
     private final InstanceRetrievalService instanceRetrievalService;
 
     @Autowired

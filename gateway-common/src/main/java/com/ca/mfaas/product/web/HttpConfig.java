@@ -13,9 +13,9 @@ import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,9 +26,9 @@ import javax.annotation.PostConstruct;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
-@Slf4j
 @Configuration
 public class HttpConfig {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(HttpConfig.class);
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
 

@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.ws;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,8 +18,8 @@ import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 /**
  * Copies data from the client to the server session.
  */
-@Slf4j
 public class WebSocketProxyClientHandler extends AbstractWebSocketHandler {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketProxyClientHandler.class);
     private final WebSocketSession webSocketServerSession;
 
     public WebSocketProxyClientHandler(WebSocketSession webSocketServerSession) {

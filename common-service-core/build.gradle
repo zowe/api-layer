@@ -29,10 +29,7 @@ dependencies {
     compile(libraries.spring_hateoas)
 
     compileOnly(libraries.javax_servlet_api)
-    compileOnly(libraries.lombok)
-    annotationProcessor(libraries.lombok)
-
-    testCompile(libraries.lombok)
+    
     testCompile(libraries.jackson_core)
     testCompile(libraries.jackson_databind)
     testCompile(libraries.javax_servlet_api)

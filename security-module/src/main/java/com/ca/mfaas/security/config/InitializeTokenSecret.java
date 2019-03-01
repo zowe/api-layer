@@ -11,15 +11,15 @@ package com.ca.mfaas.security.config;
 
 import com.ca.mfaas.product.web.HttpConfig;
 import com.ca.mfaas.security.token.TokenService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-@Slf4j
 public class InitializeTokenSecret implements InitializingBean {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(InitializeTokenSecret.class);
     @Autowired
     private HttpConfig httpConfig;
 

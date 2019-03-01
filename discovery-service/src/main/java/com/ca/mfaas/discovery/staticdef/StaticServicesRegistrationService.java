@@ -15,7 +15,7 @@ import com.netflix.appinfo.LeaseInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -28,9 +28,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>
  * The service called by {@link EurekaRegistryAvailableListener} that calls method {@link #registerServices()}.
  */
-@Slf4j
 @Component
 public class StaticServicesRegistrationService {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(StaticServicesRegistrationService.class);
     private final ServiceDefinitionProcessor serviceDefinitionProcessor;
     private final List<InstanceInfo> staticInstances = new CopyOnWriteArrayList<>();
     private final Timer renewalTimer = new Timer();

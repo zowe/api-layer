@@ -11,7 +11,7 @@ package com.ca.mfaas.enable.api;
 
 
 import com.ca.mfaas.enable.services.LocalApiDocService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,13 +35,13 @@ import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 /**
  * Controller for handling retrieval of API doc via the gateway
  */
-@Slf4j
 @RestController
 @RequestMapping("/")
 @ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
 
 public class ApiDocController {
 
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ApiDocController.class);
     private final boolean apiDocEnabled;
     private String swaggerLocation;
     private LocalApiDocService localApiDocService;

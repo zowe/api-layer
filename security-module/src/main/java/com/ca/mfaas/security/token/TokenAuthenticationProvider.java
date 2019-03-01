@@ -9,15 +9,15 @@
  */
 package com.ca.mfaas.security.token;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class TokenAuthenticationProvider implements AuthenticationProvider {
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(TokenAuthenticationProvider.class);
     private final TokenService tokenService;
 
     public TokenAuthenticationProvider(TokenService tokenService) {
