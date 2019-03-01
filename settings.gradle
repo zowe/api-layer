@@ -14,6 +14,8 @@ include 'integration-tests'
 //include 'helloworld-spring'
 include 'integration-enabler-java'
 include 'security-module'
+include 'security-service'
 //include 'api-catalog-services'
 //include 'api-catalog-ui'
+
 
