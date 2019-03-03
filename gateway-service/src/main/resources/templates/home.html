@@ -16,6 +16,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <link rel="icon" type="image/png" href="images/favicon.png">
     <style>
         * {
             padding: 0;
@@ -159,12 +160,6 @@
 <div class="app">
     <h1>API Mediation Layer</h1>
     <ul class="status">
-        <li class="list-item">
-            <div class="wrap"><img class="status-icon"
-                                   th:src="@{/images/icon-notification-intent-warning.png}"
-                                   alt="Security options status icon"/>
-                <p class="status-text">Security options are turned off</p></div>
-        </li>
         <li class="list-item">
             <div class="wrap"><img class="status-icon"
                                    th:src="@{${'/images/icon-notification-intent-' + catalogIconName + '.png'}}"

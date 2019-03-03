@@ -1,0 +1,46 @@
+messages:
+# Controller specific messages
+    - key: com.ca.mfaas.sampleservice.petNotFound
+      number: CSR0001
+      type: ERROR
+      text: "The pet with id '%s' is not found."
+
+    - key: com.ca.mfaas.sampleservice.petIdMismatchException
+      number: CSR0002
+      type: ERROR
+      text: "The id '%s' in the URL is different from the request body id '%s'."
+
+    - key: com.ca.mfaas.sampleservice.petIdTypeMismatch
+      number: CSR0003
+      type: ERROR
+      text: "The pet id '%s' is invalid: it is not an integer."
+
+    - key: com.ca.mfaas.sampleservice.petMethodArgumentNotValid
+      number: CSR0004
+      type: ERROR
+      text: "The field '%s' with the provided value ['%s'] is invalid due to: '%s'."
+
+    - key: com.ca.mfaas.sampleservice.petUnrecognizedProperty
+      number: CSR0005
+      type: ERROR
+      text: "Unrecognized field '%s'"
+
+    - key: com.ca.mfaas.sampleservice.jsonParseException
+      number: CSR0006
+      type: ERROR
+      text: "Invalid JSON request"
+
+    - key: com.ca.mfaas.sampleservice.petInvalidFormatException
+      number: CSR0007
+      type: ERROR
+      text: "Field '%s' is in the wrong format."
+
+    - key: com.ca.mfaas.sampleservice.missingRequestParameter
+      number: CSR0008
+      type: ERROR
+      text: "%s"
+
+    - key: com.ca.mfaas.sampleservice.echoServiceException
+      number: CSR0009
+      type: ERROR
+      text: "%s"

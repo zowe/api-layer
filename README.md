@@ -17,19 +17,19 @@ This is a page about API Mediation Layer.
 
 ## Quick start 1-2-3
 
+
 1. Build
 2. Run
 3. Use
 
 ## Build
 
-### Prerequisites for build
 
+### Prerequisites for build
 Following platform is required to run the API Mediation Layer:
 
 * **Java** Oracle or IBM Java SE Development Kit 8 (http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html or https://www.ibm.com/developerworks/java/jdk/), Java 10 is not supported.
 * **Node.js** You should be able to run Node.js on your machine.
-
 
 ### Build all modules
 ```shell

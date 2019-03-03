@@ -17,6 +17,7 @@ logging:
         com.ca.mfaas.gateway.ws: INFO
         com.ca.mfaas.gateway.error: INFO
         org.eclipse.jetty: WARN
+        org.springframework.web.servlet.PageNotFound: ERROR
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -42,6 +43,8 @@ spring:
             ipAddress: ${apiml.service.ipAddress}
     mvc:
         throw-exception-if-no-handler-found: true
+        favicon:
+            enabled: false
     output:
         ansi:
             enabled: detect
@@ -58,6 +61,7 @@ server:
 
 zuul:
     sslHostnameValidationEnabled: false
+    addProxyHeaders: false
     traceRequestBody: true
     ignoreSecurityHeaders: false
     includeDebugHeader: false
@@ -106,6 +110,9 @@ management:
     health:
         defaults:
             enabled: false
+    endpoint:
+        health:
+            showDetails: always
 
 eureka:
     instance:
@@ -125,9 +132,6 @@ eureka:
                 api-v1:
                     gateway-url: /api/v1
                     service-url: /api/v1
-                api-doc:
-                    gateway-url: /api/v1/api-doc
-                    service-url: /api-doc
             mfaas:
                 discovery:
                     catalogUiTile:
@@ -177,6 +181,7 @@ logging:
         org.apache.catalina: INFO
         com.netflix: INFO
         org.hibernate: INFO
+        org.springframework.web.servlet.PageNotFound: WARN
 
 ---
 spring:

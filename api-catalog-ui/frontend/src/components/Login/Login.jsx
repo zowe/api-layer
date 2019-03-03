@@ -1,55 +1,59 @@
 import React from 'react';
-import { Button, FormField, Text, TextInput } from 'mineral-ui';
+import { Button, FormField, TextInput } from 'mineral-ui';
 import { IconDanger } from 'mineral-ui-icons';
 
 import logoImage from '../../assets/images/api-catalog-logo.png';
 import './Login.css';
 import './LoginWebflow.css';
+import Spinner from '../Spinner/Spinner';
 
 export default class Login extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            username: 'user',
-            password: 'user',
+            username: '',
+            password: '',
+            errorMessage: '',
         };
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    onLoad(feedItem) {
-        this.setState(({ loadedItems }) => ({ loadedItems: loadedItems.concat(feedItem) }));
-    }
-
     isDisabled = () => {
-        const { username, password } = this.state;
-        return !(username.trim().length > 0 && password.trim().length > 0);
+        const { isFetching } = this.props;
+        return isFetching;
     };
 
-    handleError = authentication => {
+    handleError = error => {
         let messageText;
         if (
-            authentication.error.name !== undefined &&
-            authentication.error.name !== null &&
-            authentication.error.name === 'AjaxError'
+            error.messageNumber !== undefined &&
+            error.messageNumber !== null &&
+            error.messageType !== undefined &&
+            error.messageType !== null
         ) {
-            const {
-                response: { messages },
-            } = authentication.error;
-            const [error] = messages;
-            if (error.messageNumber === 'SEC0004') {
-                messageText = 'Session has expired, please login again';
-            } else {
-                messageText = `Internal Error: ${error.messageNumber}`;
-            }
-        }
-        if (authentication.error.messageType !== undefined && authentication.error.messageType !== null) {
-            if (authentication.error.messageNumber === 'SEC0005') {
-                messageText = 'Username or password is invalid';
-            } else {
-                messageText = `Internal Error: ${authentication.error.messageNumber}`;
+            switch (error.messageNumber) {
+                case 'SEC0001':
+                    messageText = `Authentication is required (${error.messageNumber})`;
+                    break;
+                case 'SEC0004':
+                    messageText = `Session has expired, please login again (${error.messageNumber})`;
+                    break;
+                case 'SEC0005':
+                    messageText = `Username or password is invalid (${error.messageNumber})`;
+                    break;
+                case 'MFS0104':
+                    messageText = `Request timeout, please try again later (${error.messageNumber})`;
+                    break;
+                case 'UI0001':
+                    messageText = error.message;
+                    this.setState({ errorMessage: messageText });
+                    break;
+                default:
+                    messageText = `Unexpected error, please try again later (${error.messageNumber})`;
+                    break;
             }
         }
         return messageText;
@@ -65,14 +69,21 @@ export default class Login extends React.Component {
 
         const { username, password } = this.state;
         const { login } = this.props;
+
         if (username && password) {
             login({ username, password });
+        } else if (!username || !password) {
+            this.handleError({
+                messageType: 'ERROR',
+                messageNumber: 'UI0001',
+                message: 'Please provide a valid username and password',
+            });
         }
     }
 
     render() {
-        const { username, password } = this.state;
-        const { authentication } = this.props;
+        const { username, password, errorMessage } = this.state;
+        const { authentication, isFetching } = this.props;
         let messageText;
         if (
             authentication !== undefined &&
@@ -80,7 +91,9 @@ export default class Login extends React.Component {
             authentication.error !== undefined &&
             authentication.error !== null
         ) {
-            messageText = this.handleError(authentication);
+            messageText = this.handleError(authentication.error);
+        } else if (errorMessage) {
+            messageText = errorMessage;
         }
         return (
             <div className="login-object">
@@ -106,13 +119,7 @@ export default class Login extends React.Component {
                                         className="form"
                                         onSubmit={this.handleSubmit}
                                     >
-                                        <Text color="#ad5f00">
-                                            Use the supplied username: <b>user</b> <br /> and password: <b>user</b>
-                                        </Text>
-                                        <FormField
-                                            label="Username"
-                                            className="formfield"
-                                        >
+                                        <FormField label="Username" className="formfield">
                                             <TextInput
                                                 id="username"
                                                 data-testid="username"
@@ -121,12 +128,10 @@ export default class Login extends React.Component {
                                                 size="jumbo"
                                                 value={username}
                                                 onChange={this.handleChange}
+                                                autocomplete
                                             />
                                         </FormField>
-                                        <FormField
-                                            label="Password"
-                                            className="formfield"
-                                        >
+                                        <FormField label="Password" className="formfield">
                                             <TextInput
                                                 id="password"
                                                 data-testid="password"
@@ -136,6 +141,7 @@ export default class Login extends React.Component {
                                                 value={password}
                                                 onChange={this.handleChange}
                                                 caption="Default: password"
+                                                autocomplete
                                             />
                                         </FormField>
                                         <FormField className="formfield" label="">
@@ -150,9 +156,18 @@ export default class Login extends React.Component {
                                                 Sign in
                                             </Button>
                                         </FormField>
+                                        <FormField className="formfield form-spinner" label="">
+                                            <Spinner
+                                                isLoading={isFetching}
+                                                css={{
+                                                    position: 'relative',
+                                                    top: '70px',
+                                                }}
+                                            />
+                                        </FormField>
                                         {messageText !== undefined &&
                                             messageText !== null && (
-                                                <FormField className="error-message">
+                                                <FormField className="error-message" label="">
                                                     <div id="error-message">
                                                         <p className="error-message-content">
                                                             <IconDanger color="#de1b1b" size="2rem" /> {messageText}

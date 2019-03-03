@@ -13,7 +13,7 @@ import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
-import com.ca.mfaas.product.family.ProductFamilyType;
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.registry.ApplicationWrapper;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -35,8 +36,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotBlank;
-
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -66,6 +67,8 @@ public class InstanceRetrievalService {
         this.propertiesContainer = propertiesContainer;
         this.cachedServicesService = cachedServicesService;
         this.restTemplate = restTemplate;
+
+        configureUnicode(restTemplate);
     }
 
     /**
@@ -83,7 +86,7 @@ public class InstanceRetrievalService {
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
         log.info("Initialising API Catalog with Gateway services.");
         try {
-            String serviceId = ProductFamilyType.API_CATALOG.getServiceId();
+            String serviceId = CoreService.API_CATALOG.getServiceId();
             InstanceInfo apiCatalogInstance = getInstanceInfo(serviceId);
             if (apiCatalogInstance == null) {
                 String msg = "API Catalog Instance not retrieved from gateway, retrying...";
@@ -173,7 +176,7 @@ public class InstanceRetrievalService {
 
         Pair<String, Pair<String, String>> requestInfo = constructServiceInfoQueryRequest(null, false);
 
-        // call Eureka REST endpoint to fetch single or all Instances
+        //  call Eureka REST endpoint to fetch single or all Instances
         ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
 
         return extractApplications(requestInfo, response);
@@ -367,4 +370,8 @@ public class InstanceRetrievalService {
         log.info("API Catalog initialised with running services..");
     }
 
+    private void configureUnicode(RestTemplate restTemplate) {
+        restTemplate.getMessageConverters()
+            .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+    }
 }

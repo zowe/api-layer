@@ -120,6 +120,17 @@ pipeline {
                 sh "echo ${changeClass} > .change_class"
             }
         }
+        /**
+        *  Stage: Bootstrap Gradlew
+        *  ========================
+        *
+        *  Downloads gradle-wrapper.jar to the gradle/wrapper/ directory.
+        **/
+        stage('Bootstrap Gradlew') {
+            steps {
+                sh './bootstrap_gradlew.sh'
+            }
+        }
 
         stage ('API Catalog build') {
             when { expression { changeClass in ['api-catalog'] } }
@@ -153,6 +164,13 @@ pipeline {
                 stage('Package api-layer source code') {
                     steps {
                         sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
+                    }
+                }
+
+                stage('Test apiml_cm.sh') {
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run test-scripts-ci'
                     }
                 }
 
@@ -287,4 +305,3 @@ pipeline {
         }
     }
 }
-

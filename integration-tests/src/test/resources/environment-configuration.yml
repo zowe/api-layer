@@ -4,6 +4,7 @@ gatewayServiceConfiguration:
     port: 10010
     user: notused
     password: notused
+    instances: 1
 discoveryServiceConfiguration:
     scheme: https
     user: eureka
@@ -12,8 +13,9 @@ discoveryServiceConfiguration:
     port: 10011
     instances: 1
 apiCatalogServiceConfiguration:
-    user: user
-    password: user
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: REPLACEME
+    password: REPLACEME
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password
@@ -23,3 +25,7 @@ tlsConfiguration:
     trustStoreType: PKCS12
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: usilca32.ca.com
+    port: 1443

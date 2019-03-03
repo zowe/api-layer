@@ -18,9 +18,12 @@ Basic routing of an API endpoint (automated by integration tests)
 
 
 ### For API Catalog
-- Open <https://yourhost:10010/ui/v1/apicatalog/#/dashboard>
+- Go to <https://yourhost:10010/ui/v1/apicatalog/>. You will be redirected to the login page (<https://yourhost:10010/ui/v1/apicatalog/#/login>)
+    - `Username` and `password` input fields should be displayed, along with the `Sign in` button.
+- Insert your mainframe credentials and press the `Sign in` button. After you logged in successfully, you will be redirected to the dashboard (<https://yourhost:10010/ui/v1/apicatalog/#/dashboard>)
     - No error should be displayed, and API Catalog main page should appear
     - API Mediation Layer API -> All services are running, Sample API Mediation Layer Applications -All services are running tiles should display
+    - The `Logout` icon should be displayed 
 - Write "Sample" on the search bar
     - API Mediation Layer API tile should disappear, and Sample API Mediation Layer Applications should be there when you stop typing
     - Search Icon should be replaced by clear icon on the right side of search bar
@@ -43,5 +46,7 @@ Basic routing of an API endpoint (automated by integration tests)
     - should return to catalog dashboard
 - Click again on a tile, then press the API Catalog header Icon
     - should return to catalog dashboard
-
-
+- Click on the `Logout` button 
+    - you should log out from the API Catalog and be redirected to the login page
+- Try to insert some invalid credentials and press the `Sign in` button
+    - should display a message saying `Username or password is invalid` and you should not be able to log into the API Catalog

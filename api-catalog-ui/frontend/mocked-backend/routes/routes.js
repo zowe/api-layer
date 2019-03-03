@@ -1,9 +1,12 @@
+const path = require('path');
+
 // * Tile info
 let containers = require('../assets/containers');
 const apicatalog = require('../assets/services/apicatalog');
 const testinson = require('../assets/services/testinson');
 const cademoapps = require('../assets/services/cademoapps');
 const loginSuccess = require('../assets/services/login_success');
+const invalidCredentials = require('../assets/services/user-name-invalid.json');
 
 const apiCatalog = require('../assets/apidoc/apicatalog.json');
 const discoverableClient = require('../assets/apidoc/discoverableclient');
@@ -11,23 +14,27 @@ const sampleClient = require('../assets/apidoc/sample');
 
 let allUP = false;
 
-function sleep(milliseconds) {
-    const start = new Date().getTime();
-    for (let i = 0; i < 1e7; i + 1) {
-        if (new Date().getTime() - start > milliseconds) {
-            break;
-        }
-    }
+function validateCredentials({ username, password }) {
+    return username === 'user' && password === 'user';
 }
 
 const appRouter = app => {
     // NOTE: The root route
     app.get('/', (req, res) => {
-        res.status(200).send('Welcome to our Mocked backend!');
+        res.sendFile(path.join(`${__dirname}/../assets/hello/hello.html`));
     });
 
-    app.post('/api/v1/apicatalog/auth/login', (req, res) => {
-        res.status(200).send(loginSuccess);
+    app.post('/api/v1/apicatalog/auth/login', async (req, res) => {
+        res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+        const credentials = req.body;
+
+        if (validateCredentials(credentials)) {
+            setTimeout(() => res.status(200).send(loginSuccess), 2000);
+        } else {
+            console.log(invalidCredentials);
+            res.status(401).send(invalidCredentials);
+        }
     });
 
     app.post('/api/v1/apicatalog/auth/logout', (req, res) => {
@@ -55,13 +62,13 @@ const appRouter = app => {
     });
 
     app.get('/api/v1/apicatalog/containers/:serviceID', (req, res) => {
-        const apiCatalog = apicatalog;
+        const ApiCatalog = apicatalog;
         const caDemoApps = cademoapps;
         const Testinson = testinson;
         console.log(`Fetching:${req.params.serviceID}`);
         switch (req.params.serviceID) {
             case 'apicatalog':
-                res.status(200).send(apiCatalog);
+                res.status(200).send(ApiCatalog);
                 break;
             case 'cademoapps':
                 res.status(200).send(caDemoApps);

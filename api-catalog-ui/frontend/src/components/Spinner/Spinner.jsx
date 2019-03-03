@@ -3,9 +3,10 @@ import './Spinner.css';
 
 export default class Spinner extends Component {
     render() {
-        const { isLoading } = this.props;
+        const { isLoading, css } = this.props;
         const divStyle = {
             display: isLoading === true ? 'block' : 'none',
+            ...css,
         };
         return (
             <div id="spinner" className="lds-ring" style={divStyle}>

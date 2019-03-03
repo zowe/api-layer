@@ -13,7 +13,7 @@ import com.ca.mfaas.gateway.filters.pre.FilterUtils;
 import com.ca.mfaas.gateway.services.routing.RoutedService;
 import com.ca.mfaas.gateway.services.routing.RoutedServices;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
-import com.ca.mfaas.product.family.ProductFamilyType;
+import com.ca.mfaas.product.constants.CoreService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
@@ -24,6 +24,7 @@ import io.swagger.models.Swagger;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 import javax.validation.UnexpectedTypeException;
@@ -107,7 +108,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
 
         // Transform a request for a service /api-doc or apicatalog/apidoc/**
         // The catalog request is transformed here rather than when first retrieved due to the dependencies on routes
-        if ((requestPath.contains("/api-doc") || requestPath.contains(ProductFamilyType.API_CATALOG.getServiceId() + "/apidoc/")) && !requestPath.contains("/api-doc/enabled")
+        if ((requestPath.contains("/api-doc") || requestPath.contains(CoreService.API_CATALOG.getServiceId() + "/apidoc/")) && !requestPath.contains("/api-doc/enabled")
             && (context.getResponseDataStream() != null || context.getResponseBody() != null)) {
             List<Pair<String, String>> zuulResponseHeaders = context.getZuulResponseHeaders();
             if (zuulResponseHeaders != null) {
@@ -188,7 +189,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
         String requestUri = (String) context.get(REQUEST_URI_KEY);
 
         // if this is an API Catalog swagger request, extract the swagger owner service id from the request URI
-        String apiDocEndPoint = "/" + ProductFamilyType.API_CATALOG.getServiceId() + "/apidoc/";
+        String apiDocEndPoint = "/" + CoreService.API_CATALOG.getServiceId() + "/apidoc/";
         if (requestUri.startsWith(apiDocEndPoint)) {
             requestUri = requestUri.replace(apiDocEndPoint, "");
             requestUri = requestUri.substring(0, requestUri.indexOf('/'));
@@ -224,7 +225,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
                 log.trace("Base Path: " + swagger.getBasePath());
 
                 // Retrieve route which matches endpoint
-                String endPoint = swagger.getBasePath() + originalEndpoint;
+                String endPoint = swagger.getBasePath().equals(SEPARATOR) ? originalEndpoint : swagger.getBasePath() + originalEndpoint;
                 RoutedService route = getRouteServiceForEndpoint(endPoint, finalServiceId);
 
                 String updatedShortEndPoint = null;
@@ -256,9 +257,9 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
         }
 
         // update scheme and host
-        String scheme = context.getZuulRequestHeaders().get(X_FORWARDED_PROTO_HEADER.toLowerCase());
+        String scheme = context.getRequest().getScheme();
         swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
-        swagger.setHost(context.getZuulRequestHeaders().get(X_FORWARDED_HOST_HEADER.toLowerCase()));
+        swagger.setHost(context.getRequest().getHeader(HttpHeaders.HOST.toLowerCase()));
 
         // Convert to JSON and set content body
         try {
