@@ -12,6 +12,7 @@ package com.broadcom.apiml.service.security.login;
 import com.broadcom.apiml.service.security.config.SecurityConfigurationProperties;
 import com.broadcom.apiml.service.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -24,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@Ignore
 public class SuccessfulLoginHandlerTest {
 
     @Test

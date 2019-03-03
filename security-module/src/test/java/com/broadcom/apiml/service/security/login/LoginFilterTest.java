@@ -12,6 +12,7 @@ package com.broadcom.apiml.service.security.login;
 import com.broadcom.apiml.service.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -41,6 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
+@Ignore
 public class LoginFilterTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();

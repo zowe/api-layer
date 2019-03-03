@@ -9,6 +9,7 @@
  */
 package com.broadcom.apiml.test.integration.client.ws;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.web.socket.TextMessage;
@@ -20,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@Ignore
 public class WebSocketServerHandlerTest {
 
     @Test

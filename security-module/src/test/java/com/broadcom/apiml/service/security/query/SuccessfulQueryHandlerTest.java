@@ -13,6 +13,7 @@ import com.broadcom.apiml.service.security.config.SecurityConfigurationPropertie
 import com.broadcom.apiml.service.security.token.TokenAuthentication;
 import com.broadcom.apiml.service.security.token.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class SuccessfulQueryHandlerTest {
 
     @Test

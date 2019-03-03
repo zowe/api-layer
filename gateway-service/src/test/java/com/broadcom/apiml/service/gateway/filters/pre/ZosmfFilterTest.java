@@ -12,6 +12,7 @@ package com.broadcom.apiml.service.gateway.filters.pre;
 import com.broadcom.apiml.service.security.token.TokenService;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
+@Ignore
 public class ZosmfFilterTest {
 
     private static final String TOKEN = "token";

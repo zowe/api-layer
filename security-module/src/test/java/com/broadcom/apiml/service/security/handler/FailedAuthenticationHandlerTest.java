@@ -16,6 +16,7 @@ import com.broadcom.apiml.service.security.token.TokenExpireException;
 import com.broadcom.apiml.service.security.token.TokenNotValidException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("Duplicates")
+@Ignore
 public class FailedAuthenticationHandlerTest {
     private ObjectMapper mapper;
     private HttpServletRequest request;

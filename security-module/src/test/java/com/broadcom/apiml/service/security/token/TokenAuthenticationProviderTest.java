@@ -10,6 +10,7 @@
 package com.broadcom.apiml.service.security.token;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class TokenAuthenticationProviderTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();

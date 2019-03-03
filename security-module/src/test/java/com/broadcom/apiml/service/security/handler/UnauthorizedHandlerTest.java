@@ -13,6 +13,7 @@ import com.broadcom.apiml.test.integration.error.ErrorService;
 import com.broadcom.apiml.test.integration.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class UnauthorizedHandlerTest {
     private ObjectMapper mapper;
     private HttpServletRequest request;

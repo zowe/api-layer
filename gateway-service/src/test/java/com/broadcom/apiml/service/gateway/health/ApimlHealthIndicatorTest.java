@@ -10,6 +10,7 @@
 package com.broadcom.apiml.service.gateway.health;
 
 import com.broadcom.apiml.test.integration.product.constants.CoreService;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
@@ -25,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class ApimlHealthIndicatorTest {
 
     @Test

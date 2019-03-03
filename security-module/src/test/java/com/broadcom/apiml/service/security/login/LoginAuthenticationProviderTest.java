@@ -12,6 +12,7 @@ package com.broadcom.apiml.service.security.login;
 import com.broadcom.apiml.service.security.user.InMemoryUserDetailsService;
 import com.broadcom.apiml.service.security.token.TokenAuthentication;
 import com.broadcom.apiml.service.security.token.TokenService;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class LoginAuthenticationProviderTest {
     @Rule
     public final ExpectedException exception = ExpectedException.none();

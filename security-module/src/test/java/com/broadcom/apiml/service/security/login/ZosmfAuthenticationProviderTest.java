@@ -14,6 +14,7 @@ import com.broadcom.apiml.service.security.token.TokenAuthentication;
 import com.broadcom.apiml.service.security.token.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -37,6 +38,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class ZosmfAuthenticationProviderTest {
     private static final String USERNAME = "user";
     private static final String PASSWORD = "password";
