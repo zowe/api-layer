@@ -9,7 +9,6 @@
  */
 package com.broadcom.apiml.test.integration.eurekaservice.client;
 
-import com.broadcom.apiml.test.integration.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.config.*;
 import com.broadcom.apiml.test.integration.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.broadcom.apiml.test.integration.eurekaservice.client.util.ApiMediationServiceConfigReader;

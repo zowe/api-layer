@@ -1,21 +1,28 @@
-rootProject.name = 'api-layer'
+rootProject.name = 'api-mediation-layer'
+
+/// Core Services
+include 'discovery-service'
+include 'gateway-service'
+include 'discoverable-client'
+include 'security-service'
+
+/// Core libraries
+include 'integration-enabler-spring-v2'
+include 'gateway-common'
+include 'common-service-core'
+include 'security-module'
+include 'core-library'
+
+/// Tests
+include 'integration-tests'
 
 //include 'helloworld-jersey'
-include 'discovery-service'
-include 'integration-enabler-spring-v2'
 //include 'integration-enabler-spring-v1'
-include 'gateway-common'
-include 'gateway-service'
-include 'common-service-core'
-include 'discoverable-client'
-include 'integration-tests'
 //include 'integration-enabler-spring-v1-sample-app'
 //include 'zowe-install'
 //include 'helloworld-spring'
 //include 'integration-enabler-java'
-include 'security-module'
-include 'security-service'
 //include 'api-catalog-services'
 //include 'api-catalog-ui'
-include 'core-library'
+
 
