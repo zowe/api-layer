@@ -1,11 +1,11 @@
 apply plugin: "org.sonarqube"
 
-ext.pullRequest = System.getenv()['CHANGE_ID'] ?: null
+ext.pullRequest = System.getenv()["CHANGE_ID"] ?: null
 
 sonarqube {
     properties {
-        property "sonar.host.url", project.getProperty('sonar.host.url')
-        property "sonar.login", project.hasProperty('sonar.login') ? project.getProperty('sonar.login') : null
+        property "sonar.host.url", project.getProperty("sonar.host.url")
+        property "sonar.login", project.hasProperty("sonar.login") ? project.getProperty("sonar.login") : null
         property "sonar.sourceEncoding", "UTF-8"
         property "sonar.projectKey", "zowe:api-mediation-layer"
         property "sonar.projectName", "Zowe API Mediation Layer"
@@ -13,12 +13,12 @@ sonarqube {
         property "sonar.language", "java"
         property "sonar.links.scm", "https://github.com/zowe/api-layer"
         property "sonar.links.scm_dev", "https://github.com/zowe/api-layer.git"
-        property "sonar.links.ci", project.hasProperty('sonar.links.ci') ? project.getProperty('sonar.links.ci') : null
+        property "sonar.links.ci", project.hasProperty("sonar.links.ci") ? project.getProperty("sonar.links.ci") : null
         if (pullRequest != null) {
             property "sonar.analysis.mode", "preview"
             property "sonar.github.pullRequest", pullRequest
             property "sonar.github.repository", "zowe/api-layer"
-            property "sonar.github.oauth", project.hasProperty('sonar.github.oauth') ? project.getProperty('sonar.github.oauth') : null
+            property "sonar.github.oauth", project.hasProperty("sonar.github.oauth") ? project.getProperty("sonar.github.oauth") : null
         }
     }
 }
@@ -54,7 +54,7 @@ project(":zowe-install") {
     }
 }
 
-project(":integration-tests") {
+project(":message-tests") {
     sonarqube {
         properties {
             property "sonar.sources", "src/test/java"

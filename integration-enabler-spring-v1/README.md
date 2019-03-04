@@ -1,6 +1,6 @@
 # Service Integration Enabler for Spring Boot applications
 
-This library enables Spring Boot REST API services to integration with MFaaS ecosystem 
+This library enables Spring Boot REST API services to message with MFaaS ecosystem 
 and make their APIs available via MFaaS API Gateway and API Catalog.
 
 It allows documentation REST endpoints to be exposed in Swagger format.

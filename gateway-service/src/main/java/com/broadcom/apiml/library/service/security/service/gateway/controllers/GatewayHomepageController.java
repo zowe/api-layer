@@ -9,8 +9,8 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.controllers;
 
-import com.broadcom.apiml.library.service.security.test.integration.product.service.BuildInfo;
-import com.broadcom.apiml.library.service.security.test.integration.product.service.BuildInfoDetails;
+import com.broadcom.apiml.library.service.service.BuildInfo;
+import com.broadcom.apiml.library.service.service.BuildInfoDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;

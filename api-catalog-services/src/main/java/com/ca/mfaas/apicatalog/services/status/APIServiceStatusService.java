@@ -50,7 +50,7 @@ public class APIServiceStatusService {
     }
 
     /**
-     * Return a cached snapshot of services and instances as a response
+     * Return a cached snapshot of services and instances as a message
      *
      * @return Applications from cache
      */

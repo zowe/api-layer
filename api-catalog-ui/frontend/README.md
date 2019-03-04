@@ -5,12 +5,12 @@ Contains React component loaded at startup which calls the running API Catalog s
 
 ## Testing
 
-The front end is covered by Unit tests, integration tests and e2e tests. The testing part of the CI/CD pipeline, but manual testing
+The front end is covered by Unit tests, message tests and e2e tests. The testing part of the CI/CD pipeline, but manual testing
 can be done locally. 
 
 #### Unit and Integration testing
 
-Unit tests for each component and integration tests are performed part of the CI/CD ,and you can see the results of the tests as well as the coverage report
+Unit tests for each component and message tests are performed part of the CI/CD ,and you can see the results of the tests as well as the coverage report
 at stage "Javascript Test and Coverage"
 
 #### For Manual testing
@@ -37,7 +37,7 @@ For Unit tests we use [Enzyme](https://github.com/airbnb/enzyme) and [jest](http
 
 When virtually rendering components you should use `.shallow`.
 
-To run all unit and integration tests run `npm test`.
+To run all unit and message tests run `npm test`.
 
 The tests will auto rerun after you make any file changes to test files.
 

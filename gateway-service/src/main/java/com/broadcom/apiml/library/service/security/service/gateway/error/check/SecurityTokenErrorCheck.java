@@ -9,10 +9,10 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.error.check;
 
-import com.broadcom.apiml.library.service.security.test.integration.error.ErrorService;
-import com.broadcom.apiml.library.service.security.test.integration.rest.response.ApiMessage;
-import com.broadcom.apiml.library.service.security.service.security.token.TokenExpireException;
-import com.broadcom.apiml.library.service.security.service.security.token.TokenNotValidException;
+import com.broadcom.apiml.library.service.response.util.MessageCreationService;
+import com.broadcom.apiml.library.response.ApiMessage;
+import com.broadcom.apiml.library.security.token.TokenExpireException;
+import com.broadcom.apiml.library.security.token.TokenNotValidException;
 import com.netflix.zuul.exception.ZuulException;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -24,9 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 
 public class SecurityTokenErrorCheck implements ErrorCheck {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(SecurityTokenErrorCheck.class);
-    private final ErrorService errorService;
+    private final MessageCreationService errorService;
 
-    public SecurityTokenErrorCheck(ErrorService errorService) {
+    public SecurityTokenErrorCheck(MessageCreationService errorService) {
         this.errorService = errorService;
     }
 

@@ -1,23 +1,23 @@
 ext.javaProjectsWithUnitTests = [
-    'api-catalog-services',
-    'common-service-core',
-    'discoverable-client',
-    'discovery-service',
-    'gateway-common',
-    'gateway-service',
-    'integration-enabler-spring-v2',
-    'integration-enabler-java',
-    'helloworld-spring',
-    'security-module'
+    "api-catalog-services",
+    "common-service-core",
+    "discoverable-client",
+    "discovery-service",
+    "gateway-common",
+    "gateway-service",
+    "message-enabler-spring-v2",
+    "message-enabler-java",
+    "helloworld-spring",
+    "security-module"
 ]
 
 
 configure(subprojects.findAll { it.name in javaProjectsWithUnitTests }) {
-    apply plugin: 'java'
-    apply plugin: 'idea'
-    apply plugin: 'jacoco'
+    apply plugin: "java"
+    apply plugin: "idea"
+    apply plugin: "jacoco"
     jacoco {
-        toolVersion = '0.8.2'
+        toolVersion = "0.8.2"
     }
 
     jacocoTestReport {

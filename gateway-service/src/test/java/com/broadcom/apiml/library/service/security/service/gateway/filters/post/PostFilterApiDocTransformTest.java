@@ -11,7 +11,7 @@ package com.broadcom.apiml.library.service.security.service.gateway.filters.post
 
 import com.broadcom.apiml.library.service.security.service.gateway.services.routing.RoutedService;
 import com.broadcom.apiml.library.service.security.service.gateway.services.routing.RoutedServices;
-import com.broadcom.apiml.library.service.security.test.integration.product.constants.ApimConstants;
+import com.broadcom.apiml.library.service.constants.ApimConstants;
 import com.netflix.zuul.context.RequestContext;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import io.swagger.models.Swagger;

@@ -9,7 +9,7 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.error.check;
 
-import com.broadcom.apiml.library.service.security.test.integration.rest.response.ApiMessage;
+import com.broadcom.apiml.library.response.ApiMessage;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;

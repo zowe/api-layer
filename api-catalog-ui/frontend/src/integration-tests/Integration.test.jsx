@@ -145,7 +145,7 @@ describe('>>> Integration tests', () => {
         expect(tiles.length).toEqual(1);
     });
 
-    xit('should display error message on irrelevant search criteria', async () => {
+    xit('should display util message on irrelevant search criteria', async () => {
         const authentication = {
             showHeader: true,
         };
@@ -243,7 +243,7 @@ describe('>>> Integration tests', () => {
         });
     });
 
-    xit('should handle error when no apidoc is available', async () => {
+    xit('should handle util when no apidoc is available', async () => {
         const authentication = {
             showHeader: true,
         };
@@ -263,11 +263,11 @@ describe('>>> Integration tests', () => {
 
         fireEvent.click(failingTile);
 
-        await waitForElement(() => getByTestId('detail-page-error'));
-        const errorMsg1 = getByTestId('detail-page-error').textContent;
+        await waitForElement(() => getByTestId('detail-page-util'));
+        const errorMsg1 = getByTestId('detail-page-util').textContent;
 
         expect(errorMsg1).toEqual(
-            'Tile details for "tile_tile1" could not be retrieved, the following error was returned...'
+            'Tile details for "tile_tile1" could not be retrieved, the following util was returned...'
         );
     });
 });

@@ -9,15 +9,15 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.security;
 
-import com.broadcom.apiml.library.service.security.service.security.config.SecurityConfigurationProperties;
-import com.broadcom.apiml.library.service.security.service.security.handler.FailedAuthenticationHandler;
-import com.broadcom.apiml.library.service.security.service.security.handler.UnauthorizedHandler;
-import com.broadcom.apiml.library.service.security.service.security.login.LoginAuthenticationProvider;
-import com.broadcom.apiml.library.service.security.service.security.login.LoginFilter;
-import com.broadcom.apiml.library.service.security.service.security.login.SuccessfulLoginHandler;
-import com.broadcom.apiml.library.service.security.service.security.token.CookieFilter;
-import com.broadcom.apiml.library.service.security.service.security.token.TokenAuthenticationProvider;
-import com.broadcom.apiml.library.service.security.service.security.token.TokenFilter;
+import com.broadcom.apiml.library.security.config.SecurityConfigurationProperties;
+import com.broadcom.apiml.library.security.handler.FailedAuthenticationHandler;
+import com.broadcom.apiml.library.security.handler.UnauthorizedHandler;
+import com.broadcom.apiml.library.security.login.LoginAuthenticationProvider;
+import com.broadcom.apiml.library.security.login.LoginFilter;
+import com.broadcom.apiml.library.security.login.SuccessfulLoginHandler;
+import com.broadcom.apiml.library.security.token.CookieFilter;
+import com.broadcom.apiml.library.security.token.TokenAuthenticationProvider;
+import com.broadcom.apiml.library.security.token.TokenFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

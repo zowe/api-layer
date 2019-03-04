@@ -39,7 +39,7 @@ describe('>>> Login page component tests', () => {
 
         const button = page.find('Button');
         button.simulate('click');
-        const errorMessage = page.find('p.error-message-content');
+        const errorMessage = page.find('p.util-message-content');
         expect(button).toBeDefined();
         expect(errorMessage).toBeDefined();
     });
@@ -142,7 +142,7 @@ describe('>>> Login page component tests', () => {
 
     it('should display UI errorMessage', () => {
         const page = enzyme.shallow(<Login errorMessage="Cus bus"/>);
-        const errorMessage = page.find('p.error-message-content').first();
+        const errorMessage = page.find('p.util-message-content').first();
 
         expect(errorMessage).toBeDefined();
     });

@@ -12,7 +12,7 @@ const scalingDuration = process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION;
 
 // terminate the epic if you get any of the following Ajax error codes
 const terminatingStatusCodes = [500, 401, 403];
-// override the termination if any of these APIM message codes are in the response
+// override the termination if any of these APIM message codes are in the message
 const excludedMessageCodes = ['MFS0103'];
 
 function checkOrigin() {
@@ -56,7 +56,7 @@ function shouldTerminate(error) {
         if (error.response.messages !== undefined) {
             const apiError = error.response.messages[0];
             if (apiError !== null && apiError !== undefined && apiError.messageNumber !== undefined) {
-                // if this APIM message number is in the response, then override the terminate flag
+                // if this APIM message number is in the message, then override the terminate flag
                 if (excludedMessageCodes.find(e => e === apiError.messageNumber)) {
                     terminate = false;
                 }

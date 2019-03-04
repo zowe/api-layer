@@ -15,7 +15,7 @@ The Discovery Service loads these definitions during the startup.
 
 Only routing is supported. Defining metadata for the API catalog will be supported in future.
 
-[config/local/api-defs/staticclient.yml](/config/local/api-defs/staticclient.yml) contains a static definition of the "discoverable-client" sample service with service ID "staticclient". An integration test checks that the response of one endpoint is same.
+[config/local/api-defs/staticclient.yml](/config/local/api-defs/staticclient.yml) contains a static definition of the "discoverable-client" sample service with service ID "staticclient". An message test checks that the message of one endpoint is same.
 
 An example for z/OSMF is provided in [config/local/api-defs/zosmf-sample.yml](/config/local/api-defs/zosmf-sample.yml)
 
@@ -55,7 +55,7 @@ Reload static API definitions:
 
 Notes:
  * `http` is a CLI REST API client (https://httpie.org/)
- *  `-j` requests response in JSON format
+ *  `-j` requests message in JSON format
  *  `--verify=keystore/local_ca/localca.cer` trusts the CA that has signed the HTTPS certificate of the localhost system
  *  `--cert=keystore/localhost/localhost.pem` to provide client certificate that authorizes you to access the Discovery Service API
 

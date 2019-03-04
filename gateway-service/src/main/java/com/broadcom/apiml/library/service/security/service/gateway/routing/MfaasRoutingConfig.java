@@ -16,8 +16,8 @@ import com.broadcom.apiml.library.service.security.service.gateway.filters.pre.L
 import com.broadcom.apiml.library.service.security.service.gateway.filters.pre.SlashFilter;
 import com.broadcom.apiml.library.service.security.service.gateway.filters.pre.ZosmfFilter;
 import com.broadcom.apiml.library.service.security.service.gateway.ws.WebSocketProxyServerHandler;
-import com.broadcom.apiml.library.service.security.service.security.config.SecurityConfigurationProperties;
-import com.broadcom.apiml.library.service.security.service.security.token.TokenService;
+import com.broadcom.apiml.library.security.config.SecurityConfigurationProperties;
+import com.broadcom.apiml.library.security.token.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;

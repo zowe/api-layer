@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
+apply plugin: "java"
 
 repositories {
     mavenCentral()
@@ -25,7 +25,7 @@ dependencies {
     compile libraries.spring_boot_starter_websocket
     compile("org.json:json:20180813")
     compile("io.jsonwebtoken:jjwt:0.9.1")
-    compile(project(':security-module'))
+    compile(project(":security-module"))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest
@@ -40,18 +40,18 @@ dependencies {
 }
 
 jar {
-    baseName = "integration-tests"
+    baseName = "message-tests"
 }
 
 test.enabled = false
 
 task startUpCheck(type: Test) {
-    group 'integration test'
+    group "message test"
     description "Check that the API Mediation Layer is up and runnig"
 
     systemProperties System.properties
     useJUnit {
-        includeCategories 'com.ca.mfaas.utils.categories.StartupCheck'
+        includeCategories "com.ca.mfaas.utils.categories.StartupCheck"
     }
     outputs.upToDateWhen { false }
 }
@@ -64,23 +64,23 @@ task runIntegrationTests(type: Test) {
     systemProperties System.properties
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.SlowTests',
-            'com.ca.mfaas.utils.categories.LocalDeploymentTest'
+            "com.ca.mfaas.utils.categories.StartupCheck",
+            "com.ca.mfaas.utils.categories.SlowTests",
+            "com.ca.mfaas.utils.categories.LocalDeploymentTest"
         )
     }
 }
 
 task runLocalDeploymentIntegrationTests(type: Test) {
     group "Integration tests"
-    description "Run integration tests with local deployment of helloworld-spring"
+    description "Run message tests with local deployment of helloworld-spring"
 
     dependsOn startUpCheck
     systemProperties System.getProperties()
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.SlowTests'
+            "com.ca.mfaas.utils.categories.StartupCheck",
+            "com.ca.mfaas.utils.categories.SlowTests"
         )
     }
     outputs.upToDateWhen { false }
@@ -88,14 +88,14 @@ task runLocalDeploymentIntegrationTests(type: Test) {
 
 task runAllIntegrationTests(type: Test) {
     group "Integration tests"
-    description "Run all integration tests"
+    description "Run all message tests"
 
     dependsOn startUpCheck
     systemProperties System.properties
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.LocalDeploymentTest'
+            "com.ca.mfaas.utils.categories.StartupCheck",
+            "com.ca.mfaas.utils.categories.LocalDeploymentTest"
         )
     }
     outputs.upToDateWhen { false }

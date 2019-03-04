@@ -11,8 +11,8 @@ buildscript {
     }
 }
 
-apply plugin: 'java'
-apply plugin: 'io.spring.dependency-management'
+apply plugin: "java"
+apply plugin: "io.spring.dependency-management"
 
 jar {
     baseName = "enabler-springboot-${springBootVersion}"
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    compile(project(':common-service-core'))
+    compile(project(":common-service-core"))
 
     compile libraries.springFox
     compile libraries.springFoxWeb

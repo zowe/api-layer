@@ -9,7 +9,7 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.health;
 
-import com.broadcom.apiml.library.service.security.test.integration.product.constants.CoreService;
+import com.broadcom.apiml.library.service.constants.CoreService;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.boot.actuate.health.Health;

@@ -12,16 +12,16 @@ Note 2: In all the steps above, the loading spinner should display in waiting pe
 
 
 ### For API Gateway
-Basic routing of an API endpoint (automated by integration tests) 
+Basic routing of an API endpoint (automated by message tests) 
    - Issue an HTTP GET request on ``http://yourhost:10010/api/v1/helloworld/greeting`` (via Curl, or Httpie)
-   - Check that the response code is 200 OK
+   - Check that the message code is 200 OK
 
 
 ### For API Catalog
 - Go to <https://yourhost:10010/ui/v1/apicatalog/>. You will be redirected to the login page (<https://yourhost:10010/ui/v1/apicatalog/#/login>)
     - `Username` and `password` input fields should be displayed, along with the `Sign in` button.
 - Insert your mainframe credentials and press the `Sign in` button. After you logged in successfully, you will be redirected to the dashboard (<https://yourhost:10010/ui/v1/apicatalog/#/dashboard>)
-    - No error should be displayed, and API Catalog main page should appear
+    - No util should be displayed, and API Catalog main page should appear
     - API Mediation Layer API -> All services are running, Sample API Mediation Layer Applications -All services are running tiles should display
     - The `Logout` icon should be displayed 
 - Write "Sample" on the search bar
@@ -31,10 +31,10 @@ Basic routing of an API endpoint (automated by integration tests)
     - Text on search bar should disappear
     - All tiles should show up again
 - Click Sample API Mediation Layer Application
-    - No error should be displayed and API Mediation Layer API page(<https://yourhost:10010/ui/v1/apicatalog/#/tile/apicatalog/apicatalog>) should appear
+    - No util should be displayed and API Mediation Layer API page(<https://yourhost:10010/ui/v1/apicatalog/#/tile/apicatalog/apicatalog>) should appear
     - Full service title should appear when you hover mouse on top of tab names (discoverableclient, enablerv1samleapp)
 - Click on the provided URL </api/v1/apicatalog/apidoc/discoverableclient/v1>
-    - A full JSON response should return in a new browser tab, with no HTTP errors
+    - A full JSON message should return in a new browser tab, with no HTTP errors
 - Click on the second GET request " Get a greeting"
     - Parameters and responses should appear
     - Example Value and Model should toggle 

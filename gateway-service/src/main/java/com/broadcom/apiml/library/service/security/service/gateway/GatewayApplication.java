@@ -10,9 +10,9 @@
 package com.broadcom.apiml.library.service.security.service.gateway;
 
 import com.broadcom.apiml.library.service.security.service.gateway.ribbon.GatewayRibbonConfig;
-import com.broadcom.apiml.library.service.security.test.integration.enable.EnableApiDiscovery;
-import com.broadcom.apiml.library.service.security.test.integration.product.service.BuildInfo;
-import com.broadcom.apiml.library.service.security.test.integration.product.service.ServiceStartupEventHandler;
+import com.broadcom.apiml.library.service.response.enable.EnableApiDiscovery;
+import com.broadcom.apiml.library.service.service.BuildInfo;
+import com.broadcom.apiml.library.service.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

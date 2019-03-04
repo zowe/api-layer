@@ -9,8 +9,8 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.filters.post;
 
-import com.broadcom.apiml.library.service.security.service.security.config.SecurityConfigurationProperties;
-import com.broadcom.apiml.library.service.security.service.security.config.SecurityConfigurationProperties.CookieProperties;
+import com.broadcom.apiml.library.security.config.SecurityConfigurationProperties;
+import com.broadcom.apiml.library.security.config.SecurityConfigurationProperties.CookieProperties;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 

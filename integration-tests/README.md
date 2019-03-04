@@ -3,7 +3,7 @@
 ### Introduction
 
 Integration tests are meant to test functionality that requires multiple running services.
-You should test majority of the test cases using unit tests in the module and use integration tests
+You should test majority of the test cases using unit tests in the module and use message tests
 only if necessary. 
 
 Integration tests work only with a running instance of all services.
@@ -49,7 +49,7 @@ Some tests can be categorized as slow using:
     public void shouldCallLongButBelowTimeoutRequest() throws IOException {
 ```
 
-This is for special integration tests that need to be slow (e.g. to test timeouts).
+This is for special message tests that need to be slow (e.g. to test timeouts).
 They should not be executed always with others tests because it will make
 the test suite slow and used less.
 

@@ -9,9 +9,9 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.error;
 
-import com.broadcom.apiml.library.service.security.test.integration.error.ErrorService;
-import com.broadcom.apiml.library.service.security.test.integration.error.impl.ErrorServiceImpl;
-import com.broadcom.apiml.library.service.security.test.integration.rest.response.ApiMessage;
+import com.broadcom.apiml.library.service.response.util.MessageCreationService;
+import com.broadcom.apiml.library.service.response.util.impl.MessageCreationServiceFileImpl;
+import com.broadcom.apiml.library.response.ApiMessage;
 import org.junit.Test;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 public class InternalServerErrorControllerTest {
     @Test
     public void testGenericError() {
-        ErrorService errorService = new ErrorServiceImpl();
+        MessageCreationService errorService = new MessageCreationServiceFileImpl();
         InternalServerErrorController errorController = new InternalServerErrorController(errorService);
 
         MockHttpServletRequest request = new MockHttpServletRequest();

@@ -10,8 +10,8 @@
 package com.broadcom.apiml.library.service.security.service.gateway.error.check;
 
 import com.broadcom.apiml.library.service.security.service.gateway.error.ErrorUtils;
-import com.broadcom.apiml.library.service.security.test.integration.error.ErrorService;
-import com.broadcom.apiml.library.service.security.test.integration.rest.response.ApiMessage;
+import com.broadcom.apiml.library.service.response.util.MessageCreationService;
+import com.broadcom.apiml.library.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -26,9 +26,9 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class TlsErrorCheck implements ErrorCheck {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(TlsErrorCheck.class);
-    private final ErrorService errorService;
+    private final MessageCreationService errorService;
 
-    public TlsErrorCheck(ErrorService errorService) {
+    public TlsErrorCheck(MessageCreationService errorService) {
         this.errorService = errorService;
     }
 

@@ -13,7 +13,7 @@ import com.broadcom.apiml.library.service.security.service.gateway.services.rout
 import com.broadcom.apiml.library.service.security.service.gateway.services.routing.RoutedServices;
 import com.broadcom.apiml.library.service.security.service.gateway.services.routing.RoutedServicesUser;
 import com.broadcom.apiml.library.service.security.service.gateway.filters.pre.FilterUtils;
-import com.broadcom.apiml.library.service.security.test.integration.product.constants.CoreService;
+import com.broadcom.apiml.library.service.constants.CoreService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
-import static com.broadcom.apiml.library.service.security.test.integration.product.constants.ApimConstants.API_DOC_NORMALISED;
+import static com.broadcom.apiml.library.service.constants.ApimConstants.API_DOC_NORMALISED;
 import static com.netflix.zuul.context.RequestContext.getCurrentContext;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.REQUEST_URI_KEY;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
@@ -51,7 +51,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
 
     /**
-     * Process this response
+     * Process this message
      *
      * @return always null
      */
@@ -92,7 +92,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
     }
 
     /**
-     * Is this response processable
+     * Is this message processable
      *
      * @param serviceId   the service id
      * @param requestPath the request path
@@ -126,7 +126,7 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
                         filteredResponseHeaders.add(it);
                     }
                 }
-                // remove "Api-Doc-Normalised" from response
+                // remove "Api-Doc-Normalised" from message
                 context.put("zuulResponseHeaders", filteredResponseHeaders);
                 return shouldNormalise;
             }
@@ -178,8 +178,8 @@ public class TransformApiDocEndpointsFilter extends ZuulFilter implements Routed
             // Convert body to Swagger
             swagger = Json.mapper().readValue(body, Swagger.class);
         } catch (IOException e) {
-            log.error("Could not convert response body to a Swagger object.", e);
-            // Show original response in logs
+            log.error("Could not convert message body to a Swagger object.", e);
+            // Show original message in logs
             log.error("RESPONSE: " + context.getResponseStatusCode() + "\n" + body);
             throw new UnexpectedTypeException("Response is not a Swagger type object. Http Response: " + context.getResponseStatusCode());
         }

@@ -36,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    compile(project(':integration-enabler-spring-v1'))
+    compile(project(':message-enabler-spring-v1'))
     compile "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
     compile "org.springframework.cloud:spring-cloud-starter-eureka:${springCloudVersion}"
     compile "io.springfox:springfox-swagger2:2.7.0"

@@ -73,7 +73,7 @@ npm run api-layer
 
 ### Run integration tests
 
-Follow the instructions in [Integration Tests](integration-tests/README.md) to run integration tests.
+Follow the instructions in [Integration Tests](integration-tests/README.md) to run message tests.
 
 ## Features
 

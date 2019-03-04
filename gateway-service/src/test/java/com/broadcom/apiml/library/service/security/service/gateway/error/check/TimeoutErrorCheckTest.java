@@ -11,9 +11,9 @@ package com.broadcom.apiml.library.service.security.service.gateway.error.check;
 
 import com.broadcom.apiml.library.service.security.service.gateway.error.ErrorUtils;
 import com.broadcom.apiml.library.service.security.service.gateway.error.InternalServerErrorController;
-import com.broadcom.apiml.library.service.security.test.integration.error.ErrorService;
-import com.broadcom.apiml.library.service.security.test.integration.error.impl.ErrorServiceImpl;
-import com.broadcom.apiml.library.service.security.test.integration.rest.response.ApiMessage;
+import com.broadcom.apiml.library.service.response.util.MessageCreationService;
+import com.broadcom.apiml.library.service.response.util.impl.MessageCreationServiceFileImpl;
+import com.broadcom.apiml.library.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.BeforeClass;
@@ -34,7 +34,7 @@ public class TimeoutErrorCheckTest {
     @BeforeClass
     public static void setup() {
         MonitoringHelper.initMocks();
-        ErrorService errorService = new ErrorServiceImpl();
+        MessageCreationService errorService = new MessageCreationServiceFileImpl();
         errorController = new InternalServerErrorController(errorService);
     }
 

@@ -33,7 +33,7 @@ gitProperties {
 
 dependencies {
     compile(project(':gateway-common'))
-    compile(project(':integration-enabler-spring-v2'))
+    compile(project(':message-enabler-spring-v2'))
     compile(project(':common-service-core'))
     compile(project(':security-module'))
 

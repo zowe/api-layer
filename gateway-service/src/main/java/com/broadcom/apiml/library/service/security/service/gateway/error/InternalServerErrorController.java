@@ -9,12 +9,12 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.error;
 
-import com.broadcom.apiml.library.service.security.test.integration.error.ErrorService;
+import com.broadcom.apiml.library.service.response.util.MessageCreationService;
 import com.broadcom.apiml.library.service.security.service.gateway.error.check.ErrorCheck;
 import com.broadcom.apiml.library.service.security.service.gateway.error.check.SecurityTokenErrorCheck;
 import com.broadcom.apiml.library.service.security.service.gateway.error.check.TimeoutErrorCheck;
 import com.broadcom.apiml.library.service.security.service.gateway.error.check.TlsErrorCheck;
-import com.broadcom.apiml.library.service.security.test.integration.rest.response.ApiMessage;
+import com.broadcom.apiml.library.response.ApiMessage;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +42,11 @@ public class InternalServerErrorController implements ErrorController {
     private static final String PATH = "/internal_error";
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(InternalServerErrorController.class);
 
-    private final ErrorService errorService;
+    private final MessageCreationService errorService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
 
     @Autowired
-    public InternalServerErrorController(ErrorService errorService) {
+    public InternalServerErrorController(MessageCreationService errorService) {
         this.errorService = errorService;
         errorChecks.add(new TlsErrorCheck(errorService));
         errorChecks.add(new TimeoutErrorCheck(errorService));

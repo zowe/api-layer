@@ -9,7 +9,7 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.filters.pre;
 
-import com.broadcom.apiml.library.service.security.service.security.token.TokenService;
+import com.broadcom.apiml.library.security.token.TokenService;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;

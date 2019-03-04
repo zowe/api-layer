@@ -1,18 +1,18 @@
 ext.springBootEnablers = [
-    'integration-enabler-spring-v1',
-    'integration-enabler-spring-v2'
+    "message-enabler-spring-v1",
+    "message-enabler-spring-v2"
 ]
 
 ext.javaEnablers = [
-    'integration-enabler-java'
+    "message-enabler-java"
 ]
 
 ext.javaLibraries = [
-    'common-service-core',
-    'gateway-common'
+    "common-service-core",
+    "gateway-common"
 ]
 
-ext.serviceJars = ['zowe-install']
+ext.serviceJars = ["zowe-install"]
 ext.enablers = ext.springBootEnablers + ext.javaEnablers
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
 
@@ -24,7 +24,7 @@ ext.publishExternalServiceDependenciesList = externalServiceDependencies.collect
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
     apply plugin: "maven"
-    apply plugin: 'maven-publish'
+    apply plugin: "maven-publish"
 
     publishing {
         repositories.maven {
@@ -43,7 +43,7 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
     publishing {
         publications {
             mavenJava(MavenPublication) {
-                groupId 'com.ca.mfaas.sdk'
+                groupId "com.ca.mfaas.sdk"
                 version rootProject.version
                 if (project.name in springBootEnablers) {
                     artifactId "mfaas-${project.name}-springboot-${springBootVersion}"
@@ -54,11 +54,11 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
                 from components.java
 
                 pom.withXml {
-                    asNode().dependencies.'*'.findAll() {
-                        it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
+                    asNode().dependencies."*".findAll() {
+                        it.scope.text() == "runtime" && project.configurations.compile.allDependencies.find { dep ->
                             dep.name == it.artifactId.text()
                         }
-                    }.each { it.scope*.value = 'compile' }
+                    }.each { it.scope*.value = "compile" }
                 }
             }
         }
@@ -81,15 +81,15 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
 
 //noinspection GroovyAssignabilityCheck
 task publishSdkArtifacts {
-    group 'Zoe Publishing'
-    description 'Publish SDK libraries for main version of Spring Boot to Zoe Artifactory'
+    group "Zoe Publishing"
+    description "Publish SDK libraries for main version of Spring Boot to Zoe Artifactory"
     doLast {
-        println 'Published SDK libraries for main version of Spring Boot to Zoe Artifactory'
+        println "Published SDK libraries for main version of Spring Boot to Zoe Artifactory"
     }
 }
 
 task publishExternalServiceDependencies {
-    group 'External dependencies Publishing'
+    group "External dependencies Publishing"
 }
 publishSdkArtifacts.dependsOn publishTasksList
 publishExternalServiceDependencies.dependsOn publishExternalServiceDependenciesList

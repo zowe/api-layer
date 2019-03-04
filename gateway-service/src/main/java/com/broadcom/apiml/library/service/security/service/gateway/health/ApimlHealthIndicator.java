@@ -9,7 +9,7 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.health;
 
-import com.broadcom.apiml.library.service.security.test.integration.product.constants.CoreService;
+import com.broadcom.apiml.library.service.constants.CoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;

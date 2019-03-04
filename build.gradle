@@ -1,8 +1,0 @@
-group 'com.broadcom.apiml'
-
-repositories {
-    mavenCentral()
-}
-
-apply from: 'gradle/versions.gradle'
-apply from: 'gradle/code-quality.gradle'

@@ -77,7 +77,7 @@ public class ApiDocController {
         "        ],\n" +
         "        \"responses\": {\n" +
         "          \"200\": {\n" +
-        "            \"description\": \"pet response\",\n" +
+        "            \"description\": \"pet message\",\n" +
         "            \"schema\": {\n" +
         "              \"type\": \"array\",\n" +
         "              \"items\": {\n" +
@@ -112,7 +112,7 @@ public class ApiDocController {
         "        ],\n" +
         "        \"responses\": {\n" +
         "          \"200\": {\n" +
-        "            \"description\": \"pet response\",\n" +
+        "            \"description\": \"pet message\",\n" +
         "            \"schema\": {\n" +
         "              \"$ref\": \"#/definitions/Pet\"\n" +
         "            }\n" +
@@ -148,7 +148,7 @@ public class ApiDocController {
         "        ],\n" +
         "        \"responses\": {\n" +
         "          \"200\": {\n" +
-        "            \"description\": \"pet response\",\n" +
+        "            \"description\": \"pet message\",\n" +
         "            \"schema\": {\n" +
         "              \"$ref\": \"#/definitions/Pet\"\n" +
         "            }\n" +
@@ -300,7 +300,7 @@ public class ApiDocController {
         "        ],\n" +
         "        \"responses\": {\n" +
         "          \"200\": {\n" +
-        "            \"description\": \"pet response\",\n" +
+        "            \"description\": \"pet message\",\n" +
         "            \"schema\": {\n" +
         "              \"type\": \"array\",\n" +
         "              \"items\": {\n" +
@@ -335,7 +335,7 @@ public class ApiDocController {
         "        ],\n" +
         "        \"responses\": {\n" +
         "          \"200\": {\n" +
-        "            \"description\": \"pet response\",\n" +
+        "            \"description\": \"pet message\",\n" +
         "            \"schema\": {\n" +
         "              \"$ref\": \"#/definitions/Pet\"\n" +
         "            }\n" +
@@ -371,7 +371,7 @@ public class ApiDocController {
         "        ],\n" +
         "        \"responses\": {\n" +
         "          \"200\": {\n" +
-        "            \"description\": \"pet response\",\n" +
+        "            \"description\": \"pet message\",\n" +
         "            \"schema\": {\n" +
         "              \"$ref\": \"#/definitions/Pet\"\n" +
         "            }\n" +

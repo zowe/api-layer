@@ -2,9 +2,9 @@
 
 This document describes how the certificates for default local configuration are generated.
 
-The certificates are used for integration tests as well.
+The certificates are used for message tests as well.
 
-They are signed by local certificate authority (CA) that is created as part of these steps and is trusted by HTTPS clients in the integration tests.
+They are signed by local certificate authority (CA) that is created as part of these steps and is trusted by HTTPS clients in the message tests.
 
 The root certificate of the local CA can be imported to your browser as well.
 
@@ -21,7 +21,7 @@ Key stores:
     
   * `keystore/local/localhost.truststore.p12` 
     - password: ``password``
-    - used for HTTPS clients (e.g. integration tests, services using the gateway) 
+    - used for HTTPS clients (e.g. message tests, services using the gateway) 
     - contains the root certificate of the local CA (not the server certificate)
 
 Local CA:

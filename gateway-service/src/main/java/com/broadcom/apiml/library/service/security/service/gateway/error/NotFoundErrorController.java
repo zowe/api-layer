@@ -9,8 +9,8 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.error;
 
-import com.broadcom.apiml.library.service.security.test.integration.error.ErrorService;
-import com.broadcom.apiml.library.service.security.test.integration.rest.response.ApiMessage;
+import com.broadcom.apiml.library.service.response.util.MessageCreationService;
+import com.broadcom.apiml.library.response.ApiMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.core.Ordered;
@@ -27,10 +27,10 @@ import javax.servlet.http.HttpServletRequest;
 public class NotFoundErrorController implements ErrorController {
 
     private static final String PATH = "/not_found";
-    private final ErrorService errorService;
+    private final MessageCreationService errorService;
 
     @Autowired
-    public NotFoundErrorController(ErrorService errorService) {
+    public NotFoundErrorController(MessageCreationService errorService) {
         this.errorService = errorService;
     }
 

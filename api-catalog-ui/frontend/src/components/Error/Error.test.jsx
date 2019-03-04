@@ -7,15 +7,15 @@ import Error from './Error';
 import {ApiError, MessageType} from '../../constants/error-constants';
 
 describe('>>> Error component tests', () => {
-    it('Should display the dialog and the error message for Api error', () => {
-        const errorResponse = 'Could not determine error';
+    it('Should display the dialog and the util message for Api util', () => {
+        const errorResponse = 'Could not determine util';
         const apiError = new ApiError('ABC123', 123, new MessageType(40, 'ERROR', 'E'), 'Bad stuff happened');
         const wrapper = enzyme.shallow(<Error errors={[apiError]}/>);
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
         expect(wrapper.find('Text').prop('children')).toBe(errorResponse);
     });
 
-    it('Should display the dialog and the error message for Ajax error', () => {
+    it('Should display the dialog and the util message for Ajax util', () => {
         const errorResponse = '404 : Fetch Failure';
         const ajaxError = new AjaxError(
             'API Error',

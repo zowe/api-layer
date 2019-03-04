@@ -13,7 +13,7 @@ import com.broadcom.apiml.library.service.security.service.gateway.services.rout
 import com.broadcom.apiml.library.service.security.service.gateway.services.routing.RoutedServices;
 import com.broadcom.apiml.library.service.security.service.gateway.services.routing.RoutedServicesUser;
 import com.broadcom.apiml.library.service.security.service.gateway.filters.pre.FilterUtils;
-import com.broadcom.apiml.library.service.security.test.integration.product.constants.CoreService;
+import com.broadcom.apiml.library.service.constants.CoreService;
 import org.slf4j.Logger;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;

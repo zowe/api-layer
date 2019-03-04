@@ -267,7 +267,7 @@ public class InstanceRetrievalService {
      * Query Discovery
      *
      * @param requestInfo information used to query the discovery service
-     * @return ResponseEntity<String> query response
+     * @return ResponseEntity<String> query message
      */
     private ResponseEntity<String> queryDiscoveryForInstances(Pair<String, Pair<String, String>> requestInfo) {
         HttpEntity<?> entity = new HttpEntity<>(null, createRequestHeader(requestInfo.getRight()));
@@ -286,7 +286,7 @@ public class InstanceRetrievalService {
     /**
      * @param serviceId the service to search for
      * @param url       try to find instance with this discovery url
-     * @param response  the fetch attempt response
+     * @param response  the fetch attempt message
      * @return service instance
      */
     private InstanceInfo extractSingleInstanceFromApplication(String serviceId, String url, ResponseEntity<String> response) {

@@ -9,8 +9,8 @@
  */
 package com.broadcom.apiml.library.service.security.service.gateway.error.check;
 
-import com.broadcom.apiml.library.service.security.test.integration.error.ErrorService;
-import com.broadcom.apiml.library.service.security.test.integration.rest.response.ApiMessage;
+import com.broadcom.apiml.library.service.response.util.MessageCreationService;
+import com.broadcom.apiml.library.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
@@ -28,9 +28,9 @@ public class TimeoutErrorCheck implements ErrorCheck {
 
     private static final String ERROR_CAUSE_TIMEOUT = "TIMEOUT";
 
-    private final ErrorService errorService;
+    private final MessageCreationService errorService;
 
-    public TimeoutErrorCheck(ErrorService errorService) {
+    public TimeoutErrorCheck(MessageCreationService errorService) {
         this.errorService = errorService;
     }
 
