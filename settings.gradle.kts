@@ -19,7 +19,7 @@ rootProject.name = "api-mediation-layer"
 //include("libraries:apiml-core", "libraries:gateway-common","libraries:enabler-java", "libraries:enabler-spring-boot-v2", "libraries:enabler-spribg-boot-v1")
 include("libraries:apiml-core")
 include("libraries:security-library")
-//include("libraries:gateway-common")
+include("libraries:gateway-common")
 //include("libraries:enabler-java")
 //include("libraries:enabler-spring-boot-v2")
 //include("libraries:enabler-spribg-boot-v1")

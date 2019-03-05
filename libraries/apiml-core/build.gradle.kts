@@ -48,16 +48,6 @@ pmd {
     isIgnoreFailures = true
 }
 
-//
-//tasks.withType<Checkstyle>().configureEach {
-//    configFile = File("codequality/checkstyle/checkstyle.xml")
-//    reports {
-//        xml.isEnabled = false
-//        html.isEnabled = true
-//        html.stylesheet = resources.text.fromFile("config/xsl/checkstyle-custom.xsl")
-//    }
-//}
-
 repositories {
     mavenCentral()
 }
