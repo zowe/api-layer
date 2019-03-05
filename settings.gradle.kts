@@ -16,7 +16,6 @@ rootProject.name = "api-mediation-layer"
 // New Structure
 
 //Libraries
-//include("libraries:apiml-core", "libraries:gateway-common","libraries:enabler-java", "libraries:enabler-spring-boot-v2", "libraries:enabler-spribg-boot-v1")
 include("libraries:apiml-core")
 include("libraries:security-library")
 include("libraries:gateway-common")
@@ -26,6 +25,8 @@ include("libraries:enabler-java")
 
 
 // Core Services
+include("services:discovery")
+include("services:gateway")
 //include( "services:discovery", "services:gateway", "services:api-catalog")
 
 // Sample Applications
