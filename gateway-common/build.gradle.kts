@@ -1,11 +1,19 @@
-apply plugin: "java"
+plugins {
+    java
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile(project(":core-library"))
+    implementation(project(":core-library"))
+
+    testImplementation("junit:junit:4.12")
+}
+
+
+//dependencies {
 
 //    compile(libraries.spring_boot_starter_web)
 //    compile(libraries.commons_validator)
@@ -24,4 +32,4 @@ dependencies {
 //    testCompile(libraries.power_mock_junit4)
 //    testCompile(libraries.power_mock_junit4_rule)
 //    testCompile(libraries.gson)
-}
+//}
