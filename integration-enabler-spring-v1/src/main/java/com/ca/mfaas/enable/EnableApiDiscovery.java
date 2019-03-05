@@ -14,7 +14,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
 
@@ -26,7 +25,6 @@ import java.lang.annotation.*;
 @Inherited
 @EnableEurekaClient
 @EnableConfigurationProperties(value = {ApiPropertiesContainerV1.class})
-@Import({EnablerV1SpringFoxConfig.class})
 public @interface EnableApiDiscovery {
 
 }
