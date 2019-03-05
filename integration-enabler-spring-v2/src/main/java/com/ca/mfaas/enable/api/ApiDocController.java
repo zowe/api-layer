@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -39,7 +40,6 @@ import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 @RestController
 @RequestMapping("/")
 @ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
-
 public class ApiDocController {
 
     private final boolean apiDocEnabled;
@@ -57,7 +57,7 @@ public class ApiDocController {
     public ApiDocController(
         @Value("${eureka.instance.metadata-map.mfaas.discovery.enableApiDoc:true}") boolean apiDocEnabled,
         @Value("${eureka.instance.metadata-map.mfaas.api-info.swagger.location:}") String swaggerLocation,
-        LocalApiDocService localApiDocService)  {
+        @Nullable LocalApiDocService localApiDocService)  {
         this.apiDocEnabled = apiDocEnabled;
         this.swaggerLocation = swaggerLocation;
         this.localApiDocService = localApiDocService;
