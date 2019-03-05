@@ -1,32 +1,17 @@
 rootProject.name = "api-mediation-layer"
 
-/// Core Services
-//include(":discovery-service")
-//include(":gateway-service")
-//include(":discoverable-client")
-//include(":security-service")
-//
-///// Core libraries
-//include(":core-library")
-//include(":security-module")
-//include(":gateway-common")
-//include(":enabler-spring-boot-v2")
-//include(":enabler-spring-boot-v1")
-
-// New Structure
-
-//Libraries
-include("libraries:apiml-core")
-include("libraries:security-library")
-include("libraries:gateway-common")
-include("libraries:enabler-java")
+// Core Libraries
+include(":libraries:apiml-core")
+include(":libraries:security-library")
+include(":libraries:gateway-common")
+include(":libraries:enabler-java")
 //include("libraries:enabler-spring-boot-v2")
 //include("libraries:enabler-spribg-boot-v1")
 
 
 // Core Services
-include("services:discovery")
-include("services:gateway")
+include(":services:discovery")
+include(":services:gateway")
 //include( "services:discovery", "services:gateway", "services:api-catalog")
 
 // Sample Applications
@@ -36,16 +21,11 @@ include("services:gateway")
 //include("sample-apps:sample-app-jersey")
 //include("sample-apps:sample-app-spring")
 
-/// Tests
+// Tests
 //include(":message-tests")
 
-//include 'helloworld-jersey'
-//include 'message-enabler-spring-v1'
-//include 'message-enabler-spring-v1-sample-app'
+// Other
 //include 'zowe-install'
-//include 'helloworld-spring'
-//include 'message-enabler-java'
-//include 'api-catalog-services'
 //include 'api-catalog-ui'
 
 

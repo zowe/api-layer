@@ -1,0 +1,34 @@
+//apply plugin: "java"
+//apply plugin: "io.spring.dependency-management"
+//
+//jar {
+//    baseName = "enabler-springboot-${springBootVersion}"
+//    archiveName = "${baseName}.jar"
+//}
+
+//repositories {
+//    mavenCentral()
+//}
+//
+//dependencies {
+//    compile(project(":common-service-core"))
+//
+//    compile libraries.springFox
+//    compile libraries.springFoxWeb
+//    compile libraries.javax_validation
+//    compile libraries.spring_cloud_starter_eureka
+//    compile libraries.spring_boot_starter_actuator
+//
+//    compileOnly libraries.spring_boot_starter_web
+//    compileOnly libraries.javax_servlet_api
+//
+//    testCompile libraries.gson
+//    testCompile libraries.powermock_api_mockito2
+//    testCompile libraries.power_mock_junit4
+//    testCompile libraries.power_mock_junit4_rule
+//    testCompile libraries.spring_boot_starter_web
+//    testCompile libraries.spring_boot_starter_test
+//    testCompile libraries.javax_servlet_api
+//    testCompile libraries.snakeyaml
+//    testCompile libraries.javax_servlet_api
+//}

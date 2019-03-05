@@ -1,5 +1,5 @@
 allprojects {
-    val version= "1.0.2-SNAPSHOT"
+    val version = "1.0.2-SNAPSHOT"
     val springBootVersion = "2.1.3.RELEASE"
 }
 

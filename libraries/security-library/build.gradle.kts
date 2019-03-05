@@ -70,7 +70,6 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test:5.1.4.RELEASE")
 
 
-
 //
 //        compileOnly libraries.slf4j_api
 //        compileOnly libraries.javax_servlet_api

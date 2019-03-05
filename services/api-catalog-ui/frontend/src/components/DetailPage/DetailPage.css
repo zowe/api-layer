@@ -1,0 +1,122 @@
+* {
+    box-sizing: border-box;
+}
+
+.detail-page {
+    text-align: left;
+    background-color: #EFEFEF;
+}
+
+.back-button {
+    padding: 1rem;
+}
+
+.api-desc {
+    background-color: #ffffff;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    border-bottom: #111 3px thin;
+    padding: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+.opblock-summary-description {
+    text-align: right;
+}
+
+.tile-desc {
+    margin-top: .6rem;
+    margin-bottom: .6rem;
+}
+
+.api-title-container {
+    border-bottom: #111 3px thin;
+    padding: .3rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+}
+
+.back-button-container {
+    float: left;
+}
+
+.detailed-description-container {
+    margin-top: 2rem;
+    text-align: left;
+    overflow: hidden;
+    width: 100%;
+}
+
+.api-description-container {
+    padding: 2.2rem;
+}
+
+#go-back-button > span > svg {
+    margin: 0;
+}
+
+#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > hgroup > h2 > small {
+    display: block;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+#go-back-button {
+    width: fit-content;
+    padding-left: .6rem;
+    padding-right: .6rem;
+    height: 32px;
+    border-radius: 3px;
+    background-color: #fff;
+    cursor: pointer;
+    color: #0c7bb3;
+    transition: .3s background-color;
+}
+
+#go-back-button:hover {
+    background-color: #f5f7fa;
+}
+
+#title {
+    padding: 2rem .3rem 1.3rem 0;
+    color: #58606e;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.0;
+}
+
+#description {
+    color: #58606e;
+    line-height: 130%;
+}
+
+.no-tiles-container {
+    margin-top: 2rem;
+    margin-left: 2rem;
+    text-align: left;
+    overflow: hidden;
+    width: 100%;
+}
+
+.no-tiles-container {
+    margin-top: 2rem;
+    margin-left: 2rem;
+    text-align: left;
+    overflow: hidden;
+    width: 100%;
+}
+
+div.content-description-container > div > div:nth-child(2) > div {
+    width: fit-content;
+}
+
+/*@media (min-width: 972px) {*/
+.api-description-container {
+    background-image: url(../../assets/images/detail-Illustration.svg);
+}
+
+/*}*/

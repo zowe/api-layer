@@ -9,6 +9,11 @@
  */
 package com.broadcom.apiml.library.service.tls;
 
+enum ErrorCode {
+    UNKNOWN_ERROR, HTTP_CLIENT_INITIALIZATION_FAILED, KEYSTORE_NOT_DEFINED, KEYSTORE_PASSWORD_NOT_DEFINED,
+    TRUSTSTORE_PASSWORD_NOT_DEFINED, SSL_CONTEXT_INITIALIZATION_FAILED, TRUSTSTORE_NOT_DEFINED, WRONG_KEY_ALIAS;
+}
+
 public class HttpsConfigError extends RuntimeException {
     private final ErrorCode code;
     private final HttpsConfig config;
@@ -44,9 +49,4 @@ public class HttpsConfigError extends RuntimeException {
         return this.config;
     }
 
-}
-
-enum ErrorCode {
-    UNKNOWN_ERROR, HTTP_CLIENT_INITIALIZATION_FAILED, KEYSTORE_NOT_DEFINED, KEYSTORE_PASSWORD_NOT_DEFINED,
-    TRUSTSTORE_PASSWORD_NOT_DEFINED, SSL_CONTEXT_INITIALIZATION_FAILED, TRUSTSTORE_NOT_DEFINED, WRONG_KEY_ALIAS;
 }

@@ -1,0 +1,123 @@
+body {
+    background-color: #EFEFEF !important;
+    background-image: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+.grid-container {
+    width: 100%;
+    height: 100%;
+    justify-items: center;
+    justify-content: start;
+    padding: 0 3rem 3rem 36px;
+    display: grid;
+    grid-gap: 20px;
+    grid-template-columns: repeat(auto-fill, 422px);
+}
+
+.api-heading {
+    color: #58606e;
+    text-align: left;
+}
+
+.filtering-container {
+    grid-row: 1;
+    grid-column: 1/-1;
+    margin-left: 0;
+    width: 100%;
+    justify-items: left;
+    float: left;
+    grid-template-columns: 422px;
+    grid-template-rows: auto auto;
+}
+
+.no-tiles-container {
+    margin-top: 2rem;
+    margin-left: 2rem;
+    text-align: left;
+    overflow: hidden;
+    width: 100%;
+}
+
+@media only screen and (max-width: 950px) {
+    .grid-container {
+        grid-template-columns: auto;
+    }
+}
+
+@media only screen and (max-width: 530px) {
+    .filtering-container {
+        grid-template-columns: 360px;
+    }
+
+    .grid-container {
+        grid-template-columns: 360px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media only screen and (max-width: 390px) {
+    .filtering-container {
+        grid-template-columns: 320px;
+    }
+
+    .grid-container {
+        grid-template-columns: 320px;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (min-width: 972px) {
+    .apis {
+        background-image: url(../../assets/images/background.svg);
+    }
+}
+
+/* Custom styles for IE10 and above */
+@media screen and (-ms-high-contrast: active), screen and (-ms-high-contrast: none) {
+    .grid-container {
+        width: 100%;
+        height: 100%;
+        padding: 0 3rem 3rem 36px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .grid-container > .grid-tile {
+        margin-bottom: 20px;
+    }
+
+    .filtering-container {
+        margin-left: 0;
+        width: 100%;
+        justify-items: left;
+        float: left;
+    }
+
+    .no-tiles-container {
+        margin-top: 2rem;
+        margin-left: 2rem;
+        text-align: left;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    @media only screen and (max-width: 530px) {
+        .grid-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+
+    @media only screen and (max-width: 390px) {
+        .grid-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+}
