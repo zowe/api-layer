@@ -9,11 +9,13 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.1.0.RELEASE")
-    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-server:2.1.0.RELEASE")
+    implementation("org.springframework.security:spring-security-web:5.1.4.RELEASE")
+    implementation("org.springframework.security:spring-security-config:5.1.4.RELEASE")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-security-test:5.1.4.RELEASE")
 }
 
