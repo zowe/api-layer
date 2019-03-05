@@ -13,7 +13,6 @@ import com.ca.mfaas.enable.model.ApiPropertiesContainer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
 
@@ -24,7 +23,6 @@ import java.lang.annotation.*;
 @Documented
 @Inherited
 @EnableConfigurationProperties(value = {ApiPropertiesContainer.class})
-@Import({EnablerV2Config.class})
 public @interface EnableApiDiscovery {
 
 }

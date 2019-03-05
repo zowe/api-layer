@@ -36,7 +36,7 @@ const authenticationReducerBlacklistFilter = createBlacklistFilter('authenticati
 const persistConfig = {
     key: 'root',
     storage: storageSession,
-    blacklist: ['filtersReducer'],
+    blacklist: ['filtersReducer', 'loadingReducer'],
     transforms: [authenticationReducerBlacklistFilter],
 };
 
