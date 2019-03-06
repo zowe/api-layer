@@ -1,107 +1,99 @@
-# API Mediation Layer.
+# API Mediation Layer
 
-This is a page about API Mediation Layer.
+[Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
 
-* [Quick start 1-2-3](#quick-start-1-2-3)
-    * [Build](#build)
-        * [Prerequisites for build](#prerequisites-for-build)
-        * [Build all modules](#build-all-modules)
-        * [Unit tests](#unit-tests)
-        * [Measure code coverage](#measure-code-coverage)
-    * [Run](#run)
-        * [Prerequisites for run](#prerequisites-for-run)
-    * [Use](#use)
-        * [Run integration tests](#run-integration-tests)
-* [Features](#features)
-* [Topics](#topics)
+[![codecov](https://codecov.io/gh/plavjanik/api-layer/branch/master/graph/badge.svg)](https://codecov.io/gh/zowe/api-layer)
+[![Waffle.io - Columns and their card count](https://badge.waffle.io/zowe/api-layer.svg?columns=all)](https://waffle.io/zowe/api-layer)
+[![SonarQube](https://jayne.zowe.org:9000/api/project_badges/measure?project=zowe%3Aapi-mediation-layer&metric=alert_status)](https://jayne.zowe.org:9000/dashboard?id=zowe%3Aapi-mediation-layer)
 
-## Quick start 1-2-3
+The home of Zowe API Mediation Layer
 
+## Prequisites
 
-1. Build
-2. Run
-3. Use
-
-## Build
-
-
-### Prerequisites for build
 Following platform is required to run the API Mediation Layer:
 
-* **Java** Oracle or IBM Java SE Development Kit 8 (http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html or https://www.ibm.com/developerworks/java/jdk/), Java 10 is not supported.
-* **Node.js** You should be able to run Node.js on your machine.
+* Oracle or IBM Java SE Development Kit 8 (<http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html> or <https://www.ibm.com/developerworks/java/jdk/>), Java 10 is not supported
 
-### Build all modules
-```shell
-./gradlew build
-```
+### Other development prerequisites
 
-### Unit tests
+Following tools are required to build and develop API Mediation Layer:
+
+## Quick start
+
+Bootstrap gradle to get wrapper:
+
+    UNIX
+    ./bootstrap_gradlew.sh
+
+    Windows
+    ./bootstrap_gradlew.bat
+
+Build all modules:
+
+    ./gradlew build
+
+You need to install `concurrently` globally:
+
+    npm install -g concurrently
+
+Run all service on local machine:
+
+    npm run api-layer
+
+## Setting up connection to z/OSMF
+
+z/OSMF is required for the API Catalog login. You need to configure a valid z/OSMF instance to `config/local/api-defs/zosmf-sample.yml` under the `instanceBaseUrls`.
+
+The certificate of z/OSMF needs to be trusted by APIML. You have to options:
+
+1. Import it to the APIML keystore using `scripts/apiml_cm.sh --action trust` as desribed at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other_services)
+
+2. Disable certificate validation as described in [Disabling certificate validation on localhost](/keystore/README.md#Disabling-certificate-validation-on-localhost)
+
+## Run unit tests
+
 Unit tests for Java and TypeScript modules are executed as a part of the build process.
 
-
-#### Measure code coverage
+## Measure code coverage
 
 For the code coverage of all modules, run:
-```shell
-./gradlew coverage
-```
-The code coverage for new code should be higher than 60% and should not be decreased for existing code.
+
+    ./gradlew coverage
+
+The code coverage for new code should be higher that 60% and should not be decreased for existing code.
 
 The reports in HTML format are stored `build/reports/jacoco/test/html/index.html` for each Java module.
 
 For the code coverage of a single Java module (for example `discovery-service`), run:
-```shell
-./gradlew :discovery-service:jacocoTestReport
-```
+
+    ./gradlew :discovery-service:jacocoTestReport
+
 You can an individual test class by:
-```shell
-./gradlew :discovery-service:test --tests com.ca.mfaas.discovery.staticdef.ServiceDefinitionProcessorTest
-```
 
-## Run
-### Prerequisites for run
-* **concurrently**
-You need to install `concurrently` globally:
-```shell
-npm install -g concurrently
-Run all service on the local machine:
-```shell
-npm run api-layer
-```
-## Use
+    ./gradlew :discovery-service:test --tests com.ca.mfaas.discovery.staticdef.ServiceDefinitionProcessorTest
 
-### Run integration tests
+## Run integration tests
 
 Follow the instructions in [Integration Tests](integration-tests/README.md) to run integration tests.
 
-## Features
+## Security
 
-### Security
+For more information about how the certificates between APIML services are setup, see [TLS Certificates for localhost](keystore/README.md).
 
-For more information about how the certificates between APIML services are set up, see [TLS Certificates for localhost](keystore/README.md).
-
-## Topics
-
-### Contributor guidelines
+## Contributor guidelines
 
 Follow the guidelines in [Contributing](CONTRIBUTING.md) to add new functionality.
 
-
-### Local configuration of services
+## Local configuration of services
 
 Follow the guidelines in [Local Configuration](docs/local-configuration.md) to set local environment properties for testing on your local machine include HTTPS setup.
 
 Also if you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
 
-
-### Adding services that do not support API Mediation Layer natively
+## Adding services that does not support API Mediation Layer natively
 
 See [Adding Services to API Gateway without Code Changes](docs/static-apis.md).
 
-
-### API Catalog UI
+## API Catalog UI
 
 For more information about the UI of the Catalog see its [README](api-catalog-ui/frontend/README.md).
-
-Yan collobarator
