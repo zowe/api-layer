@@ -26,7 +26,7 @@ Bootstrap gradle to get wrapper:
     ./bootstrap_gradlew.sh
 
     Windows
-    ./bootstrap_gradlew.bat
+    bootstrap_gradlew.bat
 
 Build all modules:
 
