@@ -9,8 +9,10 @@
  */
 package com.ca.mfaas.enable.services;
 
+import com.ca.mfaas.enable.conditions.ConditionalOnMissingProperty;
 import io.swagger.models.Swagger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import springfox.documentation.service.Documentation;
 import springfox.documentation.spring.web.DocumentationCache;
@@ -22,6 +24,8 @@ import springfox.documentation.swagger2.mappers.ServiceModelToSwagger2Mapper;
 import java.util.*;
 
 @Component
+@ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
+@ConditionalOnMissingProperty("eureka.instance.metadata-map.mfaas.api-info.swagger.location")
 public class LocalApiDocService {
 
     private final DocumentationCache documentationCache;
