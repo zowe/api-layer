@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang.StringEscapeUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;

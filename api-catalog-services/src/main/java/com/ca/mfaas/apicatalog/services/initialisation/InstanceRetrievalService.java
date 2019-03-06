@@ -257,7 +257,7 @@ public class InstanceRetrievalService {
         cachedServicesService.updateService(application.getName(), application);
         application.getInstances().forEach(instanceInfo -> {
             String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
-            String homePage = "";
+            String homePage;
             if (instanceInfo.getHomePageUrl() != null) {
                 InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
                 homePage = gatewayInstance.getHomePageUrl() + "ui/v1/" + instanceInfo.getVIPAddress();
