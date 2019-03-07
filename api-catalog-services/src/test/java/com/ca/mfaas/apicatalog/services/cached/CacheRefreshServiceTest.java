@@ -83,13 +83,13 @@ public class CacheRefreshServiceTest {
         Applications cachedServices = new Applications("1", 1L,cachedState.getApplications());
         when(apiServiceStatusService.getCachedApplicationState()).thenReturn(cachedServices);
 
-        when(cachedProductFamilyService.createContainerFromInstance("apifive", newInstanceOfService5, null))
+        when(cachedProductFamilyService.createContainerFromInstance("apifive", newInstanceOfService5))
             .thenReturn(new APIContainer());
 
         cacheRefreshService.refreshCacheFromDiscovery();
 
         verify(cachedProductFamilyService, times(1))
-            .createContainerFromInstance("apifive", newInstanceOfService5, null);
+            .createContainerFromInstance("apifive", newInstanceOfService5);
     }
 
     @Test

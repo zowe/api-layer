@@ -121,7 +121,7 @@ public class CachedProductFamilyService {
      */
     @Cacheable(key = "#productFamilyId", sync = true)
     public APIContainer getContainer(final String productFamilyId, @NonNull InstanceInfo instanceInfo) {
-        return createContainerFromInstance(productFamilyId, instanceInfo, null);
+        return createContainerFromInstance(productFamilyId, instanceInfo);
     }
 
     /**
@@ -153,6 +153,7 @@ public class CachedProductFamilyService {
      *
      * @param productFamilyId the product family id
      * @param instanceInfo    the service instance
+     * @param homePage   the service homepage url
      */
     @CachePut(key = "#productFamilyId")
     public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo, String homePage) {
@@ -165,6 +166,10 @@ public class CachedProductFamilyService {
             checkIfContainerShouldBeUpdatedFromInstance(productFamilyId, instanceInfo, container);
         }
         return container;
+    }
+
+    public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
+        return createContainerFromInstance(productFamilyId, instanceInfo, null);
     }
 
     /**
@@ -256,7 +261,7 @@ public class CachedProductFamilyService {
      */
     @CacheEvict(key = "#productFamilyId")
     public void updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
-        createContainerFromInstance(productFamilyId, instanceInfo, null);
+        createContainerFromInstance(productFamilyId, instanceInfo);
     }
 
     /**
