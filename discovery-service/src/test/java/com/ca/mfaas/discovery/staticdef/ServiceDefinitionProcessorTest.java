@@ -19,9 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class ServiceDefinitionProcessorTest {
     @Test
@@ -309,6 +307,35 @@ public class ServiceDefinitionProcessorTest {
         System.out.println("testCreateInstancesWithMultipleYmls - result.getErrors():" + result.getErrors());
         assertThat(instances.size(), is(2));
         assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
+
+    }
+
+    @Test
+    public void testEnableUnsecurePortIfHttp() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml = "services:\n" +
+            "    - serviceId: casamplerestapiservice\n" +
+            "      instanceBaseUrls:\n" +
+            "        - http://localhost:10019/casamplerestapiservice/\n" +
+            "      homePageRelativeUrl: api/v1/pets\n" +
+            "      statusPageRelativeUrl: actuator/info\n" +
+            "      healthCheckRelativeUrl: actuator/health\n" +
+            "      routes:\n" +
+            "        - gatewayUrl: api/v1\n" +
+            "          serviceRelativeUrl: api/v1\n" +
+            "        - gatewayUrl: api/v2\n" +
+            "          serviceRelativeUrl: api/v2\n";
+
+
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            Collections.singletonList(routedServiceYaml));
+        List<InstanceInfo> instances = result.getInstances();
+        System.out.println("testCreateInstancesWithMultipleStaticDefinitions - result.getErrors():" + result.getErrors());
+        assertThat(instances.size(), is(1));
+        assertFalse(instances.get(0).isPortEnabled(InstanceInfo.PortType.SECURE));
+        assertTrue(instances.get(0).isPortEnabled(InstanceInfo.PortType.UNSECURE));
+        assertTrue(instances.get(0).getSecurePort() == instances.get(0).getPort());
+        assertEquals(10019, instances.get(0).getSecurePort());
 
     }
 }
