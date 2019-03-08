@@ -14,6 +14,7 @@ import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.swagger.models.ExternalDocs;
 import io.swagger.models.Path;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
@@ -33,6 +34,7 @@ import java.util.*;
 @Service
 public class TransformApiDocService {
     private static final String SWAGGER_LOCATION_LINK = "[Swagger/OpenAPI JSON Document]";
+    private static final String EXTERNAL_DOCUMENTATION = "External documentation";
     private static final String HIDDEN_TAG = "apimlHidden";
     private static final String CATALOG_VERSION = "/api/v1";
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc";
@@ -60,6 +62,7 @@ public class TransformApiDocService {
 
         updateSchemeHostAndLink(swagger, serviceId, apiDocInfo, hidden);
         updatePaths(swagger, serviceId, apiDocInfo, hidden);
+        updateExternalDoc(swagger, apiDocInfo);
 
         try {
             return Json.mapper().writeValueAsString(swagger);
@@ -152,6 +155,20 @@ public class TransformApiDocService {
 
         if (!hidden) {
             swagger.setPaths(updatedPaths);
+        }
+    }
+
+    /**
+     * Updates External documentation in Swagger
+     *
+     * @param swagger    the API doc
+     * @param apiDocInfo the service information
+     */
+    private void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
+        String externalDoc = apiDocInfo.getApiInfo().getDocumentationUrl();
+
+        if (externalDoc != null) {
+            swagger.setExternalDocs(new ExternalDocs(EXTERNAL_DOCUMENTATION, externalDoc));
         }
     }
 }

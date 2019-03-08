@@ -74,6 +74,7 @@ eureka:
                     - apiId: org.zowe.discoverableclient
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
+                      documentationUrl: https://www.zowe.org
             mfaas:
                 api-info:
                     apiVersionProperties:
