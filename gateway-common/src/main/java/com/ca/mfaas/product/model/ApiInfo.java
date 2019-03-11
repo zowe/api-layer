@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.RandomStringUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -43,10 +43,13 @@ public class ApiInfo {
      */
     public Map<String, String> generateMetadata(String serviceId) {
         Map<String, String> metadata = new HashMap<>();
-        String encodedGatewayUrl = gatewayUrl.replaceAll("\\W", "-");
+        String encodedGatewayUrl;
 
         if (gatewayUrl != null) {
+            encodedGatewayUrl = gatewayUrl.replaceAll("\\W", "-");
             metadata.put(String.format("apiml.apiInfo.%s.gatewayUrl", encodedGatewayUrl), gatewayUrl);
+        } else {
+            encodedGatewayUrl = RandomStringUtils.randomAlphanumeric(10);
         }
 
         if (version != null) {
