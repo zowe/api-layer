@@ -18,7 +18,7 @@ import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,7 +160,7 @@ public class APIDocRetrievalService {
             }
         }
 
-        return new Pair<>(scheme, host);
+        return Pair.of(scheme, host);
     }
 
     /**
