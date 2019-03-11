@@ -227,7 +227,6 @@ public class CachedProductFamilyService {
                     container.setDescription(description);
                 }
                 container.updateLastUpdatedTimestamp();
-                products.put(productFamilyId, container);
             }
         }
     }
@@ -256,9 +255,39 @@ public class CachedProductFamilyService {
      * @param productFamilyId the product family id of the container
      * @param instanceInfo    the service instance
      */
+    @CachePut(key = "#productFamilyId")
+    public APIContainer updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
+        APIContainer container = products.get(productFamilyId);
+        if (container == null) {
+            createNewContainerFromService(productFamilyId, instanceInfo);
+        } else {
+            Set<APIService> apiServices = container.getServices();
+            APIService service = createAPIServiceFromInstance(instanceInfo);
+            apiServices.add(service);
+            container.setServices(apiServices);
+            //update container
+            checkIfContainerShouldBeUpdatedFromInstance(productFamilyId, instanceInfo, container);
+            products.put(productFamilyId, container);
+        }
+
+        return container;
+    }
+
     @CacheEvict(key = "#productFamilyId")
-    public void updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
-        createContainerFromInstance(productFamilyId, instanceInfo);
+    public void removeContainerFromInstance(String productFamilyId, String serviceId) {
+        APIContainer container = products.get(productFamilyId);
+        Set<APIService> apiServices = container.getServices();
+        if (container != null && apiServices != null && !apiServices.isEmpty()) {
+            apiServices.remove(new APIService(serviceId));
+
+            //check api container doesn't have elements
+            if (apiServices.isEmpty()) {
+                products.remove(productFamilyId);
+            } else {
+                container.setServices(apiServices);
+                products.put(container.getId(), container);
+            }
+        }
     }
 
     /**

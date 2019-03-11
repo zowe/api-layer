@@ -99,7 +99,6 @@ public class CacheRefreshService {
     private Set<String> compareServices() {
         // Updated containers
         Set<String> containersUpdated = new HashSet<>();
-        Applications cachedServices = apiServiceStatusService.getCachedApplicationState();
         Applications deltaFromDiscovery = instanceRetrievalService.extractDeltaFromDiscovery();
 
         if (deltaFromDiscovery != null && !deltaFromDiscovery.getRegisteredApplications().isEmpty()) {
@@ -107,7 +106,7 @@ public class CacheRefreshService {
             // newer identifier is provided by Netflix
             // if getVersion is removed then the process will be slightly more inefficient but will not need to change
             if (cachedServicesService.getVersionDelta() != deltaFromDiscovery.getVersion()) {
-                containersUpdated = processServiceInstances(cachedServices, deltaFromDiscovery);
+                containersUpdated = processServiceInstances(deltaFromDiscovery);
             }
             cachedServicesService.setVersionDelta(deltaFromDiscovery.getVersion());
         }
@@ -116,16 +115,16 @@ public class CacheRefreshService {
 
     /**
      * Check each delta instance and consider it for processing
-     * @param cachedServices the collection of cached services
+     *
      * @param deltaFromDiscovery changed instances
      */
-    private Set<String> processServiceInstances(Applications cachedServices, Applications deltaFromDiscovery) {
+    private Set<String> processServiceInstances(Applications deltaFromDiscovery) {
         Set<String> containersUpdated = new HashSet<>();
         Set<InstanceInfo> updatedServices = updateDelta(deltaFromDiscovery);
         updatedServices.forEach(instance -> {
             try {
                 // check if this instance should be processed/updated
-                processServiceInstance(containersUpdated, cachedServices, deltaFromDiscovery, instance);
+                processServiceInstance(containersUpdated, deltaFromDiscovery, instance);
             } catch (Exception e) {
                 log.error("could not update cache for service: " + instance + ", processing will continue.", e);
             }
@@ -135,33 +134,30 @@ public class CacheRefreshService {
 
     /**
      * Get this instance service details and check if it should be processed
-     * @param containersUpdated which containers were updated
-     * @param cachedServices existing services
+     *
+     * @param containersUpdated  which containers were updated
      * @param deltaFromDiscovery changed service instances
-     * @param instance this instance
+     * @param instance           this instance
      */
-    private void processServiceInstance(Set<String> containersUpdated, Applications cachedServices,
-                                        Applications deltaFromDiscovery, InstanceInfo instance) {
-        Application application = null;
-        // Get the application which this instance belongs to
-        if (cachedServices != null && cachedServices.getRegisteredApplications() != null) {
-            application = cachedServices.getRegisteredApplications().stream()
-                .filter(service -> service.getName().equalsIgnoreCase(instance.getAppName())).findFirst().orElse(null);
-        }
-        // if its new then it will only be in the delta
-        if (application == null || application.getInstances().isEmpty()) {
-            application = deltaFromDiscovery.getRegisteredApplications().stream()
-                .filter(service -> service.getName().equalsIgnoreCase(instance.getAppName())).findFirst().orElse(null);
-        }
+    private void processServiceInstance(Set<String> containersUpdated,
+                                        Applications deltaFromDiscovery,
+                                        InstanceInfo instance) {
+        deltaFromDiscovery.getRegisteredApplications()
+            .stream()
+            .filter(service -> service.getName().equalsIgnoreCase(instance.getAppName()))
+            .findFirst()
+            .ifPresent(application -> {
+                processInstance(containersUpdated, instance, application);
+            });
 
-        processInstance(containersUpdated, instance, application);
     }
 
     /**
      * Go ahead amd retrieve this instances API doc and update the cache
+     *
      * @param containersUpdated which containers were updated
-     * @param instance the instance
-     * @param application the service
+     * @param instance          the instance
+     * @param application       the service
      */
     private void processInstance(Set<String> containersUpdated, InstanceInfo instance, Application application) {
         if (InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
@@ -172,14 +168,15 @@ public class CacheRefreshService {
         updateService(instance.getAppName(), application);
 
         // update any containers which contain this service
-        updateContainers(containersUpdated, instance.getAppName(), application);
+        updateContainers(containersUpdated, instance, application);
     }
 
     /**
      * Update the API Doc cache for a service
+     *
      * @param serviceId the service Id
-     * @param version the API Doc version
-     * @param apiDoc the API Doc
+     * @param version   the API Doc version
+     * @param apiDoc    the API Doc
      */
     private void updateApiDocCache(String serviceId, String version, String apiDoc) {
         try {
@@ -231,42 +228,45 @@ public class CacheRefreshService {
 
     private void updateService(String serviceId, Application application) {
         if (application == null) {
-            log.error("Could not find Application object for serviceId: " + serviceId + " cache not updated with " +
-                "current values.");
+            log.error("Could not find Application object for serviceId: {} cache not updated with " +
+                "current values.", serviceId);
         } else {
-            cachedServicesService.updateService(serviceId, application);
-            log.debug("Updated service cache for service: " + serviceId);
+            if (application.getInstances() == null || application.getInstances().isEmpty()) {
+                cachedServicesService.removeService(serviceId);
+                log.debug("Removed service cache for service: {}", serviceId);
+            } else {
+                cachedServicesService.updateService(serviceId, application);
+                log.debug("Updated service cache for service: {}", serviceId);
+            }
         }
     }
 
-    private void updateContainers(Set<String> containersUpdated, String serviceId, Application application) {
-        List<APIContainer> containers = cachedProductFamilyService.getContainersForService(serviceId);
-        if (containers == null || containers.isEmpty()) {
-            if (application == null || application.getInstances() == null || application.getInstances().isEmpty()) {
-                log.error("Cannot create a tile for an empty instance");
+    private void updateContainers(Set<String> containersUpdated,
+                                  InstanceInfo instanceInfo,
+                                  Application application) {
+        if (application == null) {
+            log.error("Cannot create a tile for an empty instance");
+        } else {
+            if (application.getInstances() == null || application.getInstances().isEmpty()) {
+                //should be removed from cache
+                checkIfServiceShouldBeRemoved(containersUpdated, instanceInfo);
             } else {
-                InstanceInfo instanceInfo = application.getInstances().get(0);
                 String apiEnabled = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
 
                 // only register API enabled services
                 if (apiEnabled == null || Boolean.valueOf(apiEnabled)) {
-                    updateContainer(containersUpdated, serviceId, instanceInfo);
+                    updateContainer(containersUpdated, instanceInfo.getAppName().toLowerCase(), instanceInfo);
                 }
             }
-        } else {
-            containers.forEach(container -> {
-                cachedProductFamilyService.updateContainer(container);
-                log.debug("Updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());
-                containersUpdated.add(container.getId());
-            });
         }
     }
 
     /**
      * Update the container
+     *
      * @param containersUpdated what containers were updated
-     * @param serviceId the service
-     * @param instanceInfo the instance
+     * @param serviceId         the service
+     * @param instanceInfo      the instance
      */
     private void updateContainer(Set<String> containersUpdated, String serviceId, InstanceInfo instanceInfo) {
         String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
@@ -274,8 +274,21 @@ public class CacheRefreshService {
             log.error("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
                 " must contain an entry for mfaas.discovery.catalogUiTile.id");
         } else {
-            APIContainer container = cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo);
-            log.debug("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());
+            APIContainer container = cachedProductFamilyService.updateContainerFromInstance(productFamilyId, instanceInfo);
+            log.info("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());
+            containersUpdated.add(productFamilyId);
+        }
+    }
+
+    private void checkIfServiceShouldBeRemoved(Set<String> containersUpdated, InstanceInfo instanceInfo) {
+        String serviceId = instanceInfo.getAppName().toLowerCase();
+        String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
+        if (productFamilyId == null) {
+            log.error("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
+                " must contain an entry for mfaas.discovery.catalogUiTile.id");
+        } else {
+            cachedProductFamilyService.removeContainerFromInstance(productFamilyId, serviceId);
+            log.info("Removed service {} from container {}", serviceId, productFamilyId);
             containersUpdated.add(productFamilyId);
         }
     }
