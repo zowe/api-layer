@@ -168,6 +168,12 @@ public class CachedProductFamilyService {
         return container;
     }
 
+    /**
+     * Return the createContainerFromInstance method with the homepage value set to null
+     *
+     * @param productFamilyId the product family id
+     * @param instanceInfo    the service instance
+     */
     public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
         return createContainerFromInstance(productFamilyId, instanceInfo, null);
     }

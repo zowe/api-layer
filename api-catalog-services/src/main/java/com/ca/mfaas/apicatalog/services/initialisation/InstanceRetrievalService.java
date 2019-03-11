@@ -263,7 +263,7 @@ public class InstanceRetrievalService {
                 homePage = gatewayInstance.getHomePageUrl() + "ui/v1/" + instanceInfo.getVIPAddress();
             }
             else
-                homePage = instanceInfo.getHomePageUrl();
+                homePage = null;
 
             if (productFamilyId != null) {
 
