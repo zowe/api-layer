@@ -7,4 +7,4 @@ It allows documentation REST endpoints to be exposed in Swagger format.
 
 You can find detailed documentations in our [docs][Documentation].
 
-[Documentation]: https://github.com/gizafoundation/Giza-docs/tree/master/topics/api-mediation/onboard-an-existing-spring-boot-rest-api-service.md
+[Documentation]: https://github.com/zowe/Giza-docs/tree/master/topics/api-mediation/onboard-an-existing-spring-boot-rest-api-service.md

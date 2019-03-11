@@ -165,6 +165,9 @@ public class TransformApiDocService {
      * @param apiDocInfo the service information
      */
     private void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
+        if (apiDocInfo.getApiInfo() == null)
+            return;
+
         String externalDoc = apiDocInfo.getApiInfo().getDocumentationUrl();
 
         if (externalDoc != null) {
