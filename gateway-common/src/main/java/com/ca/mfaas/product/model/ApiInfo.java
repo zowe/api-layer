@@ -62,7 +62,7 @@ public class ApiInfo {
             } catch (MalformedURLException e) {
                 throw new InvalidParameterException(
                     String.format("The Swagger URL \"%s\" for service %s is not valid: %s",
-                        serviceId, swaggerUrl, e.getMessage()));
+                        swaggerUrl, serviceId, e.getMessage()));
             }
             metadata.put(String.format("apiml.apiInfo.%s.swaggerUrl", encodedGatewayUrl), swaggerUrl);
         }
@@ -73,7 +73,7 @@ public class ApiInfo {
             } catch (MalformedURLException e) {
                 throw new InvalidParameterException(
                     String.format("The documentation URL \"%s\" for service %s is not valid: %s",
-                        serviceId, documentationUrl, e.getMessage()));
+                        documentationUrl, serviceId, e.getMessage()));
             }
             metadata.put(String.format("apiml.apiInfo.%s.documentationUrl", encodedGatewayUrl), documentationUrl);
         }
