@@ -167,6 +167,13 @@ pipeline {
                     }
                 }
 
+                stage('Test apiml_cm.sh') {
+                    steps {
+                        sh 'npm install'
+                        sh 'npm run test-scripts-ci'
+                    }
+                }
+
                 stage('Build and unit test with coverage') {
                     steps {
                         timeout(time: 20, unit: 'MINUTES') {
@@ -298,4 +305,3 @@ pipeline {
         }
     }
 }
-
