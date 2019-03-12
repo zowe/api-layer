@@ -219,3 +219,21 @@ If your editor of choice happens to be Idea and you wnat to use its 'Run Dashboa
    ```
    discoveryLocations: http://eureka:password@discoveryInstance1:10022/eureka,http://eureka:password@discoveryInstance2:10033/eureka
    ```
+
+### Ports Used
+
+   This is a list of default ports used by the project for developing
+
+   Discovery Service: 10011
+   
+   Gateway: 10010
+   
+   API Catalog: 10014
+   
+   Discoverable client: 10012
+   
+   Helloword(Jersey): 10016
+   
+   Helloworld(Spring): 10021
+   
+   Helloworld(ExpressJs): 10020
