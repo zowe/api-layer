@@ -5,7 +5,7 @@ This is a sample Helloword application.
 # How to Run 
 
 After building  deploy the produced .war artifact to a local Tomcat server. 
-Run `gradlew tomcatRun` with these additional parameters:
+Run `gradlew helloworld-spring:tomcatRun` with these additional parameters:
  
 `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" 
 -Djavax.net.ssl.trustStorePassword="password"`.

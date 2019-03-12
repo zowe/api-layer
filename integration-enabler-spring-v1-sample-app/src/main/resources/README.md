@@ -1,6 +1,6 @@
 # Sample Spring Boot service
 
-This is a sample Helloword application, onboarded using the Spring Enabler v1
+This is a sample Helloworld application, onboarded using the Spring Enabler v1.
 
 # How to use
 
