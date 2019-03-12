@@ -17,7 +17,7 @@ logging:
 mfaas:
     discovery:
         serviceId: apicatalog
-        locations: ${environment.discoveryLocations:http://localhost:10011/eureka}
+        locations: ${environment.discoveryLocations:http://localhost:10011/eureka/}
         fetchRegistry: false
         registerWithEureka: true
         region: default
