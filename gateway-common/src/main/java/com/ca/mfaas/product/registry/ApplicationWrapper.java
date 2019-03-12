@@ -10,6 +10,7 @@
 package com.ca.mfaas.product.registry;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.netflix.discovery.shared.Application;
 import lombok.Data;
 
 @JsonDeserialize(as = ApplicationWrapper.class)
@@ -17,4 +18,11 @@ import lombok.Data;
 public class ApplicationWrapper {
 
     private com.netflix.discovery.shared.Application application;
+
+    public ApplicationWrapper() {
+    }
+
+    public ApplicationWrapper(Application application) {
+        this.application = application;
+    }
 }

@@ -37,11 +37,16 @@ import static java.util.stream.Collectors.toList;
 @CacheConfig(cacheNames = {"products"})
 public class CachedProductFamilyService {
 
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
     private final Map<String, APIContainer> products = new HashMap<>();
-    private final CachedServicesService cachedServicesService;
 
     @Autowired
+    private MFaaSConfigPropertiesContainer propertiesContainer;
+    @Autowired
+    private CachedServicesService cachedServicesService;
+
+    public CachedProductFamilyService() {
+    }
+
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       MFaaSConfigPropertiesContainer propertiesContainer) {
         this.cachedServicesService = cachedServicesService;
