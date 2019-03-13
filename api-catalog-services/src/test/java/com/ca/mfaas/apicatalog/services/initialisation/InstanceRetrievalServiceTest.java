@@ -29,7 +29,9 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -68,6 +70,9 @@ public class InstanceRetrievalServiceTest {
 
     @Mock
     RestTemplate restTemplate;
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setup() {
@@ -184,6 +189,20 @@ public class InstanceRetrievalServiceTest {
                Assert.assertEquals("https://localhost:9090/ui/v1/staticclient", ip.getHomePageUrl());
             });
 
+    }
+
+    @Test
+    public void shouldFailToLocateInstanceForRequest() throws CannotRegisterServiceException {
+
+        when(
+            restTemplate.exchange(
+                null,
+                HttpMethod.GET,
+                null,
+                String.class
+            )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        exception.expectMessage("An error occurred when trying to get instance info for:  apicatalog");
+        instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
     }
 
     private HashMap<String, String> getMetadataByCatalogUiTitleId(String catalogUiTileId) {
