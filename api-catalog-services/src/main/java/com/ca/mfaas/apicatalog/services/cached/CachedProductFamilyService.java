@@ -255,8 +255,14 @@ public class CachedProductFamilyService {
      * @param productFamilyId the product family id of the container
      * @param instanceInfo    the service instance
      */
+    @CacheEvict(key = "#productFamilyId")
+    public void updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
+        createContainerFromInstance(productFamilyId, instanceInfo);
+    }
+
+
     @CachePut(key = "#productFamilyId")
-    public APIContainer updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
+    public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
             createNewContainerFromService(productFamilyId, instanceInfo);

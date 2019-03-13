@@ -255,7 +255,7 @@ public class CacheRefreshService {
 
                 // only register API enabled services
                 if (apiEnabled == null || Boolean.valueOf(apiEnabled)) {
-                    updateContainer(containersUpdated, instanceInfo.getAppName().toLowerCase(), instanceInfo);
+                    updateContainer(containersUpdated, instanceInfo.getAppName(), instanceInfo);
                 }
             }
         }
@@ -274,14 +274,14 @@ public class CacheRefreshService {
             log.error("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
                 " must contain an entry for mfaas.discovery.catalogUiTile.id");
         } else {
-            APIContainer container = cachedProductFamilyService.updateContainerFromInstance(productFamilyId, instanceInfo);
+            APIContainer container = cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);
             log.info("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());
             containersUpdated.add(productFamilyId);
         }
     }
 
     private void checkIfServiceShouldBeRemoved(Set<String> containersUpdated, InstanceInfo instanceInfo) {
-        String serviceId = instanceInfo.getAppName().toLowerCase();
+        String serviceId = instanceInfo.getAppName();
         String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
         if (productFamilyId == null) {
             log.error("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
