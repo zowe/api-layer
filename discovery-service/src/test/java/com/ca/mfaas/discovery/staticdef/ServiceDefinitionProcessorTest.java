@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -157,7 +158,7 @@ public class ServiceDefinitionProcessorTest {
         System.out.println("testProcessServicesDataWithWrongUrlMissingHostname - result.getErrors():" + result.getErrors());
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("The URL https:///casamplerestapiservice/ does not contain a hostname"));
+        assertTrue(result.getErrors().get(0).contains("The URL https:///casamplerestapiservice/ does not contain a hostname. The instance of casamplerestapiservice will not be created"));
     }
 
     @Test
@@ -173,7 +174,7 @@ public class ServiceDefinitionProcessorTest {
         System.out.println("testProcessServicesDataWithWrongUrlMissingPort - result.getErrors():" + result.getErrors());
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("The URL https://host/casamplerestapiservice/ does not contain a port number"));
+        assertTrue(result.getErrors().get(0).contains("The URL https://host/casamplerestapiservice/ does not contain a port number. The instance of casamplerestapiservice will not be created"));
     }
 
     @Test
@@ -199,6 +200,116 @@ public class ServiceDefinitionProcessorTest {
         System.out.println("testServiceWithCatalogMetadata - metadata():" + result.getInstances().get(0).getMetadata());
         assertEquals(1, instances.size());
         assertEquals(6, result.getInstances().get(0).getMetadata().size());
+    }
+
+    @Test
+    public void testCreateInstancesWithUndefinedInstanceBaseUrl() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            Collections.singletonList(yaml));
+        List<InstanceInfo> instances = result.getInstances();
+        System.out.println("testCreateInstancesWithUndefinedInstanceBaseUrl - result.getErrors():" + result.getErrors());
+        assertThat(instances.size(), is(0));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created: null"));
+    }
+
+    @Test
+    public void testCreateInstancesWithMultipleStaticDefinitions() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "       - https://localhost:10012/casamplerestapiservice2\n" +
+                "    - serviceId: casamplerestapiservice2\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "    - serviceId: casamplerestapiservice3\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "       - https://localhost:10012/casamplerestapiservice3\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            Collections.singletonList(yaml));
+        List<InstanceInfo> instances = result.getInstances();
+        System.out.println("testCreateInstancesWithMultipleStaticDefinitions - result.getErrors():" + result.getErrors());
+        assertThat(instances.size(), is(2));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
+
+    }
+
+    @Test
+    public void testCreateInstancesWithMultipleYmls() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "       - https://localhost:10012/casamplerestapiservice\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        String yaml2 =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice2\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "        \n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        String yaml3 =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice3\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "       - https://localhost:10012/casamplerestapiservice3\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+
+
+        List<String> yamlList = Arrays.asList(yaml, yaml2, yaml3);
+        List<String> yamlNameList = Arrays.asList("yaml", "yaml1", "yaml2");
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(yamlNameList,
+            yamlList);
+        List<InstanceInfo> instances = result.getInstances();
+        System.out.println("testCreateInstancesWithMultipleYmls - result.getErrors():" + result.getErrors());
+        assertThat(instances.size(), is(2));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
+
     }
 }
 
