@@ -10,7 +10,7 @@
 
 package com.ca.mfaas.apicatalog.services.initialisation;
 
-import com.ca.mfaas.apicatalog.model.APIContainer;
+import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.apicatalog.util.ApplicationsWrapper;
@@ -21,13 +21,8 @@ import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
-
-import static org.junit.Assert.assertEquals;
-
-
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,10 +38,9 @@ import org.springframework.retry.RetryException;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
-
 import java.util.*;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -179,16 +173,15 @@ public class InstanceRetrievalServiceTest {
         instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
 
 
-        Collection<APIContainer> apiContainers = cachedProductFamilyService.getAllContainers();
-        apiContainers.stream()
+        Optional<APIService> staticApiService = cachedProductFamilyService.getAllContainers()
+            .stream()
             .filter(f -> f.getId().equals("static"))
             .flatMap(fm -> fm.getServices().stream())
             .filter(f -> f.getServiceId().equals("staticclient"))
-            .findFirst()
-            .ifPresent(ip -> {
-               Assert.assertEquals("https://localhost:9090/ui/v1/staticclient", ip.getHomePageUrl());
-            });
+            .findFirst();
 
+        assertTrue(staticApiService.isPresent());
+        assertEquals("https://localhost:9090/ui/v1/staticclient", staticApiService.get().getHomePageUrl());
     }
 
     @Test
