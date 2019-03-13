@@ -73,12 +73,6 @@ public class InstanceRetrievalServiceTest {
         instanceRetrievalService = new InstanceRetrievalService(cachedProductFamilyService, propertiesContainer, cachedServicesService, restTemplate);
     }
 
-    private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status, HashMap<String, String> metadata, String vipAddress, String homePageUrl) {
-        return new InstanceInfo(null, serviceId, null, "192.168.0.1", null, new InstanceInfo.PortWrapper(true, 9090),
-            new InstanceInfo.PortWrapper(true, 9090), homePageUrl, null, null, null, vipAddress, "localhost", 0, null,
-            "localhost", status, null, null, null, null, metadata, new Date().getTime(), null, null, null);
-    }
-
     @Test
     public void shouldChangeHomePageValue() throws RetryException, CannotRegisterServiceException, JsonProcessingException {
         String discoveryServiceLocatorUrl = propertiesContainer.getDiscovery().getLocations() + "apps";
@@ -88,87 +82,35 @@ public class InstanceRetrievalServiceTest {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        InstanceInfo gatewayInstance = getStandardInstance(
-            CoreService.GATEWAY.getServiceId(),
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer"),
-            "gateway",
-            "https://localhost:9090/");
+        Map<String, InstanceInfo> instanceInfoMap = createInstances();
+        String bodyGateway = mapper.writeValueAsString(
+            new ApplicationWrapper(new Application(
+                CoreService.GATEWAY.getServiceId(),
+                Collections.singletonList(instanceInfoMap.get(CoreService.GATEWAY.getServiceId())))
+            ));
 
-        String bodyGateway = mapper.writeValueAsString(new ApplicationWrapper(new Application(CoreService.GATEWAY.getServiceId(), Collections.singletonList(gatewayInstance))));
 
-        InstanceInfo apiCatalogInstance = getStandardInstance(
-            CoreService.API_CATALOG.getServiceId(),
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer"),
-            "apicatalog",
-            "https://localhost:9090/");
-
-        String bodyCatalog = mapper.writeValueAsString(new ApplicationWrapper(new Application(CoreService.API_CATALOG.getServiceId(), Collections.singletonList(apiCatalogInstance))));
-
-        InstanceInfo staticClientInstance = getStandardInstance(
-            "STATICCLIENT",
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("static"),
-            "staticclient",
-            "https://localhost:9090/");
-
-        InstanceInfo staticClientTwoInstance = getStandardInstance(
-            "STATICCLIENT2",
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("static"),
-            "staticclient2",
-            null);
-
-        InstanceInfo zosmftsoInstance = getStandardInstance(
-            "ZOSMFTSO21",
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf"),
-            "zosmftso21",
-            null);
-
-        InstanceInfo zosmfcaInstance = getStandardInstance(
-            "ZOSMFCA32",
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf"),
-            "zosmfca32",
-            null);
+        String bodyCatalog = mapper.writeValueAsString(
+            new ApplicationWrapper(new Application(
+                CoreService.API_CATALOG.getServiceId(),
+                Collections.singletonList(instanceInfoMap.get(CoreService.API_CATALOG.getServiceId())))
+            ));
 
         Applications applications = new Applications();
-        applications.addApplication(new Application(CoreService.GATEWAY.getServiceId(), Collections.singletonList(gatewayInstance)));
-        applications.addApplication(new Application(CoreService.API_CATALOG.getServiceId(), Collections.singletonList(apiCatalogInstance)));
-        applications.addApplication(new Application("STATICCLIENT", Collections.singletonList(staticClientInstance)));
-        applications.addApplication(new Application("STATICCLIENT2", Collections.singletonList(staticClientTwoInstance)));
-        applications.addApplication(new Application("ZOSMFTSO21", Collections.singletonList(zosmftsoInstance)));
-        applications.addApplication(new Application("ZOSMFCA32", Collections.singletonList(zosmfcaInstance)));
+        instanceInfoMap.entrySet().forEach(f -> {
+            applications.addApplication(new Application(f.getValue().getAppName(), Collections.singletonList(f.getValue())));
+        });
 
         String bodyAll = mapper.writeValueAsString(new ApplicationsWrapper(applications));
 
-        when(
-            restTemplate.exchange(
-                discoveryServiceLocatorUrl + "/" + CoreService.API_CATALOG.getServiceId(),
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenReturn(new ResponseEntity<>(bodyCatalog, HttpStatus.OK));
+        mockRetrieveAppicationService(discoveryServiceLocatorUrl + "/" + CoreService.API_CATALOG.getServiceId(),
+            bodyCatalog);
 
-        when(
-            restTemplate.exchange(
-                discoveryServiceLocatorUrl + "/" + CoreService.GATEWAY.getServiceId(),
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenReturn(new ResponseEntity<>(bodyGateway, HttpStatus.OK));
+        mockRetrieveAppicationService(discoveryServiceLocatorUrl + "/" + CoreService.GATEWAY.getServiceId(),
+            bodyGateway);
 
-
-        when(
-            restTemplate.exchange(
-                discoveryServiceLocatorUrl + "/",
-                HttpMethod.GET,
-                getHttpEntity(),
-                String.class
-            )).thenReturn(new ResponseEntity<>(bodyAll, HttpStatus.OK));
-
+        mockRetrieveAppicationService(discoveryServiceLocatorUrl + "/",
+            bodyAll);
 
         instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
 
@@ -215,6 +157,80 @@ public class InstanceRetrievalServiceTest {
         types.add(MediaType.APPLICATION_JSON);
         headers.setAccept(types);
         return new HttpEntity<>(headers);
+    }
+
+    private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status, HashMap<String, String> metadata, String vipAddress, String homePageUrl) {
+        return new InstanceInfo(null, serviceId, null, "192.168.0.1", null, new InstanceInfo.PortWrapper(true, 9090),
+            new InstanceInfo.PortWrapper(true, 9090), homePageUrl, null, null, null, vipAddress, "localhost", 0, null,
+            "localhost", status, null, null, null, null, metadata, new Date().getTime(), null, null, null);
+    }
+
+    private Map<String, InstanceInfo> createInstances() {
+        Map<String, InstanceInfo> instanceInfoMap = new HashMap<>();
+
+        InstanceInfo instanceInfo = getStandardInstance(
+            CoreService.GATEWAY.getServiceId(),
+            InstanceInfo.InstanceStatus.UP,
+            getMetadataByCatalogUiTitleId("apimediationlayer"),
+            "gateway",
+            "https://localhost:9090/");
+        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
+
+
+        instanceInfo = getStandardInstance(
+            CoreService.API_CATALOG.getServiceId(),
+            InstanceInfo.InstanceStatus.UP,
+            getMetadataByCatalogUiTitleId("apimediationlayer"),
+            "apicatalog",
+            "https://localhost:9090/");
+        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
+
+
+        instanceInfo = getStandardInstance(
+            "STATICCLIENT",
+            InstanceInfo.InstanceStatus.UP,
+            getMetadataByCatalogUiTitleId("static"),
+            "staticclient",
+            "https://localhost:9090/");
+        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
+
+
+        instanceInfo = getStandardInstance(
+            "STATICCLIENT2",
+            InstanceInfo.InstanceStatus.UP,
+            getMetadataByCatalogUiTitleId("static"),
+            "staticclient2",
+            null);
+        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
+
+
+        instanceInfo = getStandardInstance(
+            "ZOSMFTSO21",
+            InstanceInfo.InstanceStatus.UP,
+            getMetadataByCatalogUiTitleId("zosmf"),
+            "zosmftso21",
+            null);
+        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
+
+        instanceInfo = getStandardInstance(
+            "ZOSMFCA32",
+            InstanceInfo.InstanceStatus.UP,
+            getMetadataByCatalogUiTitleId("zosmf"),
+            "zosmfca32",
+            null);
+        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
+
+        return instanceInfoMap;
+    }
+
+    private void mockRetrieveAppicationService(String url, String body) {
+        when(
+            restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                getHttpEntity(),
+                String.class
+            )).thenReturn(new ResponseEntity<>(body, HttpStatus.OK));
     }
 
 }
