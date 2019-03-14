@@ -16,7 +16,9 @@ Such services are already configured with the URL of the Discovery Service (Eure
 
 Eureka has information about every instance of the API gateway however the `hostname` of those instances is the hostname of the instance but not the DVIPA hostname
 that should be used to access the gateway with high-availability. The same is true for `ipAddress`. Other fields that are listed in https://github.com/Netflix/eureka/wiki/eureka-REST-operations were considered (namely `vipAddress` but that one is used by Spring Cloud for routing and it needs to be the service ID).
-One option was to add new metadata. Second option was to use the `homePageUrl` and put the DVIPA address (hostname when hostnames are preferred or IP address) there. The second option has been chosen since existing code in API Catalog was already use `homePageUrl` to find the URL of the API Gateway.
+One option was to add new metadata. Second option was to use the `homePageUrl` and put the DVIPA address (hostname when hostnames are preferred or IP address) there. Second option was to use the `homePageUrl` that was already used by the API Catalog to find the URL of the API Gateway.
+
+So the decision is to use the `homePageUrl` and put the DVIPA address (hostname when hostnames are preferred or IP address) there.
 
 ## Consequences
 
