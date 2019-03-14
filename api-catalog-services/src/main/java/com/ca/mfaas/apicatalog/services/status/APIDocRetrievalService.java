@@ -132,7 +132,7 @@ public class APIDocRetrievalService {
     }
 
     /**
-     * Creates URL from the routing metadata 'routed-services.api-doc.service-url' when 'apiml.apiInfo.swaggerUrl' is
+     * Creates a URL from the routing metadata 'routed-services.api-doc.service-url' when 'apiml.apiInfo.swaggerUrl' is
      * not present
      *
      * @param instanceInfo the information about service instance

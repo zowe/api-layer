@@ -16,8 +16,8 @@ import lombok.Data;
 import org.springframework.http.ResponseEntity;
 
 /**
- * Contains all necessary information for a creation of API Documentation
- * running through Gateway
+ * Contains all necessary information to create API Documentation
+ * running through the Gateway
  */
 @Data
 @AllArgsConstructor
