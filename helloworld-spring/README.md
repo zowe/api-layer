@@ -14,6 +14,6 @@ For more information on how to configure Tomcat server check the file docs > loc
 
 # How to use
 
-You can see this application registered to your local running catalog on Tile "Sample API Mediation Layer Applications"
+You can see this application registered to your local running catalog on the tile "Sample API Mediation Layer Applications"
 
-For API requests use endpoints "/greeting" for a generic greet or "greeting/{name}" for a greet returning your input {name}
+For API requests, use endpoints "/greeting" for a generic greet or "greeting/{name}" for a greet returning your input {name}
