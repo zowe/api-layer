@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 /**
  * Contains all necessary information to create API Documentation
- * running through Gateway
+ * running through the Gateway
  */
 @Data
 @AllArgsConstructor
