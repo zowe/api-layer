@@ -57,7 +57,7 @@ public class LocalApiDocServiceTest {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getStandardMetadata()));
+            .thenReturn(getStandardInstance(getStandardMetadata(), true));
         when(instanceRetrievalService.getGatewayScheme())
             .thenReturn(GATEWAY_SCHEME);
         when(instanceRetrievalService.getGatewayHostname())
@@ -98,7 +98,7 @@ public class LocalApiDocServiceTest {
         String responseBody = "Server not found";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getStandardMetadata()));
+            .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
@@ -115,7 +115,7 @@ public class LocalApiDocServiceTest {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(new HashMap<>()));
+            .thenReturn(getStandardInstance(new HashMap<>(), true));
 
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
@@ -161,7 +161,7 @@ public class LocalApiDocServiceTest {
 
         generatedResponseBody = generatedResponseBody.replaceAll("\\s+", "");
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl()));
+            .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
         when(instanceRetrievalService.getGatewayScheme())
             .thenReturn(GATEWAY_SCHEME);
         when(instanceRetrievalService.getGatewayHostname())
@@ -194,10 +194,30 @@ public class LocalApiDocServiceTest {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo()));
+            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(),true));
 
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
+
+        assertNotNull(actualResponse);
+        assertNotNull(actualResponse.getApiDocResponse());
+
+        assertEquals(responseBody, actualResponse.getApiDocResponse().getBody());
+        assertEquals(HttpStatus.OK, actualResponse.getApiDocResponse().getStatusCode());
+    }
+
+    @Test
+    public void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
+        String responseBody = "api-doc body";
+
+        when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(),false));
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        when(restTemplate.exchange("http://service:8080/service/api-doc", HttpMethod.GET, getObjectHttpEntity(), String.class))
             .thenReturn(expectedResponse);
 
         ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
@@ -216,12 +236,13 @@ public class LocalApiDocServiceTest {
         return new HttpEntity<>(headers);
     }
 
-    private InstanceInfo getStandardInstance(Map<String, String> metadata) {
+    private InstanceInfo getStandardInstance(Map<String, String> metadata, Boolean isPortSecure) {
         return InstanceInfo.Builder.newBuilder()
             .setAppName(SERVICE_ID)
             .setHostName(SERVICE_HOST)
+            .setPort(SERVICE_PORT)
             .setSecurePort(SERVICE_PORT)
-            .enablePort(InstanceInfo.PortType.SECURE, true)
+            .enablePort(InstanceInfo.PortType.SECURE, isPortSecure)
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .setMetadata(metadata)
             .build();
