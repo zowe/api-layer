@@ -14,11 +14,9 @@ import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
-import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
-import org.apache.commons.lang3.tuple.Pair;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,17 +65,10 @@ public class APIDocRetrievalService {
     public ApiDocInfo retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         String apiDocUrl;
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
-        InstanceInfo gateway = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
 
         if (instanceInfo == null) {
             throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + " .");
         }
-
-        if (gateway == null) {
-            throw new ApiDocNotFoundException("Could not load gateway instance for service " + serviceId + ".");
-        }
-
-        Pair<String, String> gatewayAddress = getGatewayAddress(gateway);
 
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
@@ -89,8 +80,8 @@ public class APIDocRetrievalService {
             if (apiInfo != null && apiInfo.getSwaggerUrl() != null) {
                 apiDocUrl = apiInfo.getSwaggerUrl();
             } else {
-                ResponseEntity<String> response = swaggerGenerator.generateSubstituteSwaggerForService(gateway, instanceInfo, apiInfo);
-                return new ApiDocInfo(apiInfo, response, routes, gatewayAddress.getKey(), gatewayAddress.getValue());
+                ResponseEntity<String> response = swaggerGenerator.generateSubstituteSwaggerForService(instanceInfo, apiInfo, instanceRetrievalService.getGatewayScheme(), instanceRetrievalService.getGatewayHostname());
+                return new ApiDocInfo(apiInfo, response, routes, instanceRetrievalService.getGatewayScheme(), instanceRetrievalService.getGatewayHostname());
             }
 
         } else {
@@ -114,7 +105,7 @@ public class APIDocRetrievalService {
             throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId + " server error: '" + response.getBody() + "'.");
         }
 
-        return new ApiDocInfo(apiInfo, response, routes, gatewayAddress.getKey(), gatewayAddress.getValue());
+        return new ApiDocInfo(apiInfo, response, routes, instanceRetrievalService.getGatewayScheme(), instanceRetrievalService.getGatewayHostname());
     }
 
     /**
@@ -138,29 +129,6 @@ public class APIDocRetrievalService {
         }
 
         return apiInfo.get(0);
-    }
-
-    /**
-     * Obtains Gateway scheme and hostname
-     *
-     * @param gateway the information about Gateway instance
-     * @return the pair containing Gateway scheme and hostname
-     */
-    private Pair<String, String> getGatewayAddress(InstanceInfo gateway) {
-        String scheme = gateway.isPortEnabled(InstanceInfo.PortType.SECURE) ? "https" : "http";
-
-        String host = gateway.getHostName();
-        if (scheme.equals("http")) {
-            if (gateway.getPort() != 80) {
-                host += ":" + gateway.getPort();
-            }
-        } else {
-            if (gateway.getPort() != 443) {
-                host += ":" + gateway.getSecurePort();
-            }
-        }
-
-        return Pair.of(scheme, host);
     }
 
     /**

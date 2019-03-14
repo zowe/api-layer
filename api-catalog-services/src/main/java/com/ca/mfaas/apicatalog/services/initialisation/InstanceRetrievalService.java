@@ -36,7 +36,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotBlank;
+
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -52,6 +55,8 @@ public class InstanceRetrievalService {
     private final MFaaSConfigPropertiesContainer propertiesContainer;
     private final CachedServicesService cachedServicesService;
     private final RestTemplate restTemplate;
+    private String gatewayScheme;
+    private String gatewayHostname;
 
     private static final String APPS_ENDPOINT = "apps/";
     private static final String DELTA_ENDPOINT = "delta";
@@ -69,6 +74,14 @@ public class InstanceRetrievalService {
         this.restTemplate = restTemplate;
 
         configureUnicode(restTemplate);
+    }
+
+    public String getGatewayScheme() {
+        return gatewayScheme;
+    }
+
+    public String getGatewayHostname() {
+        return gatewayHostname;
     }
 
     /**
@@ -89,7 +102,7 @@ public class InstanceRetrievalService {
             String serviceId = CoreService.API_CATALOG.getServiceId();
             InstanceInfo apiCatalogInstance = getInstanceInfo(serviceId);
             if (apiCatalogInstance == null) {
-                String msg = "API Catalog Instance not retrieved from gateway, retrying...";
+                String msg = "API Catalog Instance not retrieved from Discovery Service, retrying...";
                 log.warn(msg);
                 throw new RetryException(msg);
             } else {
@@ -100,6 +113,23 @@ public class InstanceRetrievalService {
             throw e;
         } catch (Exception e) {
             String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Gateway, NOT RETRYING!!";
+            log.warn(msg, e);
+            throw new CannotRegisterServiceException(msg, e);
+        }
+
+        try {
+            InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
+            if (gatewayInstance == null) {
+                String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
+                log.warn(msg);
+                throw new RetryException(msg);
+            } else {
+                URI uri = new URI(gatewayInstance.getHomePageUrl());
+                gatewayScheme = uri.getScheme();
+                gatewayHostname = uri.getHost() + ":" + uri.getPort();
+            }
+        } catch (URISyntaxException e) {
+            String msg = "Gateway URL is incorrect.";
             log.warn(msg, e);
             throw new CannotRegisterServiceException(msg, e);
         }

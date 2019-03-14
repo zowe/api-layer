@@ -11,7 +11,6 @@ package com.ca.mfaas.apicatalog.swagger;
 
 import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.PortType;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -22,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import java.io.StringWriter;
 
 public class SubstituteSwaggerGenerator {
-    private VelocityEngine ve = new VelocityEngine();
+    private final VelocityEngine ve = new VelocityEngine();
 
     public SubstituteSwaggerGenerator() {
         ve.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
@@ -30,33 +29,20 @@ public class SubstituteSwaggerGenerator {
         ve.init();
     }
 
-    public ResponseEntity<String> generateSubstituteSwaggerForService(InstanceInfo gateway, InstanceInfo service,
-            ApiInfo api) {
+    public ResponseEntity<String> generateSubstituteSwaggerForService(InstanceInfo service, ApiInfo api,
+                                                                      String gatewayScheme, String gatewayHost) {
         String title = service.getMetadata().get("mfaas.discovery.service.title");
         String description = service.getMetadata().get("mfaas.discovery.service.description");
-        String scheme = gateway.isPortEnabled(PortType.SECURE) ? "https" : "http";
-
-        String host = gateway.getHostName();
-        if (scheme.equals("http")) {
-            if (gateway.getPort() != 80) {
-                host += ":" + gateway.getPort();
-            }
-        } else {
-            if (gateway.getPort() != 443) {
-                host += ":" + gateway.getSecurePort();
-            }
-        }
-
         String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + api.getGatewayUrl()
-                + (api.getGatewayUrl().endsWith("/") ? "" : "/") + service.getAppName().toLowerCase();
+            + (api.getGatewayUrl().endsWith("/") ? "" : "/") + service.getAppName().toLowerCase();
 
         Template t = ve.getTemplate("substitute_swagger.json");
         VelocityContext context = new VelocityContext();
         context.put("title", title);
         context.put("description", description);
         context.put("version", api.getVersion());
-        context.put("scheme", scheme);
-        context.put("host", host);
+        context.put("scheme", gatewayScheme);
+        context.put("host", gatewayHost);
         context.put("basePath", basePath);
         context.put("documentationUrl", api.getDocumentationUrl());
 
