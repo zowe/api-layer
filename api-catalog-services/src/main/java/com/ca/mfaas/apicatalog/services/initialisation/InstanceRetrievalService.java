@@ -373,8 +373,12 @@ public class InstanceRetrievalService {
         String productFamilyId = apiCatalogInstance.getMetadata().get("mfaas.discovery.catalogUiTile.id");
         if (productFamilyId != null) {
             log.debug("Initialising product family (creating tile for) : " + productFamilyId);
+            String homePage;
             InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
-            String homePage = gatewayInstance.getHomePageUrl() + "ui/v1/" + apiCatalogInstance.getVIPAddress();
+            if (apiCatalogInstance.getHomePageUrl() != null) {
+                homePage = gatewayInstance.getHomePageUrl() + "ui/v1/" + apiCatalogInstance.getVIPAddress();
+            }
+            else homePage = null;
             cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance, homePage);
         }
 
