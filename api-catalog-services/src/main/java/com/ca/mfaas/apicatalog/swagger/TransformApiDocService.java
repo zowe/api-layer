@@ -52,7 +52,7 @@ public class TransformApiDocService {
         Swagger swagger;
 
         try {
-            swagger = Json.mapper().readValue(apiDocInfo.getApiDocResponse(), Swagger.class);
+            swagger = Json.mapper().readValue(apiDocInfo.getApiDocContent(), Swagger.class);
         } catch (IOException e) {
             log.error("Could not convert response body to a Swagger object.", e);
             throw new UnexpectedTypeException("Response is not a Swagger type object.");

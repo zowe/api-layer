@@ -13,7 +13,6 @@ import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedServices;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.http.ResponseEntity;
 
 /**
  * Contains all necessary information to create API Documentation
@@ -23,7 +22,7 @@ import org.springframework.http.ResponseEntity;
 @AllArgsConstructor
 public class ApiDocInfo {
     ApiInfo apiInfo;
-    String apiDocResponse;
+    String apiDocContent;
     RoutedServices routes;
     String gatewayScheme;
     String gatewayHost;

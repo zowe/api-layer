@@ -50,7 +50,7 @@ public class EurekaMetadataParser {
         if (apiInfo.size() == 0) {
             return null;
         } else {
-            return new ArrayList<ApiInfo>(apiInfo.values());
+            return new ArrayList<>(apiInfo.values());
         }
     }
 

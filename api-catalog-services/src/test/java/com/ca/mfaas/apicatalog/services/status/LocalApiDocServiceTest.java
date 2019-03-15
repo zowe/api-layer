@@ -75,8 +75,8 @@ public class LocalApiDocServiceTest {
         assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
 
         assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocResponse());
-        assertEquals(responseBody, actualResponse.getApiDocResponse());
+        assertNotNull(actualResponse.getApiDocContent());
+        assertEquals(responseBody, actualResponse.getApiDocContent());
 
         assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
 
@@ -178,8 +178,8 @@ public class LocalApiDocServiceTest {
         assertNull(actualResponse.getApiInfo().getSwaggerUrl());
 
         assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocResponse());
-        assertEquals(generatedResponseBody, actualResponse.getApiDocResponse().replaceAll("\\s+", ""));
+        assertNotNull(actualResponse.getApiDocContent());
+        assertEquals(generatedResponseBody, actualResponse.getApiDocContent().replaceAll("\\s+", ""));
 
         assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
 
@@ -201,9 +201,9 @@ public class LocalApiDocServiceTest {
         ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
 
         assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocResponse());
+        assertNotNull(actualResponse.getApiDocContent());
 
-        assertEquals(responseBody, actualResponse.getApiDocResponse());
+        assertEquals(responseBody, actualResponse.getApiDocContent());
     }
 
     private HttpEntity<Object> getObjectHttpEntity() {

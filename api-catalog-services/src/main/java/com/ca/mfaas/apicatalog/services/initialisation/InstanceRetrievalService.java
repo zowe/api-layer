@@ -390,7 +390,7 @@ public class InstanceRetrievalService {
             .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
     }
 
-    private void initializeGatewaySchemeAndHostname() throws CannotRegisterServiceException{
+    private void initializeGatewaySchemeAndHostname() throws CannotRegisterServiceException {
         try {
             URI uri = getGatewayHomePageURI();
             gatewayScheme = uri.getScheme();

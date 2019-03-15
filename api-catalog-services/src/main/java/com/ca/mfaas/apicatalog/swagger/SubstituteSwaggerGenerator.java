@@ -16,7 +16,6 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.springframework.http.ResponseEntity;
 
 import java.io.StringWriter;
 
@@ -29,8 +28,9 @@ public class SubstituteSwaggerGenerator {
         ve.init();
     }
 
-    public String generateSubstituteSwaggerForService(InstanceInfo service, ApiInfo api,
-                                                                      String gatewayScheme, String gatewayHost) {
+    public String generateSubstituteSwaggerForService(InstanceInfo service,
+                                                      ApiInfo api,
+                                                      String gatewayScheme, String gatewayHost) {
         String title = service.getMetadata().get("mfaas.discovery.service.title");
         String description = service.getMetadata().get("mfaas.discovery.service.description");
         String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + api.getGatewayUrl()

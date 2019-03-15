@@ -47,7 +47,7 @@ public class CachedApiDocService {
         String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
         if (apiDoc == null) {
             ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
-            if (apiDocInfo.getApiDocResponse() == null) {
+            if (apiDocInfo.getApiDocContent() == null) {
                 return null;
             } else {
                 apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);

@@ -28,6 +28,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -63,9 +64,7 @@ public class APIDocRetrievalService {
      * @return the API doc and related information for transformation
      */
     public ApiDocInfo retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
-        String apiDocUrl;
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
-
         if (instanceInfo == null) {
             throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + " .");
         }
@@ -73,34 +72,33 @@ public class APIDocRetrievalService {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
-        ApiInfo apiInfo = null;
-        if (apiInfoList != null) {
-            apiInfo = findApi(apiInfoList, apiVersion);
-
-            if (apiInfo != null && apiInfo.getSwaggerUrl() != null) {
-                apiDocUrl = apiInfo.getSwaggerUrl();
-            } else {
-                String response = swaggerGenerator.generateSubstituteSwaggerForService(
-                    instanceInfo,
-                    apiInfo,
-                    instanceRetrievalService.getGatewayScheme(),
-                    instanceRetrievalService.getGatewayHostname());
-                return new ApiDocInfo(
-                    apiInfo,
-                    response,
-                    routes,
-                    instanceRetrievalService.getGatewayScheme(),
-                    instanceRetrievalService.getGatewayHostname());
-            }
-
-        } else {
-            apiDocUrl = createApiDocUrlFromRouting(instanceInfo);
-        }
-
+        ApiInfo apiInfo = findApi(apiInfoList, apiVersion);
+        String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo);
         if (apiDocUrl == null) {
-            throw new ApiDocNotFoundException("No API Documentation defined for service " + serviceId + " .");
+            return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
         }
 
+        String apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
+        return new ApiDocInfo(
+            apiInfo,
+            apiDocContent,
+            routes,
+            instanceRetrievalService.getGatewayScheme(),
+            instanceRetrievalService.getGatewayHostname());
+    }
+
+    private String getApiDocUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
+        String apiDocUrl = null;
+        if (apiInfo == null) {
+            apiDocUrl = createApiDocUrlFromRouting(instanceInfo);
+        } else if (apiInfo.getSwaggerUrl() != null) {
+            apiDocUrl = apiInfo.getSwaggerUrl();
+        }
+
+        return apiDocUrl;
+    }
+
+    private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
 
@@ -113,10 +111,20 @@ public class APIDocRetrievalService {
         if (response.getStatusCode().isError()) {
             throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId + " server error: '" + response.getBody() + "'.");
         }
+        return response.getBody();
+    }
 
+    private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
+                                                        RoutedServices routes,
+                                                        ApiInfo apiInfo) {
+        String response = swaggerGenerator.generateSubstituteSwaggerForService(
+            instanceInfo,
+            apiInfo,
+            instanceRetrievalService.getGatewayScheme(),
+            instanceRetrievalService.getGatewayHostname());
         return new ApiDocInfo(
             apiInfo,
-            response.getBody(),
+            response,
             routes,
             instanceRetrievalService.getGatewayScheme(),
             instanceRetrievalService.getGatewayHostname());
@@ -125,25 +133,27 @@ public class APIDocRetrievalService {
     /**
      * Find ApiInfo for the corresponding version, if not found the first one is returned
      *
-     * @param apiInfo    the list of APIs information
+     * @param apiInfos   the list of APIs information
      * @param apiVersion the version to be find
      * @return the information about API
      */
-    private ApiInfo findApi(List<ApiInfo> apiInfo, String apiVersion) {
+    private ApiInfo findApi(List<ApiInfo> apiInfos, String apiVersion) {
+        if (Objects.isNull(apiInfos)) {
+            return null;
+        }
 
         String expectedGatewayUrl = "api";
-
         if (apiVersion != null) {
             expectedGatewayUrl = "api/" + apiVersion;
         }
 
-        for (ApiInfo api : apiInfo) {
+        for (ApiInfo api : apiInfos) {
             if (api.getGatewayUrl().equals(expectedGatewayUrl)) {
                 return api;
             }
         }
 
-        return apiInfo.get(0);
+        return apiInfos.get(0);
     }
 
     /**
@@ -169,7 +179,7 @@ public class APIDocRetrievalService {
 
         String path = instanceInfo.getMetadata().get("routed-services.api-doc.service-url");
         if (path == null) {
-            return null;
+            throw new ApiDocNotFoundException("No API Documentation defined for service " + instanceInfo.getAppName().toLowerCase() + " .");
         }
 
         UriComponents uri = UriComponentsBuilder
