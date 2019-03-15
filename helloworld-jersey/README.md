@@ -1,19 +1,17 @@
 # Sample Java Jersey service
 
-This is a sample Helloword application using Java Jersey
+This is a sample Hello world application using Java Jersey using 'integration-enabler-java' enabler.
 
 # How to Run 
 
-After building deploy the produced .war artifact to a local Tomcat server. 
-Run `gradlew helloworld-jersey:tomcatRun` with these additional parameters:
- 
-`-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" 
--Djavax.net.ssl.trustStorePassword="password"`.
+You can start the service using:
 
-For more information on how to configure Tomcat server check the file docs > local-configuration.md.
+    ./gradlew helloworld-jersey:tomcatRun
+
+For more information read [docs/local-configuration.md](docs/local-configuration.md).
 
 # How to use
 
-You can see this application registered to your local running catalog under the tile "Sample API Mediation Layer Applications"
+You can see this application registered to catalog under the tile "Sample API Mediation Layer Applications".
 
-For API request, use endpoints "/greeting" for a generic greet or "greeting/{name}" for a greet returning your input {name}
+For API request, use endpoints "/greeting" for a generic greet or "greeting/{name}" for a greet returning your input {name}.
