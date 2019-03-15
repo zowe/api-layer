@@ -90,4 +90,22 @@ public class CachedApiDocServiceTest {
         Assert.assertNotNull(apiDoc);
         Assert.assertEquals(updatedApiDoc, apiDoc);
     }
+
+    @Test
+    public void shouldReturnNullIfNotValidResponse() {
+        String serviceId = "Service";
+        String version = "v1";
+        String expectedApiDoc = "This is some api doc";
+
+        ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null, null, null);
+
+        when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
+            .thenReturn(apiDocInfo);
+        when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
+            .thenReturn(expectedApiDoc);
+
+        String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
+
+        Assert.assertNull(apiDoc);
+    }
 }
