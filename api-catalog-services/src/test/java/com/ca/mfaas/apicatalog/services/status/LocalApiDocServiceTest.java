@@ -220,10 +220,9 @@ public class LocalApiDocServiceTest {
         ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
 
         assertNotNull(actualResponse);
-        assertNotNull(actualResponse.getApiDocResponse());
+        assertNotNull(actualResponse.getApiDocContent());
 
-        assertEquals(responseBody, actualResponse.getApiDocResponse().getBody());
-        assertEquals(HttpStatus.OK, actualResponse.getApiDocResponse().getStatusCode());
+        assertEquals(responseBody, actualResponse.getApiDocContent());
     }
 
     private HttpEntity<Object> getObjectHttpEntity() {
