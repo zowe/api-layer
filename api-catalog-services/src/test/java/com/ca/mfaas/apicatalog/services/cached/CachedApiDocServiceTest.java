@@ -18,8 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import static org.mockito.Mockito.when;
 
@@ -45,8 +43,7 @@ public class CachedApiDocServiceTest {
         String version = "v1";
         String expectedApiDoc = "This is some api doc";
 
-        ResponseEntity<String> response = new ResponseEntity<>(expectedApiDoc, HttpStatus.OK);
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, response, null, null, null);
+        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null, null, null);
 
         when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
             .thenReturn(apiDocInfo);
@@ -67,8 +64,7 @@ public class CachedApiDocServiceTest {
         String updatedApiDoc = "This is some updated API Doc";
 
 
-        ResponseEntity<String> response = new ResponseEntity<>(expectedApiDoc, HttpStatus.OK);
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, response, null, null, null);
+        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null, null, null);
 
         when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
             .thenReturn(apiDocInfo);
@@ -82,8 +78,7 @@ public class CachedApiDocServiceTest {
 
         cachedApiDocService.updateApiDocForService(serviceId, version, updatedApiDoc);
 
-        response = new ResponseEntity<>(updatedApiDoc, HttpStatus.OK);
-        apiDocInfo = new ApiDocInfo(null, response, null, null, null);
+        apiDocInfo = new ApiDocInfo(null, updatedApiDoc, null, null, null);
 
         when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
             .thenReturn(apiDocInfo);

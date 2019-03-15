@@ -23,7 +23,7 @@ import org.springframework.http.ResponseEntity;
 @AllArgsConstructor
 public class ApiDocInfo {
     ApiInfo apiInfo;
-    ResponseEntity<String> apiDocResponse;
+    String apiDocResponse;
     RoutedServices routes;
     String gatewayScheme;
     String gatewayHost;

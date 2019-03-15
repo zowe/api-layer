@@ -14,7 +14,6 @@ import com.ca.mfaas.product.model.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.PortType;
 import org.junit.Test;
-import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +37,8 @@ public class SubstituteSwaggerGeneratorTest {
         InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName("serviceId").setHostName("localhost")
                 .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
 
-        ResponseEntity<String> result = new SubstituteSwaggerGenerator().generateSubstituteSwaggerForService(service,
+        String result = new SubstituteSwaggerGenerator().generateSubstituteSwaggerForService(service,
             info.get(0), gatewayScheme, gatewayHost);
-        assertTrue(result.getBody().contains("https://doc.ca.com/api"));
+        assertTrue(result.contains("https://doc.ca.com/api"));
     }
 }

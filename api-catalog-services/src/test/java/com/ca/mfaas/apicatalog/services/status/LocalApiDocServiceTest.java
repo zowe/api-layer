@@ -76,8 +76,7 @@ public class LocalApiDocServiceTest {
 
         assertNotNull(actualResponse);
         assertNotNull(actualResponse.getApiDocResponse());
-        assertEquals(responseBody, actualResponse.getApiDocResponse().getBody());
-        assertEquals(HttpStatus.OK, actualResponse.getApiDocResponse().getStatusCode());
+        assertEquals(responseBody, actualResponse.getApiDocResponse());
 
         assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
 
@@ -180,8 +179,7 @@ public class LocalApiDocServiceTest {
 
         assertNotNull(actualResponse);
         assertNotNull(actualResponse.getApiDocResponse());
-        assertEquals(generatedResponseBody, actualResponse.getApiDocResponse().getBody().replaceAll("\\s+", ""));
-        assertEquals(HttpStatus.OK, actualResponse.getApiDocResponse().getStatusCode());
+        assertEquals(generatedResponseBody, actualResponse.getApiDocResponse().replaceAll("\\s+", ""));
 
         assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
 
@@ -205,8 +203,7 @@ public class LocalApiDocServiceTest {
         assertNotNull(actualResponse);
         assertNotNull(actualResponse.getApiDocResponse());
 
-        assertEquals(responseBody, actualResponse.getApiDocResponse().getBody());
-        assertEquals(HttpStatus.OK, actualResponse.getApiDocResponse().getStatusCode());
+        assertEquals(responseBody, actualResponse.getApiDocResponse());
     }
 
     private HttpEntity<Object> getObjectHttpEntity() {

@@ -29,7 +29,7 @@ public class SubstituteSwaggerGenerator {
         ve.init();
     }
 
-    public ResponseEntity<String> generateSubstituteSwaggerForService(InstanceInfo service, ApiInfo api,
+    public String generateSubstituteSwaggerForService(InstanceInfo service, ApiInfo api,
                                                                       String gatewayScheme, String gatewayHost) {
         String title = service.getMetadata().get("mfaas.discovery.service.title");
         String description = service.getMetadata().get("mfaas.discovery.service.description");
@@ -49,6 +49,6 @@ public class SubstituteSwaggerGenerator {
         StringWriter w = new StringWriter();
         t.merge(context, w);
 
-        return ResponseEntity.ok(w.toString());
+        return w.toString();
     }
 }

@@ -80,8 +80,17 @@ public class APIDocRetrievalService {
             if (apiInfo != null && apiInfo.getSwaggerUrl() != null) {
                 apiDocUrl = apiInfo.getSwaggerUrl();
             } else {
-                ResponseEntity<String> response = swaggerGenerator.generateSubstituteSwaggerForService(instanceInfo, apiInfo, instanceRetrievalService.getGatewayScheme(), instanceRetrievalService.getGatewayHostname());
-                return new ApiDocInfo(apiInfo, response, routes, instanceRetrievalService.getGatewayScheme(), instanceRetrievalService.getGatewayHostname());
+                String response = swaggerGenerator.generateSubstituteSwaggerForService(
+                    instanceInfo,
+                    apiInfo,
+                    instanceRetrievalService.getGatewayScheme(),
+                    instanceRetrievalService.getGatewayHostname());
+                return new ApiDocInfo(
+                    apiInfo,
+                    response,
+                    routes,
+                    instanceRetrievalService.getGatewayScheme(),
+                    instanceRetrievalService.getGatewayHostname());
             }
 
         } else {
@@ -105,7 +114,12 @@ public class APIDocRetrievalService {
             throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId + " server error: '" + response.getBody() + "'.");
         }
 
-        return new ApiDocInfo(apiInfo, response, routes, instanceRetrievalService.getGatewayScheme(), instanceRetrievalService.getGatewayHostname());
+        return new ApiDocInfo(
+            apiInfo,
+            response.getBody(),
+            routes,
+            instanceRetrievalService.getGatewayScheme(),
+            instanceRetrievalService.getGatewayHostname());
     }
 
     /**
@@ -116,6 +130,7 @@ public class APIDocRetrievalService {
      * @return the information about API
      */
     private ApiInfo findApi(List<ApiInfo> apiInfo, String apiVersion) {
+
         String expectedGatewayUrl = "api";
 
         if (apiVersion != null) {

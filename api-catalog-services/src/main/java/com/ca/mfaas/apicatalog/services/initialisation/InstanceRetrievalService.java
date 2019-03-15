@@ -117,22 +117,7 @@ public class InstanceRetrievalService {
             throw new CannotRegisterServiceException(msg, e);
         }
 
-        try {
-            InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
-            if (gatewayInstance == null) {
-                String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
-                log.warn(msg);
-                throw new RetryException(msg);
-            } else {
-                URI uri = new URI(gatewayInstance.getHomePageUrl());
-                gatewayScheme = uri.getScheme();
-                gatewayHostname = uri.getHost() + ":" + uri.getPort();
-            }
-        } catch (URISyntaxException e) {
-            String msg = "Gateway URL is incorrect.";
-            log.warn(msg, e);
-            throw new CannotRegisterServiceException(msg, e);
-        }
+        initializeGatewaySchemeAndHostname();
     }
 
 
@@ -403,5 +388,28 @@ public class InstanceRetrievalService {
     private void configureUnicode(RestTemplate restTemplate) {
         restTemplate.getMessageConverters()
             .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+    }
+
+    private void initializeGatewaySchemeAndHostname() throws CannotRegisterServiceException{
+        try {
+            URI uri = getGatewayHomePageURI();
+            gatewayScheme = uri.getScheme();
+            gatewayHostname = uri.getHost() + ":" + uri.getPort();
+        } catch (URISyntaxException e) {
+            String msg = "Gateway URL is incorrect.";
+            log.warn(msg, e);
+            throw new CannotRegisterServiceException(msg, e);
+        }
+    }
+
+    private URI getGatewayHomePageURI() throws URISyntaxException {
+        InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
+        if (gatewayInstance == null) {
+            String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
+            log.warn(msg);
+            throw new RetryException(msg);
+        } else {
+            return new URI(gatewayInstance.getHomePageUrl());
+        }
     }
 }
