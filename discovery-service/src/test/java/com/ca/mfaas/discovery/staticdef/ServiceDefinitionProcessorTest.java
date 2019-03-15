@@ -311,5 +311,44 @@ public class ServiceDefinitionProcessorTest {
         assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
 
     }
+
+    @Test
+    public void shouldGenerateMetadataIfApiInfoIsNotNUll() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml = "services:\n" +
+            "    - serviceId: casamplerestapiservice\n" +
+            "      catalogUiTileId: static\n" +
+            "      title: Petstore Sample API Service\n" +
+            "      description: This is a sample server Petstore REST API service\n" +
+            "      instanceBaseUrls:\n" +
+            "        - http://localhost:10019\n" +
+            "      routes:\n" +
+            "        - gatewayUrl: api/v2\n" +
+            "          serviceRelativeUrl: /v2\n" +
+            "      apiInfo:\n" +
+            "        - apiId: swagger.io.petstore\n" +
+            "          gatewayUrl: api/v2\n" +
+            "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
+            "          version: 2.0.0\n" +
+            "\n" +
+            "catalogUiTiles:\n" +
+            "    static:\n" +
+            "        title: Static API Services\n" +
+            "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
+
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            Collections.singletonList(routedServiceYaml));
+        System.out.println(result.getErrors());
+        List<InstanceInfo> instances = result.getInstances();
+        assertEquals(1, instances.size());
+        assertEquals(10019, instances.get(0).getSecurePort());
+        assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
+        assertEquals("api/v2", instances.get(0).getMetadata().get("routed-services.api-v2.gateway-url"));
+        assertEquals("/v2", instances.get(0).getMetadata().get("routed-services.api-v2.service-url"));
+        assertEquals("static", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.id"));
+        assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
+        assertEquals(0, result.getErrors().size());
+    }
+
 }
 
