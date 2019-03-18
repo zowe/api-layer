@@ -357,34 +357,6 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void shouldGiveErrorIfHostnameIsUnknown() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
-        String routedServiceYaml = "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      catalogUiTileId: static\n" +
-            "      title: Petstore Sample API Service\n" +
-            "      description: This is a sample server Petstore REST API service\n" +
-            "      instanceBaseUrls:\n" +
-            "        - http://local:10019\n" +
-            "      routes:\n" +
-            "        - gatewayUrl: api/v2\n" +
-            "          serviceRelativeUrl: /v2\n" +
-            "      apiInfo:\n" +
-            "        - apiId: swagger.io.petstore\n" +
-            "          gatewayUrl: api/v2\n" +
-            "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
-            "          version: 2.0.0\n" +
-            "\n" +
-            "catalogUiTiles:\n" +
-            "    static:\n" +
-            "        title: Static API Services\n" +
-            "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
-
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"), Collections.singletonList(routedServiceYaml));
-        assertEquals("The hostname of URL http://local:10019 is unknown. The instance will not be created: local", result.getErrors().get(0));
-    }
-
-    @Test
     public void shouldGiveErrorIfTileIdIsInvalid() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
