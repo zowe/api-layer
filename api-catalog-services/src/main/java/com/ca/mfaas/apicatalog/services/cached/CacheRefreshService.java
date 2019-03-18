@@ -11,9 +11,6 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
-import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
-import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
-import com.ca.mfaas.enable.model.ApiDocConfigException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -23,7 +20,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
@@ -36,28 +34,19 @@ import java.util.concurrent.*;
 public class CacheRefreshService {
 
     // until versioning is implemented, only v1 API docs are supported
-    private static final String API_VERSION = "v1";
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
-    private final APIServiceStatusService apiServiceStatusService;
     private final InstanceRetrievalService instanceRetrievalService;
-    private final APIDocRetrievalService apiDocRetrievalService;
-    private final CachedApiDocService cachedApiDocService;
 
     private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
 
     @Autowired
     public CacheRefreshService(CachedProductFamilyService cachedProductFamilyService,
                                CachedServicesService cachedServicesService,
-                               APIServiceStatusService apiServiceStatusService,
-                               InstanceRetrievalService instanceRetrievalService,
-                               APIDocRetrievalService apiDocRetrievalService, CachedApiDocService cachedApiDocService) {
+                               InstanceRetrievalService instanceRetrievalService) {
         this.cachedProductFamilyService = cachedProductFamilyService;
         this.cachedServicesService = cachedServicesService;
-        this.apiServiceStatusService = apiServiceStatusService;
         this.instanceRetrievalService = instanceRetrievalService;
-        this.apiDocRetrievalService = apiDocRetrievalService;
-        this.cachedApiDocService = cachedApiDocService;
     }
 
     /**
@@ -146,9 +135,7 @@ public class CacheRefreshService {
             .stream()
             .filter(service -> service.getName().equalsIgnoreCase(instance.getAppName()))
             .findFirst()
-            .ifPresent(application -> {
-                processInstance(containersUpdated, instance, application);
-            });
+            .ifPresent(application -> processInstance(containersUpdated, instance, application));
 
     }
 
@@ -169,30 +156,6 @@ public class CacheRefreshService {
 
         // update any containers which contain this service
         updateContainers(containersUpdated, instance, application);
-    }
-
-    /**
-     * Update the API Doc cache for a service
-     *
-     * @param serviceId the service Id
-     * @param version   the API Doc version
-     * @param apiDoc    the API Doc
-     */
-    private void updateApiDocCache(String serviceId, String version, String apiDoc) {
-        try {
-            if (apiDoc != null && !apiDoc.isEmpty()) {
-                String existingApiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
-                if (existingApiDoc == null || !existingApiDoc.equalsIgnoreCase(apiDoc)) {
-                    log.debug("Updating API doc for service: " + serviceId);
-                    cachedApiDocService.updateApiDocForService(serviceId, version, apiDoc);
-                }
-            } else {
-                log.warn("Ignoring empty API doc for service: " + serviceId);
-            }
-        } catch (Exception e) {
-            throw new ApiDocConfigException("Could not update API Doc for service: " + serviceId + ": "
-                + e.getMessage(), e);
-        }
     }
 
 

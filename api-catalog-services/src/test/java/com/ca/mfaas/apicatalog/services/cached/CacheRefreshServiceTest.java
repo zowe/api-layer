@@ -12,7 +12,6 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
-import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import com.ca.mfaas.apicatalog.util.ContainerServiceMockUtil;
 import com.ca.mfaas.apicatalog.util.ContainerServiceState;
 import com.netflix.appinfo.InstanceInfo;
@@ -44,9 +43,6 @@ public class CacheRefreshServiceTest {
 
     @Mock
     private CachedServicesService cachedServicesService;
-
-    @Mock
-    private APIServiceStatusService apiServiceStatusService;
 
     @Mock
     private InstanceRetrievalService instanceRetrievalService;
