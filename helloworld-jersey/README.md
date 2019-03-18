@@ -1,17 +1,17 @@
 # Sample Java Jersey service
 
-This is a sample Hello world application using Java Jersey using 'integration-enabler-java' enabler.
+This is a sample Hello World application using Java Jersey that uses the 'integration-enabler-java' enabler.
 
 # How to Run 
 
-You can start the service using:
+You can start the service using the following command:
 
     ./gradlew helloworld-jersey:tomcatRun
 
-For more information read [docs/local-configuration.md](docs/local-configuration.md).
+For more information, see [docs/local-configuration.md](docs/local-configuration.md).
 
 # How to use
 
-You can see this application registered to catalog under the tile "Sample API Mediation Layer Applications".
+You can see this application registered to the Catalog under the tile "Sample API Mediation Layer Applications".
 
-For API request, use endpoints "/greeting" for a generic greet or "greeting/{name}" for a greet returning your input {name}.
+For an API request, use endpoints "/greeting" for a generic greeting or "greeting/{name}" for a greeting returning your input {name}.
