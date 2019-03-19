@@ -13,8 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -29,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * Filter for process authentication request with username and password in JSON format.
@@ -54,26 +54,25 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-        throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
-            throw new AuthMethodNotSupportedException("Authentication method not supported");
+            throw new AuthenticationServiceException("Authentication method not supported.");
         }
 
-        LoginRequest loginRequest = null;
+        LoginRequest loginRequest;
         try {
             loginRequest = mapper.readValue(request.getInputStream(), LoginRequest.class);
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
-            throw new BadCredentialsException("Login object has wrong format");
+            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
         }
 
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-            throw new BadCredentialsException("Username or password not provided");
+            throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
         }
 
         UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword(), Collections.emptyList());
+            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
         return this.getAuthenticationManager().authenticate(authentication);
     }
 

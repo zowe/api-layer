@@ -11,7 +11,7 @@ package com.ca.mfaas.gateway.security.login;
 
 import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.security.service.TokenAuthentication;
+import com.ca.mfaas.gateway.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +23,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -36,7 +37,6 @@ import java.util.List;
 @Slf4j
 @Component
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
-
     private static final String ZOSMF_END_POINT = "zosmf/info";
     private static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
     private static final String ZOSMF_DOMAIN = "zosmf_saf_realm";
@@ -85,7 +85,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             String cookie = response.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
             String ltpaToken = readLtpaToken(cookie);
             String domain = readDomain(response.getBody());
-            String jwtToken = authenticationService.createToken(user, domain, ltpaToken);
+            String jwtToken = authenticationService.createJwtToken(user, domain, ltpaToken);
 
             TokenAuthentication tokenAuthentication = new TokenAuthentication(user, jwtToken);
             tokenAuthentication.setAuthenticated(true);
@@ -120,7 +120,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         String ltpaToken;
 
         if (cookie == null || cookie.isEmpty() || !cookie.contains("LtpaToken2")) {
-            throw new InvalidUserException("Username or password are invalid.");
+            throw new BadCredentialsException("Username or password are invalid.");
         } else {
             int end = cookie.indexOf(';');
             ltpaToken = end > 0 ? cookie.substring(0, end) : cookie;
@@ -150,5 +150,4 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     public boolean supports(Class<?> auth) {
         return auth.equals(UsernamePasswordAuthenticationToken.class);
     }
-
 }

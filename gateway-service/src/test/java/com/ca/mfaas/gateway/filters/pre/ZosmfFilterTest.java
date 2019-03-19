@@ -61,8 +61,8 @@ public class ZosmfFilterTest {
     public void shouldAddLtpaTokenToZosmfRequests() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(authenticationService.getToken(ctx.getRequest())).thenReturn(TOKEN);
-        when(authenticationService.getLtpaToken(TOKEN)).thenReturn(LTPA_TOKEN);
+        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getLtpaTokenFromJwtToken(TOKEN)).thenReturn(LTPA_TOKEN);
 
         this.filter.run();
 
@@ -73,8 +73,8 @@ public class ZosmfFilterTest {
     public void shouldPassWhenLtpaTokenIsMissing() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(authenticationService.getToken(ctx.getRequest())).thenReturn(TOKEN);
-        when(authenticationService.getLtpaToken(TOKEN)).thenReturn(null);
+        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getLtpaTokenFromJwtToken(TOKEN)).thenReturn(null);
 
         this.filter.run();
 
@@ -85,8 +85,8 @@ public class ZosmfFilterTest {
     public void shouldPassWhenJwtTokenIsMissing() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(authenticationService.getToken(ctx.getRequest())).thenReturn(null);
-        when(authenticationService.getLtpaToken(null)).thenReturn(null);
+        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(null);
+        when(authenticationService.getLtpaTokenFromJwtToken(null)).thenReturn(null);
 
         this.filter.run();
 
@@ -99,8 +99,8 @@ public class ZosmfFilterTest {
         ctx.set(SERVICE_ID_KEY, "zosmftest");
         ctx.addZuulRequestHeader("Cookie", MY_COOKIE);
 
-        when(authenticationService.getToken(ctx.getRequest())).thenReturn(TOKEN);
-        when(authenticationService.getLtpaToken(TOKEN)).thenReturn(LTPA_TOKEN);
+        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getLtpaTokenFromJwtToken(TOKEN)).thenReturn(LTPA_TOKEN);
 
         this.filter.run();
 

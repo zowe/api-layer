@@ -10,11 +10,11 @@
 package com.ca.mfaas.gateway.security.handler;
 
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.gateway.security.login.InvalidUserException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
     private final ErrorService errorService;
     private final ObjectMapper mapper;
 
-    public FailedAuthenticationHandler( ErrorService errorService, ObjectMapper objectMapper) {
+    public FailedAuthenticationHandler(ErrorService errorService, ObjectMapper objectMapper) {
         this.errorService = errorService;
         this.mapper = objectMapper;
     }
@@ -38,8 +38,8 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-        ApiMessage message = null;
-        if (exception instanceof InvalidUserException) {
+        ApiMessage message;
+        if (exception instanceof BadCredentialsException) {
             message = errorService.createApiMessage("com.ca.mfaas.security.invalidUsername", exception.getMessage(), request.getRequestURI());
         } else {
             message = errorService.createApiMessage("com.ca.mfaas.security.authenticationException", exception.getMessage(), request.getRequestURI());

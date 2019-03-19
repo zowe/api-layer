@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.login;
 
 import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.gateway.security.service.TokenAuthentication;
+import com.ca.mfaas.gateway.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,12 +26,10 @@ import java.io.IOException;
 
 @Component
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
+    private static final String COOKIE_RESPONSE = "";
+
     private final ObjectMapper mapper;
     private final SecurityConfigurationProperties securityConfigurationProperties;
-    private static final String JSON = "JSON";
-    private static final String COOKIE = "COOKIE";
-    private static final String COOKIE_RESPONSE = "";
-    private static final String AUTHENTICATION_RESPONSE_TYPE_HEADER_NAME = "Auth-Response-Type";
 
     public SuccessfulLoginHandler(ObjectMapper securityObjectMapper,
                                   SecurityConfigurationProperties securityConfigurationProperties) {
@@ -48,31 +46,7 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         response.setStatus(HttpStatus.OK.value());
 
-        final String responseType = request.getHeader(AUTHENTICATION_RESPONSE_TYPE_HEADER_NAME);
-        switch (responseType == null ? COOKIE : responseType.toUpperCase()) {
-            case JSON:
-                setJson(token, response);
-                break;
-            case COOKIE:
-                setCookie(token, response);
-                break;
-            default:
-                setCookie(token, response);
-        }
-    }
-
-    /**
-     * Add the token to the response
-     *
-     * @param token    the authentication token
-     * @param response send back this response
-     */
-    private void setJson(String token, HttpServletResponse response) throws IOException {
-        mapper.writeValue(response.getWriter(), new LoginResponse(token));
-        response.getWriter().flush();
-        if (!response.isCommitted()) {
-            throw new IOException("Setting Authentication response is not commited.");
-        }
+        setCookie(token, response);
     }
 
     /**
@@ -88,6 +62,7 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         tokenCookie.setHttpOnly(true);
         tokenCookie.setMaxAge(securityConfigurationProperties.getCookieProperties().getCookieMaxAge());
         tokenCookie.setSecure(securityConfigurationProperties.getCookieProperties().isCookieSecure());
+
         response.addCookie(tokenCookie);
         mapper.writeValue(response.getWriter(), COOKIE_RESPONSE);
     }

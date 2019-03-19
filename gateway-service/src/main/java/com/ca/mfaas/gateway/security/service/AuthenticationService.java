@@ -10,6 +10,8 @@
 package com.ca.mfaas.gateway.security.service;
 
 import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.gateway.security.token.TokenExpireException;
+import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +31,6 @@ public class AuthenticationService {
     private static final String BEARER_TYPE_PREFIX = "Bearer";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
-
     private String secret;
 
     public AuthenticationService(SecurityConfigurationProperties securityConfigurationProperties) {
@@ -38,7 +39,7 @@ public class AuthenticationService {
 
     public String getSecret() {
         if (secret == null) {
-            throw new NullPointerException("The secret key for JWT token service is null");
+            throw new NullPointerException("The secret key for JWT token service is null.");
         }
         return secret;
     }
@@ -47,11 +48,7 @@ public class AuthenticationService {
         this.secret = secret;
     }
 
-    public String createToken(String username) {
-        return createToken(username, "", "");
-    }
-
-    public String createToken(String username, String domain, String ltpaToken) {
+    public String createJwtToken(String username, String domain, String ltpaToken) {
         long now = System.currentTimeMillis();
         long expiration = calculateExpiration(now, username);
 
@@ -67,8 +64,20 @@ public class AuthenticationService {
             .compact();
     }
 
+    public String getJwtTokenFromRequest(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
 
-    public String getLtpaToken(String jwtToken) {
+        return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+    }
+
+    public String getLtpaTokenFromJwtToken(String jwtToken) {
         try {
             Claims claims = Jwts.parser()
                 .setSigningKey(getSecret())
@@ -81,26 +90,10 @@ public class AuthenticationService {
         } catch (JwtException exception) {
             log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
             throw new TokenNotValidException("Token is not valid");
-        } catch (Exception exception) {
-            log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
-            throw new TokenNotValidException("Token is not valid");
         }
     }
 
-    public String getToken(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-
-        return extractTokenFromAuthoritationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
-    }
-
-    private String extractTokenFromAuthoritationHeader(String header) {
+    private String extractJwtTokenFromAuthorizationHeader(String header) {
         if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
             return header.replaceFirst(BEARER_TYPE_PREFIX + " ", "");
         }
@@ -112,11 +105,11 @@ public class AuthenticationService {
         long expiration = now + (securityConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000);
 
         // calculate time for short TTL user
-        if (securityConfigurationProperties.getTokenProperties().getShortTtlUsername() != null) {
-            if (username.equals(securityConfigurationProperties.getTokenProperties().getShortTtlUsername())) {
-                expiration = now + (securityConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds() * 1000);
-            }
+        if (securityConfigurationProperties.getTokenProperties().getShortTtlUsername() != null
+            && username.equals(securityConfigurationProperties.getTokenProperties().getShortTtlUsername())) {
+            expiration = now + (securityConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds() * 1000);
         }
+
         return expiration;
     }
 }

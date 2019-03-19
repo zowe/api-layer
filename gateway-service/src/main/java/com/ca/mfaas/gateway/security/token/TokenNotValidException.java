@@ -7,12 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.service;
+package com.ca.mfaas.gateway.security.token;
 
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 
-public class TokenExpireException extends BadCredentialsException {
-    public TokenExpireException(String msg) {
+public class TokenNotValidException extends AuthenticationException {
+    public TokenNotValidException(String msg) {
         super(msg);
     }
 }

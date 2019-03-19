@@ -52,9 +52,9 @@ public class ZosmfFilter extends ZuulFilter {
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
 
-        String jwtToken = authenticationService.getToken(context.getRequest());
+        String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
         if (jwtToken != null) {
-            String ltpaToken = authenticationService.getLtpaToken(jwtToken);
+            String ltpaToken = authenticationService.getLtpaTokenFromJwtToken(jwtToken);
 
             String cookie = context.getZuulRequestHeaders().get(COOKIE_HEADER);
             if (cookie != null) {

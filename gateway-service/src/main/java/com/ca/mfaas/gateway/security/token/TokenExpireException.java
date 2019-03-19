@@ -7,15 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.login;
+package com.ca.mfaas.gateway.security.token;
 
-import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.AuthenticationException;
 
-/**
- * This exception is thrown in case of unsupported HTTP method.
- */
-public class AuthMethodNotSupportedException extends AuthenticationServiceException {
-    public AuthMethodNotSupportedException(String msg) {
+public class TokenExpireException extends AuthenticationException {
+    public TokenExpireException(String msg) {
         super(msg);
     }
 }

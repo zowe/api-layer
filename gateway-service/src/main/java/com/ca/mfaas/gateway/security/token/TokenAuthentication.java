@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.service;
+package com.ca.mfaas.gateway.security.token;
 
 import lombok.EqualsAndHashCode;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -22,12 +22,6 @@ import java.util.Collections;
 public class TokenAuthentication extends AbstractAuthenticationToken {
     private final String username;
     private final String token;
-
-    public TokenAuthentication(String token) {
-        super(Collections.emptyList());
-        this.username = null;
-        this.token = token;
-    }
 
     public TokenAuthentication(String username, String token) {
         super(Collections.emptyList());

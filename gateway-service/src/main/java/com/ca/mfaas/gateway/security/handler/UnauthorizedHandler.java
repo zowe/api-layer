@@ -38,9 +38,10 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.security.authenticationRequired", request.getRequestURI());
+
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.security.authenticationRequired", request.getRequestURI());
         mapper.writeValue(response.getWriter(), message);
     }
 }

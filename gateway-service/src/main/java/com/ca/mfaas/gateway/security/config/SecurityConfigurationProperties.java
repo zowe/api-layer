@@ -19,12 +19,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @ConfigurationProperties(prefix = "apiml.security", ignoreUnknownFields = false)
+@SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
-    public SecurityConfigurationProperties() {
-        this.cookieProperties = new CookieProperties();
-        this.tokenProperties = new TokenProperties();
-    }
-
     private String authenticationResponseTypeHeaderName = "Auth-Response-Type";
     private String loginPath = "/auth/login/**";
     private String queryPath = "/auth/query/**";
@@ -34,11 +30,14 @@ public class SecurityConfigurationProperties {
     private String zosmfServiceId;
     private boolean verifySslCertificatesOfServices = true;
 
+    public SecurityConfigurationProperties() {
+        this.cookieProperties = new CookieProperties();
+        this.tokenProperties = new TokenProperties();
+    }
+
     @Data
     public static class TokenProperties {
-        private String authorizationHeader = "Authorization";
-        private String bearerPrefix = "Bearer ";
-        private long expirationInSeconds = 24 * 60 * 60;
+        private int expirationInSeconds = 24 * 60 * 60;
         private String issuer = "APIML";
         private String shortTtlUsername = "expire";
         private long shortTtlExpirationInSeconds = 1;
@@ -57,7 +56,7 @@ public class SecurityConfigurationProperties {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
             log.error("z/OSMF service name not found. Set property apiml.security.zosmfServiceId to your service name.");
             throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
-        }        
+        }
         return zosmfServiceId;
     }
 }

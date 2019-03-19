@@ -15,10 +15,7 @@ import com.ca.mfaas.gateway.security.login.LoginFilter;
 import com.ca.mfaas.gateway.security.login.SuccessfulLoginHandler;
 import com.ca.mfaas.gateway.security.login.ZosmfAuthenticationProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -28,7 +25,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@Import(ComponentsConfiguration.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper securityObjectMapper;
@@ -81,11 +77,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler,
             securityObjectMapper, authenticationManager());
-    }
-
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
     }
 }

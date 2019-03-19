@@ -19,15 +19,18 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class InitializeTokenSecret implements InitializingBean {
-  
-    @Autowired
-    private HttpConfig httpConfig;
+
+    private final HttpConfig httpConfig;
+    private final AuthenticationService authenticationService;
 
     @Autowired
-    private AuthenticationService authenticationService;
- 
+    public InitializeTokenSecret(HttpConfig httpConfig, AuthenticationService authenticationService) {
+        this.httpConfig = httpConfig;
+        this.authenticationService = authenticationService;
+    }
+
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         log.info("Initializing token service with secret key");
         authenticationService.setSecret(httpConfig.getSecret());
     }
