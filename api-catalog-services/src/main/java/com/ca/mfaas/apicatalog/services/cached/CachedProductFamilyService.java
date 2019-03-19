@@ -280,12 +280,14 @@ public class CachedProductFamilyService {
      */
     @CachePut(key = "#productFamilyId")
     public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
+        String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
+
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
-            createNewContainerFromService(productFamilyId, instanceInfo);
+            createNewContainerFromService(productFamilyId, instanceInfo, instanceHomePage);
         } else {
             Set<APIService> apiServices = container.getServices();
-            APIService service = createAPIServiceFromInstance(instanceInfo);
+            APIService service = createAPIServiceFromInstance(instanceInfo, instanceHomePage);
             apiServices.add(service);
             container.setServices(apiServices);
             //update container
