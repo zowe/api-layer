@@ -11,10 +11,12 @@ package com.ca.mfaas.apicatalog.model;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
 @Data
+@EqualsAndHashCode(of = {"serviceId"})
 public class APIService implements Serializable {
 
     private static final long serialVersionUID = 5119572678327579985L;
@@ -39,6 +41,12 @@ public class APIService implements Serializable {
 
     @ApiModelProperty(notes = "The API documentation for this service")
     private String apiDoc;
+
+    public APIService(String serviceId) {
+        this.serviceId = serviceId;
+        this.status = "UP";
+    }
+
 
     public APIService(String serviceId, String title, String description, boolean secured, String homePageUrl) {
         this.serviceId = serviceId;
