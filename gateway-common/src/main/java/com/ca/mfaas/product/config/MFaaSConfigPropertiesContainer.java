@@ -194,9 +194,9 @@ public class MFaaSConfigPropertiesContainer {
 
     @Data
     public static class GatewayProperties {
-        // The hostname of the gateway / DVIPA address
+        // The homepage of the gateway
         @NotBlank
-        private String gatewayHostname;
+        private String gatewayHomePageUrl;
 
         // Timeout duration for all requests going via the gateway
         // default = 30,000 (see histrixTimeoutInMillis if changing this value)

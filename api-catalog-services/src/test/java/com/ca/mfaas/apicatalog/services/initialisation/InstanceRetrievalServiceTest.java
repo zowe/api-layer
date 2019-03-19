@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,9 +51,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     private InstanceRetrievalService instanceRetrievalService;
-
-    @Spy
-    CachedProductFamilyService cachedProductFamilyService;
+    private CachedProductFamilyService cachedProductFamilyService;
 
     @Autowired
     MFaaSConfigPropertiesContainer propertiesContainer;
@@ -70,6 +67,7 @@ public class InstanceRetrievalServiceTest {
 
     @Before
     public void setup() {
+        cachedProductFamilyService = new CachedProductFamilyService(cachedServicesService, propertiesContainer);
         instanceRetrievalService = new InstanceRetrievalService(cachedProductFamilyService, propertiesContainer, cachedServicesService, restTemplate);
     }
 

@@ -70,8 +70,6 @@ mfaas:
         trustStore: ${environment.truststore}
         trustStoreType: ${environment.truststoreType}
         trustStorePassword: ${environment.truststorePassword}
-    gateway:
-        gatewayHostname: ${environment.gatewayHostname}
     service-registry:
         serviceFetchDelayInMillis:  30000
         cacheRefreshUpdateThresholdInMillis: 60000

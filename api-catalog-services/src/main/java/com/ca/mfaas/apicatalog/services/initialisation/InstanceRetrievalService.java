@@ -257,18 +257,9 @@ public class InstanceRetrievalService {
         cachedServicesService.updateService(application.getName(), application);
         application.getInstances().forEach(instanceInfo -> {
             String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
-            String homePage;
-            if (instanceInfo.getHomePageUrl() != null) {
-                InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
-                homePage = gatewayInstance.getHomePageUrl() + "ui/v1/" + instanceInfo.getVIPAddress();
-            }
-            else
-                homePage = null;
-
             if (productFamilyId != null) {
-
                 log.debug("Initialising product family (creating tile for) : " + productFamilyId);
-                cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo, homePage);
+                cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo);
             }
 
         });
@@ -373,13 +364,15 @@ public class InstanceRetrievalService {
         String productFamilyId = apiCatalogInstance.getMetadata().get("mfaas.discovery.catalogUiTile.id");
         if (productFamilyId != null) {
             log.debug("Initialising product family (creating tile for) : " + productFamilyId);
-            String homePage;
             InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
-            if (apiCatalogInstance.getHomePageUrl() != null) {
-                homePage = gatewayInstance.getHomePageUrl() + "ui/v1/" + apiCatalogInstance.getVIPAddress();
+
+            if (propertiesContainer.getGateway() == null) {
+                propertiesContainer.setGateway(new MFaaSConfigPropertiesContainer.GatewayProperties());
             }
-            else homePage = null;
-            cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance, homePage);
+
+            propertiesContainer.getGateway().setGatewayHomePageUrl(gatewayInstance.getHomePageUrl());
+
+            cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance);
         }
 
         updateCacheWithAllInstances();

@@ -137,7 +137,7 @@ public class CachedProductFamilyTest {
         APIContainer originalContainer = service.getContainer("demoapp", instance);
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
 
-        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance,"https://localhost:8080/demoapp");
+        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance);
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
@@ -163,7 +163,7 @@ public class CachedProductFamilyTest {
         instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         Thread.sleep(100);
 
-        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance,"https://localhost:8080/demoapp");
+        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance);
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
@@ -201,7 +201,7 @@ public class CachedProductFamilyTest {
         instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         Thread.sleep(100);
 
-        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance,"https://localhost:8080/demoapp");
+        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance);
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
@@ -227,7 +227,7 @@ public class CachedProductFamilyTest {
 
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
-        service.createContainerFromInstance("demoapp", instance,"https://localhost:8080/demoapp");
+        service.createContainerFromInstance("demoapp", instance);
     }
 
     @Test

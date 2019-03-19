@@ -158,29 +158,28 @@ public class CachedProductFamilyService {
      *
      * @param productFamilyId the product family id
      * @param instanceInfo    the service instance
-     * @param homePage   the service homepage url
      */
     @CachePut(key = "#productFamilyId")
-    public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo, String homePage) {
+    public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
+        String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
+
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
-            container = createNewContainerFromService(productFamilyId, instanceInfo, homePage);
+            container = createNewContainerFromService(productFamilyId, instanceInfo, instanceHomePage);
         } else {
-            addServiceToContainer(productFamilyId, instanceInfo, homePage);
+            addServiceToContainer(productFamilyId, instanceInfo, instanceHomePage);
             container = products.get(productFamilyId);
             checkIfContainerShouldBeUpdatedFromInstance(productFamilyId, instanceInfo, container);
         }
         return container;
     }
 
-    /**
-     * Return the createContainerFromInstance method with the homepage value set to null
-     *
-     * @param productFamilyId the product family id
-     * @param instanceInfo    the service instance
-     */
-    public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
-        return createContainerFromInstance(productFamilyId, instanceInfo, null);
+    private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
+        String instanceHomePage = null;
+        if (instanceInfo.getHomePageUrl() != null) {
+            instanceHomePage = propertiesContainer.getGateway().getGatewayHomePageUrl() + "ui/v1/" + instanceInfo.getVIPAddress();
+        }
+        return instanceHomePage;
     }
 
     /**
