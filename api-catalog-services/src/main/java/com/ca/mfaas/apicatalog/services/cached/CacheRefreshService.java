@@ -76,9 +76,11 @@ public class CacheRefreshService {
                 log.debug(containersUpdated.size() + " containers updated from discovered services.");
                 log.debug("Catalog status updates will occur for containers: " + containersUpdated.toString());
             }
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (InterruptedException e) {
             log.error("Failed to update cache with discovered services: " + e.getMessage(), e);
             Thread.currentThread().interrupt();
+        } catch (ExecutionException | TimeoutException e) {
+            log.error("Failed to update cache with discovered services: " + e.getMessage(), e);
         }
     }
 
