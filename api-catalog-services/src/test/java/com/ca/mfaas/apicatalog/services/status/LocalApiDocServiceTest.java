@@ -275,8 +275,8 @@ public class LocalApiDocServiceTest {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("routed-services.api-v1.gateway-url", "api");
         metadata.put("routed-services.api-v1.service-url", "/");
-        metadata.put("routed-services.api-doc.gateway-url", "api");
-        metadata.put("routed-services.api-doc.service-url", SERVICE_ID + "/api-doc");
+        metadata.put("routed-services.apidoc.gateway-url", "api/v1/api-doc");
+        metadata.put("routed-services.apidoc.service-url", SERVICE_ID + "/api-doc");
         metadata.put("mfaas.discovery.service.title", "Test service");
         metadata.put("mfaas.discovery.service.description", "Test service description");
 

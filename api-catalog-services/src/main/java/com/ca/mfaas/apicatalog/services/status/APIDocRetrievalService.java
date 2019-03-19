@@ -15,6 +15,7 @@ import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
 import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
@@ -73,7 +74,7 @@ public class APIDocRetrievalService {
         RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
         ApiInfo apiInfo = findApi(apiInfoList, apiVersion);
-        String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo);
+        String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo, routes);
         if (apiDocUrl == null) {
             return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
         }
@@ -87,10 +88,10 @@ public class APIDocRetrievalService {
             instanceRetrievalService.getGatewayHostname());
     }
 
-    private String getApiDocUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
+    private String getApiDocUrl(ApiInfo apiInfo, InstanceInfo instanceInfo, RoutedServices routes) {
         String apiDocUrl = null;
         if (apiInfo == null) {
-            apiDocUrl = createApiDocUrlFromRouting(instanceInfo);
+            apiDocUrl = createApiDocUrlFromRouting(instanceInfo, routes);
         } else if (apiInfo.getSwaggerUrl() != null) {
             apiDocUrl = apiInfo.getSwaggerUrl();
         }
@@ -166,7 +167,7 @@ public class APIDocRetrievalService {
      * introduced. It will be removed when all services will be using the new configuration style.
      */
     @Deprecated
-    private String createApiDocUrlFromRouting(InstanceInfo instanceInfo) {
+    private String createApiDocUrlFromRouting(InstanceInfo instanceInfo, RoutedServices routes) {
         String scheme;
         int port;
         if (instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)) {
@@ -177,7 +178,12 @@ public class APIDocRetrievalService {
             port = instanceInfo.getPort();
         }
 
-        String path = instanceInfo.getMetadata().get("routed-services.api-doc.service-url");
+        String path = null;
+        RoutedService route = routes.findServiceByGatewayUrl("api/v1/api-doc");
+        if (route != null) {
+            path = route.getServiceUrl();
+        }
+
         if (path == null) {
             throw new ApiDocNotFoundException("No API Documentation defined for service " + instanceInfo.getAppName().toLowerCase() + " .");
         }
