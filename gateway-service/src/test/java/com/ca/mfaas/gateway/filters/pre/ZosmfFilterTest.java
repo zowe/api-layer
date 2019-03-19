@@ -16,7 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
-import com.ca.mfaas.security.token.TokenService;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.context.RequestContext;
 
 import org.junit.Before;
@@ -30,12 +30,12 @@ public class ZosmfFilterTest {
     private static final String MY_COOKIE = "myCookie=MYCOOKIE";
 
     private ZosmfFilter filter;
-    private TokenService tokenService;
+    private AuthenticationService authenticationService;
 
     @Before
     public void setUp() throws Exception {
-        this.tokenService = mock(TokenService.class);
-        this.filter = new ZosmfFilter(tokenService);
+        this.authenticationService = mock(AuthenticationService.class);
+        this.filter = new ZosmfFilter(authenticationService);
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
         ctx.setResponse(new MockHttpServletResponse());
@@ -61,8 +61,8 @@ public class ZosmfFilterTest {
     public void shouldAddLtpaTokenToZosmfRequests() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(tokenService.getToken(ctx.getRequest())).thenReturn(TOKEN);
-        when(tokenService.getLtpaToken(TOKEN)).thenReturn(LTPA_TOKEN);
+        when(authenticationService.getToken(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getLtpaToken(TOKEN)).thenReturn(LTPA_TOKEN);
 
         this.filter.run();
 
@@ -73,8 +73,8 @@ public class ZosmfFilterTest {
     public void shouldPassWhenLtpaTokenIsMissing() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(tokenService.getToken(ctx.getRequest())).thenReturn(TOKEN);
-        when(tokenService.getLtpaToken(TOKEN)).thenReturn(null);
+        when(authenticationService.getToken(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getLtpaToken(TOKEN)).thenReturn(null);
 
         this.filter.run();
 
@@ -85,8 +85,8 @@ public class ZosmfFilterTest {
     public void shouldPassWhenJwtTokenIsMissing() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(tokenService.getToken(ctx.getRequest())).thenReturn(null);
-        when(tokenService.getLtpaToken(null)).thenReturn(null);
+        when(authenticationService.getToken(ctx.getRequest())).thenReturn(null);
+        when(authenticationService.getLtpaToken(null)).thenReturn(null);
 
         this.filter.run();
 
@@ -99,8 +99,8 @@ public class ZosmfFilterTest {
         ctx.set(SERVICE_ID_KEY, "zosmftest");
         ctx.addZuulRequestHeader("Cookie", MY_COOKIE);
 
-        when(tokenService.getToken(ctx.getRequest())).thenReturn(TOKEN);
-        when(tokenService.getLtpaToken(TOKEN)).thenReturn(LTPA_TOKEN);
+        when(authenticationService.getToken(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getLtpaToken(TOKEN)).thenReturn(LTPA_TOKEN);
 
         this.filter.run();
 

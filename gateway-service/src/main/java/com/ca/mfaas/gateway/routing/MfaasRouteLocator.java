@@ -77,7 +77,8 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
             for (String serviceId : services) {
                 // Ignore specifically ignored services and those that were manually
                 // configured
-                String targetServiceId = changeServiceId(serviceId);
+                //   String targetServiceId = changeServiceId(serviceId);
+                String targetServiceId = serviceId;
 
                 RoutedServices routedServices = new RoutedServices();
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(targetServiceId);
@@ -91,7 +92,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     keys.add("/" + mapRouteToService(serviceId) + "/**");
                 }
 
-                for (RoutedServicesUser routedServicesUser: routedServicesUsers) {
+                for (RoutedServicesUser routedServicesUser : routedServicesUsers) {
                     routedServicesUser.addRoutedServices(serviceId, routedServices);
                 }
 

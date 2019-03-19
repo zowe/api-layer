@@ -15,8 +15,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.security.config.SecurityConfigurationProperties.CookieProperties;
+import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
@@ -49,7 +48,7 @@ public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
         if ((context.getRequestQueryParams() != null) && context.getRequestQueryParams().containsKey(TOKEN_KEY)) {
             HttpServletResponse servletResponse = context.getResponse();
-            CookieProperties cp = securityConfigurationProperties.getCookieProperties();
+            SecurityConfigurationProperties.CookieProperties cp = securityConfigurationProperties.getCookieProperties();
             Cookie cookie = new Cookie(cp.getCookieName(), context.getRequestQueryParams().get(TOKEN_KEY).get(0));
             cookie.setPath(cp.getCookiePath());
             cookie.setSecure(true);

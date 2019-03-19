@@ -7,33 +7,27 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security;
+package com.ca.mfaas.gateway.security.config;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.security.handler.FailedAuthenticationHandler;
-import com.ca.mfaas.security.handler.UnauthorizedHandler;
-import com.ca.mfaas.security.login.LoginAuthenticationProvider;
-import com.ca.mfaas.security.login.LoginFilter;
-import com.ca.mfaas.security.login.SuccessfulLoginHandler;
-import com.ca.mfaas.security.token.CookieFilter;
-import com.ca.mfaas.security.token.TokenAuthenticationProvider;
-import com.ca.mfaas.security.token.TokenFilter;
+import com.ca.mfaas.gateway.security.handler.FailedAuthenticationHandler;
+import com.ca.mfaas.gateway.security.handler.UnauthorizedHandler;
+import com.ca.mfaas.gateway.security.login.LoginFilter;
+import com.ca.mfaas.gateway.security.login.SuccessfulLoginHandler;
+import com.ca.mfaas.gateway.security.login.ZosmfAuthenticationProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@Configuration
 @EnableWebSecurity
-@ComponentScan("com.ca.mfaas.security")
 @Import(ComponentsConfiguration.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
@@ -41,23 +35,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final UnauthorizedHandler unAuthorizedHandler;
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
-    private final LoginAuthenticationProvider loginAuthenticationProvider;
-    private final TokenAuthenticationProvider tokenAuthenticationProvider;
+    private final ZosmfAuthenticationProvider loginAuthenticationProvider;
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public SecurityConfiguration(
         UnauthorizedHandler unAuthorizedHandler,
         SuccessfulLoginHandler successfulLoginHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
-        LoginAuthenticationProvider loginAuthenticationProvider,
-        TokenAuthenticationProvider tokenAuthenticationProvider,
+        ZosmfAuthenticationProvider loginAuthenticationProvider,
         ObjectMapper securityObjectMapper,
         SecurityConfigurationProperties securityConfigurationProperties) {
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.successfulLoginHandler = successfulLoginHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.loginAuthenticationProvider = loginAuthenticationProvider;
-        this.tokenAuthenticationProvider = tokenAuthenticationProvider;
         this.securityObjectMapper = securityObjectMapper;
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
@@ -65,18 +56,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(loginAuthenticationProvider);
-        auth.authenticationProvider(tokenAuthenticationProvider);
-    }
-
-    @Override
-    public void configure(WebSecurity web) {
-        // skip web filters matchers
-        String[] noSecurityAntMatchers = {
-            "/**",
-            "/images/**",
-            "/favicon.ico",
-        };
-        web.ignoring().antMatchers(noSecurityAntMatchers);
     }
 
     @Override
@@ -96,30 +75,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // login endpoint
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
-            .authorizeRequests()
-
-            // allow login to pass through filters
-            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
-
-            // filters
-            .and()
-            .addFilterBefore(cookieTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(headerTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-            .authorizeRequests();
-    }
-
-    private TokenFilter headerTokenFilter() throws Exception {
-        return new TokenFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
+            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class);
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler,
             securityObjectMapper, authenticationManager());
-    }
-
-    private CookieFilter cookieTokenFilter() throws Exception {
-        return new CookieFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }
 
     @Bean

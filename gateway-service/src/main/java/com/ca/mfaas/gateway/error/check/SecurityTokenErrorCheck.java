@@ -10,9 +10,9 @@
 package com.ca.mfaas.gateway.error.check;
 
 import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.gateway.security.service.TokenExpireException;
+import com.ca.mfaas.gateway.security.service.TokenNotValidException;
 import com.ca.mfaas.rest.response.ApiMessage;
-import com.ca.mfaas.security.token.TokenExpireException;
-import com.ca.mfaas.security.token.TokenNotValidException;
 import com.netflix.zuul.exception.ZuulException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -43,7 +43,7 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
                 }
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(message);
             }
-            }
+        }
 
         return null;
     }

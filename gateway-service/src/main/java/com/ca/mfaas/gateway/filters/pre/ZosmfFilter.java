@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
-import com.ca.mfaas.security.token.TokenService;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +23,11 @@ public class ZosmfFilter extends ZuulFilter {
 
     private static final String COOKIE_HEADER = "cookie";
 
-    private final TokenService tokenService;
+    private final AuthenticationService authenticationService;
 
     @Autowired
-    public ZosmfFilter(TokenService tokenService) {
-        this.tokenService = tokenService;
+    public ZosmfFilter(AuthenticationService tokenService) {
+        this.authenticationService = tokenService;
     }
 
     @Override
@@ -52,9 +52,9 @@ public class ZosmfFilter extends ZuulFilter {
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
 
-        String jwtToken = tokenService.getToken(context.getRequest());
+        String jwtToken = authenticationService.getToken(context.getRequest());
         if (jwtToken != null) {
-            String ltpaToken = tokenService.getLtpaToken(jwtToken);
+            String ltpaToken = authenticationService.getLtpaToken(jwtToken);
 
             String cookie = context.getZuulRequestHeaders().get(COOKIE_HEADER);
             if (cookie != null) {

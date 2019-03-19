@@ -33,6 +33,8 @@ apiml:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: localhost  # The hostname for other services to access the gateway
         timeoutMillis: 30000  # Timeout for connection to the services
+    security:
+        zosmfServiceId: zosmfca32
 
 spring:
     application:

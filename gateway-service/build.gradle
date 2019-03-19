@@ -35,13 +35,14 @@ dependencies {
     compile(project(':integration-enabler-spring-v2'))
     compile(project(':common-service-core'))
     compile(project(':gateway-common'))
-    compile(project(':security-module'))
 
     compile libraries.spring_cloud_starter_zuul
     compile libraries.spring_boot_starter_actuator
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_websocket
     compile libraries.spring_boot_starter_thymeleaf
+    compile libraries.spring_security_web
+    compile libraries.spring_security_config
     compile libraries.tomcat_coyote
     compile libraries.tomcat_embed_core
     compile libraries.spring_cloud_starter_eureka
@@ -49,6 +50,7 @@ dependencies {
     compile libraries.swagger_core
     compile libraries.swagger_models
     compile libraries.jetty_websocket_client
+    compile libraries.jjwt
 
     compileOnly libraries.lombok
 

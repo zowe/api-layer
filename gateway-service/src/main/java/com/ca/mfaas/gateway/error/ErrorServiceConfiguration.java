@@ -7,16 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security;
+package com.ca.mfaas.gateway.error;
 
+import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
-public class ComponentsConfiguration {
+public class ErrorServiceConfiguration {
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
+    public ErrorService errorService() {
+        return new ErrorServiceImpl("/gateway-messages.yml");
     }
 }

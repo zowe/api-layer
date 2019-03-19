@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
 import com.netflix.zuul.context.RequestContext;
 
 import org.junit.Before;
