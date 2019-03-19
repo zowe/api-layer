@@ -78,6 +78,7 @@ public class CacheRefreshService {
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             log.error("Failed to update cache with discovered services: " + e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
     }
 

@@ -163,7 +163,7 @@ public class CachedProductFamilyService {
         } else {
             addServiceToContainer(productFamilyId, instanceInfo);
             container = products.get(productFamilyId);
-            checkIfContainerShouldBeUpdatedFromInstance(productFamilyId, instanceInfo, container);
+            checkIfContainerShouldBeUpdatedFromInstance(instanceInfo, container);
         }
         return container;
     }
@@ -198,11 +198,10 @@ public class CachedProductFamilyService {
      * Compare the version of the parent in the given instance
      * If the version is greater, then update the parent
      *
-     * @param productFamilyId parent identifier
      * @param instanceInfo    service instance
      * @param container       parent container
      */
-    private void checkIfContainerShouldBeUpdatedFromInstance(String productFamilyId, InstanceInfo instanceInfo, APIContainer container) {
+    private void checkIfContainerShouldBeUpdatedFromInstance(InstanceInfo instanceInfo, APIContainer container) {
         String versionFromInstance = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
         // if the instance has a parent version
         if (versionFromInstance != null) {
@@ -260,7 +259,12 @@ public class CachedProductFamilyService {
         createContainerFromInstance(productFamilyId, instanceInfo);
     }
 
-
+    /**
+     * Save a containers details using a service's metadata
+     *
+     * @param productFamilyId the product family id of the container
+     * @param instanceInfo    the service instance
+     */
     @CachePut(key = "#productFamilyId")
     public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
         APIContainer container = products.get(productFamilyId);
@@ -272,21 +276,26 @@ public class CachedProductFamilyService {
             apiServices.add(service);
             container.setServices(apiServices);
             //update container
-            checkIfContainerShouldBeUpdatedFromInstance(productFamilyId, instanceInfo, container);
+            checkIfContainerShouldBeUpdatedFromInstance(instanceInfo, container);
             products.put(productFamilyId, container);
         }
 
         return container;
     }
 
+    /**
+     * Remove a container
+     *
+     * @param productFamilyId the product family id of the container
+     * @param serviceId check for this service
+     */
     @CacheEvict(key = "#productFamilyId")
     public void removeContainerFromInstance(String productFamilyId, String serviceId) {
         APIContainer container = products.get(productFamilyId);
-        Set<APIService> apiServices = container.getServices();
-        if (container != null && apiServices != null && !apiServices.isEmpty()) {
+        if (container != null) {
+            Set<APIService> apiServices = container.getServices();
             apiServices.remove(new APIService(serviceId));
 
-            //check api container doesn't have elements
             if (apiServices.isEmpty()) {
                 products.remove(productFamilyId);
             } else {
