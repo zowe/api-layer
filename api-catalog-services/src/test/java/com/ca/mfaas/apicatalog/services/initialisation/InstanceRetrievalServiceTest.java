@@ -46,10 +46,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {InstanceRetrievalServiceTest.TestConfiguration.class})
 public class InstanceRetrievalServiceTest {
-    @EnableConfigurationProperties(MFaaSConfigPropertiesContainer.class)
-    public static class TestConfiguration {
-
-    }
+    private final Integer cacheRefreshUpdateThresholdInMillis = 2000;
 
     private InstanceRetrievalService instanceRetrievalService;
     private CachedProductFamilyService cachedProductFamilyService;
@@ -70,7 +67,7 @@ public class InstanceRetrievalServiceTest {
     @Before
     public void setup() {
         gatewayConfigProperties = GatewayConfigProperties.builder().hostname("localhost:9090").scheme("https").build();
-        cachedProductFamilyService = new CachedProductFamilyService(gatewayConfigProperties, cachedServicesService);
+        cachedProductFamilyService = new CachedProductFamilyService(gatewayConfigProperties, cachedServicesService, cacheRefreshUpdateThresholdInMillis);
         instanceRetrievalService = new InstanceRetrievalService(cachedProductFamilyService, propertiesContainer, cachedServicesService, restTemplate);
     }
 
@@ -234,4 +231,8 @@ public class InstanceRetrievalServiceTest {
             )).thenReturn(new ResponseEntity<>(body, HttpStatus.OK));
     }
 
+    @EnableConfigurationProperties(MFaaSConfigPropertiesContainer.class)
+    public static class TestConfiguration {
+
+    }
 }
