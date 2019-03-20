@@ -34,7 +34,8 @@ public class AppContextInitialisedListener {
      * @param event spring event
      */
     @EventListener
-    public void onApplicationEvent(ContextRefreshedEvent event) throws CannotRegisterServiceException {
+    public void onApplicationEvent(ContextRefreshedEvent event)
+        throws CannotRegisterServiceException {
         instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
     }
 }

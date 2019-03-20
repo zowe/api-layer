@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.cached;
 
+import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
@@ -22,6 +23,7 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -41,6 +43,11 @@ public class CachedProductFamilyService {
 
     @Autowired
     private MFaaSConfigPropertiesContainer propertiesContainer;
+
+    @Autowired
+    @Lazy
+    private GatewayConfigProperties gatewayConfigProperties;
+
     @Autowired
     private CachedServicesService cachedServicesService;
 
@@ -177,7 +184,7 @@ public class CachedProductFamilyService {
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null) {
-            instanceHomePage = propertiesContainer.getGateway().getGatewayHomePageUrl() + "ui/v1/" + instanceInfo.getVIPAddress();
+            instanceHomePage = gatewayConfigProperties.getHomePageUrl() + "ui/v1/" + instanceInfo.getVIPAddress();
         }
         return instanceHomePage;
     }

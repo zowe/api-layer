@@ -194,10 +194,6 @@ public class MFaaSConfigPropertiesContainer {
 
     @Data
     public static class GatewayProperties {
-        // The homepage of the gateway
-        @NotBlank
-        private String gatewayHomePageUrl;
-
         // Timeout duration for all requests going via the gateway
         // default = 30,000 (see histrixTimeoutInMillis if changing this value)
         private Integer timeoutInMillis;

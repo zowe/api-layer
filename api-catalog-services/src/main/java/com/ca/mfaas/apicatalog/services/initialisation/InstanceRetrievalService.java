@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.initialisation;
 
+import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
@@ -29,9 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.retry.RetryException;
-import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -78,11 +77,6 @@ public class InstanceRetrievalService {
      *
      * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the gateway
      */
-    @Retryable(
-        value = {RetryException.class},
-        exclude = CannotRegisterServiceException.class,
-        maxAttempts = 5,
-        backoff = @Backoff(delayExpression = "#{${mfaas.service-registry.serviceFetchDelayInMillis}}"))
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
         log.info("Initialising API Catalog with Gateway services.");
         try {
@@ -364,14 +358,6 @@ public class InstanceRetrievalService {
         String productFamilyId = apiCatalogInstance.getMetadata().get("mfaas.discovery.catalogUiTile.id");
         if (productFamilyId != null) {
             log.debug("Initialising product family (creating tile for) : " + productFamilyId);
-            InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
-
-            if (propertiesContainer.getGateway() == null) {
-                propertiesContainer.setGateway(new MFaaSConfigPropertiesContainer.GatewayProperties());
-            }
-
-            propertiesContainer.getGateway().setGatewayHomePageUrl(gatewayInstance.getHomePageUrl());
-
             cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance);
         }
 
