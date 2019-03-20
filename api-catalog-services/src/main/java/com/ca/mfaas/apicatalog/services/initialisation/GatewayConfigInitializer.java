@@ -47,7 +47,6 @@ public class GatewayConfigInitializer {
             return GatewayConfigProperties.builder()
                 .scheme(uri.getScheme())
                 .hostname(uri.getHost() + ":" + uri.getPort())
-                .homePageUrl(gatewayHomePage)
                 .build();
         } catch (URISyntaxException e) {
             String msg = "Gateway URL is incorrect.";
