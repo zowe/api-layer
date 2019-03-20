@@ -72,7 +72,6 @@ public class InstanceRetrievalService {
     /**
      * Initialise the API Catalog with all current running instances
      * The API Catalog itself must be UP before checking all other instances
-     * If the catalog is not up, or if the fetch fails, then wait for a defined period and retry up to a max of 5 times
      *
      * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the gateway
      */
