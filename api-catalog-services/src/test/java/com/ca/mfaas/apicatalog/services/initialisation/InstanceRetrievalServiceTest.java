@@ -11,6 +11,7 @@
 package com.ca.mfaas.apicatalog.services.initialisation;
 
 import com.ca.mfaas.apicatalog.model.APIService;
+import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.apicatalog.util.ApplicationsWrapper;
@@ -52,6 +53,7 @@ public class InstanceRetrievalServiceTest {
 
     private InstanceRetrievalService instanceRetrievalService;
     private CachedProductFamilyService cachedProductFamilyService;
+    private GatewayConfigProperties gatewayConfigProperties;
 
     @Autowired
     MFaaSConfigPropertiesContainer propertiesContainer;
@@ -67,7 +69,8 @@ public class InstanceRetrievalServiceTest {
 
     @Before
     public void setup() {
-        cachedProductFamilyService = new CachedProductFamilyService(cachedServicesService, propertiesContainer);
+        gatewayConfigProperties = GatewayConfigProperties.builder().hostname("localhost:9090").scheme("https").build();
+        cachedProductFamilyService = new CachedProductFamilyService(gatewayConfigProperties, cachedServicesService);
         instanceRetrievalService = new InstanceRetrievalService(cachedProductFamilyService, propertiesContainer, cachedServicesService, restTemplate);
     }
 

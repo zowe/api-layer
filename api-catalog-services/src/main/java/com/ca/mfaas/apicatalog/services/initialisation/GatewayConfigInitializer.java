@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 package com.ca.mfaas.apicatalog.services.initialisation;
 
 import com.ca.mfaas.apicatalog.exceptions.GatewayConfigInitializerException;
@@ -5,8 +15,6 @@ import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
 import com.ca.mfaas.product.constants.CoreService;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -47,7 +55,7 @@ public class GatewayConfigInitializer {
         }
     }
 
-    private String getGatewayHomePage(){
+    private String getGatewayHomePage() {
         InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
         if (gatewayInstance == null) {
             String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
