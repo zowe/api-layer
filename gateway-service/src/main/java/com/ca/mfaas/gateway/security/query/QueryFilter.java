@@ -7,17 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.login;
+package com.ca.mfaas.gateway.security.query;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.mfaas.gateway.security.token.TokenAuthentication;
+import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,52 +29,38 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
-/**
- * Filter for process authentication request with username and password in JSON format.
- */
 @Slf4j
-public class LoginFilter extends AbstractAuthenticationProcessingFilter {
-    private static final String BASIC_TYPE_PREFIX = "Basic ";
-
+public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
-    private final ObjectMapper mapper;
+    private final AuthenticationService authenticationService;
 
-    public LoginFilter(
+    public QueryFilter(
         String authEndpoint,
         AuthenticationSuccessHandler successHandler,
         AuthenticationFailureHandler failureHandler,
-        ObjectMapper mapper,
+        AuthenticationService authenticationService,
         AuthenticationManager authenticationManager) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
-        this.mapper = mapper;
+        this.authenticationService = authenticationService;
         this.setAuthenticationManager(authenticationManager);
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        if (!request.getMethod().equals(HttpMethod.POST.name())) {
+        if (!request.getMethod().equals(HttpMethod.GET.name())) {
             throw new AuthenticationServiceException("Authentication method not supported.");
         }
 
-        LoginRequest loginRequest = getCredentialFromAuthorizationHeader(request);
-
-        if (loginRequest == null) {
-            loginRequest = getCredentialsFromBody(request);
+        String token = authenticationService.getJwtTokenFromRequest(request);
+        if (token == null || token.isEmpty()) {
+            throw new TokenNotValidException("Valid token not provided.");
         }
 
-        if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-            throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
-        }
-
-        UsernamePasswordAuthenticationToken authentication
-            = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
-        return this.getAuthenticationManager().authenticate(authentication);
+        return this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
     }
 
     @Override
@@ -94,31 +78,5 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         SecurityContextHolder.clearContext();
         failureHandler.onAuthenticationFailure(request, response, failed);
     }
-
-    private LoginRequest getCredentialFromAuthorizationHeader(HttpServletRequest request) {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-
-        if (header != null && header.startsWith(BASIC_TYPE_PREFIX)) {
-            String base64Credentials = header.replaceFirst(BASIC_TYPE_PREFIX, "");
-
-            if (!base64Credentials.isEmpty()) {
-                String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
-                int i = credentials.indexOf(':');
-                if (i > 0) {
-                    return new LoginRequest(credentials.substring(0, i), credentials.substring(i + 1));
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private LoginRequest getCredentialsFromBody(HttpServletRequest request) {
-        try {
-            return mapper.readValue(request.getInputStream(), LoginRequest.class);
-        } catch (IOException e) {
-            logger.debug("Authentication problem: login object has wrong format");
-            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
-        }
-    }
 }
+

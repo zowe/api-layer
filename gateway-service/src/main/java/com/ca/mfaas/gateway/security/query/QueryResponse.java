@@ -7,13 +7,18 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.login;
+package com.ca.mfaas.gateway.security.query;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @AllArgsConstructor
-public class LoginResponse {
-    private String token;
+public class QueryResponse {
+    private String domain;
+    private String userId;
+    private Date creation;
+    private Date expiration;
 }

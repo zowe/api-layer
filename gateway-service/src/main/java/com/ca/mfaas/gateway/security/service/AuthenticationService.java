@@ -10,6 +10,8 @@
 package com.ca.mfaas.gateway.security.service;
 
 import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.gateway.security.query.QueryResponse;
+import com.ca.mfaas.gateway.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import io.jsonwebtoken.*;
@@ -37,7 +39,7 @@ public class AuthenticationService {
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
-    public String getSecret() {
+    private String getSecret() {
         if (secret == null) {
             throw new NullPointerException("The secret key for JWT token service is null.");
         }
@@ -62,6 +64,42 @@ public class AuthenticationService {
             .setId(UUID.randomUUID().toString())
             .signWith(SignatureAlgorithm.HS512, getSecret())
             .compact();
+    }
+
+    public TokenAuthentication validateJwtToken(TokenAuthentication token) {
+        try {
+            Claims claims = Jwts.parser()
+                .setSigningKey(getSecret())
+                .parseClaimsJws(token.getCredentials())
+                .getBody();
+
+            TokenAuthentication validTokenAuthentication = new TokenAuthentication(claims.getSubject(), token.getCredentials());
+            validTokenAuthentication.setAuthenticated(true);
+
+            return validTokenAuthentication;
+        } catch (ExpiredJwtException exception) {
+            log.debug("Token with id '{}' for user '{}' is expired.", exception.getClaims().getId(), exception.getClaims().getSubject());
+            throw new TokenExpireException("Token is expired.");
+        } catch (JwtException exception) {
+            log.debug("Token is not valid due to: {}.", exception.getMessage());
+            throw new TokenNotValidException("Token is not valid.");
+        } catch (Exception exception) {
+            log.debug("Token is not valid due to: {}.", exception.getMessage());
+            throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid.");
+        }
+    }
+
+    public QueryResponse parseJwtToken(String token) {
+        Claims claims = Jwts.parser()
+            .setSigningKey(getSecret())
+            .parseClaimsJws(token)
+            .getBody();
+
+        return new QueryResponse(
+            claims.get(DOMAIN_CLAIM_NAME, String.class),
+            claims.getSubject(),
+            claims.getIssuedAt(),
+            claims.getExpiration());
     }
 
     public String getJwtTokenFromRequest(HttpServletRequest request) {

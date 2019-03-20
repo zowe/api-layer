@@ -23,6 +23,12 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
     private final String username;
     private final String token;
 
+    public TokenAuthentication(String token) {
+        super(Collections.emptyList());
+        this.username = null;
+        this.token = token;
+    }
+
     public TokenAuthentication(String username, String token) {
         super(Collections.emptyList());
         this.username = username;
