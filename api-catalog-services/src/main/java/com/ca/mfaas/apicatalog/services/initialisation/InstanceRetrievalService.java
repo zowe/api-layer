@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.apicatalog.services.initialisation;
 
-import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;

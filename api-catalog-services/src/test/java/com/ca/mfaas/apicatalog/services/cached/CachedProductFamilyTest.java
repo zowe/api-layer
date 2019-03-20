@@ -94,7 +94,7 @@ public class CachedProductFamilyTest {
         service.getContainer("demoapp", instance1);
 
         InstanceInfo instance2 = getStandardInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
-        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
+        service.addServiceToContainer("demoapp", instance2);
 
         APIService containerService = service.getContainerService("demoapp", instance1);
         Assert.assertEquals("service1", containerService.getServiceId());
@@ -246,7 +246,7 @@ public class CachedProductFamilyTest {
         CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService,getProperties());
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
+        service.addServiceToContainer("demoapp", instance2);
 
         List<APIContainer> containersForService = service.getContainersForService("service1");
         Assert.assertEquals(1, service.getContainerCount());
@@ -276,7 +276,7 @@ public class CachedProductFamilyTest {
         CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService,getProperties());
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
+        service.addServiceToContainer("demoapp", instance2);
 
         APIContainer container = service.retrieveContainer("demoapp");
         Assert.assertNotNull(container);
@@ -305,7 +305,7 @@ public class CachedProductFamilyTest {
         CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService, getProperties());
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
+        service.addServiceToContainer("demoapp", instance2);
 
         APIContainer container = service.retrieveContainer("demoapp");
         Assert.assertNotNull(container);
