@@ -21,19 +21,12 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "apiml.security", ignoreUnknownFields = false)
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
-    private String authenticationResponseTypeHeaderName = "Auth-Response-Type";
-    private String loginPath = "/auth/login/**";
-    private String queryPath = "/auth/query/**";
-    private String logoutPath = "/auth/logout/**";
+    private String loginPath = "/api/v1/gateway/auth/login/**";
+    private String queryPath = "/api/v1/gateway/auth/query/**";
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
     private String zosmfServiceId;
     private boolean verifySslCertificatesOfServices = true;
-
-    public SecurityConfigurationProperties() {
-        this.cookieProperties = new CookieProperties();
-        this.tokenProperties = new TokenProperties();
-    }
 
     @Data
     public static class TokenProperties {
@@ -50,6 +43,11 @@ public class SecurityConfigurationProperties {
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
         private Integer cookieMaxAge = 24 * 60 * 60;
+    }
+
+    public SecurityConfigurationProperties() {
+        this.cookieProperties = new CookieProperties();
+        this.tokenProperties = new TokenProperties();
     }
 
     public String validatedZosmfServiceId() {

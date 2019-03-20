@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.security.login;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,12 +31,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * Filter for process authentication request with username and password in JSON format.
  */
 @Slf4j
 public class LoginFilter extends AbstractAuthenticationProcessingFilter {
+    private static final String BASIC_TYPE_PREFIX = "Basic ";
+
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final ObjectMapper mapper;
@@ -59,12 +64,10 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
             throw new AuthenticationServiceException("Authentication method not supported.");
         }
 
-        LoginRequest loginRequest;
-        try {
-            loginRequest = mapper.readValue(request.getInputStream(), LoginRequest.class);
-        } catch (IOException e) {
-            logger.debug("Authentication problem: login object has wrong format");
-            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
+        LoginRequest loginRequest = getCredentialFromAuthorizationHeader(request);
+
+        if (loginRequest == null) {
+            loginRequest = getCredentialsFromBody(request);
         }
 
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
@@ -85,5 +88,32 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         SecurityContextHolder.clearContext();
         failureHandler.onAuthenticationFailure(request, response, failed);
+    }
+
+    private LoginRequest getCredentialFromAuthorizationHeader(HttpServletRequest request) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (header != null && header.startsWith(BASIC_TYPE_PREFIX)) {
+            String base64Credentials = header.replaceFirst(BASIC_TYPE_PREFIX, "");
+
+            if (!base64Credentials.isEmpty()) {
+                String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+                int i = credentials.indexOf(':');
+                if (i > 0) {
+                    return new LoginRequest(credentials.substring(0, i), credentials.substring(i+1));
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private LoginRequest getCredentialsFromBody(HttpServletRequest request) {
+        try {
+            return mapper.readValue(request.getInputStream(), LoginRequest.class);
+        } catch (IOException e) {
+            logger.debug("Authentication problem: login object has wrong format");
+            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
+        }
     }
 }
