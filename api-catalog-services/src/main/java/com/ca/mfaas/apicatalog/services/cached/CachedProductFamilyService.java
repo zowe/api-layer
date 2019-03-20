@@ -110,10 +110,10 @@ public class CachedProductFamilyService {
     }
 
     @CachePut(key = "#productFamilyId")
-    public void addServiceToContainer(final String productFamilyId, final InstanceInfo instanceInfo, final String homePage) {
+    public void addServiceToContainer(final String productFamilyId, final InstanceInfo instanceInfo) {
         APIContainer apiContainer = products.get(productFamilyId);
         // fix - throw error if null
-        apiContainer.addService(createAPIServiceFromInstance(instanceInfo, homePage));
+        apiContainer.addService(createAPIServiceFromInstance(instanceInfo));
         products.put(productFamilyId, apiContainer);
     }
 
@@ -168,13 +168,11 @@ public class CachedProductFamilyService {
      */
     @CachePut(key = "#productFamilyId")
     public APIContainer createContainerFromInstance(final String productFamilyId, InstanceInfo instanceInfo) {
-        String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
-
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
-            container = createNewContainerFromService(productFamilyId, instanceInfo, instanceHomePage);
+            container = createNewContainerFromService(productFamilyId, instanceInfo);
         } else {
-            addServiceToContainer(productFamilyId, instanceInfo, instanceHomePage);
+            addServiceToContainer(productFamilyId, instanceInfo);
             container = products.get(productFamilyId);
             checkIfContainerShouldBeUpdatedFromInstance(instanceInfo, container);
         }
@@ -196,12 +194,12 @@ public class CachedProductFamilyService {
      * @param instanceInfo    instance
      * @return a new container
      */
-    private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo instanceInfo, String homePage) {
-        APIContainer container;
+    private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo instanceInfo) {
         String title = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.title");
         String description = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.description");
         String version = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
-        container = new APIContainer();
+
+        APIContainer container = new APIContainer();
         container.setStatus("UP");
         container.setId(productFamilyId);
         container.setDescription(description);
@@ -210,7 +208,7 @@ public class CachedProductFamilyService {
         log.debug("updated Container cache with product family: " + productFamilyId + ": " + title);
 
         // create API Service from instance and update container last changed date
-        container.addService(createAPIServiceFromInstance(instanceInfo, homePage));
+        container.addService(createAPIServiceFromInstance(instanceInfo));
         products.put(productFamilyId, container);
         return container;
     }
@@ -257,15 +255,17 @@ public class CachedProductFamilyService {
      * @param instanceInfo the service instance
      * @return a APIService object
      */
-    public APIService createAPIServiceFromInstance(InstanceInfo instanceInfo, String homePage) {
+    public APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
 
-        log.info("Service homepage set to: " + homePage);
+        String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
+        log.debug("Service homepage set to: " + instanceHomePage);
 
-        return new APIService(instanceInfo.getAppName().toLowerCase(),
+        return new APIService(
+            instanceInfo.getAppName().toLowerCase(),
             instanceInfo.getMetadata().get("mfaas.discovery.service.title"),
             instanceInfo.getMetadata().get("mfaas.discovery.service.description"),
-            secureEnabled, homePage);
+            secureEnabled, instanceHomePage);
     }
 
     /**
@@ -287,14 +287,12 @@ public class CachedProductFamilyService {
      */
     @CachePut(key = "#productFamilyId")
     public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
-        String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
-
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
-            createNewContainerFromService(productFamilyId, instanceInfo, instanceHomePage);
+            createNewContainerFromService(productFamilyId, instanceInfo);
         } else {
             Set<APIService> apiServices = container.getServices();
-            APIService service = createAPIServiceFromInstance(instanceInfo, instanceHomePage);
+            APIService service = createAPIServiceFromInstance(instanceInfo);
             apiServices.add(service);
             container.setServices(apiServices);
             //update container
