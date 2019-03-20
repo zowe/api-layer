@@ -44,14 +44,16 @@ public class CachedProductFamilyService {
 
     private final GatewayConfigProperties gatewayConfigProperties;
     private final CachedServicesService cachedServicesService;
+    private final Integer cacheRefreshUpdateThresholdInMillis;
 
-    @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
-    public Integer cacheRefreshUpdateThresholdInMillis;
-
+    @Autowired
     public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
-                                      CachedServicesService cachedServicesService) {
+                                      CachedServicesService cachedServicesService,
+                                      @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
+                                      Integer cacheRefreshUpdateThresholdInMillis) {
         this.gatewayConfigProperties = gatewayConfigProperties;
         this.cachedServicesService = cachedServicesService;
+        this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
     }
 
     /**

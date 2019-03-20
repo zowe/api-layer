@@ -11,10 +11,11 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -31,11 +32,21 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class CachedProductFamilyTest {
 
+    public Integer cacheRefreshUpdateThresholdInMillis = 2000;
+
+    private CachedProductFamilyService service;
+
+    @Before
+    public void setup() {
+        service = new CachedProductFamilyService(
+            getProperties(),
+            null,
+            cacheRefreshUpdateThresholdInMillis);
+    }
+
     @Test
     public void testRetrievalOfRecentlyUpdatedContainers() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
 
@@ -51,8 +62,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         service.getContainer("demoapp", instance);
@@ -69,8 +78,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         service.getContainer("demoapp", instance);
@@ -87,14 +94,12 @@ public class CachedProductFamilyTest {
     @Test
     public void testRetrievalOfContainerServices() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance1 = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         service.getContainer("demoapp", instance1);
 
         InstanceInfo instance2 = getStandardInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
-        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
+        service.addServiceToContainer("demoapp", instance2);
 
         APIService containerService = service.getContainerService("demoapp", instance1);
         Assert.assertEquals("service1", containerService.getServiceId());
@@ -105,7 +110,6 @@ public class CachedProductFamilyTest {
 
     @Test(expected = NullPointerException.class)
     public void testCreationOfContainerWithoutInstance() {
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
         service.getContainer("demoapp", null);
         Assert.assertEquals(0, service.getContainerCount());
         Assert.assertEquals(0, service.getAllContainers().size());
@@ -114,8 +118,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testGetMultipleContainersForASingleService() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         service.getContainer("demoapp1", instance);
@@ -130,8 +132,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testCallCreationOfContainerThatAlreadyExistsButNothingHasChangedSoNoUpdate() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         APIContainer originalContainer = service.getContainer("demoapp", instance);
@@ -147,8 +147,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testCallCreationOfContainerThatAlreadyExistsInstanceInfoHasChangedSoUpdateLastChangeTime() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         metadata.put("mfaas.discovery.catalogUiTile.title", "Title");
         metadata.put("mfaas.discovery.catalogUiTile.description", "Description");
@@ -185,8 +183,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testCallCreationOfContainerForNullVersion() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         metadata.put("mfaas.discovery.catalogUiTile.title", "Title");
         metadata.put("mfaas.discovery.catalogUiTile.description", "Description");
@@ -223,8 +219,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testUpdateOfContainerFromInstance() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null,getProperties());
-
         metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
         InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         service.createContainerFromInstance("demoapp", instance);
@@ -243,10 +237,13 @@ public class CachedProductFamilyTest {
         application.addInstance(instance2);
 
         when(cachedServicesService.getService("service1")).thenReturn(application);
-        CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService,getProperties());
+        service = new CachedProductFamilyService(
+            getProperties(),
+            cachedServicesService,
+            cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
+        service.addServiceToContainer("demoapp", instance2);
 
         List<APIContainer> containersForService = service.getContainersForService("service1");
         Assert.assertEquals(1, service.getContainerCount());
@@ -273,10 +270,13 @@ public class CachedProductFamilyTest {
 
         when(cachedServicesService.getService("service1")).thenReturn(application1);
         when(cachedServicesService.getService("service2")).thenReturn(application2);
-        CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService,getProperties());
+        service = new CachedProductFamilyService(
+            getProperties(),
+            cachedServicesService,
+            cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
+        service.addServiceToContainer("demoapp", instance2);
 
         APIContainer container = service.retrieveContainer("demoapp");
         Assert.assertNotNull(container);
@@ -302,10 +302,13 @@ public class CachedProductFamilyTest {
 
         when(cachedServicesService.getService("service1")).thenReturn(application1);
         when(cachedServicesService.getService("service2")).thenReturn(application2);
-        CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService, getProperties());
+        service = new CachedProductFamilyService(
+            getProperties(),
+            cachedServicesService,
+            cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
-        service.addServiceToContainer("demoapp", instance2,"https://localhost:8080/demoapp");
+        service.addServiceToContainer("demoapp", instance2);
 
         APIContainer container = service.retrieveContainer("demoapp");
         Assert.assertNotNull(container);
@@ -316,18 +319,17 @@ public class CachedProductFamilyTest {
         Assert.assertEquals(1, container.getActiveServices().intValue());
     }
 
+    private GatewayConfigProperties getProperties() {
+        return GatewayConfigProperties.builder()
+            .scheme("https")
+            .hostname("localhost:10010")
+            .build();
+    }
+
     private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status,
             HashMap<String, String> metadata) {
         return new InstanceInfo(serviceId, serviceId.toUpperCase(), null, "192.168.0.1", null,
                 new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
                 status, null, null, null, null, metadata, null, null, null, null);
-    }
-
-    private MFaaSConfigPropertiesContainer getProperties() {
-        MFaaSConfigPropertiesContainer propertiesContainer = new MFaaSConfigPropertiesContainer();
-        propertiesContainer.setService(new MFaaSConfigPropertiesContainer.ServiceProperties());
-        propertiesContainer.setServiceRegistry(new MFaaSConfigPropertiesContainer.ServiceRegistryProperties());
-        propertiesContainer.getServiceRegistry().setCacheRefreshUpdateThresholdInMillis(2000);
-        return propertiesContainer;
     }
 }
