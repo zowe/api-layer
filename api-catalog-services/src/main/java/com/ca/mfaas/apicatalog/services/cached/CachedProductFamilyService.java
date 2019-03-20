@@ -42,14 +42,11 @@ public class CachedProductFamilyService {
 
     private final Map<String, APIContainer> products = new HashMap<>();
 
-    private GatewayConfigProperties gatewayConfigProperties;
-    private CachedServicesService cachedServicesService;
+    private final GatewayConfigProperties gatewayConfigProperties;
+    private final CachedServicesService cachedServicesService;
 
     @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
     public Integer cacheRefreshUpdateThresholdInMillis;
-
-    public CachedProductFamilyService() {
-    }
 
     public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
                                       CachedServicesService cachedServicesService) {
