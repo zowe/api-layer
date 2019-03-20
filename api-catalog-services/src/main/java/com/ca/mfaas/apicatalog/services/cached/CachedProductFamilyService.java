@@ -19,6 +19,7 @@ import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -41,23 +42,19 @@ public class CachedProductFamilyService {
 
     private final Map<String, APIContainer> products = new HashMap<>();
 
-    @Autowired
-    private MFaaSConfigPropertiesContainer propertiesContainer;
-
-    @Autowired
-    @Lazy
     private GatewayConfigProperties gatewayConfigProperties;
-
-    @Autowired
     private CachedServicesService cachedServicesService;
+
+    @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
+    public Integer cacheRefreshUpdateThresholdInMillis;
 
     public CachedProductFamilyService() {
     }
 
-    public CachedProductFamilyService(CachedServicesService cachedServicesService,
-                                      MFaaSConfigPropertiesContainer propertiesContainer) {
+    public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
+                                      CachedServicesService cachedServicesService) {
+        this.gatewayConfigProperties = gatewayConfigProperties;
         this.cachedServicesService = cachedServicesService;
-        this.propertiesContainer = propertiesContainer;
     }
 
     /**
@@ -83,8 +80,7 @@ public class CachedProductFamilyService {
     public List<APIContainer> getRecentlyUpdatedContainers() {
         return this.products.values().stream().filter(
             container -> {
-                boolean isRecent = container.isRecentUpdated(
-                    propertiesContainer.getServiceRegistry().getCacheRefreshUpdateThresholdInMillis());
+                boolean isRecent = container.isRecentUpdated(cacheRefreshUpdateThresholdInMillis);
                 if (isRecent) {
                     log.debug("Container: " + container.getId() + " last updated: "
                         + container.getLastUpdatedTimestamp().getTime() +
@@ -115,14 +111,6 @@ public class CachedProductFamilyService {
         // fix - throw error if null
         apiContainer.addService(createAPIServiceFromInstance(instanceInfo));
         products.put(productFamilyId, apiContainer);
-    }
-
-    @CacheEvict(key = "#apiContainer.id")
-    public void updateContainer(final APIContainer apiContainer) {
-        apiContainer.updateLastUpdatedTimestamp();
-        log.debug("Updated container: " + apiContainer.getId() + " @ "
-            + apiContainer.getLastUpdatedTimestamp().getTime() + ", cache evicted.");
-        products.put(apiContainer.getId(), apiContainer);
     }
 
     /**
@@ -182,7 +170,10 @@ public class CachedProductFamilyService {
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null) {
-            instanceHomePage = gatewayConfigProperties.getHomePageUrl() + "ui/v1/" + instanceInfo.getVIPAddress();
+            instanceHomePage = String.format("%s://%s/ui/v1/%s",
+                gatewayConfigProperties.getScheme(),
+                gatewayConfigProperties.getHostname(),
+                instanceInfo.getVIPAddress());
         }
         return instanceHomePage;
     }
@@ -217,8 +208,8 @@ public class CachedProductFamilyService {
      * Compare the version of the parent in the given instance
      * If the version is greater, then update the parent
      *
-     * @param instanceInfo    service instance
-     * @param container       parent container
+     * @param instanceInfo service instance
+     * @param container    parent container
      */
     private void checkIfContainerShouldBeUpdatedFromInstance(InstanceInfo instanceInfo, APIContainer container) {
         String versionFromInstance = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
@@ -307,7 +298,7 @@ public class CachedProductFamilyService {
      * Remove a container
      *
      * @param productFamilyId the product family id of the container
-     * @param serviceId check for this service
+     * @param serviceId       check for this service
      */
     @CacheEvict(key = "#productFamilyId")
     public void removeContainerFromInstance(String productFamilyId, String serviceId) {

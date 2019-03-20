@@ -9,6 +9,5 @@ public class GatewayConfigProperties {
 
     private String scheme;
     private String hostname;
-    private String homePageUrl;
 
 }
