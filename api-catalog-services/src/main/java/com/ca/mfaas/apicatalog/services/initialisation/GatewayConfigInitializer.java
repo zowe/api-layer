@@ -37,7 +37,7 @@ public class GatewayConfigInitializer {
     @Retryable(
         value = {RetryException.class},
         exclude = GatewayConfigInitializerException.class,
-        maxAttempts = 100,
+        maxAttempts = 20,
         backoff = @Backoff(delayExpression = "#{${mfaas.service-registry.serviceFetchDelayInMillis}}"))
     public GatewayConfigProperties getGatewayConfigProperties() throws GatewayConfigInitializerException {
         try {
