@@ -17,6 +17,7 @@ import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
@@ -53,6 +54,11 @@ public class GatewayConfigInitializer {
             log.warn(msg, e);
             throw new GatewayConfigInitializerException(msg, e);
         }
+    }
+
+    @Recover
+    public void recover(RetryException e) {
+        log.warn("Failed to initialise Gateway configurations");
     }
 
     private String getGatewayHomePage() {

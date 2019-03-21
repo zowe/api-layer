@@ -73,34 +73,25 @@ public class InstanceRetrievalService {
      * Initialise the API Catalog with all current running instances
      * The API Catalog itself must be UP before checking all other instances
      *
-     * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the gateway
+     * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the discovery
      */
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
-        log.info("Initialising API Catalog with Gateway services.");
+        log.info("Initialising API Catalog with Discovery services.");
         try {
             String serviceId = CoreService.API_CATALOG.getServiceId();
             InstanceInfo apiCatalogInstance = getInstanceInfo(serviceId);
             if (apiCatalogInstance == null) {
-                String msg = "API Catalog Instance not retrieved from gateway, retrying...";
+                String msg = "API Catalog Instance not retrieved from discovery service";
                 log.warn(msg);
-                throw new RetryException(msg);
             } else {
                 log.info("API Catalog instance found, retrieving all services.");
                 getAllInstances(apiCatalogInstance);
             }
-        } catch (RetryException e) {
-            throw e;
         } catch (Exception e) {
-            String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Gateway, NOT RETRYING!!";
+            String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service";
             log.warn(msg, e);
             throw new CannotRegisterServiceException(msg, e);
         }
-    }
-
-
-    @Recover
-    public void recover(RetryException e) {
-        log.warn("Failed to initialise API Catalog with services running in the Gateway.");
     }
 
     /**
@@ -138,25 +129,26 @@ public class InstanceRetrievalService {
      * @return service instance
      */
     public InstanceInfo getInstanceInfo(@NotBlank(message = "Service Id must be supplied") String serviceId) {
-        Pair<String, Pair<String, String>> requestInfo;
-        try {
-            if (serviceId.equalsIgnoreCase(UNKNOWN)) {
-                return null;
-            }
+        if (serviceId.equalsIgnoreCase(UNKNOWN)) {
+            return null;
+        }
 
-            requestInfo = constructServiceInfoQueryRequest(serviceId, false);
+        InstanceInfo instanceInfo = null;
+        try {
+            Pair<String, Pair<String, String>> requestInfo = constructServiceInfoQueryRequest(serviceId, false);
 
             // call Eureka REST endpoint to fetch single or all Instances
             ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
             if (response.getStatusCode().is2xxSuccessful()) {
-                return extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
+                instanceInfo = extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
             }
         } catch (Exception e) {
             String msg = "An error occurred when trying to get instance info for:  " + serviceId;
             log.error(msg, e);
-            throw new RetryException(msg);
+            throw e;
         }
-        return null;
+
+        return instanceInfo;
     }
 
     /**

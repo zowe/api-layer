@@ -34,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
-import org.springframework.retry.RetryException;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
@@ -72,7 +71,7 @@ public class InstanceRetrievalServiceTest {
     }
 
     @Test
-    public void shouldChangeHomePageValue() throws RetryException, CannotRegisterServiceException, JsonProcessingException {
+    public void shouldChangeHomePageValue() throws CannotRegisterServiceException, JsonProcessingException {
         String discoveryServiceLocatorUrl = propertiesContainer.getDiscovery().getLocations() + "apps";
         assertEquals(discoveryServiceLocatorUrl, "http://localhost:10011/eureka/apps");
 
@@ -126,7 +125,6 @@ public class InstanceRetrievalServiceTest {
 
     @Test
     public void shouldFailToLocateInstanceForRequest() throws CannotRegisterServiceException {
-
         when(
             restTemplate.exchange(
                 null,
@@ -134,7 +132,7 @@ public class InstanceRetrievalServiceTest {
                 null,
                 String.class
             )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
-        exception.expectMessage("An error occurred when trying to get instance info for:  apicatalog");
+        exception.expectMessage("An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service");
         instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
     }
 
