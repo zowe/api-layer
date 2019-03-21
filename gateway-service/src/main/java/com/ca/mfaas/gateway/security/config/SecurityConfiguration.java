@@ -11,14 +11,16 @@ package com.ca.mfaas.gateway.security.config;
 
 import com.ca.mfaas.gateway.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.gateway.security.handler.UnauthorizedHandler;
+import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.LoginFilter;
 import com.ca.mfaas.gateway.security.login.SuccessfulLoginHandler;
-import com.ca.mfaas.gateway.security.login.ZosmfAuthenticationProvider;
+import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.token.TokenAuthenticationProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -28,6 +30,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -37,7 +40,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
-    private final ZosmfAuthenticationProvider loginAuthenticationProvider;
+    private final DummyAuthenticationProvider dummyAuthenticationProvider;
+    private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     private final UnauthorizedHandler unAuthorizedHandler;
 
@@ -48,7 +52,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         SuccessfulLoginHandler successfulLoginHandler,
         SuccessfulQueryHandler successfulQueryHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
-        ZosmfAuthenticationProvider loginAuthenticationProvider,
+        DummyAuthenticationProvider dummyAuthenticationProvider,
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider,
         TokenAuthenticationProvider tokenAuthenticationProvider,
         UnauthorizedHandler unAuthorizedHandler) {
         this.securityObjectMapper = securityObjectMapper;
@@ -57,14 +62,29 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.successfulLoginHandler = successfulLoginHandler;
         this.successfulQueryHandler = successfulQueryHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
-        this.loginAuthenticationProvider = loginAuthenticationProvider;
+        this.dummyAuthenticationProvider = dummyAuthenticationProvider;
+        this.zosmfAuthenticationProvider = zosmfAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;
         this.unAuthorizedHandler = unAuthorizedHandler;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(loginAuthenticationProvider);
+        switch (securityConfigurationProperties.getAuthProvider()) {
+            case "zosmf":
+                auth.authenticationProvider(zosmfAuthenticationProvider);
+                break;
+            case "dummy":
+                log.warn("Login endpoint is running in the dummy mode. Use credentials user/user to login.");
+                log.warn("Do not use this option in the production environment.");
+                auth.authenticationProvider(dummyAuthenticationProvider);
+                break;
+            default:
+                log.warn("Authentication provider is not set correctly. Default 'zosmf' authentication provider is used.");
+                log.warn("Incorrect value: apiml.security.authProvider = {}", securityConfigurationProperties.getAuthProvider());
+                auth.authenticationProvider(zosmfAuthenticationProvider);
+        }
+
         auth.authenticationProvider(tokenAuthenticationProvider);
     }
 

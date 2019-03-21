@@ -15,9 +15,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Data
 @Component
-@Slf4j
 @ConfigurationProperties(prefix = "apiml.security", ignoreUnknownFields = false)
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
@@ -26,6 +26,7 @@ public class SecurityConfigurationProperties {
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
     private String zosmfServiceId;
+    private String authProvider = "zosmf";
     private boolean verifySslCertificatesOfServices = true;
 
     @Data
