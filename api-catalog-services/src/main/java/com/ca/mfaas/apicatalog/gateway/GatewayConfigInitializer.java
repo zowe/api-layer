@@ -8,10 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.apicatalog.services.initialisation;
+package com.ca.mfaas.apicatalog.gateway;
 
-import com.ca.mfaas.apicatalog.exceptions.GatewayConfigInitializerException;
-import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
+import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.product.constants.CoreService;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -62,13 +61,17 @@ public class GatewayConfigInitializer {
     }
 
     private String getGatewayHomePage() {
-        InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
-        if (gatewayInstance == null) {
-            String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
-            log.warn(msg);
-            throw new RetryException(msg);
-        } else {
-            return gatewayInstance.getHomePageUrl();
+        try {
+            InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
+            if (gatewayInstance == null) {
+                String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
+                log.warn(msg);
+                throw new RetryException(msg);
+            } else {
+                return gatewayInstance.getHomePageUrl();
+            }
+        } catch (Exception exp) {
+            throw new RetryException(exp.getMessage());
         }
     }
 }

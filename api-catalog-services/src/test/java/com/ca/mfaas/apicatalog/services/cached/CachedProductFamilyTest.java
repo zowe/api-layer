@@ -11,7 +11,7 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
-import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
+import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import org.junit.Assert;
