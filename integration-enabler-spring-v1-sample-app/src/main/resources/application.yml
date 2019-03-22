@@ -23,10 +23,6 @@ mfaas:
         serviceId: ${environment.serviceId}
         locations: ${environment.discoveryLocations}
         enabled: ${environment.discoveryEnabled:true}
-        endpoints:
-            statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/info
-            healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/health
-            homePage:
         info:
             serviceTitle: ${environment.serviceTitle}
             description:  ${environment.serviceDescription}
@@ -44,15 +40,19 @@ mfaas:
     server:
         port: ${environment.port}
         contextPath: /${spring.application.name}
-        scheme: http
+        scheme: https
 
 eureka:
     instance:
         appName: ${mfaas.discovery.serviceId}
         hostname: ${mfaas.service.hostname}
-        statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
-        healthCheckUrlPath: ${mfaas.discovery.endpoints.healthPage}
-        homePageUrlPath: ${mfaas.discovery.endpoints.homePage}
+        port: ${server.port}
+        securePort: ${server.port}
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        statusPageUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/info
+        healthCheckUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/health
+        homePageUrl:
         metadata-map:
             routed-services:
                 api_v1:

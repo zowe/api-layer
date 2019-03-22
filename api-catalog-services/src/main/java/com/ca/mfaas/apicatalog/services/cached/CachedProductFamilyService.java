@@ -167,12 +167,13 @@ public class CachedProductFamilyService {
 
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = null;
-        if (instanceInfo.getHomePageUrl() != null) {
+        if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().equals("")) {
             instanceHomePage = String.format("%s://%s/ui/v1/%s",
                 gatewayConfigProperties.getScheme(),
                 gatewayConfigProperties.getHostname(),
                 instanceInfo.getVIPAddress());
         }
+        System.out.println(instanceInfo.getHomePageUrl());
         return instanceHomePage;
     }
 
