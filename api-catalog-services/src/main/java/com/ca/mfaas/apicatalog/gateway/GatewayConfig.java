@@ -8,11 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.apicatalog.config;
+package com.ca.mfaas.apicatalog.gateway;
 
-import com.ca.mfaas.apicatalog.exceptions.GatewayConfigInitializerException;
 import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
-import com.ca.mfaas.apicatalog.services.initialisation.GatewayConfigInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

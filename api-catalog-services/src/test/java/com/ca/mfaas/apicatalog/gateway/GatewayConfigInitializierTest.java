@@ -8,10 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.apicatalog.services.initialisation;
+package com.ca.mfaas.apicatalog.gateway;
 
-import com.ca.mfaas.apicatalog.exceptions.GatewayConfigInitializerException;
 import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
+import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.product.constants.CoreService;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Assert;
@@ -22,7 +22,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
-
 
 import static org.mockito.Mockito.when;
 

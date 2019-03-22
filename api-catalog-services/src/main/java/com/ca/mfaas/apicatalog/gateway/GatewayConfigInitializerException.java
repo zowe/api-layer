@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.apicatalog.exceptions;
+package com.ca.mfaas.apicatalog.gateway;
 
 public class GatewayConfigInitializerException extends Exception {
     private static final long serialVersionUID = -559112794280136165L;
