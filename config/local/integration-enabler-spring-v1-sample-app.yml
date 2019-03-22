@@ -17,7 +17,7 @@ spring:
 
 server:
     ssl:
-        enabled: true
+        enabled: false
         keyAlias: localhost
         keyPassword: password
         keyStore: keystore/localhost/localhost.keystore.p12

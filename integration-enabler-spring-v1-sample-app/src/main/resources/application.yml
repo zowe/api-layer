@@ -40,16 +40,12 @@ mfaas:
     server:
         port: ${environment.port}
         contextPath: /${spring.application.name}
-        scheme: https
+        scheme: http
 
 eureka:
     instance:
         appName: ${mfaas.discovery.serviceId}
         hostname: ${mfaas.service.hostname}
-        port: ${server.port}
-        securePort: ${server.port}
-        nonSecurePortEnabled: false
-        securePortEnabled: true
         statusPageUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/info
         healthCheckUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/health
         homePageUrl:
