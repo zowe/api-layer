@@ -39,7 +39,7 @@ import java.util.Base64;
  */
 @Slf4j
 public class LoginFilter extends AbstractAuthenticationProcessingFilter {
-    private static final String BASIC_TYPE_PREFIX = "Basic ";
+    private static final String BASIC_AUTHENTICATION_PREFIX = "Basic ";
 
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
@@ -98,8 +98,8 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     private LoginRequest getCredentialFromAuthorizationHeader(HttpServletRequest request) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if (header != null && header.startsWith(BASIC_TYPE_PREFIX)) {
-            String base64Credentials = header.replaceFirst(BASIC_TYPE_PREFIX, "");
+        if (header != null && header.startsWith(BASIC_AUTHENTICATION_PREFIX)) {
+            String base64Credentials = header.replaceFirst(BASIC_AUTHENTICATION_PREFIX, "");
 
             if (!base64Credentials.isEmpty()) {
                 String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);

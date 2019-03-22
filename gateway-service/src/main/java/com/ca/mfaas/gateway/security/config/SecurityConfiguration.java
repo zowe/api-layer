@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
+import com.ca.mfaas.gateway.security.basic.SecureContentFilter;
 import com.ca.mfaas.gateway.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.gateway.security.handler.UnauthorizedHandler;
 import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
@@ -92,12 +93,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
-            .httpBasic().disable()
             .headers().disable()
-            .exceptionHandling().authenticationEntryPoint(unAuthorizedHandler)
+            .exceptionHandling()
+            .authenticationEntryPoint(unAuthorizedHandler)
 
             .and()
             .headers().httpStrictTransportSecurity().disable()
+            .and()
+            .httpBasic()
 
             .and()
             .sessionManagement()
@@ -105,14 +108,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // login endpoint
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
 
-            // query endpoint
+            // endpoint protection
+            .and()
+            .authorizeRequests()
+            .antMatchers("/application/health", "/application/info").permitAll()
+            .antMatchers("/application/**").authenticated()
+
+            // add filters - login + query
             .and()
             .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
-            .authorizeRequests();
+            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(secureContentFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
@@ -123,5 +132,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private QueryFilter queryFilter(String queryEndpoint) throws Exception {
         return new QueryFilter(queryEndpoint, successfulQueryHandler, authenticationFailureHandler, authenticationService,
             authenticationManager());
+    }
+
+    private SecureContentFilter secureContentFilter() throws Exception {
+        return new SecureContentFilter(authenticationManager(), authenticationFailureHandler);
     }
 }
