@@ -62,13 +62,17 @@ public class GatewayConfigInitializer {
     }
 
     private String getGatewayHomePage() {
-        InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
-        if (gatewayInstance == null) {
-            String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
-            log.warn(msg);
-            throw new RetryException(msg);
-        } else {
-            return gatewayInstance.getHomePageUrl();
+        try {
+            InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
+            if (gatewayInstance == null) {
+                String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
+                log.warn(msg);
+                throw new RetryException(msg);
+            } else {
+                return gatewayInstance.getHomePageUrl();
+            }
+        } catch (Exception exp) {
+            throw new RetryException(exp.getMessage());
         }
     }
 }

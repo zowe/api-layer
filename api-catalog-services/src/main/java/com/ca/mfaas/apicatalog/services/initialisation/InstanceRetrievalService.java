@@ -28,7 +28,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.retry.RetryException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -144,7 +143,7 @@ public class InstanceRetrievalService {
         } catch (Exception e) {
             String msg = "An error occurred when trying to get instance info for:  " + serviceId;
             log.error(msg, e);
-            throw new RetryException(msg);
+            throw e;
         }
 
         return instanceInfo;
