@@ -1,0 +1,7 @@
+dependencies {
+    compile libraries.spring_security_web
+
+    compileOnly libraries.javax_servlet_api
+
+    testCompile libraries.junit
+}

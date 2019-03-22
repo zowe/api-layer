@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
-import com.ca.mfaas.gateway.security.basic.SecureContentFilter;
+import com.ca.apiml.security.content.SecureContentFilter;
 import com.ca.mfaas.gateway.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.gateway.security.handler.UnauthorizedHandler;
 import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;

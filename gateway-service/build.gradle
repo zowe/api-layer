@@ -32,9 +32,10 @@ gitProperties {
 }
 
 dependencies {
-    compile(project(':integration-enabler-spring-v2'))
     compile(project(':common-service-core'))
     compile(project(':gateway-common'))
+    compile(project(':integration-enabler-spring-v2'))
+    compile(project(':security-service-client-spring'))
 
     compile libraries.spring_cloud_starter_zuul
     compile libraries.spring_boot_starter_actuator

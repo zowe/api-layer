@@ -7,13 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.basic;
+package com.ca.apiml.security.content;
 
-import com.ca.mfaas.gateway.security.login.LoginRequest;
-import com.ca.mfaas.gateway.security.token.TokenAuthentication;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
