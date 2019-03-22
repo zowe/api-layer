@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.apicatalog.model;
+package com.ca.mfaas.apicatalog.gateway;
 
 import lombok.Builder;
 import lombok.Getter;

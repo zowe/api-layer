@@ -10,7 +10,6 @@
 
 package com.ca.mfaas.apicatalog.gateway;
 
-import com.ca.mfaas.apicatalog.model.GatewayConfigProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
