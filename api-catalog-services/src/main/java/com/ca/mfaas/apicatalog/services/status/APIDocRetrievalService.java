@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.status;
 
+import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
@@ -39,14 +40,18 @@ import java.util.Objects;
 public class APIDocRetrievalService {
     private final RestTemplate restTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
+    private final GatewayConfigProperties gatewayConfigProperties;
+
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
     @Autowired
-    public APIDocRetrievalService(
-        RestTemplate restTemplate, InstanceRetrievalService instanceRetrievalService) {
+    public APIDocRetrievalService(RestTemplate restTemplate,
+                                  InstanceRetrievalService instanceRetrievalService,
+                                  GatewayConfigProperties gatewayConfigProperties) {
         this.restTemplate = restTemplate;
         this.instanceRetrievalService = instanceRetrievalService;
+        this.gatewayConfigProperties = gatewayConfigProperties;
     }
 
     /**
@@ -84,17 +89,17 @@ public class APIDocRetrievalService {
             apiInfo,
             apiDocContent,
             routes,
-            instanceRetrievalService.getGatewayScheme(),
-            instanceRetrievalService.getGatewayHostname());
+            gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname());
     }
 
 
     /**
      * Get ApiDoc url
      *
-     * @param apiInfo the apiinfo of service instance
+     * @param apiInfo      the apiinfo of service instance
      * @param instanceInfo the information about service instance
-     * @param routes the routes of service instance
+     * @param routes       the routes of service instance
      * @return the url of apidoc
      */
     private String getApiDocUrl(ApiInfo apiInfo, InstanceInfo instanceInfo, RoutedServices routes) {
@@ -112,7 +117,7 @@ public class APIDocRetrievalService {
     /**
      * Get ApiDoc content by Url
      *
-     * @param serviceId  the unique service id
+     * @param serviceId the unique service id
      * @param apiDocUrl the url of apidoc
      * @return the information about APIDoc content as application/json
      * @throws ApiDocNotFoundException if the response is error
@@ -137,8 +142,8 @@ public class APIDocRetrievalService {
      * Get ApiDocInfo by Substitute Swagger
      *
      * @param instanceInfo the information about service instance
-     * @param routes the routes of service instance
-     * @param apiInfo the apiinfo of service instance
+     * @param routes       the routes of service instance
+     * @param apiInfo      the apiinfo of service instance
      * @return the information about APIDocInfo
      */
     private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
@@ -147,14 +152,14 @@ public class APIDocRetrievalService {
         String response = swaggerGenerator.generateSubstituteSwaggerForService(
             instanceInfo,
             apiInfo,
-            instanceRetrievalService.getGatewayScheme(),
-            instanceRetrievalService.getGatewayHostname());
+            gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname());
         return new ApiDocInfo(
             apiInfo,
             response,
             routes,
-            instanceRetrievalService.getGatewayScheme(),
-            instanceRetrievalService.getGatewayHostname());
+            gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname());
     }
 
     /**

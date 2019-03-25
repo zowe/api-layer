@@ -36,10 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.constraints.NotBlank;
-
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -55,8 +52,6 @@ public class InstanceRetrievalService {
     private final MFaaSConfigPropertiesContainer propertiesContainer;
     private final CachedServicesService cachedServicesService;
     private final RestTemplate restTemplate;
-    private String gatewayScheme;
-    private String gatewayHostname;
 
     private static final String APPS_ENDPOINT = "apps/";
     private static final String DELTA_ENDPOINT = "delta";
@@ -76,13 +71,6 @@ public class InstanceRetrievalService {
         configureUnicode(restTemplate);
     }
 
-    public String getGatewayScheme() {
-        return gatewayScheme;
-    }
-
-    public String getGatewayHostname() {
-        return gatewayHostname;
-    }
 
     /**
      * Initialise the API Catalog with all current running instances
@@ -116,8 +104,6 @@ public class InstanceRetrievalService {
             log.warn(msg, e);
             throw new CannotRegisterServiceException(msg, e);
         }
-
-        initializeGatewaySchemeAndHostname();
     }
 
 
@@ -388,28 +374,5 @@ public class InstanceRetrievalService {
     private void configureUnicode(RestTemplate restTemplate) {
         restTemplate.getMessageConverters()
             .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-    }
-
-    private void initializeGatewaySchemeAndHostname() throws CannotRegisterServiceException {
-        try {
-            URI uri = getGatewayHomePageURI();
-            gatewayScheme = uri.getScheme();
-            gatewayHostname = uri.getHost() + ":" + uri.getPort();
-        } catch (URISyntaxException e) {
-            String msg = "Gateway URL is incorrect.";
-            log.warn(msg, e);
-            throw new CannotRegisterServiceException(msg, e);
-        }
-    }
-
-    private URI getGatewayHomePageURI() throws URISyntaxException {
-        InstanceInfo gatewayInstance = getInstanceInfo(CoreService.GATEWAY.getServiceId());
-        if (gatewayInstance == null) {
-            String msg = "Gateway Instance not retrieved from Discovery Service, retrying...";
-            log.warn(msg);
-            throw new RetryException(msg);
-        } else {
-            return new URI(gatewayInstance.getHomePageUrl());
-        }
     }
 }

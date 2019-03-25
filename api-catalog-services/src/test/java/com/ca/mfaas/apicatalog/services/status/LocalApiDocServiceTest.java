@@ -9,21 +9,24 @@
  */
 package com.ca.mfaas.apicatalog.services.status;
 
+import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.netflix.appinfo.InstanceInfo;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
@@ -46,11 +49,18 @@ public class LocalApiDocServiceTest {
     @Mock
     private InstanceRetrievalService instanceRetrievalService;
 
-    @InjectMocks
     private APIDocRetrievalService apiDocRetrievalService;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
+
+    @Before
+    public void setup() {
+        apiDocRetrievalService = new APIDocRetrievalService(
+            restTemplate,
+            instanceRetrievalService,
+            getProperties());
+    }
 
     @Test
     public void testRetrievalOfAPIDoc() {
@@ -58,10 +68,6 @@ public class LocalApiDocServiceTest {
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
             .thenReturn(getStandardInstance(getStandardMetadata(), true));
-        when(instanceRetrievalService.getGatewayScheme())
-            .thenReturn(GATEWAY_SCHEME);
-        when(instanceRetrievalService.getGatewayHostname())
-            .thenReturn(GATEWAY_HOST);
 
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
@@ -161,10 +167,6 @@ public class LocalApiDocServiceTest {
         generatedResponseBody = generatedResponseBody.replaceAll("\\s+", "");
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
             .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
-        when(instanceRetrievalService.getGatewayScheme())
-            .thenReturn(GATEWAY_SCHEME);
-        when(instanceRetrievalService.getGatewayHostname())
-            .thenReturn(GATEWAY_HOST);
 
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
@@ -281,5 +283,12 @@ public class LocalApiDocServiceTest {
         metadata.put("mfaas.discovery.service.description", "Test service description");
 
         return metadata;
+    }
+
+    private GatewayConfigProperties getProperties() {
+        return GatewayConfigProperties.builder()
+            .scheme(GATEWAY_SCHEME)
+            .hostname(GATEWAY_HOST)
+            .build();
     }
 }
