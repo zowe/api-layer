@@ -120,7 +120,7 @@ public class InstanceRetrievalServiceTest {
             .findFirst();
 
         assertTrue(staticApiService.isPresent());
-        assertEquals("https://localhost:9090/ui/v1/staticclient", staticApiService.get().getHomePageUrl());
+        assertEquals("https://localhost:9090/ui/v1/staticclient/", staticApiService.get().getHomePageUrl());
     }
 
     @Test
@@ -136,9 +136,13 @@ public class InstanceRetrievalServiceTest {
         instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
     }
 
-    private HashMap<String, String> getMetadataByCatalogUiTitleId(String catalogUiTileId) {
+    private HashMap<String, String> getMetadataByCatalogUiTitleId(String catalogUiTileId, String uiRoute) {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("mfaas.discovery.catalogUiTile.id", catalogUiTileId);
+        metadata.put("routed-services.ui-v1.service-url", uiRoute);
+        metadata.put("routed-services.ui-v1.gateway-url", "ui/v1");
+        metadata.put("routed-services.api-v1.gateway-url", "api/v1");
+        metadata.put("routed-services.api-v1.service-url", "/");
         return metadata;
     }
 
@@ -167,16 +171,15 @@ public class InstanceRetrievalServiceTest {
         InstanceInfo instanceInfo = getStandardInstance(
             CoreService.GATEWAY.getServiceId(),
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer"),
+            getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.GATEWAY.getServiceId()),
             "gateway",
             "https://localhost:9090/");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
-
         instanceInfo = getStandardInstance(
             CoreService.API_CATALOG.getServiceId(),
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer"),
+            getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.API_CATALOG.getServiceId()),
             "apicatalog",
             "https://localhost:9090/");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -185,7 +188,7 @@ public class InstanceRetrievalServiceTest {
         instanceInfo = getStandardInstance(
             "STATICCLIENT",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("static"),
+            getMetadataByCatalogUiTitleId("static", "/discoverableclient"),
             "staticclient",
             "https://localhost:9090/");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -194,7 +197,7 @@ public class InstanceRetrievalServiceTest {
         instanceInfo = getStandardInstance(
             "STATICCLIENT2",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("static"),
+            getMetadataByCatalogUiTitleId("static", "/discoverableclient"),
             "staticclient2",
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -203,7 +206,7 @@ public class InstanceRetrievalServiceTest {
         instanceInfo = getStandardInstance(
             "ZOSMFTSO21",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf"),
+            getMetadataByCatalogUiTitleId("zosmf", "/zosmftso21"),
             "zosmftso21",
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -211,7 +214,7 @@ public class InstanceRetrievalServiceTest {
         instanceInfo = getStandardInstance(
             "ZOSMFCA32",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf"),
+            getMetadataByCatalogUiTitleId("zosmf", "/zosmfca32"),
             "zosmfca32",
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);

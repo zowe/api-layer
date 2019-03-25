@@ -10,9 +10,11 @@
 package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
+import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
+import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
@@ -26,6 +28,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -44,6 +47,7 @@ public class CachedProductFamilyService {
     private final GatewayConfigProperties gatewayConfigProperties;
     private final CachedServicesService cachedServicesService;
     private final Integer cacheRefreshUpdateThresholdInMillis;
+    private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
     @Autowired
     public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
@@ -168,10 +172,16 @@ public class CachedProductFamilyService {
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().equals("")) {
-            instanceHomePage = String.format("%s://%s/ui/v1/%s",
+            RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+            String uiServiceRoute = routes.findServiceByGatewayUrl("ui/v1").getServiceUrl();
+            URI receivedHomePage = URI.create(instanceInfo.getHomePageUrl());
+            String path = receivedHomePage.getPath();
+            path = path.replace(uiServiceRoute, "");
+            instanceHomePage = String.format("%s://%s/ui/v1/%s%s",
                 gatewayConfigProperties.getScheme(),
                 gatewayConfigProperties.getHostname(),
-                instanceInfo.getVIPAddress());
+                instanceInfo.getVIPAddress(),
+                path);
         }
         System.out.println(instanceInfo.getHomePageUrl());
         return instanceHomePage;
