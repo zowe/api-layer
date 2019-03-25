@@ -85,9 +85,6 @@ public class LocalApiDocServiceTest {
         assertEquals(responseBody, actualResponse.getApiDocContent());
 
         assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
-
-        assertEquals(GATEWAY_HOST, actualResponse.getGatewayHost());
-        assertEquals(GATEWAY_SCHEME, actualResponse.getGatewayScheme());
     }
 
     @Test
@@ -184,9 +181,6 @@ public class LocalApiDocServiceTest {
         assertEquals(generatedResponseBody, actualResponse.getApiDocContent().replaceAll("\\s+", ""));
 
         assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
-
-        assertEquals(GATEWAY_HOST, actualResponse.getGatewayHost());
-        assertEquals(GATEWAY_SCHEME, actualResponse.getGatewayScheme());
     }
 
     @Test

@@ -85,12 +85,7 @@ public class APIDocRetrievalService {
         }
 
         String apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
-        return new ApiDocInfo(
-            apiInfo,
-            apiDocContent,
-            routes,
-            gatewayConfigProperties.getScheme(),
-            gatewayConfigProperties.getHostname());
+        return new ApiDocInfo(apiInfo, apiDocContent, routes);
     }
 
 
@@ -154,12 +149,7 @@ public class APIDocRetrievalService {
             apiInfo,
             gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname());
-        return new ApiDocInfo(
-            apiInfo,
-            response,
-            routes,
-            gatewayConfigProperties.getScheme(),
-            gatewayConfigProperties.getHostname());
+        return new ApiDocInfo(apiInfo, response, routes);
     }
 
     /**

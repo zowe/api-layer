@@ -43,7 +43,7 @@ public class CachedApiDocServiceTest {
         String version = "v1";
         String expectedApiDoc = "This is some api doc";
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null, null, null);
+        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
 
         when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
             .thenReturn(apiDocInfo);
@@ -64,7 +64,7 @@ public class CachedApiDocServiceTest {
         String updatedApiDoc = "This is some updated API Doc";
 
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null, null, null);
+        ApiDocInfo apiDocInfo = new ApiDocInfo(null, expectedApiDoc, null);
 
         when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
             .thenReturn(apiDocInfo);
@@ -78,7 +78,7 @@ public class CachedApiDocServiceTest {
 
         cachedApiDocService.updateApiDocForService(serviceId, version, updatedApiDoc);
 
-        apiDocInfo = new ApiDocInfo(null, updatedApiDoc, null, null, null);
+        apiDocInfo = new ApiDocInfo(null, updatedApiDoc, null);
 
         when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
             .thenReturn(apiDocInfo);
@@ -97,7 +97,7 @@ public class CachedApiDocServiceTest {
         String version = "v1";
         String expectedApiDoc = "This is some api doc";
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null, null, null);
+        ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null);
 
         when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
             .thenReturn(apiDocInfo);

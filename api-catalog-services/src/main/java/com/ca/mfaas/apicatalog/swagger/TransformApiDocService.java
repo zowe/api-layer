@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.swagger;
 
 import com.ca.mfaas.apicatalog.exceptions.ApiDocTransformationException;
+import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.routing.RoutedService;
@@ -41,6 +42,12 @@ public class TransformApiDocService {
     private static final String HARDCODED_VERSION = "/v1";
     private static final String SEPARATOR = "/";
 
+    private final GatewayConfigProperties gatewayConfigProperties;
+
+    public TransformApiDocService(GatewayConfigProperties gatewayConfigProperties) {
+        this.gatewayConfigProperties = gatewayConfigProperties;
+    }
+
     /**
      * Does transformation API documentation
      *
@@ -60,7 +67,7 @@ public class TransformApiDocService {
 
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
-        updateSchemeHostAndLink(swagger, serviceId, apiDocInfo, hidden);
+        updateSchemeHostAndLink(swagger, serviceId, hidden);
         updatePaths(swagger, serviceId, apiDocInfo, hidden);
         updateExternalDoc(swagger, apiDocInfo);
 
@@ -77,16 +84,15 @@ public class TransformApiDocService {
      *
      * @param swagger    the API doc
      * @param serviceId  the unique service id
-     * @param apiDocInfo the service information
      * @param hidden     do not add link for automatically generated API doc
      */
-    private void updateSchemeHostAndLink(Swagger swagger, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
-        String link = apiDocInfo.getGatewayScheme() + "://" + apiDocInfo.getGatewayHost() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
+    private void updateSchemeHostAndLink(Swagger swagger, String serviceId, boolean hidden) {
+        String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
             CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
         String swaggerLink = "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
 
-        swagger.setSchemes(Collections.singletonList(Scheme.forValue(apiDocInfo.getGatewayScheme())));
-        swagger.setHost(apiDocInfo.getGatewayHost());
+        swagger.setSchemes(Collections.singletonList(Scheme.forValue(gatewayConfigProperties.getScheme())));
+        swagger.setHost(gatewayConfigProperties.getHostname());
         if (!hidden) {
             swagger.getInfo().setDescription(swagger.getInfo().getDescription() + swaggerLink);
         }

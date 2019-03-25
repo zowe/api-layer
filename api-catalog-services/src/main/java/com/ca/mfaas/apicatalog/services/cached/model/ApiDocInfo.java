@@ -24,6 +24,4 @@ public class ApiDocInfo {
     ApiInfo apiInfo;
     String apiDocContent;
     RoutedServices routes;
-    String gatewayScheme;
-    String gatewayHost;
 }
