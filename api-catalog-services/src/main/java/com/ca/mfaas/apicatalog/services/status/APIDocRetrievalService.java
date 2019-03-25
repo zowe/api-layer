@@ -164,18 +164,12 @@ public class APIDocRetrievalService {
             return null;
         }
 
-        String expectedGatewayUrl = "api";
-        if (apiVersion != null) {
-            expectedGatewayUrl = "api/" + apiVersion;
-        }
-
-        for (ApiInfo api : apiInfos) {
-            if (api.getGatewayUrl().equals(expectedGatewayUrl)) {
-                return api;
-            }
-        }
-
-        return apiInfos.get(0);
+        return apiInfos.stream()
+            .filter(
+                f -> f.getGatewayUrl().equals(apiVersion == null ? "api" : "api/" + apiVersion)
+            )
+            .findFirst()
+            .orElse(apiInfos.get(0));
     }
 
     /**
