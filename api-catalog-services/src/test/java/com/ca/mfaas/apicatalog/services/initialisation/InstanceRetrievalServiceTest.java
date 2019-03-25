@@ -132,7 +132,7 @@ public class InstanceRetrievalServiceTest {
                 null,
                 String.class
             )).thenReturn(new ResponseEntity<>(HttpStatus.OK));
-        exception.expectMessage("An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service");
+        exception.expectMessage("An error occurred when trying to get instance info for:  apicatalog");
         instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
     }
 

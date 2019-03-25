@@ -28,6 +28,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.retry.RetryException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -70,9 +74,15 @@ public class InstanceRetrievalService {
     /**
      * Initialise the API Catalog with all current running instances
      * The API Catalog itself must be UP before checking all other instances
+     * If the catalog is not up, or if the fetch fails, then wait for a defined period and retry up to a max of 5 times
      *
      * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the discovery
      */
+    @Retryable(
+        value = {RetryException.class},
+        exclude = CannotRegisterServiceException.class,
+        maxAttempts = 5,
+        backoff = @Backoff(delayExpression = "#{${mfaas.service-registry.serviceFetchDelayInMillis}}"))
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
         log.info("Initialising API Catalog with Discovery services.");
         try {
@@ -81,15 +91,24 @@ public class InstanceRetrievalService {
             if (apiCatalogInstance == null) {
                 String msg = "API Catalog Instance not retrieved from discovery service";
                 log.warn(msg);
+                throw new RetryException(msg);
             } else {
                 log.info("API Catalog instance found, retrieving all services.");
                 getAllInstances(apiCatalogInstance);
             }
+        } catch (RetryException e) {
+            throw e;
         } catch (Exception e) {
             String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service";
             log.warn(msg, e);
             throw new CannotRegisterServiceException(msg, e);
         }
+    }
+
+
+    @Recover
+    public void recover(RetryException e) {
+        log.warn("Failed to initialise API Catalog with services running in the Gateway.");
     }
 
     /**
@@ -143,7 +162,7 @@ public class InstanceRetrievalService {
         } catch (Exception e) {
             String msg = "An error occurred when trying to get instance info for:  " + serviceId;
             log.error(msg, e);
-            throw e;
+            throw new RetryException(msg);
         }
 
         return instanceInfo;
