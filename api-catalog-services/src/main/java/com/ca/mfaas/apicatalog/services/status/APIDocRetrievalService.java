@@ -88,6 +88,15 @@ public class APIDocRetrievalService {
             instanceRetrievalService.getGatewayHostname());
     }
 
+
+    /**
+     * Get ApiDoc url
+     *
+     * @param apiInfo the apiinfo of service instance
+     * @param instanceInfo the information about service instance
+     * @param routes the routes of service instance
+     * @return the url of apidoc
+     */
     private String getApiDocUrl(ApiInfo apiInfo, InstanceInfo instanceInfo, RoutedServices routes) {
         String apiDocUrl = null;
         if (apiInfo == null) {
@@ -99,6 +108,15 @@ public class APIDocRetrievalService {
         return apiDocUrl;
     }
 
+
+    /**
+     * Get ApiDoc content by Url
+     *
+     * @param serviceId  the unique service id
+     * @param apiDocUrl the url of apidoc
+     * @return the information about APIDoc content as application/json
+     * @throws ApiDocNotFoundException if the response is error
+     */
     private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
@@ -115,6 +133,14 @@ public class APIDocRetrievalService {
         return response.getBody();
     }
 
+    /**
+     * Get ApiDocInfo by Substitute Swagger
+     *
+     * @param instanceInfo the information about service instance
+     * @param routes the routes of service instance
+     * @param apiInfo the apiinfo of service instance
+     * @return the information about APIDocInfo
+     */
     private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
                                                         RoutedServices routes,
                                                         ApiInfo apiInfo) {
