@@ -125,6 +125,9 @@ public class TransformApiDocService {
                 if (apiDocInfo.getApiInfo() != null) {
                     String gatewayUrl = apiDocInfo.getApiInfo().getGatewayUrl();
                     route = apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
+                    if(!endPoint.toLowerCase().startsWith(route.getServiceUrl())) {
+                        route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, true);
+                    }
                 } else {
                     route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, true);
                 }
