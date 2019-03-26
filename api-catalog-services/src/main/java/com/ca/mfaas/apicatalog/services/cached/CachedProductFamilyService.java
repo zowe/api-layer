@@ -171,7 +171,7 @@ public class CachedProductFamilyService {
 
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = null;
-        if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().equals("")) {
+        if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
             String uiServiceRoute = routes.findServiceByGatewayUrl("ui/v1").getServiceUrl();
             URI receivedHomePage = URI.create(instanceInfo.getHomePageUrl());
@@ -183,7 +183,7 @@ public class CachedProductFamilyService {
                 instanceInfo.getVIPAddress(),
                 path);
         }
-        System.out.println(instanceInfo.getHomePageUrl());
+        log.debug("Homepage URL for %s service is: %s", instanceInfo.getVIPAddress(), instanceHomePage);
         return instanceHomePage;
     }
 
