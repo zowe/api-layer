@@ -22,17 +22,28 @@ import org.springframework.stereotype.Component;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * Initialize a {@link GatewayConfigProperties} from a homepage of the Gateway.
+ */
 @Slf4j
 @Component
 public class GatewayConfigInitializer {
 
     private final InstanceRetrievalService instanceRetrievalService;
 
+    /**
+     * Create a new instance.
+     *
+     * @param instanceRetrievalService to obtain the Gateway instance
+     */
     public GatewayConfigInitializer(InstanceRetrievalService instanceRetrievalService) {
         this.instanceRetrievalService = instanceRetrievalService;
     }
 
 
+    /**
+     * Get {@link GatewayConfigProperties} of the Gateway.
+     */
     @Retryable(
         value = {RetryException.class},
         exclude = GatewayConfigInitializerException.class,
@@ -61,6 +72,9 @@ public class GatewayConfigInitializer {
         log.warn("Failed to initialise Gateway configurations");
     }
 
+    /**
+     * Get a homepage of the Gateway.
+     */
     private String getGatewayHomePage() {
         try {
             InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());
