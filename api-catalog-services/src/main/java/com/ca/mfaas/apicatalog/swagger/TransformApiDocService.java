@@ -114,8 +114,6 @@ public class TransformApiDocService {
 
         if (swagger.getPaths() != null && !swagger.getPaths().isEmpty()) {
             swagger.getPaths().forEach((originalEndpoint, path) -> {
-
-                // Logging
                 log.trace("Swagger Service Id: " + serviceId);
                 log.trace("Original Endpoint: " + originalEndpoint);
                 log.trace("Base Path: " + swagger.getBasePath());
