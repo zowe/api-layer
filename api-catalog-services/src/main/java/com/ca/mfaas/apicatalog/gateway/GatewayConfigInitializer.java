@@ -39,6 +39,8 @@ public class GatewayConfigInitializer {
         maxAttempts = 100,
         backoff = @Backoff(delayExpression = "#{${mfaas.service-registry.serviceFetchDelayInMillis}}"))
     public GatewayConfigProperties getGatewayConfigProperties() throws GatewayConfigInitializerException {
+        log.info("Initializing Gateway configurations by discovery service");
+
         try {
             String gatewayHomePage = getGatewayHomePage();
             URI uri = new URI(gatewayHomePage);
