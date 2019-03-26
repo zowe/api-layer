@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.login;
 
 import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.gateway.security.token.TokenAuthentication;
+import com.ca.apiml.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

@@ -11,6 +11,7 @@ package com.ca.mfaas.gateway.security.login.dummy;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,6 +27,7 @@ import java.util.List;
  * Dummy service to provide user information
  */
 @Component
+@Qualifier("dummyService")
 public class InMemoryUserDetailsService implements UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
 

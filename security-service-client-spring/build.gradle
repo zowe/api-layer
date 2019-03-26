@@ -1,7 +1,8 @@
 dependencies {
     compile libraries.spring_security_web
-
+    
     compileOnly libraries.javax_servlet_api
+    compileOnly libraries.lombok
 
     testCompile libraries.junit
 }

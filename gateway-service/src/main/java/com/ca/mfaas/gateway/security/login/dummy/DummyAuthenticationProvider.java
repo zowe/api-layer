@@ -10,8 +10,9 @@
 package com.ca.mfaas.gateway.security.login.dummy;
 
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.security.token.TokenAuthentication;
+import com.ca.apiml.security.token.TokenAuthentication;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,7 +31,7 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
     private final AuthenticationService authenticationService;
 
     public DummyAuthenticationProvider(BCryptPasswordEncoder encoder,
-                                       UserDetailsService userDetailsService,
+                                       @Qualifier("dummyService") UserDetailsService userDetailsService,
                                        AuthenticationService authenticationService) {
         super();
         this.setPasswordEncoder(encoder);

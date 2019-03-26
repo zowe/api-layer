@@ -10,6 +10,7 @@
 package com.ca.apiml.security.content;
 
 import org.springframework.http.HttpHeaders;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,20 +28,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public class SecureContentFilter extends OncePerRequestFilter {
+public class BasicFilter extends OncePerRequestFilter {
     private static final String BASIC_AUTHENTICATION_PREFIX = "Basic ";
 
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
 
-    public SecureContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
+    public BasicFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
         this.authenticationManager = authenticationManager;
         this.failureHandler = failureHandler;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        UsernamePasswordAuthenticationToken authenticationToken = getCredentialFromAuthorizationHeader(request);
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+        UsernamePasswordAuthenticationToken authenticationToken = extractContent(request);
 
         if (authenticationToken != null) {
             try {
@@ -55,7 +56,7 @@ public class SecureContentFilter extends OncePerRequestFilter {
         }
     }
 
-    private UsernamePasswordAuthenticationToken getCredentialFromAuthorizationHeader(HttpServletRequest request) {
+    private UsernamePasswordAuthenticationToken extractContent(HttpServletRequest request) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         if (header != null && header.startsWith(BASIC_AUTHENTICATION_PREFIX)) {

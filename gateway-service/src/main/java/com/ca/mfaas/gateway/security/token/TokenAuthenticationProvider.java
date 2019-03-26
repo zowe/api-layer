@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.token;
 
+import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -29,6 +30,7 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         return authenticationService.validateJwtToken(tokenAuthentication);
     }
+
 
     @Override
     public boolean supports(Class<?> authentication) {

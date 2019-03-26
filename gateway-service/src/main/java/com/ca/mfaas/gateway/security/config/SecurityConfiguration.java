@@ -9,11 +9,12 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
-import com.ca.apiml.security.content.SecureContentFilter;
+import com.ca.apiml.security.content.BasicFilter;
+import com.ca.apiml.security.content.CookieFilter;
 import com.ca.mfaas.gateway.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.gateway.security.handler.UnauthorizedHandler;
-import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.LoginFilter;
+import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.SuccessfulLoginHandler;
 import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
@@ -121,7 +122,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(secureContentFilter(), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
@@ -134,7 +136,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             authenticationManager());
     }
 
-    private SecureContentFilter secureContentFilter() throws Exception {
-        return new SecureContentFilter(authenticationManager(), authenticationFailureHandler);
+    private BasicFilter basicFilter() throws Exception {
+        return new BasicFilter(authenticationManager(), authenticationFailureHandler);
+    }
+
+    private CookieFilter cookieFilter() throws Exception {
+        return new CookieFilter(authenticationManager(), authenticationFailureHandler);
     }
 }

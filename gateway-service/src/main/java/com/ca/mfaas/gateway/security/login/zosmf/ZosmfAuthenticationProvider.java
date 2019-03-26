@@ -11,7 +11,7 @@ package com.ca.mfaas.gateway.security.login.zosmf;
 
 import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.security.token.TokenAuthentication;
+import com.ca.apiml.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
