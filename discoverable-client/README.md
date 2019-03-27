@@ -4,11 +4,11 @@ This is a sample Spring Boot Helloworld application, including swagger documenta
 
 #How to run
 
-This [document](../docs/local-configuration.md) describes how to run Discoverable client service.
+This [document](../docs/local-configuration.md) describes how to run the Discoverable client service.
 
 # How to use
 
-You can see this application registered to catalog under the tile "Sample API Mediation Layer Applications".
+You can see this application registered to the Catalog under the tile "Sample API Mediation Layer Applications".
 
 This service includes a simple greeting as well as a basic petstore for PUT, DELETE or POST requests. 
 
