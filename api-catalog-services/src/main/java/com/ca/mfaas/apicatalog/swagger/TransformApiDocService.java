@@ -13,7 +13,9 @@ import com.ca.mfaas.apicatalog.exceptions.ApiDocTransformationException;
 import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.RoutedServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Path;
@@ -82,9 +84,9 @@ public class TransformApiDocService {
     /**
      * Updates scheme and hostname, and adds API doc link to Swagger
      *
-     * @param swagger    the API doc
-     * @param serviceId  the unique service id
-     * @param hidden     do not add link for automatically generated API doc
+     * @param swagger   the API doc
+     * @param serviceId the unique service id
+     * @param hidden    do not add link for automatically generated API doc
      */
     private void updateSchemeHostAndLink(Swagger swagger, String serviceId, boolean hidden) {
         String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
@@ -109,7 +111,6 @@ public class TransformApiDocService {
     private void updatePaths(Swagger swagger, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
         Map<String, Path> updatedShortPaths = new HashMap<>();
         Map<String, Path> updatedLongPaths = new HashMap<>();
-        Map<String, Path> updatedPaths;
         Set<String> prefixes = new HashSet<>();
 
         if (swagger.getPaths() != null && !swagger.getPaths().isEmpty()) {
@@ -119,18 +120,9 @@ public class TransformApiDocService {
                 log.trace("Base Path: " + swagger.getBasePath());
 
                 // Retrieve route which matches endpoint
-                String endPoint = swagger.getBasePath().equals(SEPARATOR) ? originalEndpoint : swagger.getBasePath() + originalEndpoint;
-
-                RoutedService route = null;
-                if (apiDocInfo.getApiInfo() != null) {
-                    String gatewayUrl = apiDocInfo.getApiInfo().getGatewayUrl();
-                    route = apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
-                    if(!endPoint.toLowerCase().startsWith(route.getServiceUrl())) {
-                        route = null;
-                    }
-                }
-
-                if(route == null) {
+                String endPoint = getEndPoint(swagger.getBasePath(), originalEndpoint);
+                RoutedService route = getRoutedServiceByApiInfo(apiDocInfo, endPoint);
+                if (route == null) {
                     route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, true);
                 }
 
@@ -138,12 +130,7 @@ public class TransformApiDocService {
                 String updatedLongEndPoint;
                 if (route != null) {
                     prefixes.add(route.getGatewayUrl());
-
-                    updatedShortEndPoint = endPoint;
-                    if(!route.getServiceUrl().equals("/")) {
-                        updatedShortEndPoint = updatedShortEndPoint.replaceFirst(route.getServiceUrl(), "");
-                    }
-
+                    updatedShortEndPoint = getShortEndPoint(route.getServiceUrl(), endPoint);
                     updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
                 } else {
                     log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
@@ -157,7 +144,7 @@ public class TransformApiDocService {
             });
         }
 
-        // update basePath and the original swagger object with the new paths
+        Map<String, Path> updatedPaths;
         if (prefixes.size() == 1) {
             swagger.setBasePath(SEPARATOR + prefixes.iterator().next() + SEPARATOR + serviceId);
             updatedPaths = updatedShortPaths;
@@ -169,6 +156,37 @@ public class TransformApiDocService {
         if (!hidden) {
             swagger.setPaths(updatedPaths);
         }
+    }
+
+    private RoutedService getRoutedServiceByApiInfo(ApiDocInfo apiDocInfo, String endPoint) {
+        ApiInfo apiInfo = apiDocInfo.getApiInfo();
+        if (apiInfo == null) {
+            return null;
+        } else {
+            String gatewayUrl = apiInfo.getGatewayUrl();
+            RoutedService route = apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
+            if (endPoint.toLowerCase().startsWith(route.getServiceUrl())) {
+                return route;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private String getShortEndPoint(String routeServiceUrl, String endPoint) {
+        String shortEndPoint = endPoint;
+        if (!routeServiceUrl.equals("/")) {
+            shortEndPoint = shortEndPoint.replaceFirst(routeServiceUrl, "");
+        }
+        return shortEndPoint;
+    }
+
+    private String getEndPoint(String swaggerBasePath, String originalEndpoint) {
+        String endPoint = originalEndpoint;
+        if (!swaggerBasePath.equals(SEPARATOR)) {
+            endPoint = swaggerBasePath + endPoint;
+        }
+        return endPoint;
     }
 
     /**
