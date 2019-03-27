@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicFilter;
 import com.ca.apiml.security.content.CookieFilter;
 import com.ca.mfaas.gateway.security.handler.FailedAuthenticationHandler;
@@ -141,6 +142,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private CookieFilter cookieFilter() throws Exception {
-        return new CookieFilter(authenticationManager(), authenticationFailureHandler);
+        return new CookieFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }
 }

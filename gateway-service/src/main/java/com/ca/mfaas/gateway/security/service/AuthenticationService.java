@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.service;
 
-import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;

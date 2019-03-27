@@ -9,6 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,10 +30,14 @@ import java.io.IOException;
 public class CookieFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    public CookieFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
+    public CookieFilter(AuthenticationManager authenticationManager,
+                        AuthenticationFailureHandler failureHandler,
+                        SecurityConfigurationProperties securityConfigurationProperties) {
         this.authenticationManager = authenticationManager;
         this.failureHandler = failureHandler;
+        this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     @Override
@@ -60,7 +65,7 @@ public class CookieFilter extends OncePerRequestFilter {
         }
 
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("apimlAuthenticationToken")) {
+            if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
                 return new TokenAuthentication(cookie.getValue());
             }
         }

@@ -15,7 +15,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
@@ -24,7 +24,7 @@ import com.netflix.zuul.context.RequestContext;
  * the expected place (cookie).
  */
 public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
-    final static String TOKEN_KEY = "apimlAuthenticationToken";
+    static final String TOKEN_KEY = "apimlAuthenticationToken";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
 

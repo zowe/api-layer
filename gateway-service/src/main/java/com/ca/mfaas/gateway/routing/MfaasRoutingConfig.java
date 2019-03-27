@@ -14,7 +14,7 @@ import com.ca.mfaas.gateway.filters.post.TransformApiDocEndpointsFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
-import com.ca.mfaas.gateway.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
 import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.config;
+package com.ca.apiml.security.config;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
