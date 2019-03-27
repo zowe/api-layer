@@ -121,33 +121,34 @@ public class TransformApiDocService {
                 // Retrieve route which matches endpoint
                 String endPoint = swagger.getBasePath().equals(SEPARATOR) ? originalEndpoint : swagger.getBasePath() + originalEndpoint;
 
-                RoutedService route;
+                RoutedService route = null;
                 if (apiDocInfo.getApiInfo() != null) {
                     String gatewayUrl = apiDocInfo.getApiInfo().getGatewayUrl();
                     route = apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
                     if(!endPoint.toLowerCase().startsWith(route.getServiceUrl())) {
-                        route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, true);
+                        route = null;
                     }
-                } else {
+                }
+
+                if(route == null) {
                     route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, true);
                 }
 
-                String updatedShortEndPoint = null;
-                String updatedLongEndPoint = null;
+                String updatedShortEndPoint;
+                String updatedLongEndPoint;
                 if (route != null) {
                     prefixes.add(route.getGatewayUrl());
                     updatedShortEndPoint = endPoint.replaceFirst(route.getServiceUrl(), "");
                     updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
-                }
-                log.trace("Final Endpoint: " + updatedLongEndPoint);
-
-                // If endpoint not converted, then use original
-                if (updatedLongEndPoint != null) {
-                    updatedShortPaths.put(updatedShortEndPoint, path);
-                    updatedLongPaths.put(updatedLongEndPoint, path);
                 } else {
-                    log.debug("Could not transform endpoint: " + originalEndpoint + ", original used");
+                    log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
+                    updatedShortEndPoint = endPoint;
+                    updatedLongEndPoint = endPoint;
                 }
+
+                log.trace("Final Endpoint: " + updatedLongEndPoint);
+                updatedShortPaths.put(updatedShortEndPoint, path);
+                updatedLongPaths.put(updatedLongEndPoint, path);
             });
         }
 

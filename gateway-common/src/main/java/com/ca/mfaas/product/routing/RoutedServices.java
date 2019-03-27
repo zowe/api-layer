@@ -29,7 +29,6 @@ public class RoutedServices {
         return routedService.get(gatewayUrl);
     }
 
-    @Deprecated
     public RoutedService getBestMatchingServiceUrl(String serviceUrl, boolean apiOnly) {
         RoutedService result = null;
         int maxSize = 0;
