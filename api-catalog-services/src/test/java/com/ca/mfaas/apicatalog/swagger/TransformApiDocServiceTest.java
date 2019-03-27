@@ -74,6 +74,55 @@ public class TransformApiDocServiceTest {
     }
 
     @Test
+    public void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedVsalues() {
+        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
+        String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
+
+        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+        RoutedService routedService3 = new RoutedService("api_v2", "api/v2", "/apicatalog");
+        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
+
+        RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(routedService);
+        routedServices.addRoutedService(routedService2);
+        routedServices.addRoutedService(routedService3);
+
+        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+
+        String actualContent = transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
+        Swagger actualSwagger = convertJsonToSwagger(actualContent);
+
+        assertNotNull(actualSwagger);
+
+        String expectedDescription = new StringBuilder()
+            .append(dummySwaggerObject.getInfo().getDescription())
+            .append("\n\n")
+            .append(SWAGGER_LOCATION_LINK)
+            .append("(")
+            .append(gatewayConfigProperties.getScheme())
+            .append("://")
+            .append(gatewayConfigProperties.getHostname())
+            .append(CATALOG_VERSION)
+            .append(SEPARATOR)
+            .append(CoreService.API_CATALOG.getServiceId())
+            .append(CATALOG_APIDOC_ENDPOINT)
+            .append(SEPARATOR)
+            .append(SERVICE_ID)
+            .append(HARDCODED_VERSION)
+            .append(")").toString();
+
+        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
+        assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
+        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+        assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
+
+        assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
+        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
+    }
+
+    @Test
     public void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
@@ -161,7 +210,7 @@ public class TransformApiDocServiceTest {
         assertNotNull(actualSwagger);
 
         assertEquals("", actualSwagger.getBasePath());
-        assertTrue(actualSwagger.getPaths().isEmpty());
+        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
     }
 
     @Test
@@ -259,14 +308,10 @@ public class TransformApiDocServiceTest {
         assertNotNull(actualSwagger);
 
         assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
-        actualSwagger.getPaths().forEach((k, v) -> System.out.println(k));
 
-//        assertTrue(transformApiDoc.contains("schemes\":[\"https\"]"));
-//        assertTrue(transformApiDoc.contains("https://localhost:10010/api/v1/apicatalog/apidoc/Service/v1"));
-//        assertTrue(transformApiDoc.contains("host\":\"localhost:10010"));
-//        assertTrue(transformApiDoc.contains("basePath\":\"/api/v1/Service"));
-//        assertTrue(transformApiDoc.contains("externalDocs\":{\"description\":\"External documentation\",\"url\":\"https://www.zowe.org"));
-//        assertTrue(transformApiDoc.contains("\"paths\":{\"apidoc/{service-id}/{api-version}"));
+        dummySwaggerObject.getPaths().forEach((k,v) -> {
+            assertThat(actualSwagger.getPaths(),  IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k));
+        });
     }
 
     private String convertSwaggerToJson(Swagger swagger) {

@@ -138,7 +138,12 @@ public class TransformApiDocService {
                 String updatedLongEndPoint;
                 if (route != null) {
                     prefixes.add(route.getGatewayUrl());
-                    updatedShortEndPoint = endPoint.replaceFirst(route.getServiceUrl(), "");
+
+                    updatedShortEndPoint = endPoint;
+                    if(!route.getServiceUrl().equals("/")) {
+                        updatedShortEndPoint = updatedShortEndPoint.replaceFirst(route.getServiceUrl(), "");
+                    }
+
                     updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
                 } else {
                     log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
