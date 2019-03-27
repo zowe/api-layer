@@ -111,10 +111,10 @@ public class TransformApiDocServiceTest {
             .append(")").toString();
 
         assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
-        assertEquals(actualSwagger.getHost(), gatewayConfigProperties.getHostname());
-        assertEquals(actualSwagger.getExternalDocs().getDescription(), EXTERNAL_DOCUMENTATION);
-        assertEquals(actualSwagger.getExternalDocs().getUrl(), apiDocInfo.getApiInfo().getDocumentationUrl());
-        assertEquals(actualSwagger.getBasePath(), "/api/v1/" + SERVICE_ID);
+        assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
+        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+        assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
 
         assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
         assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
@@ -138,7 +138,7 @@ public class TransformApiDocServiceTest {
         Swagger actualSwagger = convertJsonToSwagger(actualContent);
         assertNotNull(actualSwagger);
 
-        assertEquals(actualSwagger.getBasePath(), "/api/v1/" + SERVICE_ID);
+        assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
         assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
     }
 
@@ -160,7 +160,7 @@ public class TransformApiDocServiceTest {
         Swagger actualSwagger = convertJsonToSwagger(actualContent);
         assertNotNull(actualSwagger);
 
-        assertEquals(actualSwagger.getBasePath(), "");
+        assertEquals("", actualSwagger.getBasePath());
         assertTrue(actualSwagger.getPaths().isEmpty());
     }
 
@@ -229,13 +229,12 @@ public class TransformApiDocServiceTest {
             .append(")").toString();
 
         assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
-        assertEquals(actualSwagger.getHost(), gatewayConfigProperties.getHostname());
-        assertEquals(actualSwagger.getExternalDocs().getDescription(), EXTERNAL_DOCUMENTATION);
-        assertEquals(actualSwagger.getExternalDocs().getUrl(), apiDocInfo.getApiInfo().getDocumentationUrl());
+        assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
+        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
+        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
+        assertEquals("", actualSwagger.getBasePath());
 
         assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
-        assertEquals(actualSwagger.getBasePath(), "");
-
         assertThat(actualSwagger.getPaths(),  IsMapContaining.hasKey("/" +routedService.getGatewayUrl() + "/" + SERVICE_ID));
         assertThat(actualSwagger.getPaths(),  IsMapContaining.hasKey("/" +routedService3.getGatewayUrl() + "/" + SERVICE_ID));
     }
@@ -259,7 +258,7 @@ public class TransformApiDocServiceTest {
         Swagger actualSwagger = convertJsonToSwagger(actualContent);
         assertNotNull(actualSwagger);
 
-        assertEquals(actualSwagger.getBasePath(), "/api/v1/" + SERVICE_ID);
+        assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
         actualSwagger.getPaths().forEach((k, v) -> System.out.println(k));
 
 //        assertTrue(transformApiDoc.contains("schemes\":[\"https\"]"));
