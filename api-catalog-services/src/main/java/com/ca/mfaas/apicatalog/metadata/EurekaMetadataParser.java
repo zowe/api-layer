@@ -13,10 +13,12 @@ import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.utils.UrlUtils;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.Map.Entry;
 
+@Slf4j
 public class EurekaMetadataParser {
 
     /**
@@ -30,32 +32,34 @@ public class EurekaMetadataParser {
 
         for (Entry<String, String> entry : eurekaMetadata.entrySet()) {
             String[] keys = entry.getKey().split("\\.");
-            if (keys.length == 4)
-                if (keys[0].equals("apiml") && keys[1].equals("apiInfo")) {
-                    apiInfo.putIfAbsent(keys[2], new ApiInfo());
-                    ApiInfo api = apiInfo.get(keys[2]);
-                    switch (keys[3]) {
-                        case "apiId":
-                            api.setApiId(entry.getValue());
-                            break;
-                        case "gatewayUrl":
-                            api.setGatewayUrl(entry.getValue());
-                            break;
-                        case "version":
-                            api.setVersion(entry.getValue());
-                            break;
-                        case "swaggerUrl":
-                            api.setSwaggerUrl(entry.getValue());
-                            break;
-                        case "documentationUrl":
-                            api.setDocumentationUrl(entry.getValue());
-                            break;
-                    }
+            if (keys.length == 4 && keys[0].equals("apiml") && keys[1].equals("apiInfo")) {
+                apiInfo.putIfAbsent(keys[2], new ApiInfo());
+                ApiInfo api = apiInfo.get(keys[2]);
+                switch (keys[3]) {
+                    case "apiId":
+                        api.setApiId(entry.getValue());
+                        break;
+                    case "gatewayUrl":
+                        api.setGatewayUrl(entry.getValue());
+                        break;
+                    case "version":
+                        api.setVersion(entry.getValue());
+                        break;
+                    case "swaggerUrl":
+                        api.setSwaggerUrl(entry.getValue());
+                        break;
+                    case "documentationUrl":
+                        api.setDocumentationUrl(entry.getValue());
+                        break;
+                    default:
+                        log.warn("Invalid parameter in metadata: {}", entry);
+                        break;
                 }
+            }
         }
 
         if (apiInfo.size() == 0) {
-            return null;
+            return Collections.emptyList();
         } else {
             return new ArrayList<>(apiInfo.values());
         }

@@ -30,7 +30,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -160,7 +159,7 @@ public class APIDocRetrievalService {
      * @return the information about API
      */
     private ApiInfo findApi(List<ApiInfo> apiInfos, String apiVersion) {
-        if (Objects.isNull(apiInfos)) {
+        if (apiInfos.isEmpty()) {
             return null;
         }
 
