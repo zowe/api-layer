@@ -165,7 +165,7 @@ public class TransformApiDocService {
     private Pair<String, String> getEndPointPairs(String endPoint, String serviceId, RoutedService route) {
         if (route == null) {
             return Pair.of(endPoint, endPoint);
-        }else {
+        } else {
             String updatedShortEndPoint = getShortEndPoint(route.getServiceUrl(), endPoint);
             String updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
 
