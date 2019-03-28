@@ -21,15 +21,32 @@ public class RoutedServices {
 
     private final Map<String, RoutedService> routedService = new HashMap<>();
 
+    /**
+     * Add route to the service
+     *
+     * @param route the route
+     */
     public void addRoutedService(RoutedService route) {
         routedService.put(route.getGatewayUrl(), route);
     }
 
+    /**
+     * Find RoutedService by Gateway Url
+     *
+     * @param gatewayUrl the url of gateway
+     * @return the route
+     */
     public RoutedService findServiceByGatewayUrl(String gatewayUrl) {
         return routedService.get(gatewayUrl);
     }
 
-    @Deprecated
+    /**
+     * Get best matching service url
+     *
+     * @param serviceUrl service url
+     * @param apiOnly only api
+     * @return the route
+     */
     public RoutedService getBestMatchingServiceUrl(String serviceUrl, boolean apiOnly) {
         RoutedService result = null;
         int maxSize = 0;

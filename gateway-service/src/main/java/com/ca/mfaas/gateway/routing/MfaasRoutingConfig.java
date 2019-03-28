@@ -10,11 +10,10 @@
 package com.ca.mfaas.gateway.routing;
 
 import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
-import com.ca.mfaas.gateway.filters.post.TransformApiDocEndpointsFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
-import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
+import com.ca.mfaas.product.routing.RoutedServicesUser;
 import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.token.TokenService;
@@ -49,11 +48,6 @@ public class MfaasRoutingConfig {
     }
 
     @Bean
-    public TransformApiDocEndpointsFilter transformApiDocEndpointsFilter() {
-        return new TransformApiDocEndpointsFilter();
-    }
-
-    @Bean
     @Autowired
     public ConvertAuthTokenInUriToCookieFilter convertAuthTokenInUriToCookieFilter(SecurityConfigurationProperties securityConfigurationProperties) {
         return new ConvertAuthTokenInUriToCookieFilter(securityConfigurationProperties);
@@ -67,7 +61,6 @@ public class MfaasRoutingConfig {
                                                                    WebSocketProxyServerHandler webSocketProxyServerHandler) {
         List<RoutedServicesUser> routedServicesUsers = new ArrayList<>();
         routedServicesUsers.add(locationFilter());
-        routedServicesUsers.add(transformApiDocEndpointsFilter());
         routedServicesUsers.add(webSocketProxyServerHandler);
 
         return new MfaasRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);

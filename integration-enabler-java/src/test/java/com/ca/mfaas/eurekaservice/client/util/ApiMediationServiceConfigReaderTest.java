@@ -35,7 +35,6 @@ public class ApiMediationServiceConfigReaderTest {
         assertEquals("/application/health", result.getHealthCheckRelativeUrl());
         assertTrue(result.getRoutes().contains(new Route("api/v1/api-doc", "/hellospring/api-doc")));
         assertTrue(result.getCatalogUiTile().getVersion().equals("1.0.0"));
-        assertTrue(result.getApiInfo().getVersion().equals("1.0.0"));
     }
 
     @Test

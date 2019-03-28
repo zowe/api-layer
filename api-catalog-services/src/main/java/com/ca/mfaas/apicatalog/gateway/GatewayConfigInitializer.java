@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package com.ca.mfaas.apicatalog.gateway;
 
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
@@ -23,23 +22,36 @@ import org.springframework.stereotype.Component;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * Initialize a {@link GatewayConfigProperties} from a homepage of the Gateway.
+ */
 @Slf4j
 @Component
 public class GatewayConfigInitializer {
 
     private final InstanceRetrievalService instanceRetrievalService;
 
+    /**
+     * Create a new instance.
+     *
+     * @param instanceRetrievalService to obtain the Gateway instance
+     */
     public GatewayConfigInitializer(InstanceRetrievalService instanceRetrievalService) {
         this.instanceRetrievalService = instanceRetrievalService;
     }
 
 
+    /**
+     * Get {@link GatewayConfigProperties} of the Gateway.
+     */
     @Retryable(
         value = {RetryException.class},
         exclude = GatewayConfigInitializerException.class,
         maxAttempts = 100,
         backoff = @Backoff(delayExpression = "#{${mfaas.service-registry.serviceFetchDelayInMillis}}"))
     public GatewayConfigProperties getGatewayConfigProperties() throws GatewayConfigInitializerException {
+        log.info("Initializing Gateway configurations by discovery service");
+
         try {
             String gatewayHomePage = getGatewayHomePage();
             URI uri = new URI(gatewayHomePage);
@@ -60,6 +72,9 @@ public class GatewayConfigInitializer {
         log.warn("Failed to initialise Gateway configurations");
     }
 
+    /**
+     * Get a homepage of the Gateway.
+     */
     private String getGatewayHomePage() {
         try {
             InstanceInfo gatewayInstance = instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId());

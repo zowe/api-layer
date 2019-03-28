@@ -7,15 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.services.routing;
+package com.ca.mfaas.apicatalog.swagger;
 
-import lombok.Data;
+public class ApiDocTransformationException extends RuntimeException {
 
-@Data
-public class RoutedService {
-
-    private final String subServiceId;
-    private final String gatewayUrl;
-    private final String serviceUrl;
-
+    public ApiDocTransformationException(String message) {
+        super(message);
+    }
 }

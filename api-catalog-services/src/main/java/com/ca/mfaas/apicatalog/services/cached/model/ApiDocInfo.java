@@ -7,17 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice.client.config;
+package com.ca.mfaas.apicatalog.services.cached.model;
 
+import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.product.routing.RoutedServices;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+/**
+ * Contains all necessary information to create API Documentation
+ * running through the Gateway
+ */
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class ApiInfo {
-    private String title;
-    private String description;
-    private String version;
+public class ApiDocInfo {
+    ApiInfo apiInfo;
+    String apiDocContent;
+    RoutedServices routes;
 }

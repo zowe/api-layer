@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang.RandomStringUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -42,10 +43,13 @@ public class ApiInfo {
      */
     public Map<String, String> generateMetadata(String serviceId) {
         Map<String, String> metadata = new HashMap<>();
-        String encodedGatewayUrl = gatewayUrl.replaceAll("\\W", "-");
+        String encodedGatewayUrl;
 
         if (gatewayUrl != null) {
+            encodedGatewayUrl = gatewayUrl.replaceAll("\\W", "-");
             metadata.put(String.format("apiml.apiInfo.%s.gatewayUrl", encodedGatewayUrl), gatewayUrl);
+        } else {
+            encodedGatewayUrl = RandomStringUtils.randomAlphanumeric(10);
         }
 
         if (version != null) {
@@ -58,7 +62,7 @@ public class ApiInfo {
             } catch (MalformedURLException e) {
                 throw new InvalidParameterException(
                     String.format("The Swagger URL \"%s\" for service %s is not valid: %s",
-                        serviceId, swaggerUrl, e.getMessage()));
+                        swaggerUrl, serviceId, e.getMessage()));
             }
             metadata.put(String.format("apiml.apiInfo.%s.swaggerUrl", encodedGatewayUrl), swaggerUrl);
         }
@@ -69,7 +73,7 @@ public class ApiInfo {
             } catch (MalformedURLException e) {
                 throw new InvalidParameterException(
                     String.format("The documentation URL \"%s\" for service %s is not valid: %s",
-                        serviceId, documentationUrl, e.getMessage()));
+                        documentationUrl, serviceId, e.getMessage()));
             }
             metadata.put(String.format("apiml.apiInfo.%s.documentationUrl", encodedGatewayUrl), documentationUrl);
         }

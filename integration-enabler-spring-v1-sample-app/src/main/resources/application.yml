@@ -54,7 +54,7 @@ eureka:
                 api_v1:
                     gateway-url: "api/v1"
                     service-url: ${mfaas.server.contextPath}/api/v1
-                api-doc:
+                api-doc: # Intentionally using old format to retrieve Api-doc for testing purposes
                     gateway-url: "api/v1/api-doc"
                     service-url: ${mfaas.server.contextPath}/api-doc
             mfaas:

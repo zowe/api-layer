@@ -22,6 +22,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
 public class ServiceDefinitionProcessorTest {
+
+
     @Test
     public void testProcessServicesDataWithTwoRoutes() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
@@ -338,5 +340,78 @@ public class ServiceDefinitionProcessorTest {
         assertEquals(10019, instances.get(0).getSecurePort());
 
     }
+
+    @Test
+    public void shouldGenerateMetadataIfApiInfoIsNotNUll() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml = "services:\n" +
+            "    - serviceId: casamplerestapiservice\n" +
+            "      catalogUiTileId: static\n" +
+            "      title: Petstore Sample API Service\n" +
+            "      description: This is a sample server Petstore REST API service\n" +
+            "      instanceBaseUrls:\n" +
+            "        - http://localhost:10019\n" +
+            "      routes:\n" +
+            "        - gatewayUrl: api/v2\n" +
+            "          serviceRelativeUrl: /v2\n" +
+            "      apiInfo:\n" +
+            "        - apiId: swagger.io.petstore\n" +
+            "          gatewayUrl: api/v2\n" +
+            "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
+            "          version: 2.0.0\n" +
+            "\n" +
+            "catalogUiTiles:\n" +
+            "    static:\n" +
+            "        title: Static API Services\n" +
+            "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
+
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            Collections.singletonList(routedServiceYaml));
+        System.out.println(result.getErrors());
+        List<InstanceInfo> instances = result.getInstances();
+        assertEquals(1, instances.size());
+        assertEquals(10019, instances.get(0).getSecurePort());
+        assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
+        assertEquals("api/v2", instances.get(0).getMetadata().get("routed-services.api-v2.gateway-url"));
+        assertEquals("/v2", instances.get(0).getMetadata().get("routed-services.api-v2.service-url"));
+        assertEquals("static", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.id"));
+        assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get("mfaas.discovery.service.title"));
+        assertEquals("2.0.0", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.version"));
+        assertEquals("1.0.0", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.version"));
+        assertEquals("Static API Services", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.title"));
+        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.swaggerUrl"));
+        assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get("mfaas.discovery.service.description"));
+        assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
+        assertEquals(0, result.getErrors().size());
+    }
+
+    @Test
+    public void shouldGiveErrorIfTileIdIsInvalid() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml = "services:\n" +
+            "    - serviceId: casamplerestapiservice\n" +
+            "      catalogUiTileId: adajand\n" +
+            "      title: Petstore Sample API Service\n" +
+            "      description: This is a sample server Petstore REST API service\n" +
+            "      instanceBaseUrls:\n" +
+            "        - http://localhost:10019\n" +
+            "      routes:\n" +
+            "        - gatewayUrl: api/v2\n" +
+            "          serviceRelativeUrl: /v2\n" +
+            "      apiInfo:\n" +
+            "        - apiId: swagger.io.petstore\n" +
+            "          gatewayUrl: api/v2\n" +
+            "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
+            "          version: 2.0.0\n" +
+            "\n" +
+            "catalogUiTiles:\n" +
+            "    static:\n" +
+            "        title: Static API Services\n" +
+            "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
+
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"), Collections.singletonList(routedServiceYaml));
+        assertEquals("The API Catalog UI tile ID adajand is invalid. The service casamplerestapiservice will not have API Catalog UI tile", result.getErrors().get(0));
+    }
+
 }
 

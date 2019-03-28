@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package com.ca.mfaas.apicatalog.gateway;
 
 import org.springframework.context.annotation.Bean;

@@ -169,7 +169,7 @@ public class ServiceDefinitionProcessor {
         return new ProcessServicesDataResult(errors, instances);
     }
 
-    private void setInstanceAttributes(InstanceInfo.Builder builder,Service service, String serviceId,
+    private void setInstanceAttributes(InstanceInfo.Builder builder, Service service, String serviceId,
                                        String instanceId, String instanceBaseUrl, URL url, String ipAddress, CatalogUiTile tile) {
         builder.setAppName(serviceId).setInstanceId(instanceId).setHostName(url.getHost()).setIPAddr(ipAddress)
             .setDataCenterInfo(DEFAULT_INFO).setVIPAddress(serviceId).setSecureVIPAddress(serviceId)

@@ -1,7 +1,7 @@
 serviceId: service
 title: HelloWorld Spring REST API
 description: POC for exposing a Spring REST API
-baseUrl: http://localhost:10020/hellospring
+baseUrl: http://localhost:10021/hellospring
 homePageRelativeUrl: /
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
@@ -14,9 +14,9 @@ routes:
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellospring/api-doc
 apiInfo:
-    title: HelloWorld Spring
-    description: REST API for a Spring Application
-    version: 1.0.0
+    - apiId: org.zowe.hellospring
+      gatewayUrl: api/v1
+      swaggerUrl: http://localhost:10021/hellospring/api-doc
 catalogUiTile:
     id: helloworld-spring
     title: HelloWorld Spring REST API

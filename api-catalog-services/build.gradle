@@ -45,6 +45,7 @@ dependencies {
     compile libraries.spring_cloud_starter_eureka
     compile libraries.spring_boot_starter_webflux
     compile libraries.spring_retry
+    compile libraries.swagger_core
     compile libraries.json_path
     compile libraries.apacheCommons
     compile libraries.spring_boot_starter_thymeleaf

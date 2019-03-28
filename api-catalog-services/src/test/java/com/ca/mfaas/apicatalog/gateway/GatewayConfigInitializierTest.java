@@ -7,7 +7,6 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package com.ca.mfaas.apicatalog.gateway;
 
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
@@ -50,7 +49,7 @@ public class GatewayConfigInitializierTest {
             .thenReturn(
                 getStandardInstance(CoreService.GATEWAY.getServiceId(), InstanceInfo.InstanceStatus.UP, "https://localhost:9090/"));
         gatewayConfigProperties = gatewayConfigInitializer.getGatewayConfigProperties();
-            Assert.assertEquals("localhost:9090", gatewayConfigProperties.getHostname());
+        Assert.assertEquals("localhost:9090", gatewayConfigProperties.getHostname());
         Assert.assertEquals("https", gatewayConfigProperties.getScheme());
     }
 

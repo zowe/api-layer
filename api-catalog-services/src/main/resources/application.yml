@@ -112,9 +112,11 @@ eureka:
                 api_v1:
                     gateway-url: "api/v1"
                     service-url: /apicatalog
-                api-doc:
-                    gateway-url: "api/v1/api-doc"
-                    service-url: /apicatalog/api-doc
+            apiml:
+                apiInfo:
+                    - apiId: org.zowe.apicatalog
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${environment.hostname}:${server.port}${server.servlet.contextPath}/api-doc
             mfaas:
                 api-info:
                     apiVersionProperties:
