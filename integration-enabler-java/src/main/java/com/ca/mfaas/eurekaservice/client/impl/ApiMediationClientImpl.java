@@ -16,7 +16,9 @@ import com.ca.mfaas.eurekaservice.client.config.Route;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.product.host.InvalidProtocolException;
 import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.product.host.parser.URLParserException;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 
@@ -47,7 +49,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
         eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
-        log.info(String.format("eurekaClient.getApplicationInfoManager().getInfo().getHostName(): %s", eurekaClient.getApplicationInfoManager().getInfo().getHostName()));
+        log.info("eurekaClient.getApplicationInfoManager().getInfo().getHostName(): {}", eurekaClient.getApplicationInfoManager().getInfo().getHostName());
     }
 
     @Override
@@ -101,7 +103,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             hostname = baseUrl.getHost();
             port = baseUrl.getPort();
         } catch (MalformedURLException e) {
-            throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
+            String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
+            throw new URLParserException(message, e);
         }
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
@@ -133,7 +136,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
-                throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
+                throw new InvalidProtocolException("Invalid protocol for baseUrl property");
         }
 
         return result;
