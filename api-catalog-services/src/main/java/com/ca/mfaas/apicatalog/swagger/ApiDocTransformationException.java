@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog.exceptions;
+package com.ca.mfaas.apicatalog.swagger;
 
 public class ApiDocTransformationException extends RuntimeException {
 

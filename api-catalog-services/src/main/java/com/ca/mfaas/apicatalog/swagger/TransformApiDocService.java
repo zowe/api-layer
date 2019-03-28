@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.apicatalog.swagger;
 
-import com.ca.mfaas.apicatalog.exceptions.ApiDocTransformationException;
 import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
