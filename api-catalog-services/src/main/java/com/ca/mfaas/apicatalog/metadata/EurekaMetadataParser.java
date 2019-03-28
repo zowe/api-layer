@@ -18,6 +18,13 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class EurekaMetadataParser {
+
+    /**
+     * Parse eureka metadata and construct ApiInfo with the values found
+     *
+     * @param eurekaMetadata the eureka metadata
+     * @return ApiInfo list
+     */
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
         Map<String, ApiInfo> apiInfo = new HashMap<>();
 
@@ -54,6 +61,12 @@ public class EurekaMetadataParser {
         }
     }
 
+    /**
+     * Parse eureka metadata and add the routes found to the RoutedServices
+     *
+     * @param eurekaMetadata the eureka metadata
+     * @return the RoutedServices
+     */
     public RoutedServices parseRoutes(Map<String, String> eurekaMetadata) {
         RoutedServices routes = new RoutedServices();
         Map<String, String> routeMap = new HashMap<>();
