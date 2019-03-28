@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.security.handler;
 
 import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,8 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
         ApiMessage message;
         if (exception instanceof BadCredentialsException) {
             message = errorService.createApiMessage("com.ca.mfaas.security.invalidUsername", exception.getMessage(), request.getRequestURI());
+        } else if (exception instanceof TokenNotValidException) {
+            message = errorService.createApiMessage("com.ca.mfaas.security.tokenIsNotValid", exception.getMessage(), request.getRequestURI());
         } else {
             message = errorService.createApiMessage("com.ca.mfaas.security.authenticationException", exception.getMessage(), request.getRequestURI());
         }

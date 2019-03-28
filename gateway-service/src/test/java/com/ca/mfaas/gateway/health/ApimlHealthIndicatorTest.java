@@ -13,51 +13,58 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.product.constants.CoreService;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.zuul.filters.Route;
-import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 
 public class ApimlHealthIndicatorTest {
 
-    @Test
-    public void testStatusIsUpWhenCatalogAndDiscoveryAreAvailable() throws Exception {
-        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
-                Arrays.asList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
-        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-                Arrays.asList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10014, true)));
+    private static final String ZOSMF = "zosmf";
 
-        DiscoveryClientRouteLocator discoveryClientRouteLocator = mock(DiscoveryClientRouteLocator.class);
-        when(discoveryClientRouteLocator.getMatchingRoute("/api/v1/gateway/auth/login")).thenReturn(new Route("", "", "", null, false, null));
+    private SecurityConfigurationProperties securityConfigurationProperties;
 
-        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient, discoveryClientRouteLocator);
-        Health.Builder builder = new Health.Builder();
-        apimlHealthIndicator.doHealthCheck(builder);
-        assertEquals(builder.build().getStatus(), Status.UP);
+    @Before
+    public void setUp() {
+        securityConfigurationProperties = new SecurityConfigurationProperties();
+        securityConfigurationProperties.setZosmfServiceId(ZOSMF);
     }
 
     @Test
-    public void testStatusIsDownWhenCatalogIsNotAvailable() throws Exception {
+    public void testStatusIsUpWhenCatalogAndDiscoveryAreAvailable() {
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(new ArrayList<>());
+        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
+            Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
-                Arrays.asList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10014, true)));
+            Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(
+            Collections.singletonList(new DefaultServiceInstance(ZOSMF, "host", 10050, true)));
 
-        DiscoveryClientRouteLocator discoveryClientRouteLocator = mock(DiscoveryClientRouteLocator.class);
-        when(discoveryClientRouteLocator.getMatchingRoute("/api/v1/gateway/auth/login")).thenReturn(null);
-        
-        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient, discoveryClientRouteLocator);
+        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient, securityConfigurationProperties);
         Health.Builder builder = new Health.Builder();
         apimlHealthIndicator.doHealthCheck(builder);
-        assertEquals(builder.build().getStatus(), Status.DOWN);
+        assertEquals(Status.UP, builder.build().getStatus());
+    }
+
+    @Test
+    public void testStatusIsDownWhenAuthIsNotAvailable() {
+        DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
+        when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
+            Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
+        when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
+            Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10014, true)));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.emptyList());
+
+        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient, securityConfigurationProperties);
+        Health.Builder builder = new Health.Builder();
+        apimlHealthIndicator.doHealthCheck(builder);
+        assertEquals(Status.DOWN, builder.build().getStatus());
     }
 }
