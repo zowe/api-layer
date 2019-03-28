@@ -27,10 +27,10 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.validation.UnexpectedTypeException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -284,8 +284,8 @@ public class TransformApiDocServiceTest {
         assertEquals("", actualSwagger.getBasePath());
 
         assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
-        assertThat(actualSwagger.getPaths(),  IsMapContaining.hasKey("/" +routedService.getGatewayUrl() + "/" + SERVICE_ID));
-        assertThat(actualSwagger.getPaths(),  IsMapContaining.hasKey("/" +routedService3.getGatewayUrl() + "/" + SERVICE_ID));
+        assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + routedService.getGatewayUrl() + "/" + SERVICE_ID));
+        assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey("/" + routedService3.getGatewayUrl() + "/" + SERVICE_ID));
     }
 
     @Test
@@ -309,8 +309,8 @@ public class TransformApiDocServiceTest {
 
         assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
 
-        dummySwaggerObject.getPaths().forEach((k,v) -> {
-            assertThat(actualSwagger.getPaths(),  IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k));
+        dummySwaggerObject.getPaths().forEach((k, v) -> {
+            assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k));
         });
     }
 
@@ -354,7 +354,7 @@ public class TransformApiDocServiceTest {
         tag.setDescription("Current state information");
         swagger.getTags().add(tag);
 
-        if(apimlHidden) {
+        if (apimlHidden) {
             tag = new Tag();
             tag.setName(HIDDEN_TAG);
             swagger.getTags().add(tag);
