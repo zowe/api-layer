@@ -58,11 +58,7 @@ public class EurekaMetadataParser {
             }
         }
 
-        if (apiInfo.size() == 0) {
-            return Collections.emptyList();
-        } else {
-            return new ArrayList<>(apiInfo.values());
-        }
+        return new ArrayList<>(apiInfo.values());
     }
 
     /**
