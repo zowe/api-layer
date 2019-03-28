@@ -158,6 +158,13 @@ public class TransformApiDocService {
         }
     }
 
+    /**
+     * Get RoutedService by APIInfo
+     *
+     * @param apiDocInfo the API doc and additional information about transformation
+     * @param endPoint the endpoint of method
+     * @return the RoutedService
+     */
     private RoutedService getRoutedServiceByApiInfo(ApiDocInfo apiDocInfo, String endPoint) {
         ApiInfo apiInfo = apiDocInfo.getApiInfo();
         if (apiInfo == null) {
@@ -173,6 +180,13 @@ public class TransformApiDocService {
         }
     }
 
+    /**
+     * Get short endpoint
+     *
+     * @param routeServiceUrl service url of route
+     * @param endPoint the endpoint of method
+     * @return short endpoint
+     */
     private String getShortEndPoint(String routeServiceUrl, String endPoint) {
         String shortEndPoint = endPoint;
         if (!routeServiceUrl.equals("/")) {
@@ -181,6 +195,13 @@ public class TransformApiDocService {
         return shortEndPoint;
     }
 
+    /**
+     * Get endpoint
+     *
+     * @param swaggerBasePath swagger basepath
+     * @param originalEndpoint the endpoint of method
+     * @return endpoint
+     */
     private String getEndPoint(String swaggerBasePath, String originalEndpoint) {
         String endPoint = originalEndpoint;
         if (!swaggerBasePath.equals(SEPARATOR)) {
