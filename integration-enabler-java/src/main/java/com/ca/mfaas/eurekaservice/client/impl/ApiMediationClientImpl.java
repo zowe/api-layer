@@ -18,7 +18,6 @@ import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 import com.ca.mfaas.product.host.InvalidProtocolException;
 import com.ca.mfaas.product.model.ApiInfo;
-import com.ca.mfaas.product.host.parser.URLParserException;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 
@@ -36,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,7 +49,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
         eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
-        log.info("eurekaClient.getApplicationInfoManager().getInfo().getHostName(): {}", eurekaClient.getApplicationInfoManager().getInfo().getHostName());
+        log.debug("eurekaClient.getApplicationInfoManager().getInfo().getHostName(): {}", eurekaClient.getApplicationInfoManager().getInfo().getHostName());
     }
 
     @Override
@@ -104,7 +104,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             port = baseUrl.getPort();
         } catch (MalformedURLException e) {
             String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
-            throw new URLParserException(message, e);
+            throw new InvalidParameterException(message);
         }
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
