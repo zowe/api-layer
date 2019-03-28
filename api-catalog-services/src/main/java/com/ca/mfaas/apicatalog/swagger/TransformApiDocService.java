@@ -23,6 +23,7 @@ import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.validation.UnexpectedTypeException;
@@ -126,21 +127,17 @@ public class TransformApiDocService {
                     route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, true);
                 }
 
-                String updatedShortEndPoint;
-                String updatedLongEndPoint;
-                if (route != null) {
-                    prefixes.add(route.getGatewayUrl());
-                    updatedShortEndPoint = getShortEndPoint(route.getServiceUrl(), endPoint);
-                    updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
-                } else {
+                if (route == null) {
                     log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
-                    updatedShortEndPoint = endPoint;
-                    updatedLongEndPoint = endPoint;
+                } else {
+                    prefixes.add(route.getGatewayUrl());
                 }
 
-                log.trace("Final Endpoint: " + updatedLongEndPoint);
-                updatedShortPaths.put(updatedShortEndPoint, path);
-                updatedLongPaths.put(updatedLongEndPoint, path);
+                Pair<String, String> endPointPairs = getEndPointPairs(endPoint, serviceId, route);
+                log.trace("Final Endpoint: " + endPointPairs.getRight());
+
+                updatedShortPaths.put(endPointPairs.getLeft(), path);
+                updatedLongPaths.put(endPointPairs.getRight(), path);
             });
         }
 
@@ -155,6 +152,25 @@ public class TransformApiDocService {
 
         if (!hidden) {
             swagger.setPaths(updatedPaths);
+        }
+    }
+
+    /**
+     * Get EndpointPairs
+     *
+     * @param endPoint the endpoint of method
+     * @param serviceId the unique service id
+     * @param route the route
+     * @return the endpoint pairs
+     */
+    private Pair<String, String> getEndPointPairs(String endPoint, String serviceId, RoutedService route) {
+        if (route == null) {
+            return Pair.of(endPoint, endPoint);
+        }else {
+            String updatedShortEndPoint = getShortEndPoint(route.getServiceUrl(), endPoint);
+            String updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
+
+            return Pair.of(updatedShortEndPoint, updatedLongEndPoint);
         }
     }
 
@@ -189,7 +205,7 @@ public class TransformApiDocService {
      */
     private String getShortEndPoint(String routeServiceUrl, String endPoint) {
         String shortEndPoint = endPoint;
-        if (!routeServiceUrl.equals("/")) {
+        if (!routeServiceUrl.equals(SEPARATOR)) {
             shortEndPoint = shortEndPoint.replaceFirst(routeServiceUrl, "");
         }
         return shortEndPoint;
