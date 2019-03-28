@@ -157,15 +157,15 @@ public class TransformApiDocService {
     /**
      * Get EndpointPairs
      *
-     * @param endPoint the endpoint of method
+     * @param endPoint  the endpoint of method
      * @param serviceId the unique service id
-     * @param route the route
+     * @param route     the route
      * @return the endpoint pairs
      */
     private Pair<String, String> getEndPointPairs(String endPoint, String serviceId, RoutedService route) {
         if (route == null) {
             return Pair.of(endPoint, endPoint);
-        }else {
+        } else {
             String updatedShortEndPoint = getShortEndPoint(route.getServiceUrl(), endPoint);
             String updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
 
@@ -177,7 +177,7 @@ public class TransformApiDocService {
      * Get RoutedService by APIInfo
      *
      * @param apiDocInfo the API doc and additional information about transformation
-     * @param endPoint the endpoint of method
+     * @param endPoint   the endpoint of method
      * @return the RoutedService
      */
     private RoutedService getRoutedServiceByApiInfo(ApiDocInfo apiDocInfo, String endPoint) {
@@ -199,7 +199,7 @@ public class TransformApiDocService {
      * Get short endpoint
      *
      * @param routeServiceUrl service url of route
-     * @param endPoint the endpoint of method
+     * @param endPoint        the endpoint of method
      * @return short endpoint
      */
     private String getShortEndPoint(String routeServiceUrl, String endPoint) {
@@ -213,7 +213,7 @@ public class TransformApiDocService {
     /**
      * Get endpoint
      *
-     * @param swaggerBasePath swagger basepath
+     * @param swaggerBasePath  swagger basepath
      * @param originalEndpoint the endpoint of method
      * @return endpoint
      */
