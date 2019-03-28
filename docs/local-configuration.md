@@ -224,12 +224,12 @@ If your editor of choice happens to be Idea and you wnat to use its 'Run Dashboa
 
    This is a list of default ports used by the project for developing
 
- |        SERVICE        |  PORT |   |   |   |
- |:---------------------:|:-----:|---|---|---|
- |        Gateway        | 10010 |   |   |   |
- |   Discovery Service   | 10011 |   |   |   |
- |  Discoverable client  | 10012 |   |   |   |
- |      API Catalog      | 10014 |   |   |   |
- |   Helloword(Jersey)   | 10016 |   |   |   |
- | Helloworld(ExpressJs) | 10020 |   |   |   |
- |   Helloworld(Spring)  | 10021 |   |   |   |
+|        SERVICE        |  PORT |
+|:---------------------:|:-----:|
+|        Gateway        | 10010 |
+|   Discovery Service   | 10011 |
+|  Discoverable client  | 10012 |
+|      API Catalog      | 10014 |
+|   Helloword(Jersey)   | 10016 |
+| Helloworld(ExpressJs) | 10020 |
+|   Helloworld(Spring)  | 10021 |
