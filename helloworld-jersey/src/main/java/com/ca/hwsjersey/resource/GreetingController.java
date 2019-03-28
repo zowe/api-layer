@@ -20,6 +20,12 @@ import javax.ws.rs.core.Response;
 
 import java.util.Date;
 
+@SwaggerDefinition(
+    info = @Info(
+        title = "Hello World Jersey",
+        description = "REST API for a Jersey Application",
+        version = "1.0.0")
+)
 @Api(value = "Greeting", tags = {"Greeting Controller"})
 @Path("/api/v1")
 public class GreetingController {

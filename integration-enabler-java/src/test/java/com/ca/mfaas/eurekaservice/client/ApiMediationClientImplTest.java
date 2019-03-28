@@ -12,11 +12,13 @@ package com.ca.mfaas.eurekaservice.client;
 import com.ca.mfaas.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
+import com.ca.mfaas.product.model.ApiInfo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ApiMediationClientImplTest {
@@ -25,9 +27,9 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void startEurekaClient() {
-        ApiInfo apiInfo = new ApiInfo("Hello World Spring", "REST API for a Spring Application", "1.0.0");
+        ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         CatalogUiTile catalogUiTile = new CatalogUiTile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0");
-        Eureka eureka = new Eureka("10020", "localhost", "127.0.0.1");
+        Eureka eureka = new Eureka("10021", "localhost", "127.0.0.1");
         Ssl ssl = new Ssl(false, "TLSv1.2", "localhost", "password",
             "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
             "../keystore/localhost/localhost.truststore.p12","password", "PKCS12");
@@ -38,7 +40,7 @@ public class ApiMediationClientImplTest {
         routes.add(apiDocRoute);
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
-            .apiInfo(apiInfo)
+            .apiInfo(Collections.singletonList(apiInfo))
             .eureka(eureka)
             .catalogUiTile(catalogUiTile)
             .routes(routes)
@@ -63,7 +65,7 @@ public class ApiMediationClientImplTest {
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = new ApiMediationServiceConfigReader(file).readConfiguration();
         exceptionRule.expect(RuntimeException.class);
-        exceptionRule.expectMessage("baseUrl: [localhost:10020/hellospring] is not valid URL");
+        exceptionRule.expectMessage("baseUrl: [localhost:10021/hellospring] is not valid URL");
 
         client.register(config);
         client.unregister();

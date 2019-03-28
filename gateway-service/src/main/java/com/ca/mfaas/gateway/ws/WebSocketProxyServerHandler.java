@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.gateway.ws;
 
-import com.ca.mfaas.gateway.services.routing.RoutedService;
-import com.ca.mfaas.gateway.services.routing.RoutedServices;
-import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
+import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.routing.RoutedServicesUser;
 import lombok.extern.slf4j.Slf4j;
 
 import org.eclipse.jetty.util.ssl.SslContextFactory;

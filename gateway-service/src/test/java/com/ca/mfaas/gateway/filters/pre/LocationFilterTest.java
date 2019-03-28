@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
-import com.ca.mfaas.gateway.services.routing.RoutedService;
-import com.ca.mfaas.gateway.services.routing.RoutedServices;
+import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.Before;
 import org.junit.Test;

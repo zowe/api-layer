@@ -16,6 +16,8 @@ import com.ca.mfaas.eurekaservice.client.config.Route;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.product.host.InvalidProtocolException;
+import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 
@@ -28,17 +30,12 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import io.swagger.jaxrs.config.SwaggerContextService;
-import io.swagger.models.Info;
-import io.swagger.models.Swagger;
-import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,14 +43,13 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     private static final Logger log = LoggerFactory.getLogger(ApiMediationClientImpl.class);
 
     private EurekaClient eurekaClient;
-    private static URI apiDocEndpoint;
 
     @Override
     public synchronized void register(ApiMediationServiceConfig config) {
         ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
         eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
-        log.info(String.format("eurekaClient.getApplicationInfoManager().getInfo().getHostName(): %s", eurekaClient.getApplicationInfoManager().getInfo().getHostName()));
+        log.debug("eurekaClient.getApplicationInfoManager().getInfo().getHostName(): {}", eurekaClient.getApplicationInfoManager().getInfo().getHostName());
     }
 
     @Override
@@ -107,7 +103,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             hostname = baseUrl.getHost();
             port = baseUrl.getPort();
         } catch (MalformedURLException e) {
-            throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
+            String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
+            throw new InvalidParameterException(message);
         }
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
@@ -139,15 +136,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
-                throw new RuntimeException(new MalformedURLException("Invalid protocol for baseUrl property"));
+                throw new InvalidProtocolException("Invalid protocol for baseUrl property");
         }
-        Info info = new Info()
-            .title(config.getApiInfo().getTitle())
-            .description(config.getApiInfo().getDescription())
-            .version(config.getApiInfo().getVersion());
-        Swagger swagger = new Swagger().info(info);
-        new SwaggerContextService().updateSwagger(swagger);
-        constructApiDocLocation(config);
 
         return result;
     }
@@ -177,41 +167,11 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         metadata.put("mfaas.discovery.service.title", config.getTitle());
         metadata.put("mfaas.discovery.service.description", config.getDescription());
 
-        // fill api metadata
-        metadata.put("mfaas.api-info.apiVersionProperties.v1.title", config.getApiInfo().getTitle());
-        metadata.put("mfaas.api-info.apiVersionProperties.v1.description", config.getApiInfo().getDescription());
-        metadata.put("mfaas.api-info.apiVersionProperties.v1.version", config.getApiInfo().getVersion());
+        // fill api-doc info
+        for (ApiInfo apiInfo : config.getApiInfo()) {
+            metadata.putAll(apiInfo.generateMetadata(config.getServiceId()));
+        }
 
         return metadata;
     }
-    private static void constructApiDocLocation(ApiMediationServiceConfig config) {
-        String hostname;
-        String serviceId = config.getServiceId();
-        int port;
-        URL baseUrl;
-        try {
-            baseUrl = new URL(config.getBaseUrl());
-            hostname = baseUrl.getHost();
-            port = baseUrl.getPort();
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl()), e);
-        }
-
-        try {
-            apiDocEndpoint = new URIBuilder()
-                .setScheme("https")
-                .setHost(hostname)
-                .setPort(port)
-                .setPath( "/" + serviceId + "/" + "swagger.json").build();
-        } catch (URISyntaxException e) {
-            log.error("Could not construct API Doc endpoint. API Doc cannot be accessed via /api-doc endpoint.\n"
-                + e.getMessage(), e);
-        }
-    }
-
-    public static URI getApiDocEndpoint() {
-        return apiDocEndpoint;
-    }
-
-
 }
