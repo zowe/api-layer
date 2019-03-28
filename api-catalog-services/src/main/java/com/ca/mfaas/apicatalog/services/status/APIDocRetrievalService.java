@@ -67,6 +67,7 @@ public class APIDocRetrievalService {
      * @param serviceId  the unique service id
      * @param apiVersion the version of the API
      * @return the API doc and related information for transformation
+     * @throws ApiDocNotFoundException if the response is error
      */
     public ApiDocInfo retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
