@@ -120,7 +120,7 @@ public class InstanceRetrievalServiceTest {
             .findFirst();
 
         assertTrue(staticApiService.isPresent());
-        assertEquals("https://localhost:9090/ui/v1/staticclient/", staticApiService.get().getHomePageUrl());
+        assertEquals("https://localhost:9090/ui/v1/staticclient", staticApiService.get().getHomePageUrl());
     }
 
     @Test
@@ -190,7 +190,7 @@ public class InstanceRetrievalServiceTest {
             InstanceInfo.InstanceStatus.UP,
             getMetadataByCatalogUiTitleId("static", "/discoverableclient"),
             "staticclient",
-            "https://localhost:9090/");
+            "https://localhost:9090/discoverableclient");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
 

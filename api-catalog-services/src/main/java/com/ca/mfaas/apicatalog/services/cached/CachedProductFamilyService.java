@@ -49,7 +49,7 @@ public class CachedProductFamilyService {
     private final CachedServicesService cachedServicesService;
     private final Integer cacheRefreshUpdateThresholdInMillis;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
-    private final TransformService transformService = new TransformService();
+    private final TransformService transformService;
 
     @Autowired
     public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
@@ -59,6 +59,7 @@ public class CachedProductFamilyService {
         this.gatewayConfigProperties = gatewayConfigProperties;
         this.cachedServicesService = cachedServicesService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
+        this.transformService = new TransformService(gatewayConfigProperties);
     }
 
     /**
@@ -175,7 +176,7 @@ public class CachedProductFamilyService {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-            instanceHomePage = transformService.transformURL(instanceInfo.getHomePageUrl(), ServiceType.UI, routes, instanceInfo.getVIPAddress(), gatewayConfigProperties);
+            instanceHomePage = transformService.transformURL(ServiceType.UI, instanceInfo.getVIPAddress(), instanceInfo.getHomePageUrl(), routes);
         }
         log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
         return instanceHomePage;

@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 package com.ca.mfaas.product.routing;
 
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
@@ -24,8 +34,8 @@ public class TransformServiceTest {
         routedServices.addRoutedService(routedService1);
         routedServices.addRoutedService(routedService2);
 
-        TransformService transformService = new TransformService();
-        String actualUrl = transformService.transformURL(url, ServiceType.UI, routedServices, serviceId, gateway);
+        TransformService transformService = new TransformService(gateway);
+        String actualUrl = transformService.transformURL(ServiceType.UI, serviceId, url, routedServices);
 
         String expectedUrl = String.format("%s://%s/%s/%s",
             gateway.getScheme(),
