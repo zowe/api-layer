@@ -44,7 +44,7 @@ public class RoutedServices {
      * Get best matching service url
      *
      * @param serviceUrl service url
-     * @param apiOnly    only api
+     * @param type the route type
      * @return the route
      */
     public RoutedService getBestMatchingServiceUrl(String serviceUrl, ServiceType type) {

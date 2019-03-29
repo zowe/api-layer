@@ -14,6 +14,7 @@ import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.model.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Path;
@@ -124,7 +125,7 @@ public class TransformApiDocService {
                 String endPoint = getEndPoint(swagger.getBasePath(), originalEndpoint);
                 RoutedService route = getRoutedServiceByApiInfo(apiDocInfo, endPoint);
                 if (route == null) {
-                    route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, true);
+                    route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, ServiceType.API);
                 }
 
                 if (route == null) {
