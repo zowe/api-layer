@@ -89,7 +89,7 @@ public class InstanceRetrievalService {
             String serviceId = CoreService.API_CATALOG.getServiceId();
             InstanceInfo apiCatalogInstance = getInstanceInfo(serviceId);
             if (apiCatalogInstance == null) {
-                String msg = "API Catalog Instance not retrieved from discovery service";
+                String msg = "API Catalog Instance not retrieved from Discovery service";
                 log.warn(msg);
                 throw new RetryException(msg);
             } else {

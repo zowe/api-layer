@@ -259,8 +259,6 @@ public class CachedProductFamilyService {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
-        log.debug("Service homepage set to: " + instanceHomePage);
-
         return new APIService(
             instanceInfo.getAppName().toLowerCase(),
             instanceInfo.getMetadata().get("mfaas.discovery.service.title"),
