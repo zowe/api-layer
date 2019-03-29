@@ -41,7 +41,6 @@ public class ServiceDefinitionProcessorTest {
             "          serviceRelativeUrl: api/v2\n";
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(routedServiceYaml));
-        System.out.println(result.getErrors());
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -75,7 +74,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(routedServiceYamlEmptyRelativeUrls));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println(result.getErrors());
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
         assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
@@ -97,7 +95,6 @@ public class ServiceDefinitionProcessorTest {
 
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList("something: value"));
-        System.out.println(result.getErrors());
         assertEquals(0, result.getInstances().size());
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getErrors().get(0).contains("Error processing file test - Unrecognized field \"something\""));
@@ -123,7 +120,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testProcessServicesDataWithWrongUrlNoScheme - result.getErrors():" + result.getErrors());
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getErrors().get(0).contains("The URL localhost:10019/casamplerestapiservice/ is malformed"));
@@ -139,7 +135,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testProcessServicesDataWithWrongUrlUnsupportedScheme - result.getErrors():" + result.getErrors());
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getErrors().get(0).contains("The URL ftp://localhost:10019/casamplerestapiservice/ is malformed"));
@@ -155,7 +150,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testProcessServicesDataWithWrongUrlMissingHostname - result.getErrors():" + result.getErrors());
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getErrors().get(0).contains("The URL https:///casamplerestapiservice/ does not contain a hostname. The instance of casamplerestapiservice will not be created"));
@@ -171,7 +165,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testProcessServicesDataWithWrongUrlMissingPort - result.getErrors():" + result.getErrors());
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getErrors().get(0).contains("The URL https://host/casamplerestapiservice/ does not contain a port number. The instance of casamplerestapiservice will not be created"));
@@ -196,8 +189,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(yaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testServiceWithCatalogMetadata - result.getErrors():" + result.getErrors());
-        System.out.println("testServiceWithCatalogMetadata - metadata():" + result.getInstances().get(0).getMetadata());
         assertEquals(1, instances.size());
         assertEquals(6, result.getInstances().get(0).getMetadata().size());
     }
@@ -219,7 +210,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(yaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testCreateInstancesWithUndefinedInstanceBaseUrl - result.getErrors():" + result.getErrors());
         assertThat(instances.size(), is(0));
         assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created: null"));
     }
@@ -254,7 +244,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(yaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testCreateInstancesWithMultipleStaticDefinitions - result.getErrors():" + result.getErrors());
         assertThat(instances.size(), is(2));
         assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
 
@@ -306,7 +295,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(yamlNameList,
             yamlList);
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testCreateInstancesWithMultipleYmls - result.getErrors():" + result.getErrors());
         assertThat(instances.size(), is(2));
         assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
 
@@ -332,7 +320,6 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
-        System.out.println("testCreateInstancesWithMultipleStaticDefinitions - result.getErrors():" + result.getErrors());
         assertThat(instances.size(), is(1));
         assertFalse(instances.get(0).isPortEnabled(InstanceInfo.PortType.SECURE));
         assertTrue(instances.get(0).isPortEnabled(InstanceInfo.PortType.UNSECURE));
@@ -367,7 +354,6 @@ public class ServiceDefinitionProcessorTest {
 
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
             Collections.singletonList(routedServiceYaml));
-        System.out.println(result.getErrors());
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
