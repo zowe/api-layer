@@ -98,8 +98,10 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     private void openWebSocketConnection(RoutedService service, ServiceInstance serviceInstance, Object uri,
             String path, WebSocketSession webSocketSession) throws IOException {
+        String serviceUrl = service.getServiceUrl();
+        String servicePath = serviceUrl.charAt(serviceUrl.length() - 1) == '/' ? serviceUrl : serviceUrl + "/";
         String targetUrl = (serviceInstance.isSecure() ? "wss" : "ws") + "://" + serviceInstance.getHost() + ":"
-                + serviceInstance.getPort() + service.getServiceUrl() + "/" + path;
+                + serviceInstance.getPort() + servicePath + path;
         log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, jettySslContextFactory, this));
         try {
             WebSocketRoutedSession session = new WebSocketRoutedSession(webSocketSession, targetUrl, jettySslContextFactory);

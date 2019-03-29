@@ -10,8 +10,10 @@
 package com.ca.mfaas.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
@@ -19,6 +21,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -56,8 +59,15 @@ public class WebSocketRoutedSession {
                     webSocketClientSession, targetUrl, jettySslContextFactory);
             JettyWebSocketClient client = new JettyWebSocketClient(new WebSocketClient(jettySslContextFactory));
             client.start();
+            URI targetURI = new URI(targetUrl);
+            WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+            HttpHeaders browserHeaders = webSocketServerSession.getHandshakeHeaders();
+            for (String key : browserHeaders.keySet()) {
+                String value = String.join(" ", browserHeaders.get(key));
+                headers.add(key, value);
+            }
             ListenableFuture<WebSocketSession> futureSession = client
-                    .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), targetUrl);
+                .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), headers, targetURI);
             return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
         }
         catch (IllegalStateException e) {
