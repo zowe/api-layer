@@ -9,10 +9,10 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
-import com.ca.mfaas.gateway.filters.pre.FilterUtils;
-import com.ca.mfaas.gateway.services.routing.RoutedService;
-import com.ca.mfaas.gateway.services.routing.RoutedServices;
-import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
+import com.ca.mfaas.product.utils.UrlUtils;
+import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.routing.RoutedServicesUser;
 import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
@@ -92,15 +92,23 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
         RequestContext context = RequestContext.getCurrentContext();
         String currentServiceId = (String) context.get(SERVICE_ID_KEY);
 
+        String path;
+        try {
+            path = new URI(location).getPath();
+        } catch (URISyntaxException e) {
+            log.error("Error creating URI", e);
+            return Optional.empty();
+        }
+
         //check current service instance
-        Optional<String> serviceUrlWithHostAndPort = foundMatchedUrlInService(location, currentServiceId);
+        Optional<String> serviceUrlWithHostAndPort = foundMatchedUrlInService(location, path, currentServiceId);
         if (serviceUrlWithHostAndPort.isPresent()) return serviceUrlWithHostAndPort;
 
         //iterate through all instances registered in discovery client, check if there is matched url
         List<String> serviceIds = discovery.getServices();
         for (String serviceId : serviceIds) {
             if (!currentServiceId.equals(serviceId)) {
-                serviceUrlWithHostAndPort = foundMatchedUrlInService(location, serviceId);
+                serviceUrlWithHostAndPort = foundMatchedUrlInService(location, path, serviceId);
                 if (serviceUrlWithHostAndPort.isPresent()) {
                     return serviceUrlWithHostAndPort;
                 }
@@ -109,11 +117,11 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
         return Optional.empty();
     }
 
-    //Check if location contains "serviceInstHost:serviceInstPort/gatewayUrl"
-    private Optional<String> foundMatchedUrlInService(String location, String serviceId) {
+    //Check if path contains service url
+    private Optional<String> foundMatchedUrlInService(String location, String path, String serviceId) {
         if (routedServicesMap.containsKey(serviceId)) {
             RoutedService service = routedServicesMap.get(serviceId)
-                .findGatewayUrlThatMatchesServiceUrl(location, true);
+                .getBestMatchingServiceUrl(path, false);
             if (service != null) {
                 String serviceUrl = service.getServiceUrl();
                 List<ServiceInstance> serviceInstances = discovery.getInstances(serviceId);
@@ -136,9 +144,9 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     private void addUrlToTable(String url, String serviceId, RoutedService service) {
         String serviceUrl = service.getServiceUrl();
         if (!serviceUrl.equals("/")) {
-            serviceUrl = FilterUtils.removeLastSlash(serviceUrl);
+            serviceUrl = UrlUtils.removeLastSlash(serviceUrl);
         }
-        this.routeTable.put(url, new RouteInfo(serviceId, FilterUtils.addFirstSlash(service.getGatewayUrl()), serviceUrl));
+        this.routeTable.put(url, new RouteInfo(serviceId, UrlUtils.addFirstSlash(service.getGatewayUrl()), serviceUrl));
     }
 
     private void transformLocation(Pair<String, String> locationHeader, RouteInfo route) {
