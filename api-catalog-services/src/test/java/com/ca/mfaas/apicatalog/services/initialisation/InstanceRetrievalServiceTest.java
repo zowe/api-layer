@@ -11,7 +11,7 @@
 package com.ca.mfaas.apicatalog.services.initialisation;
 
 import com.ca.mfaas.apicatalog.model.APIService;
-import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.apicatalog.util.ApplicationsWrapper;

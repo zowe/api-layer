@@ -44,17 +44,17 @@ public class RoutedServices {
      * Get best matching service url
      *
      * @param serviceUrl service url
-     * @param apiOnly only api
+     * @param apiOnly    only api
      * @return the route
      */
-    public RoutedService getBestMatchingServiceUrl(String serviceUrl, boolean apiOnly) {
+    public RoutedService getBestMatchingServiceUrl(String serviceUrl, ServiceType type) {
         RoutedService result = null;
         int maxSize = 0;
 
         for (Map.Entry<String, RoutedService> route : routedService.entrySet()) {
             int size = route.getValue().getServiceUrl().length();
 
-            if (apiOnly && route.getKey().toLowerCase().startsWith(UI_PREFIX)) {
+            if(!route.getKey().toLowerCase().startsWith(type.name().toLowerCase())) {
                 continue;
             }
 
