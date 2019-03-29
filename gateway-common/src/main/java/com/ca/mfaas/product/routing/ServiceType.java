@@ -1,13 +1,17 @@
 package com.ca.mfaas.product.routing;
 
+import lombok.Getter;
+
+@Getter
 public enum ServiceType {
-    API(1, "API"),
-    UI(2, "UI"),
-    WS(3, "WS");
+    ALL(1, "All services"),
+    API(2, "API"),
+    UI(3, "UI"),
+    WS(4, "WS");
 
     private int serviceCode;
     private String name;
-    private ServiceType(int serviceCode, String name) {
+    ServiceType(int serviceCode, String name) {
         this.serviceCode = serviceCode;
         this.name = name;
     }
