@@ -46,16 +46,16 @@ public class RoutedServicesTest {
         assertEquals("/apicatalog", routedServiceUIV1.getServiceUrl());
     }
 
-    /*
+
     @Test
     public void testNotFoundBestMatchingServiceUrl() {
-        RoutedService routedService = routedServices.getBestMatchingServiceUrl("/apicatalo", true);
+        RoutedService routedService = routedServices.getBestMatchingServiceUrl("/apicatalo", ServiceType.ALL);
         assertNull(routedService);
     }
 
     @Test
     public void testBestMatchingServiceUrl() {
-        RoutedService routedService = routedServices.getBestMatchingServiceUrl("/apicatalog", true);
+        RoutedService routedService = routedServices.getBestMatchingServiceUrl("/apicatalog", ServiceType.API);
 
         assertEquals("api_v1", routedService.getSubServiceId());
         assertEquals("api/v1", routedService.getGatewayUrl());
@@ -66,7 +66,7 @@ public class RoutedServicesTest {
         routedServices.addRoutedService(routedService3);
         routedServices.addRoutedService(routedService4);
 
-        routedService = routedServices.getBestMatchingServiceUrl("/apicatalog2", true);
+        routedService = routedServices.getBestMatchingServiceUrl("/apicatalog2", ServiceType.API);
 
         assertEquals("api_v2", routedService.getSubServiceId());
         assertEquals("api/v2", routedService.getGatewayUrl());
@@ -82,12 +82,12 @@ public class RoutedServicesTest {
         routedServices.addRoutedService(routedService3);
         routedServices.addRoutedService(routedService4);
 
-        RoutedService routedService = routedServices.getBestMatchingServiceUrl("/apicatalog2", false);
+        RoutedService routedService = routedServices.getBestMatchingServiceUrl("/apicatalog2", ServiceType.UI);
 
         assertEquals("ui_v2", routedService.getSubServiceId());
         assertEquals("ui/v2", routedService.getGatewayUrl());
         assertEquals("/apicatalog2", routedService.getServiceUrl());
     }
 
-     */
+
 }
