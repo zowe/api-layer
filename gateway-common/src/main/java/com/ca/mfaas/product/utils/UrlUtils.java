@@ -43,4 +43,18 @@ public class UrlUtils {
         return normalizedUri;
     }
 
+    public static String removeLastSlash(String uri) {
+        String nomalizedUri = uri;
+        if (uri == null) {
+            return null;
+        }
+        if (uri.trim().isEmpty()) {
+            return "";
+        }
+        if (uri.endsWith("/")) {
+            nomalizedUri = nomalizedUri.substring(0, nomalizedUri.length() - 1);
+        }
+        return nomalizedUri;
+    }
+
 }

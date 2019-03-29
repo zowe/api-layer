@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.routing;
 
 import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
+import com.ca.mfaas.gateway.filters.post.PageRedirectionFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
@@ -49,6 +50,12 @@ public class MfaasRoutingConfig {
 
     @Bean
     @Autowired
+    public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery) {
+        return new PageRedirectionFilter(discovery);
+    }
+
+    @Bean
+    @Autowired
     public ConvertAuthTokenInUriToCookieFilter convertAuthTokenInUriToCookieFilter(SecurityConfigurationProperties securityConfigurationProperties) {
         return new ConvertAuthTokenInUriToCookieFilter(securityConfigurationProperties);
     }
@@ -62,6 +69,7 @@ public class MfaasRoutingConfig {
         List<RoutedServicesUser> routedServicesUsers = new ArrayList<>();
         routedServicesUsers.add(locationFilter());
         routedServicesUsers.add(webSocketProxyServerHandler);
+        routedServicesUsers.add(pageRedirectionFilter(discovery));
 
         return new MfaasRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
     }
