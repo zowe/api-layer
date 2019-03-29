@@ -17,8 +17,6 @@ public class RoutedServices {
     public static final String GATEWAY_URL_PARAMETER = "gateway-url";
     public static final String SERVICE_URL_PARAMETER = "service-url";
 
-    private static final String UI_PREFIX = "ui";
-
     private final Map<String, RoutedService> routedService = new HashMap<>();
 
     /**
@@ -44,23 +42,23 @@ public class RoutedServices {
      * Get best matching service url
      *
      * @param serviceUrl service url
-     * @param apiOnly    only api
+     * @param type  service type
      * @return the route
      */
     public RoutedService getBestMatchingServiceUrl(String serviceUrl, ServiceType type) {
         RoutedService result = null;
         int maxSize = 0;
 
-        for (Map.Entry<String, RoutedService> route : routedService.entrySet()) {
-            int size = route.getValue().getServiceUrl().length();
-
-            if(!route.getKey().toLowerCase().startsWith(type.name().toLowerCase())) {
+        for(String key : routedService.keySet()) {
+            if(type.equals(ServiceType.ALL) || !key.toLowerCase().startsWith(type.name().toLowerCase())) {
                 continue;
             }
 
+            RoutedService value = routedService.get(key);
+            int size = value.getServiceUrl().length();
             if (size > maxSize &&
-                serviceUrl.toLowerCase().startsWith(route.getValue().getServiceUrl().toLowerCase())) {
-                result = route.getValue();
+                serviceUrl.toLowerCase().startsWith(value.getServiceUrl().toLowerCase())) {
+                result = value;
                 maxSize = size;
             }
         }
