@@ -322,7 +322,7 @@ function trust_zosmf {
         USERID=`whoami`
         echo "It is not possible to read z/OSMF keyring ${ZOSMF_USERID}/${ZOSMF_KEYRING}. The effective user ID was: ${USERID}. You need to run this command as user that has access to the z/OSMF keyring:"
         echo "  cd ${PWD}"
-        echo "  scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR"
+        echo "  scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring ${ZOSMF_KEYRING} --zosmf-userid ${ZOSMF_USERID}"
         exit 1
     fi
     keytool -list -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
