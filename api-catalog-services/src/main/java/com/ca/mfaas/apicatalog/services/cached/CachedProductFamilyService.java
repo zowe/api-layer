@@ -15,6 +15,8 @@ import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
 import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.routing.ServiceType;
+import com.ca.mfaas.product.routing.TransformService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
@@ -28,7 +30,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,6 +49,7 @@ public class CachedProductFamilyService {
     private final CachedServicesService cachedServicesService;
     private final Integer cacheRefreshUpdateThresholdInMillis;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+    private final TransformService transformService = new TransformService();
 
     @Autowired
     public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
@@ -173,15 +175,7 @@ public class CachedProductFamilyService {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-            String uiServiceRoute = routes.findServiceByGatewayUrl("ui/v1").getServiceUrl();
-            URI receivedHomePage = URI.create(instanceInfo.getHomePageUrl());
-            String path = receivedHomePage.getPath();
-            path = path.replace(uiServiceRoute, "");
-            instanceHomePage = String.format("%s://%s/ui/v1/%s%s",
-                gatewayConfigProperties.getScheme(),
-                gatewayConfigProperties.getHostname(),
-                instanceInfo.getVIPAddress(),
-                path);
+            instanceHomePage = transformService.transformURL(instanceInfo.getHomePageUrl(), ServiceType.UI, routes, instanceInfo.getVIPAddress(), gatewayConfigProperties);
         }
         log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
         return instanceHomePage;
