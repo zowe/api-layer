@@ -183,7 +183,7 @@ public class CachedProductFamilyService {
                 instanceInfo.getVIPAddress(),
                 path);
         }
-        log.debug("Homepage URL for %s service is: %s", instanceInfo.getVIPAddress(), instanceHomePage);
+        log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
         return instanceHomePage;
     }
 
@@ -255,7 +255,7 @@ public class CachedProductFamilyService {
      * @param instanceInfo the service instance
      * @return a APIService object
      */
-    public APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
+    private APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
