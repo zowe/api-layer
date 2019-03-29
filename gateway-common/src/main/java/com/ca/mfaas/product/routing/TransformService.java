@@ -2,17 +2,24 @@ package com.ca.mfaas.product.routing;
 
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.net.URI;
 
 @Slf4j
+@Component
 public class TransformService {
 
-    public String transformURL(String serviceUrl,
-                               ServiceType type,
-                               RoutedServices routes,
+    private final GatewayConfigProperties gatewayConfigProperties;
+
+    public TransformService(GatewayConfigProperties gatewayConfigProperties) {
+        this.gatewayConfigProperties = gatewayConfigProperties;
+    }
+
+    public String transformURL(ServiceType type,
                                String serviceId,
-                               GatewayConfigProperties gateway) {
+                               String serviceUrl,
+                               RoutedServices routes) {
         URI serviceUri = URI.create(serviceUrl);
 
         RoutedService route = routes.getBestMatchingServiceUrl(serviceUri.getPath(), type);
@@ -21,11 +28,12 @@ public class TransformService {
                 serviceUrl, serviceId);
             return serviceUrl;
         }
+
         String path = serviceUri.getPath().replace(route.getServiceUrl(), "");
 
         return String.format("%s://%s/%s/%s%s",
-            gateway.getScheme(),
-            gateway.getHostname(),
+            gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname(),
             route.getGatewayUrl(),
             serviceId,
             path);
