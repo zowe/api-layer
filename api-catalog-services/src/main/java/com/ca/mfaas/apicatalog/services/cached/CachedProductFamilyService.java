@@ -38,7 +38,7 @@ import static java.util.stream.Collectors.toList;
 public class CachedProductFamilyService {
 
     private static final String CATALOG_UI_TITLE_KEY = "mfaas.discovery.catalogUiTile.title";
-    private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.title";
+    private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.description";
     private static final String CATALOG_UI_VERSION_KEY = "mfaas.discovery.catalogUiTile.version";
 
     private final MFaaSConfigPropertiesContainer propertiesContainer;
