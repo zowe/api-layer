@@ -198,8 +198,8 @@ public class CachedProductFamilyService {
      * Compare the version of the parent in the given instance
      * If the version is greater, then update the parent
      *
-     * @param instanceInfo    service instance
-     * @param container       parent container
+     * @param instanceInfo service instance
+     * @param container    parent container
      */
     private void checkIfContainerShouldBeUpdatedFromInstance(InstanceInfo instanceInfo, APIContainer container) {
         String versionFromInstance = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
@@ -273,10 +273,22 @@ public class CachedProductFamilyService {
         } else {
             Set<APIService> apiServices = container.getServices();
             APIService service = createAPIServiceFromInstance(instanceInfo);
+            if (apiServices.contains(service)) {
+                apiServices.remove(service);
+            }
+
             apiServices.add(service);
             container.setServices(apiServices);
             //update container
-            checkIfContainerShouldBeUpdatedFromInstance(instanceInfo, container);
+            String versionFromInstance = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
+            String title = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.title");
+            String description = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.description");
+
+            container.setVersion(versionFromInstance);
+            container.setTitle(title);
+            container.setDescription(description);
+            container.updateLastUpdatedTimestamp();
+
             products.put(productFamilyId, container);
         }
 
@@ -287,7 +299,7 @@ public class CachedProductFamilyService {
      * Remove a container
      *
      * @param productFamilyId the product family id of the container
-     * @param serviceId check for this service
+     * @param serviceId       check for this service
      */
     @CacheEvict(key = "#productFamilyId")
     public void removeContainerFromInstance(String productFamilyId, String serviceId) {
