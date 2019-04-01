@@ -18,7 +18,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 
 @Slf4j
-@Component
 public class TransformService {
 
     private final GatewayConfigProperties gatewayConfigProperties;
