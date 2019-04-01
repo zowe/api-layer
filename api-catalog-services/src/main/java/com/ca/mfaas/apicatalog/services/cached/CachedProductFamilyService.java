@@ -269,7 +269,7 @@ public class CachedProductFamilyService {
     public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
-            createNewContainerFromService(productFamilyId, instanceInfo);
+            container = createNewContainerFromService(productFamilyId, instanceInfo);
         } else {
             Set<APIService> apiServices = container.getServices();
             APIService service = createAPIServiceFromInstance(instanceInfo);
