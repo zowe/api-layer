@@ -25,6 +25,16 @@ public class TransformService {
         this.gatewayConfigProperties = gatewayConfigProperties;
     }
 
+    /**
+     * Construct the URL using gateway hostname and royte
+     *
+     * @param type the type of the route
+     * @param serviceId the service id
+     * @param serviceUrl the service URL
+     * @param routes the routes
+     * @return the new URL
+     * @throws MalformedURLException if the path of the service URL is not valid
+     */
     public String transformURL(ServiceType type,
                                String serviceId,
                                String serviceUrl,
