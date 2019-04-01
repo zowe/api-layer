@@ -11,19 +11,25 @@
 package com.ca.mfaas.product.routing;
 
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.net.MalformedURLException;
 
 import static org.junit.Assert.*;
 
 public class TransformServiceTest {
 
     public static final String UI_PREFIX = "ui";
-    public static final String API_PREFIX = "API";
+    public static final String API_PREFIX = "api";
     public static final String WS_PREFIX = "ws";
 
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
     @Test
-    public void shouldTransformURL() {
+    public void shouldTransformURL() throws MalformedURLException {
         String url = "https://localhost:8080/ui";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -49,7 +55,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void shouldUseOriginalUrl_IfRouteNotFound() {
+    public void shouldUseOriginalUrl_IfRouteNotFound() throws MalformedURLException {
         String url = "https://localhost:8080/u";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -70,7 +76,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void shouldSelectWsRoute() {
+    public void shouldSelectWsRoute() throws MalformedURLException {
         String url = "https://localhost:8080/ws";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -96,7 +102,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void shouldSelectApiRoute() {
+    public void shouldSelectApiRoute() throws MalformedURLException {
         String url = "https://localhost:8080/api";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -122,8 +128,8 @@ public class TransformServiceTest {
     }
 
 
-    @Ignore
-    public void shouldSelectOriginalUrl_IfPathdIsNotValid() {
+    @Test
+    public void shouldSelectOriginalUrl_IfPathdIsNotValid() throws MalformedURLException {
         String url = "https://localhost:8080/wss";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -138,14 +144,10 @@ public class TransformServiceTest {
         routedServices.addRoutedService(routedService2);
 
         TransformService transformService = new TransformService(gateway);
-        String actualUrl = transformService.transformURL(ServiceType.WS, serviceId, url, routedServices);
 
-        String expectedUrl = String.format("%s://%s/%s/%s",
-            gateway.getScheme(),
-            gateway.getHostname(),
-            WS_PREFIX,
-            serviceId);
-        assertEquals(expectedUrl, actualUrl);
+        exception.expect(MalformedURLException.class);
+        exception.expectMessage("The path /wss of the service URL https://localhost:8080/wss is not valid.");
+        transformService.transformURL(ServiceType.WS, serviceId, url, routedServices);
     }
 
 }

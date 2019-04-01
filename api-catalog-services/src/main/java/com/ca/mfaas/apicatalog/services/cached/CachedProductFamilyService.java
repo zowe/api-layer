@@ -30,6 +30,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -176,7 +177,11 @@ public class CachedProductFamilyService {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-            instanceHomePage = transformService.transformURL(ServiceType.UI, instanceInfo.getVIPAddress(), instanceInfo.getHomePageUrl(), routes);
+            try {
+                instanceHomePage = transformService.transformURL(ServiceType.UI, instanceInfo.getVIPAddress(), instanceInfo.getHomePageUrl(), routes);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
         log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
         return instanceHomePage;

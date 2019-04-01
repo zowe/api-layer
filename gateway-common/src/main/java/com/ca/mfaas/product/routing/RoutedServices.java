@@ -49,8 +49,8 @@ public class RoutedServices {
         RoutedService result = null;
         int maxSize = 0;
 
-        for(String key : routedService.keySet()) {
-            if(type.equals(ServiceType.ALL) || !key.toLowerCase().startsWith(type.name().toLowerCase())) {
+        for (String key : routedService.keySet()) {
+            if (type.equals(ServiceType.ALL) || !key.toLowerCase().startsWith(type.name().toLowerCase())) {
                 continue;
             }
 
