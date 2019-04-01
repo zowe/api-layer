@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"squid:S2925", "Duplicates"}) // replace with proper wait test library
@@ -45,7 +47,7 @@ public class CachedProductFamilyTest {
         service.getContainer("demoapp2", instance);
 
         Collection<APIContainer> containers = service.getRecentlyUpdatedContainers();
-        Assert.assertEquals(2, containers.size());
+        assertEquals(2, containers.size());
     }
 
     @Test
@@ -63,7 +65,7 @@ public class CachedProductFamilyTest {
         service.getContainer("demoapp2", instance);
 
         Collection<APIContainer> containers = service.getRecentlyUpdatedContainers();
-        Assert.assertEquals(1, containers.size());
+        assertEquals(1, containers.size());
     }
 
     @Test
@@ -97,18 +99,18 @@ public class CachedProductFamilyTest {
         service.addServiceToContainer("demoapp", instance2);
 
         APIService containerService = service.getContainerService("demoapp", instance1);
-        Assert.assertEquals("service1", containerService.getServiceId());
+        assertEquals("service1", containerService.getServiceId());
 
         containerService = service.getContainerService("demoapp", instance2);
-        Assert.assertEquals("service2", containerService.getServiceId());
+        assertEquals("service2", containerService.getServiceId());
     }
 
     @Test(expected = NullPointerException.class)
     public void testCreationOfContainerWithoutInstance() {
         CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
         service.getContainer("demoapp", null);
-        Assert.assertEquals(0, service.getContainerCount());
-        Assert.assertEquals(0, service.getAllContainers().size());
+        assertEquals(0, service.getContainerCount());
+        assertEquals(0, service.getAllContainers().size());
     }
 
     @Test
@@ -122,9 +124,9 @@ public class CachedProductFamilyTest {
         service.getContainer("demoapp2", instance);
 
         List<APIContainer> containersForService = service.getContainersForService("service1");
-        Assert.assertEquals(2, containersForService.size());
-        Assert.assertEquals(2, service.getContainerCount());
-        Assert.assertEquals(2, service.getAllContainers().size());
+        assertEquals(2, containersForService.size());
+        assertEquals(2, service.getContainerCount());
+        assertEquals(2, service.getAllContainers().size());
     }
 
     @Test
@@ -167,7 +169,7 @@ public class CachedProductFamilyTest {
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
-        Assert.assertFalse(equals);
+        assertFalse(equals);
 
         metadata.put("mfaas.discovery.catalogUiTile.title", "Title 2");
         metadata.put("mfaas.discovery.catalogUiTile.description", "Description 2");
@@ -179,7 +181,7 @@ public class CachedProductFamilyTest {
         Calendar retrievedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         equals = updatedTimestamp.equals(retrievedTimestamp);
-        Assert.assertFalse(equals);
+        assertFalse(equals);
     }
 
     @Test
@@ -205,7 +207,7 @@ public class CachedProductFamilyTest {
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
-        Assert.assertFalse(equals);
+        assertFalse(equals);
 
         metadata.put("mfaas.discovery.catalogUiTile.title", "Title 2");
         metadata.put("mfaas.discovery.catalogUiTile.description", "Description 2");
@@ -217,7 +219,7 @@ public class CachedProductFamilyTest {
         Calendar retrievedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         equals = updatedTimestamp.equals(retrievedTimestamp);
-        Assert.assertFalse(equals);
+        assertFalse(equals);
     }
 
     @Test
@@ -249,13 +251,13 @@ public class CachedProductFamilyTest {
         service.addServiceToContainer("demoapp", instance2);
 
         List<APIContainer> containersForService = service.getContainersForService("service1");
-        Assert.assertEquals(1, service.getContainerCount());
+        assertEquals(1, service.getContainerCount());
 
         APIContainer container = containersForService.get(0);
         service.calculateContainerServiceTotals(container);
-        Assert.assertEquals("UP", container.getStatus());
-        Assert.assertEquals(1, container.getTotalServices().intValue());
-        Assert.assertEquals(1, container.getActiveServices().intValue());
+        assertEquals("UP", container.getStatus());
+        assertEquals(1, container.getTotalServices().intValue());
+        assertEquals(1, container.getActiveServices().intValue());
     }
 
     @Test
@@ -282,9 +284,9 @@ public class CachedProductFamilyTest {
         Assert.assertNotNull(container);
 
         service.calculateContainerServiceTotals(container);
-        Assert.assertEquals("DOWN", container.getStatus());
-        Assert.assertEquals(2, container.getTotalServices().intValue());
-        Assert.assertEquals(0, container.getActiveServices().intValue());
+        assertEquals("DOWN", container.getStatus());
+        assertEquals(2, container.getTotalServices().intValue());
+        assertEquals(0, container.getActiveServices().intValue());
     }
 
     @Test
@@ -311,9 +313,63 @@ public class CachedProductFamilyTest {
         Assert.assertNotNull(container);
 
         service.calculateContainerServiceTotals(container);
-        Assert.assertEquals("WARNING", container.getStatus());
-        Assert.assertEquals(2, container.getTotalServices().intValue());
-        Assert.assertEquals(1, container.getActiveServices().intValue());
+        assertEquals("WARNING", container.getStatus());
+        assertEquals(2, container.getTotalServices().intValue());
+        assertEquals(1, container.getActiveServices().intValue());
+    }
+
+    @Test
+    public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew() {
+        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
+
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
+        metadata.put("mfaas.discovery.catalogUiTile.title", "Title");
+        metadata.put("mfaas.discovery.catalogUiTile.description", "Description");
+        metadata.put("mfaas.discovery.catalogUiTile.version", "1.0.0");
+        InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+        APIContainer actualDemoAppContainer = service.saveContainerFromInstance("demoapp", instance);
+
+        List<APIContainer> lsContainer = service.getRecentlyUpdatedContainers();
+        assertEquals(1, lsContainer.size());
+
+        assertEquals(metadata.get("mfaas.discovery.catalogUiTile.id"), actualDemoAppContainer.getId());
+        assertEquals(metadata.get("mfaas.discovery.catalogUiTile.title"), actualDemoAppContainer.getTitle());
+        assertEquals(metadata.get("mfaas.discovery.catalogUiTile.description"), actualDemoAppContainer.getDescription());
+        assertEquals(metadata.get("mfaas.discovery.catalogUiTile.version"), actualDemoAppContainer.getVersion());
+    }
+
+    @Test
+    public void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate() throws InterruptedException {
+        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
+
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put("mfaas.discovery.catalogUiTile.id", "demoapp");
+        metadata.put("mfaas.discovery.catalogUiTile.title", "Title");
+        metadata.put("mfaas.discovery.catalogUiTile.description", "Description");
+        metadata.put("mfaas.discovery.catalogUiTile.version", "1.0.0");
+        InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+        APIContainer actualDemoAppContainer = service.saveContainerFromInstance("demoapp", instance);
+        Calendar createTimestamp = actualDemoAppContainer.getLastUpdatedTimestamp();
+        Thread.sleep(100);
+
+        metadata.put("mfaas.discovery.catalogUiTile.title", "Title2");
+        metadata.put("mfaas.discovery.catalogUiTile.description", "Description2");
+        metadata.put("mfaas.discovery.catalogUiTile.version", "2.0.0");
+        instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+        APIContainer updatedContainer = service.saveContainerFromInstance("demoapp", instance);
+        Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
+
+        boolean equals = updatedTimestamp.equals(createTimestamp);
+        assertFalse(equals);
+
+        List<APIContainer> lsContainer = service.getRecentlyUpdatedContainers();
+        assertEquals(1, lsContainer.size());
+
+        assertEquals(metadata.get("mfaas.discovery.catalogUiTile.id"), actualDemoAppContainer.getId());
+        assertEquals(metadata.get("mfaas.discovery.catalogUiTile.title"), actualDemoAppContainer.getTitle());
+        assertEquals(metadata.get("mfaas.discovery.catalogUiTile.description"), actualDemoAppContainer.getDescription());
+        assertEquals(metadata.get("mfaas.discovery.catalogUiTile.version"), actualDemoAppContainer.getVersion());
     }
 
     private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status,
