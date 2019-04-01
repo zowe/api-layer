@@ -20,11 +20,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import javax.xml.ws.Service;
 import java.util.*;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings({"squid:S2925", "Duplicates"}) // replace with proper wait test library
