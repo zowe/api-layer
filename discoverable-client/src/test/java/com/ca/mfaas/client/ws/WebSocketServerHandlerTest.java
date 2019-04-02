@@ -48,4 +48,14 @@ public class WebSocketServerHandlerTest {
         assertEquals("BYE", messageCaptor.getValue().getPayload().toString());
         verify(session, times(1)).close();
     }
+
+    @Test
+    public void handleHeadersMessage() throws Exception {
+        WebSocketServerHandler handler = new WebSocketServerHandler();
+        WebSocketSession session = mock(WebSocketSession.class);
+
+        handler.handleMessage(session, new TextMessage("headers"));
+
+
+    }
 }

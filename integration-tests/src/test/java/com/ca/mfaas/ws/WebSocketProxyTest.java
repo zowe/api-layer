@@ -15,6 +15,7 @@ import com.ca.mfaas.utils.http.HttpClientUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -32,6 +33,7 @@ public class WebSocketProxyTest {
 
     private final static int WAIT_TIMEOUT_MS = 10000;
     private final static String UPPERCASE_URL = "/ws/v1/discoverableclient/uppercase";
+    private final static String HEADER_URL = "/ws/v1/discoverableclient/header";
 
     @Before
     public void setUp() {
@@ -89,6 +91,21 @@ public class WebSocketProxyTest {
         }
 
         assertEquals("HELLO WORLD!", response.toString());
+        session.close();
+    }
+
+    @Test
+    public void shouldRouteAllHeaders() throws Exception {
+        final StringBuilder response = new StringBuilder();
+        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(HEADER_URL), response, 1);
+
+        session.sendMessage(new TextMessage("gimme those headers"));
+        synchronized (response) {
+            response.wait(WAIT_TIMEOUT_MS);
+        }
+
+        HttpHeaders headers = session.getHandshakeHeaders();
+        assertEquals(response.toString(), headers.toString());
         session.close();
     }
 
