@@ -15,8 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.net.MalformedURLException;
-
 import static org.junit.Assert.*;
 
 public class TransformServiceTest {
@@ -70,9 +68,10 @@ public class TransformServiceTest {
         routedServices.addRoutedService(routedService2);
 
         TransformService transformService = new TransformService(gateway);
-        String actualUrl = transformService.transformURL(ServiceType.UI, serviceId, url, routedServices);
+        exception.expect(URLTransformationException.class);
+        exception.expectMessage("Not able to select route for url https://localhost:8080/u of the service service. Original url used.");
+        transformService.transformURL(ServiceType.UI, serviceId, url, routedServices);
 
-        assertEquals(url, actualUrl);
     }
 
     @Test
@@ -145,9 +144,36 @@ public class TransformServiceTest {
 
         TransformService transformService = new TransformService(gateway);
 
-        exception.expect(MalformedURLException.class);
+        exception.expect(URLTransformationException.class);
         exception.expectMessage("The path /wss of the service URL https://localhost:8080/wss is not valid.");
         transformService.transformURL(ServiceType.WS, serviceId, url, routedServices);
     }
+
+    @Test
+    public void shouldSelectRoute_IfPathIsEmpty() throws URLTransformationException {
+        String url = "https://localhost:8080/";
+        GatewayConfigProperties gateway = GatewayConfigProperties.builder()
+            .scheme("https")
+            .hostname("localhost")
+            .build();
+        String serviceId = "service";
+
+        RoutedServices routedServices = new RoutedServices();
+        RoutedService routedService1 = new RoutedService(serviceId, WS_PREFIX, "/");
+        RoutedService routedService2 = new RoutedService(serviceId, "api/v1", "/");
+        routedServices.addRoutedService(routedService1);
+        routedServices.addRoutedService(routedService2);
+
+        TransformService transformService = new TransformService(gateway);
+
+        String actualUrl = transformService.transformURL(ServiceType.WS, serviceId, url, routedServices);
+        String expectedUrl = String.format("%s://%s/%s/%s",
+            gateway.getScheme(),
+            gateway.getHostname(),
+            WS_PREFIX,
+            serviceId);
+        assertEquals(expectedUrl, actualUrl);
+    }
+
 
 }
