@@ -7,11 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.filters.pre;
+package com.ca.mfaas.product.utils;
 
-public class FilterUtils {
+public class UrlUtils {
 
-    private FilterUtils() {
+    private UrlUtils() {
         throw new IllegalStateException("Filter utility class");
     }
 

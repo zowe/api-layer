@@ -71,6 +71,7 @@ public class InstanceRetrievalService {
         configureUnicode(restTemplate);
     }
 
+
     /**
      * Initialise the API Catalog with all current running instances
      * The API Catalog itself must be UP before checking all other instances
@@ -89,7 +90,7 @@ public class InstanceRetrievalService {
             String serviceId = CoreService.API_CATALOG.getServiceId();
             InstanceInfo apiCatalogInstance = getInstanceInfo(serviceId);
             if (apiCatalogInstance == null) {
-                String msg = "API Catalog Instance not retrieved from gateway, retrying...";
+                String msg = "API Catalog Instance not retrieved from Discovery Service, retrying...";
                 log.warn(msg);
                 throw new RetryException(msg);
             } else {

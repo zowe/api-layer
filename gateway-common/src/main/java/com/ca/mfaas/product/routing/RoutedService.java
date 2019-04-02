@@ -7,17 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice.client.config;
+package com.ca.mfaas.product.routing;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ApiInfo {
-    private String title;
-    private String description;
-    private String version;
+public class RoutedService {
+
+    private final String subServiceId;
+    private final String gatewayUrl;
+    private final String serviceUrl;
+
 }

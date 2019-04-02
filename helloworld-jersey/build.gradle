@@ -19,7 +19,7 @@ dependencies {
     compile(project(':integration-enabler-java'))
 
     compile libraries.springFox
-    compile group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.5.10'
+    compile libraries.swagger_jersey2_jaxrs
     compile libraries.jackson_dataformat_yaml
     compileOnly libraries.lombok
     compile libraries.logback_classic
@@ -32,7 +32,7 @@ dependencies {
     testCompile libraries.jersey_test_provider_jdk_http
 
 
-    def tomcatVersion = '8.0.39'
+    def tomcatVersion = '8.0.53'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"

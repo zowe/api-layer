@@ -41,11 +41,11 @@ public class ApiCatalogEndpointIntegrationTest {
     private String invalidContainerEndpoint = "/api/v1/apicatalog/containerz";
     private String invalidStatusUpdatesEndpoint = "/api/v1/apicatalog/statuz/updatez";
     private String getApiCatalogApiDocEndpoint = "/api/v1/apicatalog/apidoc/apicatalog/v1";
+    private String getDiscoverableClientApiDocEndpoint = "/api/v1/apicatalog/apidoc/discoverableclient/v1";
     private String invalidApiCatalogApiDocEndpoint = "/api/v1/apicatalog/apidoc/apicatalog/v2";
 
     private GatewayServiceConfiguration gatewayServiceConfiguration;
 
-    private String scheme;
     private String host;
     private int port;
     private String baseHost;
@@ -53,7 +53,6 @@ public class ApiCatalogEndpointIntegrationTest {
     @Before
     public void setUp() throws URISyntaxException {
         gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        scheme = gatewayServiceConfiguration.getScheme();
         host = gatewayServiceConfiguration.getHost();
         port = gatewayServiceConfiguration.getPort();
         baseHost = host + ":" + port;
@@ -108,6 +107,42 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
+    public void whenDiscoveryClientApiDoc_thenResponseOK() throws Exception {
+        final HttpResponse response = getResponse(getDiscoverableClientApiDocEndpoint, HttpStatus.SC_OK);
+
+        // When
+        final String jsonResponse = EntityUtils.toString(response.getEntity());
+
+        String apiCatalogSwagger = "\n**************************\n" +
+            "Integration Test: Discoverable Client Swagger" +
+            "\n**************************\n" +
+            jsonResponse +
+            "\n**************************\n";
+        DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+
+        LinkedHashMap swaggerInfo = jsonContext.read("$.info");
+        String swaggerHost = jsonContext.read("$.host");
+        String swaggerBasePath = jsonContext.read("$.basePath");
+        LinkedHashMap paths = jsonContext.read("$.paths");
+        LinkedHashMap definitions = jsonContext.read("$.definitions");
+        LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
+
+        // Then
+        assertTrue(apiCatalogSwagger, swaggerInfo.get("description").toString().contains("API"));
+        assertEquals(apiCatalogSwagger, baseHost, swaggerHost);
+        assertEquals(apiCatalogSwagger, "/api/v1/discoverableclient", swaggerBasePath);
+        assertEquals(apiCatalogSwagger, "External documentation", externalDoc.get("description"));
+
+        assertFalse(apiCatalogSwagger, paths.isEmpty());
+        assertNotNull(apiCatalogSwagger, paths.get("/greeting"));
+
+        assertFalse(apiCatalogSwagger, definitions.isEmpty());
+        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessage"));
+        assertNotNull(apiCatalogSwagger, definitions.get("Greeting"));
+        assertNotNull(apiCatalogSwagger, definitions.get("Message"));
+    }
+
+    @Test
     public void whenMisSpeltContainersEndpoint_thenNotFoundResponseWithAPIMessage() throws Exception {
         HttpResponse response = getResponse(invalidContainerEndpoint, HttpStatus.SC_NOT_FOUND);
         final String htmlResponse = EntityUtils.toString(response.getEntity());
@@ -127,8 +162,14 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
-    public void whenInvalidApiDocVersion_thenInvalidResponse() throws Exception {
-        getResponse(invalidApiCatalogApiDocEndpoint, HttpStatus.SC_INTERNAL_SERVER_ERROR);
+    public void whenInvalidApiDocVersion_thenReturnFirstDoc() throws Exception {
+        final HttpResponse response = getResponse(invalidApiCatalogApiDocEndpoint, HttpStatus.SC_OK);
+
+        // When
+        final String jsonResponse = EntityUtils.toString(response.getEntity());
+        String swaggerBasePath = JsonPath.parse(jsonResponse).read("$.basePath");
+
+        assertEquals("/api/v1/apicatalog", swaggerBasePath);
     }
 
     /**

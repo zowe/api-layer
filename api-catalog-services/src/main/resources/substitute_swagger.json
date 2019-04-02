@@ -13,9 +13,6 @@
     "tags": [
         {
             "name": "apimlHidden"
-        },
-        {
-            "name": "apimlNoTransformation"
         }
     ],
     "paths": {
