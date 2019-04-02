@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.routing;
+package com.ca.mfaas.product.routing.transform;
 
 /**
  * Exception used to indicate that URL couldn't be transformable.

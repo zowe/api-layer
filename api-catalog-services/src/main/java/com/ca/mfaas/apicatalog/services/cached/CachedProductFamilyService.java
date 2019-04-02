@@ -16,8 +16,8 @@ import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
-import com.ca.mfaas.product.routing.TransformService;
-import com.ca.mfaas.product.routing.URLTransformationException;
+import com.ca.mfaas.product.routing.transform.TransformService;
+import com.ca.mfaas.product.routing.transform.URLTransformationException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
@@ -179,7 +179,11 @@ public class CachedProductFamilyService {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
             try {
-                instanceHomePage = transformService.transformURL(ServiceType.UI, instanceInfo.getVIPAddress(), instanceInfo.getHomePageUrl(), routes);
+                instanceHomePage = transformService.transformURL(
+                    ServiceType.UI,
+                    instanceInfo.getVIPAddress(),
+                    instanceInfo.getHomePageUrl(),
+                    routes);
             } catch (URLTransformationException e) {
                 e.printStackTrace();
                 instanceHomePage = instanceInfo.getHomePageUrl();

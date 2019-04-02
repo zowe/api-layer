@@ -8,9 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.product.routing;
+package com.ca.mfaas.product.routing.transform;
 
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.routing.ServiceType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;

@@ -12,7 +12,7 @@ package com.ca.mfaas.apicatalog.config;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.routing.TransformService;
+import com.ca.mfaas.product.routing.transform.TransformService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
