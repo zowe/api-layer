@@ -17,6 +17,7 @@ import com.ca.mfaas.apicatalog.model.SemanticVersion;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.routing.TransformService;
+import com.ca.mfaas.product.routing.URLTransformationException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
@@ -56,7 +57,7 @@ public class CachedProductFamilyService {
     public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
                                       CachedServicesService cachedServicesService,
                                       @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
-                                      Integer cacheRefreshUpdateThresholdInMillis) {
+                                          Integer cacheRefreshUpdateThresholdInMillis) {
         this.gatewayConfigProperties = gatewayConfigProperties;
         this.cachedServicesService = cachedServicesService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
@@ -177,12 +178,15 @@ public class CachedProductFamilyService {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+
             try {
                 instanceHomePage = transformService.transformURL(ServiceType.UI, instanceInfo.getVIPAddress(), instanceInfo.getHomePageUrl(), routes);
-            } catch (MalformedURLException e) {
+            } catch (URLTransformationException e) {
                 e.printStackTrace();
+                instanceHomePage = instanceInfo.getHomePageUrl();
             }
         }
+
         log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
         return instanceHomePage;
     }
