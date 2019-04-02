@@ -28,32 +28,31 @@ public class TransformService {
     /**
      * Construct the URL using gateway hostname and royte
      *
-     * @param type the type of the route
-     * @param serviceId the service id
+     * @param type       the type of the route
+     * @param serviceId  the service id
      * @param serviceUrl the service URL
-     * @param routes the routes
+     * @param routes     the routes
      * @return the new URL
-     * @throws MalformedURLException if the path of the service URL is not valid
+     * @throws URLTransformationException if the path of the service URL is not valid
      */
     public String transformURL(ServiceType type,
                                String serviceId,
                                String serviceUrl,
-                               RoutedServices routes) throws MalformedURLException {
+                               RoutedServices routes) throws URLTransformationException {
         URI serviceUri = URI.create(serviceUrl);
 
         RoutedService route = routes.getBestMatchingServiceUrl(serviceUri.getPath(), type);
         if (route == null) {
-            log.warn("Not able to select route for url {} of the service {}. Original url used.",
-                serviceUrl, serviceId);
-            return serviceUrl;
+            String message = String.format("Not able to select route for url %s of the service %s. Original url used.", serviceUri, serviceId);
+            log.warn(message);
+            throw new URLTransformationException(message);
         }
 
         String path = serviceUri.getPath().replace(route.getServiceUrl(), "");
-        if (!path.isEmpty()) {
-            if (path.charAt(0) != '/') {
-                throw new MalformedURLException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
-            }
+        if (!path.isEmpty() && !path.startsWith("/")) {
+            throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
         }
+
         return String.format("%s://%s/%s/%s%s",
             gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(),

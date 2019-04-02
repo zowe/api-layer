@@ -29,7 +29,7 @@ public class TransformServiceTest {
     public final ExpectedException exception = ExpectedException.none();
 
     @Test
-    public void shouldTransformURL() throws MalformedURLException {
+    public void shouldTransformURL() throws URLTransformationException {
         String url = "https://localhost:8080/ui";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -55,7 +55,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void shouldUseOriginalUrl_IfRouteNotFound() throws MalformedURLException {
+    public void shouldUseOriginalUrl_IfRouteNotFound() throws URLTransformationException {
         String url = "https://localhost:8080/u";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -76,7 +76,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void shouldSelectWsRoute() throws MalformedURLException {
+    public void shouldSelectWsRoute() throws URLTransformationException {
         String url = "https://localhost:8080/ws";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -102,7 +102,7 @@ public class TransformServiceTest {
     }
 
     @Test
-    public void shouldSelectApiRoute() throws MalformedURLException {
+    public void shouldSelectApiRoute() throws URLTransformationException {
         String url = "https://localhost:8080/api";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
@@ -129,7 +129,7 @@ public class TransformServiceTest {
 
 
     @Test
-    public void shouldSelectOriginalUrl_IfPathdIsNotValid() throws MalformedURLException {
+    public void shouldSelectOriginalUrl_IfPathdIsNotValid() throws URLTransformationException {
         String url = "https://localhost:8080/wss";
         GatewayConfigProperties gateway = GatewayConfigProperties.builder()
             .scheme("https")
