@@ -37,6 +37,10 @@ import static java.util.stream.Collectors.toList;
 @CacheConfig(cacheNames = {"products"})
 public class CachedProductFamilyService {
 
+    private static final String CATALOG_UI_TITLE_KEY = "mfaas.discovery.catalogUiTile.title";
+    private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.description";
+    private static final String CATALOG_UI_VERSION_KEY = "mfaas.discovery.catalogUiTile.version";
+
     private final MFaaSConfigPropertiesContainer propertiesContainer;
 
     private final Map<String, APIContainer> products = new HashMap<>();
@@ -176,11 +180,11 @@ public class CachedProductFamilyService {
      * @return a new container
      */
     private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo instanceInfo) {
-        APIContainer container;
-        String title = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.title");
-        String description = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.description");
-        String version = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
-        container = new APIContainer();
+        Map<String, String> instanceInfoMetadata = instanceInfo.getMetadata();
+        String title = instanceInfoMetadata.get(CATALOG_UI_TITLE_KEY);
+        String description = instanceInfoMetadata.get(CATALOG_UI_DESCRIPTION_KEY);
+        String version = instanceInfoMetadata.get(CATALOG_UI_VERSION_KEY);
+        APIContainer container = new APIContainer();
         container.setStatus("UP");
         container.setId(productFamilyId);
         container.setDescription(description);
@@ -198,11 +202,11 @@ public class CachedProductFamilyService {
      * Compare the version of the parent in the given instance
      * If the version is greater, then update the parent
      *
-     * @param instanceInfo    service instance
-     * @param container       parent container
+     * @param instanceInfo service instance
+     * @param container    parent container
      */
     private void checkIfContainerShouldBeUpdatedFromInstance(InstanceInfo instanceInfo, APIContainer container) {
-        String versionFromInstance = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
+        String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_UI_VERSION_KEY);
         // if the instance has a parent version
         if (versionFromInstance != null) {
             final SemanticVersion instanceVer = new SemanticVersion(versionFromInstance);
@@ -217,8 +221,8 @@ public class CachedProductFamilyService {
             int result = instanceVer.compareTo(containerVer);
             if (result > 0) {
                 container.setVersion(versionFromInstance);
-                String title = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.title");
-                String description = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.description");
+                String title = instanceInfo.getMetadata().get(CATALOG_UI_TITLE_KEY);
+                String description = instanceInfo.getMetadata().get(CATALOG_UI_DESCRIPTION_KEY);
                 if (!container.getTitle().equals(title)) {
                     container.setTitle(title);
                 }
@@ -269,14 +273,26 @@ public class CachedProductFamilyService {
     public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
         APIContainer container = products.get(productFamilyId);
         if (container == null) {
-            createNewContainerFromService(productFamilyId, instanceInfo);
+            container = createNewContainerFromService(productFamilyId, instanceInfo);
         } else {
             Set<APIService> apiServices = container.getServices();
             APIService service = createAPIServiceFromInstance(instanceInfo);
+            if (apiServices.contains(service)) {
+                apiServices.remove(service);
+            }
+
             apiServices.add(service);
             container.setServices(apiServices);
             //update container
-            checkIfContainerShouldBeUpdatedFromInstance(instanceInfo, container);
+            String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_UI_VERSION_KEY);
+            String title = instanceInfo.getMetadata().get(CATALOG_UI_TITLE_KEY);
+            String description = instanceInfo.getMetadata().get(CATALOG_UI_DESCRIPTION_KEY);
+
+            container.setVersion(versionFromInstance);
+            container.setTitle(title);
+            container.setDescription(description);
+            container.updateLastUpdatedTimestamp();
+
             products.put(productFamilyId, container);
         }
 
@@ -287,7 +303,7 @@ public class CachedProductFamilyService {
      * Remove a container
      *
      * @param productFamilyId the product family id of the container
-     * @param serviceId check for this service
+     * @param serviceId       check for this service
      */
     @CacheEvict(key = "#productFamilyId")
     public void removeContainerFromInstance(String productFamilyId, String serviceId) {
