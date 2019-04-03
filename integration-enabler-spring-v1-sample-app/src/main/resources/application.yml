@@ -23,10 +23,6 @@ mfaas:
         serviceId: ${environment.serviceId}
         locations: ${environment.discoveryLocations}
         enabled: ${environment.discoveryEnabled:true}
-        endpoints:
-            statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/info
-            healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/health
-            homePage:
         info:
             serviceTitle: ${environment.serviceTitle}
             description:  ${environment.serviceDescription}
@@ -50,9 +46,9 @@ eureka:
     instance:
         appName: ${mfaas.discovery.serviceId}
         hostname: ${mfaas.service.hostname}
-        statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
-        healthCheckUrlPath: ${mfaas.discovery.endpoints.healthPage}
-        homePageUrlPath: ${mfaas.discovery.endpoints.homePage}
+        statusPageUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/info
+        healthCheckUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/health
+        homePageUrl:
         metadata-map:
             routed-services:
                 api_v1:

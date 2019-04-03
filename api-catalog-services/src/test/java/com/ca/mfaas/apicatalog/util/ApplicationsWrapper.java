@@ -7,22 +7,23 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.registry;
+
+package com.ca.mfaas.apicatalog.util;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.netflix.discovery.shared.Application;
+import com.netflix.discovery.shared.Applications;
 import lombok.Data;
 
-@JsonDeserialize(as = ApplicationWrapper.class)
+@JsonDeserialize(as = ApplicationsWrapper.class)
 @Data
-public class ApplicationWrapper {
+public class ApplicationsWrapper {
 
-    private com.netflix.discovery.shared.Application application;
+    private Applications applications;
 
-    public ApplicationWrapper() {
+    public ApplicationsWrapper() {
     }
 
-    public ApplicationWrapper(Application application) {
-        this.application = application;
+    public ApplicationsWrapper(Applications applications) {
+        this.applications = applications;
     }
 }

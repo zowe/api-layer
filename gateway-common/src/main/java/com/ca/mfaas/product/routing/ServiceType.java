@@ -7,19 +7,22 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog.gateway;
 
-import lombok.Builder;
+package com.ca.mfaas.product.routing;
+
 import lombok.Getter;
 
-/**
- * Carries information of the Gateway scheme and port.
- */
-@Builder
 @Getter
-public class GatewayConfigProperties {
+public enum ServiceType {
+    ALL(1, "All services"),
+    API(2, "API"),
+    UI(3, "UI"),
+    WS(4, "WS");
 
-    private String scheme;
-    private String hostname;
-
+    private int serviceCode;
+    private String name;
+    ServiceType(int serviceCode, String name) {
+        this.serviceCode = serviceCode;
+        this.name = name;
+    }
 }

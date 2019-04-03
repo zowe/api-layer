@@ -9,19 +9,26 @@
  */
 package com.ca.mfaas.apicatalog.services.cached;
 
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.routing.ServiceType;
+import com.ca.mfaas.product.routing.transform.TransformService;
+import com.ca.mfaas.product.routing.transform.URLTransformationException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -41,16 +48,23 @@ public class CachedProductFamilyService {
     private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.description";
     private static final String CATALOG_UI_VERSION_KEY = "mfaas.discovery.catalogUiTile.version";
 
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
-
     private final Map<String, APIContainer> products = new HashMap<>();
+
+    private final GatewayConfigProperties gatewayConfigProperties;
     private final CachedServicesService cachedServicesService;
+    private final Integer cacheRefreshUpdateThresholdInMillis;
+    private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+    private final TransformService transformService;
 
     @Autowired
-    public CachedProductFamilyService(CachedServicesService cachedServicesService,
-                                      MFaaSConfigPropertiesContainer propertiesContainer) {
+    public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
+                                      CachedServicesService cachedServicesService,
+                                      @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
+                                          Integer cacheRefreshUpdateThresholdInMillis) {
+        this.gatewayConfigProperties = gatewayConfigProperties;
         this.cachedServicesService = cachedServicesService;
-        this.propertiesContainer = propertiesContainer;
+        this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
+        this.transformService = new TransformService(gatewayConfigProperties);
     }
 
     /**
@@ -76,8 +90,7 @@ public class CachedProductFamilyService {
     public List<APIContainer> getRecentlyUpdatedContainers() {
         return this.products.values().stream().filter(
             container -> {
-                boolean isRecent = container.isRecentUpdated(
-                    propertiesContainer.getServiceRegistry().getCacheRefreshUpdateThresholdInMillis());
+                boolean isRecent = container.isRecentUpdated(cacheRefreshUpdateThresholdInMillis);
                 if (isRecent) {
                     log.debug("Container: " + container.getId() + " last updated: "
                         + container.getLastUpdatedTimestamp().getTime() +
@@ -108,14 +121,6 @@ public class CachedProductFamilyService {
         // fix - throw error if null
         apiContainer.addService(createAPIServiceFromInstance(instanceInfo));
         products.put(productFamilyId, apiContainer);
-    }
-
-    @CacheEvict(key = "#apiContainer.id")
-    public void updateContainer(final APIContainer apiContainer) {
-        apiContainer.updateLastUpdatedTimestamp();
-        log.debug("Updated container: " + apiContainer.getId() + " @ "
-            + apiContainer.getLastUpdatedTimestamp().getTime() + ", cache evicted.");
-        products.put(apiContainer.getId(), apiContainer);
     }
 
     /**
@@ -170,6 +175,27 @@ public class CachedProductFamilyService {
             checkIfContainerShouldBeUpdatedFromInstance(instanceInfo, container);
         }
         return container;
+    }
+
+    private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
+        String instanceHomePage = null;
+        if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
+            RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+
+            try {
+                instanceHomePage = transformService.transformURL(
+                    ServiceType.UI,
+                    instanceInfo.getVIPAddress(),
+                    instanceInfo.getHomePageUrl(),
+                    routes);
+            } catch (URLTransformationException e) {
+                e.printStackTrace();
+                instanceHomePage = instanceInfo.getHomePageUrl();
+            }
+        }
+
+        log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
+        return instanceHomePage;
     }
 
     /**
@@ -242,14 +268,13 @@ public class CachedProductFamilyService {
      */
     private APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
-        String homePage = instanceInfo.getHomePageUrl();
 
-        log.info("Service homepage set to: " + homePage);
-
-        return new APIService(instanceInfo.getAppName().toLowerCase(),
+        String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
+        return new APIService(
+            instanceInfo.getAppName().toLowerCase(),
             instanceInfo.getMetadata().get("mfaas.discovery.service.title"),
             instanceInfo.getMetadata().get("mfaas.discovery.service.description"),
-            secureEnabled, homePage);
+            secureEnabled, instanceHomePage);
     }
 
     /**

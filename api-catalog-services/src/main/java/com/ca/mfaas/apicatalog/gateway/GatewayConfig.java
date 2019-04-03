@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.gateway;
 
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

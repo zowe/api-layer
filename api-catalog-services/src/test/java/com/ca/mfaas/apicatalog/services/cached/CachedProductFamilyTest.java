@@ -11,10 +11,11 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -39,11 +40,21 @@ public class CachedProductFamilyTest {
     private static final String CATALOG_UI_SERVICE_DESCRIPTION_KEY = "mfaas.discovery.service.description";
 
 
+    public Integer cacheRefreshUpdateThresholdInMillis = 2000;
+
+    private CachedProductFamilyService service;
+
+    @Before
+    public void setup() {
+        service = new CachedProductFamilyService(
+            getProperties(),
+            null,
+            cacheRefreshUpdateThresholdInMillis);
+    }
+
     @Test
     public void testRetrievalOfRecentlyUpdatedContainers() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
-
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
 
@@ -59,7 +70,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
@@ -77,7 +87,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
@@ -95,7 +104,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testRetrievalOfContainerServices() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         InstanceInfo instance1 = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
@@ -113,7 +121,6 @@ public class CachedProductFamilyTest {
 
     @Test(expected = NullPointerException.class)
     public void testCreationOfContainerWithoutInstance() {
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
         service.getContainer("demoapp", null);
         assertEquals(0, service.getContainerCount());
         assertEquals(0, service.getAllContainers().size());
@@ -122,7 +129,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testGetMultipleContainersForASingleService() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
@@ -138,7 +144,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testCallCreationOfContainerThatAlreadyExistsButNothingHasChangedSoNoUpdate() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
@@ -155,7 +160,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testCallCreationOfContainerThatAlreadyExistsInstanceInfoHasChangedSoUpdateLastChangeTime() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         metadata.put(CATALOG_UI_TITLE_KEY, "Title");
@@ -193,7 +197,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testCallCreationOfContainerForNullVersion() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         metadata.put(CATALOG_UI_TITLE_KEY, "Title");
@@ -231,7 +234,6 @@ public class CachedProductFamilyTest {
     @Test
     public void testUpdateOfContainerFromInstance() {
         HashMap<String, String> metadata = new HashMap<>();
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
@@ -251,7 +253,10 @@ public class CachedProductFamilyTest {
         application.addInstance(instance2);
 
         when(cachedServicesService.getService("service1")).thenReturn(application);
-        CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService, getProperties());
+        service = new CachedProductFamilyService(
+            getProperties(),
+            cachedServicesService,
+            cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
         service.addServiceToContainer("demoapp", instance2);
@@ -281,7 +286,10 @@ public class CachedProductFamilyTest {
 
         when(cachedServicesService.getService("service1")).thenReturn(application1);
         when(cachedServicesService.getService("service2")).thenReturn(application2);
-        CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService, getProperties());
+        service = new CachedProductFamilyService(
+            getProperties(),
+            cachedServicesService,
+            cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
         service.addServiceToContainer("demoapp", instance2);
@@ -310,7 +318,10 @@ public class CachedProductFamilyTest {
 
         when(cachedServicesService.getService("service1")).thenReturn(application1);
         when(cachedServicesService.getService("service2")).thenReturn(application2);
-        CachedProductFamilyService service = new CachedProductFamilyService(cachedServicesService, getProperties());
+        service = new CachedProductFamilyService(
+            getProperties(),
+            cachedServicesService,
+            cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
         service.addServiceToContainer("demoapp", instance2);
@@ -326,8 +337,6 @@ public class CachedProductFamilyTest {
 
     @Test
     public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew() {
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
-
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         metadata.put(CATALOG_UI_TITLE_KEY, "Title");
@@ -360,8 +369,6 @@ public class CachedProductFamilyTest {
 
     @Test
     public void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate() throws InterruptedException {
-        CachedProductFamilyService service = new CachedProductFamilyService(null, getProperties());
-
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         metadata.put(CATALOG_UI_TITLE_KEY, "Title");
@@ -406,18 +413,17 @@ public class CachedProductFamilyTest {
         assertEquals(instance.getHomePageUrl(), actualService.getHomePageUrl());
     }
 
-    private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status,
-                                             HashMap<String, String> metadata) {
-        return new InstanceInfo(serviceId, serviceId.toUpperCase(), null, "192.168.0.1", null,
-            new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
-            status, null, null, null, null, metadata, null, null, null, null);
+    private GatewayConfigProperties getProperties() {
+        return GatewayConfigProperties.builder()
+            .scheme("https")
+            .hostname("localhost:10010")
+            .build();
     }
 
-    private MFaaSConfigPropertiesContainer getProperties() {
-        MFaaSConfigPropertiesContainer propertiesContainer = new MFaaSConfigPropertiesContainer();
-        propertiesContainer.setService(new MFaaSConfigPropertiesContainer.ServiceProperties());
-        propertiesContainer.setServiceRegistry(new MFaaSConfigPropertiesContainer.ServiceRegistryProperties());
-        propertiesContainer.getServiceRegistry().setCacheRefreshUpdateThresholdInMillis(2000);
-        return propertiesContainer;
+    private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status,
+            HashMap<String, String> metadata) {
+        return new InstanceInfo(serviceId, serviceId.toUpperCase(), null, "192.168.0.1", null,
+                new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
+                status, null, null, null, null, metadata, null, null, null, null);
     }
 }
