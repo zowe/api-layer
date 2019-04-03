@@ -22,10 +22,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.http.HttpHeaders.LOCATION;
@@ -85,7 +82,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
         return routeTable.keySet()
             .stream()
             .filter(location::contains)
-            .findFirst();
+            .max(Comparator.comparingInt(String::length));
     }
 
     private Optional<String> getMatchedUrlFromDS(String location) {
@@ -99,6 +96,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
             log.error("Error creating URI", e);
             return Optional.empty();
         }
+        path = UrlUtils.addLastSlash(path);
 
         //check current service instance
         Optional<String> serviceUrlWithHostAndPort = foundMatchedUrlInService(location, path, currentServiceId);
@@ -123,7 +121,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
             RoutedService service = routedServicesMap.get(serviceId)
                 .getBestMatchingServiceUrl(path, false);
             if (service != null) {
-                String serviceUrl = service.getServiceUrl();
+                String serviceUrl = UrlUtils.removeLastSlash(service.getServiceUrl());
                 List<ServiceInstance> serviceInstances = discovery.getInstances(serviceId);
                 for (ServiceInstance instance : serviceInstances) {
                     String host = instance.getHost();
@@ -150,10 +148,6 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     }
 
     private void transformLocation(Pair<String, String> locationHeader, RouteInfo route) {
-        if (route == null) {
-            log.error("Route info was not added to route table, location will not be transformed for location header: " + locationHeader.second());
-            return;
-        }
         String gatewayHost = RequestContext.getCurrentContext().getRequest().getLocalName();
         int gatewayPort = RequestContext.getCurrentContext().getRequest().getLocalPort();
         try {

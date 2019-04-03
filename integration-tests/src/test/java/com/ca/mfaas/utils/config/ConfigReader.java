@@ -54,6 +54,7 @@ public class ConfigReader {
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);
                         configuration = new EnvironmentConfiguration(credentials, gatewayServiceConfiguration, discoveryServiceConfiguration, tlsConfiguration, zosmfServiceConfiguration);
+
                     }
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
                     configuration.getCredentials().setPassword(System.getProperty("credentials.password", configuration.getCredentials().getPassword()));

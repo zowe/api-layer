@@ -14,13 +14,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class EnvironmentConfiguration {
-    private Credentials credentials;
-    private GatewayServiceConfiguration gatewayServiceConfiguration;
-    private DiscoveryServiceConfiguration discoveryServiceConfiguration;
-    private TlsConfiguration tlsConfiguration;
-    private ZosmfServiceConfiguration zosmfServiceConfiguration;
-    private DiscoverableClientConfiguration discoverableClientConfiguration;
+@NoArgsConstructor
+public class DiscoverableClientConfiguration {
+    private String scheme;
+    private String host;
+    private int port;
 }
