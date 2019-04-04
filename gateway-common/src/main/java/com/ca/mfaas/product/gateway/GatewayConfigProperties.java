@@ -7,14 +7,19 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.routing;
+package com.ca.mfaas.product.gateway;
+
+import lombok.Builder;
+import lombok.Getter;
 
 /**
- * Class that implements it is using information about routed services.
+ * Carries information of the Gateway scheme and port.
  */
-public interface RoutedServicesUser {
-    /**
-     * Adds routed services that are routed for a service ID.
-     */
-    void addRoutedServices(String serviceId, RoutedServices routedServices);
+@Builder
+@Getter
+public class GatewayConfigProperties {
+
+    private String scheme;
+    private String hostname;
+
 }

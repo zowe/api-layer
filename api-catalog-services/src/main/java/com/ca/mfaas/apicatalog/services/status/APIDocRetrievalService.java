@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.status;
 
-import com.ca.mfaas.apicatalog.gateway.GatewayConfigProperties;
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
