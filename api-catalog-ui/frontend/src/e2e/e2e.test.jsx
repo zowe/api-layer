@@ -161,6 +161,14 @@ describe('>>> e2e tests', async () => {
         expect(serviceUrlText).toBe(expectedUrl);
     });
 
+    it('Should display the service homepage', async () => {
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(defaultDetailPageUrl)]);
+        await page.waitForSelector('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a');
+        const homepageLabel = await page.$('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a');
+        const homePageLabelContent = await page.evaluate(a => a.href, homepageLabel);
+        expect(homePageLabelContent).toBe(baseUrl);
+    });
+
     it('Should go back to the dashboard page, check the URL and check if the search bar works', async () => {
         await page.goto(defaultDetailPageUrl);
         await page.waitForSelector('#go-back-button');

@@ -48,6 +48,12 @@ java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.conf
 java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
 ```
 
+### Sample Application -EnablerV1Sample 
+
+```shell
+java -jar integration-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.additional-location=file:./config/local/integration-enabler-spring-v1-sample-app.yml
+```
+
 ### Helloworld Jersey
 
 To run Helloworld Jersey, you need to have Apache Tomcat installed in your computer. Follow the steps below:

@@ -11,6 +11,7 @@ package com.ca.mfaas.apicatalog.gateway;
 
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Assert;
 import org.junit.Before;
