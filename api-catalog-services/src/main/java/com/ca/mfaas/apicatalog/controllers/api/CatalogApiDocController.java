@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
@@ -34,6 +35,7 @@ public class CatalogApiDocController {
 
     /**
      * Create the controller and autowire in the repository services
+     *
      * @param apiServiceStatusService repo service for registered services
      */
     @Autowired
@@ -44,13 +46,15 @@ public class CatalogApiDocController {
 
     /**
      * Retrieve the api-doc info for this service
-     * @param serviceId the eureka id
+     *
+     * @param serviceId  the eureka id
      * @param apiVersion the version of the api
      * @return api-doc info (as JSON)
      */
     @GetMapping(value = "/{service-id}/{api-version}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Retrieves the API documentation for a specific service version",
-        notes = "Returns the API documentation for a specific service {service-id} and version {api-version}",
+        notes = "Returns the API documentation for a specific service {service-id} and version {api-version}. When " +
+            " the API documentation for the specified version is not found, the first discovered version will be used.",
         response = String.class)
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "OK"),
