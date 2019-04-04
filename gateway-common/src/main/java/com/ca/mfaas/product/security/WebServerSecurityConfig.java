@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.config;
+package com.ca.mfaas.product.security;
 
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -16,20 +16,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration of Tomcat for the API Gateway.
+ * Configuration of web server security
  */
 @Configuration
-public class TomcatCipherConfig {
+public class WebServerSecurityConfig {
 
     @Bean
     public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
-        return (factory) -> {
-            (factory)
-                .addConnectorCustomizers((connector) -> {
-                    ((AbstractHttp11Protocol<?>) connector.getProtocolHandler())
-                        .setUseServerCipherSuitesOrder(Boolean.toString(true));
-                });
-        };
+        return factory -> factory.addConnectorCustomizers(connector -> {
+            AbstractHttp11Protocol abstractProtocol = (AbstractHttp11Protocol<?>) connector.getProtocolHandler();
+            abstractProtocol.setUseServerCipherSuitesOrder(Boolean.toString(true));
+        });
     }
 
 }
