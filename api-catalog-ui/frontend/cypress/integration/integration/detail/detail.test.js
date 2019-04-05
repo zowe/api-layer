@@ -14,6 +14,11 @@ describe('>>> Detail page test', () => {
         cy.get('#title')
             .should('exist')
             .should('contain', 'API Catalog');
+
+        cy.get('div > span > span > a')
+            .should('exist')
+            .should('have.attr', 'href', '/ui/v1/apicatalog');
+
         cy.get('#description')
             .should('exist')
             .should(
