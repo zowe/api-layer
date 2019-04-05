@@ -58,6 +58,14 @@ public class CachedServicesService {
     }
 
     /**
+     * Remove this service with the application object
+     * @param serviceId the service name (lowercase)
+     */
+    public void removeService(@NonNull final String serviceId) {
+        services.remove(serviceId.toLowerCase());
+    }
+
+    /**
      * Clear the cache and remove all entries from the map
      */
     public void clearAllServices() {

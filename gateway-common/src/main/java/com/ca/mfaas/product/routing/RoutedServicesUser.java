@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.services.routing;
+package com.ca.mfaas.product.routing;
 
 /**
  * Class that implements it is using information about routed services.
@@ -16,5 +16,5 @@ public interface RoutedServicesUser {
     /**
      * Adds routed services that are routed for a service ID.
      */
-    public void addRoutedServices(String serviceId, RoutedServices routedServices);
+    void addRoutedServices(String serviceId, RoutedServices routedServices);
 }

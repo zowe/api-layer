@@ -9,10 +9,10 @@
  */
 package com.ca.mfaas.gateway.routing;
 
-import com.ca.mfaas.gateway.filters.pre.FilterUtils;
-import com.ca.mfaas.gateway.services.routing.RoutedService;
-import com.ca.mfaas.gateway.services.routing.RoutedServices;
-import com.ca.mfaas.gateway.services.routing.RoutedServicesUser;
+import com.ca.mfaas.product.utils.UrlUtils;
+import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.routing.RoutedServicesUser;
 import com.ca.mfaas.product.constants.CoreService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -152,13 +152,13 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                 if (url.length == 3 && url[0].equals(RoutedServices.ROUTED_SERVICES_PARAMETER)) {
 
                     if (url[2].equals(RoutedServices.GATEWAY_URL_PARAMETER)) {
-                        String gatewayURL = FilterUtils.removeFirstAndLastSlash(metadata.getValue());
+                        String gatewayURL = UrlUtils.removeFirstAndLastSlash(metadata.getValue());
                         routeMap.put(url[1], gatewayURL);
                         keys.add("/" + gatewayURL + "/" + mapRouteToService(serviceId) + "/**");
                     }
 
                     if (url[2].equals(RoutedServices.SERVICE_URL_PARAMETER) && routeMap.containsKey(url[1])) {
-                        String serviceURL = FilterUtils.addFirstSlash(metadata.getValue());
+                        String serviceURL = UrlUtils.addFirstSlash(metadata.getValue());
                         routes.addRoutedService(new RoutedService(url[1], routeMap.get(url[1]), serviceURL));
                         routeMap.remove(url[1]);
                     }

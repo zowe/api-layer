@@ -7,56 +7,73 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.services.routing;
+package com.ca.mfaas.product.routing;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class RoutedServices {
-
     public static final String ROUTED_SERVICES_PARAMETER = "routed-services";
     public static final String GATEWAY_URL_PARAMETER = "gateway-url";
     public static final String SERVICE_URL_PARAMETER = "service-url";
 
     private final Map<String, RoutedService> routedService = new HashMap<>();
 
+    /**
+     * Add route to the service
+     *
+     * @param route the route
+     */
     public void addRoutedService(RoutedService route) {
         routedService.put(route.getGatewayUrl(), route);
     }
 
+    /**
+     * Find RoutedService by Gateway Url
+     *
+     * @param gatewayUrl the url of gateway
+     * @return the route
+     */
     public RoutedService findServiceByGatewayUrl(String gatewayUrl) {
         return routedService.get(gatewayUrl);
     }
 
-    public RoutedService findGatewayUrlThatMatchesServiceUrl(String serviceUrl, boolean partial) {
-        String gatewayUrl = routedService.entrySet().stream()
-            .filter(e -> {
-                boolean found;
-                if (partial) {
-                    found = serviceUrl.contains(e.getValue().getServiceUrl());
-                    if (!found) {
-                        found = ("/" + e.getValue().getSubServiceId() + serviceUrl)
-                            .contains(e.getValue().getServiceUrl());
-                    }
-                } else {
-                    found = serviceUrl.equalsIgnoreCase(e.getValue().getServiceUrl());
-                }
-                return found;
-            })
-            .map(Map.Entry::getKey)
-            .findFirst()
-            .orElse(null);
-        return gatewayUrl == null ? null : routedService.get(gatewayUrl);
+    /**
+     * Get best matching service url
+     *
+     * @param serviceUrl service url
+     * @param type  service type
+     * @return the route
+     */
+    public RoutedService getBestMatchingServiceUrl(String serviceUrl, ServiceType type) {
+        RoutedService result = null;
+        int maxSize = 0;
+
+        for (String key : routedService.keySet()) {
+            if (type.equals(ServiceType.ALL) || !key.toLowerCase().startsWith(type.name().toLowerCase())) {
+                continue;
+            }
+
+            RoutedService value = routedService.get(key);
+            int size = value.getServiceUrl().length();
+            if (size > maxSize &&
+                serviceUrl.toLowerCase().startsWith(value.getServiceUrl().toLowerCase())) {
+                result = value;
+                maxSize = size;
+            }
+        }
+
+        return result;
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("[");
-        for (String gatewayUrl: routedService.keySet()) {
-            builder.append(gatewayUrl);
+        for (Map.Entry<String, RoutedService> route : routedService.entrySet()) {
+            builder.append(route.getKey());
             builder.append(" -> ");
-            builder.append(routedService.get(gatewayUrl).toString());
+            builder.append(route.toString());
             builder.append(", ");
         }
         if (routedService.size() > 0) {

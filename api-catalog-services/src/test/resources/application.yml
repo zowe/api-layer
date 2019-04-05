@@ -17,7 +17,7 @@ logging:
 mfaas:
     discovery:
         serviceId: apicatalog
-        locations: ${environment.discoveryLocations:http://localhost:10011/eureka}
+        locations: ${environment.discoveryLocations:http://localhost:10011/eureka/}
         fetchRegistry: false
         registerWithEureka: true
         region: default
@@ -26,7 +26,7 @@ mfaas:
         endpoints:
             statusPage: ${mfaas.server.contextPath}/application/info
             healthPage: ${mfaas.server.contextPath}/application/health
-            homePage: ${mfaas.gateway.gatewayHostname}/ui/v1${mfaas.server.contextPath}
+            homePage: ${mfaas.server.contextPath}
         info:
             serviceTitle: API Catalog
             description: Service to locate and display API documentation for discovered services
@@ -49,8 +49,6 @@ mfaas:
         sslEnabled: true
         protocol: TLSv1.2
         ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
-    gateway:
-        gatewayHostname: ${environment.gatewayHostname:https://localhost:10010}
     service-registry:
         serviceFetchDelayInMillis:  1000
         cacheRefreshUpdateThresholdInMillis: 1000
@@ -79,9 +77,11 @@ eureka:
                 api_v1:
                     gateway-url: "api/v1"
                     service-url: "/apicatalog"
-                api-doc:
-                    gateway-url: "api/v1/api-doc"
-                    service-url: "/apicatalog/api-doc"
+            apiml:
+                apiInfo:
+                    - apiId: org.zowe.apicatalog
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
             mfaas:
                 api-info:
                     apiVersionProperties:

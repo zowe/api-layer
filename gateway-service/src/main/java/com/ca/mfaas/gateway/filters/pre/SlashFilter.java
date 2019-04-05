@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
+import com.ca.mfaas.product.utils.UrlUtils;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
@@ -49,7 +50,7 @@ public class SlashFilter extends ZuulFilter {
     @Override
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
-        String proxy = FilterUtils.removeFirstAndLastSlash((String) context.get(PROXY_KEY));
+        String proxy = UrlUtils.removeFirstAndLastSlash((String) context.get(PROXY_KEY));
         if (proxy != null && !proxy.isEmpty()) {
             context.setSendZuulResponse(false);
             context.addZuulResponseHeader("Location", "/" + proxy + "/");

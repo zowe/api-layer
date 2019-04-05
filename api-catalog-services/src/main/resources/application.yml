@@ -43,7 +43,7 @@ mfaas:
         eurekaUserName: ${environment.eurekaUserId}
         eurekaUserPassword: ${environment.eurekaPassword}
         endpoints:
-            homePage: ${mfaas.gateway.gatewayHostname}/ui/v1${mfaas.server.contextPath}
+            homePage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}
             statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
             healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
         info:
@@ -70,8 +70,6 @@ mfaas:
         trustStore: ${environment.truststore}
         trustStoreType: ${environment.truststoreType}
         trustStorePassword: ${environment.truststorePassword}
-    gateway:
-        gatewayHostname: ${environment.gatewayHostname}
     service-registry:
         serviceFetchDelayInMillis:  30000
         cacheRefreshUpdateThresholdInMillis: 60000
@@ -114,9 +112,11 @@ eureka:
                 api_v1:
                     gateway-url: "api/v1"
                     service-url: /apicatalog
-                api-doc:
-                    gateway-url: "api/v1/api-doc"
-                    service-url: /apicatalog/api-doc
+            apiml:
+                apiInfo:
+                    - apiId: org.zowe.apicatalog
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${environment.hostname}:${server.port}${server.servlet.contextPath}/api-doc
             mfaas:
                 api-info:
                     apiVersionProperties:

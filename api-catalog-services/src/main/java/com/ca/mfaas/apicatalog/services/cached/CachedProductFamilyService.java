@@ -9,19 +9,26 @@
  */
 package com.ca.mfaas.apicatalog.services.cached;
 
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
-import com.ca.mfaas.product.config.MFaaSConfigPropertiesContainer;
+import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.routing.ServiceType;
+import com.ca.mfaas.product.routing.transform.TransformService;
+import com.ca.mfaas.product.routing.transform.URLTransformationException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -37,16 +44,27 @@ import static java.util.stream.Collectors.toList;
 @CacheConfig(cacheNames = {"products"})
 public class CachedProductFamilyService {
 
-    private final MFaaSConfigPropertiesContainer propertiesContainer;
+    private static final String CATALOG_UI_TITLE_KEY = "mfaas.discovery.catalogUiTile.title";
+    private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.description";
+    private static final String CATALOG_UI_VERSION_KEY = "mfaas.discovery.catalogUiTile.version";
 
     private final Map<String, APIContainer> products = new HashMap<>();
+
+    private final GatewayConfigProperties gatewayConfigProperties;
     private final CachedServicesService cachedServicesService;
+    private final Integer cacheRefreshUpdateThresholdInMillis;
+    private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+    private final TransformService transformService;
 
     @Autowired
-    public CachedProductFamilyService(CachedServicesService cachedServicesService,
-                                      MFaaSConfigPropertiesContainer propertiesContainer) {
+    public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
+                                      CachedServicesService cachedServicesService,
+                                      @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
+                                          Integer cacheRefreshUpdateThresholdInMillis) {
+        this.gatewayConfigProperties = gatewayConfigProperties;
         this.cachedServicesService = cachedServicesService;
-        this.propertiesContainer = propertiesContainer;
+        this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
+        this.transformService = new TransformService(gatewayConfigProperties);
     }
 
     /**
@@ -72,8 +90,7 @@ public class CachedProductFamilyService {
     public List<APIContainer> getRecentlyUpdatedContainers() {
         return this.products.values().stream().filter(
             container -> {
-                boolean isRecent = container.isRecentUpdated(
-                    propertiesContainer.getServiceRegistry().getCacheRefreshUpdateThresholdInMillis());
+                boolean isRecent = container.isRecentUpdated(cacheRefreshUpdateThresholdInMillis);
                 if (isRecent) {
                     log.debug("Container: " + container.getId() + " last updated: "
                         + container.getLastUpdatedTimestamp().getTime() +
@@ -104,14 +121,6 @@ public class CachedProductFamilyService {
         // fix - throw error if null
         apiContainer.addService(createAPIServiceFromInstance(instanceInfo));
         products.put(productFamilyId, apiContainer);
-    }
-
-    @CacheEvict(key = "#apiContainer.id")
-    public void updateContainer(final APIContainer apiContainer) {
-        apiContainer.updateLastUpdatedTimestamp();
-        log.debug("Updated container: " + apiContainer.getId() + " @ "
-            + apiContainer.getLastUpdatedTimestamp().getTime() + ", cache evicted.");
-        products.put(apiContainer.getId(), apiContainer);
     }
 
     /**
@@ -163,9 +172,30 @@ public class CachedProductFamilyService {
         } else {
             addServiceToContainer(productFamilyId, instanceInfo);
             container = products.get(productFamilyId);
-            checkIfContainerShouldBeUpdatedFromInstance(productFamilyId, instanceInfo, container);
+            checkIfContainerShouldBeUpdatedFromInstance(instanceInfo, container);
         }
         return container;
+    }
+
+    private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
+        String instanceHomePage = null;
+        if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
+            RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+
+            try {
+                instanceHomePage = transformService.transformURL(
+                    ServiceType.UI,
+                    instanceInfo.getVIPAddress(),
+                    instanceInfo.getHomePageUrl(),
+                    routes);
+            } catch (URLTransformationException e) {
+                e.printStackTrace();
+                instanceHomePage = instanceInfo.getHomePageUrl();
+            }
+        }
+
+        log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
+        return instanceHomePage;
     }
 
     /**
@@ -176,11 +206,11 @@ public class CachedProductFamilyService {
      * @return a new container
      */
     private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo instanceInfo) {
-        APIContainer container;
-        String title = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.title");
-        String description = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.description");
-        String version = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
-        container = new APIContainer();
+        Map<String, String> instanceInfoMetadata = instanceInfo.getMetadata();
+        String title = instanceInfoMetadata.get(CATALOG_UI_TITLE_KEY);
+        String description = instanceInfoMetadata.get(CATALOG_UI_DESCRIPTION_KEY);
+        String version = instanceInfoMetadata.get(CATALOG_UI_VERSION_KEY);
+        APIContainer container = new APIContainer();
         container.setStatus("UP");
         container.setId(productFamilyId);
         container.setDescription(description);
@@ -198,12 +228,11 @@ public class CachedProductFamilyService {
      * Compare the version of the parent in the given instance
      * If the version is greater, then update the parent
      *
-     * @param productFamilyId parent identifier
-     * @param instanceInfo    service instance
-     * @param container       parent container
+     * @param instanceInfo service instance
+     * @param container    parent container
      */
-    private void checkIfContainerShouldBeUpdatedFromInstance(String productFamilyId, InstanceInfo instanceInfo, APIContainer container) {
-        String versionFromInstance = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.version");
+    private void checkIfContainerShouldBeUpdatedFromInstance(InstanceInfo instanceInfo, APIContainer container) {
+        String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_UI_VERSION_KEY);
         // if the instance has a parent version
         if (versionFromInstance != null) {
             final SemanticVersion instanceVer = new SemanticVersion(versionFromInstance);
@@ -218,8 +247,8 @@ public class CachedProductFamilyService {
             int result = instanceVer.compareTo(containerVer);
             if (result > 0) {
                 container.setVersion(versionFromInstance);
-                String title = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.title");
-                String description = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.description");
+                String title = instanceInfo.getMetadata().get(CATALOG_UI_TITLE_KEY);
+                String description = instanceInfo.getMetadata().get(CATALOG_UI_DESCRIPTION_KEY);
                 if (!container.getTitle().equals(title)) {
                     container.setTitle(title);
                 }
@@ -227,7 +256,6 @@ public class CachedProductFamilyService {
                     container.setDescription(description);
                 }
                 container.updateLastUpdatedTimestamp();
-                products.put(productFamilyId, container);
             }
         }
     }
@@ -240,14 +268,13 @@ public class CachedProductFamilyService {
      */
     private APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
-        String homePage = instanceInfo.getHomePageUrl();
 
-        log.info("Service homepage set to: " + homePage);
-
-        return new APIService(instanceInfo.getAppName().toLowerCase(),
+        String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
+        return new APIService(
+            instanceInfo.getAppName().toLowerCase(),
             instanceInfo.getMetadata().get("mfaas.discovery.service.title"),
             instanceInfo.getMetadata().get("mfaas.discovery.service.description"),
-            secureEnabled, homePage);
+            secureEnabled, instanceHomePage);
     }
 
     /**
@@ -259,6 +286,64 @@ public class CachedProductFamilyService {
     @CacheEvict(key = "#productFamilyId")
     public void updateContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
         createContainerFromInstance(productFamilyId, instanceInfo);
+    }
+
+    /**
+     * Save a containers details using a service's metadata
+     *
+     * @param productFamilyId the product family id of the container
+     * @param instanceInfo    the service instance
+     */
+    @CachePut(key = "#productFamilyId")
+    public APIContainer saveContainerFromInstance(String productFamilyId, InstanceInfo instanceInfo) {
+        APIContainer container = products.get(productFamilyId);
+        if (container == null) {
+            container = createNewContainerFromService(productFamilyId, instanceInfo);
+        } else {
+            Set<APIService> apiServices = container.getServices();
+            APIService service = createAPIServiceFromInstance(instanceInfo);
+            if (apiServices.contains(service)) {
+                apiServices.remove(service);
+            }
+
+            apiServices.add(service);
+            container.setServices(apiServices);
+            //update container
+            String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_UI_VERSION_KEY);
+            String title = instanceInfo.getMetadata().get(CATALOG_UI_TITLE_KEY);
+            String description = instanceInfo.getMetadata().get(CATALOG_UI_DESCRIPTION_KEY);
+
+            container.setVersion(versionFromInstance);
+            container.setTitle(title);
+            container.setDescription(description);
+            container.updateLastUpdatedTimestamp();
+
+            products.put(productFamilyId, container);
+        }
+
+        return container;
+    }
+
+    /**
+     * Remove a container
+     *
+     * @param productFamilyId the product family id of the container
+     * @param serviceId       check for this service
+     */
+    @CacheEvict(key = "#productFamilyId")
+    public void removeContainerFromInstance(String productFamilyId, String serviceId) {
+        APIContainer container = products.get(productFamilyId);
+        if (container != null) {
+            Set<APIService> apiServices = container.getServices();
+            apiServices.remove(new APIService(serviceId));
+
+            if (apiServices.isEmpty()) {
+                products.remove(productFamilyId);
+            } else {
+                container.setServices(apiServices);
+                products.put(container.getId(), container);
+            }
+        }
     }
 
     /**

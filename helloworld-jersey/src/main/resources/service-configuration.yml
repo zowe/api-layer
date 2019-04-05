@@ -26,16 +26,12 @@ ssl:
 routes:
     - gatewayUrl: api/v1
       serviceUrl: /hellojersey/api/v1
-    - gatewayUrl: api/v1/api-doc
-      serviceUrl: /hellojersey/api-doc
     - gatewayUrl: ui/v1
       serviceUrl: /hellojersey/
-    - gatewayUrl: app
-      serviceUrl: /hellojersey/application
 apiInfo:
-    title: Hello World Jersey
-    description: REST API for a Jersey Application
-    version: 1.0.0
+    - apiId: org.zowe.hellojersey
+      gatewayUrl: api/v1
+      swaggerUrl: https://localhost:10016/hellojersey/swagger.json
 catalogUiTile:
     id: cademoapps
     title: Sample API Mediation Layer Applications

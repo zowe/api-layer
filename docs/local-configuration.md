@@ -48,6 +48,12 @@ java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.conf
 java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
 ```
 
+### Sample Application -EnablerV1Sample 
+
+```shell
+java -jar integration-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.additional-location=file:./config/local/integration-enabler-spring-v1-sample-app.yml
+```
+
 ### Helloworld Jersey
 
 To run Helloworld Jersey, you need to have Apache Tomcat installed in your computer. Follow the steps below:
@@ -219,3 +225,17 @@ If your editor of choice happens to be Idea and you wnat to use its 'Run Dashboa
    ```
    discoveryLocations: http://eureka:password@discoveryInstance1:10022/eureka,http://eureka:password@discoveryInstance2:10033/eureka
    ```
+
+### Ports Used
+
+   This is a list of default ports used by the project for developing
+
+|        SERVICE         |  PORT |
+|:----------------------:|:-----:|
+|        Gateway         | 10010 |
+|   Discovery Service    | 10011 |
+|  Discoverable client   | 10012 |
+|      API Catalog       | 10014 |
+|   Helloword (Jersey)   | 10016 |
+| Helloworld (ExpressJs) | 10020 |
+|   Helloworld (Spring)  | 10021 |
