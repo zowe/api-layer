@@ -23,10 +23,10 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 
 public class BasicFilter extends OncePerRequestFilter {
     private static final String BASIC_AUTHENTICATION_PREFIX = "Basic ";
@@ -57,18 +57,23 @@ public class BasicFilter extends OncePerRequestFilter {
     }
 
     private UsernamePasswordAuthenticationToken extractContent(HttpServletRequest request) {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        return Optional.ofNullable(
+            request.getHeader(HttpHeaders.AUTHORIZATION)
+        ).filter(
+            header -> header.startsWith(BASIC_AUTHENTICATION_PREFIX)
+        ).map(
+            header -> header.replaceFirst(BASIC_AUTHENTICATION_PREFIX, "")
+        )
+         .filter(base64Credentials -> !base64Credentials.isEmpty())
+         .map(this::mapBase64Credentials)
+        .orElse(null);
+    }
 
-        if (header != null && header.startsWith(BASIC_AUTHENTICATION_PREFIX)) {
-            String base64Credentials = header.replaceFirst(BASIC_AUTHENTICATION_PREFIX, "");
-
-            if (!base64Credentials.isEmpty()) {
-                String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
-                int i = credentials.indexOf(':');
-                if (i > 0) {
-                    return new UsernamePasswordAuthenticationToken(credentials.substring(0, i), credentials.substring(i + 1));
-                }
-            }
+    private UsernamePasswordAuthenticationToken mapBase64Credentials(String base64Credentials) {
+        String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+        int i = credentials.indexOf(':');
+        if (i > 0) {
+            return new UsernamePasswordAuthenticationToken(credentials.substring(0, i), credentials.substring(i + 1));
         }
 
         return null;

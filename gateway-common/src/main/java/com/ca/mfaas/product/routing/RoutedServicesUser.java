@@ -16,5 +16,5 @@ public interface RoutedServicesUser {
     /**
      * Adds routed services that are routed for a service ID.
      */
-    public void addRoutedServices(String serviceId, RoutedServices routedServices);
+    void addRoutedServices(String serviceId, RoutedServices routedServices);
 }

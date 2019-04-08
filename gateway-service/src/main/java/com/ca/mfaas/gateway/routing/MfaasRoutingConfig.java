@@ -15,9 +15,9 @@ import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.product.routing.RoutedServicesUser;
 import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;
 
+import com.ca.mfaas.product.routing.RoutedServicesUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
