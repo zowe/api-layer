@@ -10,8 +10,8 @@
 package com.ca.mfaas.gateway.security.login.zosmf;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +33,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @Slf4j
 @Component
@@ -61,12 +63,11 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) {
+        String zosmf = securityConfigurationProperties.validatedZosmfServiceId();
+        String uri = getURI(zosmf);
+
         String user = authentication.getPrincipal().toString();
         String password = authentication.getCredentials().toString();
-
-        String zosmf = securityConfigurationProperties.validatedZosmfServiceId();
-
-        String uri = getURI(zosmf);
 
         String credentials = user + ":" + password;
         String authorization = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
@@ -98,35 +99,26 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     }
 
     private String getURI(String zosmf) {
-        String uri = null;
-
-        List<ServiceInstance> zosmfInstances = discovery.getInstances(zosmf);
-        if (zosmfInstances != null && !zosmfInstances.isEmpty()) {
-            ServiceInstance zosmfInstance = zosmfInstances.get(0);
-            if (zosmfInstance != null) {
-                uri = zosmfInstance.getUri().toString();
-            }
-        }
-
-        if (uri == null) {
+        Supplier<AuthenticationServiceException> authenticationServiceExceptionSupplier = () -> {
             log.error("z/OSMF instance '{}' not found or incorrectly configured.", zosmf);
-            throw new AuthenticationServiceException("z/OSMF instance not found or incorrectly configured.");
-        }
+            return new AuthenticationServiceException("z/OSMF instance not found or incorrectly configured.");
+        };
 
-        return uri;
+        return Optional.ofNullable(discovery.getInstances(zosmf))
+            .orElseThrow(authenticationServiceExceptionSupplier)
+            .stream()
+            .findFirst()
+            .map(zosmfInstance -> zosmfInstance.getUri().toString())
+            .orElseThrow(authenticationServiceExceptionSupplier);
     }
 
     private String readLtpaToken(String cookie) {
-        String ltpaToken;
-
         if (cookie == null || cookie.isEmpty() || !cookie.contains("LtpaToken2")) {
             throw new BadCredentialsException("Username or password are invalid.");
         } else {
             int end = cookie.indexOf(';');
-            ltpaToken = end > 0 ? cookie.substring(0, end) : cookie;
+            return (end > 0) ? cookie.substring(0, end) : cookie;
         }
-
-        return ltpaToken;
     }
 
     private String readDomain(String content) {

@@ -37,7 +37,7 @@ public class InMemoryUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username)  {
+    public UserDetails loadUserByUsername(String username) {
 
         // Hard coding the users. All passwords must be encoded.
         final List<AppUser> users = Arrays.asList(
@@ -46,17 +46,15 @@ public class InMemoryUserDetailsService implements UserDetailsService {
         );
 
 
-        for (AppUser appUser : users) {
-            if (appUser.getUsername().equals(username)) {
-
+        return users.stream()
+            .filter(f -> f.getUsername().equals(username))
+            .map(appUser -> {
                 // The "User" class is provided by Spring and represents a model class for user to be returned by UserDetailsService
                 // And used by auth manager to verify and check user authentication.
                 return new User(appUser.getUsername(), appUser.getPassword(), AuthorityUtils.NO_AUTHORITIES);
-            }
-        }
-
-        // If user not found. Throw this exception.
-        throw new UsernameNotFoundException("Username: " + username + " not found.");
+            })
+            .findFirst()
+            .orElseThrow(() -> new UsernameNotFoundException("Username: " + username + " not found."));
     }
 
     // A class represent the user saved in the database.
