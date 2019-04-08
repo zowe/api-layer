@@ -18,6 +18,7 @@ import com.ca.mfaas.gateway.security.login.LoginFilter;
 import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.SuccessfulLoginHandler;
 import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
+import com.ca.mfaas.gateway.security.logout.SuccessfulLogoutHandler;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
@@ -42,6 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final SuccessfulQueryHandler successfulQueryHandler;
+    private final SuccessfulLogoutHandler successfulLogoutHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final DummyAuthenticationProvider dummyAuthenticationProvider;
     private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
@@ -54,6 +56,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         SecurityConfigurationProperties securityConfigurationProperties,
         SuccessfulLoginHandler successfulLoginHandler,
         SuccessfulQueryHandler successfulQueryHandler,
+        SuccessfulLogoutHandler successfulLogoutHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         DummyAuthenticationProvider dummyAuthenticationProvider,
         ZosmfAuthenticationProvider zosmfAuthenticationProvider,
@@ -64,6 +67,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.securityConfigurationProperties = securityConfigurationProperties;
         this.successfulLoginHandler = successfulLoginHandler;
         this.successfulQueryHandler = successfulQueryHandler;
+        this.successfulLogoutHandler = successfulLogoutHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.dummyAuthenticationProvider = dummyAuthenticationProvider;
         this.zosmfAuthenticationProvider = zosmfAuthenticationProvider;
@@ -112,6 +116,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
+
+            // logout endpoint
+            .and()
+            .logout()
+            .logoutUrl(securityConfigurationProperties.getLogoutPath())
+            .logoutSuccessHandler(successfulLogoutHandler)
 
             // endpoint protection
             .and()
