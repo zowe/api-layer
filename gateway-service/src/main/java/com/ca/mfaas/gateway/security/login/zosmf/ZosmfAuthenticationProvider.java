@@ -120,19 +120,19 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     }
 
     private String readDomain(String content) {
-        ObjectNode zosmfNode;
         try {
-            zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);
+            ObjectNode zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);
+
+            return Optional.ofNullable(zosmfNode)
+                .filter(zn -> zn.has(ZOSMF_DOMAIN))
+                .map(zn -> zosmfNode.get(ZOSMF_DOMAIN).asText())
+                .orElseThrow(() -> {
+                    log.error("z/OSMF response does not contain field '{}'.", ZOSMF_DOMAIN);
+                    return new AuthenticationServiceException("z/OSMF domain cannot be read.");
+                });
         } catch (IOException e) {
             log.error("Error parsing z/OSMF response.");
-            throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
-        }
-
-        if (zosmfNode != null && zosmfNode.has(ZOSMF_DOMAIN)) {
-            return zosmfNode.get(ZOSMF_DOMAIN).asText();
-        } else {
-            log.error("z/OSMF response does not contain field '{}'.", ZOSMF_DOMAIN);
-            throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
+            throw  new AuthenticationServiceException("z/OSMF domain cannot be read.");
         }
     }
 
