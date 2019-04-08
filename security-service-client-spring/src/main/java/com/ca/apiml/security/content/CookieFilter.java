@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Optional;
 
 public class CookieFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
@@ -42,11 +44,10 @@ public class CookieFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        TokenAuthentication authenticationToken = extractContent(request);
-
-        if (authenticationToken != null) {
+        Optional<TokenAuthentication> authenticationToken = extractContent(request);
+        if (authenticationToken.isPresent()) {
             try {
-                Authentication authentication = authenticationManager.authenticate(authenticationToken);
+                Authentication authentication = authenticationManager.authenticate(authenticationToken.get());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 filterChain.doFilter(request, response);
             } catch (AuthenticationException authenticationException) {
@@ -57,19 +58,16 @@ public class CookieFilter extends OncePerRequestFilter {
         }
     }
 
-    private TokenAuthentication extractContent(HttpServletRequest request) {
+    private Optional<TokenAuthentication> extractContent(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-
         if (cookies == null) {
-            return null;
+            return Optional.empty();
         }
 
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
-                return new TokenAuthentication(cookie.getValue());
-            }
-        }
-
-        return null;
+        return Arrays.asList(cookies)
+            .stream()
+            .filter(cookie -> cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName()))
+            .map(cookie -> new TokenAuthentication(cookie.getValue()))
+            .findFirst();
     }
 }

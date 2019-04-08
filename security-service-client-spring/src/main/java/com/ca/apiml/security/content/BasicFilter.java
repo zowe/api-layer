@@ -41,11 +41,11 @@ public class BasicFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        UsernamePasswordAuthenticationToken authenticationToken = extractContent(request);
+        Optional<UsernamePasswordAuthenticationToken> authenticationToken = extractContent(request);
 
-        if (authenticationToken != null) {
+        if (authenticationToken.isPresent()) {
             try {
-                Authentication authentication = authenticationManager.authenticate(authenticationToken);
+                Authentication authentication = authenticationManager.authenticate(authenticationToken.get());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 filterChain.doFilter(request, response);
             } catch (AuthenticationException authenticationException) {
@@ -56,7 +56,7 @@ public class BasicFilter extends OncePerRequestFilter {
         }
     }
 
-    private UsernamePasswordAuthenticationToken extractContent(HttpServletRequest request) {
+    private Optional<UsernamePasswordAuthenticationToken> extractContent(HttpServletRequest request) {
         return Optional.ofNullable(
             request.getHeader(HttpHeaders.AUTHORIZATION)
         ).filter(
@@ -65,8 +65,7 @@ public class BasicFilter extends OncePerRequestFilter {
             header -> header.replaceFirst(BASIC_AUTHENTICATION_PREFIX, "")
         )
          .filter(base64Credentials -> !base64Credentials.isEmpty())
-         .map(this::mapBase64Credentials)
-        .orElse(null);
+         .map(this::mapBase64Credentials);
     }
 
     private UsernamePasswordAuthenticationToken mapBase64Credentials(String base64Credentials) {
