@@ -11,7 +11,6 @@ An application is Zowe API ML conformant if it follows these criteria:
      - Starts with the name of the vendor
    - At least one REST API is defined and routed
    - The API ID follows same rules as for Java packages
-     **Example:**
      
       `org.zowe.apiml.apicatalog`
    - The routing follows the conventions for the Gateway URL:
