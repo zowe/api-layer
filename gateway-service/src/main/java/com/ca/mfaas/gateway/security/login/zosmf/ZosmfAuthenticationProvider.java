@@ -15,7 +15,6 @@ import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -32,7 +31,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
