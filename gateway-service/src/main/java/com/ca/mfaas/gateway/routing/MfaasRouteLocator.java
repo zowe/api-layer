@@ -66,11 +66,13 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     staticServices.put(serviceId, route);
                 }
             }
+
             // Add routes for discovered services and itself by default
             List<String> services = this.discovery.getServices();
             if (!services.contains(CoreService.GATEWAY.getServiceId())) {
                 services.add(CoreService.GATEWAY.getServiceId());
             }
+
             String[] ignored = this.properties.getIgnoredServices()
                 .toArray(new String[0]);
             Set<String> removedRoutes = new HashSet<>();
@@ -82,11 +84,11 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
 
                 RoutedServices routedServices = new RoutedServices();
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(targetServiceId);
-
                 if (serviceInstances == null) {
                     log.error("Cannot find any instances of service: " + serviceId);
                     return null;
                 }
+
                 List<String> keys = createRouteKeys(serviceInstances, routedServices, serviceId);
                 if (keys.isEmpty()) {
                     keys.add("/" + mapRouteToService(serviceId) + "/**");
@@ -104,6 +106,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     routesMap.remove(staticRoute.getPath());
                     removedRoutes.add(staticRoute.getPath());
                 }
+
                 for (String key : keys) {
                     if (!PatternMatchUtils.simpleMatch(ignored, serviceId)
                         && !routesMap.containsKey(key) && !removedRoutes.contains(key)) {
@@ -113,6 +116,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                 }
             }
         }
+
         LinkedHashMap<String, ZuulProperties.ZuulRoute> values = new LinkedHashMap<>();
         for (Map.Entry<String, ZuulProperties.ZuulRoute> entry : routesMap.entrySet()) {
             String path = entry.getKey();
@@ -128,6 +132,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
             }
             values.put(path, entry.getValue());
         }
+
         return values;
     }
 

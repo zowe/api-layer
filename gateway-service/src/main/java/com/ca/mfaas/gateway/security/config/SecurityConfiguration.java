@@ -25,6 +25,7 @@ import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.token.TokenAuthenticationProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -33,6 +34,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Slf4j
 @Configuration
@@ -43,7 +45,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final SuccessfulQueryHandler successfulQueryHandler;
-    private final SuccessfulLogoutHandler successfulLogoutHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final DummyAuthenticationProvider dummyAuthenticationProvider;
     private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
@@ -56,7 +57,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         SecurityConfigurationProperties securityConfigurationProperties,
         SuccessfulLoginHandler successfulLoginHandler,
         SuccessfulQueryHandler successfulQueryHandler,
-        SuccessfulLogoutHandler successfulLogoutHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         DummyAuthenticationProvider dummyAuthenticationProvider,
         ZosmfAuthenticationProvider zosmfAuthenticationProvider,
@@ -67,7 +67,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.securityConfigurationProperties = securityConfigurationProperties;
         this.successfulLoginHandler = successfulLoginHandler;
         this.successfulQueryHandler = successfulQueryHandler;
-        this.successfulLogoutHandler = successfulLogoutHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.dummyAuthenticationProvider = dummyAuthenticationProvider;
         this.zosmfAuthenticationProvider = zosmfAuthenticationProvider;
@@ -121,7 +120,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .logout()
             .logoutUrl(securityConfigurationProperties.getLogoutPath())
-            .logoutSuccessHandler(successfulLogoutHandler)
+            .logoutSuccessHandler(logoutSuccessHandler())
 
             // endpoint protection
             .and()
@@ -135,6 +134,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Bean
+    public LogoutSuccessHandler logoutSuccessHandler() {
+        return new SuccessfulLogoutHandler(securityConfigurationProperties);
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {

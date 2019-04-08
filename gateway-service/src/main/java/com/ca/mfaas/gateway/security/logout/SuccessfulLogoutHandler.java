@@ -26,7 +26,6 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @Slf4j
-@Component
 public class SuccessfulLogoutHandler implements LogoutSuccessHandler {
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
