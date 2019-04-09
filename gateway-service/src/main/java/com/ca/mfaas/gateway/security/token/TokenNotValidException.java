@@ -15,4 +15,8 @@ public class TokenNotValidException extends AuthenticationException {
     public TokenNotValidException(String msg) {
         super(msg);
     }
+
+    public TokenNotValidException(String msg, Throwable t) {
+        super(msg, t);
+    }
 }
