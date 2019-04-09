@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 
 /**
  * Filter for process authentication request with username and password in JSON format.
@@ -64,11 +65,8 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
             throw new AuthenticationServiceException("Authentication method not supported.");
         }
 
-        LoginRequest loginRequest = getCredentialFromAuthorizationHeader(request);
-
-        if (loginRequest == null) {
-            loginRequest = getCredentialsFromBody(request);
-        }
+        Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
+        LoginRequest loginRequest = optionalLoginRequest.orElse(getCredentialsFromBody(request));
 
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
             throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
@@ -95,23 +93,28 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         failureHandler.onAuthenticationFailure(request, response, failed);
     }
 
-    private LoginRequest getCredentialFromAuthorizationHeader(HttpServletRequest request) {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+    private Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
+        return Optional.ofNullable(
+            request.getHeader(HttpHeaders.AUTHORIZATION)
+        ).filter(
+            header -> header.startsWith(BASIC_AUTHENTICATION_PREFIX)
+        ).map(
+            header -> header.replaceFirst(BASIC_AUTHENTICATION_PREFIX, "")
+        )
+        .filter(base64Credentials -> !base64Credentials.isEmpty())
+        .map(this::mapBase64Credentials);
+    }
 
-        if (header != null && header.startsWith(BASIC_AUTHENTICATION_PREFIX)) {
-            String base64Credentials = header.replaceFirst(BASIC_AUTHENTICATION_PREFIX, "");
-
-            if (!base64Credentials.isEmpty()) {
-                String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
-                int i = credentials.indexOf(':');
-                if (i > 0) {
-                    return new LoginRequest(credentials.substring(0, i), credentials.substring(i + 1));
-                }
-            }
+    private LoginRequest mapBase64Credentials(String base64Credentials) {
+        String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+        int i = credentials.indexOf(':');
+        if (i > 0) {
+            return new LoginRequest(credentials.substring(0, i), credentials.substring(i + 1));
         }
 
         return null;
     }
+
 
     private LoginRequest getCredentialsFromBody(HttpServletRequest request) {
         try {
