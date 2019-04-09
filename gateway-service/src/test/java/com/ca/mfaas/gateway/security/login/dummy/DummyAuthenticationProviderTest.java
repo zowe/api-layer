@@ -31,8 +31,8 @@ import static org.mockito.Mockito.mock;
 @RunWith(MockitoJUnitRunner.class)
 public class DummyAuthenticationProviderTest {
 
-    private static final String PRINCIPAL = "USER";
-    private static final String USERNAME = "USER";
+    private static final String PRINCIPAL = "user";
+    private static final String USERNAME = "user";
 
     private static DummyAuthenticationProvider dummyAuthenticationProvider;
     private static AuthenticationService authenticationService;
@@ -73,7 +73,7 @@ public class DummyAuthenticationProviderTest {
 
     @Test
     public void shouldThrowExceptionIfCredentialsAreNull() {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, null);
+        UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, "sdsd");
 
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Username or password are invalid.");
