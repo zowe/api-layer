@@ -17,7 +17,6 @@ import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -26,8 +25,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.AuthenticationException;
 
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SecurityTokenErrorCheckTest {
 
@@ -39,45 +38,49 @@ public class SecurityTokenErrorCheckTest {
         ErrorService errorService = new ErrorServiceImpl();
         securityTokenErrorCheck = new SecurityTokenErrorCheck(errorService);
     }
+
     @Test
     public void shouldReturnUnauthorizedStatus() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        AuthenticationException exception = mock(AuthenticationException.class);
+        AuthenticationException exception = new TokenExpireException("TOKEN_EXPIRE");
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), null);
+
         ResponseEntity response = securityTokenErrorCheck.checkError(request, exc);
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
     }
 
     @Test
     public void shouldReturnCauseMessageWhenTokenExpireException() {
-//        BasicApiMessage basicApiMessage = new BasicApiMessage( Collections.singletonList(new BasicMessage(MessageType.ERROR, "MFS0001", "Internal error: Invalid message key 'com.ca.mfaas.security.tokenIsExpiredWithoutUrl' is provided. Please contact support for further assistance.")));
-        String basicApiMessage = "Internal error: Invalid message key 'com.ca.mfaas.security.tokenIsExpiredWithoutUrl' is provided. Please contact support for further assistance.";
         MockHttpServletRequest request = new MockHttpServletRequest();
-        TokenExpireException tokenExpireException = new TokenExpireException("error");
-        AuthenticationException exception = mock(TokenExpireException.class);
-            when(exception.getCause()).thenReturn(tokenExpireException);
+        TokenExpireException tokenExpireException = new TokenExpireException("TOKEN_EXPIRE");
+
+        AuthenticationException exception = new TokenExpireException(tokenExpireException.getMessage(), tokenExpireException);
+
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
-        System.out.println(exc.getCause());
+
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
         ResponseEntity response = securityTokenErrorCheck.checkError(request, exc);
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        Assert.assertTrue(response.getBody().toString().contains(basicApiMessage));
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+
+        String basicApiMessage = "Internal error: Invalid message key 'com.ca.mfaas.security.tokenIsExpiredWithoutUrl' is provided. Please contact support for further assistance.";
+        assertTrue(response.getBody().toString().contains(basicApiMessage));
     }
 
     @Test
     public void shouldReturnCauseMessageWhenTokenNotValidException() {
-//        BasicApiMessage basicApiMessage = new BasicApiMessage( Collections.singletonList(new BasicMessage(MessageType.ERROR, "MFS0001", "Internal error: Invalid message key 'com.ca.mfaas.security.tokenIsExpiredWithoutUrl' is provided. Please contact support for further assistance.")));
-        String basicApiMessage = "Internal error: Invalid message key 'com.ca.mfaas.security.tokenIsNotValidWithoutUrl' is provided. Please contact support for further assistance.";
         MockHttpServletRequest request = new MockHttpServletRequest();
-        TokenNotValidException tokenNotValidException = new TokenNotValidException("error");
-        AuthenticationException exception = mock(TokenNotValidException.class);
-        when(exception.getCause()).thenReturn(tokenNotValidException);
+        TokenNotValidException tokenNotValidException = new TokenNotValidException("TOKEN_NOT_VALID");
+
+        AuthenticationException exception = new TokenNotValidException(tokenNotValidException.getMessage(), tokenNotValidException);
+
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
-        System.out.println(exc.getCause());
+
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
         ResponseEntity response = securityTokenErrorCheck.checkError(request, exc);
-        Assert.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        Assert.assertTrue(response.getBody().toString().contains(basicApiMessage));
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+
+        String basicApiMessage = "Internal error: Invalid message key 'com.ca.mfaas.security.tokenIsNotValidWithoutUrl' is provided. Please contact support for further assistance.";
+        assertTrue(response.getBody().toString().contains(basicApiMessage));
     }
 }
 
