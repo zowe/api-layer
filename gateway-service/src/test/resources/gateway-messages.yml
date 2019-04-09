@@ -1,0 +1,20 @@
+messages:
+    - key: com.ca.mfaas.security.authenticationRequired
+      number: SEC0001
+      type: ERROR
+      text: "Authentication is required for URL '%s'"
+
+    - key: com.ca.mfaas.security.authenticationException
+      number: SEC0002
+      type: ERROR
+      text: "Authentication problem: '%s' for URL '%s'"
+
+    - key: com.ca.mfaas.security.tokenIsNotValid
+      number: SEC0003
+      type: ERROR
+      text: "Authentication problem: '%s' for URL '%s'"
+
+    - key: com.ca.mfaas.security.invalidUsername
+      number: SEC0005
+      type: ERROR
+      text: "Authentication problem: '%s' for URL '%s'"
