@@ -131,7 +131,7 @@ public class PageRedirectionFilterTest {
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
         //route for other service
         String serviceUrl = "/discoverableclient/api/v1";
-        RoutedService otherService = new RoutedService("api-v1", "api/v1", serviceUrl);
+        RoutedService otherService = new RoutedService("ui-v1", "ui/v1", serviceUrl);
         RoutedServices otherRoutedServices = new RoutedServices();
         otherRoutedServices.addRoutedService(otherService);
         this.filter.addRoutedServices(OTHER_SERVICE_ID, otherRoutedServices);
@@ -241,7 +241,7 @@ public class PageRedirectionFilterTest {
     @Test
     public void serviceUrlEndWithSlash() throws Exception {
         String serviceUrl = "/discoverableclient";
-        RoutedService currentService = new RoutedService("api-v1", "api/v1", serviceUrl + "/");
+        RoutedService currentService = new RoutedService("ui-v1", "ui/v1", serviceUrl + "/");
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(currentService);
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
@@ -271,7 +271,7 @@ public class PageRedirectionFilterTest {
     public void urlCached() throws Exception {
         //run filter the first time to put url to cache
         String serviceUrl = "/discoverableclient";
-        RoutedService currentService = new RoutedService("api-v1", "api/v1", serviceUrl);
+        RoutedService currentService = new RoutedService("ui-v1", "ui/v1", serviceUrl);
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(currentService);
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
@@ -324,28 +324,6 @@ public class PageRedirectionFilterTest {
         return String.join("", "https://", NOT_IN_DS_SERVER_HOST, ":", String.valueOf(NOT_IN_DS_SERVER_PORT), relativeUrl);
     }
 
-//    private void mockDifferentServerButInDS(String location, String prefix) {
-//        locationHeader = String.format(location, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, prefix);
-//        //mock other service
-//        when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Arrays.asList(
-//            new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
-//        ));
-//        when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
-//    }
-//
-//    private void mockDifferentServerAndNotInDS(String location, String prefix) {
-//        locationHeader = String.format(location, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, prefix);
-//        //mock other service
-//        when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Arrays.asList(
-//            new DefaultServiceInstance(OTHER_SERVICE_ID, NOT_IN_DS_SERVER_HOST, NOT_IN_DS_SERVER_PORT, true)
-//        ));
-//        when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
-//    }
-//
-//    private String mockUrlPrefixMatched(RoutedService service) {
-//        return service.getServiceUrl();
-//    }
-
     private void verifyLocationUpdatedSameServer(String actualLocation, String originalLocation, String relativeUrl) throws Exception {
         RequestContext ctx = RequestContext.getCurrentContext();
         URI uri = new URI(originalLocation);
@@ -357,13 +335,4 @@ public class PageRedirectionFilterTest {
     private void verifyLocationNotUpdated(String actualLocation, String expectedLocation) {
         assertEquals("Location should not be updated", expectedLocation, actualLocation);
     }
-
-//    private void verifyLocationNotUpdated(String actualLocation) {
-//        assertEquals("Location header should not be modified", this.locationHeader, actualLocation);
-//    }
-
-//    private void verifyGatewayUrlNotAddedToTable() {
-//        HashSet<String> table = this.filter.getRegisteredUrls();
-//        assertTrue(table.isEmpty());
-//    }
 }

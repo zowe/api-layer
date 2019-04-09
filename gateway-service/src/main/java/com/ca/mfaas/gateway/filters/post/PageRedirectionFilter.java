@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
+import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.utils.UrlUtils;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
@@ -119,7 +120,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     private Optional<String> foundMatchedUrlInService(String location, String path, String serviceId) {
         if (routedServicesMap.containsKey(serviceId)) {
             RoutedService service = routedServicesMap.get(serviceId)
-                .getBestMatchingServiceUrl(path, false);
+                .getBestMatchingServiceUrl(path, ServiceType.UI);
             if (service != null) {
                 String serviceUrl = UrlUtils.removeLastSlash(service.getServiceUrl());
                 List<ServiceInstance> serviceInstances = discovery.getInstances(serviceId);
