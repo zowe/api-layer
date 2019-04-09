@@ -15,25 +15,22 @@ import com.ca.mfaas.gateway.security.query.QueryResponse;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.http.Cookie;
 import java.util.Date;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 
 public class AuthenticationServiceTest {
 
-    private String user = "Me";
-    private String domain = "this.com";
-    private String ltpa = "ltpaToken";
-    @Mock
+    public static final String USER = "Me";
+    public static final String DOMAIN = "this.com";
+    public static final String LTPA = "ltpaToken";
+
     private AuthenticationService authService;
-    @Mock
+
     private SecurityConfigurationProperties securityConfigurationProperties;
 
     @Before
@@ -45,8 +42,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void shouldCreateJwtToken() {
-
-        String jwtToken = authService.createJwtToken(user, domain, ltpa);
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
         assertFalse(jwtToken.isEmpty());
         assertEquals(jwtToken.getClass().getName(), "java.lang.String");
@@ -54,27 +50,26 @@ public class AuthenticationServiceTest {
 
     @Test
     public void shouldValidateJwtToken() {
-
-        String jwtToken = authService.createJwtToken(user, domain, ltpa);
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
         TokenAuthentication token = new TokenAuthentication(jwtToken);
         TokenAuthentication jwtValidation = authService.validateJwtToken(token);
 
-        assertEquals(jwtValidation.getPrincipal(), user);
+        assertEquals(jwtValidation.getPrincipal(), USER);
         assertEquals(jwtValidation.getCredentials(), jwtToken);
         assertTrue(jwtValidation.isAuthenticated());
     }
 
     @Test
     public void shouldParseJwtTokenAsQueryResponse() {
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
-        String jwtToken = authService.createJwtToken(user, domain, ltpa);
         String dateNow = new Date().toString().substring(0,16);
         QueryResponse parsedToken = authService.parseJwtToken(jwtToken);
 
         assertEquals(parsedToken.getClass().getTypeName(), "com.ca.mfaas.gateway.security.query.QueryResponse");
-        assertEquals(parsedToken.getDomain(), domain);
-        assertEquals(parsedToken.getUserId(), user);
+        assertEquals(parsedToken.getDomain(), DOMAIN);
+        assertEquals(parsedToken.getUserId(), USER);
         assertEquals(parsedToken.getCreation().toString().substring(0,16), dateNow);
         Date toBeExpired = DateUtils.addDays(parsedToken.getCreation(), 1);
         assertEquals(parsedToken.getExpiration(), toBeExpired);
@@ -82,8 +77,7 @@ public class AuthenticationServiceTest {
 
     @Test
     public void shouldReadJwtTokenFromRequest() {
-
-        String jwtToken = authService.createJwtToken(user, domain, ltpa);
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
 
@@ -93,10 +87,9 @@ public class AuthenticationServiceTest {
 
     @Test
     public void shouldReadLtpaTokenFromJwtToken() {
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
-        String jwtToken = authService.createJwtToken(user, domain, ltpa);
-
-        assertEquals(authService.getLtpaTokenFromJwtToken(jwtToken), ltpa);
+        assertEquals(authService.getLtpaTokenFromJwtToken(jwtToken), LTPA);
     }
 
 }
