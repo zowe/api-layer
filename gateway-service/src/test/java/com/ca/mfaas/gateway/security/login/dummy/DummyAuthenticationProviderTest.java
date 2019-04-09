@@ -16,6 +16,8 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,17 +28,20 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
+@RunWith(MockitoJUnitRunner.class)
 public class DummyAuthenticationProviderTest {
 
+    private static final String PRINCIPAL = "USER";
+    private static final String USERNAME = "USER";
 
     private static DummyAuthenticationProvider dummyAuthenticationProvider;
     private static AuthenticationService authenticationService;
     private  static BCryptPasswordEncoder encoder;
     private static UserDetailsService userDetailsService;
 
+
     @BeforeClass
     public static void setup() {
-
         MonitoringHelper.initMocks();
         authenticationService = mock(AuthenticationService.class);
         encoder = new BCryptPasswordEncoder(10);
@@ -49,14 +54,12 @@ public class DummyAuthenticationProviderTest {
 
     @Test
     public void shouldReturnDummyToken() {
-        String principal = "user";
-        String username = "user";
-        UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(principal, username);
+        UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, USERNAME);
         Authentication returnedTokenAuthentication = dummyAuthenticationProvider.authenticate(usernamePasswordAuthentication);
 
         assertTrue(returnedTokenAuthentication.isAuthenticated());
-        assertEquals("user", returnedTokenAuthentication.getName());
-        assertEquals("user", returnedTokenAuthentication.getPrincipal());
+        assertEquals(USERNAME, returnedTokenAuthentication.getName());
+        assertEquals(PRINCIPAL, returnedTokenAuthentication.getPrincipal());
 
     }
 
@@ -70,8 +73,7 @@ public class DummyAuthenticationProviderTest {
 
     @Test
     public void shouldThrowExceptionIfCredentialsAreNull() {
-        String principal = "user";
-        UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(principal, null);
+        UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, null);
 
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Username or password are invalid.");

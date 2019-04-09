@@ -35,12 +35,21 @@ public class SuccessfulLogoutHandler implements LogoutSuccessHandler {
 
     @Override
     public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+        invalidateSession(httpServletRequest);
+        expireCookie(httpServletResponse);
+        clearContext();
+
+        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private void invalidateSession(HttpServletRequest httpServletRequest) {
         HttpSession session = httpServletRequest.getSession(false);
         if (session != null) {
             session.invalidate();
         }
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+    }
 
+    private void expireCookie(HttpServletResponse httpServletResponse) {
         // Set the cookie to null and expired
         Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), null);
         tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
@@ -48,7 +57,9 @@ public class SuccessfulLogoutHandler implements LogoutSuccessHandler {
         tokenCookie.setHttpOnly(true);
         tokenCookie.setMaxAge(0);
         httpServletResponse.addCookie(tokenCookie);
+    }
 
+    private void clearContext() {
         // Clean the security context
         SecurityContext context = SecurityContextHolder.getContext();
         context.setAuthentication(null);
