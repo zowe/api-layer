@@ -23,6 +23,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
 
+import java.util.Optional;
+
 public class ZosmfFilterTest {
 
     private static final String TOKEN = "token";
@@ -61,7 +63,9 @@ public class ZosmfFilterTest {
     public void shouldAddLtpaTokenToZosmfRequests() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(
+            Optional.of(TOKEN)
+        );
         when(authenticationService.getLtpaTokenFromJwtToken(TOKEN)).thenReturn(LTPA_TOKEN);
 
         this.filter.run();
@@ -73,7 +77,9 @@ public class ZosmfFilterTest {
     public void shouldPassWhenLtpaTokenIsMissing() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(
+            Optional.of(TOKEN)
+        );
         when(authenticationService.getLtpaTokenFromJwtToken(TOKEN)).thenReturn(null);
 
         this.filter.run();
@@ -99,7 +105,9 @@ public class ZosmfFilterTest {
         ctx.set(SERVICE_ID_KEY, "zosmftest");
         ctx.addZuulRequestHeader("Cookie", MY_COOKIE);
 
-        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(TOKEN);
+        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(
+            Optional.of(TOKEN)
+        );
         when(authenticationService.getLtpaTokenFromJwtToken(TOKEN)).thenReturn(LTPA_TOKEN);
 
         this.filter.run();

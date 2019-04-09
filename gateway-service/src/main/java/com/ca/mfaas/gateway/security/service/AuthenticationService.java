@@ -10,8 +10,8 @@
 package com.ca.mfaas.gateway.security.service;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import io.jsonwebtoken.*;
@@ -21,8 +21,9 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -102,17 +103,18 @@ public class AuthenticationService {
             claims.getExpiration());
     }
 
-    public String getJwtTokenFromRequest(HttpServletRequest request) {
+    public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName())) {
-                    return cookie.getValue();
-                }
-            }
+        if (cookies == null) {
+            return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
         }
 
-        return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+        return Arrays.asList(cookies)
+            .stream()
+            .filter(cookie -> cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName()))
+            .filter(cookie -> !cookie.getValue().isEmpty())
+            .findFirst()
+            .map(Cookie::getValue);
     }
 
     public String getLtpaTokenFromJwtToken(String jwtToken) {
@@ -131,12 +133,17 @@ public class AuthenticationService {
         }
     }
 
-    private String extractJwtTokenFromAuthorizationHeader(String header) {
+    private Optional<String> extractJwtTokenFromAuthorizationHeader(String header) {
         if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
-            return header.replaceFirst(BEARER_TYPE_PREFIX + " ", "");
+            header = header.replaceFirst(BEARER_TYPE_PREFIX + " ", "");
+            if(header.isEmpty()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(header);
         }
 
-        return null;
+        return Optional.empty();
     }
 
     private long calculateExpiration(long now, String username) {

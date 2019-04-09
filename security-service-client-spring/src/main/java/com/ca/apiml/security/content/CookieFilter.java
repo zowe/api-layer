@@ -67,7 +67,8 @@ public class CookieFilter extends OncePerRequestFilter {
         return Arrays.asList(cookies)
             .stream()
             .filter(cookie -> cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName()))
-            .map(cookie -> new TokenAuthentication(cookie.getValue()))
-            .findFirst();
+            .filter(cookie -> !cookie.getValue().isEmpty())
+            .findFirst()
+            .map(cookie -> new TokenAuthentication(cookie.getValue()));
     }
 }
