@@ -105,6 +105,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         return Optional.ofNullable(discovery.getInstances(zosmf))
             .orElseThrow(authenticationServiceExceptionSupplier)
             .stream()
+            .filter(f -> f != null)
             .findFirst()
             .map(zosmfInstance -> zosmfInstance.getUri().toString())
             .orElseThrow(authenticationServiceExceptionSupplier);
