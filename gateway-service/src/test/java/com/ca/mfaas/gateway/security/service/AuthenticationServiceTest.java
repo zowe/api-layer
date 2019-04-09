@@ -12,6 +12,8 @@ package com.ca.mfaas.gateway.security.service;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.query.QueryResponse;
+import com.ca.mfaas.gateway.security.token.TokenExpireException;
+import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,6 +50,12 @@ public class AuthenticationServiceTest {
         assertEquals(jwtToken.getClass().getName(), "java.lang.String");
     }
 
+    @Test(expected = NullPointerException.class)
+    public void shouldThrowExceptionWithNullSecret() {
+        authService.setSecret(null);
+        authService.createJwtToken(USER, DOMAIN, LTPA);
+    }
+
     @Test
     public void shouldValidateJwtToken() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
@@ -58,6 +66,28 @@ public class AuthenticationServiceTest {
         assertEquals(jwtValidation.getPrincipal(), USER);
         assertEquals(jwtValidation.getCredentials(), jwtToken);
         assertTrue(jwtValidation.isAuthenticated());
+    }
+
+    @Test(expected = TokenNotValidException.class)
+    public void shouldThrowExceptionWhenTokenIsInvalid() {
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+        String brokenToken = jwtToken + "not";
+        TokenAuthentication token = new TokenAuthentication(brokenToken);
+        authService.validateJwtToken(token);
+    }
+
+    @Test(expected = TokenExpireException.class)
+    public void shouldThrowExceptionWhenTokenIsExpired() throws InterruptedException {
+        SecurityConfigurationProperties.TokenProperties expiredProperties = new SecurityConfigurationProperties.TokenProperties();
+        expiredProperties.setExpirationInSeconds(1);
+        securityConfigurationProperties.setTokenProperties(expiredProperties);
+        AuthenticationService expAuthService = new AuthenticationService(securityConfigurationProperties);
+        expAuthService.setSecret("very_secret");
+        String jwtToken = expAuthService.createJwtToken(USER, DOMAIN, LTPA);
+        TokenAuthentication token = new TokenAuthentication(jwtToken);
+        Thread.sleep(1000);
+
+        authService.validateJwtToken(token);
     }
 
     @Test
@@ -76,13 +106,24 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReadJwtTokenFromRequest() {
+    public void shouldReadJwtTokenFromRequestcOOKIE() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
+
+        assertEquals(authService.getJwtTokenFromRequest(request), null);
+
         request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
 
         assertEquals(authService.getJwtTokenFromRequest(request), jwtToken);
+    }
 
+    @Test
+    public void shouldExtractJwtFromRequestHeader() {
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
+
+        assertEquals(authService.getJwtTokenFromRequest(request), jwtToken);
     }
 
     @Test
@@ -92,4 +133,23 @@ public class AuthenticationServiceTest {
         assertEquals(authService.getLtpaTokenFromJwtToken(jwtToken), LTPA);
     }
 
+    @Test(expected = TokenNotValidException.class)
+    public void shouldThrowExceptionWhenTokenIsInvalidWhileExtractingLtpa() {
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+        String brokenToken = jwtToken + "not";
+        authService.getLtpaTokenFromJwtToken(brokenToken);
+    }
+
+    @Test(expected = TokenExpireException.class)
+    public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() throws InterruptedException {
+        SecurityConfigurationProperties.TokenProperties expiredProperties = new SecurityConfigurationProperties.TokenProperties();
+        expiredProperties.setExpirationInSeconds(1);
+        securityConfigurationProperties.setTokenProperties(expiredProperties);
+        AuthenticationService expAuthService = new AuthenticationService(securityConfigurationProperties);
+        expAuthService.setSecret("very_secret");
+        String jwtToken = expAuthService.createJwtToken(USER, DOMAIN, LTPA);
+        Thread.sleep(1000);
+
+        authService.getLtpaTokenFromJwtToken(jwtToken);
+    }
 }
