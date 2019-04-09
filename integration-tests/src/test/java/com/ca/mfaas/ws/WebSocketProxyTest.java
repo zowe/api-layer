@@ -9,12 +9,14 @@
  */
 package com.ca.mfaas.ws;
 
+import com.ca.mfaas.utils.categories.WebsocketTest;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import com.ca.mfaas.utils.http.HttpClientUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -22,7 +24,10 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
@@ -77,7 +82,7 @@ public class WebSocketProxyTest {
             throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
         client.getUserProperties().put(SSL_CONTEXT_PROPERTY, HttpClientUtils.ignoreSslContext());
-        return client.doHandshake(appendResponseHandler(response, countToNotify), url).get();
+        return client.doHandshake(appendResponseHandler(response, countToNotify), url).get(30000, TimeUnit.MILLISECONDS);
     }
 
     @Test
@@ -95,6 +100,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
+    @Category(WebsocketTest.class)
     public void shouldRouteAllHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(HEADER_URL), response, 1);
@@ -105,7 +111,9 @@ public class WebSocketProxyTest {
         }
 
         HttpHeaders headers = session.getHandshakeHeaders();
-        assertEquals(response.toString(), headers.toString());
+
+        assertEquals(headers.toString(), response.toString());
+        session.sendMessage(new TextMessage("bye"));
         session.close();
     }
 

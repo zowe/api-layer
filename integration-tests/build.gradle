@@ -48,6 +48,12 @@ testlogger {
 
 test.enabled = false
 
+apply plugin : 'java'
+
+test {
+    testLogging.showStandardStreams = true
+}
+
 task startUpCheck(type: Test) {
     group 'integration test'
     description "Check that the API Mediation Layer is up and runnig"
@@ -55,6 +61,17 @@ task startUpCheck(type: Test) {
     systemProperties System.properties
     useJUnit {
         includeCategories 'com.ca.mfaas.utils.categories.StartupCheck'
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runWebsocketHeaderTest(type: Test) {
+    group "integration test"
+    description "runs test on websocket headers"
+
+    systemProperties System.properties
+    useJUnit {
+        includeCategories 'com.ca.mfaas.utils.categories.WebsocketTest'
     }
     outputs.upToDateWhen { false }
 }
