@@ -10,12 +10,13 @@
 package com.ca.mfaas.gateway.security.logout;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.token.TokenAuthentication;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.http.Cookie;
@@ -27,8 +28,8 @@ public class SuccessfulLogoutHandlerTest {
     private SecurityConfigurationProperties securityConfigurationProperties;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
-
     private SuccessfulLogoutHandler successfulLogoutHandler;
+
 
     @Before
     public void setup() {
@@ -60,14 +61,27 @@ public class SuccessfulLogoutHandlerTest {
         MockHttpSession httpSession = new MockHttpSession();
         httpServletRequest.setSession(httpSession);
 
-        assertEquals(false,((MockHttpSession)httpServletRequest.getSession()).isInvalid());
+        assertFalse(((MockHttpSession)httpServletRequest.getSession()).isInvalid());
         assertEquals("1",((MockHttpSession)httpServletRequest.getSession()).getId());
-        assertEquals(false,httpSession.isInvalid());
+        assertFalse(httpSession.isInvalid());
 
         successfulLogoutHandler.onLogoutSuccess(httpServletRequest,httpServletResponse, null);
 
-        assertEquals(false, ((MockHttpSession) httpServletRequest.getSession()).isInvalid());
+        assertFalse(((MockHttpSession) httpServletRequest.getSession()).isInvalid());
         assertEquals("2",((MockHttpSession)httpServletRequest.getSession()).getId());
-        assertEquals(true,httpSession.isInvalid());
+        assertTrue(httpSession.isInvalid());
+    }
+
+    @Test
+    public void shouldCleanSecurityContextAuthentication() throws Exception {
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+
+        Authentication authentication = new TokenAuthentication("TEST_TOKEN_STRING");
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+
+        successfulLogoutHandler.onLogoutSuccess(httpServletRequest,httpServletResponse, null);
+
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
 }
