@@ -29,8 +29,6 @@ import static org.mockito.Mockito.when;
 public class TokenAuthenticationProviderTest {
     private AuthenticationService tokenService;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() {
