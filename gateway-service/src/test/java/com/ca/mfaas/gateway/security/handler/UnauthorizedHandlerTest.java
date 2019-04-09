@@ -2,6 +2,7 @@ package com.ca.mfaas.gateway.security.handler;
 
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class UnauthorizedHandlerTest {
 
         MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
 
-        unauthorizedHandler.commence(httpServletRequest, httpServletResponse, null);
+        unauthorizedHandler.commence(httpServletRequest, httpServletResponse, new TokenExpireException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
