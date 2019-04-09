@@ -17,21 +17,22 @@ import org.apache.http.client.utils.URIBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class WebSocketProxyTest {
     private GatewayServiceConfiguration serviceConfiguration;
@@ -78,14 +79,21 @@ public class WebSocketProxyTest {
         return new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(gatewayUrl).build().toString();
     }
 
-    private WebSocketSession appendingWebSocketSession(String url, StringBuilder response, int countToNotify)
+    private WebSocketSession appendingWebSocketSession(String url, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
             throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
         client.getUserProperties().put(SSL_CONTEXT_PROPERTY, HttpClientUtils.ignoreSslContext());
-        return client.doHandshake(appendResponseHandler(response, countToNotify), url).get(30000, TimeUnit.MILLISECONDS);
+        URI uri = UriComponentsBuilder.fromUriString(url).build().encode().toUri();
+        return client.doHandshake(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
     }
 
+    private WebSocketSession appendingWebSocketSession(String url, StringBuilder response, int countToNotify)
+            throws Exception {
+        return appendingWebSocketSession(url, null, response, countToNotify);
+    }    
+
     @Test
+    @Category(WebsocketTest.class)
     public void shouldRouteWebSocketSession() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 1);
@@ -101,23 +109,24 @@ public class WebSocketProxyTest {
 
     @Test
     @Category(WebsocketTest.class)
-    public void shouldRouteAllHeaders() throws Exception {
+    public void shouldRouteHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();
-        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(HEADER_URL), response, 1);
+        WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+        headers.add("X-Test", "value");
+        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(HEADER_URL), headers, response, 1);
 
         session.sendMessage(new TextMessage("gimme those headers"));
         synchronized (response) {
             response.wait(WAIT_TIMEOUT_MS);
         }
 
-        HttpHeaders headers = session.getHandshakeHeaders();
-
-        assertEquals(headers.toString(), response.toString());
+        assertTrue(response.toString().contains("x-test=[value]"));
         session.sendMessage(new TextMessage("bye"));
         session.close();
     }
 
     @Test
+    @Category(WebsocketTest.class)
     public void shouldCloseSessionAfterClientServerCloses() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 2);
@@ -131,6 +140,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
+    @Category(WebsocketTest.class) 
     public void shouldFailIfPathIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL + "bad"), response, 1);
@@ -144,6 +154,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
+    @Category(WebsocketTest.class)
     public void shouldFailIfServiceIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(
@@ -158,6 +169,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
+    @Category(WebsocketTest.class)
     public void shouldFailIfUrlFormatIsNotCorrent() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), response, 1);

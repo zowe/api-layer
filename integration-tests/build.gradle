@@ -65,9 +65,9 @@ task startUpCheck(type: Test) {
     outputs.upToDateWhen { false }
 }
 
-task runWebsocketHeaderTest(type: Test) {
+task runWebsocketTests(type: Test) {
     group "integration test"
-    description "runs test on websocket headers"
+    description "Runs tests for WebSockets"
 
     systemProperties System.properties
     useJUnit {
