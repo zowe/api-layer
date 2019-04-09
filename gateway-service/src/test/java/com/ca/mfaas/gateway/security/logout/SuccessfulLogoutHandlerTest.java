@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.security.logout;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -23,23 +24,30 @@ import static org.junit.Assert.*;
 
 public class SuccessfulLogoutHandlerTest {
 
-    private SuccessfulLogoutHandler successfulLogoutHandler; // = new SuccessfulLogoutHandler();
-    private SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
-    private MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-    private MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
-    private SecurityContext securityContext = SecurityContextHolder.getContext();
+    private SecurityConfigurationProperties securityConfigurationProperties;
+    private MockHttpServletRequest httpServletRequest;
+    private MockHttpServletResponse httpServletResponse;
 
-    @Test
-    public void shouldClearCookieValue() throws Exception {
+    private SuccessfulLogoutHandler successfulLogoutHandler;
 
-        Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), "TEST_WOOKIE");
+    @Before
+    public void setup() {
+        securityConfigurationProperties = new SecurityConfigurationProperties();
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletResponse = new MockHttpServletResponse();
+
+        Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), "TEST_COOKIE");
         tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
         tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());
         tokenCookie.setHttpOnly(true);
         tokenCookie.setMaxAge(1000);
         httpServletRequest.setCookies(tokenCookie);
 
-        SuccessfulLogoutHandler successfulLogoutHandler = new SuccessfulLogoutHandler(securityConfigurationProperties);
+        successfulLogoutHandler = new SuccessfulLogoutHandler(securityConfigurationProperties);
+    }
+
+    @Test
+    public void shouldClearCookieValue() throws Exception {
         successfulLogoutHandler.onLogoutSuccess(httpServletRequest,httpServletResponse, null);
 
         Cookie responseCookie = httpServletResponse.getCookie(securityConfigurationProperties.getCookieProperties().getCookieName());
@@ -49,7 +57,6 @@ public class SuccessfulLogoutHandlerTest {
 
     @Test
     public void shouldInvalidateSession() throws Exception {
-
         MockHttpSession httpSession = new MockHttpSession();
         httpServletRequest.setSession(httpSession);
 
@@ -57,7 +64,6 @@ public class SuccessfulLogoutHandlerTest {
         assertEquals("1",((MockHttpSession)httpServletRequest.getSession()).getId());
         assertEquals(false,httpSession.isInvalid());
 
-        SuccessfulLogoutHandler successfulLogoutHandler = new SuccessfulLogoutHandler(securityConfigurationProperties);
         successfulLogoutHandler.onLogoutSuccess(httpServletRequest,httpServletResponse, null);
 
         assertEquals(false, ((MockHttpSession) httpServletRequest.getSession()).isInvalid());
