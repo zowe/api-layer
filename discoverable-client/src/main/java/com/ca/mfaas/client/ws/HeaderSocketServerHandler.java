@@ -10,17 +10,10 @@
 package com.ca.mfaas.client.ws;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
-
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HeaderSocketServerHandler extends AbstractWebSocketHandler {
     @Override
