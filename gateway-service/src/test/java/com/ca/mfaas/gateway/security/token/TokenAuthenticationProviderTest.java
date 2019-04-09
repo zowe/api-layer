@@ -13,9 +13,7 @@ package com.ca.mfaas.gateway.security.token;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
