@@ -58,6 +58,7 @@ public class SuccessfulQueryHandlerTest {
 
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
+        assertTrue(httpServletResponse.isCommitted());
     }
 
     @Test
