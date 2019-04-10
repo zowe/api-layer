@@ -45,6 +45,16 @@ public class WebSocketRoutedSession {
         this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl);
     }
 
+    private WebSocketHttpHeaders getWebSocketHttpHeaders(WebSocketSession webSocketServerSession) {
+        WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+        HttpHeaders browserHeaders = webSocketServerSession.getHandshakeHeaders();
+        for (String key : browserHeaders.keySet()) {
+            String value = String.join(" ", browserHeaders.get(key));
+            headers.add(key, value);
+        }
+        return headers;
+    }
+
     public WebSocketSession getWebSocketClientSession() {
         return webSocketClientSession;
     }
@@ -60,12 +70,7 @@ public class WebSocketRoutedSession {
             JettyWebSocketClient client = new JettyWebSocketClient(new WebSocketClient(jettySslContextFactory));
             client.start();
             URI targetURI = new URI(targetUrl);
-            WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-            HttpHeaders browserHeaders = webSocketServerSession.getHandshakeHeaders();
-            for (String key : browserHeaders.keySet()) {
-                String value = String.join(" ", browserHeaders.get(key));
-                headers.add(key, value);
-            }
+            WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
             ListenableFuture<WebSocketSession> futureSession = client
                 .doHandshake(new WebSocketProxyClientHandler(webSocketServerSession), headers, targetURI);
             return futureSession.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);

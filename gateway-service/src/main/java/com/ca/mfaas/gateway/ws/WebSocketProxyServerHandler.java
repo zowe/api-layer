@@ -58,6 +58,12 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         routedServicesMap.put(serviceId, routedServices);
     }
 
+    private String getTargetUrl(String serviceUrl, ServiceInstance serviceInstance, String path) {
+        String servicePath = serviceUrl.charAt(serviceUrl.length() - 1) == '/' ? serviceUrl : serviceUrl + "/";
+        return (serviceInstance.isSecure() ? "wss" : "ws") + "://" + serviceInstance.getHost() + ":"
+            + serviceInstance.getPort() + servicePath + path;
+    }
+
     public Map<String, WebSocketRoutedSession> getRoutedSessions() {
         return routedSessions;
     }
@@ -99,9 +105,8 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private void openWebSocketConnection(RoutedService service, ServiceInstance serviceInstance, Object uri,
             String path, WebSocketSession webSocketSession) throws IOException {
         String serviceUrl = service.getServiceUrl();
-        String servicePath = serviceUrl.charAt(serviceUrl.length() - 1) == '/' ? serviceUrl : serviceUrl + "/";
-        String targetUrl = (serviceInstance.isSecure() ? "wss" : "ws") + "://" + serviceInstance.getHost() + ":"
-                + serviceInstance.getPort() + servicePath + path;
+        String targetUrl = getTargetUrl(serviceUrl, serviceInstance, path);
+
         log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, jettySslContextFactory, this));
         try {
             WebSocketRoutedSession session = new WebSocketRoutedSession(webSocketSession, targetUrl, jettySslContextFactory);
