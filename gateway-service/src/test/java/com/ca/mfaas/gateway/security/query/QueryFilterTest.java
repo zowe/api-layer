@@ -62,7 +62,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldReturnAuthenticationWithValidToken() throws Exception {
+    public void shouldCallAuthenticationManagerAuthenticate() throws Exception {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET);
         httpServletResponse = new MockHttpServletResponse();
