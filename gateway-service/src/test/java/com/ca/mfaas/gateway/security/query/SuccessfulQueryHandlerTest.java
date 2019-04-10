@@ -70,8 +70,8 @@ public class SuccessfulQueryHandlerTest {
         assertNotNull(httpServletResponse.getContentAsString());
         String response = httpServletResponse.getContentAsString();
 
-        assertTrue(response.contains("\"domain\":\""+DOMAIN+"\""));
-        assertTrue(response.contains("\"userId\":\""+USER+"\""));
+        assertTrue(response.contains("\"domain\":\"" + DOMAIN + "\""));
+        assertTrue(response.contains("\"userId\":\"" + USER + "\""));
         assertTrue(response.contains("\"creation\":"));
         assertTrue(response.contains("\"expiration\":"));
     }
