@@ -273,4 +273,20 @@ public class ZosmfAuthenticationProviderTest {
         zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
 
     }
+
+    @Test
+    public void shouldReturnTrueWhenSupportMethodIsCalledWithCorrectClass() {
+        securityConfigurationProperties.setZosmfServiceId(ZOSMF);
+
+        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
+        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, COOKIE);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider
+            = new ZosmfAuthenticationProvider(securityConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+
+        Boolean supports = zosmfAuthenticationProvider.supports(usernamePasswordAuthentication.getClass());
+        assertTrue(supports);
+
+    }
 }
