@@ -82,6 +82,7 @@ public class AuthenticationServiceTest {
         SecurityConfigurationProperties.TokenProperties expiredProperties = new SecurityConfigurationProperties.TokenProperties();
         expiredProperties.setExpirationInSeconds(1);
         securityConfigurationProperties.setTokenProperties(expiredProperties);
+
         AuthenticationService expAuthService = new AuthenticationService(securityConfigurationProperties);
         expAuthService.setSecret("very_secret");
         String jwtToken = expAuthService.createJwtToken(USER, DOMAIN, LTPA);
@@ -89,6 +90,11 @@ public class AuthenticationServiceTest {
         Thread.sleep(1000);
 
         authService.validateJwtToken(token);
+    }
+
+    @Test(expected = TokenNotValidException.class)
+    public void shouldThrowExceptionWhenOccurUnexpectedException() {
+        authService.validateJwtToken(null);
     }
 
     @Test
@@ -125,9 +131,13 @@ public class AuthenticationServiceTest {
     public void shouldExtractJwtFromRequestHeader() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
-
+        request.addHeader("Authorization", "Bearer ");
         Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
+        assertFalse(optionalToken.isPresent());
+
+        request = new MockHttpServletRequest();
+        request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
+        optionalToken = authService.getJwtTokenFromRequest(request);
         assertTrue(optionalToken.isPresent());
         assertEquals(optionalToken.get(), jwtToken);
     }
@@ -135,7 +145,6 @@ public class AuthenticationServiceTest {
     @Test
     public void shouldReadLtpaTokenFromJwtToken() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-
         assertEquals(authService.getLtpaTokenFromJwtToken(jwtToken), LTPA);
     }
 

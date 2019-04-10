@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -105,7 +106,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         return Optional.ofNullable(discovery.getInstances(zosmf))
             .orElseThrow(authenticationServiceExceptionSupplier)
             .stream()
-            .filter(f -> f != null)
+            .filter(Objects::nonNull)
             .findFirst()
             .map(zosmfInstance -> zosmfInstance.getUri().toString())
             .orElseThrow(authenticationServiceExceptionSupplier);
