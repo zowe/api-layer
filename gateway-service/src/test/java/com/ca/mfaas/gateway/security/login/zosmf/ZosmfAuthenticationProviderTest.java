@@ -29,6 +29,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -248,5 +249,28 @@ public class ZosmfAuthenticationProviderTest {
 
         assertTrue(tokenAuthentication.isAuthenticated());
         assertEquals(USERNAME, tokenAuthentication.getPrincipal());
+    }
+
+    @Test
+    public void shouldThrowANewExceptionIfRestClientException() {
+        securityConfigurationProperties.setZosmfServiceId(ZOSMF);
+
+        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
+        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, COOKIE);
+        when(restTemplate.exchange(Mockito.anyString(),
+            Mockito.eq(HttpMethod.GET),
+            Mockito.any(),
+            Mockito.<Class<Object>>any()))
+            .thenThrow(RestClientException.class);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider
+            = new ZosmfAuthenticationProvider(securityConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+
+        exception.expect(AuthenticationServiceException.class);
+        exception.expectMessage("A failure occurred when authenticating.");
+
+        zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
+
     }
 }
