@@ -91,7 +91,9 @@ public class ZosmfFilterTest {
     public void shouldPassWhenJwtTokenIsMissing() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "zosmftest");
-        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(null);
+        when(authenticationService.getJwtTokenFromRequest(ctx.getRequest())).thenReturn(
+            Optional.empty()
+        );
         when(authenticationService.getLtpaTokenFromJwtToken(null)).thenReturn(null);
 
         this.filter.run();

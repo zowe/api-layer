@@ -136,7 +136,7 @@ public class AuthenticationService {
     private Optional<String> extractJwtTokenFromAuthorizationHeader(String header) {
         if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
             header = header.replaceFirst(BEARER_TYPE_PREFIX + " ", "");
-            if(header.isEmpty()) {
+            if (header.isEmpty()) {
                 return Optional.empty();
             }
 

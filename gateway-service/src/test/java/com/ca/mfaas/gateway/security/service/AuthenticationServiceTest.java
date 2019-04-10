@@ -21,6 +21,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.http.Cookie;
 import java.util.Date;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -106,15 +107,18 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReadJwtTokenFromRequestcOOKIE() {
+    public void shouldReadJwtTokenFromRequestCookie() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
 
-        assertEquals(authService.getJwtTokenFromRequest(request), null);
+        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
+        assertFalse(optionalToken.isPresent());
 
         request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
 
-        assertEquals(authService.getJwtTokenFromRequest(request), jwtToken);
+        optionalToken = authService.getJwtTokenFromRequest(request);
+        assertTrue(optionalToken.isPresent());
+        assertEquals(optionalToken.get(), jwtToken);
     }
 
     @Test
@@ -123,7 +127,9 @@ public class AuthenticationServiceTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
 
-        assertEquals(authService.getJwtTokenFromRequest(request), jwtToken);
+        Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
+        assertTrue(optionalToken.isPresent());
+        assertEquals(optionalToken.get(), jwtToken);
     }
 
     @Test
