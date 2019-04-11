@@ -23,8 +23,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
 public class QueryIntegrationTest {
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getPassword();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getUser();
     private final static String QUERY_ENDPOINT = "/auth/query";
 
     private String token;
@@ -64,7 +64,7 @@ public class QueryIntegrationTest {
     @Test
     public void doQueryWithInvalidToken() {
         String invalidToken = "1234";
-        String expectedMessage = "Authentication problem: 'Token is not valid' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Token is not valid.' for URL '/api/v1/gateway/auth/query'";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
@@ -80,7 +80,7 @@ public class QueryIntegrationTest {
 
     @Test
     public void doQueryWithoutHeader() {
-        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/api/v1/gateway/auth/query'";
 
         given()
             .when()
@@ -94,7 +94,7 @@ public class QueryIntegrationTest {
 
     @Test
     public void doQueryWithWrongAuthType() {
-        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Valid token not provided.' for URL '/api/v1/gateway/auth/query'";
 
         given()
             .header("Authorization", "Basic " + token)
@@ -110,7 +110,7 @@ public class QueryIntegrationTest {
     @Test
     public void doQueryWithEmptyHeader() {
         String emptyToken = " ";
-        String expectedMessage = "Authentication problem: 'Token is not valid' for URL '/apicatalog/auth/query'";
+        String expectedMessage = "Authentication problem: 'Token is not valid.' for URL '/api/v1/gateway/auth/query'";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
