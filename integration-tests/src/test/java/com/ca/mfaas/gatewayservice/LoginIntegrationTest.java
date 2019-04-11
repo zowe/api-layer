@@ -33,8 +33,8 @@ import static org.junit.Assert.assertTrue;
 public class LoginIntegrationTest {
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPassword();
     private final static String INVALID_USERNAME = "intstusr";
     private final static String INVALID_PASSWORD = "someps33";
 

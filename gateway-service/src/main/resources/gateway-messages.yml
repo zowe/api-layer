@@ -14,6 +14,11 @@ messages:
       type: ERROR
       text: "Authentication problem: '%s' for URL '%s'"
 
+    - key: com.ca.mfaas.security.tokenIsNotValidWithoutUrl
+      number: SEC0006
+      type: ERROR
+      text: "Authentication problem: '%s'"
+
     - key: com.ca.mfaas.security.invalidUsername
       number: SEC0005
       type: ERROR

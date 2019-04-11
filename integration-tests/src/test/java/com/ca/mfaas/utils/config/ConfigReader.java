@@ -61,8 +61,8 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
-                    configuration.getApiCatalogServiceConfiguration().setUser(System.getProperty("apicatalog.user", configuration.getApiCatalogServiceConfiguration().getUser()));
-                    configuration.getApiCatalogServiceConfiguration().setPassword(System.getProperty("apicatalog.password", configuration.getApiCatalogServiceConfiguration().getPassword()));
+                    configuration.getGatewayServiceConfiguration().setUser(System.getProperty("apicatalog.user", configuration.getGatewayServiceConfiguration().getUser()));
+                    configuration.getGatewayServiceConfiguration().setPassword(System.getProperty("apicatalog.password", configuration.getGatewayServiceConfiguration().getPassword()));
 
                     setTlsConfigurationFromSystemProperties(configuration);
 
