@@ -14,8 +14,8 @@ discoveryServiceConfiguration:
     instances: 1
 apiCatalogServiceConfiguration:
     # Mainframe credentials are required - see /integration-tests/README.md for instructions
-    user: abdil01
-    password: noteb123
+    user: REPLACEME
+    password: REPLACEME
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password
