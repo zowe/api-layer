@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.utils.http;
 
-import com.ca.mfaas.utils.config.ApiCatalogServiceConfiguration;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import org.apache.http.HttpRequest;
@@ -25,15 +24,15 @@ import java.io.IOException;
 import java.net.URI;
 
 public class HttpSecurityUtils {
-    private static final String API_CATALOG_LOGIN_ENDPOINT = "/api/v1/apicatalog/auth/login";
+    private static final String GATEWAY_LOGIN_ENDPOINT = "/api/v1/gateway/auth/login/";
 
     private HttpSecurityUtils() {}
 
-    public static String getCookieForApiCatalog() throws IOException {
-        ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
-        String user = apiCatalogServiceConfiguration.getUser();
-        String password = apiCatalogServiceConfiguration.getPassword();
-        URI uri = HttpRequestUtils.getUriFromGateway(API_CATALOG_LOGIN_ENDPOINT);
+    public static String getCookieForGateway() throws IOException {
+        GatewayServiceConfiguration GatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        String user = GatewayServiceConfiguration.getUser();
+        String password = GatewayServiceConfiguration.getPassword();
+        URI uri = HttpRequestUtils.getUriFromGateway(GATEWAY_LOGIN_ENDPOINT);
 
         return getCookie(uri, user, password);
     }

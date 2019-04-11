@@ -183,7 +183,7 @@ public class ApiCatalogEndpointIntegrationTest {
      */
     private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
         HttpGet request = HttpRequestUtils.getRequest(endpoint);
-        String cookie = HttpSecurityUtils.getCookieForApiCatalog();
+        String cookie = HttpSecurityUtils.getCookieForGateway();
         HttpSecurityUtils.addCookie(request, cookie);
 
         // When

@@ -7,14 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog;
+package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.utils.config.ApiCatalogServiceConfiguration;
 import com.ca.mfaas.utils.config.ConfigReader;
+import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import com.ca.mfaas.utils.http.HttpRequestUtils;
 import com.ca.mfaas.utils.http.HttpSecurityUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.sun.jndi.toolkit.url.Uri;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
@@ -23,6 +24,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.HttpCookie;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -34,10 +36,10 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class ApiCatalogSecurityTest {
-    private static final String PROTECTED_ENDPOINT = "/api/v1/apicatalog/containers";
-    private static final String LOGIN_ENDPOINT = "/api/v1/apicatalog/auth/login";
-    private static final String LOGOUT_ENDPOINT = "/api/v1/apicatalog/auth/logout";
+public class GatewaySecurityTest {
+    private static final String PROTECTED_ENDPOINT = "/application/";
+    private static final String LOGIN_ENDPOINT = "/api/v1/gateway/auth/login";
+    private static final String LOGOUT_ENDPOINT = "/api/v1/gateway/auth/logout";
     private static final String AUTHENTICATION_COOKIE = "apimlAuthenticationToken";
 
     @Test
@@ -46,18 +48,18 @@ public class ApiCatalogSecurityTest {
     }
 
     @Test
-    public void loginToApiCatalogAndAccessProtectedEndpoint() throws IOException {
-        String cookie = HttpSecurityUtils.getCookieForApiCatalog();
+    public void loginToGatewayAndAccessProtectedEndpoint() throws IOException {
+        String cookie = HttpSecurityUtils.getCookieForGateway();
         HttpGet request = HttpRequestUtils.getRequest(PROTECTED_ENDPOINT);
         request = (HttpGet) HttpSecurityUtils.addCookie(request, cookie);
         HttpRequestUtils.response(request, SC_OK);
     }
 
     @Test
-    public void loginToApplicationCatalogAndCheckForCookie() throws IOException {
-        ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
-        String user = apiCatalogServiceConfiguration.getUser();
-        String password = apiCatalogServiceConfiguration.getPassword();
+    public void loginToGatewayAndCheckForCookie() throws IOException {
+        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        String user = gatewayServiceConfiguration.getUser();
+        String password = gatewayServiceConfiguration.getPassword();
         HttpResponse response = HttpSecurityUtils.getLoginResponse(LOGIN_ENDPOINT, user, password);
         String cookiesString = response.getFirstHeader("Set-Cookie").getValue();
         List<HttpCookie> cookies = HttpCookie.parse(cookiesString);
@@ -87,7 +89,8 @@ public class ApiCatalogSecurityTest {
     public void accessProtectedEndpointWithExpiredToken() throws IOException, InterruptedException {
         String user = "expire";
         String password = "expire";
-        String cookie = HttpSecurityUtils.getCookie(LOGIN_ENDPOINT, user, password);
+        URI uri = HttpRequestUtils.getUriFromGateway(LOGIN_ENDPOINT);
+        String cookie = HttpSecurityUtils.getCookie(uri, user, password);
         TimeUnit.SECONDS.sleep(3);
         HttpGet request = HttpRequestUtils.getRequest(PROTECTED_ENDPOINT);
         request = (HttpGet) HttpSecurityUtils.addCookie(request, cookie);
@@ -102,9 +105,9 @@ public class ApiCatalogSecurityTest {
 
     @Test
     public void accessProtectedEndpointWithInvalidToken() throws IOException {
-        String cookie = HttpSecurityUtils.getCookieForApiCatalog();
+        String cookie = HttpSecurityUtils.getCookieForGateway();
         String subst = cookie.substring(30, 50);
-        cookie = cookie.replace(subst, "aaaaaaaaaaaaaaaaaaas");
+        cookie = cookie.replace(subst, "not");
         HttpGet request = HttpRequestUtils.getRequest(PROTECTED_ENDPOINT);
         request = (HttpGet) HttpSecurityUtils.addCookie(request, cookie);
         HttpResponse response = HttpRequestUtils.response(request, SC_UNAUTHORIZED);
@@ -118,7 +121,7 @@ public class ApiCatalogSecurityTest {
 
     @Test
     public void logout() throws IOException {
-        String cookie = HttpSecurityUtils.getCookieForApiCatalog();
+        String cookie = HttpSecurityUtils.getCookieForGateway();
         HttpGet request = HttpRequestUtils.getRequest(LOGOUT_ENDPOINT);
         String requestCookie = String.format("%s=%s", AUTHENTICATION_COOKIE, cookie);
         request.setHeader("Cookie", requestCookie);
