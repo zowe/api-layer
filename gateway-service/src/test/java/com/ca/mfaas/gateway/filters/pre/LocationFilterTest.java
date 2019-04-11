@@ -132,4 +132,33 @@ public class LocationFilterTest {
         assertEquals(null, ctx.get(REQUEST_URI_KEY));
     }
 
+    @Test
+    public void shouldReturnFilterType() {
+        String filterType = this.filter.filterType();
+        assertEquals("pre", filterType);
+    }
+
+    @Test
+    public void shouldFilterShouldReturnTrue() {
+        Boolean filterFlag = this.filter.shouldFilter();
+        assertEquals(true, filterFlag);
+    }
+
+    @Test
+    public void shouldReturnFilterOrder() {
+        int filterOrder = this.filter.filterOrder();
+        assertEquals(6, filterOrder);
+    }
+
+    @Test
+    public void normalizeOriginalPathShouldReturnEmptyString() {
+        LocationFilter filter = new LocationFilter();
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(
+            new RoutedService("testv1", "api/v1", null));
+        filter.addRoutedServices("service", routedServices);
+        filter.run();
+        assertEquals("/path", ctx.get(REQUEST_URI_KEY));
+    }
 }
