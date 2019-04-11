@@ -66,8 +66,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         }
 
         Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
-        LoginRequest loginRequest = optionalLoginRequest.orElse(getCredentialsFromBody(request));
-
+        LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
             throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
         }
