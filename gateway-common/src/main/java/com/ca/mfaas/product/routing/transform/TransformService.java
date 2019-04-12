@@ -50,7 +50,15 @@ public class TransformService {
             throw new URLTransformationException(message);
         }
 
-        String path = serviceUri.getPath().replace(route.getServiceUrl(), "");
+        String pathToReplace;
+
+        if (serviceUri.getQuery() != null) {
+            pathToReplace = serviceUri.getPath() + "?" + serviceUri.getQuery();
+        }
+        else pathToReplace = serviceUri.getPath();
+
+        String path = pathToReplace.replace(route.getServiceUrl(), "");
+
         if (!path.isEmpty() && !path.startsWith("/")) {
             throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
         }

@@ -161,5 +161,27 @@ public class TransformServiceTest {
         assertEquals(expectedUrl, actualUrl);
     }
 
+    @Test
+    public void givenUrlContainingPathAndQuery_whenTransform_thenKeepQueryPartInTheNewUrl() throws URLTransformationException {
+        String url = "https://locahost:8080/ui/service/login.do?action=secure";
+        String path = "/login.do?action=secure";
+        RoutedServices routedServices = new RoutedServices();
+        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/ui/service");
+        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
+        routedServices.addRoutedService(routedService1);
+        routedServices.addRoutedService(routedService2);
+
+        TransformService transformService = new TransformService(gatewayConfigProperties);
+
+        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices);
+        String expectedUrl = String.format("%s://%s/%s/%s%s",
+            gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname(),
+            UI_PREFIX,
+            SERVICE_ID,
+            path);
+        assertEquals(expectedUrl, actualUrl);
+    }
+
 
 }
