@@ -97,7 +97,7 @@ public class LoginIntegrationTest {
 
     @Test
     public void doLoginWithInvalidCredentialsInHeaderLoginRequest() {
-        String expectedMessage = "Authentication problem: 'Login object has wrong format' for URL '/apicatalog/auth/login'";
+        String expectedMessage = "Authentication problem: 'Username or password are invalid.' for URL '/api/v1/gateway/auth/login'";
         given()
             .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
             .contentType(JSON)
@@ -106,7 +106,7 @@ public class LoginIntegrationTest {
             .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0002' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'SEC0005' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -148,7 +148,7 @@ public class LoginIntegrationTest {
 
     @Test
     public void doLoginWithInvalidCredentials() {
-        String expectedMessage = "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'";
+        String expectedMessage = "Authentication problem: 'Username or password are invalid.' for URL '/api/v1/gateway/auth/login'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 

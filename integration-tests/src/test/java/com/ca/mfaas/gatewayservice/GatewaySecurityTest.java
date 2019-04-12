@@ -15,7 +15,6 @@ import com.ca.mfaas.utils.http.HttpRequestUtils;
 import com.ca.mfaas.utils.http.HttpSecurityUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import com.sun.jndi.toolkit.url.Uri;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
