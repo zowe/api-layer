@@ -29,9 +29,9 @@ public class HttpSecurityUtils {
     private HttpSecurityUtils() {}
 
     public static String getCookieForGateway() throws IOException {
-        GatewayServiceConfiguration GatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        String user = GatewayServiceConfiguration.getUser();
-        String password = GatewayServiceConfiguration.getPassword();
+        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        String user = gatewayServiceConfiguration.getUser();
+        String password = gatewayServiceConfiguration.getPassword();
         URI uri = HttpRequestUtils.getUriFromGateway(GATEWAY_LOGIN_ENDPOINT);
 
         return getCookie(uri, user, password);
