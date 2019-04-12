@@ -73,7 +73,7 @@ public class InstanceRetrievalServiceTest {
     @Test
     public void shouldChangeHomePageValue() throws CannotRegisterServiceException, JsonProcessingException {
         String discoveryServiceLocatorUrl = propertiesContainer.getDiscovery().getLocations() + "apps";
-        assertEquals(discoveryServiceLocatorUrl, "http://localhost:10011/eureka/apps");
+        assertEquals("http://localhost:10011/eureka/apps", discoveryServiceLocatorUrl);
 
         assertNotNull(instanceRetrievalService);
 

@@ -189,7 +189,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getHomePageUrl(),
                     routes);
             } catch (URLTransformationException e) {
-                e.printStackTrace();
+                log.info("Failed to create Instance Homepage URL", e);
                 instanceHomePage = instanceInfo.getHomePageUrl();
             }
         }
