@@ -21,6 +21,8 @@ import java.net.URI;
 @Slf4j
 public class TransformService {
 
+    private static final String SEPARATOR = "/";
+
     private final GatewayConfigProperties gatewayConfigProperties;
 
     public TransformService(GatewayConfigProperties gatewayConfigProperties) {
@@ -50,16 +52,14 @@ public class TransformService {
             throw new URLTransformationException(message);
         }
 
-        String pathToReplace;
 
+        String pathToReplace = serviceUri.getPath();
         if (serviceUri.getQuery() != null) {
-            pathToReplace = serviceUri.getPath() + "?" + serviceUri.getQuery();
+            pathToReplace += "?" + serviceUri.getQuery();
         }
-        else pathToReplace = serviceUri.getPath();
 
-        String path = pathToReplace.replace(route.getServiceUrl(), "");
-
-        if (!path.isEmpty() && !path.startsWith("/")) {
+        String endPoint = getShortEndPoint(route.getServiceUrl(), pathToReplace);
+        if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
             throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
         }
 
@@ -68,6 +68,22 @@ public class TransformService {
             gatewayConfigProperties.getHostname(),
             route.getGatewayUrl(),
             serviceId,
-            path);
+            endPoint);
+    }
+
+
+    /**
+     * Get short endpoint
+     *
+     * @param routeServiceUrl service url of route
+     * @param endPoint        the endpoint of method
+     * @return short endpoint
+     */
+    private String getShortEndPoint(String routeServiceUrl, String endPoint) {
+        String shortEndPoint = endPoint;
+        if (!routeServiceUrl.equals(SEPARATOR)) {
+            shortEndPoint = shortEndPoint.replaceFirst(routeServiceUrl, "");
+        }
+        return shortEndPoint;
     }
 }
