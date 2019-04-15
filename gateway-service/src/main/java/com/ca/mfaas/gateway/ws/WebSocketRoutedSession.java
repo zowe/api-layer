@@ -52,6 +52,8 @@ public class WebSocketRoutedSession {
             String value = String.join(" ", browserHeaders.get(key));
             headers.add(key, value);
         }
+
+        headers.setAccessControlAllowOrigin(browserHeaders.getOrigin());
         return headers;
     }
 
