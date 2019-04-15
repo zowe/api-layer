@@ -30,6 +30,7 @@ const appRouter = app => {
         const credentials = req.body;
 
         if (validateCredentials(credentials)) {
+            console.log('LOGIN');
             setTimeout(() => res.status(200).send(loginSuccess), 2000);
         } else {
             console.log(invalidCredentials);
