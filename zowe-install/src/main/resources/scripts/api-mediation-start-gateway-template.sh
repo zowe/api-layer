@@ -6,6 +6,9 @@
 # - CATALOG_PORT - The port the catalog service will use
 # - GATEWAY_PORT - The port the gateway service will use
 # - VERIFY_CERTIFICATES - true/false - Validation of TLS/SSL certitificates for services
+# - ZOWE_JWT_ALGORITHM - The signature algorithm used to sign jwt token
+# - ZOWE_JWT_SECRET - The secret password used to sign jwt token
+
 
 **JAVA_SETUP**
 if [[ ":$PATH:" == *":$JAVA_HOME/bin:"* ]]; then
@@ -28,6 +31,8 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.discoveryServiceUrls=https://**HOSTNAME**:**DISCOVERY_PORT**/eureka/ \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.service.ipAddress=**IPADDRESS** \
+    -Dapiml.security.jwtAlgorithm=**JWT_ALGORITHM** \
+    -Dapiml.security.jwtSecret=**JWT_SECRET** \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
