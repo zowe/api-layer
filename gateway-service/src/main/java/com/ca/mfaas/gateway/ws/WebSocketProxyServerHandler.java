@@ -46,6 +46,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private final Map<String, RoutedServices> routedServicesMap = new ConcurrentHashMap<>();
     private final DiscoveryClient discovery;
     private final SslContextFactory jettySslContextFactory;
+    private static final String SEPARATOR = "/";
 
     @Autowired
     public WebSocketProxyServerHandler(DiscoveryClient discovery, SslContextFactory jettySslContextFactory) {
@@ -59,7 +60,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     private String getTargetUrl(String serviceUrl, ServiceInstance serviceInstance, String path) {
-        String servicePath = serviceUrl.charAt(serviceUrl.length() - 1) == '/' ? serviceUrl : serviceUrl + "/";
+        String servicePath = serviceUrl.charAt(serviceUrl.length() - 1) == '/' ? serviceUrl : serviceUrl + SEPARATOR;
         return (serviceInstance.isSecure() ? "wss" : "ws") + "://" + serviceInstance.getHost() + ":"
             + serviceInstance.getPort() + servicePath + path;
     }
@@ -72,7 +73,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     public void afterConnectionEstablished(WebSocketSession webSocketSession) throws Exception {
         URI uri = webSocketSession.getUri();
 
-        String[] uriParts = uri.getPath().split("/", 5);
+        String[] uriParts = uri.getPath().split(SEPARATOR, 5);
         if (uriParts.length == 5) {
             String majorVersion = uriParts[2];
             String serviceId = uriParts[3];
