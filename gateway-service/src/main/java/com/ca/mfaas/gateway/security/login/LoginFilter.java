@@ -59,6 +59,15 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         this.setAuthenticationManager(authenticationManager);
     }
 
+    /**
+     * Attempt authentication and return a fully populated Authentication object
+     * (including granted authorities) if successful
+     * @param request the http request
+     * @param response the http response
+     * @return the successful authentication token
+     * @throws AuthenticationServiceException if the authentication method is not supported
+     * @throws AuthenticationCredentialsNotFoundException if username or password are not provided
+     */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
@@ -92,6 +101,11 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         failureHandler.onAuthenticationFailure(request, response, failed);
     }
 
+    /**
+     * Get credentials from the authorization header in the request and decode them
+     * @param request the http request
+     * @return the decoded credentials
+     */
     private Optional<LoginRequest> getCredentialFromAuthorizationHeader(HttpServletRequest request) {
         return Optional.ofNullable(
             request.getHeader(HttpHeaders.AUTHORIZATION)
@@ -104,6 +118,11 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         .map(this::mapBase64Credentials);
     }
 
+    /**
+     * Decode the encoded credentials
+     * @param base64Credentials the credentials encoded in base64
+     * @return the decoded credentials
+     */
     private LoginRequest mapBase64Credentials(String base64Credentials) {
         String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
         int i = credentials.indexOf(':');
@@ -114,7 +133,12 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         return null;
     }
 
-
+    /**
+     * Get credentials from the request body
+     * @param request the http request
+     * @return the credentials
+     * @throws AuthenticationCredentialsNotFoundException if the login object has wrong format
+     */
     private LoginRequest getCredentialsFromBody(HttpServletRequest request) {
         try {
             return mapper.readValue(request.getInputStream(), LoginRequest.class);

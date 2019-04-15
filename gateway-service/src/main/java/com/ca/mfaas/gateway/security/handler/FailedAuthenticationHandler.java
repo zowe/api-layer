@@ -35,6 +35,9 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
         this.mapper = objectMapper;
     }
 
+    /**
+     * Handles errors in authentication process
+     */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
