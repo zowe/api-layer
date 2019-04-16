@@ -36,6 +36,11 @@ public class InMemoryUserDetailsService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Find user by username and return information
+     * @param username the username
+     * @return user information
+     */
     @Override
     public UserDetails loadUserByUsername(String username) {
 
