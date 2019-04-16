@@ -40,7 +40,7 @@ public class ApiMediationLayerStartupChecker {
     }
 
     public void waitUntilReady() {
-        await().atMost(10, MINUTES).pollDelay(0, SECONDS).pollInterval(10, SECONDS).until(this::isReady);
+        await().atMost(3, MINUTES).pollDelay(0, SECONDS).pollInterval(10, SECONDS).until(this::isReady);
     }
 
     private boolean isReady() {
