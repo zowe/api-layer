@@ -42,6 +42,10 @@ public class SuccessfulLogoutHandler implements LogoutSuccessHandler {
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
     }
 
+    /**
+     * Invalidate the session
+     * @param httpServletRequest the http request
+     */
     private void invalidateSession(HttpServletRequest httpServletRequest) {
         HttpSession session = httpServletRequest.getSession(false);
         if (session != null) {
@@ -49,8 +53,11 @@ public class SuccessfulLogoutHandler implements LogoutSuccessHandler {
         }
     }
 
+    /**
+     * Set the cookie to null and expired
+     * @param httpServletResponse the http response
+     */
     private void expireCookie(HttpServletResponse httpServletResponse) {
-        // Set the cookie to null and expired
         Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), null);
         tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
         tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());

@@ -40,6 +40,11 @@ public class AuthenticationService {
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
+    /**
+     * Return the secret key
+     * @return the secret key
+     * @throws NullPointerException if the secret key is null
+     */
     private String getSecret() {
         if (secret == null) {
             throw new NullPointerException("The secret key for JWT token service is null.");
@@ -47,10 +52,23 @@ public class AuthenticationService {
         return secret;
     }
 
+
+    /**
+     * Set the secret key
+     * @param secret the secret key
+     */
     public void setSecret(String secret) {
         this.secret = secret;
     }
 
+    /**
+     * Create the jwt token and set the ltpa token, the expiration time, the domain, the subject, the date of issue, the issuer and the id.
+     * Sign the token with HMAC SHA512 algorithm, using the secret key
+     * @param username the username
+     * @param domain the domain
+     * @param ltpaToken the ltpa token
+     * @return the jwt token
+     */
     public String createJwtToken(String username, String domain, String ltpaToken) {
         long now = System.currentTimeMillis();
         long expiration = calculateExpiration(now, username);
@@ -67,6 +85,13 @@ public class AuthenticationService {
             .compact();
     }
 
+    /**
+     * Validate the jwt token
+     * @param token the jwt token
+     * @throws  TokenExpireException if the token is expired
+     * @throws  TokenNotValidException if the token is not valid
+     * @return the TokenAuthentication object containing username and valid JWT token
+     */
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
         try {
             Claims claims = Jwts.parser()
@@ -90,6 +115,11 @@ public class AuthenticationService {
         }
     }
 
+    /**
+     * Parse the jwt token and return a QueryResponse object contaning the found domain, user id, date of creation and date of expiration
+     * @param token the jwt token
+     * @return the query response
+     */
     public QueryResponse parseJwtToken(String token) {
         Claims claims = Jwts.parser()
             .setSigningKey(getSecret())
@@ -103,6 +133,12 @@ public class AuthenticationService {
             claims.getExpiration());
     }
 
+    /**
+     * Get the jwt token from the authorization header in the http request if cookies are null, otherwise
+     * extract it from the cookies
+     * @param request the http request
+     * @return the jwt token
+     */
     public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
@@ -117,6 +153,12 @@ public class AuthenticationService {
             .map(Cookie::getValue);
     }
 
+    /**
+     * Get the ltpa token from the parsed jwt token
+     * @param jwtToken the jwt token
+     * @throws TokenNotValidException if the jwt token is not valid
+     * @return the ltpa token
+     */
     public String getLtpaTokenFromJwtToken(String jwtToken) {
         try {
             Claims claims = Jwts.parser()
@@ -133,6 +175,11 @@ public class AuthenticationService {
         }
     }
 
+    /**
+     * Extract the jwt token from the authorization header
+     * @param header the http request header
+     * @return the jwt token
+     */
     private Optional<String> extractJwtTokenFromAuthorizationHeader(String header) {
         if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
             header = header.replaceFirst(BEARER_TYPE_PREFIX + " ", "");
@@ -146,6 +193,12 @@ public class AuthenticationService {
         return Optional.empty();
     }
 
+    /**
+     * Calculate the expiration time
+     * @param now the current time
+     * @param username the username
+     * @return the calculated expiration time
+     */
     private long calculateExpiration(long now, String username) {
         long expiration = now + (securityConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000);
 

@@ -51,7 +51,6 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
 
     /**
      * Add the cookie to the response
-     *
      * @param token    the authentication token
      * @param response send back this response
      */

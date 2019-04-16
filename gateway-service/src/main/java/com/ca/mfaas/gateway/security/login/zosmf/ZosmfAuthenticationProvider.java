@@ -60,6 +60,11 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         this.restTemplate = restTemplate;
     }
 
+    /**
+     * Authenticate zosmf credentials
+     * @param authentication that was presented to the provider for validation
+     * @return the successful authentication token
+     */
     @Override
     public Authentication authenticate(Authentication authentication) {
         String zosmf = securityConfigurationProperties.validatedZosmfServiceId();
@@ -97,6 +102,11 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
+    /**
+     * Return zosmf instance uri
+     * @param zosmf the zosmf service id
+     * @return the uri
+     */
     private String getURI(String zosmf) {
         Supplier<AuthenticationServiceException> authenticationServiceExceptionSupplier = () -> {
             log.error("z/OSMF instance '{}' not found or incorrectly configured.", zosmf);
@@ -112,6 +122,12 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             .orElseThrow(authenticationServiceExceptionSupplier);
     }
 
+    /**
+     * Read the ltpa token
+     * @param cookie the cookie
+     * @return the ltpa stored in the cookie
+     * @throws BadCredentialsException if username or password are invalid
+     */
     private String readLtpaToken(String cookie) {
         if (cookie == null || cookie.isEmpty() || !cookie.contains("LtpaToken2")) {
             throw new BadCredentialsException("Username or password are invalid.");
@@ -121,6 +137,12 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         }
     }
 
+    /**
+     * Read the zosmf domain from the content in the response
+     * @param content the response body
+     * @return the zosmf domain
+     * @throws AuthenticationServiceException if the zosmf domain cannot be read
+     */
     private String readDomain(String content) {
         try {
             ObjectNode zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);

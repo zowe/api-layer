@@ -177,6 +177,13 @@ public class CachedProductFamilyService {
         return container;
     }
 
+
+    /**
+     * Try to transform the service homepage url and return it. If it fails,
+     * return the original homepage url
+     * @param instanceInfo    the service instance
+     * @return the transformed homepage url
+     */
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {

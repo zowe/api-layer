@@ -143,6 +143,13 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
         return serviceId;
     }
 
+    /**
+     * Create route keys using gateway url found in the service routes metadata
+     * @param serviceInstance the list of service instances
+     * @param routes the service routes
+     * @param serviceId the service id
+     * @return the list of route keys
+     */
     @SuppressWarnings("squid:S3776") // Suppress complexity warning
     private List<String> createRouteKeys(List<ServiceInstance> serviceInstance,
                                          RoutedServices routes, String serviceId) {

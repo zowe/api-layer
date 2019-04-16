@@ -39,6 +39,11 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
         this.authenticationService = authenticationService;
     }
 
+    /**
+     * Authenticate dummy credentials
+     * @param authentication that was presented to the provider for validation
+     * @return the successful authentication token
+     */
     @Override
     public Authentication authenticate(Authentication authentication) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
