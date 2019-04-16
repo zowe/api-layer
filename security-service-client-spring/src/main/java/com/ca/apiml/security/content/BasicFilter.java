@@ -39,6 +39,15 @@ public class BasicFilter extends OncePerRequestFilter {
         this.failureHandler = failureHandler;
     }
 
+    /**
+     * Extract the token from the request and use the authentication manager to perform authentication.
+     * Then set the currently authenticated principal and call the next filter in the chain
+     * @param request the http request
+     * @param response the http response
+     * @param filterChain the filter chain
+     * @throws ServletException
+     * @throws  IOException
+     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         Optional<UsernamePasswordAuthenticationToken> authenticationToken = extractContent(request);
@@ -56,6 +65,11 @@ public class BasicFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Extract credentials from the authorization header in the request and decode them
+     * @param request the http request
+     * @return the decoded credentials
+     */
     private Optional<UsernamePasswordAuthenticationToken> extractContent(HttpServletRequest request) {
         return Optional.ofNullable(
             request.getHeader(HttpHeaders.AUTHORIZATION)
@@ -68,6 +82,11 @@ public class BasicFilter extends OncePerRequestFilter {
          .map(this::mapBase64Credentials);
     }
 
+    /**
+     * Decode the encoded credentials
+     * @param base64Credentials the credentials encoded in base64
+     * @return the decoded credentials
+     */
     private UsernamePasswordAuthenticationToken mapBase64Credentials(String base64Credentials) {
         String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
         int i = credentials.indexOf(':');

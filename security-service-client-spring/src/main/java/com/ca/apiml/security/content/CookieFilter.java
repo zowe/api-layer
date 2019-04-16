@@ -42,6 +42,15 @@ public class CookieFilter extends OncePerRequestFilter {
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
+    /**
+     * Extract the token from the request and use the authentication manager to perform authentication.
+     * Then set the currently authenticated principal and call the next filter in the chain
+     * @param request the http request
+     * @param response the http response
+     * @param filterChain the filter chain
+     * @throws ServletException
+     * @throws  IOException
+     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         Optional<TokenAuthentication> authenticationToken = extractContent(request);
@@ -58,6 +67,11 @@ public class CookieFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Extract  username and valid JWT token from the cookies
+     * @param request the http request
+     * @return the TokenAuthentication object containing username and valid JWT token
+     */
     private Optional<TokenAuthentication> extractContent(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {

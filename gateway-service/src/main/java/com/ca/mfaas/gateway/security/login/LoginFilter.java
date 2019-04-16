@@ -102,7 +102,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     }
 
     /**
-     * Get credentials from the authorization header in the request and decode them
+     * Extract credentials from the authorization header in the request and decode them
      * @param request the http request
      * @return the decoded credentials
      */
