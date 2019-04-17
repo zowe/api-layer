@@ -11,13 +11,13 @@ package com.ca.mfaas.gateway.security.handler;
 
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
+import com.ca.mfaas.gateway.security.query.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -56,8 +56,13 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
             response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
             message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidMethod", exception.getMessage(), request.getRequestURI());
         } else if (exception instanceof TokenNotValidException) {
-            message = errorService.createApiMessage("com.ca.mfaas.gateway.security.tokenIsNotValid", exception.getMessage(), request.getRequestURI());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidToken", request.getRequestURI());
+        } else if (exception instanceof TokenNotProvidedException) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            message = errorService.createApiMessage("com.ca.mfaas.gateway.security.tokenNotProvided", request.getRequestURI());
         } else {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             message = errorService.createApiMessage("com.ca.mfaas.gateway.security.authenticationException", exception.getMessage(), request.getRequestURI());
         }
 

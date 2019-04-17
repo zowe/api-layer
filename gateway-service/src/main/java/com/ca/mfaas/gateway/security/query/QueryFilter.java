@@ -12,7 +12,6 @@ package com.ca.mfaas.gateway.security.query;
 import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.apiml.security.token.TokenAuthentication;
-import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -56,7 +55,7 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         }
 
         String token = authenticationService.getJwtTokenFromRequest(request)
-            .orElseThrow(() -> new TokenNotValidException("Valid token not provided."));
+            .orElseThrow(() -> new TokenNotProvidedException("Authorization token not provided."));
 
         return this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
     }
