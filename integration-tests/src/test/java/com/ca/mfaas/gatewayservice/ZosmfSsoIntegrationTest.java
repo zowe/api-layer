@@ -9,20 +9,23 @@
  */
 package com.ca.mfaas.gatewayservice;
 
+import com.ca.mfaas.utils.categories.MainframeDependentTests;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 
+@Category(MainframeDependentTests.class)
 public class ZosmfSsoIntegrationTest {
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPassword();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String BASE_PATH = "/api/zosmfca32";
     private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
     private final static int RC = 16;

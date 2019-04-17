@@ -10,7 +10,7 @@
 package com.ca.mfaas.gatewayservice;
 
 import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
+import com.ca.mfaas.utils.config.Credentials;
 import com.ca.mfaas.utils.http.HttpRequestUtils;
 import com.ca.mfaas.utils.http.HttpSecurityUtils;
 import com.jayway.jsonpath.DocumentContext;
@@ -56,9 +56,9 @@ public class GatewaySecurityTest {
 
     @Test
     public void loginToGatewayAndCheckForCookie() throws IOException {
-        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        String user = gatewayServiceConfiguration.getUser();
-        String password = gatewayServiceConfiguration.getPassword();
+        Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
+        String user = credentials.getUser();
+        String password = credentials.getPassword();
         HttpResponse response = HttpSecurityUtils.getLoginResponse(LOGIN_ENDPOINT, user, password);
         String cookiesString = response.getFirstHeader("Set-Cookie").getValue();
         List<HttpCookie> cookies = HttpCookie.parse(cookiesString);

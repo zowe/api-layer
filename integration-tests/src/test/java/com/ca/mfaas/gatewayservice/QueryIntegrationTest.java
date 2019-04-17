@@ -23,8 +23,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
 public class QueryIntegrationTest {
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPassword();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String QUERY_ENDPOINT = "/auth/query";
 
     private String token;

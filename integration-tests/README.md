@@ -18,26 +18,27 @@ completely and ready for tests to start.
 
 2. Run
     ```shell
-    ./gradlew runIntegrationTests -Dapicatalog.user=<MAINFRAME_USERID> -Dapicatalog.password=<PASSWORD>
+    ./gradlew runIntegrationTests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD>
     ``` 
 
-3. (Optional) Change host/port/scheme for gateway-service and discovery-service. You can also set the number of instances for discovery service
-```shell
-./gradlew -Ddiscovery.host=localhost -Ddiscovery.port=9000 -Ddiscovery.instances=1 -Dgateway.host=localhost -Dgateway.port=8000 -Dgateway.scheme=https runIntegrationTests
-./gradlew runIntegrationTests -Ddiscovery.host=ca31.ca.com -Ddiscovery.port=10011 -Ddiscovery.instances=1 -Dgateway.host=ca31.ca.com -Dgateway.port=10010 -Dgateway.scheme=https
-```
+3. (Optional) Change host/port/scheme for gateway-service and discovery-service.
+    ```shell
+    ./gradlew runIntegrationTests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD> -Ddiscovery.host=<DS_HOST> -Ddiscovery.port=<DS_PORT>  -Dgateway.host=<GW_HOST> -Dgateway.port=<GW_PORT> -Dgateway.scheme=https
+    ```
 
 ### Localhost Quick start
 
-1. Build all
-```shell
-./gradlew clean build
-```
+1. Deploy and run all services.
 
-2. Run script
-```shell
-scripts/run-integration-tests.sh
-```
+2. Run
+    ```shell
+    ./gradlew runLocalIntegrationTests
+    ``` 
+
+3. (Optional) Run all local tests including all sample services 
+    ```shell
+    ./gradlew runAllLocalIntegrationTests
+    ```
 
 ### Running all tests (including slow)
 
@@ -54,9 +55,8 @@ They should not be executed always with others tests because it will make
 the test suite slow and used less.
 
 Such tests can be started using:
-```bash
+```shell
 ./gradlew :integrationTests:runAllIntegrationTests
-
 ```
 
 All tests are executed on Jenkins.

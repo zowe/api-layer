@@ -10,6 +10,7 @@
 package com.ca.mfaas.gatewayservice;
 
 import com.ca.mfaas.security.login.LoginRequest;
+import com.ca.mfaas.utils.categories.MainframeDependentTests;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import io.jsonwebtoken.Claims;
@@ -19,6 +20,7 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -30,11 +32,12 @@ import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@Category(MainframeDependentTests.class) //TODO: Consider removing
 public class LoginIntegrationTest {
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "intstusr";
     private final static String INVALID_PASSWORD = "someps33";
 
@@ -57,6 +60,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
+    //@formatter:off
     public void doLoginWithValidBodyLoginRequest() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
@@ -101,9 +105,9 @@ public class LoginIntegrationTest {
         given()
             .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
             .contentType(JSON)
-            .when()
+        .when()
             .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-            .then()
+        .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'SEC0005' }.messageContent", equalTo(expectedMessage)
@@ -182,4 +186,5 @@ public class LoginIntegrationTest {
                 "messages.find { it.messageNumber == 'SEC0002' }.messageContent", equalTo(expectedMessage)
             );
     }
+    //@formatter:on
 }

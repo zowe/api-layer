@@ -14,9 +14,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class ApiCatalogServiceConfiguration {
+@NoArgsConstructor
+public class Credentials {
     private String user;
     private String password;
 }

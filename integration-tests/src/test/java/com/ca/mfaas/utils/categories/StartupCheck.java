@@ -12,6 +12,7 @@ package com.ca.mfaas.utils.categories;
 /**
  * A category market for test that should be pass before other integration tests,
  * to make sure that all services are ready for testing.
+ *
  * These tests will run before all other integration tests.
  */
 public interface StartupCheck {

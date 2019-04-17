@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.helloworldjersey;
 
-import com.ca.mfaas.utils.categories.LocalDeploymentTest;
+import com.ca.mfaas.utils.categories.AdditionalLocalTest;
 import com.ca.mfaas.utils.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import org.junit.BeforeClass;
@@ -22,14 +22,13 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
-@Category(LocalDeploymentTest.class)
+@Category(AdditionalLocalTest.class)
 public class HelloWorldJerseyEndpointTest {
-    private static final String UI_V1_PATH = "/hellojersey/";
-    private static final String APP_INFO_PATH = "/app/hellojersey/info/";
-    private static final String APP_INFO_HEALTH = "/app/hellojersey/health/";
-    private static final String API_DOC_PATH = "/api/v1/api-doc/hellojersey/";
-    private static final String GREETING_PATH = "/api/v1/hellojersey/v1/greeting";
-    private static final String GREETING_WITH_NAME_PATH = "/api/v1/hellojersey/v1/greeting/Petr";
+    private static final String UI_V1_PATH = "/ui/v1/hellojersey/";
+    private static final String APP_INFO_PATH = "/api/v1/hellojersey/application/info/";
+    private static final String APP_INFO_HEALTH = "/api/v1/hellojersey/application/health/";
+    private static final String GREETING_PATH = "/api/v1/hellojersey/greeting";
+    private static final String GREETING_WITH_NAME_PATH = "/api/v1/hellojersey/greeting/Petr";
     private static final String JSON_CONTENT_TYPE = "application/json";
 
     @BeforeClass
@@ -73,19 +72,6 @@ public class HelloWorldJerseyEndpointTest {
             .statusCode(is(SC_OK))
             .contentType(is(JSON_CONTENT_TYPE))
             .body("status", is("UP"));
-    }
-
-    @Test
-    public void shouldGetApiDoc() {
-        URI uri = HttpRequestUtils.getUriFromGateway(API_DOC_PATH);
-
-        given()
-        .when()
-            .get(uri)
-        .then()
-            .statusCode(is(SC_OK))
-            .contentType(is(JSON_CONTENT_TYPE))
-            .body("info.description", is("REST API for a JavaEE Jersey Application"));
     }
 
     @Test

@@ -10,7 +10,7 @@
 
 package com.ca.mfaas.discoverableclient;
 
-import com.ca.mfaas.utils.categories.LocalDeploymentTest;
+import com.ca.mfaas.utils.categories.AdditionalLocalTest;
 import com.ca.mfaas.utils.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
@@ -24,7 +24,7 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 
-@Category(LocalDeploymentTest.class)
+@Category(AdditionalLocalTest.class)
 public class MultipartPutIntegrationTest {
     private static final String MULTIPART_PATH = "/api/v1/discoverableclient/multipart";
     private String configFileName = "example.txt";

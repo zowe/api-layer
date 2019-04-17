@@ -10,7 +10,8 @@
 package com.ca.mfaas.utils.http;
 
 import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
+import com.ca.mfaas.utils.config.Credentials;
+import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthenticationException;
@@ -26,12 +27,10 @@ import java.net.URI;
 public class HttpSecurityUtils {
     private static final String GATEWAY_LOGIN_ENDPOINT = "/api/v1/gateway/auth/login/";
 
-    private HttpSecurityUtils() {}
-
     public static String getCookieForGateway() throws IOException {
-        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        String user = gatewayServiceConfiguration.getUser();
-        String password = gatewayServiceConfiguration.getPassword();
+        Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
+        String user = credentials.getUser();
+        String password = credentials.getPassword();
         URI uri = HttpRequestUtils.getUriFromGateway(GATEWAY_LOGIN_ENDPOINT);
 
         return getCookie(uri, user, password);
@@ -46,6 +45,10 @@ public class HttpSecurityUtils {
         request.setHeader("Content-type", "application/json");
 
         HttpResponse response = client.execute(request);
+        Header cookie = response.getFirstHeader("Set-Cookie");
+        if (cookie == null) {
+            return null;
+        }
         return response.getFirstHeader("Set-Cookie").getValue();
     }
 
@@ -72,11 +75,11 @@ public class HttpSecurityUtils {
     }
 
     public static HttpRequest addBasicAuthorizationHeader(HttpRequest request) throws AuthenticationException {
-        GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        String user = serviceConfiguration.getUser();
-        String password = serviceConfiguration.getPassword();
-        UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password);
-        request.addHeader(new BasicScheme().authenticate(credentials, request, null));
+        Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
+        String user = credentials.getUser();
+        String password = credentials.getPassword();
+        UsernamePasswordCredentials userCredentials = new UsernamePasswordCredentials(user, password);
+        request.addHeader(new BasicScheme().authenticate(userCredentials, request, null));
         return request;
     }
 

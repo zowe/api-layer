@@ -10,8 +10,10 @@
 package com.ca.mfaas.utils.categories;
 
 /**
- * A category market for test that is working on local deployment.
- * These tests will not run by default with other integration tests.
+ * A category market for tests which must run when mainframe is accessible.
+ *
+ * These tests will run by default with other integration tests.
+ * To run locally use runLocalIntegrationTests Gradle task.
  */
-public interface LocalDeploymentTest {
+public interface MainframeDependentTests {
 }

@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog;
 
+import com.ca.mfaas.utils.categories.MainframeDependentTests;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import com.ca.mfaas.utils.http.HttpClientUtils;
@@ -27,6 +28,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -36,6 +38,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 @Slf4j
+@Category(MainframeDependentTests.class) //TODO: Remove when the catalog will use Gateway security
 public class ApiCatalogEndpointIntegrationTest {
     private String getAllContainersEndpoint = "/api/v1/apicatalog/containers";
     private String invalidContainerEndpoint = "/api/v1/apicatalog/containerz";

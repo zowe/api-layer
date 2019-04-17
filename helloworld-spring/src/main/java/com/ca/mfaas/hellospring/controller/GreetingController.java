@@ -11,6 +11,7 @@ package com.ca.mfaas.hellospring.controller;
 
 import com.ca.mfaas.hellospring.model.Greeting;
 import io.swagger.annotations.*;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping(value = "/api/v1", produces = {MediaType.APPLICATION_JSON_VALUE})
 @Api(value = "Greeting", tags = {"Greeting Controller"})
 public class GreetingController {
 

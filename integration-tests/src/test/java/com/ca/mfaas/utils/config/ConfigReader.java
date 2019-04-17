@@ -36,22 +36,22 @@ public class ConfigReader {
                         configuration = mapper.readValue(configFile, EnvironmentConfiguration.class);
                     } catch (IOException e) {
                         log.info("Can't read service configuration from resource file, using default: http://localhost:10010");
+                        Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", 10010, "user", "password", 1);
+                            = new GatewayServiceConfiguration("https", "localhost", 10010, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
-                        ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = new ApiCatalogServiceConfiguration("user", "user");
                         TlsConfiguration tlsConfiguration = new TlsConfiguration("localhost", "password", "PKCS12",
                             "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
                             "../keystore/localhost/localhost.truststore.p12", "password");
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);
-                        configuration = new EnvironmentConfiguration(gatewayServiceConfiguration, discoveryServiceConfiguration, apiCatalogServiceConfiguration, tlsConfiguration, zosmfServiceConfiguration);
+                        configuration = new EnvironmentConfiguration(credentials, gatewayServiceConfiguration, discoveryServiceConfiguration, tlsConfiguration, zosmfServiceConfiguration);
                     }
+                    configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
+                    configuration.getCredentials().setPassword(System.getProperty("credentials.password", configuration.getCredentials().getPassword()));
 
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));
                     configuration.getGatewayServiceConfiguration().setPort(Integer.parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort()))));
-                    configuration.getGatewayServiceConfiguration().setUser(System.getProperty("gateway.user", configuration.getGatewayServiceConfiguration().getUser()));
-                    configuration.getGatewayServiceConfiguration().setPassword(System.getProperty("gateway.password", configuration.getGatewayServiceConfiguration().getPassword()));
                     configuration.getGatewayServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
 
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
@@ -60,9 +60,6 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setHost(System.getProperty("discovery.host", configuration.getDiscoveryServiceConfiguration().getHost()));
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
-
-                    configuration.getGatewayServiceConfiguration().setUser(System.getProperty("apicatalog.user", configuration.getGatewayServiceConfiguration().getUser()));
-                    configuration.getGatewayServiceConfiguration().setPassword(System.getProperty("apicatalog.password", configuration.getGatewayServiceConfiguration().getPassword()));
 
                     setTlsConfigurationFromSystemProperties(configuration);
 
