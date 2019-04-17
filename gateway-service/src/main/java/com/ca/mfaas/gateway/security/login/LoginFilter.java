@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.login;
 
+import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,7 +17,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -62,16 +62,17 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     /**
      * Attempt authentication and return a fully populated Authentication object
      * (including granted authorities) if successful
-     * @param request the http request
+     *
+     * @param request  the http request
      * @param response the http response
      * @return the successful authentication token
-     * @throws AuthenticationServiceException if the authentication method is not supported
+     * @throws AuthMethodNotSupportedException            if the authentication method is not supported
      * @throws AuthenticationCredentialsNotFoundException if username or password are not provided
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
-            throw new AuthenticationServiceException("Authentication method not supported.");
+            throw new AuthMethodNotSupportedException(request.getMethod());
         }
 
         Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
@@ -103,6 +104,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
     /**
      * Extract credentials from the authorization header in the request and decode them
+     *
      * @param request the http request
      * @return the decoded credentials
      */
@@ -114,12 +116,13 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         ).map(
             header -> header.replaceFirst(BASIC_AUTHENTICATION_PREFIX, "")
         )
-        .filter(base64Credentials -> !base64Credentials.isEmpty())
-        .map(this::mapBase64Credentials);
+            .filter(base64Credentials -> !base64Credentials.isEmpty())
+            .map(this::mapBase64Credentials);
     }
 
     /**
      * Decode the encoded credentials
+     *
      * @param base64Credentials the credentials encoded in base64
      * @return the decoded credentials
      */
@@ -135,6 +138,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
     /**
      * Get credentials from the request body
+     *
      * @param request the http request
      * @return the credentials
      * @throws AuthenticationCredentialsNotFoundException if the login object has wrong format

@@ -1,25 +1,28 @@
 messages:
-    - key: com.ca.mfaas.security.authenticationRequired
-      number: SEC0001
+    # Security messages (100 - 199)
+    # Login messages (100 - 110)
+    - key: com.ca.mfaas.gateway.security.invalidCredentials
+      number: ZWEAG100E
       type: ERROR
-      text: "Authentication is required for URL '%s'"
+      text: "Invalid username or password for URL '%s'"
 
-    - key: com.ca.mfaas.security.authenticationException
-      number: SEC0002
+    - key: com.ca.mfaas.gateway.security.invalidInput
+      number: ZWEAG101E
+      type: ERROR
+      text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
+
+    - key: com.ca.mfaas.gateway.security.invalidMethod
+      number: ZWEAG102E
+      type: ERROR
+      text: "Authentication method '%s' not supported for URL '%s'"
+
+    - key: com.ca.mfaas.gateway.security.tokenIsNotValid
+      number: ZWEAG103E
       type: ERROR
       text: "Authentication problem: '%s' for URL '%s'"
 
-    - key: com.ca.mfaas.security.tokenIsNotValid
-      number: SEC0003
-      type: ERROR
-      text: "Authentication problem: '%s' for URL '%s'"
-
-    - key: com.ca.mfaas.security.tokenIsNotValidWithoutUrl
-      number: SEC0006
+    - key: com.ca.mfaas.gateway.security.tokenIsNotValidWithoutUrl
+      number: ZWEAG104E
       type: ERROR
       text: "Authentication problem: '%s'"
 
-    - key: com.ca.mfaas.security.invalidUsername
-      number: SEC0005
-      type: ERROR
-      text: "Authentication problem: '%s' for URL '%s'"

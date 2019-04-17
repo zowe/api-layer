@@ -44,7 +44,7 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         String token = tokenAuthentication.getCredentials();
 
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-        response.setStatus(HttpStatus.OK.value());
+        response.setStatus(HttpStatus.NO_CONTENT.value());
 
         setCookie(token, response);
     }
