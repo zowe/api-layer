@@ -18,6 +18,7 @@ import com.ca.mfaas.product.constants.CoreService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
@@ -86,7 +87,20 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     log.error("Cannot find any instances of service: " + serviceId);
                     return null;
                 }
-                List<String> keys = createRouteKeys(serviceInstances, routedServices, serviceId);
+
+                //serviceId is converted to lowercase by Discovery Service. Recover serviceId which contains uppercase characters
+                String originalServiceId = serviceId;
+                if (serviceInstances.size() > 0) {
+                    ServiceInstance instance = serviceInstances.get(0);
+                    if (instance instanceof EurekaDiscoveryClient.EurekaServiceInstance) {
+                        String vipAddr = ((EurekaDiscoveryClient.EurekaServiceInstance) instance).getInstanceInfo().getVIPAddress();
+                        if (serviceId.equalsIgnoreCase(vipAddr)) {
+                            originalServiceId = vipAddr;
+                        }
+                    }
+                }
+
+                List<String> keys = createRouteKeys(serviceInstances, routedServices, originalServiceId);
                 if (keys.isEmpty()) {
                     keys.add("/" + mapRouteToService(serviceId) + "/**");
                 }
