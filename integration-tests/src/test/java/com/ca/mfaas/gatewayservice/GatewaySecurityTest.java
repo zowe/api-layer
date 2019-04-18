@@ -10,126 +10,85 @@
 package com.ca.mfaas.gatewayservice;
 
 import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.Credentials;
-import com.ca.mfaas.utils.http.HttpRequestUtils;
-import com.ca.mfaas.utils.http.HttpSecurityUtils;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
-import org.junit.Ignore;
+import io.restassured.RestAssured;
+
+import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class GatewaySecurityTest {
-    private static final String PROTECTED_ENDPOINT = "/application/";
-    private static final String LOGIN_ENDPOINT = "/api/v1/gateway/auth/login";
-    private static final String LOGOUT_ENDPOINT = "/api/v1/gateway/auth/logout";
-    private static final String AUTHENTICATION_COOKIE = "apimlAuthenticationToken";
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
+    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
+    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+    private static final String PROTECTED_ENDPOINT = "/application/routes";
+    private final static String COOKIE = "apimlAuthenticationToken";
 
+    @Before
+    public void setUp() {
+        RestAssured.useRelaxedHTTPSValidation();
+    }
+
+    //@formatter:off
     @Test
-    public void accessProtectedEndpointWithoutCredentials() throws IOException {
-        HttpRequestUtils.getResponse(PROTECTED_ENDPOINT, SC_UNAUTHORIZED);
+    public void accessProtectedEndpointWithoutCredentials() {
+        given()
+        .when()
+            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test
-    public void loginToGatewayAndAccessProtectedEndpoint() throws IOException {
-        String cookie = HttpSecurityUtils.getCookieForGateway();
-        HttpGet request = HttpRequestUtils.getRequest(PROTECTED_ENDPOINT);
-        request = (HttpGet) HttpSecurityUtils.addCookie(request, cookie);
-        HttpRequestUtils.response(request, SC_OK);
+    public void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
+        given()
+            .auth().preemptive().basic(USERNAME, PASSWORD)
+        .when()
+            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK));
     }
 
     @Test
-    public void loginToGatewayAndCheckForCookie() throws IOException {
-        Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
-        String user = credentials.getUser();
-        String password = credentials.getPassword();
-        HttpResponse response = HttpSecurityUtils.getLoginResponse(LOGIN_ENDPOINT, user, password);
-        String cookiesString = response.getFirstHeader("Set-Cookie").getValue();
-        List<HttpCookie> cookies = HttpCookie.parse(cookiesString);
-        HttpCookie cookie = cookies.stream().filter(c -> c.getName().equals(AUTHENTICATION_COOKIE)).findAny().orElse(null);
+    public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
+        String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
-        assertTrue(cookie.isHttpOnly());
-        assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(86400L));
+        given()
+            .cookie(COOKIE, token)
+        .when()
+            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK));
     }
 
     @Test
-    public void loginWithInvalidUser() throws IOException {
-        String user = "invalid";
-        String password = "invalid";
-        HttpResponse response = HttpSecurityUtils.getLoginResponse(LOGIN_ENDPOINT, user, password);
+    public void accessProtectedEndpointWithInvalidToken() {
+        String invalidToken = "badToken";
 
-        final String jsonResponse = EntityUtils.toString(response.getEntity());
-        DocumentContext jsonContext = JsonPath.parse(jsonResponse);
-        String content = jsonContext.read("$.messages[0].messageNumber");
-
-        assertThat(response.getStatusLine().getStatusCode(), is(SC_UNAUTHORIZED));
-        assertThat(content, equalTo("SEC0005"));
+        given()
+            .cookie(COOKIE, invalidToken)
+        .when()
+            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED));;
     }
+
 
     @Test
-    @Ignore //'expire' user does not have access - zosmf token expires itself
-    public void accessProtectedEndpointWithExpiredToken() throws IOException, InterruptedException {
-        String user = "expire";
-        String password = "expire";
-        URI uri = HttpRequestUtils.getUriFromGateway(LOGIN_ENDPOINT);
-        String cookie = HttpSecurityUtils.getCookie(uri, user, password);
-        TimeUnit.SECONDS.sleep(3);
-        HttpGet request = HttpRequestUtils.getRequest(PROTECTED_ENDPOINT);
-        request = (HttpGet) HttpSecurityUtils.addCookie(request, cookie);
-        HttpResponse response = HttpRequestUtils.response(request, SC_UNAUTHORIZED);
+    public void accessProtectedEndpointWithInvalidCredentials() {
+        String invalidPassword = "badPassword";
 
-        final String jsonResponse = EntityUtils.toString(response.getEntity());
-        DocumentContext jsonContext = JsonPath.parse(jsonResponse);
-        String content = jsonContext.read("$.messages[0].messageNumber");
-
-        assertThat(content, equalTo("SEC0004"));
+        given()
+            .auth().preemptive().basic(USERNAME, invalidPassword)
+        .when()
+            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED));
     }
-
-    @Test
-    public void accessProtectedEndpointWithInvalidToken() throws IOException {
-        String cookie = HttpSecurityUtils.getCookieForGateway();
-        String subst = cookie.substring(30, 50);
-        cookie = cookie.replace(subst, "not");
-        HttpGet request = HttpRequestUtils.getRequest(PROTECTED_ENDPOINT);
-        request = (HttpGet) HttpSecurityUtils.addCookie(request, cookie);
-        HttpResponse response = HttpRequestUtils.response(request, SC_UNAUTHORIZED);
-
-        final String jsonResponse = EntityUtils.toString(response.getEntity());
-        DocumentContext jsonContext = JsonPath.parse(jsonResponse);
-        String content = jsonContext.read("$.messages[0].messageNumber");
-
-        assertThat(content, equalTo("SEC0003"));
-    }
-
-    @Test
-    public void logout() throws IOException {
-        String cookie = HttpSecurityUtils.getCookieForGateway();
-        HttpGet request = HttpRequestUtils.getRequest(LOGOUT_ENDPOINT);
-        String requestCookie = String.format("%s=%s", AUTHENTICATION_COOKIE, cookie);
-        request.setHeader("Cookie", requestCookie);
-        HttpResponse response = HttpRequestUtils.response(request, SC_OK);
-        String responseCookiesString = response.getFirstHeader("Set-Cookie").getValue();
-        List<HttpCookie> cookies = HttpCookie.parse(responseCookiesString);
-        HttpCookie responseCookie = cookies.stream().filter(c -> c.getName().equals(AUTHENTICATION_COOKIE)).findAny().orElse(null);
-
-        assertThat(responseCookie.getValue(), is(""));
-        assertThat(responseCookie.hasExpired(), is(true));
-    }
+    //@formatter:on
 }

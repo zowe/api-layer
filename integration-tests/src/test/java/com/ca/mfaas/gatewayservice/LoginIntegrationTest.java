@@ -10,15 +10,14 @@
 package com.ca.mfaas.gatewayservice;
 
 import com.ca.mfaas.security.login.LoginRequest;
-import com.ca.mfaas.utils.categories.MainframeDependentTests;
 import com.ca.mfaas.utils.config.ConfigReader;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
+import io.restassured.http.Cookie;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -27,9 +26,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-@Category(MainframeDependentTests.class) //TODO: Consider removing
 public class LoginIntegrationTest {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
@@ -54,7 +54,7 @@ public class LoginIntegrationTest {
     public void doLoginWithValidBodyLoginRequest() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
-        String token = given()
+        Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
         .when()
@@ -62,10 +62,14 @@ public class LoginIntegrationTest {
         .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().cookie(COOKIE_NAME);
+            .extract().detailedCookie(COOKIE_NAME);
 
-        int i = token.lastIndexOf('.');
-        String untrustedJwtString = token.substring(0, i + 1);
+        assertTrue(cookie.isHttpOnly());
+        assertThat(cookie.getValue(), is(notNullValue()));
+        assertThat(cookie.getMaxAge(), is(24 * 60 * 60));
+
+        int i = cookie.getValue().lastIndexOf('.');
+        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
         Claims claims = Jwts.parser()
             .parseClaimsJwt(untrustedJwtString)
             .getBody();
@@ -112,7 +116,7 @@ public class LoginIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG100E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -130,7 +134,7 @@ public class LoginIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG100E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -145,7 +149,7 @@ public class LoginIntegrationTest {
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -166,7 +170,7 @@ public class LoginIntegrationTest {
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -185,7 +189,7 @@ public class LoginIntegrationTest {
         .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
             );
     }
     //@formatter:on

@@ -9,9 +9,7 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +77,7 @@ public class QueryIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
         .body(
-            "messages.find { it.messageNumber == 'ZWEAG110E' }.messageContent", equalTo(expectedMessage)
+            "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
         );
     }
 
@@ -95,7 +93,7 @@ public class QueryIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG110E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -109,7 +107,7 @@ public class QueryIntegrationTest {
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG111E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -124,7 +122,7 @@ public class QueryIntegrationTest {
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG111E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -140,7 +138,7 @@ public class QueryIntegrationTest {
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG111E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
@@ -156,7 +154,22 @@ public class QueryIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG110E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
+    @Test
+    public void doQueryWithWrongHttpMethod() {
+        String expectedMessage = "Authentication method 'POST' not supported for URL '" +
+            BASE_PATH + QUERY_ENDPOINT + "'";
+
+        given()
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
+        .then()
+            .body(
+            "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
             );
     }
     //@formatter:on
