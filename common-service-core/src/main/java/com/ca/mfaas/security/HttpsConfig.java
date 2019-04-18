@@ -29,4 +29,6 @@ public class HttpsConfig {
     @Builder.Default private String keyStoreType = "PKCS12";
     @Builder.Default private boolean clientAuth = false;
     @Builder.Default private boolean verifySslCertificatesOfServices = true;
+    @Builder.Default private String jwtSignatureAlgorithm = null;
+    @Builder.Default private String jwtSecretType = null;
 }
