@@ -232,7 +232,6 @@ public class TokenServiceTest {
         exception.expect(SignatureException.class);
         exception.expectMessage("Unsupported signature algorithm 'HS512d'");
         when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512d");
-        String token = tokenService.createToken(TEST_USER);
-
+        tokenService.createToken(TEST_USER);
     }
 }
