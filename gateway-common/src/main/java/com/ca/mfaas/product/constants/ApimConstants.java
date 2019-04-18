@@ -13,4 +13,7 @@ public class ApimConstants {
 
     // custom REST response header to signify that this API Doc has already been normalised
     public static final String API_DOC_NORMALISED = "Api-Doc-Normalised";
+
+    //Authorization constants
+    public static final String BASIC_AUTHENTICATION_PREFIX = "Basic ";
 }
