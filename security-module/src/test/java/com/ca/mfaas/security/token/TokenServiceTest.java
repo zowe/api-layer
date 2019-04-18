@@ -234,4 +234,14 @@ public class TokenServiceTest {
         when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512d");
         tokenService.createToken(TEST_USER);
     }
+
+    @Test
+    public void shouldThrowExceptionWhenSecretKeyIsNull() {
+        tokenService.setSecret(null);
+        exception.expect(NullPointerException.class);
+        exception.expectMessage("The secret key for JWT token service is null");
+        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512");
+        tokenService.createToken(TEST_USER);
+    }
 }
+
