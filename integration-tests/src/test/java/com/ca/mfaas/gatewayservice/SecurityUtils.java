@@ -17,6 +17,7 @@ import com.ca.mfaas.utils.config.ZosmfServiceConfiguration;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
@@ -50,7 +51,7 @@ public class SecurityUtils {
         .when()
             .post(String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH, GATEWAY_LOGIN_ENDPOINT))
         .then()
-            .statusCode(is(SC_OK))
+            .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN);
     }
