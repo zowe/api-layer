@@ -20,6 +20,7 @@ import com.ca.mfaas.product.web.HttpConfig;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 
 import com.ca.mfaas.security.query.QueryResponse;
+import io.jsonwebtoken.SignatureException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -225,4 +226,13 @@ public class TokenServiceTest {
         assertEquals(null, tokenService.getLtpaToken(jwtToken));
     }
 
+    @Test
+    public void shouldThrowExceptionWhenUsingUnsupportedSignAlgorithm() {
+        tokenService.setSecret(SECRET);
+        exception.expect(SignatureException.class);
+        exception.expectMessage("Unsupported signature algorithm 'HS512d'");
+        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512d");
+        String token = tokenService.createToken(TEST_USER);
+
+    }
 }
