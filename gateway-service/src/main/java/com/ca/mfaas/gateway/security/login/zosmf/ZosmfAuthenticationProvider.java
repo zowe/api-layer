@@ -149,7 +149,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
             return Optional.ofNullable(zosmfNode)
                 .filter(zn -> zn.has(ZOSMF_DOMAIN))
-                .map(zn -> zosmfNode.get(ZOSMF_DOMAIN).asText())
+                .map(zn -> zn.get(ZOSMF_DOMAIN).asText())
                 .orElseThrow(() -> {
                     log.error("z/OSMF response does not contain field '{}'.", ZOSMF_DOMAIN);
                     return new AuthenticationServiceException("z/OSMF domain cannot be read.");

@@ -18,14 +18,12 @@ import com.ca.mfaas.gateway.security.login.LoginFilter;
 import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.SuccessfulLoginHandler;
 import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
-import com.ca.mfaas.gateway.security.logout.SuccessfulLogoutHandler;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.token.TokenAuthenticationProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -34,7 +32,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Slf4j
 @Configuration
@@ -116,12 +113,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
 
-            // logout endpoint
-            .and()
-            .logout()
-            .logoutUrl(securityConfigurationProperties.getLogoutPath())
-            .logoutSuccessHandler(logoutSuccessHandler())
-
             // endpoint protection
             .and()
             .authorizeRequests()
@@ -130,16 +121,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login + query
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
-    }
-
-    @Bean
-    public LogoutSuccessHandler logoutSuccessHandler() {
-        return new SuccessfulLogoutHandler(securityConfigurationProperties);
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {

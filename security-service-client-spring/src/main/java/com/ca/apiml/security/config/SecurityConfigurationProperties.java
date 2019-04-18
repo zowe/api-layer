@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
     private String loginPath = "/api/v1/gateway/auth/login/**";
-    private String logoutPath = "/api/v1/gateway/auth/logout/**";
     private String queryPath = "/api/v1/gateway/auth/query/**";
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
