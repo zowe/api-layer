@@ -15,8 +15,9 @@ import com.ca.apiml.security.content.CookieFilter;
 import com.ca.mfaas.gateway.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.gateway.security.handler.UnauthorizedHandler;
 import com.ca.mfaas.gateway.security.login.LoginFilter;
-import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
+import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.gateway.security.login.SuccessfulLoginHandler;
+import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
@@ -73,21 +74,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
-        switch (securityConfigurationProperties.getAuthProvider()) {
-            case "zosmf":
+        LoginProvider provider = LoginProvider.ZOSMF;
+        try{
+            provider = LoginProvider.getLoginProvider(securityConfigurationProperties.getAuthProvider());
+        } catch (IllegalArgumentException ex) {
+            log.warn("Authentication provider is not set correctly. Default 'zosmf' authentication provider is used.");
+            log.warn("Incorrect value: apiml.security.authProvider = {}", securityConfigurationProperties.getAuthProvider());
+        }
+        switch (provider) {
+            case ZOSMF:
                 auth.authenticationProvider(zosmfAuthenticationProvider);
                 break;
-            case "dummy":
+            case DUMMY:
                 log.warn("Login endpoint is running in the dummy mode. Use credentials user/user to login.");
                 log.warn("Do not use this option in the production environment.");
                 auth.authenticationProvider(dummyAuthenticationProvider);
                 break;
             default:
-                log.warn("Authentication provider is not set correctly. Default 'zosmf' authentication provider is used.");
-                log.warn("Incorrect value: apiml.security.authProvider = {}", securityConfigurationProperties.getAuthProvider());
+                log.warn("Unsupported value of authentication provider indicated in apiml.security.authProvider = {}.", provider.getValue());
+                log.warn("Default 'zosmf' authentication provider is used.");
                 auth.authenticationProvider(zosmfAuthenticationProvider);
         }
-
         auth.authenticationProvider(tokenAuthenticationProvider);
     }
 

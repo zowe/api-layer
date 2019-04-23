@@ -11,60 +11,22 @@ package com.ca.apiml.security.content;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
-import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class CookieFilter extends OncePerRequestFilter {
-    private final AuthenticationManager authenticationManager;
-    private final AuthenticationFailureHandler failureHandler;
+public class CookieFilter extends AbstractFilter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public CookieFilter(AuthenticationManager authenticationManager,
                         AuthenticationFailureHandler failureHandler,
                         SecurityConfigurationProperties securityConfigurationProperties) {
-        this.authenticationManager = authenticationManager;
-        this.failureHandler = failureHandler;
+        super(authenticationManager, failureHandler);
         this.securityConfigurationProperties = securityConfigurationProperties;
-    }
-
-    /**
-     * Extract the token from the request and use the authentication manager to perform authentication.
-     * Then set the currently authenticated principal and call the next filter in the chain
-     * @param request the http request
-     * @param response the http response
-     * @param filterChain the filter chain
-     * @throws ServletException
-     * @throws  IOException
-     */
-    @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        Optional<TokenAuthentication> authenticationToken = extractContent(request);
-        if (authenticationToken.isPresent()) {
-            try {
-                Authentication authentication = authenticationManager.authenticate(authenticationToken.get());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                filterChain.doFilter(request, response);
-            } catch (AuthenticationException authenticationException) {
-                failureHandler.onAuthenticationFailure(request, response, authenticationException);
-            }
-        } else {
-            filterChain.doFilter(request, response);
-        }
     }
 
     /**
@@ -72,7 +34,7 @@ public class CookieFilter extends OncePerRequestFilter {
      * @param request the http request
      * @return the TokenAuthentication object containing username and valid JWT token
      */
-    private Optional<TokenAuthentication> extractContent(HttpServletRequest request) {
+    protected Optional<TokenAuthentication> extractContent(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             return Optional.empty();

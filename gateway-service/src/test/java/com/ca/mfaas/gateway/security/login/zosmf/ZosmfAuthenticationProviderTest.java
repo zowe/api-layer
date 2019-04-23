@@ -199,7 +199,7 @@ public class ZosmfAuthenticationProviderTest {
     }
 
     @Test
-    public void InvalidCookieInResponse() {
+    public void invalidCookieInResponse() {
         String invalidCookie = "LtpaToken=test";
 
         securityConfigurationProperties.setZosmfServiceId(ZOSMF);
@@ -225,7 +225,7 @@ public class ZosmfAuthenticationProviderTest {
     }
 
     @Test
-    public void CookieWithSemicolumn() {
+    public void cookieWithSemicolumn() {
         String cookie = "LtpaToken2=test;";
 
         securityConfigurationProperties.setZosmfServiceId(ZOSMF);

@@ -43,7 +43,7 @@ public class UnauthorizedHandlerTest {
 
     @Test
     public void testCommence() throws IOException {
-        UnauthorizedHandler unauthorizedHandler = new UnauthorizedHandler(errorService);
+        UnauthorizedHandler unauthorizedHandler = new UnauthorizedHandler(errorService, objectMapper);
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
@@ -56,7 +56,7 @@ public class UnauthorizedHandlerTest {
         assertEquals(ApimConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader("WWW-Authenticate"));
 
 
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.security.authenticationRequired", httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidCredentials", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 

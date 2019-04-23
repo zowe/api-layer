@@ -66,7 +66,7 @@ public class FailedAuthenticationHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.security.invalidUsername", badCredentialsException.getMessage(), httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidCredentials", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 
@@ -78,7 +78,7 @@ public class FailedAuthenticationHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.security.tokenIsNotValid", tokenNotValidException.getMessage(), httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidToken", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 
@@ -87,10 +87,10 @@ public class FailedAuthenticationHandlerTest {
         TokenExpireException tokenExpireException = new TokenExpireException("ERROR");
         failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, tokenExpireException);
 
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.security.authenticationException", tokenExpireException.getMessage(), httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.gateway.security.authenticationException", tokenExpireException.getMessage(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 
