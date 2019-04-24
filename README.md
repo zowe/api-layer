@@ -90,6 +90,8 @@ Follow the guidelines in [Local Configuration](docs/local-configuration.md) to s
 
 Also if you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
 
+If you use Visual Studio Code, see [how to configure it](docs/vscode-setup.md) to develop and debug local configurations.
+
 ## Adding services that does not support API Mediation Layer natively
 
 See [Adding Services to API Gateway without Code Changes](docs/static-apis.md).
