@@ -119,7 +119,7 @@ public class ZosmfSsoIntegrationTest {
     @Test
     public void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
-        String expectedMessage = "Authentication problem: 'Token is not valid'";
+        String expectedMessage = "Token is not valid";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
@@ -129,13 +129,13 @@ public class ZosmfSsoIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
+                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage));
     }
 
     @Test
     public void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
-        String expectedMessage = "Authentication problem: 'Token is not valid.' for URL '/api/zosmfca32/zosmf/restfiles/ds'";
+        String expectedMessage = "Token is not valid for URL '/api/zosmfca32/zosmf/restfiles/ds'";
 
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
@@ -145,7 +145,7 @@ public class ZosmfSsoIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0003' }.messageContent", containsString(expectedMessage));
+                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", containsString(expectedMessage));
     }
 
     @Test
@@ -164,7 +164,7 @@ public class ZosmfSsoIntegrationTest {
     @Test
     public void doZosmfCallWithEmptyHeader() {
         String emptyToken = " ";
-        String expectedMessage = "Authentication problem: 'Token is not valid'";
+        String expectedMessage = "Token is not valid";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
@@ -173,7 +173,7 @@ public class ZosmfSsoIntegrationTest {
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
             .body(
-                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
+                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage));
     }
 
 
