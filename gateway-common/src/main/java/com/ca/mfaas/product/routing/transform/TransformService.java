@@ -21,6 +21,8 @@ import java.net.URI;
 @Slf4j
 public class TransformService {
 
+    private static final String SEPARATOR = "/";
+
     private final GatewayConfigProperties gatewayConfigProperties;
 
     public TransformService(GatewayConfigProperties gatewayConfigProperties) {
@@ -42,16 +44,25 @@ public class TransformService {
                                String serviceUrl,
                                RoutedServices routes) throws URLTransformationException {
         URI serviceUri = URI.create(serviceUrl);
+        String serviceUriPath = serviceUri.getPath();
+        if (serviceUriPath == null) {
+            throw new URLTransformationException("The URI " + serviceUri.toString() + " is not valid.");
+        }
 
-        RoutedService route = routes.getBestMatchingServiceUrl(serviceUri.getPath(), type);
+        RoutedService route = routes.getBestMatchingServiceUrl(serviceUriPath, type);
         if (route == null) {
             String message = String.format("Not able to select route for url %s of the service %s. Original url used.", serviceUri, serviceId);
             log.warn(message);
             throw new URLTransformationException(message);
         }
 
-        String path = serviceUri.getPath().replace(route.getServiceUrl(), "");
-        if (!path.isEmpty() && !path.startsWith("/")) {
+
+        if (serviceUri.getQuery() != null) {
+            serviceUriPath += "?" + serviceUri.getQuery();
+        }
+
+        String endPoint = getShortEndPoint(route.getServiceUrl(), serviceUriPath);
+        if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
             throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
         }
 
@@ -60,6 +71,22 @@ public class TransformService {
             gatewayConfigProperties.getHostname(),
             route.getGatewayUrl(),
             serviceId,
-            path);
+            endPoint);
+    }
+
+
+    /**
+     * Get short endpoint
+     *
+     * @param routeServiceUrl service url of route
+     * @param endPoint        the endpoint of method
+     * @return short endpoint
+     */
+    private String getShortEndPoint(String routeServiceUrl, String endPoint) {
+        String shortEndPoint = endPoint;
+        if (!routeServiceUrl.equals(SEPARATOR)) {
+            shortEndPoint = shortEndPoint.replaceFirst(routeServiceUrl, "");
+        }
+        return shortEndPoint;
     }
 }
