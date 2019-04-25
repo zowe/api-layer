@@ -34,6 +34,7 @@ public class SecurityConfigurationProperties {
     private CookieProperties cookieProperties;
     private String zosmfServiceId;
     private boolean verifySslCertificatesOfServices = true;
+    private String ciphers = null;
 
     @Data
     public static class TokenProperties {
