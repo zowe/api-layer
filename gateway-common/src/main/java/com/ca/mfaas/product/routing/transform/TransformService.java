@@ -44,8 +44,12 @@ public class TransformService {
                                String serviceUrl,
                                RoutedServices routes) throws URLTransformationException {
         URI serviceUri = URI.create(serviceUrl);
+        String serviceUriPath = serviceUri.getPath();
+        if (serviceUriPath == null) {
+            throw new URLTransformationException("The URI " + serviceUri.toString() + " is not valid.");
+        }
 
-        RoutedService route = routes.getBestMatchingServiceUrl(serviceUri.getPath(), type);
+        RoutedService route = routes.getBestMatchingServiceUrl(serviceUriPath, type);
         if (route == null) {
             String message = String.format("Not able to select route for url %s of the service %s. Original url used.", serviceUri, serviceId);
             log.warn(message);
@@ -53,12 +57,11 @@ public class TransformService {
         }
 
 
-        String pathToReplace = serviceUri.getPath();
         if (serviceUri.getQuery() != null) {
-            pathToReplace += "?" + serviceUri.getQuery();
+            serviceUriPath += "?" + serviceUri.getQuery();
         }
 
-        String endPoint = getShortEndPoint(route.getServiceUrl(), pathToReplace);
+        String endPoint = getShortEndPoint(route.getServiceUrl(), serviceUriPath);
         if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
             throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
         }

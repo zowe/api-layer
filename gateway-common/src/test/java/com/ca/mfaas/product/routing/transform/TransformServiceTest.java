@@ -124,6 +124,18 @@ public class TransformServiceTest {
 
 
     @Test
+    public void givenInvalidHomePage_thenThrowException() throws URLTransformationException {
+        String url = "https:localhost:8080/wss";
+
+        TransformService transformService = new TransformService(gatewayConfigProperties);
+
+        exception.expect(URLTransformationException.class);
+        exception.expectMessage("The URI " + url + " is not valid.");
+        transformService.transformURL(null, null, url, null);
+    }
+
+
+    @Test
     public void givenHomePage_whenPathIsNotValid_thenThrowException() throws URLTransformationException {
         String url = "https://localhost:8080/wss";
 
