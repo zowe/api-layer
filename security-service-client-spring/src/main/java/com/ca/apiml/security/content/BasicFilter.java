@@ -51,7 +51,7 @@ public class BasicFilter extends AbstractFilter {
     private UsernamePasswordAuthenticationToken mapBase64Credentials(String base64Credentials) {
         String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
         int i = credentials.indexOf(':');
-        if (i > 0) {
+        if (i >= 0) {
             return new UsernamePasswordAuthenticationToken(credentials.substring(0, i), credentials.substring(i + 1));
         }
 
