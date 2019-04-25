@@ -91,7 +91,7 @@ public class HttpsFactory {
 
     private SSLContext createIgnoringSslContext() {
         try {
-            return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
+            return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).setProtocol(config.getProtocol()).build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
             throw new HttpsConfigError("Error initializing SSL/TLS context: " + e.getMessage(), e,
                     ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
