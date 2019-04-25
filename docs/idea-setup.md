@@ -1,6 +1,6 @@
 # IntelliJ Idea setup
 
-If your editor of choice happens to be Idea and you wnat to use its 'Run Dashboard' follow these steps:
+If your editor of choice happens to be Idea and you want to use its 'Run Dashboard' follow these steps:
 
 First of all enable _Annotations processing_ if you haven't done so already (Just go to settings and search for 'annotation').
 
