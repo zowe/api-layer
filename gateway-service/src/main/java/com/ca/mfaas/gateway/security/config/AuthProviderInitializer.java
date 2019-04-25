@@ -60,7 +60,7 @@ public class AuthProviderInitializer {
 
     private LoginProvider getLoginProvider() {
         LoginProvider provider = LoginProvider.ZOSMF;
-        try{
+        try {
             provider = LoginProvider.getLoginProvider(authProvider);
         } catch (IllegalArgumentException ex) {
             log.warn("Authentication provider is not set correctly. Default 'zosmf' authentication provider is used.");

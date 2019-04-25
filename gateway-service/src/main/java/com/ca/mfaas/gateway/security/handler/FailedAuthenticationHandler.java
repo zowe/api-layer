@@ -48,22 +48,22 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
         ApiMessage message;
         if (exception instanceof BadCredentialsException) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            message = errorService.createApiMessage("com.ca.apiml.gateway.security.login.invalidCredentials", request.getRequestURI());
+            message = errorService.createApiMessage("apiml.gateway.security.login.invalidCredentials", request.getRequestURI());
         } else if (exception instanceof AuthenticationCredentialsNotFoundException) {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
-            message = errorService.createApiMessage("com.ca.apiml.gateway.security.login.invalidInput", request.getRequestURI());
+            message = errorService.createApiMessage("apiml.gateway.security.login.invalidInput", request.getRequestURI());
         } else if (exception instanceof AuthMethodNotSupportedException) {
             response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
-            message = errorService.createApiMessage("com.ca.apiml.gateway.security.invalidMethod", exception.getMessage(), request.getRequestURI());
+            message = errorService.createApiMessage("apiml.gateway.security.invalidMethod", exception.getMessage(), request.getRequestURI());
         } else if (exception instanceof TokenNotValidException) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            message = errorService.createApiMessage("com.ca.apiml.gateway.security.query.invalidToken", request.getRequestURI());
+            message = errorService.createApiMessage("apiml.gateway.security.query.invalidToken", request.getRequestURI());
         } else if (exception instanceof TokenNotProvidedException) {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
-            message = errorService.createApiMessage("com.ca.apiml.gateway.security.query.tokenNotProvided", request.getRequestURI());
+            message = errorService.createApiMessage("apiml.gateway.security.query.tokenNotProvided", request.getRequestURI());
         } else {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            message = errorService.createApiMessage("com.ca.apiml.gateway.security.generic", exception.getMessage(), request.getRequestURI());
+            message = errorService.createApiMessage("apiml.gateway.security.generic", exception.getMessage(), request.getRequestURI());
         }
 
         mapper.writeValue(response.getWriter(), message);
