@@ -16,6 +16,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 @Slf4j
 @Component
+@SuppressWarnings("squid:S1075")
 public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {

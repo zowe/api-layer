@@ -150,7 +150,7 @@ public class WebSocketProxyTest {
         }
 
         System.out.println("Response: " + response.toString());
-        assertEquals(response.toString().indexOf("CloseStatus[code=1003,"), 0);
+        assertEquals(0, response.toString().indexOf("CloseStatus[code=1003,"));
     }
 
     @Test

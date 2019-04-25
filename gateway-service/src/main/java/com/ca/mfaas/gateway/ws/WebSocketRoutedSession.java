@@ -48,9 +48,9 @@ public class WebSocketRoutedSession {
     private WebSocketHttpHeaders getWebSocketHttpHeaders(WebSocketSession webSocketServerSession) {
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
         HttpHeaders browserHeaders = webSocketServerSession.getHandshakeHeaders();
-        browserHeaders.entrySet().forEach(header -> {
-            String value = String.join(" ", header.getValue());
-            headers.add(header.getKey(), value);
+        browserHeaders.forEach((key, value) -> {
+            String header = String.join(" ", value);
+            headers.add(key, header);
         });
 
         headers.setAccessControlAllowOrigin(browserHeaders.getOrigin());

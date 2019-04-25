@@ -130,7 +130,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         log.debug("afterConnectionClosed(session={},status={})", session, status);
         try {
             session.close(status);
