@@ -36,7 +36,7 @@ public class ConfigReader {
                     try {
                         configuration = mapper.readValue(configFile, EnvironmentConfiguration.class);
                     } catch (IOException e) {
-                        log.info("Can't read service configuration from resource file, using default: http://localhost:10010");
+                        log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 1);
@@ -51,7 +51,7 @@ public class ConfigReader {
                             .trustStoreType("PKCS12")
                             .trustStore("../keystore/localhost/localhost.truststore.p12")
                             .trustStorePassword("password")
-                            .procotol("TLSv1.2")
+                            .protocol("TLSv1.2")
                             .ciphers(
                                 Arrays.asList(
                                     "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",

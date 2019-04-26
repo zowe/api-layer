@@ -92,8 +92,8 @@ public class EurekaInstancesIntegrationTest {
 
     private SSLConfig getConfiguredSslConfig() {
         try {
-            String[] protocols = new String[] { tlsConfiguration.getProcotol() };
-            String[] ciphers = tlsConfiguration.getCiphers().toArray(new String[tlsConfiguration.getCiphers().size()]);
+            String[] protocols = new String[] { tlsConfiguration.getProtocol() };
+            String[] ciphers = tlsConfiguration.getCiphers().toArray(new String[0]);
             SSLContext sslContext = SSLContexts.custom()
                 .loadKeyMaterial(
                     new File(tlsConfiguration.getKeyStore()),
