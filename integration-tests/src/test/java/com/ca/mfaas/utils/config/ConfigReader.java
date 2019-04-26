@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Slf4j
 public class ConfigReader {
@@ -40,9 +41,31 @@ public class ConfigReader {
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
-                        TlsConfiguration tlsConfiguration = new TlsConfiguration("localhost", "password", "PKCS12",
-                            "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
-                            "../keystore/localhost/localhost.truststore.p12", "password");
+
+                        TlsConfiguration tlsConfiguration = TlsConfiguration.builder()
+                            .keyAlias("localhost")
+                            .keyPassword("password")
+                            .keyStoreType("PKCS12")
+                            .keyStore("../keystore/localhost/localhost.keystore.p12")
+                            .keyStorePassword("password")
+                            .trustStoreType("PKCS12")
+                            .trustStore("../keystore/localhost/localhost.truststore.p12")
+                            .trustStorePassword("password")
+                            .procotol("TLSv1.2")
+                            .ciphers(
+                                Arrays.asList(
+                                    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+                                    "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+                                    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+                                    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                                    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                                    "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+                                    "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+                                    "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384"
+                                )
+                            )
+                            .build();
+
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);
                         configuration = new EnvironmentConfiguration(credentials, gatewayServiceConfiguration, discoveryServiceConfiguration, tlsConfiguration, zosmfServiceConfiguration);
                     }
@@ -79,6 +102,6 @@ public class ConfigReader {
         tlsConfiguration.setKeyPassword(System.getProperty("tlsConfiguration.keyStorePassword", tlsConfiguration.getKeyStorePassword()));
         tlsConfiguration.setTrustStoreType(System.getProperty("tlsConfiguration.trustStoreType", tlsConfiguration.getTrustStoreType()));
         tlsConfiguration.setTrustStore(System.getProperty("tlsConfiguration.trustStore", tlsConfiguration.getTrustStore()));
-        tlsConfiguration.setTrustStoreType(System.getProperty("tlsConfiguration.trustStorePassword", tlsConfiguration.getTrustStorePassword()));
+        tlsConfiguration.setTrustStorePassword(System.getProperty("tlsConfiguration.trustStorePassword", tlsConfiguration.getTrustStorePassword()));
     }
 }

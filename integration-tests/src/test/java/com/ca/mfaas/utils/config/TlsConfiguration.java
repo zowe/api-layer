@@ -9,13 +9,13 @@
  */
 package com.ca.mfaas.utils.config;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+@Builder
 public class TlsConfiguration {
     private String keyAlias;
     private String keyPassword;
@@ -25,4 +25,6 @@ public class TlsConfiguration {
     private String trustStoreType;
     private String trustStore;
     private String trustStorePassword;
+    private String procotol;
+    private List<String> ciphers;
 }

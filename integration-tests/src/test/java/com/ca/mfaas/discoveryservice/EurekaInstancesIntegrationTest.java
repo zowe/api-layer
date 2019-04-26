@@ -17,16 +17,14 @@ import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.PrivateKeyDetails;
-import org.apache.http.ssl.PrivateKeyStrategy;
 import org.apache.http.ssl.SSLContexts;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -35,7 +33,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -95,29 +92,30 @@ public class EurekaInstancesIntegrationTest {
 
     private SSLConfig getConfiguredSslConfig() {
         try {
-            SSLSocketFactory sslSocketFactory = new SSLSocketFactory(SSLContexts.custom()
-                    .loadKeyMaterial(new File(tlsConfiguration.getKeyStore()),
-                            tlsConfiguration.getKeyStorePassword() != null
-                                    ? tlsConfiguration.getKeyStorePassword().toCharArray()
-                                    : null,
-                            tlsConfiguration.getKeyPassword() != null ? tlsConfiguration.getKeyPassword().toCharArray()
-                                    : null,
-                            new PrivateKeyStrategy() {
-                                @Override
-                                public String chooseAlias(Map<String, PrivateKeyDetails> aliases, Socket socket) {
-                                    return tlsConfiguration.getKeyAlias();
-                                }
-                            })
-                    .loadTrustMaterial(new File(tlsConfiguration.getTrustStore()),
-                            tlsConfiguration.getTrustStorePassword() != null
-                                    ? tlsConfiguration.getTrustStorePassword().toCharArray()
-                                    : null)
-                    .build(), SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+            String[] protocols = new String[] { tlsConfiguration.getProcotol() };
+            String[] ciphers = tlsConfiguration.getCiphers().toArray(new String[tlsConfiguration.getCiphers().size()]);
+            SSLContext sslContext = SSLContexts.custom()
+                .loadKeyMaterial(
+                    new File(tlsConfiguration.getKeyStore()),
+                    getCharArray(tlsConfiguration.getKeyStorePassword()),
+                    getCharArray(tlsConfiguration.getKeyPassword()),
+                    (aliases, socket) -> tlsConfiguration.getKeyAlias())
+                .loadTrustMaterial(
+                    new File(tlsConfiguration.getTrustStore()),
+                    getCharArray(tlsConfiguration.getTrustStorePassword()))
+                .build();
+
+            SSLSocketFactory sslSocketFactory = new SSLSocketFactory(sslContext, protocols, ciphers,
+                SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
             return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
                 | CertificateException | IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private char[] getCharArray(String value) {
+        return value != null ? value.toCharArray() : null;
     }
 
 }
