@@ -13,10 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.netflix.zuul.context.RequestContext;
@@ -28,40 +25,39 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 public class ConvertAuthTokenInUriToCookieFilterTest {
 
-    private ConvertAuthTokenInUriToCookieFilter filter;
+    private final SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+    private final ConvertAuthTokenInUriToCookieFilter filter = new ConvertAuthTokenInUriToCookieFilter(securityConfigurationProperties);
 
     @Before
-    public void setUp() throws Exception {
-        SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
-        this.filter = new ConvertAuthTokenInUriToCookieFilter(securityConfigurationProperties);
+    public void setUp() {
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
         ctx.setResponse(new MockHttpServletResponse());
     }
 
     @Test
-    public void doesNotDoAnythingWhenThereIsNoParam() throws Exception {
+    public void doesNotDoAnythingWhenThereIsNoParam() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         this.filter.run();
         assertFalse(ctx.getResponse().getHeaderNames().contains("Set-Cookie"));
     }
 
     @Test
-    public void doesNotDoAnythingWhenThereIsAnotherParam() throws Exception {
+    public void doesNotDoAnythingWhenThereIsAnotherParam() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         Map<String, List<String>> params = new HashMap<>();
-        params.put("someParameter", Arrays.asList("value"));
+        params.put("someParameter", Collections.singletonList("value"));
         ctx.setRequestQueryParams(params);
         this.filter.run();
         assertFalse(ctx.getResponse().getHeaderNames().contains("Set-Cookie"));
     }
 
     @Test
-    public void setsCookieForCorrectParameter() throws Exception {
+    public void setsCookieForCorrectParameter() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.setRequest(new MockHttpServletRequest("GET", "/api/v1/service"));
         Map<String, List<String>> params = new HashMap<>();
-        params.put(ConvertAuthTokenInUriToCookieFilter.TOKEN_KEY, Arrays.asList("token"));
+        params.put(securityConfigurationProperties.getCookieProperties().getCookieName(), Collections.singletonList("token"));
         ctx.setRequestQueryParams(params);
         this.filter.run();
         assertTrue(ctx.getResponse().getHeaders("Set-Cookie").toString().contains("apimlAuthenticationToken=token"));
@@ -70,11 +66,11 @@ public class ConvertAuthTokenInUriToCookieFilterTest {
     }
 
     @Test
-    public void setsLocationToDashboardForApiCatalog() throws Exception {
+    public void setsLocationToDashboardForApiCatalog() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.setRequest(new MockHttpServletRequest("GET", "/api/v1/apicatalog/"));
         Map<String, List<String>> params = new HashMap<>();
-        params.put(ConvertAuthTokenInUriToCookieFilter.TOKEN_KEY, Arrays.asList("token"));
+        params.put(securityConfigurationProperties.getCookieProperties().getCookieName(), Collections.singletonList("token"));
         ctx.setRequestQueryParams(params);
         this.filter.run();
         assertTrue(ctx.getResponse().getHeaders("Set-Cookie").toString().contains("apimlAuthenticationToken=token"));
