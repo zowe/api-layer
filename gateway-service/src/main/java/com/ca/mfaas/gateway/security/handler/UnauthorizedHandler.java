@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.handler;
 
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.product.constants.ApimConstants;
+import com.ca.mfaas.product.constants.ApimlConstants;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,7 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.addHeader("WWW-Authenticate", ApimConstants.BASIC_AUTHENTICATION_PREFIX);
+        response.addHeader("WWW-Authenticate", ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
 
         ApiMessage message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidCredentials", request.getRequestURI());
         mapper.writeValue(response.getWriter(), message);

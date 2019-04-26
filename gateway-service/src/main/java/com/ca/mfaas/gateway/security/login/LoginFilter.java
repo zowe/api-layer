@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.login;
 
 import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
-import com.ca.mfaas.product.constants.ApimConstants;
+import com.ca.mfaas.product.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -112,9 +112,9 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         return Optional.ofNullable(
             request.getHeader(HttpHeaders.AUTHORIZATION)
         ).filter(
-            header -> header.startsWith(ApimConstants.BASIC_AUTHENTICATION_PREFIX)
+            header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
         ).map(
-            header -> header.replaceFirst(ApimConstants.BASIC_AUTHENTICATION_PREFIX, "")
+            header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "")
         )
             .filter(base64Credentials -> !base64Credentials.isEmpty())
             .map(this::mapBase64Credentials);

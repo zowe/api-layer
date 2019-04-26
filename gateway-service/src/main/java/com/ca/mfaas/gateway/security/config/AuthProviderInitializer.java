@@ -18,6 +18,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.stereotype.Component;
 
+/**
+ * Initialize authentication and authorization provider set by apiml.security.auth.authProvider parameter
+ */
 @Component
 @Slf4j
 public class AuthProviderInitializer {
@@ -39,6 +42,13 @@ public class AuthProviderInitializer {
         this.authProvider = authProvider;
     }
 
+    /**
+     * Configure security providers:
+     * 1. {@link ZosmfAuthenticationProvider} or {@link DummyAuthenticationProvider} for login credentials
+     * 2. {@link TokenAuthenticationProvider} for query token
+     *
+     * @param auth authenticationManagerBuilder which is being configured
+     */
     public void configure(AuthenticationManagerBuilder auth) {
         LoginProvider provider = getLoginProvider();
         switch (provider) {
@@ -58,6 +68,11 @@ public class AuthProviderInitializer {
         auth.authenticationProvider(tokenAuthenticationProvider);
     }
 
+    /**
+     * Get login provider according apiml.security.auth.authProvider parameter
+     *
+     * @return login provider
+     */
     private LoginProvider getLoginProvider() {
         LoginProvider provider = LoginProvider.ZOSMF;
         try {

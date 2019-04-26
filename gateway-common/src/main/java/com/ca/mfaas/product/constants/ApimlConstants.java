@@ -9,11 +9,12 @@
  */
 package com.ca.mfaas.product.constants;
 
-public class ApimConstants {
+public final class ApimlConstants {
 
-    // custom REST response header to signify that this API Doc has already been normalised
-    public static final String API_DOC_NORMALISED = "Api-Doc-Normalised";
+    private ApimlConstants() {
+        throw new IllegalStateException("APIML constant class");
+    }
 
-    //Authorization constants
+    //Authentication constants
     public static final String BASIC_AUTHENTICATION_PREFIX = "Basic ";
 }

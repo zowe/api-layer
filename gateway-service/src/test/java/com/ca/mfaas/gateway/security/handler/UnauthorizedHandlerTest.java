@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.security.handler;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
-import com.ca.mfaas.product.constants.ApimConstants;
+import com.ca.mfaas.product.constants.ApimlConstants;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class UnauthorizedHandlerTest {
         unauthorizedHandler.commence(httpServletRequest, httpServletResponse, new TokenExpireException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(ApimConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader("WWW-Authenticate"));
+        assertEquals(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader("WWW-Authenticate"));
 
 
         ApiMessage message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidCredentials", httpServletRequest.getRequestURI());

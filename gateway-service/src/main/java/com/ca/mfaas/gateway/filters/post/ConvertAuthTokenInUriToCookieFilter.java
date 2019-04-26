@@ -24,8 +24,6 @@ import com.netflix.zuul.context.RequestContext;
  * the expected place (cookie).
  */
 public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
-    static final String TOKEN_KEY = "apimlAuthenticationToken";
-
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
     public ConvertAuthTokenInUriToCookieFilter(SecurityConfigurationProperties securityConfigurationProperties) {
@@ -46,10 +44,10 @@ public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
 
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
-        if ((context.getRequestQueryParams() != null) && context.getRequestQueryParams().containsKey(TOKEN_KEY)) {
+        SecurityConfigurationProperties.CookieProperties cp = securityConfigurationProperties.getCookieProperties();
+        if ((context.getRequestQueryParams() != null) && context.getRequestQueryParams().containsKey(cp.getCookieName())) {
             HttpServletResponse servletResponse = context.getResponse();
-            SecurityConfigurationProperties.CookieProperties cp = securityConfigurationProperties.getCookieProperties();
-            Cookie cookie = new Cookie(cp.getCookieName(), context.getRequestQueryParams().get(TOKEN_KEY).get(0));
+            Cookie cookie = new Cookie(cp.getCookieName(), context.getRequestQueryParams().get(cp.getCookieName()).get(0));
             cookie.setPath(cp.getCookiePath());
             cookie.setSecure(true);
             cookie.setHttpOnly(true);

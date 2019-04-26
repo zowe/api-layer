@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static com.ca.mfaas.product.constants.ApimConstants.API_DOC_NORMALISED;
-
 @Slf4j
 @Service
 public class APIServiceStatusService {
@@ -150,7 +148,6 @@ public class APIServiceStatusService {
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
-        headers.set(API_DOC_NORMALISED, "true");
         return headers;
     }
 }

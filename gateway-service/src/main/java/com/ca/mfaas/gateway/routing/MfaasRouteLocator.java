@@ -79,11 +79,8 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
             for (String serviceId : services) {
                 // Ignore specifically ignored services and those that were manually
                 // configured
-                //   String targetServiceId = changeServiceId(serviceId);
-                String targetServiceId = serviceId;
-
                 RoutedServices routedServices = new RoutedServices();
-                List<ServiceInstance> serviceInstances = this.discovery.getInstances(targetServiceId);
+                List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
                 if (serviceInstances == null) {
                     log.error("Cannot find any instances of service: " + serviceId);
                     return null;
@@ -111,7 +108,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     if (!PatternMatchUtils.simpleMatch(ignored, serviceId)
                         && !routesMap.containsKey(key) && !removedRoutes.contains(key)) {
                         // Not ignored
-                        routesMap.put(key, new ZuulProperties.ZuulRoute(key, targetServiceId));
+                        routesMap.put(key, new ZuulProperties.ZuulRoute(key, serviceId));
                     }
                 }
             }
@@ -136,18 +133,12 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
         return values;
     }
 
-    private String changeServiceId(String serviceId) {
-        if (serviceId.equals(CoreService.GATEWAY.getServiceId())) {
-            return CoreService.API_CATALOG.getServiceId();
-        }
-        return serviceId;
-    }
-
     /**
-     * Create route keys using gateway url found in the service routes metadata
+     * Parse route keys from the metadata and populate service routes
+     *
      * @param serviceInstance the list of service instances
-     * @param routes the service routes
-     * @param serviceId the service id
+     * @param routes          the service routes
+     * @param serviceId       the service id
      * @return the list of route keys
      */
     @SuppressWarnings("squid:S3776") // Suppress complexity warning

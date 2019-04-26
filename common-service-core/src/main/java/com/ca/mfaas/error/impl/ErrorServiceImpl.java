@@ -123,6 +123,14 @@ public class ErrorServiceImpl implements ErrorService {
         return new BasicMessage(key, message.getType(), message.getNumber(), text);
     }
 
+    /**
+     * Internal method that validates the message. When the message does not exists, the key {@value INVALID_KEY_MESSAGE}
+     * is used. When this message also does not exist, the new predefined message is created.
+     *
+     * @param message to be checked
+     * @param key     of message
+     * @return {@link ErrorMessage} in mainframe format
+     */
     private ErrorMessage validateMessage(ErrorMessage message, String key) {
         if (message == null) {
             LOGGER.debug("Invalid message key '{}' was used. Please resolve this problem.", key);
@@ -137,6 +145,15 @@ public class ErrorServiceImpl implements ErrorService {
         return message;
     }
 
+    /**
+     * Internal method that modifies parameters when the original message key does not exist and the new error message
+     * to indicate this issue is being used.
+     *
+     * @param message    to be checked if the original message was invalid
+     * @param key        of the original message
+     * @param parameters of the original message
+     * @return modified parameters if the message was changed, otherwise parameters remain unchanged
+     */
     private Object[] validateParameters(ErrorMessage message, String key, Object... parameters) {
         if (message.getKey().equals(INVALID_KEY_MESSAGE)) {
             return new Object[]{key};
