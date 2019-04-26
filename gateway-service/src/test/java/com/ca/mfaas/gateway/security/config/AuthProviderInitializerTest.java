@@ -15,10 +15,8 @@ import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import com.ca.mfaas.gateway.security.token.TokenAuthenticationProvider;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class AuthProviderInitializerTest {

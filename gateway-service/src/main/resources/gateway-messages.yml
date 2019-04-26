@@ -1,44 +1,44 @@
 messages:
     # Security messages (100 - 199)
     # Generic messages (100 - 120)
-    - key: com.ca.apiml.gateway.security.generic
+    - key: apiml.gateway.security.generic
       number: ZWEAG100E
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
 
-    - key: com.ca.apiml.gateway.security.invalidMethod
+    - key: apiml.gateway.security.invalidMethod
       number: ZWEAG101E
       type: ERROR
       text: "Authentication method '%s' not supported for URL '%s'"
 
-    - key: com.ca.apiml.gateway.security.invalidToken
+    - key: apiml.gateway.security.invalidToken
       number: ZWEAG102E
       type: ERROR
       text: "Token is not valid"
 
-    - key: com.ca.apiml.gateway.security.expiredToken
+    - key: apiml.gateway.security.expiredToken
       number: ZWEAG103E
       type: ERROR
       text: "Token is expired"
 
     # Login messages (120 - 130)
-    - key: com.ca.apiml.gateway.security.login.invalidCredentials
+    - key: apiml.gateway.security.login.invalidCredentials
       number: ZWEAG120E
       type: ERROR
       text: "Invalid username or password for URL '%s'"
 
-    - key: com.ca.apiml.gateway.security.login.invalidInput
+    - key: apiml.gateway.security.login.invalidInput
       number: ZWEAG121E
       type: ERROR
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
 
     # Query messages (130 - 140)
-    - key: com.ca.apiml.gateway.security.query.invalidToken
+    - key: apiml.gateway.security.query.invalidToken
       number: ZWEAG130E
       type: ERROR
       text: "Token is not valid for URL '%s'"
 
-    - key: com.ca.apiml.gateway.security.query.tokenNotProvided
+    - key: apiml.gateway.security.query.tokenNotProvided
       number: ZWEAG131E
       type: ERROR
       text: "No authorization token provided for URL '%s'"

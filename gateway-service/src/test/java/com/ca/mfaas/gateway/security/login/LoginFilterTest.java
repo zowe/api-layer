@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.login;
 
+import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,11 +21,12 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
 import javax.ws.rs.HttpMethod;
-import static org.mockito.ArgumentMatchers.any;
+
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -55,7 +57,7 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticateWithAuthHeader() throws Exception {
+    public void shouldCallAuthenticationManagerAuthenticateWithAuthHeader() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, VALID_AUTH_HEADER);
@@ -63,11 +65,13 @@ public class LoginFilterTest {
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
-        verify(authenticationManager).authenticate(any());
+        UsernamePasswordAuthenticationToken authentication
+            = new UsernamePasswordAuthenticationToken("user", "pwd");
+        verify(authenticationManager).authenticate(authentication);
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticateWithJson() throws Exception {
+    public void shouldCallAuthenticationManagerAuthenticateWithJson() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletRequest.setContent(VALID_JSON.getBytes());
@@ -75,11 +79,13 @@ public class LoginFilterTest {
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
-        verify(authenticationManager).authenticate(any());
+        UsernamePasswordAuthenticationToken authentication
+            = new UsernamePasswordAuthenticationToken("user", "pwd");
+        verify(authenticationManager).authenticate(authentication);
     }
 
     @Test(expected = AuthenticationCredentialsNotFoundException.class)
-    public void shouldFailWithJsonEmptyCredentials() throws Exception {
+    public void shouldFailWithJsonEmptyCredentials() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletRequest.setContent(EMPTY_JSON.getBytes());
@@ -89,7 +95,7 @@ public class LoginFilterTest {
     }
 
     @Test (expected = AuthenticationCredentialsNotFoundException.class)
-    public void shouldFailWithoutAuth() throws Exception {
+    public void shouldFailWithoutAuth() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletResponse = new MockHttpServletResponse();
@@ -97,8 +103,8 @@ public class LoginFilterTest {
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
 
-    @Test (expected = AuthenticationServiceException.class)
-    public void shouldFailWithWrongHttpMethod() throws Exception {
+    @Test (expected = AuthMethodNotSupportedException.class)
+    public void shouldFailWithWrongHttpMethod() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET);
         httpServletResponse = new MockHttpServletResponse();

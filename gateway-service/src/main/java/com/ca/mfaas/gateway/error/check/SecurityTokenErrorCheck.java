@@ -36,9 +36,9 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
             ApiMessage message = null;
             Throwable cause = exc.getCause();
             if (cause instanceof TokenExpireException) {
-                message = errorService.createApiMessage("com.ca.apiml.gateway.security.expiredToken");
+                message = errorService.createApiMessage("apiml.gateway.security.expiredToken");
             } else if (cause instanceof TokenNotValidException) {
-                message = errorService.createApiMessage("com.ca.apiml.gateway.security.invalidToken");
+                message = errorService.createApiMessage("apiml.gateway.security.invalidToken");
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(message);
         }

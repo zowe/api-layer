@@ -15,39 +15,49 @@ import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.error.ErrorUtils;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.rest.response.Message;
+import com.ca.mfaas.rest.response.MessageType;
+import com.ca.mfaas.rest.response.impl.BasicMessage;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
+@RunWith(SpringRunner.class)
 public class SecurityTokenErrorCheckTest {
 
     private static SecurityTokenErrorCheck securityTokenErrorCheck;
 
+    @Autowired
+    private ErrorService errorService;
+
     @BeforeClass
-    public static void setup() {
+    public static void initMocks() {
         MonitoringHelper.initMocks();
-        ErrorService errorService = new ErrorServiceImpl();
+    }
+
+    @Before
+    public void setup() {
         securityTokenErrorCheck = new SecurityTokenErrorCheck(errorService);
     }
 
-    @Test
-    public void shouldReturnUnauthorizedStatus() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        AuthenticationException exception = new TokenExpireException("TOKEN_EXPIRE");
-        ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), null);
-
-        ResponseEntity response = securityTokenErrorCheck.checkError(request, exc);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-    }
 
     @Test
     public void shouldReturnCauseMessageWhenTokenExpireException() {
@@ -59,11 +69,11 @@ public class SecurityTokenErrorCheckTest {
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
-        ResponseEntity response = securityTokenErrorCheck.checkError(request, exc);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
+        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
-        String basicApiMessage = "Internal error: Invalid message key 'com.ca.mfaas.security.tokenIsExpiredWithoutUrl' is provided. Please contact support for further assistance.";
-        assertTrue(response.getBody().toString().contains(basicApiMessage));
+        List<Message> actualMessageList = actualResponse.getBody().getMessages();
+        assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
     }
 
     @Test
@@ -76,11 +86,19 @@ public class SecurityTokenErrorCheckTest {
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
-        ResponseEntity response = securityTokenErrorCheck.checkError(request, exc);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
+        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
-        String basicApiMessage = "Internal error: Invalid message key 'com.ca.mfaas.security.tokenIsNotValidWithoutUrl' is provided. Please contact support for further assistance.";
-        assertTrue(response.getBody().toString().contains(basicApiMessage));
+        List<Message> actualMessageList = actualResponse.getBody().getMessages();
+        assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
+    }
+
+    @Configuration
+    static class ContextConfiguration {
+        @Bean
+        public ErrorService errorService() {
+            return new ErrorServiceImpl("/gateway-messages.yml");
+        }
     }
 }
 
