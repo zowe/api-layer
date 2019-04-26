@@ -46,7 +46,7 @@ public class SuccessfulLoginHandlerTest {
         successfulLoginHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
-        assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
+        assertEquals(HttpStatus.NO_CONTENT.value(), httpServletResponse.getStatus());
     }
 
     @Test

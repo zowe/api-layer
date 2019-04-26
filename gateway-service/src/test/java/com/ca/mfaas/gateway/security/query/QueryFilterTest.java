@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
+import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.security.token.TokenNotValidException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -72,7 +71,7 @@ public class QueryFilterTest {
         verify(authenticationManager).authenticate(any());
     }
 
-    @Test(expected = AuthenticationServiceException.class)
+    @Test(expected = AuthMethodNotSupportedException.class)
     public void shouldRejectHttpMethods() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
@@ -81,7 +80,7 @@ public class QueryFilterTest {
     }
 
 
-    @Test(expected = TokenNotValidException.class)
+    @Test(expected = TokenNotProvidedException.class)
     public void shouldRejectIfTokenIsNotPresent() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET);
