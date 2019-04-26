@@ -35,6 +35,7 @@ An application is Zowe API ML conformant if it follows these criteria:
    - The Zowe JWT token in the cookie is accepted (For more information, see https://github.com/zowe/api-layer/wiki/Zowe-Authentication-and-Authorization-Service)
 5. User interface (applies only if the UI is provided)
    - UI uses relative URLs
+   - (Proposal) If the application uses absolute URLs, it needs to be aware of running behind API gateway and use absolute URLs that are routed via the API gateway
    - Accepts JWT token
 6. User documentation requirements
    - Reviewed by Tech Materials (previously Tech Info)  
