@@ -28,6 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+/**
+ * Authentication error handler
+ */
 @Component
 public class FailedAuthenticationHandler implements AuthenticationFailureHandler {
     private final ErrorService errorService;

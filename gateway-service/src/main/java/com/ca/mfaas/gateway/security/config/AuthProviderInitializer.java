@@ -35,7 +35,7 @@ public class AuthProviderInitializer {
     public AuthProviderInitializer(DummyAuthenticationProvider dummyAuthenticationProvider,
                                    ZosmfAuthenticationProvider zosmfAuthenticationProvider,
                                    TokenAuthenticationProvider tokenAuthenticationProvider,
-                                   @Value("${apiml.security.auth.provider}") String authProvider) {
+                                   @Value("${apiml.security.auth.provider:zosmf}") String authProvider) {
         this.dummyAuthenticationProvider = dummyAuthenticationProvider;
         this.zosmfAuthenticationProvider = zosmfAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;

@@ -30,6 +30,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Security configuration for Gateway
+ * <p>
+ * 1. Adds Login and Query endpoints
+ * 2. Allows basic and token (cookie) authentication
+ */
 @Slf4j
 @Configuration
 @EnableWebSecurity

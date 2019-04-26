@@ -21,8 +21,12 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
+/**
+ * Handles unauthorized access
+ */
 @Slf4j
 @Component
 public class UnauthorizedHandler implements AuthenticationEntryPoint {
@@ -34,9 +38,6 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
         this.mapper = objectMapper;
     }
 
-    /**
-     * Handles authentication errors for endpoints access
-     */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
