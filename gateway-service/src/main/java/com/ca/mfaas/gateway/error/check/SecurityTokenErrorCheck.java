@@ -22,6 +22,9 @@ import org.springframework.security.core.AuthenticationException;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Checks whether the error was caused by an invalid token
+ */
 @Slf4j
 public class SecurityTokenErrorCheck implements ErrorCheck {
     private final ErrorService errorService;
