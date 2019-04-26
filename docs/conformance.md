@@ -27,7 +27,7 @@ An application is Zowe API ML conformant if it follows these criteria:
 3. The REST API follows these best practices:
    - Encoded slash is not used
    - URL encoding of values in the URL does not change how the values are interpreted 
-   - REST API is designed to follow this URL: https://broadcom.ent.box.com/notes/288959969273
+   - REST API is designed to follow rules defined at https://broadcom.ent.box.com/notes/288959969273
 4. Authentication
    - The resources of REST APIs are protected by mainframe credentials
    - Some resources can be public
