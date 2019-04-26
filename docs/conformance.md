@@ -23,7 +23,7 @@ An application is Zowe API ML conformant if it follows these criteria:
      
       `api/{serviceId}`, `ui/{serviceId}`, `ws/{serviceId}` 
    - Names and titles reviewed by Tech Materials (previously Tech Info) 
-2. The provided API is documented by Swagger/OpenAPI 2.0 JSON document. This document needs to be valid
+2. The provided REST API is documented by Swagger/OpenAPI 2.0 JSON document. This document needs to be valid
 3. The REST API follows these best practices:
    - Encoded slash is not used
    - URL encoding of values in the URL does not change how the values are interpreted 
@@ -38,6 +38,9 @@ An application is Zowe API ML conformant if it follows these criteria:
    - Accepts JWT token
 6. User documentation requirements
    - Reviewed by Tech Materials (previously Tech Info)  
+7. The provided WebSocket APIs need to be routed via the `ws/vn/serviceId` path
+   - There are no rules about the format of WebSocket messages
+   - The public WebSocket APIs need to be documented in the documentation of the application
 
 ### Validation 
 
