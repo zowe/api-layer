@@ -9,16 +9,9 @@
  */
 package com.ca.mfaas.hellospring.listener;
 
-import org.junit.Test;
 
 
 public class ApiDiscoveryListenerTest {
 
-    @Test
-    public void contextStartsAndStopsTest() {
-        ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
 
-        contextListener.contextInitialized(null);
-        contextListener.contextDestroyed(null);
-    }
 }

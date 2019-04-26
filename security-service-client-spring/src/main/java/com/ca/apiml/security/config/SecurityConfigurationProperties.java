@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Data
 @Component
-@ConfigurationProperties(prefix = "apiml.security", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
     private String loginPath = "/api/v1/gateway/auth/login/**";
@@ -26,7 +26,7 @@ public class SecurityConfigurationProperties {
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
     private String zosmfServiceId;
-    private String authProvider = "zosmf";
+    private String provider = "zosmf";
     private boolean verifySslCertificatesOfServices = true;
 
     @Data
@@ -58,7 +58,7 @@ public class SecurityConfigurationProperties {
      */
     public String validatedZosmfServiceId() {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-            log.error("z/OSMF service name not found. Set property apiml.security.zosmfServiceId to your service name.");
+            log.error("z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name.");
             throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
         }
         return zosmfServiceId;

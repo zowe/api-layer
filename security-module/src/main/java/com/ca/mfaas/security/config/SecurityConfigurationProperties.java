@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @Slf4j
-@ConfigurationProperties(prefix = "apiml.security", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 public class SecurityConfigurationProperties {
     public SecurityConfigurationProperties() {
         this.cookieProperties = new CookieProperties();
@@ -57,7 +57,7 @@ public class SecurityConfigurationProperties {
 
     public String validatedZosmfServiceId() {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-            log.error("z/OSMF service name not found. Set property apiml.security.zosmfServiceId to your service name.");
+            log.error("z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name.");
             throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
         }        
         return zosmfServiceId;

@@ -196,9 +196,9 @@ The default configuration of services for local development is to verify certifi
 
 However, you may want to quickly register an existing service without generating a certificate for it using the `apiml_cm.sh --action new-service` command.
 
-You can do it by setting the `apiml.security.verifySslCertificatesOfServices` configuration property to `false` from the default `true` for the APIML services (gateway, discovery service and API catalog). 
+You can do it by setting the `apiml.security.ssl.verifySslCertificatesOfServices` configuration property to `false` from the default `true` for the APIML services (gateway, discovery service and API catalog). 
 This can be done by adding following options to the startup command of each service in `package.json` or in your IDE:
 
-    --apiml.security.verifySslCertificatesOfServices=false
+    --apiml.security.ssl.verifySslCertificatesOfServices=false
 
 

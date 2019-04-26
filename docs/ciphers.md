@@ -3,7 +3,7 @@
 To set ciphers supported by the HTTPS servers in API ML services you need to set following property
 for all services (gateway, discovery service, and API catalog):
 
-    -Dapiml.security.ciphers=<cipher-list>
+    -Dapiml.security.ssl.ciphers=<cipher-list>
 
 The default value is in the `application.yml` files, for example: [gateway-service/src/main/resources/application.yml](/gateway-service/src/main/resources/application.yml). The default configuration is in the resulting JAR files.
 

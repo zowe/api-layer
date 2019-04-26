@@ -32,7 +32,7 @@ public class AuthProviderInitializer {
     public AuthProviderInitializer(DummyAuthenticationProvider dummyAuthenticationProvider,
                                    ZosmfAuthenticationProvider zosmfAuthenticationProvider,
                                    TokenAuthenticationProvider tokenAuthenticationProvider,
-                                   @Value("${apiml.security.authProvider}") String authProvider) {
+                                   @Value("${apiml.security.auth.provider}") String authProvider) {
         this.dummyAuthenticationProvider = dummyAuthenticationProvider;
         this.zosmfAuthenticationProvider = zosmfAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;
@@ -51,7 +51,7 @@ public class AuthProviderInitializer {
                 auth.authenticationProvider(dummyAuthenticationProvider);
                 break;
             default:
-                log.warn("Unsupported value of authentication provider indicated in apiml.security.authProvider = {}.", provider.getValue());
+                log.warn("Unsupported value of authentication provider indicated in apiml.security.auth.provider = {}.", provider.getValue());
                 log.warn("Default 'zosmf' authentication provider is used.");
                 auth.authenticationProvider(zosmfAuthenticationProvider);
         }
@@ -64,7 +64,7 @@ public class AuthProviderInitializer {
             provider = LoginProvider.getLoginProvider(authProvider);
         } catch (IllegalArgumentException ex) {
             log.warn("Authentication provider is not set correctly. Default 'zosmf' authentication provider is used.");
-            log.warn("Incorrect value: apiml.security.authProvider = {}", authProvider);
+            log.warn("Incorrect value: apiml.security.auth.provider = {}", authProvider);
         }
         return provider;
     }

@@ -44,7 +44,7 @@ public class ApimlHealthIndicator extends AbstractHealthIndicator {
         boolean apiCatalogUp = !this.discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId()).isEmpty();
         boolean discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
         boolean authUp = true;
-        if (!securityConfigurationProperties.getAuthProvider().equalsIgnoreCase("dummy")) {
+        if (!securityConfigurationProperties.getProvider().equalsIgnoreCase("dummy")) {
             authUp = !this.discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId()).isEmpty();
         }
         boolean apimlUp = discoveryUp && authUp;

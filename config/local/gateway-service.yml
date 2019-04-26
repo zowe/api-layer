@@ -6,8 +6,10 @@ apiml:
         port: 10010
         discoveryServiceUrls: https://localhost:10011/eureka/
     security:
-        authProvider: dummy
-        verifySslCertificatesOfServices: true
+        auth:
+            provider: dummy
+        ssl:
+            verifySslCertificatesOfServices: true
 
 spring:
     output:

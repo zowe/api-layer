@@ -58,7 +58,7 @@ public class HttpConfig {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${apiml.security.verifySslCertificatesOfServices:true}")
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
     @Value("${spring.application.name}")
