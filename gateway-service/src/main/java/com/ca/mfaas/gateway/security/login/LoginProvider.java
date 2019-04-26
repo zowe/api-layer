@@ -9,6 +9,9 @@
  */
 package com.ca.mfaas.gateway.security.login;
 
+/**
+ * Represents supported login providers
+ */
 public enum LoginProvider {
     ZOSMF("zosmf"),
     DUMMY("dummy");

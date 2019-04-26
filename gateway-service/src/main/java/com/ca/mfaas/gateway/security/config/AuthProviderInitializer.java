@@ -51,19 +51,12 @@ public class AuthProviderInitializer {
      */
     public void configure(AuthenticationManagerBuilder auth) {
         LoginProvider provider = getLoginProvider();
-        switch (provider) {
-            case ZOSMF:
-                auth.authenticationProvider(zosmfAuthenticationProvider);
-                break;
-            case DUMMY:
-                log.warn("Login endpoint is running in the dummy mode. Use credentials user/user to login.");
-                log.warn("Do not use this option in the production environment.");
-                auth.authenticationProvider(dummyAuthenticationProvider);
-                break;
-            default:
-                log.warn("Unsupported value of authentication provider indicated in apiml.security.auth.provider = {}.", provider.getValue());
-                log.warn("Default 'zosmf' authentication provider is used.");
-                auth.authenticationProvider(zosmfAuthenticationProvider);
+        if (provider == LoginProvider.ZOSMF) {
+            auth.authenticationProvider(zosmfAuthenticationProvider);
+        } else if (provider == LoginProvider.DUMMY) {
+            log.warn("Login endpoint is running in the dummy mode. Use credentials user/user to login.");
+            log.warn("Do not use this option in the production environment.");
+            auth.authenticationProvider(dummyAuthenticationProvider);
         }
         auth.authenticationProvider(tokenAuthenticationProvider);
     }

@@ -13,6 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Represents the login JSON with credentials
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
