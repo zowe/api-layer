@@ -5,14 +5,16 @@
 An application is Zowe API ML conformant if it follows these criteria:
 
 1. The application provides a discoverable API service that is registered dynamically to the Discovery Service
-   - The service ID can be set in the configuration of the application
-   - The default service ID follows these rules:
-     - Lower case, no symbols
-     - Starts with the name of the vendor
+   - The service ID can be set in the configuration of the application by the system programmer
+   - The application provides a default service ID that is prefixed by the provider name (for example: 'ca', 'ibm', 'rocket')
+   - Every service ID follows these rules:
+     - Lower case, no symbols (the service ID is case insensitive for users and can be used in places that does not allow different case or symbols such as SAF resource names)
+     - It has up to 64 characters
    - At least one REST API is defined and routed
    - The API ID follows same rules as for Java packages
      
       `org.zowe.apiml.apicatalog`
+      
    - The routing follows the conventions for the Gateway URL:
      - For versioned APIs:
      
