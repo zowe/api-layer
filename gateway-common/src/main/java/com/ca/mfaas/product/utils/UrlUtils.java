@@ -43,20 +43,6 @@ public class UrlUtils {
         return normalizedUri;
     }
 
-    public static String addLastSlash(String uri) {
-        String normalizedUri = uri;
-        if (uri == null) {
-            return null;
-        }
-        if (uri.trim().isEmpty()) {
-            return "";
-        }
-        if (!uri.endsWith("/")) {
-            normalizedUri = normalizedUri + "/";
-        }
-        return normalizedUri;
-    }
-
     public static String removeLastSlash(String uri) {
         String nomalizedUri = uri;
         if (uri == null) {

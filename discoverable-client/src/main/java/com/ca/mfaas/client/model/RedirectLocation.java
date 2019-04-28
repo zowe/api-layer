@@ -16,6 +16,10 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * This model is used for integration test of PageRedirectionFilter.java
+ * It wraps Location url
+ */
 @ApiModel
 public class RedirectLocation {
 

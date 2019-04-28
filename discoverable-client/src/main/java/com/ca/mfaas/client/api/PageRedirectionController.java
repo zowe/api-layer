@@ -25,12 +25,21 @@ import static org.springframework.http.HttpHeaders.LOCATION;
 
 /**
  * This Rest Controller is used for the integration test of PageRedirectionFilter.java
+ * It accepts POST request which should contain a url in request body. The controller then sets the url to Location
+ * Response Header and returns status code 307
  */
 @Slf4j
 @RestController
 @Api(tags = {"Other Operations"}, description = "General Operations")
 public class PageRedirectionController {
 
+    /**
+     * Get url from POST request body, then set the url to Location response header, and set status code to 307
+     *
+     * @param redirectLocation request body which contains a url
+     * @param response         return the same data as request body
+     * @return
+     */
     @PostMapping(
         value = "/api/v1/redirect",
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE,

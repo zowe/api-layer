@@ -22,6 +22,18 @@ import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.core.Is.is;
 import static org.springframework.http.HttpHeaders.LOCATION;
 
+/**
+ * This is an integration test class for PageRedirectionFilter.java
+ * It tests PageRedirectionFilter with service staticclient which is defined staticclient.yml
+ * <ol>
+ * The test scenario is:
+ * <li>Send POST request to PageRedirectionController, the request body contains a service url</li>
+ * <li>When PageRedirectionController gets the POST request, it takes out the url from request body, sets Location
+ * Response header to the url, and returns status code 307</li>
+ * <li>The response should then be filtered by PageRedirectionFilter</li>
+ * <li>Checks the Location in response header, verify that it has been tranformed to gateway url</li>
+ * </ol>
+ */
 public class PageRedirectionTest {
     private final String serviceId = "staticclient";
     private final String baseUrl = "/discoverableclient";
@@ -52,13 +64,14 @@ public class PageRedirectionTest {
         requestUrl = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, apiPrefix, "/" + serviceId, "/redirect");
     }
 
-
-    //The test is currently comment out because RouteServices.getBestMatchingServiceUrl only transform url with prefix api, ui and ws
-    //@Test
-    public void test1APIRouteOfDiscoverableClient() {
+    /**
+     * Test api instance of staticclient
+     */
+    @Test
+    public void apiRouteOfDiscoverableClient() {
         String apiRelativeUrl = "/api/v1";
         String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, baseUrl, apiRelativeUrl, "/greeting");
-        String trasformedLocation = String.format("%s://%s:%d%s%s%s", dcScheme, gatewayHost, gatewayPort, apiPrefix, "/" + serviceId, "/greeting");
+        String trasformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, apiPrefix, "/" + serviceId, "/greeting");
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -72,13 +85,15 @@ public class PageRedirectionTest {
             .header(LOCATION, trasformedLocation);
     }
 
-    //The test is currently comment out because RouteServices.getBestMatchingServiceUrl only transform url with prefix api, ui and ws
-    //@Test
-    public void test2WSRouteOfDiscoverableClient() {
+    /**
+     * Test ws instance of staticclient
+     */
+    @Test
+    public void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, baseUrl, wsRelativeUrl);
         String wsPrefix = "/ws/v1";
-        String trasformedLocation = String.format("%s://%s:%d%s%s", dcScheme, gatewayHost, gatewayPort, wsPrefix, "/" + serviceId);
+        String trasformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, wsPrefix, "/" + serviceId);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -92,11 +107,14 @@ public class PageRedirectionTest {
             .header(LOCATION, trasformedLocation);
     }
 
+    /**
+     * Test ui instance of staticclient
+     */
     @Test
-    public void test3UIRouteOfDiscoverableClient() {
+    public void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, baseUrl);
         String uiPrefix = "/ui/v1";
-        String trasformedLocation = String.format("%s://%s:%d%s%s", dcScheme, gatewayHost, gatewayPort, uiPrefix, "/" + serviceId);
+        String trasformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, uiPrefix, "/" + serviceId);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 

@@ -40,7 +40,6 @@ public class PageRedirectionFilterTest {
     private static final int OTHER_SERVICE_SERVER_PORT = 9999;
     private static final String NOT_IN_DS_SERVER_HOST = "hostC.test.com";
     private static final int NOT_IN_DS_SERVER_PORT = 7777;
-    private static final String URL_PREFIX = "/prefix1";
 
     private PageRedirectionFilter filter = null;
     private DiscoveryClient discoveryClient = null;
@@ -49,7 +48,6 @@ public class PageRedirectionFilterTest {
     @Before
     public void setUp() {
         discoveryClient = mock(DiscoveryClient.class);
-        this.filter = new PageRedirectionFilter(this.discoveryClient);
 
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
@@ -58,12 +56,20 @@ public class PageRedirectionFilterTest {
         response = new MockHttpServletResponse();
         ctx.setRequest(request);
         ctx.setResponse(response);
+
+        this.filter = new PageRedirectionFilter(this.discoveryClient, ctx.getRequest().getLocalName(), String.valueOf(ctx.getRequest().getLocalPort()), ctx.getRequest().getScheme());
     }
 
-    //host and port in location are same as target server's
-    //location contains service url
+    /**
+     * <ul>Test the Location url which
+     * <li>contains the same host and port with current service</li>
+     * <li>can be matched to gateway url</li>
+     * </ul>
+     *
+     * @throws Exception
+     */
     @Test
-    public void sameServerAndContainsGatewayURL() throws Exception {
+    public void sameServerAndUrlMatched() throws Exception {
         RoutedService currentService = new RoutedService("ui", "ui", "/");
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(currentService);
@@ -89,10 +95,14 @@ public class PageRedirectionFilterTest {
             "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
     }
 
-    //host and port in location are same as target server's
-    //location does NOT contain service url
+    /**
+     * <ul>Test the Location url which
+     * <li>contains the same host and port with current service</li>
+     * <li>can not be matched to gateway url</li>
+     * </ul>
+     */
     @Test
-    public void sameServerAndLocationNotContainGatewayURL() {
+    public void sameServerAndUrlNotMatched() {
         String serviceUrl = "/discoverableclient/api/v1";
         RoutedService currentService = new RoutedService("api-v1", "api/v1", serviceUrl);
         RoutedServices routedServices = new RoutedServices();
@@ -119,11 +129,17 @@ public class PageRedirectionFilterTest {
         verifyLocationNotUpdated(locationHeader.get().second(), location);
     }
 
-    //host and port in location are NOT the same as target server's
-    //host and port are registered in DS
-    //location contains service url
+    /**
+     * <ul>Test the Location url which
+     * <li>does not contain the same host and port with current service</li>
+     * <li>host and port are registered in Discovery Service</li>
+     * <li>can be matched to gateway url</li>
+     * </ul>
+     *
+     * @throws Exception
+     */
     @Test
-    public void differentServerAndHostPortInDSAndLocationContainsGatewayURL() throws Exception {
+    public void hostRegisteredAndUrlMatched() throws Exception {
         //route for current service
         RoutedService currentService = new RoutedService("ui", "ui", "/");
         RoutedServices routedServices = new RoutedServices();
@@ -161,9 +177,13 @@ public class PageRedirectionFilterTest {
             "/" + otherService.getGatewayUrl() + "/" + OTHER_SERVICE_ID + relativePath);
     }
 
-    //host and port in location are NOT the same as target server's
-    //host and port are NOT registered in DS
-    //location contains gateway url (prefix + serviceId)
+    /**
+     * <ul>Test the Location url which
+     * <li>does not contain the same host and port with current service</li>
+     * <li>host and port are NOT registered in Discovery Service</li>
+     * <li>can be matched to gateway url</li>
+     * </ul>
+     */
     @Test
     public void differentServerAndHostPortNotInDSAndLocationContainsGatewayURL() {
         //route for current service
@@ -202,42 +222,13 @@ public class PageRedirectionFilterTest {
         this.verifyLocationNotUpdated(locationHeader.get().second(), location);
     }
 
-    //host and port in location are NOT the same as target server's
-    //host and port are registered in DS
-    //location does NOT contain gateway url (prefix + serviceId)
-    @Test
-    public void differentServerAndHostPortInDSAndLocationNotContainGatewayURL() {
-        String serviceUrl = "/discoverableclient/api/v1";
-        RoutedService currentService = new RoutedService("api-v1", "api/v1", serviceUrl);
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(currentService);
-        this.filter.addRoutedServices(SERVICE_ID, routedServices);
-
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Arrays.asList(
-            new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
-        ));
-        when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Arrays.asList(
-            new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
-        ));
-        when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
-
-        response.setStatus(308);
-        String relativePath = "/some/path/login.html";
-        String location = mockLocationDSServer(relativePath);
-
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.addZuulResponseHeader(LOCATION, location);
-        this.filter.run();
-
-        Optional<Pair<String, String>> locationHeader = ctx.getZuulResponseHeaders()
-            .stream()
-            .filter(stringPair -> LOCATION.equals(stringPair.first()))
-            .findFirst();
-
-        verifyLocationNotUpdated(locationHeader.get().second(), location);
-    }
-
-    //when service url end with slash
+    /**
+     * <ul>Test the Location url which
+     * <li>ends with slash, such as: /discoverableclient/</li>
+     * </ul>
+     *
+     * @throws Exception
+     */
     @Test
     public void serviceUrlEndWithSlash() throws Exception {
         String serviceUrl = "/discoverableclient";
@@ -266,9 +257,13 @@ public class PageRedirectionFilterTest {
             "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
     }
 
-    //registered url should be cached
+    /**
+     * Test matched url is cached
+     *
+     * @throws Exception
+     */
     @Test
-    public void urlCached() throws Exception {
+    public void shouldUrlCached() throws Exception {
         //run filter the first time to put url to cache
         String serviceUrl = "/discoverableclient";
         RoutedService currentService = new RoutedService("ui-v1", "ui/v1", serviceUrl);
@@ -327,7 +322,7 @@ public class PageRedirectionFilterTest {
     private void verifyLocationUpdatedSameServer(String actualLocation, String originalLocation, String relativeUrl) throws Exception {
         RequestContext ctx = RequestContext.getCurrentContext();
         URI uri = new URI(originalLocation);
-        uri = new URI(uri.getScheme(), uri.getUserInfo(), ctx.getRequest().getLocalName(), ctx.getRequest().getLocalPort(),
+        uri = new URI(ctx.getRequest().getScheme(), uri.getUserInfo(), ctx.getRequest().getLocalName(), ctx.getRequest().getLocalPort(),
             relativeUrl, uri.getQuery(), uri.getFragment());
         assertEquals("Location header is not updated as expected", uri.toString(), actualLocation);
     }

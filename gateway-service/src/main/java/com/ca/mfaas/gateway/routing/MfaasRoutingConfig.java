@@ -20,6 +20,7 @@ import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;
 
 import com.ca.mfaas.product.routing.RoutedServicesUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
@@ -50,8 +51,11 @@ public class MfaasRoutingConfig {
 
     @Bean
     @Autowired
-    public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery) {
-        return new PageRedirectionFilter(discovery);
+    public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery,
+                                                       @Value("${apiml.service.hostname}")String hostname,
+                                                       @Value("${apiml.service.port}")String port,
+                                                       @Value("${apiml.service.scheme}")String scheme) {
+        return new PageRedirectionFilter(discovery, hostname, port, scheme);
     }
 
     @Bean
@@ -65,11 +69,12 @@ public class MfaasRoutingConfig {
     public DiscoveryClientRouteLocator discoveryClientRouteLocator(DiscoveryClient discovery,
                                                                    ZuulProperties zuulProperties,
                                                                    ServiceRouteMapper serviceRouteMapper,
-                                                                   WebSocketProxyServerHandler webSocketProxyServerHandler) {
+                                                                   WebSocketProxyServerHandler webSocketProxyServerHandler,
+                                                                   PageRedirectionFilter pageRedirectionFilter) {
         List<RoutedServicesUser> routedServicesUsers = new ArrayList<>();
         routedServicesUsers.add(locationFilter());
         routedServicesUsers.add(webSocketProxyServerHandler);
-        routedServicesUsers.add(pageRedirectionFilter(discovery));
+        routedServicesUsers.add(pageRedirectionFilter);
 
         return new MfaasRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
     }
