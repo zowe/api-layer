@@ -12,21 +12,21 @@ An application is Zowe API ML conformant if it follows these criteria:
      - It has up to 64 characters
    - At least one REST API is defined and routed
    - The API ID follows same rules as for Java packages
-     
+
       `org.zowe.apiml.apicatalog`
-      
+
    - The routing follows the conventions for the Gateway URL:
      - For versioned APIs:
-     
+
       `api/v1/{serviceId}`, `ui/v1/{serviceId}`, `ws/v1/{serviceId}` for versioned APIs or
      - For non-versioned APIs or APIs versioned differently (e.g.z/OSMF):
-     
-      `api/{serviceId}`, `ui/{serviceId}`, `ws/{serviceId}` 
-   - Names and titles reviewed by Tech Materials (previously Tech Info) 
+
+      `api/{serviceId}`, `ui/{serviceId}`, `ws/{serviceId}`
+   - Names and titles reviewed by Tech Materials (previously Tech Info)
 2. The provided REST API is documented by Swagger/OpenAPI 2.0 JSON document. This document needs to be valid
 3. The REST API follows these best practices:
    - Encoded slash is not used
-   - URL encoding of values in the URL does not change how the values are interpreted 
+   - URL encoding of values in the URL does not change how the values are interpreted
    - REST API is designed to follow rules defined at https://broadcom.ent.box.com/notes/288959969273
 4. Authentication
    - The resources of REST APIs are protected by mainframe credentials
