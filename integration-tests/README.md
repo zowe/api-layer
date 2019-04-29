@@ -16,7 +16,7 @@ completely and ready for tests to start.
 
 1. Deploy and run all services.
 
-2. Run
+2. Run.
     ```shell
     ./gradlew runIntegrationTests -Dcredentials.user=<MAINFRAME_USERID> -Dcredentials.password=<PASSWORD>
     ``` 
@@ -30,12 +30,12 @@ completely and ready for tests to start.
 
 1. Deploy and run all services.
 
-2. Run
+2. Run.
     ```shell
     ./gradlew runLocalIntegrationTests
     ``` 
 
-3. (Optional) Run all local tests including all sample services 
+3. (Optional) Run all local tests including all sample services. 
     ```shell
     ./gradlew runAllLocalIntegrationTests
     ```

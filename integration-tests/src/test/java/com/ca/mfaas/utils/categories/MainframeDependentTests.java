@@ -13,7 +13,7 @@ package com.ca.mfaas.utils.categories;
  * A category market for tests which must run when mainframe is accessible.
  *
  * These tests will run by default with other integration tests.
- * To run locally use runLocalIntegrationTests Gradle task.
+ * To run locally, use runLocalIntegrationTests Gradle task.
  */
 public interface MainframeDependentTests {
 }

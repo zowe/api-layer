@@ -16,7 +16,7 @@ import java.util.Collections;
 
 /**
  * This object is added to security context after successful authentication.
- * Contains username nad valid JWT token.
+ * Contains username and valid JWT token.
  */
 @EqualsAndHashCode(callSuper = false)
 public class TokenAuthentication extends AbstractAuthenticationToken {

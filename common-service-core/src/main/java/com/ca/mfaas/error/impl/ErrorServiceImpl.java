@@ -124,7 +124,7 @@ public class ErrorServiceImpl implements ErrorService {
     }
 
     /**
-     * Internal method that validates the message. When the message does not exists, the key {@value INVALID_KEY_MESSAGE}
+     * Internal method that validates the message. When the message does not exist, the key {@value INVALID_KEY_MESSAGE}
      * is used. When this message also does not exist, the new predefined message is created.
      *
      * @param message to be checked
