@@ -180,7 +180,7 @@ public class CachedProductFamilyService {
 
     /**
      * Try to transform the service homepage url and return it. If it fails,
-     * return the original homepage url
+     * return the original homepage url.
      * @param instanceInfo    the service instance
      * @return the transformed homepage url
      */
