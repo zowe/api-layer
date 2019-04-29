@@ -22,7 +22,7 @@ An application is *Zowe API ML conformant* if it follows these criteria:
    - The routing must follow the conventions for the gateway URL:
      - For versioned APIs: `api/v1/{serviceId}`, `ui/v1/{serviceId}`, `ws/v1/{serviceId}`
      - For non-versioned APIs or APIs versioned differently (e.g. z/OSMF): `api/{serviceId}`, `ui/{serviceId}`, `ws/{serviceId}`
-     - The requirements for UI routing must be followed since Day 1
+     - The requirements for UI routing must be followed since Day 2
    - Names and titles reviewed by Tech Materials (previously Tech Info)
 2. The provided REST API is documented by Swagger/OpenAPI 2.0 JSON document. This document needs to be valid
 3. The REST API must follow these best practices:
