@@ -105,8 +105,8 @@ public class EurekaInstancesIntegrationTest {
                     getCharArray(tlsConfiguration.getTrustStorePassword()))
                 .build();
 
-            SSLSocketFactory sslSocketFactory = new SSLSocketFactory(sslContext, protocols, ciphers,
-                SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+            SSLSocketFactory sslSocketFactory = new SSLSocketFactory(sslContext,
+                SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
             return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
                 | CertificateException | IOException e) {
