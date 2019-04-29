@@ -1,5 +1,6 @@
 apiml:
     security:
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
         zosmfServiceId: zosmfca32
 
 spring:
@@ -66,7 +67,7 @@ mfaas:
         esmEnabled: ${environment.esmEnabled:false}
         sslEnabled: true
         protocol: TLSv1.2
-        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        ciphers: ${apiml.security.ciphers}
         trustStore: ${environment.truststore}
         trustStoreType: ${environment.truststoreType}
         trustStorePassword: ${environment.truststorePassword}
@@ -86,6 +87,7 @@ server:
     ssl:
         enabled: ${mfaas.security.sslEnabled}
         protocol: ${mfaas.security.protocol}
+        enabled-protocols: TLSv1.2
         ciphers:  ${mfaas.security.ciphers}
         trustStore: ${mfaas.security.trustStore}
         trustStoreType: ${mfaas.security.trustStoreType}
