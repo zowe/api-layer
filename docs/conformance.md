@@ -18,7 +18,7 @@ An application is *Zowe API ML conformant* if it follows these criteria:
      - Lower case, no symbols (the service ID is case insensitive for users and can be used in places that does not allow different case or symbols such as SAF resource names)
      - It has up to 64 characters
    - At least one REST API must be defined and routed
-   - The API ID must follow same rules as for Java packages: `org.zowe.apiml.apicatalog`
+   - The API ID must follow same rules as for Java packages, for example `org.zowe.apiml.apicatalog`
    - The routing must follow the conventions for the gateway URL:
      - For versioned APIs: `api/v1/{serviceId}`, `ui/v1/{serviceId}`, `ws/v1/{serviceId}`
      - For non-versioned APIs or APIs versioned differently (e.g. z/OSMF): `api/{serviceId}`, `ui/{serviceId}`, `ws/{serviceId}`
