@@ -10,8 +10,10 @@
 package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
+import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
 import com.ca.mfaas.apicatalog.swagger.TransformApiDocService;
+import com.netflix.appinfo.InstanceInfo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -31,9 +34,12 @@ public class CachedApiDocServiceTest {
     @Mock
     TransformApiDocService transformApiDocService;
 
+    @Mock
+    InstanceRetrievalService instanceRetrievalService;
+
     @Before
     public void setUp() {
-        cachedApiDocService = new CachedApiDocService(apiDocRetrievalService, transformApiDocService);
+        cachedApiDocService = new CachedApiDocService(apiDocRetrievalService, transformApiDocService, instanceRetrievalService);
         cachedApiDocService.resetCache();
     }
 
@@ -49,6 +55,7 @@ public class CachedApiDocServiceTest {
             .thenReturn(apiDocInfo);
         when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
             .thenReturn(expectedApiDoc);
+        mockInstanceRetrievalService(serviceId);
 
         String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
@@ -70,6 +77,7 @@ public class CachedApiDocServiceTest {
             .thenReturn(apiDocInfo);
         when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
             .thenReturn(expectedApiDoc);
+        mockInstanceRetrievalService(serviceId);
 
         String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
@@ -103,9 +111,18 @@ public class CachedApiDocServiceTest {
             .thenReturn(apiDocInfo);
         when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
             .thenReturn(expectedApiDoc);
+        mockInstanceRetrievalService(serviceId);
 
         String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
 
         Assert.assertNull(apiDoc);
+    }
+
+    private void mockInstanceRetrievalService(String serviceId) {
+        InstanceInfo instanceInfo = mock(InstanceInfo.class);
+        when(instanceInfo.getVIPAddress())
+            .thenReturn(serviceId);
+        when(instanceRetrievalService.getInstanceInfo(serviceId))
+            .thenReturn(instanceInfo);
     }
 }
