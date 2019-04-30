@@ -27,7 +27,3 @@ zosmfServiceConfiguration:
     scheme: https
     host: usilca32.ca.com
     port: 1443
-discoverableClientConfiguration:
-    scheme: https
-    host: localhost
-    port: 10012

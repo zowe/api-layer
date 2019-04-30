@@ -10,12 +10,17 @@
 package com.ca.mfaas.gatewayservice;
 
 import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.DiscoverableClientConfiguration;
+import com.ca.mfaas.utils.config.DiscoveryServiceConfiguration;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
-import org.junit.Before;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.element.Node;
+import org.apache.http.client.utils.URIBuilder;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -35,9 +40,11 @@ import static org.springframework.http.HttpHeaders.LOCATION;
  * </ol>
  */
 public class PageRedirectionTest {
-    private final String serviceId = "staticclient";
-    private final String baseUrl = "/discoverableclient";
-    private final String apiPrefix = "/api/v1";
+    private final String EUREKA_APP = "/eureka/apps";
+    private final String SERVICE_ID = "staticclient";
+    private final String BASE_URL = "/discoverableclient";
+    private final String API_PREFIX = "/api/v1";
+
     private String gatewayScheme;
     private String gatewayHost;
     private int gatewayPort;
@@ -46,22 +53,9 @@ public class PageRedirectionTest {
     private int dcPort;
     private String requestUrl;
 
-    @Before
-    public void setUp() {
-        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        gatewayScheme = gatewayServiceConfiguration.getScheme();
-        gatewayHost = gatewayServiceConfiguration.getHost();
-        gatewayPort = gatewayServiceConfiguration.getPort();
-
-        DiscoverableClientConfiguration discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
-        dcScheme = discoverableClientConfiguration.getScheme();
-        dcHost = discoverableClientConfiguration.getHost();
-        dcPort = discoverableClientConfiguration.getPort();
-
-        RestAssured.port = gatewayPort;
-        RestAssured.useRelaxedHTTPSValidation();
-
-        requestUrl = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, apiPrefix, "/" + serviceId, "/redirect");
+    public PageRedirectionTest() throws URISyntaxException {
+        initGatewayProperties();
+        initDiscoverableClientProperties();
     }
 
     /**
@@ -70,8 +64,8 @@ public class PageRedirectionTest {
     @Test
     public void apiRouteOfDiscoverableClient() {
         String apiRelativeUrl = "/api/v1";
-        String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, baseUrl, apiRelativeUrl, "/greeting");
-        String trasformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, apiPrefix, "/" + serviceId, "/greeting");
+        String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, BASE_URL, apiRelativeUrl, "/greeting");
+        String trasformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_PREFIX, "/" + SERVICE_ID, "/greeting");
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -91,9 +85,9 @@ public class PageRedirectionTest {
     @Test
     public void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
-        String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, baseUrl, wsRelativeUrl);
+        String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
         String wsPrefix = "/ws/v1";
-        String trasformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, wsPrefix, "/" + serviceId);
+        String trasformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, wsPrefix, "/" + SERVICE_ID);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -112,9 +106,9 @@ public class PageRedirectionTest {
      */
     @Test
     public void uiRouteOfDiscoverableClient() {
-        String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, baseUrl);
+        String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
         String uiPrefix = "/ui/v1";
-        String trasformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, uiPrefix, "/" + serviceId);
+        String trasformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, uiPrefix, "/" + SERVICE_ID);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -127,6 +121,59 @@ public class PageRedirectionTest {
             .statusCode(is(HttpStatus.TEMPORARY_REDIRECT.value()))
             .header(LOCATION, trasformedLocation);
     }
+
+    /**
+     * Initiate gateway properties, such as host, port, scheme
+     */
+    private void initGatewayProperties() {
+        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        gatewayScheme = gatewayServiceConfiguration.getScheme();
+        gatewayHost = gatewayServiceConfiguration.getHost();
+        gatewayPort = gatewayServiceConfiguration.getPort();
+
+        RestAssured.port = gatewayPort;
+        RestAssured.useRelaxedHTTPSValidation();
+
+        requestUrl = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_PREFIX, "/" + SERVICE_ID, "/redirect");
+    }
+
+    /**
+     * Initiate Discoverable Client properties, such as host, port, scheme
+     *
+     * @throws URISyntaxException
+     */
+    private void initDiscoverableClientProperties() throws URISyntaxException {
+        DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
+        final String scheme = discoveryServiceConfiguration.getScheme();
+        final String username = discoveryServiceConfiguration.getUser();
+        final String password = discoveryServiceConfiguration.getPassword();
+        final String host = discoveryServiceConfiguration.getHost();
+        final int port = discoveryServiceConfiguration.getPort();
+        URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(EUREKA_APP).build();
+
+        RestAssured.config = RestAssured.config().sslConfig(SecurityUtils.getConfiguredSslConfig());
+        String xml =
+            given()
+                .auth().basic(username, password)
+                .when()
+                .get(uri)
+                .then()
+                .statusCode(is(200))
+                .extract().body().asString();
+
+        Node staticclientNode = XmlPath.from(xml).get("applications.application.find {it.name == 'STATICCLIENT'}");
+        Node instanceNode = staticclientNode.children().get("instance");
+        dcHost = instanceNode.children().get("hostName").toString();
+        Node securePortNode = instanceNode.children().get("securePort");
+        if (securePortNode.getAttribute("enabled").equalsIgnoreCase("true")) {
+            dcScheme = "https";
+            dcPort = Integer.parseInt(securePortNode.value());
+        } else {
+            dcScheme = "http";
+            dcPort = Integer.parseInt(instanceNode.children().get("port").toString());
+        }
+    }
+
 
     class RedirectLocation {
 

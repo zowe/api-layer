@@ -22,5 +22,4 @@ public class EnvironmentConfiguration {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
-    private DiscoverableClientConfiguration discoverableClientConfiguration;
 }
