@@ -16,21 +16,12 @@ import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.SSLContexts;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.net.ssl.SSLContext;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -91,31 +82,11 @@ public class EurekaInstancesIntegrationTest {
     }
 
     private SSLConfig getConfiguredSslConfig() {
-        try {
-            String[] protocols = new String[] { tlsConfiguration.getProtocol() };
-            String[] ciphers = tlsConfiguration.getCiphers().toArray(new String[0]);
-            SSLContext sslContext = SSLContexts.custom()
-                .loadKeyMaterial(
-                    new File(tlsConfiguration.getKeyStore()),
-                    getCharArray(tlsConfiguration.getKeyStorePassword()),
-                    getCharArray(tlsConfiguration.getKeyPassword()),
-                    (aliases, socket) -> tlsConfiguration.getKeyAlias())
-                .loadTrustMaterial(
-                    new File(tlsConfiguration.getTrustStore()),
-                    getCharArray(tlsConfiguration.getTrustStorePassword()))
-                .build();
-
-            SSLSocketFactory sslSocketFactory = new SSLSocketFactory(sslContext,
-                SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-            return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
-        } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
-                | CertificateException | IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        }
+        return SSLConfig.sslConfig()
+            .keyStore(new File(tlsConfiguration.getKeyStore()), tlsConfiguration.getKeyStorePassword())
+            .and()
+            .trustStore(new File(tlsConfiguration.getTrustStore()), tlsConfiguration.getTrustStorePassword())
+            .and()
+            .allowAllHostnames();
     }
-
-    private char[] getCharArray(String value) {
-        return value != null ? value.toCharArray() : null;
-    }
-
 }

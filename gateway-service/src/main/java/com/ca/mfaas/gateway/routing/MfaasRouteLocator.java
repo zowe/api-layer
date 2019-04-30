@@ -41,7 +41,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
 
     MfaasRouteLocator(String servletPath, DiscoveryClient discovery, ZuulProperties properties,
                       ServiceRouteMapper serviceRouteMapper, List<RoutedServicesUser> routedServicesUsers) {
-        super(servletPath, discovery, properties, serviceRouteMapper);
+        super(servletPath, discovery, properties, serviceRouteMapper, null);
         this.discovery = discovery;
         this.properties = properties;
         this.routedServicesUsers = routedServicesUsers;
