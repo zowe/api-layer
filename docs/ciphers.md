@@ -13,7 +13,7 @@ On z/OS, this can be overridden in `$ZOWE_ROOT_DIR/api-mediation/scripts/api-med
 
 where:
 
-`*` expands to `gateway`, `atalog`, and `discovery`.
+`*` expands to `gateway`, `catalog`, and `discovery`.
 
 On localhost, the default configuration can be overridden on [config/local/gateway-service.yml](/config/local/gateway-service.yml) and other YAML files for development purposes without rebuilding the JAR files.
 
