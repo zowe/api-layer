@@ -43,6 +43,6 @@ public class StaticClientEndpointsTest {
      */
     @Test
     public void shouldMixedCaseServiceIdWork() throws Exception {
-        final HttpResponse staticResponse = HttpRequestUtils.getResponse(MIXED_CASE_GREET, SC_OK);
+        HttpRequestUtils.getResponse(MIXED_CASE_GREET, SC_OK);
     }
 }

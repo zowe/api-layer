@@ -88,19 +88,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     return null;
                 }
 
-                //serviceId is converted to lowercase by Discovery Service. Recover serviceId which contains uppercase characters
-                String originalServiceId = serviceId;
-                if (serviceInstances.size() > 0) {
-                    ServiceInstance instance = serviceInstances.get(0);
-                    if (instance instanceof EurekaDiscoveryClient.EurekaServiceInstance) {
-                        String vipAddr = ((EurekaDiscoveryClient.EurekaServiceInstance) instance).getInstanceInfo().getVIPAddress();
-                        if (serviceId.equalsIgnoreCase(vipAddr)) {
-                            originalServiceId = vipAddr;
-                        }
-                    }
-                }
-
-                List<String> keys = createRouteKeys(serviceInstances, routedServices, originalServiceId);
+                List<String> keys = createRouteKeys(serviceInstances, routedServices, getOriginalServiceId(serviceId, serviceInstances));
                 if (keys.isEmpty()) {
                     keys.add("/" + mapRouteToService(serviceId) + "/**");
                 }
@@ -179,5 +167,29 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
             }
         }
         return keys;
+    }
+
+    /**
+     * serviceId is converted to lower case by Discovery Service. This method recovers serviceId from VIPAddress,
+     * because VIPAddress has the same value as serviceId, and it is not converted by lower case
+     *
+     * @param serviceId        current serviceId
+     * @param serviceInstances service instances for specified serviceId
+     * @return
+     */
+    private String getOriginalServiceId(String serviceId, List<ServiceInstance> serviceInstances) {
+        //serviceId is converted to lowercase by Discovery Service. Recover serviceId which contains uppercase characters
+        String originalServiceId = serviceId;
+        if (serviceInstances.size() > 0) {
+            ServiceInstance instance = serviceInstances.get(0);
+            if (instance instanceof EurekaDiscoveryClient.EurekaServiceInstance) {
+                String vipAddr = ((EurekaDiscoveryClient.EurekaServiceInstance) instance).getInstanceInfo().getVIPAddress();
+                if (serviceId.equalsIgnoreCase(vipAddr)) {
+                    originalServiceId = vipAddr;
+                }
+            }
+        }
+
+        return originalServiceId;
     }
 }

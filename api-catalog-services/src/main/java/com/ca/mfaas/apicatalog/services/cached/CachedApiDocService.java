@@ -11,6 +11,7 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocCacheKey;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
+import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
 import com.ca.mfaas.apicatalog.swagger.TransformApiDocService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +30,13 @@ public class CachedApiDocService {
     private static final Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
     private final APIDocRetrievalService apiDocRetrievalService;
     private final TransformApiDocService transformApiDocService;
+    private final InstanceRetrievalService instanceRetrievalService;
 
     @Autowired
-    public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService, TransformApiDocService transformApiDocService) {
+    public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService, TransformApiDocService transformApiDocService, InstanceRetrievalService instanceRetrievalService) {
         this.apiDocRetrievalService = apiDocRetrievalService;
         this.transformApiDocService = transformApiDocService;
+        this.instanceRetrievalService = instanceRetrievalService;
     }
 
     /**
@@ -50,7 +53,7 @@ public class CachedApiDocService {
             if (apiDocInfo.getApiDocContent() == null) {
                 return null;
             } else {
-                apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
+                apiDoc = transformApiDocService.transformApiDoc(getOriginalServiceId(serviceId), apiDocInfo);
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
             }
         }
@@ -74,5 +77,16 @@ public class CachedApiDocService {
      */
     public void resetCache() {
         serviceApiDocs.clear();
+    }
+
+    /**
+     * serviceId is converted to lower case by Discovery Service. This method recovers serviceId from VIPAddress,
+     * because VIPAddress has the same value as serviceId, and it is not converted by lower case
+     *
+     * @param serviceId current serviceId
+     * @return original serviceId which may contain mixed case letters
+     */
+    private String getOriginalServiceId(String serviceId) {
+        return instanceRetrievalService.getInstanceInfo(serviceId).getVIPAddress();
     }
 }
