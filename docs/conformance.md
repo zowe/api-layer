@@ -29,7 +29,7 @@ An application is *Zowe API ML conformant* if it follows these criteria:
    - Every method must be documented and use cases for these methods are explained
    - Every use case must be demonstrated by an example
    - Every parameter must be documented and all possible values and their meaning is defined
-   - Reviewed by Tech Materials (previously Tech Info)     
+   - Reviewed by technical writer     
 3. The REST API must follow these best practices:
    - Encoded slash is not used
    - URL encoding of values in the URL does not change how the values are interpreted
