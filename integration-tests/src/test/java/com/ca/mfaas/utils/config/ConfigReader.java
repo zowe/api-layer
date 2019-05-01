@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 @Slf4j
 public class ConfigReader {
@@ -51,19 +50,6 @@ public class ConfigReader {
                             .trustStoreType("PKCS12")
                             .trustStore("../keystore/localhost/localhost.truststore.p12")
                             .trustStorePassword("password")
-                            .protocol("TLSv1.2")
-                            .ciphers(
-                                Arrays.asList(
-                                    "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
-                                    "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
-                                    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-                                    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-                                    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-                                    "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-                                    "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-                                    "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384"
-                                )
-                            )
                             .build();
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);

@@ -14,8 +14,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -29,6 +27,4 @@ public class TlsConfiguration {
     private String trustStoreType;
     private String trustStore;
     private String trustStorePassword;
-    private String protocol;
-    private List<String> ciphers;
 }
