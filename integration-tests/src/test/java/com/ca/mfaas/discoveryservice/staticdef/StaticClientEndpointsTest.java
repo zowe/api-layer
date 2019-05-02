@@ -19,8 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 public class StaticClientEndpointsTest {
     private static final String GREET = "/api/v1/discoverableclient/greeting";
-    private static final String STATIC_GREET = "/api/v1/staticclient/greeting";
-    private static final String MIXED_CASE_GREET = "/api/v1/StaticClient3/greeting";
+    private static final String STATIC_GREET = "/api/v1/StaticClient/greeting";
 
     @Test
     public void shouldSameResponseAsDynamicService() throws Exception {
@@ -34,15 +33,5 @@ public class StaticClientEndpointsTest {
         // Then
         assertEquals(response.getStatusLine().getStatusCode(), staticResponse.getStatusLine().getStatusCode());
         assertEquals(hello, staticHello);
-    }
-
-    /**
-     * Test service with mixed case service ID
-     * Depends on service StaticClient3 to be defined in staticclient.yml
-     * @throws Exception
-     */
-    @Test
-    public void shouldMixedCaseServiceIdWork() throws Exception {
-        HttpRequestUtils.getResponse(MIXED_CASE_GREET, SC_OK);
     }
 }
