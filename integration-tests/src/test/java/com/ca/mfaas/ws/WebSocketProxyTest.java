@@ -32,6 +32,7 @@ public class WebSocketProxyTest {
 
     private final static int WAIT_TIMEOUT_MS = 10000;
     private final static String UPPERCASE_URL = "/ws/v1/discoverableclient/uppercase";
+    private final static String STATIC_UPPERCASE_URL = "/ws/v1/StaticClient/uppercase";
 
     @Before
     public void setUp() {
@@ -93,6 +94,20 @@ public class WebSocketProxyTest {
     }
 
     @Test
+    public void shouldRouteWebSocketSessionForStaticClient() throws Exception {
+        final StringBuilder response = new StringBuilder();
+        WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(STATIC_UPPERCASE_URL), response, 1);
+
+        session.sendMessage(new TextMessage("hello world!"));
+        synchronized (response) {
+            response.wait(WAIT_TIMEOUT_MS);
+        }
+
+        assertEquals("HELLO WORLD!", response.toString());
+        session.close();
+    }
+
+    @Test
     public void shouldCloseSessionAfterClientServerCloses() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 2);
@@ -121,8 +136,7 @@ public class WebSocketProxyTest {
     @Test
     public void shouldFailIfServiceIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
-        WebSocketSession session = appendingWebSocketSession(
-                discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), response, 1);
+        appendingWebSocketSession(discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), response, 1);
 
         synchronized (response) {
             response.wait(WAIT_TIMEOUT_MS);
