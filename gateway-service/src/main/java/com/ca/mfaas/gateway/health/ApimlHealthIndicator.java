@@ -22,6 +22,9 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 
+/**
+ * Provider of the health information for the Actuator health endpoint
+ */
 @Component
 public class ApimlHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;

@@ -23,6 +23,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/**
+ * Authentication provider for development purposes
+ */
 @Slf4j
 @Component
 public class DummyAuthenticationProvider extends DaoAuthenticationProvider {

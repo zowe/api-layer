@@ -16,6 +16,9 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+/**
+ * Provider for authentication using JWT Token
+ */
 @Slf4j
 @Component
 public class TokenAuthenticationProvider implements AuthenticationProvider {

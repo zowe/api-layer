@@ -38,6 +38,14 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
         this.mapper = objectMapper;
     }
 
+    /**
+     * Set http header and status, add appropriate message to response
+     *
+     * @param request
+     * @param response
+     * @param authException
+     * @throws IOException
+     */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());

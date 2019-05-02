@@ -208,6 +208,11 @@ public class InstanceRetrievalService {
         return applications;
     }
 
+    /**
+     * Extract applications delta
+     *
+     * @return
+     */
     public Applications extractDeltaFromDiscovery() {
 
         Pair<String, Pair<String, String>> requestInfo = constructServiceInfoQueryRequest(null, true);

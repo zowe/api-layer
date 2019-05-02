@@ -15,6 +15,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
+/**
+ * General configuration of security constants: endpoints, cookie, token
+ */
 @Slf4j
 @Data
 @Component

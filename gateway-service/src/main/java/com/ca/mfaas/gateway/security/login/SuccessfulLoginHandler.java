@@ -24,6 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+/**
+ * Handler after login success that sets the cookie
+ */
 @Component
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
     private static final String COOKIE_RESPONSE = "";
@@ -37,6 +40,13 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
+    /**
+     * Set cookie and http response on successful authentication
+     * @param request
+     * @param response
+     * @param authentication
+     * @throws IOException
+     */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
         throws IOException {

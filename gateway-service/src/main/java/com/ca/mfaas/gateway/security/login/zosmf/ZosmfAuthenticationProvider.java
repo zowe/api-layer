@@ -35,6 +35,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * Authentication provider that verifies credentials against z/OSMF service
+ */
 @Slf4j
 @Component
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {

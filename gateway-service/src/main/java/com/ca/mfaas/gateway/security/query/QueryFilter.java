@@ -29,6 +29,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+/**
+ * Filter for query endpoint request with JWT token.
+ */
 @Slf4j
 public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
@@ -48,6 +51,15 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         this.setAuthenticationManager(authenticationManager);
     }
 
+    /**
+     * Attempt authentication and return fully populated Authentication object
+     *
+     * @param request
+     * @param response
+     * @throws TokenNotProvidedException when token is not provided in request
+     * @throws AuthMethodNotSupportedException when trying with other method than GET
+     * @return Authentication object on successful authentication
+     */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         if (!request.getMethod().equals(HttpMethod.GET.name())) {
