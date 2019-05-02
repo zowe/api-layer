@@ -21,6 +21,7 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.HttpStatus;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,15 +65,13 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     }
 
     /**
-     * Return true if status code is 3XX
-     *
-     * @return
+     * @return true if status code is 3XX
      */
     @Override
     public boolean shouldFilter() {
         RequestContext context = RequestContext.getCurrentContext();
         int status = context.getResponseStatusCode();
-        return (status > 300 && status < 400);
+        return HttpStatus.valueOf(status).is3xxRedirection();
     }
 
     @Override
@@ -90,7 +89,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
      * If not, the filter will find the matched url in Discovery Service. If matched url can be found in Discovery Service, the filter will put the matched
      * url to cache, and replace Location with the matched url
      *
-     * @return
+     * @return null
      */
     @Override
     public Object run() {
@@ -193,10 +192,10 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
      * Replace Location header with transformed url
      *
      * @param locationHeader Location header
-     * @param tranformedUrl  transformed url
+     * @param transformedUrl  transformed url
      */
-    private void transformLocation(Pair<String, String> locationHeader, String tranformedUrl) {
-        locationHeader.setSecond(tranformedUrl);
+    private void transformLocation(Pair<String, String> locationHeader, String transformedUrl) {
+        locationHeader.setSecond(transformedUrl);
     }
 
     @Override

@@ -52,7 +52,7 @@ public class MfaasRoutingConfig {
     @Bean
     @Autowired
     public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery,
-                                                       @Value("${apiml.service.hostname}")String hostname,
+                                                       @Value("${apiml.gateway.hostname}")String hostname,
                                                        @Value("${apiml.service.port}")String port,
                                                        @Value("${apiml.service.scheme}")String scheme) {
         return new PageRedirectionFilter(discovery, hostname, port, scheme);
