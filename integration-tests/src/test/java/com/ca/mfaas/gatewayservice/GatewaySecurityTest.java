@@ -75,7 +75,7 @@ public class GatewaySecurityTest {
         .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED));;
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
 
