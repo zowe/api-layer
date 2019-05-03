@@ -2,8 +2,7 @@
 
 [Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
 
-[![codecov](https://codecov.io/gh/plavjanik/api-layer/branch/master/graph/badge.svg)](https://codecov.io/gh/zowe/api-layer)
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/zowe/api-layer.svg?columns=all)](https://waffle.io/zowe/api-layer)
+[![codecov](https://codecov.io/gh/zowe/api-layer/branch/master/graph/badge.svg)](https://codecov.io/gh/zowe/api-layer)
 [![SonarQube](https://jayne.zowe.org:9000/api/project_badges/measure?project=zowe%3Aapi-mediation-layer&metric=alert_status)](https://jayne.zowe.org:9000/dashboard?id=zowe%3Aapi-mediation-layer)
 
 The home of Zowe API Mediation Layer
