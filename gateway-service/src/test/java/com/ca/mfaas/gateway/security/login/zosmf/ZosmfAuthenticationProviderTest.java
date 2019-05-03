@@ -143,7 +143,7 @@ public class ZosmfAuthenticationProviderTest {
             = new ZosmfAuthenticationProvider(securityConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
         exception.expect(AuthenticationServiceException.class);
-        exception.expectMessage("Parameter 'zosmfServiceId' is not configured.");
+        exception.expectMessage("The parameter 'zosmfServiceId' is not configured.");
 
         zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
     }
