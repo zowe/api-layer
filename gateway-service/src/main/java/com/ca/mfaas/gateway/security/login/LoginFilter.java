@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.login;
 
 import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
-import com.ca.mfaas.product.constants.ApimlConstants;
+import com.ca.mfaas.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

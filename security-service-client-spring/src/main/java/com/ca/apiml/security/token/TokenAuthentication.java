@@ -23,23 +23,40 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
     private final String username;
     private final String token;
 
+    /**
+     * Constructor
+     *
+     * @param token that proves the username is correct
+     */
     public TokenAuthentication(String token) {
         super(Collections.emptyList());
         this.username = null;
         this.token = token;
     }
 
+    /**
+     * Constructor
+     *
+     * @param username being authenticated
+     * @param token    that proves the username is correct
+     */
     public TokenAuthentication(String username, String token) {
         super(Collections.emptyList());
         this.username = username;
         this.token = token;
     }
 
+    /**
+     * @return the token that prove the username is correct
+     */
     @Override
     public String getCredentials() {
         return token;
     }
 
+    /**
+     * @return the username being authenticated
+     */
     @Override
     public String getPrincipal() {
         return username;

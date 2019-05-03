@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.constants;
+package com.ca.mfaas.constants;
 
 public final class ApimlConstants {
 

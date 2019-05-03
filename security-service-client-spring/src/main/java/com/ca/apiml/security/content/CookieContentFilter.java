@@ -16,23 +16,31 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.Arrays;
 import java.util.Optional;
 
-public class CookieFilter extends AbstractFilter {
+/**
+ * Authenticate the JWT token stored in the cookie
+ */
+public class CookieContentFilter extends AbstractSecureContentFilter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    public CookieFilter(AuthenticationManager authenticationManager,
-                        AuthenticationFailureHandler failureHandler,
-                        SecurityConfigurationProperties securityConfigurationProperties) {
+    /**
+     * Constructor
+     */
+    public CookieContentFilter(AuthenticationManager authenticationManager,
+                               AuthenticationFailureHandler failureHandler,
+                               SecurityConfigurationProperties securityConfigurationProperties) {
         super(authenticationManager, failureHandler);
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     /**
-     * Extract  username and valid JWT token from the cookies
+     * Extract the username and valid JWT token from the cookies
+     *
      * @param request the http request
-     * @return the TokenAuthentication object containing username and valid JWT token
+     * @return the {@link TokenAuthentication} object containing username and valid JWT token
      */
     protected Optional<TokenAuthentication> extractContent(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
@@ -40,8 +48,7 @@ public class CookieFilter extends AbstractFilter {
             return Optional.empty();
         }
 
-        return Arrays.asList(cookies)
-            .stream()
+        return Arrays.stream(cookies)
             .filter(cookie -> cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName()))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()

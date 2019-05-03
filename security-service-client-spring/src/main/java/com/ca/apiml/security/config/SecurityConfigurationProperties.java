@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
+    // General properties
     private String loginPath = "/api/v1/gateway/auth/login/**";
     private String queryPath = "/api/v1/gateway/auth/query/**";
     private TokenProperties tokenProperties;
@@ -32,6 +33,7 @@ public class SecurityConfigurationProperties {
     private String provider = "zosmf";
     private boolean verifySslCertificatesOfServices = true;
 
+    //Token properties
     @Data
     public static class TokenProperties {
         private int expirationInSeconds = 24 * 60 * 60;
@@ -40,6 +42,7 @@ public class SecurityConfigurationProperties {
         private long shortTtlExpirationInSeconds = 1;
     }
 
+    //Cookie properties
     @Data
     public static class CookieProperties {
         private String cookieName = "apimlAuthenticationToken";
@@ -49,21 +52,26 @@ public class SecurityConfigurationProperties {
         private Integer cookieMaxAge = 24 * 60 * 60;
     }
 
+    /**
+     * Constructor
+     */
     public SecurityConfigurationProperties() {
         this.cookieProperties = new CookieProperties();
         this.tokenProperties = new TokenProperties();
     }
 
     /**
-     * Return the zosmf service id if it is set
-     * @throws AuthenticationServiceException if the zosmf service id is not configured
-     * @return the zosmf service id
+     * Return the z/OSMF service id when it is set
+     *
+     * @return the z/OSMF service id
+     * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
     public String validatedZosmfServiceId() {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
             log.error("z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name.");
-            throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
+            throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
         }
+
         return zosmfServiceId;
     }
 }

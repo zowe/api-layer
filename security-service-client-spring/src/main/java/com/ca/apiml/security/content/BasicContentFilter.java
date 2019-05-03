@@ -9,25 +9,33 @@
  */
 package com.ca.apiml.security.content;
 
+import com.ca.mfaas.constants.ApimlConstants;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 
-public class BasicFilter extends AbstractFilter {
-    private static final String BASIC_AUTHENTICATION_PREFIX = "Basic ";
+/**
+ * Authenticate the credentials from the basic authorization header
+ */
+public class BasicContentFilter extends AbstractSecureContentFilter {
 
-    public BasicFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
+    /**
+     * Constructor
+     */
+    public BasicContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
         super(authenticationManager, failureHandler);
     }
 
     /**
      * Extract credentials from the authorization header in the request and decode them
+     *
      * @param request the http request
      * @return the decoded credentials
      */
@@ -35,16 +43,17 @@ public class BasicFilter extends AbstractFilter {
         return Optional.ofNullable(
             request.getHeader(HttpHeaders.AUTHORIZATION)
         ).filter(
-            header -> header.startsWith(BASIC_AUTHENTICATION_PREFIX)
+            header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
         ).map(
-            header -> header.replaceFirst(BASIC_AUTHENTICATION_PREFIX, "")
+            header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "")
         )
-         .filter(base64Credentials -> !base64Credentials.isEmpty())
-         .map(this::mapBase64Credentials);
+            .filter(base64Credentials -> !base64Credentials.isEmpty())
+            .map(this::mapBase64Credentials);
     }
 
     /**
      * Decode the encoded credentials
+     *
      * @param base64Credentials the credentials encoded in base64
      * @return the decoded credentials
      */

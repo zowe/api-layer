@@ -22,29 +22,43 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.Optional;
 
-public abstract class AbstractFilter extends OncePerRequestFilter {
+/**
+ * Filter base abstract class to secure application content
+ */
+public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
 
-    protected final AuthenticationManager authenticationManager;
-    protected final AuthenticationFailureHandler failureHandler;
+    private final AuthenticationManager authenticationManager;
+    private final AuthenticationFailureHandler failureHandler;
 
-    public AbstractFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
+    /**
+     * Constructor
+     */
+    AbstractSecureContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
         this.authenticationManager = authenticationManager;
         this.failureHandler = failureHandler;
     }
 
+    /**
+     * Extracts the token from the request
+     *
+     * @param request containing credentials
+     * @return credentials
+     */
     protected abstract Optional<? extends AbstractAuthenticationToken> extractContent(HttpServletRequest request);
 
     /**
-     * Extract the token from the request and use the authentication manager to perform authentication.
-     * Then set the currently authenticated principal and call the next filter in the chain
-     * @param request the http request
-     * @param response the http response
+     * Extracts the token from the request and use the authentication manager to perform authentication.
+     * Then set the currently authenticated principal and call the next filter in the chain.
+     *
+     * @param request     the http request
+     * @param response    the http response
      * @param filterChain the filter chain
-     * @throws ServletException
-     * @throws IOException
+     * @throws ServletException a general exception
+     * @throws IOException      a IO exception
      */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {

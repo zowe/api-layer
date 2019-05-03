@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.handler;
 
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.product.constants.ApimlConstants;
+import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;

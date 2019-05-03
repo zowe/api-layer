@@ -1,4 +1,5 @@
 dependencies {
+    compile(project(':common-service-core'))
     compile libraries.spring_boot_starter_web
     compile libraries.spring_security_web
     
