@@ -107,7 +107,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
                 transformLocation(locationHeader.get(), transformedUrl);
             } else {
                 //find matched url in Discovery Service
-                Optional transformedUrlOp = getMatchedUrlFromDS(location);
+                Optional<String> transformedUrlOp = getMatchedUrlFromDS(location);
                 if (transformedUrlOp.isPresent()) {
                     transformedUrl = (String) transformedUrlOp.get();
                     //Put matched url to cache
