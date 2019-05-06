@@ -27,9 +27,9 @@ import static org.mockito.Mockito.when;
 public class BasicContentFilterTest {
 
     private BasicContentFilter basicContentFilter;
-    private AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
-    private AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
-    private HttpServletRequest request = mock(HttpServletRequest.class);
+    private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
+    private final AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
+    private final HttpServletRequest request = mock(HttpServletRequest.class);
 
     @Before
     public void setUp() {
@@ -55,6 +55,20 @@ public class BasicContentFilterTest {
         assertNull(token.get().getPrincipal());
         assertNull(token.get().getCredentials());
 
+        when(request.getHeader(anyString())).thenReturn("Duck");
+        token = basicContentFilter.extractContent(request);
+
+        assertFalse(token.isPresent());
+    }
+
+    @Test
+    public void extractContentFromRequestWithIncompleteBasicAuth() {
+        when(request.getHeader(anyString())).thenReturn("Basic dXNlcj11c2Vy");
+        Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
+
+        assertTrue(token.isPresent());
+        assertNull(token.get().getPrincipal());
+        assertNull(token.get().getCredentials());
 
         when(request.getHeader(anyString())).thenReturn("Duck");
         token = basicContentFilter.extractContent(request);
@@ -77,6 +91,5 @@ public class BasicContentFilterTest {
 
         assertFalse(token.isPresent());
     }
-
 }
 

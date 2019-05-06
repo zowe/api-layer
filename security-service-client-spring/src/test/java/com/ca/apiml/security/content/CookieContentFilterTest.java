@@ -27,18 +27,16 @@ import java.util.Optional;
 public class CookieContentFilterTest {
 
     private CookieContentFilter cookieContentFilter;
-    private AuthenticationManager authenticationManager;
-    private AuthenticationFailureHandler failureHandler;
     private SecurityConfigurationProperties securityConfigurationProperties;
     private MockHttpServletRequest request;
 
     @Before
     public void setUp() {
-        authenticationManager = mock(AuthenticationManager.class);
-        failureHandler = mock(AuthenticationFailureHandler.class);
+        AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
+        AuthenticationFailureHandler failureHandler = mock(AuthenticationFailureHandler.class);
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        request = new MockHttpServletRequest();
         cookieContentFilter = new CookieContentFilter(authenticationManager, failureHandler, securityConfigurationProperties);
+        request = new MockHttpServletRequest();
     }
 
     @Test
