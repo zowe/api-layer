@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class BasicContentFilterTest {
+
     private BasicContentFilter basicContentFilter;
     private AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
     private AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
@@ -34,32 +35,40 @@ public class BasicContentFilterTest {
     public void setUp() {
         basicContentFilter = new BasicContentFilter(authenticationManager, authenticationFailureHandler);
     }
+
     @Test
     public void extractContentFromRequestWithValidBasicAuth() {
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Basic dXNlcjpwYXNzd29yZA==");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
+
         assertTrue(token.isPresent());
         assertEquals("user",token.get().getPrincipal());
         assertEquals("password",token.get().getCredentials().toString());
     }
+
     @Test
     public void extractContentFromRequestWithNonsenseBasicAuth() {
         when(request.getHeader(anyString())).thenReturn("Basic dXNlG4m3oFthR0n3syZA==");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
+
         assertTrue(token.isPresent());
         assertNull(token.get().getPrincipal());
         assertNull(token.get().getCredentials());
     }
+
     @Test
     public void extractContentFromRequestWithNonsenseBasicAuth2() {
         when(request.getHeader(anyString())).thenReturn("Duck");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
+
         assertFalse(token.isPresent());
     }
+
     @Test
     public void extractContentFromRequestWithoutAuthHeader() {
         when(request.getHeader(anyString())).thenReturn(null);
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
+
         assertFalse(token.isPresent());
     }
 
