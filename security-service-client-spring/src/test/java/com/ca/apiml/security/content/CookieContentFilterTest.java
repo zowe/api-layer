@@ -49,4 +49,11 @@ public class CookieContentFilterTest {
 
     }
 
+    @Test
+    public void shouldReturnEmptyIfValueIsEmpty() {
+        Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), "");
+        request.setCookies(cookie);
+        Optional<AbstractAuthenticationToken> content =  cookieContentFilter.extractContent(request);
+        assertFalse(content.isPresent());
+    }
 }
