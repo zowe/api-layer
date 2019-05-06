@@ -11,6 +11,7 @@ package com.ca.apiml.security.content;
 
 import com.ca.mfaas.constants.ApimlConstants;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -39,7 +40,7 @@ public class BasicContentFilter extends AbstractSecureContentFilter {
      * @param request the http request
      * @return the decoded credentials
      */
-    protected Optional<UsernamePasswordAuthenticationToken> extractContent(HttpServletRequest request) {
+    public Optional<AbstractAuthenticationToken> extractContent(HttpServletRequest request) {
         return Optional.ofNullable(
             request.getHeader(HttpHeaders.AUTHORIZATION)
         ).filter(

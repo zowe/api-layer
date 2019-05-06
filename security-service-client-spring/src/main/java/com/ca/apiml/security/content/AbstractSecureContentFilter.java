@@ -48,7 +48,7 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
      * @param request containing credentials
      * @return credentials
      */
-    protected abstract Optional<? extends AbstractAuthenticationToken> extractContent(HttpServletRequest request);
+    protected abstract Optional<AbstractAuthenticationToken> extractContent(HttpServletRequest request);
 
     /**
      * Extracts the token from the request and use the authentication manager to perform authentication.

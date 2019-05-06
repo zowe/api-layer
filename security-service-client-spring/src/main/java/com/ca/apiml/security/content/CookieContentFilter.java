@@ -11,6 +11,7 @@ package com.ca.apiml.security.content;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
@@ -42,7 +43,7 @@ public class CookieContentFilter extends AbstractSecureContentFilter {
      * @param request the http request
      * @return the {@link TokenAuthentication} object containing username and valid JWT token
      */
-    protected Optional<TokenAuthentication> extractContent(HttpServletRequest request) {
+    public Optional<AbstractAuthenticationToken> extractContent(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             return Optional.empty();
