@@ -7,4 +7,5 @@ dependencies {
     compileOnly libraries.lombok
 
     testCompile libraries.junit
+    testCompile libraries.mockito_core
 }
