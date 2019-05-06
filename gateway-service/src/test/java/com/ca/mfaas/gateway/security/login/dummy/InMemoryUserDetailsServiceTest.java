@@ -24,10 +24,8 @@ import static org.junit.Assert.*;
 
 public class InMemoryUserDetailsServiceTest {
 
-
-    private  static BCryptPasswordEncoder encoder;
+    private static BCryptPasswordEncoder encoder;
     private static InMemoryUserDetailsService inMemoryUserDetailsService;
-    private static UserDetails userDetails;
 
     @BeforeClass
     public static void setup() {
@@ -43,7 +41,7 @@ public class InMemoryUserDetailsServiceTest {
     public void shouldEncodePasswordAndReturnFoundUsername() {
         Mockito.when(encoder.encode("user")).thenReturn("hashcodeUser");
 
-        userDetails = inMemoryUserDetailsService.loadUserByUsername("user");
+        UserDetails userDetails = inMemoryUserDetailsService.loadUserByUsername("user");
 
         assertEquals("user", userDetails.getUsername());
         assertEquals("hashcodeUser", userDetails.getPassword());

@@ -34,7 +34,7 @@ public class LoginFilterTest {
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private LoginFilter loginFilter;
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     private final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
     private final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";

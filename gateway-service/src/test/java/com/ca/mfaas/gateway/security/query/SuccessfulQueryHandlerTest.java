@@ -22,28 +22,25 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import static org.junit.Assert.*;
 
 public class SuccessfulQueryHandlerTest {
-    private SecurityConfigurationProperties securityConfigurationProperties;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private SuccessfulQueryHandler successfulQueryHandler;
-    private ObjectMapper mapper;
     private String jwtToken;
-    private AuthenticationService authenticationService;
 
-    public static final String USER = "Me";
-    public static final String DOMAIN = "this.com";
-    public static final String LTPA = "ltpaToken";
+    private static final String USER = "Me";
+    private static final String DOMAIN = "this.com";
+    private static final String LTPA = "ltpaToken";
 
     @Before
     public void setup() {
-        securityConfigurationProperties = new SecurityConfigurationProperties();
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
-        mapper = new ObjectMapper();
-        authenticationService = new AuthenticationService(securityConfigurationProperties);
+
+        ObjectMapper mapper = new ObjectMapper();
+        SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+        AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties);
         authenticationService.setSecret("very_secret");
         jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
-
         successfulQueryHandler = new SuccessfulQueryHandler(mapper, authenticationService);
     }
 

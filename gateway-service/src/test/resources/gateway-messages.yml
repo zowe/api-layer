@@ -1,6 +1,6 @@
 messages:
     # Security messages (100 - 199)
-    # Generic messages (100 - 120)
+    # General messages (100 - 120)
     - key: apiml.gateway.security.generic
       number: ZWEAG100E
       type: ERROR

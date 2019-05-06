@@ -26,14 +26,14 @@ public class SuccessfulLoginHandlerTest {
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private SuccessfulLoginHandler successfulLoginHandler;
-    private ObjectMapper mapper;
 
     @Before
     public void setup() {
-        securityConfigurationProperties = new SecurityConfigurationProperties();
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
-        mapper = new ObjectMapper();
+
+        ObjectMapper mapper = new ObjectMapper();
+        securityConfigurationProperties = new SecurityConfigurationProperties();
         successfulLoginHandler = new SuccessfulLoginHandler(mapper,securityConfigurationProperties);
     }
 

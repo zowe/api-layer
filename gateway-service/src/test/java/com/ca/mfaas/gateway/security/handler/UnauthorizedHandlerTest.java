@@ -34,7 +34,6 @@ import static org.mockito.Mockito.verify;
 @RunWith(SpringRunner.class)
 public class UnauthorizedHandlerTest {
 
-
     @Autowired
     private ErrorService errorService;
 

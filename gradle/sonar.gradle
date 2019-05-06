@@ -40,14 +40,6 @@ project(":gateway-service") {
     }
 }
 
-project(":security-service-client-spring") {
-    sonarqube {
-        properties {
-            skipProject = true
-        }
-    }
-}
-
 project(":api-catalog-ui") {
     sonarqube {
         skipProject = true

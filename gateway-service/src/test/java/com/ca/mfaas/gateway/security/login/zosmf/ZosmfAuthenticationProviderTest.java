@@ -224,7 +224,7 @@ public class ZosmfAuthenticationProviderTest {
     }
 
     @Test
-    public void cookieWithSemicolumn() {
+    public void cookieWithSemicolon() {
         String cookie = "LtpaToken2=test;";
 
         securityConfigurationProperties.setZosmfServiceId(ZOSMF);
@@ -256,8 +256,6 @@ public class ZosmfAuthenticationProviderTest {
 
         List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
         when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, COOKIE);
         when(restTemplate.exchange(Mockito.anyString(),
             Mockito.eq(HttpMethod.GET),
             Mockito.any(),
@@ -279,12 +277,10 @@ public class ZosmfAuthenticationProviderTest {
 
         List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
         when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, COOKIE);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(securityConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Boolean supports = zosmfAuthenticationProvider.supports(usernamePasswordAuthentication.getClass());
+        boolean supports = zosmfAuthenticationProvider.supports(usernamePasswordAuthentication.getClass());
         assertTrue(supports);
 
     }

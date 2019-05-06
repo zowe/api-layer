@@ -35,17 +35,13 @@ public class DummyAuthenticationProviderTest {
     private static final String USERNAME = "user";
 
     private static DummyAuthenticationProvider dummyAuthenticationProvider;
-    private static AuthenticationService authenticationService;
-    private  static BCryptPasswordEncoder encoder;
-    private static UserDetailsService userDetailsService;
-
 
     @BeforeClass
     public static void setup() {
         MonitoringHelper.initMocks();
-        authenticationService = mock(AuthenticationService.class);
-        encoder = new BCryptPasswordEncoder(10);
-        userDetailsService = new InMemoryUserDetailsService(encoder);
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
+        UserDetailsService userDetailsService = new InMemoryUserDetailsService(encoder);
+        AuthenticationService authenticationService = mock(AuthenticationService.class);
         dummyAuthenticationProvider = new DummyAuthenticationProvider(encoder, userDetailsService, authenticationService);
     }
 

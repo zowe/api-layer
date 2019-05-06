@@ -47,7 +47,7 @@ public class AuthProviderInitializerTest {
     }
 
     @Test
-    public void testZosmfprovider() {
+    public void testZosmfProvider() {
         String authProvider = LoginProvider.ZOSMF.toString();
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider, authProvider);

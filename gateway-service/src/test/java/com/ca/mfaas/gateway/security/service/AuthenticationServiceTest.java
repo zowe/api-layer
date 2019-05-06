@@ -28,9 +28,9 @@ import static org.junit.Assert.*;
 
 public class AuthenticationServiceTest {
 
-    public static final String USER = "Me";
-    public static final String DOMAIN = "this.com";
-    public static final String LTPA = "ltpaToken";
+    private static final String USER = "Me";
+    private static final String DOMAIN = "this.com";
+    private static final String LTPA = "ltpaToken";
 
     private AuthenticationService authService;
 
@@ -48,7 +48,7 @@ public class AuthenticationServiceTest {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
         assertFalse(jwtToken.isEmpty());
-        assertEquals(jwtToken.getClass().getName(), "java.lang.String");
+        assertEquals("java.lang.String", jwtToken.getClass().getName());
     }
 
     @Test(expected = NullPointerException.class)
@@ -64,7 +64,7 @@ public class AuthenticationServiceTest {
         TokenAuthentication token = new TokenAuthentication(jwtToken);
         TokenAuthentication jwtValidation = authService.validateJwtToken(token);
 
-        assertEquals(jwtValidation.getPrincipal(), USER);
+        assertEquals(USER, jwtValidation.getPrincipal());
         assertEquals(jwtValidation.getCredentials(), jwtToken);
         assertTrue(jwtValidation.isAuthenticated());
     }
@@ -104,9 +104,9 @@ public class AuthenticationServiceTest {
         String dateNow = new Date().toString().substring(0,16);
         QueryResponse parsedToken = authService.parseJwtToken(jwtToken);
 
-        assertEquals(parsedToken.getClass().getTypeName(), "com.ca.mfaas.gateway.security.query.QueryResponse");
-        assertEquals(parsedToken.getDomain(), DOMAIN);
-        assertEquals(parsedToken.getUserId(), USER);
+        assertEquals("com.ca.mfaas.gateway.security.query.QueryResponse", parsedToken.getClass().getTypeName());
+        assertEquals(DOMAIN, parsedToken.getDomain());
+        assertEquals(USER, parsedToken.getUserId());
         assertEquals(parsedToken.getCreation().toString().substring(0,16), dateNow);
         Date toBeExpired = DateUtils.addDays(parsedToken.getCreation(), 1);
         assertEquals(parsedToken.getExpiration(), toBeExpired);
@@ -145,7 +145,7 @@ public class AuthenticationServiceTest {
     @Test
     public void shouldReadLtpaTokenFromJwtToken() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-        assertEquals(authService.getLtpaTokenFromJwtToken(jwtToken), LTPA);
+        assertEquals(LTPA, authService.getLtpaTokenFromJwtToken(jwtToken));
     }
 
     @Test(expected = TokenNotValidException.class)
