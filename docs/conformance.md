@@ -11,7 +11,7 @@ The conformance requirements are split into:
 
 An application is *Zowe API ML conformant* if it follows these criteria:
 
-1. The application must provide a discoverable API service that is registered dynamically to the Discovery Service
+1. In order to leverage the benefits of API ML Dynamic Discovery the application must provide a discoverable API service that is     registered dynamically to the Discovery Service. This will give the End User (in this case SYSPROG) easier time when adding a new REST API service into already running Zowe ecosystem, or doing a fresh install completely, via removing extra configuration changes required otherwise. 
    - The system programmer must be able to set the service ID in the configuration of the application
    - The application must provides a default service ID that is prefixed by the provider name (for example: `ca`, `ibm`, `rocket`)
    - Every service ID must follow these rules:
@@ -24,7 +24,7 @@ An application is *Zowe API ML conformant* if it follows these criteria:
      - For non-versioned APIs or APIs versioned differently (e.g. z/OSMF): `api/{serviceId}`, `ui/{serviceId}`, `ws/{serviceId}`
      - The requirements for UI routing must be followed since Day 2
    - Names and titles reviewed by Tech Materials (previously Tech Info)
-2. The provided REST API is documented by Swagger/OpenAPI 2.0 JSON document. This document needs to be valid and provide enough information for usage of the API:
+2. API documentation is the information that is required to successfully consume and integrate with API. In order to give the end user the industry standard experience, the provided REST API must be documented by Swagger/OpenAPI 2.0 JSON document. This document needs to be valid and provide enough information for usage of the API. The better the interface that’s used to consume APIs, the higher the chance of achieving your business and technological objectives. For more information follow this link https://swagger.io/resources/articles/documenting-apis-with-swagger/ as well as the rules:
    - Every public resource must be documented and the meaning of each resource is described
    - Every method must be documented and use cases for these methods are explained
    - Every use case must be demonstrated by an example
