@@ -42,8 +42,8 @@ public class BasicContentFilterTest {
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertTrue(token.isPresent());
-        assertEquals("user",token.get().getPrincipal());
-        assertEquals("password",token.get().getCredentials().toString());
+        assertEquals("user", token.get().getPrincipal());
+        assertEquals("password", token.get().getCredentials().toString());
     }
 
     @Test
@@ -54,21 +54,22 @@ public class BasicContentFilterTest {
         assertTrue(token.isPresent());
         assertNull(token.get().getPrincipal());
         assertNull(token.get().getCredentials());
-    }
-    @Test
-    public void extractContentFromRequestWithNonsenseBasicAuth2() {
+
+
         when(request.getHeader(anyString())).thenReturn("Duck");
-        Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
+        token = basicContentFilter.extractContent(request);
 
         assertFalse(token.isPresent());
     }
+
     @Test
-    public void extractContentFromRequestWithNonsenseBasicAuth3() {
+    public void extractContentFromRequestWithEmptyRealm() {
         when(request.getHeader(anyString())).thenReturn("Basic ");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertFalse(token.isPresent());
     }
+
     @Test
     public void extractContentFromRequestWithoutAuthHeader() {
         when(request.getHeader(anyString())).thenReturn(null);

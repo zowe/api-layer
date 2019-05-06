@@ -50,7 +50,7 @@ public class CookieContentFilterTest {
     }
 
     @Test
-    public void shouldReturnEmptyIfValueIsEmpty() {
+    public void shouldReturnEmptyIfCookieValueIsEmpty() {
         Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), "");
         request.setCookies(cookie);
         Optional<AbstractAuthenticationToken> content =  cookieContentFilter.extractContent(request);
