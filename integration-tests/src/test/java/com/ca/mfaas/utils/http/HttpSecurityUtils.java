@@ -49,8 +49,7 @@ public class HttpSecurityUtils {
         return response.getFirstHeader("Set-Cookie").getValue();
     }
 
-    public static HttpRequest addCookie(HttpRequest request, String cookie) {
+    public static void addCookie(HttpRequest request, String cookie) {
         request.addHeader("Cookie", cookie);
-        return request;
     }
 }

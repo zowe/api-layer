@@ -87,8 +87,9 @@ public class AuthenticationServiceTest {
         expAuthService.setSecret("very_secret");
         String jwtToken = expAuthService.createJwtToken(USER, DOMAIN, LTPA);
         TokenAuthentication token = new TokenAuthentication(jwtToken);
-        Thread.sleep(1000);
-
+        synchronized (this) {
+            wait(1000);
+        }
         authService.validateJwtToken(token);
     }
 
@@ -163,8 +164,9 @@ public class AuthenticationServiceTest {
         AuthenticationService expAuthService = new AuthenticationService(securityConfigurationProperties);
         expAuthService.setSecret("very_secret");
         String jwtToken = expAuthService.createJwtToken(USER, DOMAIN, LTPA);
-        Thread.sleep(1000);
-
+        synchronized (this) {
+            wait(1000);
+        }
         authService.getLtpaTokenFromJwtToken(jwtToken);
     }
 }

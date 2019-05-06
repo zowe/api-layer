@@ -33,15 +33,15 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LoginFilterTest {
+    private static final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
+    private static final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
+    private static final String VALID_AUTH_HEADER = "Basic dXNlcjpwd2Q=";
+    private static final String INVALID_AUTH_HEADER = "Basic dXNlcj11c2Vy";
+
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private LoginFilter loginFilter;
     private final ObjectMapper mapper = new ObjectMapper();
-
-    private final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
-    private final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
-    private final String VALID_AUTH_HEADER = "Basic dXNlcjpwd2Q=";
-    private final String INVALID_AUTH_HEADER = "Basic dXNlcj11c2Vy";
 
     @Mock
     private AuthenticationSuccessHandler authenticationSuccessHandler;

@@ -40,30 +40,26 @@ import static org.junit.Assert.*;
 @Slf4j
 @Category(MainframeDependentTests.class) //TODO: Remove when the catalog will use Gateway security
 public class ApiCatalogEndpointIntegrationTest {
-    private String getAllContainersEndpoint = "/api/v1/apicatalog/containers";
-    private String invalidContainerEndpoint = "/api/v1/apicatalog/containerz";
-    private String invalidStatusUpdatesEndpoint = "/api/v1/apicatalog/statuz/updatez";
-    private String getApiCatalogApiDocEndpoint = "/api/v1/apicatalog/apidoc/apicatalog/v1";
-    private String getDiscoverableClientApiDocEndpoint = "/api/v1/apicatalog/apidoc/discoverableclient/v1";
-    private String invalidApiCatalogApiDocEndpoint = "/api/v1/apicatalog/apidoc/apicatalog/v2";
+    private static final String GET_ALL_CONTAINERS_ENDPOINT = "/api/v1/apicatalog/containers";
+    private static final String INVALID_CONTAINER_ENDPOINT = "/api/v1/apicatalog/containerz";
+    private static final String INVALID_STATUS_UPDATES_ENDPOINT = "/api/v1/apicatalog/statuz/updatez";
+    private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/apicatalog/v1";
+    private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/discoverableclient/v1";
+    private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/apicatalog/v2";
 
-    private GatewayServiceConfiguration gatewayServiceConfiguration;
-
-    private String host;
-    private int port;
     private String baseHost;
 
     @Before
-    public void setUp() throws URISyntaxException {
-        gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        host = gatewayServiceConfiguration.getHost();
-        port = gatewayServiceConfiguration.getPort();
+    public void setUp() {
+        GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        String host = gatewayServiceConfiguration.getHost();
+        int port = gatewayServiceConfiguration.getPort();
         baseHost = host + ":" + port;
     }
 
     @Test
     public void whenGetContainerStatuses_thenResponseWithAtLeastOneUp() throws Exception {
-        final HttpResponse response = getResponse(getAllContainersEndpoint, HttpStatus.SC_OK);
+        final HttpResponse response = getResponse(GET_ALL_CONTAINERS_ENDPOINT, HttpStatus.SC_OK);
 
         // When
         final String jsonResponse = EntityUtils.toString(response.getEntity());
@@ -78,7 +74,7 @@ public class ApiCatalogEndpointIntegrationTest {
 
     @Test
     public void whenCatalogApiDoc_thenResponseOK() throws Exception {
-        final HttpResponse response = getResponse(getApiCatalogApiDocEndpoint, HttpStatus.SC_OK);
+        final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 
         // When
         final String jsonResponse = EntityUtils.toString(response.getEntity());
@@ -111,7 +107,7 @@ public class ApiCatalogEndpointIntegrationTest {
 
     @Test
     public void whenDiscoveryClientApiDoc_thenResponseOK() throws Exception {
-        final HttpResponse response = getResponse(getDiscoverableClientApiDocEndpoint, HttpStatus.SC_OK);
+        final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 
         // When
         final String jsonResponse = EntityUtils.toString(response.getEntity());
@@ -147,7 +143,7 @@ public class ApiCatalogEndpointIntegrationTest {
 
     @Test
     public void whenMisSpeltContainersEndpoint_thenNotFoundResponseWithAPIMessage() throws Exception {
-        HttpResponse response = getResponse(invalidContainerEndpoint, HttpStatus.SC_NOT_FOUND);
+        HttpResponse response = getResponse(INVALID_CONTAINER_ENDPOINT, HttpStatus.SC_NOT_FOUND);
         final String htmlResponse = EntityUtils.toString(response.getEntity());
         Document doc = Jsoup.parse(htmlResponse);
         String title = doc.title();
@@ -161,12 +157,12 @@ public class ApiCatalogEndpointIntegrationTest {
 
     @Test
     public void whenMisSpeltStatusUpdateEndpoint_thenNotFoundResponse() throws Exception {
-        getResponse(invalidStatusUpdatesEndpoint, HttpStatus.SC_NOT_FOUND);
+        getResponse(INVALID_STATUS_UPDATES_ENDPOINT, HttpStatus.SC_NOT_FOUND);
     }
 
     @Test
     public void whenInvalidApiDocVersion_thenReturnFirstDoc() throws Exception {
-        final HttpResponse response = getResponse(invalidApiCatalogApiDocEndpoint, HttpStatus.SC_OK);
+        final HttpResponse response = getResponse(INVALID_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 
         // When
         final String jsonResponse = EntityUtils.toString(response.getEntity());

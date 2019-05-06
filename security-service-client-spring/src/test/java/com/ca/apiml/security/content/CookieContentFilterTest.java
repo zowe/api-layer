@@ -11,18 +11,18 @@ package com.ca.apiml.security.content;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-
 import org.junit.Before;
+import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.http.Cookie;
 import java.util.Optional;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 public class CookieContentFilterTest {
 

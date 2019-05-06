@@ -27,12 +27,12 @@ import static org.mockito.Mockito.when;
 public class BasicContentFilterTest {
 
     private BasicContentFilter basicContentFilter;
-    private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
-    private final AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
     private final HttpServletRequest request = mock(HttpServletRequest.class);
 
     @Before
     public void setUp() {
+        AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
+        AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
         basicContentFilter = new BasicContentFilter(authenticationManager, authenticationFailureHandler);
     }
 
