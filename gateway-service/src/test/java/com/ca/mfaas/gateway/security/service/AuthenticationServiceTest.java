@@ -14,6 +14,8 @@ import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +33,7 @@ public class AuthenticationServiceTest {
     private static final String USER = "Me";
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
+    private static final String SECRET = "very_secret";
 
     private AuthenticationService authService;
 
@@ -40,7 +43,7 @@ public class AuthenticationServiceTest {
     public void setUp() {
         securityConfigurationProperties = new SecurityConfigurationProperties();
         authService = new AuthenticationService(securityConfigurationProperties);
-        authService.setSecret("very_secret");
+        authService.setSecret(SECRET);
     }
 
     @Test
@@ -78,18 +81,8 @@ public class AuthenticationServiceTest {
     }
 
     @Test(expected = TokenExpireException.class)
-    public void shouldThrowExceptionWhenTokenIsExpired() throws InterruptedException {
-        SecurityConfigurationProperties.TokenProperties expiredProperties = new SecurityConfigurationProperties.TokenProperties();
-        expiredProperties.setExpirationInSeconds(1);
-        securityConfigurationProperties.setTokenProperties(expiredProperties);
-
-        AuthenticationService expAuthService = new AuthenticationService(securityConfigurationProperties);
-        expAuthService.setSecret("very_secret");
-        String jwtToken = expAuthService.createJwtToken(USER, DOMAIN, LTPA);
-        TokenAuthentication token = new TokenAuthentication(jwtToken);
-        synchronized (this) {
-            wait(1000);
-        }
+    public void shouldThrowExceptionWhenTokenIsExpired() {
+        TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(SECRET));
         authService.validateJwtToken(token);
     }
 
@@ -157,16 +150,17 @@ public class AuthenticationServiceTest {
     }
 
     @Test(expected = TokenExpireException.class)
-    public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() throws InterruptedException {
-        SecurityConfigurationProperties.TokenProperties expiredProperties = new SecurityConfigurationProperties.TokenProperties();
-        expiredProperties.setExpirationInSeconds(1);
-        securityConfigurationProperties.setTokenProperties(expiredProperties);
-        AuthenticationService expAuthService = new AuthenticationService(securityConfigurationProperties);
-        expAuthService.setSecret("very_secret");
-        String jwtToken = expAuthService.createJwtToken(USER, DOMAIN, LTPA);
-        synchronized (this) {
-            wait(1000);
-        }
-        authService.getLtpaTokenFromJwtToken(jwtToken);
+    public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
+        authService.getLtpaTokenFromJwtToken(createExpiredJwtToken(SECRET));
+    }
+
+    private String createExpiredJwtToken(String secret) {
+        long expredTimeMillis = System.currentTimeMillis() - 1000;
+
+        return Jwts.builder()
+            .setExpiration(new Date(expredTimeMillis))
+            .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
+            .signWith(SignatureAlgorithm.HS512, secret)
+            .compact();
     }
 }
