@@ -47,7 +47,6 @@ public class ZosmfAuthenticationProviderTest {
     private static final String HOST = "localhost";
     private static final int PORT = 0;
     private static final String ZOSMF = "zosmf";
-    private static final String SECRET = "secret";
     private static final String COOKIE = "LtpaToken2=test";
     private static final String DOMAIN = "realm";
     private static final String RESPONSE = "{\"zosmf_saf_realm\": \"" + DOMAIN + "\"}";
@@ -143,7 +142,7 @@ public class ZosmfAuthenticationProviderTest {
             = new ZosmfAuthenticationProvider(securityConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
         exception.expect(AuthenticationServiceException.class);
-        exception.expectMessage("Parameter 'zosmfServiceId' is not configured.");
+        exception.expectMessage("The parameter 'zosmfServiceId' is not configured.");
 
         zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
     }

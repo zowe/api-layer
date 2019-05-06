@@ -30,7 +30,6 @@ public class HelloWorldSpringIntegrationTest {
     private static final String GREETING_PATH = "/api/v1/hellospring/greeting";
     private static final String GREETING_WITH_NAME_PATH = "/api/v1/hellospring/greeting/petr";
 
-    private GatewayServiceConfiguration serviceConfiguration;
     private String scheme;
     private String host;
     private int port;
@@ -42,7 +41,7 @@ public class HelloWorldSpringIntegrationTest {
 
     @Before
     public void setUp() {
-        serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
         port = serviceConfiguration.getPort();

@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.net.ssl.SSLContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -60,6 +61,7 @@ public class EurekaInstancesIntegrationTest {
         final int instances = discoveryServiceConfiguration.getInstances();
         URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(EUREKA_STATUS).build();
 
+        //@formatter:off
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String xml =
             given()
@@ -69,6 +71,7 @@ public class EurekaInstancesIntegrationTest {
             .then()
                 .statusCode(is(200))
                 .extract().body().asString();
+        //@formatter:on
 
         xml = xml.replaceAll("com.netflix.eureka.util.StatusInfo", "StatusInfo");
 
@@ -76,7 +79,7 @@ public class EurekaInstancesIntegrationTest {
         String registeredReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.registered-replicas");
         String unavailableReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.unavailable-replicas");
         List<String> servicesList = Arrays.asList(registeredReplicas.split(","));
-        if (instances == 1 ) {
+        if (instances == 1) {
             Assert.assertEquals("", registeredReplicas);
             Assert.assertEquals("", availableReplicas);
             Assert.assertEquals("", unavailableReplicas);
@@ -85,7 +88,7 @@ public class EurekaInstancesIntegrationTest {
                 availableReplicas = availableReplicas.substring(0, availableReplicas.length() - 1);
             }
             Assert.assertNotEquals("", registeredReplicas);
-            Assert.assertNotEquals("",availableReplicas);
+            Assert.assertNotEquals("", availableReplicas);
             Assert.assertEquals("", unavailableReplicas);
             Assert.assertEquals(registeredReplicas, availableReplicas);
             Assert.assertEquals(servicesList.size(), instances - 1);

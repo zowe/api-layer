@@ -31,14 +31,13 @@ public class ZosmfSsoIntegrationTest {
     private final static int RC = 16;
 
     private String token;
-    private GatewayServiceConfiguration serviceConfiguration;
     private String scheme;
     private String host;
     private int port;
 
     @Before
     public void setUp() {
-        serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
         port = serviceConfiguration.getPort();
@@ -150,7 +149,6 @@ public class ZosmfSsoIntegrationTest {
 
     @Test
     public void doZosmfCallWithoutToken() {
-
         given()
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
         .when()
@@ -180,7 +178,6 @@ public class ZosmfSsoIntegrationTest {
     @Test
     public void doZosmfCallWithEmptyCookie() {
         String invalidToken = "";
-        String expectedMessage = "Authentication problem: 'Token is not valid.' for URL '/api/zosmfca32/zosmf/restfiles/ds'";
 
         given()
             .cookie("apimlAuthenticationToken", invalidToken)

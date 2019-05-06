@@ -184,11 +184,11 @@ public class InstanceRetrievalService {
     }
 
     /**
-     * Extract applications
+     * Parse information from the response and extract the Applications object which contains all the registry information returned by eureka server
      *
      * @param requestInfo
-     * @param response
-     * @return
+     * @param response the http response
+     * @return Applications object that wraps all the registry information
      */
     private Applications extractApplications(Pair<String, Pair<String, String>> requestInfo, ResponseEntity<String> response) {
         Applications applications = null;
@@ -209,9 +209,9 @@ public class InstanceRetrievalService {
     }
 
     /**
-     * Extract applications delta
+     * Extract the delta of the registry information returned by eureka server and contained in Applications
      *
-     * @return
+     * @return the Applications object that wraps all the registry information
      */
     public Applications extractDeltaFromDiscovery() {
 
@@ -270,7 +270,6 @@ public class InstanceRetrievalService {
 
         });
     }
-
 
     /**
      * Query Discovery
