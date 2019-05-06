@@ -2,10 +2,11 @@ dependencies {
     compile(project(':common-service-core'))
     compile libraries.spring_boot_starter_web
     compile libraries.spring_security_web
-    
+
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.lombok
 
     testCompile libraries.junit
     testCompile libraries.mockito_core
+    testCompile libraries.spring_mock_mvc
 }
