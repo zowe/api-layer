@@ -62,7 +62,7 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        Optional<? extends AbstractAuthenticationToken> authenticationToken = extractContent(request);
+        Optional<AbstractAuthenticationToken> authenticationToken = extractContent(request);
 
         if (authenticationToken.isPresent()) {
             try {

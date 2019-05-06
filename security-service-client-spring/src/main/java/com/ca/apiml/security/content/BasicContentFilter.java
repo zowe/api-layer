@@ -10,6 +10,7 @@
 package com.ca.apiml.security.content;
 
 import com.ca.mfaas.constants.ApimlConstants;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,6 +26,7 @@ import java.util.Optional;
 /**
  * Authenticate the credentials from the basic authorization header
  */
+@Slf4j
 public class BasicContentFilter extends AbstractSecureContentFilter {
 
     /**
@@ -59,12 +61,20 @@ public class BasicContentFilter extends AbstractSecureContentFilter {
      * @return the decoded credentials
      */
     private UsernamePasswordAuthenticationToken mapBase64Credentials(String base64Credentials) {
-        String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
-        int i = credentials.indexOf(':');
-        if (i >= 0) {
-            return new UsernamePasswordAuthenticationToken(credentials.substring(0, i), credentials.substring(i + 1));
+        String principal = null;
+        String credentials = null;
+
+        try {
+            String decodedCredentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+            int i = decodedCredentials.indexOf(':');
+            if (i >= 0) {
+                principal = decodedCredentials.substring(0, i);
+                credentials = decodedCredentials.substring(i + 1);
+            }
+        } catch (Exception e) {
+            log.debug("Conversion problem with the credentials {}", base64Credentials);
         }
 
-        return null;
+        return new UsernamePasswordAuthenticationToken(principal, credentials);
     }
 }
