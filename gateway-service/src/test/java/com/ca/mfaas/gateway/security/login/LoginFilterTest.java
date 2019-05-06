@@ -12,7 +12,9 @@ package com.ca.mfaas.gateway.security.login;
 import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -39,6 +41,7 @@ public class LoginFilterTest {
     private final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
     private final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
     private final String VALID_AUTH_HEADER = "Basic dXNlcjpwd2Q=";
+    private final String INVALID_AUTH_HEADER = "Basic dXNlcj11c2Vy";
 
     @Mock
     private AuthenticationSuccessHandler authenticationSuccessHandler;
@@ -46,6 +49,9 @@ public class LoginFilterTest {
     private AuthenticationFailureHandler authenticationFailureHandler;
     @Mock
     private AuthenticationManager authenticationManager;
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setup() {
@@ -84,30 +90,52 @@ public class LoginFilterTest {
         verify(authenticationManager).authenticate(authentication);
     }
 
-    @Test(expected = AuthenticationCredentialsNotFoundException.class)
+    @Test
     public void shouldFailWithJsonEmptyCredentials() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletRequest.setContent(EMPTY_JSON.getBytes());
         httpServletResponse = new MockHttpServletResponse();
 
+        exception.expect(AuthenticationCredentialsNotFoundException.class);
+        exception.expectMessage("Username or password not provided.");
+
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
 
-    @Test (expected = AuthenticationCredentialsNotFoundException.class)
+    @Test
     public void shouldFailWithoutAuth() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletResponse = new MockHttpServletResponse();
 
+        exception.expect(AuthenticationCredentialsNotFoundException.class);
+        exception.expectMessage("Login object has wrong format.");
+
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
 
-    @Test (expected = AuthMethodNotSupportedException.class)
+    @Test
     public void shouldFailWithWrongHttpMethod() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET);
         httpServletResponse = new MockHttpServletResponse();
+
+        exception.expect(AuthMethodNotSupportedException.class);
+        exception.expectMessage("GET");
+
+        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+    }
+
+    @Test
+    public void shouldFailWithIncorrectCredentialsFormat() {
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setMethod(HttpMethod.POST);
+        httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, INVALID_AUTH_HEADER);
+        httpServletResponse = new MockHttpServletResponse();
+
+        exception.expect(AuthenticationCredentialsNotFoundException.class);
+        exception.expectMessage("Login object has wrong format.");
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
