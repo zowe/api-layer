@@ -8,6 +8,7 @@ apiml:
     security:
         auth:
             provider: dummy
+            zosmfServiceId: zosmfca32
         ssl:
             verifySslCertificatesOfServices: true
 
