@@ -67,17 +67,6 @@ public class RoutedServices {
         return result;
     }
 
-    /**
-     * Check Service type
-     *
-     * @param type  service type
-     * @param routeKey  route key
-     * @return if service type is ALL is true, in othercase it checks  whether the location starts with service type
-     */
-    private boolean checkServiceType(ServiceType type, String routeKey) {
-        return type.equals(ServiceType.ALL) || routeKey.toLowerCase().startsWith(type.name().toLowerCase());
-    }
-
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
