@@ -17,23 +17,31 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 /**
- * Provider for authentication using JWT Token
+ * Authentication provider that verifies the JWT token
  */
 @Slf4j
 @Component
 public class TokenAuthenticationProvider implements AuthenticationProvider {
     private final AuthenticationService authenticationService;
 
+    /**
+     * Constructor
+     */
     public TokenAuthenticationProvider(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
+    /**
+     * Authenticate the token
+     *
+     * @param authentication that was presented to the provider for validation
+     * @return the authenticated token
+     */
     @Override
     public Authentication authenticate(Authentication authentication) {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         return authenticationService.validateJwtToken(tokenAuthentication);
     }
-
 
     @Override
     public boolean supports(Class<?> authentication) {

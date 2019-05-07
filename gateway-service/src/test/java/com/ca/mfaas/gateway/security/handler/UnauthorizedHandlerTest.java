@@ -55,7 +55,7 @@ public class UnauthorizedHandlerTest {
         assertEquals(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader("WWW-Authenticate"));
 
 
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidCredentials", httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.login.invalidCredentials", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 

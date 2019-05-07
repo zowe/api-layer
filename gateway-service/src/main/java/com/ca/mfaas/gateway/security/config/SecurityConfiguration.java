@@ -39,6 +39,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@SuppressWarnings("squid:S00107")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
@@ -103,26 +104,38 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login + query
             .and()
-            .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
+    /**
+     * Processes /login requests
+     */
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler, securityObjectMapper,
             authenticationManager());
     }
 
+    /**
+     * Processes /query requests
+     */
     private QueryFilter queryFilter(String queryEndpoint) throws Exception {
         return new QueryFilter(queryEndpoint, successfulQueryHandler, authenticationFailureHandler, authenticationService,
             authenticationManager());
     }
 
+    /**
+     * Secures content with a basic authentication
+     */
     private BasicContentFilter basicFilter() throws Exception {
         return new BasicContentFilter(authenticationManager(), authenticationFailureHandler);
     }
 
+    /**
+     * Secures content with a token stored in a cookie
+     */
     private CookieContentFilter cookieFilter() throws Exception {
         return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }

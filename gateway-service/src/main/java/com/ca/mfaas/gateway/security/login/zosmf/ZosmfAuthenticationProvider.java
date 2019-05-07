@@ -51,6 +51,9 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     private final ObjectMapper securityObjectMapper;
     private final RestTemplate restTemplate;
 
+    /**
+     * Constructor
+     */
     public ZosmfAuthenticationProvider(SecurityConfigurationProperties securityConfigurationProperties,
                                        AuthenticationService authenticationService,
                                        DiscoveryClient discovery,
@@ -64,9 +67,10 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     }
 
     /**
-     * Authenticate zosmf credentials
+     * Authenticate the credentials with the z/OSMF service
+     *
      * @param authentication that was presented to the provider for validation
-     * @return the successful authentication token
+     * @return the authenticated token
      */
     @Override
     public Authentication authenticate(Authentication authentication) {
@@ -106,8 +110,9 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     }
 
     /**
-     * Return zosmf instance uri
-     * @param zosmf the zosmf service id
+     * Return z/OSMF instance uri
+     *
+     * @param zosmf the z/OSMF service id
      * @return the uri
      */
     private String getURI(String zosmf) {
@@ -126,10 +131,11 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     }
 
     /**
-     * Read the ltpa token
+     * Read the LTPA token from the cookie
+     *
      * @param cookie the cookie
-     * @return the ltpa stored in the cookie
-     * @throws BadCredentialsException if username or password are invalid
+     * @return the LPTA token
+     * @throws BadCredentialsException if the cookie does not contain valid LTPA token
      */
     private String readLtpaToken(String cookie) {
         if (cookie == null || cookie.isEmpty() || !cookie.contains("LtpaToken2")) {
@@ -141,9 +147,10 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     }
 
     /**
-     * Read the zosmf domain from the content in the response
+     * Read the z/OSMF domain from the content in the response
+     *
      * @param content the response body
-     * @return the zosmf domain
+     * @return the z/OSMF domain
      * @throws AuthenticationServiceException if the zosmf domain cannot be read
      */
     private String readDomain(String content) {
@@ -159,7 +166,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                 });
         } catch (IOException e) {
             log.error("Error parsing z/OSMF response.");
-            throw  new AuthenticationServiceException("z/OSMF domain cannot be read.");
+            throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
         }
     }
 

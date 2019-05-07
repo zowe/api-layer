@@ -25,15 +25,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Handler after login success that sets the cookie
+ * Handles the successful login
  */
 @Component
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
-    private static final String COOKIE_RESPONSE = "";
+    private static final String SUCCESSFUL_RESPONSE = "";
 
     private final ObjectMapper mapper;
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
+    /**
+     * Constructor
+     */
     public SuccessfulLoginHandler(ObjectMapper securityObjectMapper,
                                   SecurityConfigurationProperties securityConfigurationProperties) {
         this.mapper = securityObjectMapper;
@@ -42,10 +45,11 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
 
     /**
      * Set cookie and http response on successful authentication
-     * @param request
-     * @param response
-     * @param authentication
-     * @throws IOException
+     *
+     * @param request        the http request
+     * @param response       the http response
+     * @param authentication the successful authentication
+     * @throws IOException when the response cannot be written
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
@@ -61,6 +65,7 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
 
     /**
      * Add the cookie to the response
+     *
      * @param token    the authentication token
      * @param response send back this response
      */
@@ -73,6 +78,6 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         tokenCookie.setSecure(securityConfigurationProperties.getCookieProperties().isCookieSecure());
 
         response.addCookie(tokenCookie);
-        mapper.writeValue(response.getWriter(), COOKIE_RESPONSE);
+        mapper.writeValue(response.getWriter(), SUCCESSFUL_RESPONSE);
     }
 }

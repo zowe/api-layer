@@ -25,6 +25,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Authentication provider for development purposes
+ * <p>
+ * Allows Gateway to run without mainframe (z/OSMF service)
  */
 @Slf4j
 @Component
@@ -44,8 +46,9 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
 
     /**
      * Authenticate dummy credentials
+     *
      * @param authentication that was presented to the provider for validation
-     * @return the successful authentication token
+     * @return the authenticated token
      */
     @Override
     public Authentication authenticate(Authentication authentication) {

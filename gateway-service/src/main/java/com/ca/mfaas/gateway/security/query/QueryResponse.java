@@ -14,6 +14,9 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * Represents the query JSON response with the token information
+ */
 @Data
 @AllArgsConstructor
 public class QueryResponse {

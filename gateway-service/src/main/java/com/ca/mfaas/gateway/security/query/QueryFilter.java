@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Filter for query endpoint request with JWT token.
+ * Filter for /query endpoint requests with JWT token.
  */
 @Slf4j
 public class QueryFilter extends AbstractAuthenticationProcessingFilter {
@@ -38,6 +38,9 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final AuthenticationService authenticationService;
 
+    /**
+     * Constructor
+     */
     public QueryFilter(
         String authEndpoint,
         AuthenticationSuccessHandler successHandler,
@@ -52,13 +55,13 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     }
 
     /**
-     * Attempt authentication and return fully populated Authentication object
+     * Calls authentication manager to validate the token
      *
-     * @param request
-     * @param response
-     * @throws TokenNotProvidedException when token is not provided in request
-     * @throws AuthMethodNotSupportedException when trying with other method than GET
-     * @return Authentication object on successful authentication
+     * @param request  the http request
+     * @param response the http response
+     * @return the authenticated token
+     * @throws TokenNotProvidedException       when a token is not provided in the request
+     * @throws AuthMethodNotSupportedException when the authentication method is not supported
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
@@ -72,6 +75,9 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         return this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
     }
 
+    /**
+     * Calls successful query handler
+     */
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
                                             HttpServletResponse response,
@@ -80,6 +86,9 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         successHandler.onAuthenticationSuccess(request, response, authResult);
     }
 
+    /**
+     * Calls unauthorized handler
+     */
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request,
                                               HttpServletResponse response,
@@ -88,4 +97,3 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         failureHandler.onAuthenticationFailure(request, response, failed);
     }
 }
-

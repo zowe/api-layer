@@ -31,6 +31,9 @@ import java.util.List;
 public class InMemoryUserDetailsService implements UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
 
+    /**
+     * Constructor
+     */
     @Autowired
     public InMemoryUserDetailsService(BCryptPasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
@@ -38,6 +41,7 @@ public class InMemoryUserDetailsService implements UserDetailsService {
 
     /**
      * Find user by username and return information
+     *
      * @param username the username
      * @return user information
      */
@@ -50,14 +54,13 @@ public class InMemoryUserDetailsService implements UserDetailsService {
             new AppUser(2, "expire", passwordEncoder.encode("expire"))
         );
 
-
         return users.stream()
             .filter(f -> f.getUsername().equals(username))
-            .map(appUser -> {
+            .map(appUser ->
                 // The "User" class is provided by Spring and represents a model class for user to be returned by UserDetailsService
                 // And used by auth manager to verify and check user authentication.
-                return new User(appUser.getUsername(), appUser.getPassword(), AuthorityUtils.NO_AUTHORITIES);
-            })
+                new User(appUser.getUsername(), appUser.getPassword(), AuthorityUtils.NO_AUTHORITIES)
+            )
             .findFirst()
             .orElseThrow(() -> new UsernameNotFoundException("Username: " + username + " not found."));
     }

@@ -11,6 +11,7 @@ package com.ca.mfaas.gateway.security.service;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
@@ -21,27 +22,34 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Service for the JWT and LTPA tokens operations
+ */
 @Service
 @Slf4j
 public class AuthenticationService {
     private static final String LTPA_CLAIM_NAME = "ltpa";
     private static final String DOMAIN_CLAIM_NAME = "dom";
-    private static final String BEARER_TYPE_PREFIX = "Bearer";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private String secret;
 
+    /**
+     * Constructor
+     */
     public AuthenticationService(SecurityConfigurationProperties securityConfigurationProperties) {
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     /**
-     * Return the secret key
+     * Return the secret key for the JWT token
+     *
      * @return the secret key
      * @throws NullPointerException if the secret key is null
      */
@@ -49,12 +57,13 @@ public class AuthenticationService {
         if (secret == null) {
             throw new NullPointerException("The secret key for JWT token service is null.");
         }
+
         return secret;
     }
 
-
     /**
-     * Set the secret key
+     * Set the secret key for the JWT token
+     *
      * @param secret the secret key
      */
     public void setSecret(String secret) {
@@ -62,12 +71,13 @@ public class AuthenticationService {
     }
 
     /**
-     * Create the jwt token and set the ltpa token, the expiration time, the domain, the subject, the date of issue, the issuer and the id.
+     * Create the JWT token and set the LTPA token, the expiration time, the domain, the subject, the date of issue, the issuer and the id.
      * Sign the token with HMAC SHA512 algorithm, using the secret key
-     * @param username the username
-     * @param domain the domain
-     * @param ltpaToken the ltpa token
-     * @return the jwt token
+     *
+     * @param username  the username
+     * @param domain    the domain
+     * @param ltpaToken the LTPA token
+     * @return the JWT token
      */
     public String createJwtToken(String username, String domain, String ltpaToken) {
         long now = System.currentTimeMillis();
@@ -86,11 +96,12 @@ public class AuthenticationService {
     }
 
     /**
-     * Validate the jwt token
-     * @param token the jwt token
-     * @throws  TokenExpireException if the token is expired
-     * @throws  TokenNotValidException if the token is not valid
-     * @return the TokenAuthentication object containing username and valid JWT token
+     * Validate the JWT token
+     *
+     * @param token the JWT token
+     * @return the {@link TokenAuthentication} object containing username and valid JWT token
+     * @throws TokenExpireException   if the token is expired
+     * @throws TokenNotValidException if the token is not valid
      */
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
         try {
@@ -116,8 +127,9 @@ public class AuthenticationService {
     }
 
     /**
-     * Parse the jwt token and return a QueryResponse object contaning the found domain, user id, date of creation and date of expiration
-     * @param token the jwt token
+     * Parse the JWT token and return a {@link QueryResponse} object containing the domain, user id, date of creation and date of expiration
+     *
+     * @param token the JWT token
      * @return the query response
      */
     public QueryResponse parseJwtToken(String token) {
@@ -134,10 +146,14 @@ public class AuthenticationService {
     }
 
     /**
-     * Get the jwt token from the authorization header in the http request if cookies are null, otherwise
-     * extract it from the cookies
+     * Get the JWT token from the authorization header in the http request
+     * <p>
+     * Order:
+     * 1. Authorization header
+     * 2. Cookie
+     *
      * @param request the http request
-     * @return the jwt token
+     * @return the JWT token
      */
     public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
@@ -145,8 +161,7 @@ public class AuthenticationService {
             return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
         }
 
-        return Arrays.asList(cookies)
-            .stream()
+        return Arrays.stream(cookies)
             .filter(cookie -> cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName()))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()
@@ -154,10 +169,11 @@ public class AuthenticationService {
     }
 
     /**
-     * Get the ltpa token from the parsed jwt token
-     * @param jwtToken the jwt token
-     * @throws TokenNotValidException if the jwt token is not valid
-     * @return the ltpa token
+     * Get the LTPA token from the JWT token
+     *
+     * @param jwtToken the JWT token
+     * @return the LTPA token
+     * @throws TokenNotValidException if the JWT token is not valid
      */
     public String getLtpaTokenFromJwtToken(String jwtToken) {
         try {
@@ -165,6 +181,7 @@ public class AuthenticationService {
                 .setSigningKey(getSecret())
                 .parseClaimsJws(jwtToken)
                 .getBody();
+
             return claims.get(LTPA_CLAIM_NAME, String.class);
         } catch (ExpiredJwtException exception) {
             log.debug("Authentication: Token with id '{}' for user '{}' is expired", exception.getClaims().getId(), exception.getClaims().getSubject());
@@ -176,13 +193,14 @@ public class AuthenticationService {
     }
 
     /**
-     * Extract the jwt token from the authorization header
+     * Extract the JWT token from the authorization header
+     *
      * @param header the http request header
-     * @return the jwt token
+     * @return the JWT token
      */
     private Optional<String> extractJwtTokenFromAuthorizationHeader(String header) {
-        if (header != null && header.startsWith(BEARER_TYPE_PREFIX)) {
-            header = header.replaceFirst(BEARER_TYPE_PREFIX + " ", "");
+        if (header != null && header.startsWith(ApimlConstants.BEARER_AUTHENTICATION_PREFIX)) {
+            header = header.replaceFirst(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, "");
             if (header.isEmpty()) {
                 return Optional.empty();
             }
@@ -195,7 +213,8 @@ public class AuthenticationService {
 
     /**
      * Calculate the expiration time
-     * @param now the current time
+     *
+     * @param now      the current time
      * @param username the username
      * @return the calculated expiration time
      */

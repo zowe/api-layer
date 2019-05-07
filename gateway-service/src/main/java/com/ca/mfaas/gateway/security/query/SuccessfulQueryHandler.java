@@ -24,13 +24,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Handler after query endpoint authentication that writes the response from the retrieved JWT token
+ * Handles the successful query
  */
 @Component
 public class SuccessfulQueryHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper mapper;
     private final AuthenticationService authenticationService;
 
+    /**
+     * Constructor
+     */
     public SuccessfulQueryHandler(ObjectMapper securityObjectMapper,
                                   AuthenticationService authenticationService) {
         this.mapper = securityObjectMapper;
@@ -38,12 +41,12 @@ public class SuccessfulQueryHandler implements AuthenticationSuccessHandler {
     }
 
     /**
-     * Read data from JWT token and construct a response
+     * Set the query response with information about the JWT token
      *
-     * @param request
-     * @param response
-     * @param authentication
-     * @throws IOException when response does not get committed
+     * @param request        the http request
+     * @param response       the http response
+     * @param authentication the successful authentication
+     * @throws IOException when the response cannot be written
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)

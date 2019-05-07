@@ -36,19 +36,21 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
     private final ErrorService errorService;
     private final ObjectMapper mapper;
 
+    /**
+     * Constructor
+     */
     public FailedAuthenticationHandler(ErrorService errorService, ObjectMapper objectMapper) {
         this.errorService = errorService;
         this.mapper = objectMapper;
     }
 
-
     /**
      * Handles authentication failure, decides on the exception type and selects appropriate message
      *
-     * @param request
-     * @param response
-     * @param exception
-     * @throws IOException
+     * @param request   the http request
+     * @param response  the http response
+     * @param exception to be checked
+     * @throws IOException when the response cannot be written
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {

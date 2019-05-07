@@ -33,18 +33,21 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
     private final ErrorService errorService;
     private final ObjectMapper mapper;
 
+    /**
+     * Constructor
+     */
     public UnauthorizedHandler(ErrorService errorService, ObjectMapper objectMapper) {
         this.errorService = errorService;
         this.mapper = objectMapper;
     }
 
     /**
-     * Set http header and status, add appropriate message to response
+     * Creates unauthorized response with the appropriate message and http status
      *
-     * @param request
-     * @param response
-     * @param authException
-     * @throws IOException
+     * @param request       the http request
+     * @param response      the http response
+     * @param authException the authorization exception
+     * @throws IOException when the response cannot be written
      */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
@@ -53,7 +56,7 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.addHeader("WWW-Authenticate", ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
 
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.gateway.security.invalidCredentials", request.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.login.invalidCredentials", request.getRequestURI());
         mapper.writeValue(response.getWriter(), message);
     }
 }

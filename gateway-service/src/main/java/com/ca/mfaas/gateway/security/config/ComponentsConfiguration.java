@@ -14,16 +14,25 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+/**
+ * Registers security related beans
+ */
 @Configuration
 public class ComponentsConfiguration {
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
-    }
-
+    /**
+     * Security configuration
+     */
     @Bean
     public SecurityConfigurationProperties securityConfigurationProperties() {
         return new SecurityConfigurationProperties();
+    }
+
+    /**
+     * Used for dummy authentication provider
+     */
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(10);
     }
 }

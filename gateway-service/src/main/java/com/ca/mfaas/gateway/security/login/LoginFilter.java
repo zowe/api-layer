@@ -37,7 +37,7 @@ import java.util.Base64;
 import java.util.Optional;
 
 /**
- * Filter for process authentication request with username and password in JSON format.
+ * Filter to process authentication requests with the username and password in JSON format.
  */
 @Slf4j
 public class LoginFilter extends AbstractAuthenticationProcessingFilter {
@@ -46,6 +46,9 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final ObjectMapper mapper;
 
+    /**
+     * Constructor
+     */
     public LoginFilter(
         String authEndpoint,
         AuthenticationSuccessHandler successHandler,
@@ -60,14 +63,13 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     }
 
     /**
-     * Attempt authentication and return a fully populated Authentication object
-     * (including granted authorities) if successful
+     * Calls authentication manager to validate the username and password
      *
      * @param request  the http request
      * @param response the http response
-     * @return the successful authentication token
-     * @throws AuthMethodNotSupportedException            if the authentication method is not supported
-     * @throws AuthenticationCredentialsNotFoundException if username or password are not provided
+     * @return the authenticated token
+     * @throws AuthMethodNotSupportedException            when the authentication method is not supported
+     * @throws AuthenticationCredentialsNotFoundException when username or password are not provided
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
@@ -86,6 +88,9 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         return this.getAuthenticationManager().authenticate(authentication);
     }
 
+    /**
+     * Calls successful login handler
+     */
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
                                             HttpServletResponse response,
@@ -94,6 +99,9 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         successHandler.onAuthenticationSuccess(request, response, authResult);
     }
 
+    /**
+     * Calls unauthorized handler
+     */
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request,
                                               HttpServletResponse response,
@@ -124,7 +132,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
      * Decode the encoded credentials
      *
      * @param base64Credentials the credentials encoded in base64
-     * @return the decoded credentials
+     * @return the decoded credentials in {@link LoginRequest}
      */
     private LoginRequest mapBase64Credentials(String base64Credentials) {
         String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
@@ -140,7 +148,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
      * Get credentials from the request body
      *
      * @param request the http request
-     * @return the credentials
+     * @return the credentials in {@link LoginRequest}
      * @throws AuthenticationCredentialsNotFoundException if the login object has wrong format
      */
     private LoginRequest getCredentialsFromBody(HttpServletRequest request) {
