@@ -288,7 +288,7 @@ public class ServiceDefinitionProcessorTest {
             Collections.singletonList(yaml));
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(2));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
 
     }
 
@@ -339,7 +339,7 @@ public class ServiceDefinitionProcessorTest {
             yamlList);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(2));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
 
     }
 

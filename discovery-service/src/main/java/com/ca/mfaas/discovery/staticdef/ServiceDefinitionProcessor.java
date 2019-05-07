@@ -48,7 +48,7 @@ public class ServiceDefinitionProcessor {
     public List<InstanceInfo> findServices(String staticApiDefinitionsDirectories) {
         List<InstanceInfo> instances = new ArrayList<>();
 
-        if ((staticApiDefinitionsDirectories != null) && !staticApiDefinitionsDirectories.isEmpty()) {
+        if (staticApiDefinitionsDirectories != null && !staticApiDefinitionsDirectories.isEmpty()) {
             String[] directories = staticApiDefinitionsDirectories.split(";");
             Arrays.stream(directories)
                 .filter(s -> !s.isEmpty())
