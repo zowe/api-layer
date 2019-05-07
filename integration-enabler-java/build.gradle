@@ -1,13 +1,13 @@
 dependencies {
     compile(project(':common-service-core'))
-    compile(project(':gateway-common'))
 
     compile libraries.jackson_annotations
     compile libraries.jackson_dataformat_yaml
     compile libraries.eureka_client
     compile libraries.swagger_jersey2_jaxrs
-    compileOnly libraries.lombok
+    compile libraries.lombok
 
     testCompile libraries.junit
     testCompile libraries.logback_classic
+    testCompile libraries.lombok
 }
