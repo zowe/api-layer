@@ -6,7 +6,7 @@ apiml:
         ipAddress: 127.0.0.3
         port: 10031
     discovery:
-        staticApiDefinitionsDirectory: config/local/api-defs
+        staticApiDefinitionsDirectories: config/local/api-defs
         allPeersUrls: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
 
 spring:

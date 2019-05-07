@@ -194,7 +194,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testCreateInstancesWithUndefinedInstanceBaseUrl() {
+    public void testCreateInstancesWithUndefinedInstanceBaseUrls() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String yaml =
             "services:\n" +
@@ -211,7 +211,50 @@ public class ServiceDefinitionProcessorTest {
             Collections.singletonList(yaml));
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(0));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created: null"));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice is not defined. The instance will not be created."));
+    }
+
+    @Test
+    public void testCreateInstancesWithUndefinedInstanceBaseUrl() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "      - \n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            Collections.singletonList(yaml));
+        List<InstanceInfo> instances = result.getInstances();
+        assertThat(instances.size(), is(0));
+        assertTrue(result.getErrors().get(0).contains("One of the instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created."));
+    }
+
+    @Test
+    public void testCreateInstancesWithUndefinedServiceId() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: \n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
+            Collections.singletonList(yaml));
+        List<InstanceInfo> instances = result.getInstances();
+        assertThat(instances.size(), is(0));
+        assertTrue(result.getErrors().get(0).contains("ServiceId is not defined. The instance will not be created."));
     }
 
     @Test
@@ -397,6 +440,34 @@ public class ServiceDefinitionProcessorTest {
 
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"), Collections.singletonList(routedServiceYaml));
         assertEquals("The API Catalog UI tile ID adajand is invalid. The service casamplerestapiservice will not have API Catalog UI tile", result.getErrors().get(0));
+    }
+
+    @Test
+    public void testFindServicesWithTwoDirectories() throws URISyntaxException {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
+        String pathTwo = ClassLoader.getSystemResource("ext-config/").getPath();
+        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne + ";" + pathTwo);
+
+        assertThat(instances.size(), is(2));
+    }
+
+    @Test
+    public void testFindServicesWithOneDirectory() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
+        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne);
+
+        assertThat(instances.size(), is(1));
+    }
+
+    @Test
+    public void testFindServicesWithSecondEmptyDirectory() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
+        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne + ";");
+
+        assertThat(instances.size(), is(1));
     }
 
 }
