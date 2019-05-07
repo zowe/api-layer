@@ -71,10 +71,8 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
     @Override
     public void afterConnectionEstablished(WebSocketSession webSocketSession) throws Exception {
-        URI uri = webSocketSession.getUri();
-
-        String[] uriParts = uri.getPath().split(SEPARATOR, 5);
-        if (uriParts.length == 5) {
+        String[] uriParts = getUriParts(webSocketSession);
+        if (uriParts != null && uriParts.length == 5) {
             String majorVersion = uriParts[2];
             String serviceId = uriParts[3];
             String path = uriParts[4];
@@ -101,6 +99,15 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         else {
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason("Invalid URL format"));
         }
+    }
+
+    private String[] getUriParts(WebSocketSession webSocketSession) {
+        URI uri = webSocketSession.getUri();
+        String[] uriParts = null;
+        if (uri != null && uri.getPath() != null) {
+            uriParts = uri.getPath().split(SEPARATOR, 5);
+        }
+        return uriParts;
     }
 
     private void openWebSocketConnection(RoutedService service, ServiceInstance serviceInstance, Object uri,
