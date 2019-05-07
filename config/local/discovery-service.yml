@@ -6,7 +6,7 @@ apiml:
         ipAddress: 127.0.0.1
         port: 10011
     discovery:
-        staticApiDefinitionsDirectory: config/local/api-defs
+        staticApiDefinitionsDirectories: config/local/api-defs
     security:
         ssl:
             verifySslCertificatesOfServices: true

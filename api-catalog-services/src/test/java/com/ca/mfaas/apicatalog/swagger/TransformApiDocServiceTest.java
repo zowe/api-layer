@@ -14,7 +14,7 @@ package com.ca.mfaas.apicatalog.swagger;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
-import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.eurekaservice.model.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.fasterxml.jackson.core.JsonProcessingException;

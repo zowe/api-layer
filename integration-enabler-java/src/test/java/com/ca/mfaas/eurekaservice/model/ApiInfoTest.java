@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.model;
+package com.ca.mfaas.eurekaservice.model;
 
 import org.junit.Rule;
 import org.junit.Test;

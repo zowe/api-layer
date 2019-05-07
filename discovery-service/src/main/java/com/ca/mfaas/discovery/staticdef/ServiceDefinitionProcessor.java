@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.eurekaservice.model.ApiInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -27,10 +27,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -48,16 +45,22 @@ public class ServiceDefinitionProcessor {
         private final List<InstanceInfo> instances;
     }
 
-    public List<InstanceInfo> findServices(String staticApiDefinitionsDirectory) {
+    public List<InstanceInfo> findServices(String staticApiDefinitionsDirectories) {
         List<InstanceInfo> instances = new ArrayList<>();
 
-        if ((staticApiDefinitionsDirectory != null) && !staticApiDefinitionsDirectory.isEmpty()) {
-            File directory = new File(staticApiDefinitionsDirectory);
-            if (directory.isDirectory()) {
-                instances.addAll(findServicesInDirectory(directory));
-            } else {
-                log.error("Directory {} is not a directory or does not exist", staticApiDefinitionsDirectory);
-            }
+        if (staticApiDefinitionsDirectories != null && !staticApiDefinitionsDirectories.isEmpty()) {
+            String[] directories = staticApiDefinitionsDirectories.split(";");
+            Arrays.stream(directories)
+                .filter(s -> !s.isEmpty())
+                .map(File::new)
+                .forEach(directory -> {
+                    if (directory.isDirectory()) {
+                        log.debug("Found directory {}", directory.getPath());
+                        instances.addAll(findServicesInDirectory(directory));
+                    } else {
+                        log.error("Directory {} is not a directory or does not exist", directory.getPath());
+                    }
+                });
         } else {
             log.info("No static definition directory defined");
         }
@@ -125,7 +128,9 @@ public class ServiceDefinitionProcessor {
         for (Service service : services) {
             try {
                 String serviceId = service.getServiceId();
-
+                if (serviceId == null) {
+                    throw new ServiceDefinitionException("ServiceId is not defined. The instance will not be created.");
+                }
                 CatalogUiTile tile = null;
                 if (service.getCatalogUiTileId() != null) {
                     tile = tiles.get(service.getCatalogUiTileId());
@@ -136,7 +141,13 @@ public class ServiceDefinitionProcessor {
                     }
                 }
 
+                if (service.getInstanceBaseUrls() == null) {
+                    throw new ServiceDefinitionException(String.format("The instanceBaseUrls parameter of %s is not defined. The instance will not be created.", service.getServiceId()));
+                }
                 for (String instanceBaseUrl : service.getInstanceBaseUrls()) {
+                    if (instanceBaseUrl == null || instanceBaseUrl.isEmpty()) {
+                        throw new ServiceDefinitionException(String.format("One of the instanceBaseUrl of %s is not defined. The instance will not be created.", service.getServiceId()));
+                    }
                     try {
                         URL url = new URL(instanceBaseUrl);
                         if (url.getHost().isEmpty()) {
@@ -154,16 +165,15 @@ public class ServiceDefinitionProcessor {
                             instances.add(builder.build());
                         }
                     } catch (MalformedURLException e) {
-                        errors.add(String.format("The URL %s is malformed. The instance will not be created: %s",
+                        throw new ServiceDefinitionException(String.format("The URL %s is malformed. The instance will not be created: %s",
                             instanceBaseUrl, e.getMessage()));
                     } catch (UnknownHostException e) {
-                        errors.add(String.format("The hostname of URL %s is unknown. The instance will not be created: %s",
+                        throw new ServiceDefinitionException(String.format("The hostname of URL %s is unknown. The instance will not be created: %s",
                             instanceBaseUrl, e.getMessage()));
                     }
                 }
-
-            } catch (NullPointerException e) {
-                errors.add(String.format("The instanceBaseUrl of %s is not defined. The instance will not be created: %s", service.getServiceId(), e.getMessage()));
+            } catch (ServiceDefinitionException e) {
+                errors.add(e.getMessage());
             }
         }
         return new ProcessServicesDataResult(errors, instances);

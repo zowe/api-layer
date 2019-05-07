@@ -155,10 +155,10 @@ public class AuthenticationServiceTest {
     }
 
     private String createExpiredJwtToken(String secret) {
-        long expredTimeMillis = System.currentTimeMillis() - 1000;
+        long expiredTimeMillis = System.currentTimeMillis() - 1000;
 
         return Jwts.builder()
-            .setExpiration(new Date(expredTimeMillis))
+            .setExpiration(new Date(expiredTimeMillis))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .signWith(SignatureAlgorithm.HS512, secret)
             .compact();
