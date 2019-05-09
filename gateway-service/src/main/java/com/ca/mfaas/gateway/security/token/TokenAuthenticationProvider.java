@@ -24,9 +24,6 @@ import org.springframework.stereotype.Component;
 public class TokenAuthenticationProvider implements AuthenticationProvider {
     private final AuthenticationService authenticationService;
 
-    /**
-     * Constructor
-     */
     public TokenAuthenticationProvider(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }

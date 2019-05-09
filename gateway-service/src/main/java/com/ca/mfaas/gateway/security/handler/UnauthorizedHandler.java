@@ -33,9 +33,6 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
     private final ErrorService errorService;
     private final ObjectMapper mapper;
 
-    /**
-     * Constructor
-     */
     public UnauthorizedHandler(ErrorService errorService, ObjectMapper objectMapper) {
         this.errorService = errorService;
         this.mapper = objectMapper;

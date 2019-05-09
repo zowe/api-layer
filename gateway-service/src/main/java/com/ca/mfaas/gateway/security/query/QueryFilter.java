@@ -38,9 +38,6 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final AuthenticationService authenticationService;
 
-    /**
-     * Constructor
-     */
     public QueryFilter(
         String authEndpoint,
         AuthenticationSuccessHandler successHandler,

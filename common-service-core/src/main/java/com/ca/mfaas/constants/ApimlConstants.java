@@ -9,6 +9,9 @@
  */
 package com.ca.mfaas.constants;
 
+/**
+ * Generally used constants for API Mediation Layer and services
+ */
 public final class ApimlConstants {
 
     private ApimlConstants() {

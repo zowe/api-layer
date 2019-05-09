@@ -40,9 +40,6 @@ public class AuthenticationService {
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private String secret;
 
-    /**
-     * Constructor
-     */
     public AuthenticationService(SecurityConfigurationProperties securityConfigurationProperties) {
         this.securityConfigurationProperties = securityConfigurationProperties;
     }

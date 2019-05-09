@@ -31,9 +31,6 @@ public class SuccessfulQueryHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper mapper;
     private final AuthenticationService authenticationService;
 
-    /**
-     * Constructor
-     */
     public SuccessfulQueryHandler(ObjectMapper securityObjectMapper,
                                   AuthenticationService authenticationService) {
         this.mapper = securityObjectMapper;

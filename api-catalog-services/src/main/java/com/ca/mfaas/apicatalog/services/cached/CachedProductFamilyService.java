@@ -68,7 +68,7 @@ public class CachedProductFamilyService {
     }
 
     /**
-     * return all cached service instances
+     * Return all cached service instances
      *
      * @return instances
      */
@@ -208,7 +208,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getHomePageUrl(),
                     routes);
             } catch (URLTransformationException e) {
-                log.info("Failed to create Instance Homepage URL", e);
+                log.warn("Failed to create Instance Homepage URL", e);
                 instanceHomePage = instanceInfo.getHomePageUrl();
             }
         }

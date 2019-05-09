@@ -31,9 +31,6 @@ import java.util.List;
 public class InMemoryUserDetailsService implements UserDetailsService {
     private final BCryptPasswordEncoder passwordEncoder;
 
-    /**
-     * Constructor
-     */
     @Autowired
     public InMemoryUserDetailsService(BCryptPasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;

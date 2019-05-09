@@ -36,9 +36,6 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
     private final ErrorService errorService;
     private final ObjectMapper mapper;
 
-    /**
-     * Constructor
-     */
     public FailedAuthenticationHandler(ErrorService errorService, ObjectMapper objectMapper) {
         this.errorService = errorService;
         this.mapper = objectMapper;

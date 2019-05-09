@@ -45,10 +45,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final ObjectMapper mapper;
-
-    /**
-     * Constructor
-     */
+    
     public LoginFilter(
         String authEndpoint,
         AuthenticationSuccessHandler successHandler,

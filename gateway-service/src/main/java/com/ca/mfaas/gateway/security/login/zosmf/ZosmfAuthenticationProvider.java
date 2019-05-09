@@ -51,9 +51,6 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     private final ObjectMapper securityObjectMapper;
     private final RestTemplate restTemplate;
 
-    /**
-     * Constructor
-     */
     public ZosmfAuthenticationProvider(SecurityConfigurationProperties securityConfigurationProperties,
                                        AuthenticationService authenticationService,
                                        DiscoveryClient discovery,

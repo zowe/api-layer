@@ -23,7 +23,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 
 /**
- * Provider of the health information for the Actuator health endpoint
+ * Gateway health information (/application/health)
  */
 @Component
 public class ApimlHealthIndicator extends AbstractHealthIndicator {

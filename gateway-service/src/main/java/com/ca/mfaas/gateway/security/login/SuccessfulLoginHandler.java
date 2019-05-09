@@ -34,9 +34,6 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
     private final ObjectMapper mapper;
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    /**
-     * Constructor
-     */
     public SuccessfulLoginHandler(ObjectMapper securityObjectMapper,
                                   SecurityConfigurationProperties securityConfigurationProperties) {
         this.mapper = securityObjectMapper;
