@@ -67,7 +67,7 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             message = errorService.createApiMessage("apiml.gateway.security.query.invalidToken", request.getRequestURI());
         } else if (exception instanceof TokenNotProvidedException) {
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             message = errorService.createApiMessage("apiml.gateway.security.query.tokenNotProvided", request.getRequestURI());
         } else {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());

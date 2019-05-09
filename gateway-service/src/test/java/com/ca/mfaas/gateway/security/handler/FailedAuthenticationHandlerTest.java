@@ -114,7 +114,7 @@ public class FailedAuthenticationHandlerTest {
         TokenNotProvidedException tokenNotProvidedException = new TokenNotProvidedException("ERROR");
         failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, tokenNotProvidedException);
 
-        assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
+        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
         ApiMessage message = errorService.createApiMessage("apiml.gateway.security.query.tokenNotProvided", httpServletRequest.getRequestURI());

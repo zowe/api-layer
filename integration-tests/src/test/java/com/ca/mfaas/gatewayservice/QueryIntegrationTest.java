@@ -105,7 +105,7 @@ public class QueryIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
         .then()
-            .statusCode(is(SC_BAD_REQUEST))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
             );
@@ -120,7 +120,7 @@ public class QueryIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
         .then()
-            .statusCode(is(SC_BAD_REQUEST))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
             );
@@ -136,7 +136,7 @@ public class QueryIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
         .then()
-            .statusCode(is(SC_BAD_REQUEST))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
             );
@@ -145,7 +145,7 @@ public class QueryIntegrationTest {
     @Test
     public void doQueryWithEmptyHeader() {
         String emptyToken = " ";
-        String expectedMessage = "Token is not valid for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
+        String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
@@ -154,7 +154,7 @@ public class QueryIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
