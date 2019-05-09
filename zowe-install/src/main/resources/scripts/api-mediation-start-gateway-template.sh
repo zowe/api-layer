@@ -32,7 +32,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.service.ipAddress=**IPADDRESS** \
     -Dapiml.security.jwtSignatureAlgorithm=**JWT_ALGORITHM** \
-    -Dapiml.security.jwtSecretType=**JWT_SECRET** \
+    -Dapiml.security.jwtSecret=**JWT_SECRET** \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dapiml.security.auth.zosmfServiceId=zosmf \

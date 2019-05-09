@@ -39,7 +39,7 @@ public class SecurityConfigurationProperties {
     private boolean verifySslCertificatesOfServices = true;
     private String ciphers = null;
     private String jwtSignatureAlgorithm;
-    private String jwtSecretType;
+    private String jwtSecret;
 
     @Data
     public static class TokenProperties {
