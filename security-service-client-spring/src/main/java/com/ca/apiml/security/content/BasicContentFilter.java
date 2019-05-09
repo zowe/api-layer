@@ -29,9 +29,6 @@ import java.util.Optional;
 @Slf4j
 public class BasicContentFilter extends AbstractSecureContentFilter {
 
-    /**
-     * Constructor
-     */
     public BasicContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
         super(authenticationManager, failureHandler);
     }

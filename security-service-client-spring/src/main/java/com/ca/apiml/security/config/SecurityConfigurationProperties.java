@@ -52,9 +52,6 @@ public class SecurityConfigurationProperties {
         private Integer cookieMaxAge = 24 * 60 * 60;
     }
 
-    /**
-     * Constructor
-     */
     public SecurityConfigurationProperties() {
         this.cookieProperties = new CookieProperties();
         this.tokenProperties = new TokenProperties();

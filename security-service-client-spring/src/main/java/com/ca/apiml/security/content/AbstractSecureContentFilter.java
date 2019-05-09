@@ -34,9 +34,6 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
 
-    /**
-     * Constructor
-     */
     AbstractSecureContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
         this.authenticationManager = authenticationManager;
         this.failureHandler = failureHandler;

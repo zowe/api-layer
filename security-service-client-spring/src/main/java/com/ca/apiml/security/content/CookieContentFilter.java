@@ -27,9 +27,6 @@ import java.util.Optional;
 public class CookieContentFilter extends AbstractSecureContentFilter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    /**
-     * Constructor
-     */
     public CookieContentFilter(AuthenticationManager authenticationManager,
                                AuthenticationFailureHandler failureHandler,
                                SecurityConfigurationProperties securityConfigurationProperties) {
