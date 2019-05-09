@@ -119,7 +119,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         ).filter(
             header -> header.startsWith(ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
         ).map(
-            header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "")
+            header -> header.replaceFirst(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, "").trim()
         )
             .filter(base64Credentials -> !base64Credentials.isEmpty())
             .map(this::mapBase64Credentials);
