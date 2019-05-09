@@ -197,11 +197,7 @@ public class AuthenticationService {
      */
     private Optional<String> extractJwtTokenFromAuthorizationHeader(String header) {
         if (header != null && header.startsWith(ApimlConstants.BEARER_AUTHENTICATION_PREFIX)) {
-            header = header.replaceFirst(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, "");
-            if (header.isEmpty()) {
-                return Optional.empty();
-            }
-
+            header = header.replaceFirst(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, "").trim();
             return Optional.of(header);
         }
 

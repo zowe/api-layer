@@ -127,7 +127,8 @@ public class AuthenticationServiceTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer ");
         Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
-        assertFalse(optionalToken.isPresent());
+        assertTrue(optionalToken.isPresent());
+        assertEquals("", optionalToken.get());
 
         request = new MockHttpServletRequest();
         request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
