@@ -91,7 +91,7 @@ public class ServiceDefinitionProcessor {
         }
         ProcessServicesDataResult result = processServicesData(ymlSources);
         for (String error : result.getErrors()) {
-            log.error(error);
+            log.warn(error);
         }
         return result.getInstances();
     }
@@ -167,11 +167,11 @@ public class ServiceDefinitionProcessor {
                             instances.add(builder.build());
                         }
                     } catch (MalformedURLException e) {
-                        throw new ServiceDefinitionException(String.format("The URL %s is malformed. The instance will not be created: %s",
-                            instanceBaseUrl, e.getMessage()));
+                        throw new ServiceDefinitionException(String.format("The URL %s is malformed. The instance of %s will not be created: %s",
+                            instanceBaseUrl, serviceId, e.getMessage()));
                     } catch (UnknownHostException e) {
-                        throw new ServiceDefinitionException(String.format("The hostname of URL %s is unknown. The instance will not be created: %s",
-                            instanceBaseUrl, e.getMessage()));
+                        throw new ServiceDefinitionException(String.format("The hostname of URL %s is unknown. The instance of %s will not be created: %s",
+                            instanceBaseUrl, serviceId, e.getMessage()));
                     }
                 }
             } catch (ServiceDefinitionException e) {

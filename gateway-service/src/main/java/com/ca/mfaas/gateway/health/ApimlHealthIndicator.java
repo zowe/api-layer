@@ -20,6 +20,7 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
 /**
@@ -48,7 +49,11 @@ public class ApimlHealthIndicator extends AbstractHealthIndicator {
         boolean discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
         boolean authUp = true;
         if (!securityConfigurationProperties.getProvider().equalsIgnoreCase("dummy")) {
-            authUp = !this.discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+            try {
+                authUp = !this.discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+            } catch (AuthenticationServiceException ex) {
+                System.exit(-1);
+            }
         }
         boolean apimlUp = discoveryUp && authUp;
         builder.status(toStatus(apimlUp)).withDetail("apicatalog", toStatus(apiCatalogUp).getCode())
