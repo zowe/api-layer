@@ -1,5 +1,5 @@
 #
-# Static definition for z/OSMF running on system CA32 and port 1443
+# Static definition for z/OSMF
 #
 # To skip adding service certificate or CA certificate to the truststore
 # of the API Gateway you need to see following setting in the
@@ -11,7 +11,7 @@
 #
 #  Then you can access z/OSMF via the API gateway:
 #
-#   http --verify=keystore/local_ca/localca.cer GET https://localhost:10010/api/zosmfca32/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
+#   http --verify=keystore/local_ca/localca.cer GET https://localhost:10010/api/{zosmf-service-id}/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
 #
 services:
     - serviceId: zosmfserviceid  # unique lowercase ID of the service
