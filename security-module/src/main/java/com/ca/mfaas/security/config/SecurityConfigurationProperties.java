@@ -40,6 +40,7 @@ public class SecurityConfigurationProperties {
     private String ciphers = null;
     private String jwtSignatureAlgorithm;
     private String jwtSecret;
+    private String ciphers = null;
 
     @Data
     public static class TokenProperties {

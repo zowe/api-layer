@@ -283,46 +283,51 @@ public class HttpsFactory {
     }
 
     public String readSecret() {
-        if (config.getKeyStore() == null) {
-            return null;
-        }
-        try {
-            KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-            InputStream istream;
-            if (config.getKeyStore().startsWith(SAFKEYRING)) {
-                URL url = keyRingUrl(config.getKeyStore());
-                istream = url.openStream();
-            } else {
-                File keyStoreFile = new File(config.getKeyStore());
-                istream = new FileInputStream(keyStoreFile);
-            }
-            ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
-            char[] keyPassword = config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray();
-            Key key = null;
-            if (config.getKeyAlias() != null) {
-                key = ks.getKey(config.getKeyAlias(), keyPassword);
-            } else {
-                for (Enumeration<String> e = ks.aliases(); e.hasMoreElements();) {
-                    String alias = e.nextElement();
-                    try {
-                        key = ks.getKey(alias, keyPassword);
-                        break;
-                    } catch (UnrecoverableKeyException uke) {
-                        log.debug("Key with alias {} could not be used: {}", alias, uke.getMessage());
+        String jwtSecret = config.getJwtSecret();
+        if (jwtSecret.isEmpty() || jwtSecret.equals(null)){
+            if (config.getKeyStore() != null) {
+                try {
+                    KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
+                    InputStream istream;
+                    if (config.getKeyStore().startsWith(SAFKEYRING)) {
+                        URL url = keyRingUrl(config.getKeyStore());
+                        istream = url.openStream();
+                    } else {
+                        File keyStoreFile = new File(config.getKeyStore());
+                        istream = new FileInputStream(keyStoreFile);
                     }
+                    ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
+                    char[] keyPassword = config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray();
+                    Key key = null;
+                    if (config.getKeyAlias() != null) {
+                        key = ks.getKey(config.getKeyAlias(), keyPassword);
+                    } else {
+                        for (Enumeration<String> e = ks.aliases(); e.hasMoreElements(); ) {
+                            String alias = e.nextElement();
+                            try {
+                                key = ks.getKey(alias, keyPassword);
+                                break;
+                            } catch (UnrecoverableKeyException uke) {
+                                log.debug("Key with alias {} could not be used: {}", alias, uke.getMessage());
+                            }
+                        }
+                    }
+                    if (key == null) {
+                        throw new UnrecoverableKeyException(String.format(
+                            "No key with private key entry could be used in the keystore. Provided key alias: %s",
+                            config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
+                    }
+                    return Base64.getEncoder().encodeToString(key.getEncoded());
+                } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
+                    | UnrecoverableKeyException e) {
+                    log.error("Error reading secret key: {}", e.getMessage(), e);
+                    throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
+                        ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
                 }
+            } else {
+                return null;
             }
-            if (key == null) {
-                throw new UnrecoverableKeyException(String.format(
-                        "No key with private key entry could be used in the keystore. Provided key alias: %s",
-                        config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
-            }
-            return Base64.getEncoder().encodeToString(key.getEncoded());
-        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                | UnrecoverableKeyException e) {
-            log.error("Error reading secret key: {}", e.getMessage(), e);
-            throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
-                    ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
         }
+        else{ return jwtSecret;}
     }
 }

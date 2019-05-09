@@ -64,7 +64,7 @@ public class HttpConfig {
     @Value("${apiml.security.jwtSignatureAlgorithm:HS512}")
     private String jwtSignatureAlgorithm;
 
-    @Value("${apiml.security.jwtSecret:plaintext}")
+    @Value("${apiml.security.jwtSecret}")
     private String jwtSecret;
 
     @Value("${spring.application.name}")
