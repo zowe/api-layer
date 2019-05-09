@@ -76,7 +76,7 @@ task runIntegrationTests(type: Test) {
 
 task runLocalIntegrationTests(type: Test) {
     group "Integration tests"
-    description "Run integration tests not dependent on mainframe"
+    description "Run integration tests that are not dependent on mainframe"
 
     dependsOn startUpCheck
     systemProperties System.getProperties()

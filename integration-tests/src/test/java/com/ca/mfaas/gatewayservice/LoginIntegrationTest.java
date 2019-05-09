@@ -176,7 +176,7 @@ public class LoginIntegrationTest {
 
     @Test
     public void doLoginWithWrongHttpMethod() {
-        String expectedMessage = "Authentication method 'GET' not supported for URL '" +
+        String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);

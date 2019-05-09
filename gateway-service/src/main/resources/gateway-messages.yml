@@ -9,7 +9,7 @@ messages:
     - key: apiml.gateway.security.invalidMethod
       number: ZWEAG101E
       type: ERROR
-      text: "Authentication method '%s' not supported for URL '%s'"
+      text: "Authentication method '%s' is not supported for URL '%s'"
 
     - key: apiml.gateway.security.invalidToken
       number: ZWEAG102E

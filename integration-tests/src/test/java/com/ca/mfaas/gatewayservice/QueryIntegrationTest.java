@@ -160,7 +160,7 @@ public class QueryIntegrationTest {
 
     @Test
     public void doQueryWithWrongHttpMethod() {
-        String expectedMessage = "Authentication method 'POST' not supported for URL '" +
+        String expectedMessage = "Authentication method 'POST' is not supported for URL '" +
             BASE_PATH + QUERY_ENDPOINT + "'";
 
         given()
