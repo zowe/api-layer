@@ -162,7 +162,6 @@ public class ZosmfSsoIntegrationTest {
     @Test
     public void doZosmfCallWithEmptyHeader() {
         String emptyToken = " ";
-        String expectedMessage = "Token is not valid";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
@@ -170,8 +169,9 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
+            .statusCode(is(SC_INTERNAL_SERVER_ERROR))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage));
+                "rc", equalTo(RC));
     }
 
 
