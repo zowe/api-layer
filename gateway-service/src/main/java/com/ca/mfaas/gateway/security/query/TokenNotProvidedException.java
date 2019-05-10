@@ -7,11 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils.categories;
+package com.ca.mfaas.gateway.security.query;
+
+import org.springframework.security.core.AuthenticationException;
 
 /**
- * A category market for test that is working on local deployment.
- * These tests will not run by default with other integration tests.
+ * This exception is thrown in case the JWT token is not provided.
  */
-public interface LocalDeploymentTest {
+public class TokenNotProvidedException extends AuthenticationException {
+    public TokenNotProvidedException(String msg) {
+        super(msg);
+    }
 }

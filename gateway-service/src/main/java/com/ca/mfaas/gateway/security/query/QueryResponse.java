@@ -7,16 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils.config;
+package com.ca.mfaas.gateway.security.query;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
+/**
+ * Represents the query JSON response with the token information
+ */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class ApiCatalogServiceConfiguration {
-    private String user;
-    private String password;
+public class QueryResponse {
+    private String domain;
+    private String userId;
+    private Date creation;
+    private Date expiration;
 }

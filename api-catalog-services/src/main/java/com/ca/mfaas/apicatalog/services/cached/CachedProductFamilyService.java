@@ -68,7 +68,7 @@ public class CachedProductFamilyService {
     }
 
     /**
-     * return all cached service instances
+     * Return all cached service instances
      *
      * @return instances
      */
@@ -77,6 +77,12 @@ public class CachedProductFamilyService {
         return products.values();
     }
 
+
+    /**
+     * return cached service instance by id
+     * @param id service identifier
+     * @return {@link APIContainer}
+     */
     public APIContainer getContainerById(String id) {
         return products.get(id);
     }
@@ -115,6 +121,12 @@ public class CachedProductFamilyService {
         return result.orElse(null);
     }
 
+    /**
+     * Add service to container
+     *
+     * @param productFamilyId the service identifier
+     * @param instanceInfo InstanceInfo
+     */
     @CachePut(key = "#productFamilyId")
     public void addServiceToContainer(final String productFamilyId, final InstanceInfo instanceInfo) {
         APIContainer apiContainer = products.get(productFamilyId);
@@ -177,6 +189,13 @@ public class CachedProductFamilyService {
         return container;
     }
 
+
+    /**
+     * Try to transform the service homepage url and return it. If it fails,
+     * return the original homepage url
+     * @param instanceInfo    the service instance
+     * @return the transformed homepage url
+     */
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = null;
         if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
@@ -189,7 +208,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getHomePageUrl(),
                     routes);
             } catch (URLTransformationException e) {
-                e.printStackTrace();
+                log.warn("Failed to create Instance Homepage URL", e);
                 instanceHomePage = instanceInfo.getHomePageUrl();
             }
         }

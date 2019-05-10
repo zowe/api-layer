@@ -21,8 +21,8 @@ dependencies {
     compile libraries.jackson_databind
     compile libraries.json_path
     compile libraries.spring_boot_starter_websocket
-    compile("org.json:json:20180813")
-    compile("io.jsonwebtoken:jjwt:0.9.1")
+    compile libraries.json
+    compile libraries.jjwt
     compile(project(':security-module'))
 
     testCompile libraries.junit
@@ -69,21 +69,39 @@ task runIntegrationTests(type: Test) {
         excludeCategories(
             'com.ca.mfaas.utils.categories.StartupCheck',
             'com.ca.mfaas.utils.categories.SlowTests',
-            'com.ca.mfaas.utils.categories.LocalDeploymentTest'
+            'com.ca.mfaas.utils.categories.AdditionalLocalTest'
         )
     }
 }
 
-task runLocalDeploymentIntegrationTests(type: Test) {
+task runLocalIntegrationTests(type: Test) {
     group "Integration tests"
-    description "Run integration tests with local deployment of helloworld-spring"
+    description "Run integration tests that are not dependent on mainframe"
 
     dependsOn startUpCheck
     systemProperties System.getProperties()
     useJUnit {
         excludeCategories(
             'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.SlowTests'
+            'com.ca.mfaas.utils.categories.SlowTests',
+            'com.ca.mfaas.utils.categories.MainframeDependentTests',
+            'com.ca.mfaas.utils.categories.AdditionalLocalTest'
+        )
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runAllLocalIntegrationTests(type: Test) {
+    group "Integration tests"
+    description "Run integration tests for additional local services"
+
+    dependsOn startUpCheck
+    systemProperties System.getProperties()
+    useJUnit {
+        excludeCategories(
+            'com.ca.mfaas.utils.categories.StartupCheck',
+            'com.ca.mfaas.utils.categories.SlowTests',
+            'com.ca.mfaas.utils.categories.MainframeDependentTests'
         )
     }
     outputs.upToDateWhen { false }
@@ -98,7 +116,7 @@ task runAllIntegrationTests(type: Test) {
     useJUnit {
         excludeCategories(
             'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.LocalDeploymentTest'
+            'com.ca.mfaas.utils.categories.AdditionalLocalTest'
         )
     }
     outputs.upToDateWhen { false }

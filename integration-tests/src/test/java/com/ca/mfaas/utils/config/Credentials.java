@@ -7,10 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.constants;
+package com.ca.mfaas.utils.config;
 
-public class ApimConstants {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    // custom REST response header to signify that this API Doc has already been normalised
-    public static final String API_DOC_NORMALISED = "Api-Doc-Normalised";
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Credentials {
+    private String user;
+    private String password;
 }

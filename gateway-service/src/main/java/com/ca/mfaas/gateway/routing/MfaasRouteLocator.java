@@ -41,7 +41,7 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
 
     MfaasRouteLocator(String servletPath, DiscoveryClient discovery, ZuulProperties properties,
                       ServiceRouteMapper serviceRouteMapper, List<RoutedServicesUser> routedServicesUsers) {
-        super(servletPath, discovery, properties, serviceRouteMapper);
+        super(servletPath, discovery, properties, serviceRouteMapper, null);
         this.discovery = discovery;
         this.properties = properties;
         this.routedServicesUsers = routedServicesUsers;
@@ -66,32 +66,32 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     staticServices.put(serviceId, route);
                 }
             }
+
             // Add routes for discovered services and itself by default
             List<String> services = this.discovery.getServices();
             if (!services.contains(CoreService.GATEWAY.getServiceId())) {
                 services.add(CoreService.GATEWAY.getServiceId());
             }
+
             String[] ignored = this.properties.getIgnoredServices()
                 .toArray(new String[0]);
             Set<String> removedRoutes = new HashSet<>();
             for (String serviceId : services) {
                 // Ignore specifically ignored services and those that were manually
                 // configured
-                String targetServiceId = changeServiceId(serviceId);
-
                 RoutedServices routedServices = new RoutedServices();
-                List<ServiceInstance> serviceInstances = this.discovery.getInstances(targetServiceId);
-
+                List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
                 if (serviceInstances == null) {
                     log.error("Cannot find any instances of service: " + serviceId);
                     return null;
                 }
+
                 List<String> keys = createRouteKeys(serviceInstances, routedServices, serviceId);
                 if (keys.isEmpty()) {
                     keys.add("/" + mapRouteToService(serviceId) + "/**");
                 }
 
-                for (RoutedServicesUser routedServicesUser: routedServicesUsers) {
+                for (RoutedServicesUser routedServicesUser : routedServicesUsers) {
                     routedServicesUser.addRoutedServices(serviceId, routedServices);
                 }
 
@@ -103,15 +103,17 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                     routesMap.remove(staticRoute.getPath());
                     removedRoutes.add(staticRoute.getPath());
                 }
+
                 for (String key : keys) {
                     if (!PatternMatchUtils.simpleMatch(ignored, serviceId)
                         && !routesMap.containsKey(key) && !removedRoutes.contains(key)) {
                         // Not ignored
-                        routesMap.put(key, new ZuulProperties.ZuulRoute(key, targetServiceId));
+                        routesMap.put(key, new ZuulProperties.ZuulRoute(key, serviceId));
                     }
                 }
             }
         }
+
         LinkedHashMap<String, ZuulProperties.ZuulRoute> values = new LinkedHashMap<>();
         for (Map.Entry<String, ZuulProperties.ZuulRoute> entry : routesMap.entrySet()) {
             String path = entry.getKey();
@@ -127,16 +129,18 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
             }
             values.put(path, entry.getValue());
         }
+
         return values;
     }
 
-    private String changeServiceId(String serviceId) {
-        if (serviceId.equals(CoreService.GATEWAY.getServiceId())) {
-            return CoreService.API_CATALOG.getServiceId();
-        }
-        return serviceId;
-    }
-
+    /**
+     * Parse route keys from the metadata and populate service routes
+     *
+     * @param serviceInstance the list of service instances
+     * @param routes          the service routes
+     * @param serviceId       the service id
+     * @return the list of route keys
+     */
     @SuppressWarnings("squid:S3776") // Suppress complexity warning
     private List<String> createRouteKeys(List<ServiceInstance> serviceInstance,
                                          RoutedServices routes, String serviceId) {

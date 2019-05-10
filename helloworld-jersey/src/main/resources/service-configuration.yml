@@ -27,7 +27,7 @@ routes:
     - gatewayUrl: api/v1
       serviceUrl: /hellojersey/api/v1
     - gatewayUrl: ui/v1
-      serviceUrl: /hellojersey/
+      serviceUrl: /
 apiInfo:
     - apiId: org.zowe.hellojersey
       gatewayUrl: api/v1

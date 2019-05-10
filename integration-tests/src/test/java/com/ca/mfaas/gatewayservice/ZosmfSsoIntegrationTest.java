@@ -9,32 +9,35 @@
  */
 package com.ca.mfaas.gatewayservice;
 
+import com.ca.mfaas.utils.categories.MainframeDependentTests;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.Is.is;
 
+@Category(MainframeDependentTests.class)
 public class ZosmfSsoIntegrationTest {
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getPassword();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String BASE_PATH = "/api/zosmfca32";
     private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
+    private final static int RC = 16;
 
     private String token;
-    private GatewayServiceConfiguration serviceConfiguration;
     private String scheme;
     private String host;
     private int port;
 
     @Before
     public void setUp() {
-        serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
         port = serviceConfiguration.getPort();
@@ -115,7 +118,7 @@ public class ZosmfSsoIntegrationTest {
     @Test
     public void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
-        String expectedMessage = "Authentication problem: 'Token is not valid'";
+        String expectedMessage = "Token is not valid";
 
         given()
             .header("Authorization", "Bearer " + invalidToken)
@@ -125,13 +128,13 @@ public class ZosmfSsoIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
+                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage));
     }
 
     @Test
     public void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
-        String expectedMessage = "Authentication problem: 'Token is not valid'";
+        String expectedMessage = "Token is not valid for URL '/api/zosmfca32/zosmf/restfiles/ds'";
 
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
@@ -141,13 +144,11 @@ public class ZosmfSsoIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
+                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", containsString(expectedMessage));
     }
 
     @Test
     public void doZosmfCallWithoutToken() {
-        int rc = 16;
-
         given()
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
         .when()
@@ -155,13 +156,12 @@ public class ZosmfSsoIntegrationTest {
         .then()
             .statusCode(is(SC_INTERNAL_SERVER_ERROR))
             .body(
-                "rc", equalTo(rc));
+                "rc", equalTo(RC));
     }
 
     @Test
     public void doZosmfCallWithEmptyHeader() {
         String emptyToken = " ";
-        String expectedMessage = "Authentication problem: 'Token is not valid'";
 
         given()
             .header("Authorization", "Bearer " + emptyToken)
@@ -169,25 +169,25 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
+            .statusCode(is(SC_INTERNAL_SERVER_ERROR))
             .body(
-                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
+                "rc", equalTo(RC));
     }
 
 
     @Test
     public void doZosmfCallWithEmptyCookie() {
-        String emptyToken = " ";
-        String expectedMessage = "Authentication problem: 'Token is not valid'";
+        String invalidToken = "";
 
         given()
-            .cookie("apimlAuthenticationToken", emptyToken)
+            .cookie("apimlAuthenticationToken", invalidToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
+            .statusCode(is(SC_INTERNAL_SERVER_ERROR))
             .body(
-                "messages.find { it.messageNumber == 'SEC0006' }.messageContent", equalTo(expectedMessage));
+                "rc", equalTo(RC));
     }
     //@formatter:on
 }

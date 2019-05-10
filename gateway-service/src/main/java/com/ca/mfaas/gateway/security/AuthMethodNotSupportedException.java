@@ -9,14 +9,13 @@
  */
 package com.ca.mfaas.gateway.security;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.AuthenticationException;
 
-@Configuration
-public class ComponentsConfiguration {
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
+/**
+ * This exception is thrown in case there is an unsupported HTTP method.
+ */
+public class AuthMethodNotSupportedException extends AuthenticationException {
+    public AuthMethodNotSupportedException(String method) {
+        super(method);
     }
 }

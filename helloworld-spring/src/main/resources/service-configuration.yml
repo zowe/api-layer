@@ -23,6 +23,8 @@ ssl:
     trustStorePassword: password
     trustStoreType: PKCS12
 routes:
+    - gatewayUrl: api
+      serviceUrl: /hellospring
     - gatewayUrl: api/v1
       serviceUrl: /hellospring/api/v1
     - gatewayUrl: api/v1/api-doc

@@ -14,7 +14,6 @@ import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
@@ -46,14 +45,6 @@ public class HttpRequestUtils {
         // Then
         assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
 
-        return response;
-    }
-
-    public static HttpResponse response(HttpUriRequest request, int returnCode) throws IOException {
-        // When
-        HttpResponse response = HttpClientUtils.client().execute(request);
-        // Then
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
         return response;
     }
 

@@ -24,8 +24,8 @@ java -Xms16m -Xmx512m -Dibm.serversocket.recover=true -Dfile.encoding=UTF-8 \
     -Denvironment.preferIpAddress=true -Denvironment.gatewayHostname=**HOSTNAME** \
     -Denvironment.eurekaUserId=eureka \
     -Denvironment.eurekaPassword=password \
-    -Dapiml.security.zosmfServiceId=zosmf \
-    -Dapiml.security.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
+    -Dapiml.security.auth.zosmfServiceId=zosmf \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dspring.profiles.include= \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \

@@ -22,10 +22,7 @@ import org.yaml.snakeyaml.error.YAMLException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.IllegalFormatConversionException;
-import java.util.List;
+import java.util.*;
 
 /**
  * Default implementation of {@link ErrorService} that uses messages.yml as source for messages.
@@ -56,6 +53,7 @@ public class ErrorServiceImpl implements ErrorService {
 
     /**
      * Constructor that creates common messages and messages from file.
+     *
      * @param messagesFilePath path to file with messages.
      */
     @SuppressWarnings("squid:S00112")
@@ -72,7 +70,8 @@ public class ErrorServiceImpl implements ErrorService {
 
     /**
      * Creates {@link ApiMessage} with key and list of parameters.
-     * @param key of message in messages.yml file
+     *
+     * @param key        of message in messages.yml file
      * @param parameters for message
      * @return {@link ApiMessage}
      */
@@ -84,7 +83,8 @@ public class ErrorServiceImpl implements ErrorService {
 
     /**
      * Creates {@link ApiMessage} with list of {@link Message}.
-     * @param key of message in messages.yml file
+     *
+     * @param key        of message in messages.yml file
      * @param parameters list that contains arrays of parameters
      * @return {@link ApiMessage}
      */
@@ -99,40 +99,66 @@ public class ErrorServiceImpl implements ErrorService {
 
     /**
      * Internal method that call {@link ErrorMessageStorage} to get message by key.
-     * @param key of message.
-     * @param parameters array of parametes for message.
-     * @return
+     *
+     * @param key        of message.
+     * @param parameters array of parameters for message.
+     * @return {@link Message} in mainframe format
      */
     private Message createMessage(String key, Object... parameters) {
         ErrorMessage message = messageStorage.getErrorMessage(key);
-        message = validateMessage(message, key, parameters);
+        message = validateMessage(message, key);
+        Object[] messageParameters = validateParameters(message, key, parameters);
 
         String text;
         try {
-            text = String.format(message.getText(), parameters);
+            text = String.format(message.getText(), messageParameters);
         } catch (IllegalFormatConversionException exception) {
             LOGGER.debug("Internal error: Invalid message format was used", exception);
             message = messageStorage.getErrorMessage(INVALID_MESSAGE_TEXT_FORMAT);
-            message = validateMessage(message, key, parameters);
-            text = String.format(message.getText(), parameters);
+            message = validateMessage(message, key);
+            messageParameters = validateParameters(message, key, parameters);
+            text = String.format(message.getText(), messageParameters);
         }
 
         return new BasicMessage(key, message.getType(), message.getNumber(), text);
     }
 
-    private ErrorMessage validateMessage(ErrorMessage message, String key, Object... parameters) {
+    /**
+     * Internal method that validates the message. When the message does not exist, the key {@value INVALID_KEY_MESSAGE}
+     * is used. When this message also does not exist, the new predefined message is created.
+     *
+     * @param message to be checked
+     * @param key     of message
+     * @return {@link ErrorMessage} in mainframe format
+     */
+    private ErrorMessage validateMessage(ErrorMessage message, String key) {
         if (message == null) {
             LOGGER.debug("Invalid message key '{}' was used. Please resolve this problem.", key);
             message = messageStorage.getErrorMessage(INVALID_KEY_MESSAGE);
-            parameters[0] = key;
         }
 
         if (message == null) {
             String text = "Internal error: Invalid message key '%s' provided. No default message found. Please contact CA support of further assistance.";
             message = new ErrorMessage(INVALID_KEY_MESSAGE, "MFS0001", MessageType.ERROR, text);
-            parameters[0] = key;
         }
 
         return message;
+    }
+
+    /**
+     * Internal method that modifies parameters when the original message key does not exist and the new error message
+     * to indicate this issue is being used.
+     *
+     * @param message    to be checked if the original message was invalid
+     * @param key        of the original message
+     * @param parameters of the original message
+     * @return modified parameters if the message was changed, otherwise parameters remain unchanged
+     */
+    private Object[] validateParameters(ErrorMessage message, String key, Object... parameters) {
+        if (message.getKey().equals(INVALID_KEY_MESSAGE)) {
+            return new Object[]{key};
+        } else {
+            return parameters;
+        }
     }
 }
