@@ -61,10 +61,10 @@ public class HttpConfig {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
-    @Value("${apiml.security.jwtSignatureAlgorithm:HS512}")
+    @Value("${apiml.security.jwt.signatureAlgorithm:HS512}")
     private String jwtSignatureAlgorithm;
 
-    @Value("${apiml.security.jwtSecret}")
+    @Value("${apiml.security.jwt.secretKey:#{null}}")
     private String jwtSecret;
 
     @Value("${spring.application.name}")
@@ -88,6 +88,7 @@ public class HttpConfig {
             HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
                     .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
                     .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
                     .jwtSignatureAlgorithm(jwtSignatureAlgorithm)
                     .jwtSecret(jwtSecret).build();
 

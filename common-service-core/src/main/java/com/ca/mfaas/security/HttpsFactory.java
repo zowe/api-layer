@@ -11,11 +11,9 @@ package com.ca.mfaas.security;
 
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -28,25 +26,19 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.Key;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.Objects;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 
 @Slf4j
 @Data
@@ -77,7 +69,7 @@ public class HttpsFactory {
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (isJwtSecretEmpty() && config.isVerifySslCertificatesOfServices()) {
             return createSecureSslSocketFactory();
         } else {
             log.warn("The service is not verifying the TLS/SSL certificates of the services");
@@ -200,21 +192,25 @@ public class HttpsFactory {
 
     private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if (config.getKeyAlias() != null) {
-            KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-            InputStream istream;
-            if (config.getKeyStore().startsWith(SAFKEYRING)) {
-                URL url = keyRingUrl(config.getKeyStore());
-                istream = url.openStream();
-            }
-            else {
-                File keyStoreFile = new File(config.getKeyStore());
-                istream = new FileInputStream(keyStoreFile);
-            }
-            ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
+            KeyStore ks = loadKeyStore();
             if (!ks.containsAlias(config.getKeyAlias())) {
                 throw new HttpsConfigError(String.format("Invalid key alias '%s'", config.getKeyAlias()), ErrorCode.WRONG_KEY_ALIAS, config);
             }
         }
+    }
+
+    private KeyStore loadKeyStore() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        KeyStore keyStore = KeyStore.getInstance(config.getKeyStoreType());
+        InputStream inputStream;
+        if (config.getKeyStore().startsWith(SAFKEYRING)) {
+            URL url = keyRingUrl(config.getKeyStore());
+            inputStream = url.openStream();
+        } else {
+            File keyStoreFile = new File(config.getKeyStore());
+            inputStream = new FileInputStream(keyStoreFile);
+        }
+        keyStore.load(inputStream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
+        return keyStore;
     }
 
     private ConnectionSocketFactory createSecureSslSocketFactory() {
@@ -223,7 +219,7 @@ public class HttpsFactory {
     }
 
     public SSLContext createSslContext() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (isJwtSecretEmpty() && config.isVerifySslCertificatesOfServices()) {
             return createSecureSslContext();
         } else {
             return createIgnoringSslContext();
@@ -253,7 +249,7 @@ public class HttpsFactory {
     }
 
     public HostnameVerifier createHostnameVerifier() {
-        if (config.isVerifySslCertificatesOfServices()) {
+        if (isJwtSecretEmpty() && config.isVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         } else {
             return new NoopHostnameVerifier();
@@ -282,21 +278,15 @@ public class HttpsFactory {
         return builder;
     }
 
+    private boolean isJwtSecretEmpty() {
+        return config.getJwtSecret() == null || config.getJwtSecret().isEmpty();
+    }
+
     public String readSecret() {
-        String jwtSecret = config.getJwtSecret();
-        if (jwtSecret.isEmpty() || jwtSecret.equals(null)){
+        if (isJwtSecretEmpty()){
             if (config.getKeyStore() != null) {
                 try {
-                    KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-                    InputStream istream;
-                    if (config.getKeyStore().startsWith(SAFKEYRING)) {
-                        URL url = keyRingUrl(config.getKeyStore());
-                        istream = url.openStream();
-                    } else {
-                        File keyStoreFile = new File(config.getKeyStore());
-                        istream = new FileInputStream(keyStoreFile);
-                    }
-                    ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
+                    KeyStore ks = loadKeyStore();
                     char[] keyPassword = config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray();
                     Key key = null;
                     if (config.getKeyAlias() != null) {
@@ -327,7 +317,8 @@ public class HttpsFactory {
             } else {
                 return null;
             }
+        } else {
+            return config.getJwtSecret();
         }
-        else{ return jwtSecret;}
     }
 }
