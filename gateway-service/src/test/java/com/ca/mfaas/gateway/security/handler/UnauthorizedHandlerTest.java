@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.handler;
 
+import com.ca.apiml.security.handler.UnauthorizedHandler;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;

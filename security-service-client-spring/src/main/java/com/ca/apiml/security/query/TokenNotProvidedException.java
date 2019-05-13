@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.query;
+package com.ca.apiml.security.query;
 
 import org.springframework.security.core.AuthenticationException;
 

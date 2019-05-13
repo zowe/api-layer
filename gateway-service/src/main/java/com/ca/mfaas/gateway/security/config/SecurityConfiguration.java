@@ -12,15 +12,16 @@ package com.ca.mfaas.gateway.security.config;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.mfaas.gateway.security.handler.FailedAuthenticationHandler;
-import com.ca.mfaas.gateway.security.handler.UnauthorizedHandler;
-import com.ca.mfaas.gateway.security.login.LoginFilter;
-import com.ca.mfaas.gateway.security.login.SuccessfulLoginHandler;
+import com.ca.apiml.security.handler.FailedAuthenticationHandler;
+import com.ca.apiml.security.handler.UnauthorizedHandler;
+import com.ca.apiml.security.login.LoginFilter;
+import com.ca.apiml.security.login.SuccessfulLoginHandler;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -39,6 +40,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@ComponentScan("com.ca.apiml.security")
 @SuppressWarnings("squid:S00107")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final ObjectMapper securityObjectMapper;

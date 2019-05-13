@@ -9,16 +9,22 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+/**
+ * Registers security related beans
+ */
 @Configuration
 public class ComponentsConfiguration {
 
+    /**
+     * Security configuration
+     */
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
+    public SecurityConfigurationProperties securityConfigurationProperties() {
+        return new SecurityConfigurationProperties();
     }
-
 }

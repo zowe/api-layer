@@ -14,7 +14,7 @@ import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.error.ErrorUtils;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
-import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.ca.mfaas.rest.response.Message;
 import com.ca.mfaas.rest.response.MessageType;

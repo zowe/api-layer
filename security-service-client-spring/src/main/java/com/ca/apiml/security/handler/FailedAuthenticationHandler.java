@@ -7,12 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.handler;
+package com.ca.apiml.security.handler;
 
+import com.ca.apiml.security.query.TokenNotProvidedException;
+import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
-import com.ca.mfaas.gateway.security.query.TokenNotProvidedException;
-import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.apiml.security.exceptions.AuthMethodNotSupportedException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;

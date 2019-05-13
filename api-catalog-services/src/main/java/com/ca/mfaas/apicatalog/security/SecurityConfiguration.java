@@ -9,18 +9,11 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.security.handler.FailedAuthenticationHandler;
-import com.ca.mfaas.security.handler.UnauthorizedHandler;
-import com.ca.mfaas.security.login.LoginFilter;
-import com.ca.mfaas.security.login.SuccessfulLoginHandler;
-import com.ca.mfaas.security.login.ZosmfAuthenticationProvider;
-import com.ca.mfaas.security.query.QueryFilter;
-import com.ca.mfaas.security.query.SuccessfulQueryHandler;
-import com.ca.mfaas.security.token.CookieFilter;
-import com.ca.mfaas.security.token.TokenAuthenticationProvider;
-import com.ca.mfaas.security.token.TokenFilter;
-import com.ca.mfaas.security.token.TokenService;
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.handler.FailedAuthenticationHandler;
+import com.ca.apiml.security.handler.UnauthorizedHandler;
+import com.ca.apiml.security.login.LoginFilter;
+import com.ca.apiml.security.login.SuccessfulLoginHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -40,19 +33,37 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 
 @Configuration
 @EnableWebSecurity
-@ComponentScan("com.ca.mfaas.security")
+@ComponentScan("com.ca.apiml.security")
 @Import(ComponentsConfiguration.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    private final ObjectMapper securityObjectMapper;
-    private final TokenService tokenService;
-    private final UnauthorizedHandler unAuthorizedHandler;
-    private final SuccessfulLoginHandler successfulLoginHandler;
-    private final SuccessfulQueryHandler successfulQueryHandler;
-    private final FailedAuthenticationHandler authenticationFailureHandler;
-    private final ZosmfAuthenticationProvider loginAuthenticationProvider;
-    private final TokenAuthenticationProvider tokenAuthenticationProvider;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
 
+    /*  private final TokenService tokenService;
+
+      private final SuccessfulLoginHandler successfulLoginHandler;
+      private final SuccessfulQueryHandler successfulQueryHandler;
+      private final ZosmfAuthenticationProvider loginAuthenticationProvider;
+      private final TokenAuthenticationProvider tokenAuthenticationProvider;*/
+
+    private final ObjectMapper securityObjectMapper;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final SuccessfulLoginHandler successfulLoginHandler;
+    private final UnauthorizedHandler unAuthorizedHandler;
+    private final FailedAuthenticationHandler authenticationFailureHandler;
+
+    public SecurityConfiguration(
+        ObjectMapper securityObjectMapper,
+        SecurityConfigurationProperties securityConfigurationProperties,
+        SuccessfulLoginHandler successfulLoginHandler,
+        UnauthorizedHandler unAuthorizedHandler,
+        FailedAuthenticationHandler authenticationFailureHandler) {
+        this.securityObjectMapper = securityObjectMapper;
+        this.securityConfigurationProperties = securityConfigurationProperties;
+        this.successfulLoginHandler = successfulLoginHandler;
+        this.unAuthorizedHandler = unAuthorizedHandler;
+        this.authenticationFailureHandler = authenticationFailureHandler;
+    }
+
+  /*
     public SecurityConfiguration(
         @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper,
         UnauthorizedHandler unAuthorizedHandler,
@@ -74,11 +85,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.tokenService = tokenService;
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
+   */
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(loginAuthenticationProvider);
-        auth.authenticationProvider(tokenAuthenticationProvider);
+        //    auth.authenticationProvider(loginAuthenticationProvider);
+        //   auth.authenticationProvider(tokenAuthenticationProvider);
     }
 
     @Override
@@ -115,11 +127,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
 
-            // query endpoint
-            .and()
-            .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
-            .authorizeRequests()
-
             // logout endpoint
             .and()
             .logout()
@@ -128,22 +135,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // endpoints protection
             .and()
-            .addFilterBefore(cookieTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(headerTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+            //        .addFilterBefore(cookieTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+            //       .addFilterAfter(headerTokenFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
             .antMatchers("/containers/**").authenticated()
             .antMatchers("/apidoc/**").authenticated();
     }
 
+    /*
     private TokenFilter headerTokenFilter() throws Exception {
         return new TokenFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
-    }
+    }*/
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler,
             securityObjectMapper, authenticationManager());
     }
 
+    /*
     private QueryFilter queryFilter(String queryEndpoint) throws Exception {
         return new QueryFilter(queryEndpoint, successfulQueryHandler, authenticationFailureHandler, tokenService,
             authenticationManager());
@@ -152,6 +161,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private CookieFilter cookieTokenFilter() throws Exception {
         return new CookieFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }
+     */
 
     @Bean
     @Override

@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;

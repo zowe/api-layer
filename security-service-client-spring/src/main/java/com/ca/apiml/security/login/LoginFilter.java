@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.login;
+package com.ca.apiml.security.login;
 
-import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
+import com.ca.apiml.security.exceptions.AuthMethodNotSupportedException;
 import com.ca.mfaas.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;

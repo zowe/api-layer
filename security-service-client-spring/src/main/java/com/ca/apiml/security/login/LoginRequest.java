@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.login;
+package com.ca.apiml.security.login;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

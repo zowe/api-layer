@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.handler;
+package com.ca.apiml.security.handler;
 
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.constants.ApimlConstants;
