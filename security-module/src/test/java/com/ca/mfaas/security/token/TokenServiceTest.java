@@ -9,36 +9,28 @@
  */
 package com.ca.mfaas.security.token;
 
-import static com.ca.mfaas.security.token.TokenService.*;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import javax.servlet.http.Cookie;
-
-import com.ca.mfaas.product.web.HttpConfig;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-
 import com.ca.mfaas.security.query.QueryResponse;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
-import static org.mockito.Mockito.when;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-
+import javax.servlet.http.Cookie;
 import java.util.Calendar;
 import java.util.Date;
+
+import static com.ca.mfaas.security.token.TokenService.*;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class TokenServiceTest {
     private static final String TEST_TOKEN = "token";
@@ -48,11 +40,7 @@ public class TokenServiceTest {
 
     private SecurityConfigurationProperties securityConfigurationProperties;
 
-    @InjectMocks
     private TokenService tokenService;
-
-    @Mock
-    private HttpConfig httpConfig;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -69,14 +57,12 @@ public class TokenServiceTest {
 
     @Test(expected = NullPointerException.class)
     public void tokenServiceWithoutSecretCannotWork() {
-        tokenService = new TokenService(securityConfigurationProperties);
         tokenService.createToken(TEST_USER);
     }
 
     @Test
     public void createTokenForGeneralUser() {
         tokenService.setSecret(SECRET);
-        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512");
         String token = tokenService.createToken(TEST_USER);
         Claims claims = Jwts.parser().setSigningKey(tokenService.getSecret())
                 .parseClaimsJws(token).getBody();
@@ -93,7 +79,6 @@ public class TokenServiceTest {
         long expiration = 10;
         securityConfigurationProperties.getTokenProperties().setExpirationInSeconds(10);
         tokenService.setSecret(SECRET);
-        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512");
         String token = tokenService.createToken(expirationUsername);
         Claims claims = Jwts.parser().setSigningKey(tokenService.getSecret())
                 .parseClaimsJws(token).getBody();
@@ -107,7 +92,6 @@ public class TokenServiceTest {
     @Test
     public void createTokenForNonExpirationUser() {
         tokenService.setSecret(SECRET);
-        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512");
         String token = tokenService.createToken(TEST_USER);
         Claims claims = Jwts.parser().setSigningKey(tokenService.getSecret())
                 .parseClaimsJws(token).getBody();
@@ -121,7 +105,6 @@ public class TokenServiceTest {
     @Test
     public void validateValidToken() {
         tokenService.setSecret(SECRET);
-        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512");
         String token = tokenService.createToken(TEST_USER);
         TokenAuthentication authentication = new TokenAuthentication(token);
         TokenAuthentication validatedAuthentication = tokenService.validateToken(authentication);
@@ -139,7 +122,6 @@ public class TokenServiceTest {
         exception.expectMessage("is expired");
 
         tokenService.setSecret(SECRET);
-        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512");
         String token = tokenService.createToken(expirationUser);
         TokenAuthentication authentication = new TokenAuthentication(token);
         tokenService.validateToken(authentication);
@@ -152,7 +134,6 @@ public class TokenServiceTest {
         exception.expectMessage("Token is not valid");
 
         tokenService.setSecret(SECRET);
-        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512");
         String token = tokenService.createToken(TEST_USER);
         TokenAuthentication authentication = new TokenAuthentication(token + signaturePadding);
         tokenService.validateToken(authentication);
@@ -219,29 +200,12 @@ public class TokenServiceTest {
 
     @Test
     public void getLtpaTokenReturnsNullIfLtpaIsMissing() {
+        TokenService tokenService = new TokenService(securityConfigurationProperties);
         tokenService.setSecret(SECRET);
         String jwtToken = Jwts.builder().claim(DOMAIN_CLAIM_NAME, TEST_DOMAIN)
                 .signWith(SignatureAlgorithm.HS512, tokenService.getSecret())
                 .compact();
         assertEquals(null, tokenService.getLtpaToken(jwtToken));
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenUsingUnsupportedSignAlgorithm() {
-        tokenService.setSecret(SECRET);
-        exception.expect(SignatureException.class);
-        exception.expectMessage("Unsupported signature algorithm 'HS512d'");
-        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512d");
-        tokenService.createToken(TEST_USER);
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenSecretKeyIsNull() {
-        tokenService.setSecret(null);
-        exception.expect(NullPointerException.class);
-        exception.expectMessage("The secret key for JWT token service is null");
-        when(httpConfig.getJwtSignatureAlgorithm()).thenReturn("HS512");
-        tokenService.createToken(TEST_USER);
     }
 }
 

@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.config;
 
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.product.web.HttpConfig;
+import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,18 +23,20 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class InitializeTokenSecret implements InitializingBean {
 
-    private final HttpConfig httpConfig;
+    private final JwtSecurityInitializer jwtSecurityInitializer;
+
     private final AuthenticationService authenticationService;
 
     @Autowired
-    public InitializeTokenSecret(HttpConfig httpConfig, AuthenticationService authenticationService) {
-        this.httpConfig = httpConfig;
+    public InitializeTokenSecret(JwtSecurityInitializer jwtSecurityInitializer,
+                                 AuthenticationService authenticationService) {
+        this.jwtSecurityInitializer = jwtSecurityInitializer;
         this.authenticationService = authenticationService;
     }
 
     @Override
     public void afterPropertiesSet() {
         log.info("Initializing token service with secret key");
-        authenticationService.setSecret(httpConfig.getSecret());
+       // authenticationService.setSecret(jwtSecurityInitializer.initializeSecret());
     }
 }

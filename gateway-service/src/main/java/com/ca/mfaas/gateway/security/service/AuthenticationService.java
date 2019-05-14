@@ -40,8 +40,12 @@ public class AuthenticationService {
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private String secret;
 
-    public AuthenticationService(SecurityConfigurationProperties securityConfigurationProperties) {
+    private final JwtSecurityInitializer jwtSecurityInitializer;
+
+    public AuthenticationService(SecurityConfigurationProperties securityConfigurationProperties,
+                                 JwtSecurityInitializer jwtSecurityInitializer) {
         this.securityConfigurationProperties = securityConfigurationProperties;
+        this.jwtSecurityInitializer = jwtSecurityInitializer;
     }
 
     /**
@@ -88,7 +92,7 @@ public class AuthenticationService {
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.HS512, getSecret())
+            .signWith(SignatureAlgorithm.forName(jwtSecurityInitializer.getSignatureAlgorithm()), jwtSecurityInitializer.getInitializedSecret())
             .compact();
     }
 
@@ -131,7 +135,7 @@ public class AuthenticationService {
      */
     public QueryResponse parseJwtToken(String token) {
         Claims claims = Jwts.parser()
-            .setSigningKey(getSecret())
+            .setSigningKey(jwtSecurityInitializer.getInitializedSecret())
             .parseClaimsJws(token)
             .getBody();
 

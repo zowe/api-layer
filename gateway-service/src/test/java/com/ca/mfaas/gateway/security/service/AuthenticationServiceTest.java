@@ -19,6 +19,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.http.Cookie;
@@ -26,8 +29,9 @@ import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
-
+@RunWith(MockitoJUnitRunner.class)
 public class AuthenticationServiceTest {
 
     private static final String USER = "Me";
@@ -36,13 +40,18 @@ public class AuthenticationServiceTest {
     private static final String SECRET = "very_secret";
 
     private AuthenticationService authService;
-
     private SecurityConfigurationProperties securityConfigurationProperties;
+
+    @Mock
+    private JwtSecurityInitializer jwtSecurityInitializer;
 
     @Before
     public void setUp() {
+        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn("HS512");
+        when(jwtSecurityInitializer.getInitializedSecret()).thenReturn("very_secret");
+
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        authService = new AuthenticationService(securityConfigurationProperties);
+        authService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
         authService.setSecret(SECRET);
     }
 
@@ -54,9 +63,9 @@ public class AuthenticationServiceTest {
         assertEquals("java.lang.String", jwtToken.getClass().getName());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWithNullSecret() {
-        authService.setSecret(null);
+        when(jwtSecurityInitializer.getInitializedSecret()).thenReturn(null);
         authService.createJwtToken(USER, DOMAIN, LTPA);
     }
 

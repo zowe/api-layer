@@ -9,12 +9,10 @@
  */
 package com.ca.mfaas.security.token;
 
-import com.ca.mfaas.product.web.HttpConfig;
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.query.QueryResponse;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +32,6 @@ public class TokenService {
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
     private String secret;
-
-    @Autowired
-    private HttpConfig httpConfig;
 
     public TokenService(SecurityConfigurationProperties securityConfigurationProperties) {
         this.securityConfigurationProperties = securityConfigurationProperties;
@@ -69,7 +64,7 @@ public class TokenService {
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.forName(httpConfig.getJwtSignatureAlgorithm()), getSecret())
+            .signWith(SignatureAlgorithm.HS512, getSecret())
             .compact();
     }
 

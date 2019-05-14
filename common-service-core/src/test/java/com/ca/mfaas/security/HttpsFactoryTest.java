@@ -27,7 +27,7 @@ public class HttpsFactoryTest {
         assertNotNull(secret);
     }
 
-    @Test(expected = HttpsConfigError.class)    
+    @Test(expected = HttpsConfigError.class)
     public void wrongKeyPasswordConfigurationShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyPassword("WRONG").build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
@@ -43,11 +43,12 @@ public class HttpsFactoryTest {
         assertNotNull(secret);
     }
 
-    @Test(expected = HttpsConfigError.class)    
+    @Test(expected = HttpsConfigError.class)
     public void specificIncorrectAliasShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyAlias("INVALID").build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         String secret = httpsFactory.readSecret();
         assertNull(secret);
     }
+
 }

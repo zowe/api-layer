@@ -41,5 +41,5 @@ public class SecurityTestUtils {
             fail("Invalid repository path: " + newPath);
             return null;
         }
-    }    
+    }
 }

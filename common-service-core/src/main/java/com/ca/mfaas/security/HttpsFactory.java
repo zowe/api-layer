@@ -69,7 +69,7 @@ public class HttpsFactory {
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
-        if (isJwtSecretEmpty() && config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices()) {
             return createSecureSslSocketFactory();
         } else {
             log.warn("The service is not verifying the TLS/SSL certificates of the services");
@@ -219,7 +219,7 @@ public class HttpsFactory {
     }
 
     public SSLContext createSslContext() {
-        if (isJwtSecretEmpty() && config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices()) {
             return createSecureSslContext();
         } else {
             return createIgnoringSslContext();
@@ -249,7 +249,7 @@ public class HttpsFactory {
     }
 
     public HostnameVerifier createHostnameVerifier() {
-        if (isJwtSecretEmpty() && config.isVerifySslCertificatesOfServices()) {
+        if (config.isVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
         } else {
             return new NoopHostnameVerifier();
@@ -278,12 +278,8 @@ public class HttpsFactory {
         return builder;
     }
 
-    private boolean isJwtSecretEmpty() {
-        return config.getJwtSecret() == null || config.getJwtSecret().isEmpty();
-    }
 
     public String readSecret() {
-        if (isJwtSecretEmpty()){
             if (config.getKeyStore() != null) {
                 try {
                     KeyStore ks = loadKeyStore();
@@ -317,8 +313,5 @@ public class HttpsFactory {
             } else {
                 return null;
             }
-        } else {
-            return config.getJwtSecret();
         }
     }
-}
