@@ -9,18 +9,17 @@
  */
 package com.ca.mfaas.gateway.routing;
 
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import com.ca.mfaas.gateway.filters.post.PageRedirectionFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;
-
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
@@ -52,10 +51,8 @@ public class MfaasRoutingConfig {
     @Bean
     @Autowired
     public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery,
-                                                       @Value("${apiml.gateway.hostname}")String hostname,
-                                                       @Value("${apiml.service.port}")String port,
-                                                       @Value("${apiml.service.scheme}")String scheme) {
-        return new PageRedirectionFilter(discovery, hostname, port, scheme);
+                                                       GatewayConfigProperties gatewayConfigProperties) {
+        return new PageRedirectionFilter(discovery, gatewayConfigProperties);
     }
 
     @Bean

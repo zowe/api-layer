@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.util.Pair;
@@ -57,7 +58,9 @@ public class PageRedirectionFilterTest {
         ctx.setRequest(request);
         ctx.setResponse(response);
 
-        this.filter = new PageRedirectionFilter(this.discoveryClient, ctx.getRequest().getLocalName(), String.valueOf(ctx.getRequest().getLocalPort()), ctx.getRequest().getScheme());
+        GatewayConfigProperties gatewayConfigProperties = getGatewayConfigProperties(ctx);
+
+        this.filter = new PageRedirectionFilter(this.discoveryClient, gatewayConfigProperties);
     }
 
     /**
@@ -329,5 +332,12 @@ public class PageRedirectionFilterTest {
 
     private void verifyLocationNotUpdated(String actualLocation, String expectedLocation) {
         assertEquals("Location should not be updated", expectedLocation, actualLocation);
+    }
+
+    private GatewayConfigProperties getGatewayConfigProperties(RequestContext ctx) {
+        return GatewayConfigProperties.builder()
+            .scheme(ctx.getRequest().getScheme())
+            .hostname(ctx.getRequest().getLocalName() + ":" + ctx.getRequest().getLocalPort())
+            .build();
     }
 }

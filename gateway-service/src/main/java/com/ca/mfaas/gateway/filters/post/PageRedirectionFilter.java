@@ -51,16 +51,10 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
      * Constructor
      *
      * @param discovery discovery client
-     * @param hostname  hostname of gateway
-     * @param port      port number of gateway
-     * @param scheme    scheme of gateway
+     * @param gatewayConfigProperties gateway config properties
      */
-    public PageRedirectionFilter(DiscoveryClient discovery, String hostname, String port, String scheme) {
+    public PageRedirectionFilter(DiscoveryClient discovery, GatewayConfigProperties gatewayConfigProperties) {
         this.discovery = discovery;
-        GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
-            .scheme(scheme)
-            .hostname(hostname + ":" + port)
-            .build();
         transformService = new TransformService(gatewayConfigProperties);
     }
 
