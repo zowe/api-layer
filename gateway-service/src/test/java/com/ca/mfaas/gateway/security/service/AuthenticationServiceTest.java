@@ -52,7 +52,6 @@ public class AuthenticationServiceTest {
 
         securityConfigurationProperties = new SecurityConfigurationProperties();
         authService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
-        authService.setSecret(SECRET);
     }
 
     @Test

@@ -38,37 +38,12 @@ public class AuthenticationService {
     private static final String DOMAIN_CLAIM_NAME = "dom";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
-    private String secret;
-
     private final JwtSecurityInitializer jwtSecurityInitializer;
 
     public AuthenticationService(SecurityConfigurationProperties securityConfigurationProperties,
                                  JwtSecurityInitializer jwtSecurityInitializer) {
         this.securityConfigurationProperties = securityConfigurationProperties;
         this.jwtSecurityInitializer = jwtSecurityInitializer;
-    }
-
-    /**
-     * Return the secret key for the JWT token
-     *
-     * @return the secret key
-     * @throws NullPointerException if the secret key is null
-     */
-    private String getSecret() {
-        if (secret == null) {
-            throw new NullPointerException("The secret key for JWT token service is null.");
-        }
-
-        return secret;
-    }
-
-    /**
-     * Set the secret key for the JWT token
-     *
-     * @param secret the secret key
-     */
-    public void setSecret(String secret) {
-        this.secret = secret;
     }
 
     /**
@@ -107,7 +82,7 @@ public class AuthenticationService {
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(getSecret())
+                .setSigningKey(jwtSecurityInitializer.getInitializedSecret())
                 .parseClaimsJws(token.getCredentials())
                 .getBody();
 
@@ -179,7 +154,7 @@ public class AuthenticationService {
     public String getLtpaTokenFromJwtToken(String jwtToken) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(getSecret())
+                .setSigningKey(jwtSecurityInitializer.getInitializedSecret())
                 .parseClaimsJws(jwtToken)
                 .getBody();
 

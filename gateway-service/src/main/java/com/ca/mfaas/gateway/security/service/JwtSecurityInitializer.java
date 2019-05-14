@@ -41,7 +41,11 @@ public class JwtSecurityInitializer {
     public void init() {
         if (secretKey == null || secretKey.isEmpty()) {
             initializedSecret =  httpConfig.getSecret();
+        } else {
+            initializedSecret = secretKey;
         }
+
+        //TODO: if it's still null throws some exception
     }
 
     public String getInitializedSecret() {
