@@ -15,21 +15,20 @@ import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import com.ca.mfaas.utils.config.TlsConfiguration;
 import com.ca.mfaas.utils.config.ZosmfServiceConfiguration;
+import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
 import io.restassured.config.SSLConfig;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.PrivateKeyDetails;
-import org.apache.http.ssl.PrivateKeyStrategy;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
 
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -88,24 +87,17 @@ public class SecurityUtils {
     public static SSLConfig getConfiguredSslConfig() {
         TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
         try {
-            SSLSocketFactory sslSocketFactory = new SSLSocketFactory(SSLContexts.custom()
-                .loadKeyMaterial(new File(tlsConfiguration.getKeyStore()),
-                    tlsConfiguration.getKeyStorePassword() != null
-                        ? tlsConfiguration.getKeyStorePassword().toCharArray()
-                        : null,
-                    tlsConfiguration.getKeyPassword() != null ? tlsConfiguration.getKeyPassword().toCharArray()
-                        : null,
-                    new PrivateKeyStrategy() {
-                        @Override
-                        public String chooseAlias(Map<String, PrivateKeyDetails> aliases, Socket socket) {
-                            return tlsConfiguration.getKeyAlias();
-                        }
-                    })
-                .loadTrustMaterial(new File(tlsConfiguration.getTrustStore()),
-                    tlsConfiguration.getTrustStorePassword() != null
-                        ? tlsConfiguration.getTrustStorePassword().toCharArray()
-                        : null)
-                .build(), SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+            SSLContext sslContext = SSLContexts.custom()
+                .loadKeyMaterial(
+                    new File(tlsConfiguration.getKeyStore()),
+                    tlsConfiguration.getKeyStorePassword() != null ? tlsConfiguration.getKeyStorePassword().toCharArray() : null,
+                    tlsConfiguration.getKeyPassword() != null ? tlsConfiguration.getKeyPassword().toCharArray() : null,
+                    (aliases, socket) -> tlsConfiguration.getKeyAlias())
+                .loadTrustMaterial(
+                    new File(tlsConfiguration.getTrustStore()),
+                    tlsConfiguration.getTrustStorePassword() != null ? tlsConfiguration.getTrustStorePassword().toCharArray() : null)
+                .build();
+            SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier()));
             return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
             | CertificateException | IOException e) {
