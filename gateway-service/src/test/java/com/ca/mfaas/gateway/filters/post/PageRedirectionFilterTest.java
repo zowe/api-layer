@@ -95,7 +95,7 @@ public class PageRedirectionFilterTest {
             .filter(stringPair -> LOCATION.equals(stringPair.first()))
             .findFirst();
 
-        verifyLocationUpdatedSameServer(locationHeader.get().second(), location,
+        verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
             "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
     }
 
@@ -130,7 +130,7 @@ public class PageRedirectionFilterTest {
             .filter(stringPair -> LOCATION.equals(stringPair.first()))
             .findFirst();
 
-        verifyLocationNotUpdated(locationHeader.get().second(), location);
+        verifyLocationNotUpdated(locationHeader.map(Pair::second).orElse(null), location);
     }
 
     /**
@@ -177,7 +177,7 @@ public class PageRedirectionFilterTest {
             .filter(stringPair -> LOCATION.equals(stringPair.first()))
             .findFirst();
 
-        this.verifyLocationUpdatedSameServer(locationHeader.get().second(), location,
+        this.verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
             "/" + otherService.getGatewayUrl() + "/" + OTHER_SERVICE_ID + relativePath);
     }
 
@@ -223,7 +223,7 @@ public class PageRedirectionFilterTest {
             .filter(stringPair -> LOCATION.equals(stringPair.first()))
             .findFirst();
 
-        this.verifyLocationNotUpdated(locationHeader.get().second(), location);
+        this.verifyLocationNotUpdated(locationHeader.map(Pair::second).orElse(null), location);
     }
 
     /**
@@ -257,7 +257,7 @@ public class PageRedirectionFilterTest {
             .filter(stringPair -> LOCATION.equals(stringPair.first()))
             .findFirst();
 
-        verifyLocationUpdatedSameServer(locationHeader.get().second(), location,
+        verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
             "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
     }
 
@@ -307,7 +307,7 @@ public class PageRedirectionFilterTest {
             .filter(stringPair -> LOCATION.equals(stringPair.first()))
             .findFirst();
 
-        verifyLocationUpdatedSameServer(locationHeader.get().second(), location,
+        verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
             "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
     }
 
