@@ -44,7 +44,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
 
     private final DiscoveryClient discovery;
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
-    private final ConcurrentHashMap<String, String> routeTable = new ConcurrentHashMap<>();
+    private final Map<String, String> routeTable = new ConcurrentHashMap<>();
     private final TransformService transformService;
 
     /**
@@ -106,7 +106,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
                     transformedUrl = (String) transformedUrlOp.get();
                     //Put matched url to cache
                     routeTable.put(location, transformedUrl);
-                    this.transformLocation(locationHeader.get(), transformedUrl);
+                    transformLocation(locationHeader.get(), transformedUrl);
                 }
             }
         }
@@ -139,7 +139,9 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
 
         //check current service instance
         Optional<String> transformedUrl = foundMatchedUrlInService(location, currentServiceId);
-        if (transformedUrl.isPresent()) return transformedUrl;
+        if (transformedUrl.isPresent()) {
+            return transformedUrl;
+        }
 
         //iterate through all instances registered in discovery client, check if there is matched url
         List<String> serviceIds = discovery.getServices();

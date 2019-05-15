@@ -23,6 +23,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.apache.http.HttpHeaders.LOCATION;
@@ -78,7 +79,7 @@ public class PageRedirectionFilterTest {
         routedServices.addRoutedService(currentService);
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
@@ -112,7 +113,7 @@ public class PageRedirectionFilterTest {
         routedServices.addRoutedService(currentService);
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
@@ -155,10 +156,10 @@ public class PageRedirectionFilterTest {
         otherRoutedServices.addRoutedService(otherService);
         this.filter.addRoutedServices(OTHER_SERVICE_ID, otherRoutedServices);
 
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
-        when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
         when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
@@ -201,10 +202,10 @@ public class PageRedirectionFilterTest {
         otherRoutedServices.addRoutedService(otherService);
         this.filter.addRoutedServices(OTHER_SERVICE_ID, otherRoutedServices);
 
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
-        when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(OTHER_SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(OTHER_SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
         when(discoveryClient.getServices()).thenReturn(Arrays.asList(SERVICE_ID, OTHER_SERVICE_ID));
@@ -240,7 +241,7 @@ public class PageRedirectionFilterTest {
         routedServices.addRoutedService(currentService);
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
@@ -274,7 +275,7 @@ public class PageRedirectionFilterTest {
         routedServices.addRoutedService(currentService);
         this.filter.addRoutedServices(SERVICE_ID, routedServices);
 
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(SERVICE_ID, TARGET_SERVER_HOST, TARGET_SERVER_PORT, true)
         ));
 
@@ -294,7 +295,7 @@ public class PageRedirectionFilterTest {
         ctx.setRequest(request);
         ctx.setResponse(response);
 
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Arrays.asList(
+        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(
             new DefaultServiceInstance(SERVICE_ID, OTHER_SERVICE_SERVER_HOST, OTHER_SERVICE_SERVER_PORT, true)
         ));
 

@@ -13,6 +13,8 @@ import com.ca.mfaas.client.model.state.New;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 
@@ -21,6 +23,7 @@ import javax.validation.constraints.NotNull;
  * It wraps Location url
  */
 @ApiModel
+@Data
 public class RedirectLocation {
 
     @NotNull(groups = New.class, message = "Location should not be null")
@@ -28,14 +31,6 @@ public class RedirectLocation {
     private String location;
 
     public RedirectLocation(@JsonProperty("location") String location) {
-        this.location = location;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
         this.location = location;
     }
 }
