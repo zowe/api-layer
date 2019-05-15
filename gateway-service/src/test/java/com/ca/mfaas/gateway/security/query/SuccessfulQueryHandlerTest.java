@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.security.query;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
+import com.ca.mfaas.product.web.HttpConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class SuccessfulQueryHandlerTest {
     private static final String LTPA = "ltpaToken";
 
     @Mock
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    HttpConfig httpConfig;
 
     @Before
     public void setup() {
@@ -46,9 +46,9 @@ public class SuccessfulQueryHandlerTest {
         httpServletResponse = new MockHttpServletResponse();
         SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
 
-        AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
-        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn("HS512");
-        when(jwtSecurityInitializer.getInitializedSecret()).thenReturn("very_secret");
+        AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties, httpConfig);
+        authenticationService.setSignatureAlgorithm("HS512");
+        when(httpConfig.getSecret()).thenReturn("very_secret");
 
         jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
 

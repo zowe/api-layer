@@ -14,6 +14,7 @@ import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.mfaas.product.web.HttpConfig;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang.time.DateUtils;
@@ -43,15 +44,16 @@ public class AuthenticationServiceTest {
     private SecurityConfigurationProperties securityConfigurationProperties;
 
     @Mock
-    private JwtSecurityInitializer jwtSecurityInitializer;
+    private HttpConfig httpConfig;
 
     @Before
     public void setUp() {
-        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn("HS512");
-        when(jwtSecurityInitializer.getInitializedSecret()).thenReturn("very_secret");
+        when(httpConfig.getSecret()).thenReturn("very_secret");
 
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        authService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
+        authService = new AuthenticationService(securityConfigurationProperties, httpConfig);
+
+        authService.setSignatureAlgorithm("HS512");
     }
 
     @Test
@@ -64,7 +66,7 @@ public class AuthenticationServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWithNullSecret() {
-        when(jwtSecurityInitializer.getInitializedSecret()).thenReturn(null);
+        when(httpConfig.getSecret()).thenReturn(null);
         authService.createJwtToken(USER, DOMAIN, LTPA);
     }
 

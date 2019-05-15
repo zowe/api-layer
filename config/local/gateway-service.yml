@@ -12,8 +12,7 @@ apiml:
         ssl:
             verifySslCertificatesOfServices: true
         jwt:
-            signatureAlgorithm: HS512
-            secretKey:
+            signatureAlgorithm: HS256
 
 spring:
     output:
