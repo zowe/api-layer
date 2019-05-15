@@ -30,7 +30,7 @@ public class TransformService {
     }
 
     /**
-     * Construct the URL using gateway hostname and royte
+     * Construct the URL using gateway hostname and route
      *
      * @param type       the type of the route
      * @param serviceId  the service id
@@ -46,13 +46,13 @@ public class TransformService {
         URI serviceUri = URI.create(serviceUrl);
         String serviceUriPath = serviceUri.getPath();
         if (serviceUriPath == null) {
-            throw new URLTransformationException("The URI " + serviceUri.toString() + " is not valid.");
+            String message = String.format("The URI %s is not valid.", serviceUri);
+            throw new URLTransformationException(message);
         }
 
         RoutedService route = routes.getBestMatchingServiceUrl(serviceUriPath, type);
         if (route == null) {
             String message = String.format("Not able to select route for url %s of the service %s. Original url used.", serviceUri, serviceId);
-            log.warn(message);
             throw new URLTransformationException(message);
         }
 

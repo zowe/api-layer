@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.cached;
 
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.model.APIContainer;
@@ -50,7 +51,6 @@ public class CachedProductFamilyService {
 
     private final Map<String, APIContainer> products = new HashMap<>();
 
-    private final GatewayConfigProperties gatewayConfigProperties;
     private final CachedServicesService cachedServicesService;
     private final Integer cacheRefreshUpdateThresholdInMillis;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
@@ -61,7 +61,6 @@ public class CachedProductFamilyService {
                                       CachedServicesService cachedServicesService,
                                       @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
                                           Integer cacheRefreshUpdateThresholdInMillis) {
-        this.gatewayConfigProperties = gatewayConfigProperties;
         this.cachedServicesService = cachedServicesService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
         this.transformService = new TransformService(gatewayConfigProperties);
@@ -80,6 +79,7 @@ public class CachedProductFamilyService {
 
     /**
      * return cached service instance by id
+     *
      * @param id service identifier
      * @return {@link APIContainer}
      */
@@ -125,7 +125,7 @@ public class CachedProductFamilyService {
      * Add service to container
      *
      * @param productFamilyId the service identifier
-     * @param instanceInfo InstanceInfo
+     * @param instanceInfo    InstanceInfo
      */
     @CachePut(key = "#productFamilyId")
     public void addServiceToContainer(final String productFamilyId, final InstanceInfo instanceInfo) {
@@ -193,12 +193,19 @@ public class CachedProductFamilyService {
     /**
      * Try to transform the service homepage url and return it. If it fails,
      * return the original homepage url
-     * @param instanceInfo    the service instance
+     *
+     * @param instanceInfo the service instance
      * @return the transformed homepage url
      */
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
         String instanceHomePage = null;
-        if (instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
+
+        //Gateway homePage is used to hold DVIPA address and must not be modified
+        if (instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId())) {
+            instanceHomePage = instanceInfo.getHomePageUrl();
+        }
+
+        if (instanceHomePage == null && instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
             try {
@@ -208,7 +215,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getHomePageUrl(),
                     routes);
             } catch (URLTransformationException e) {
-                log.warn("Failed to create Instance Homepage URL", e);
+                log.warn(e.getMessage());
                 instanceHomePage = instanceInfo.getHomePageUrl();
             }
         }
@@ -321,9 +328,7 @@ public class CachedProductFamilyService {
         } else {
             Set<APIService> apiServices = container.getServices();
             APIService service = createAPIServiceFromInstance(instanceInfo);
-            if (apiServices.contains(service)) {
-                apiServices.remove(service);
-            }
+            apiServices.remove(service);
 
             apiServices.add(service);
             container.setServices(apiServices);
