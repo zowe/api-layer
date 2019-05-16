@@ -21,4 +21,7 @@ public final class ApimlConstants {
     //Authentication constants
     public static final String BASIC_AUTHENTICATION_PREFIX = "Basic";
     public static final String BEARER_AUTHENTICATION_PREFIX = "Bearer";
+
+    //Gateway PageRedirectionFilter constants
+    public static final int PAGE_REDIRECTION_FILTER_MAX_CACHE_ENTRIES = 100;
 }

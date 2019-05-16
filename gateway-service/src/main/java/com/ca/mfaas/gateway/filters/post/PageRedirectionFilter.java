@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
+import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
@@ -23,11 +24,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 
 import static org.apache.http.HttpHeaders.LOCATION;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
@@ -44,8 +41,15 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
 
     private final DiscoveryClient discovery;
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
-    private final Map<String, String> routeTable = new ConcurrentHashMap<>();
     private final TransformService transformService;
+
+    private final Map<String, String> routeTable = Collections.synchronizedMap(
+        new LinkedHashMap<String, String>(ApimlConstants.PAGE_REDIRECTION_FILTER_MAX_CACHE_ENTRIES + 1, .75F, true) {
+            public boolean removeEldestEntry(Map.Entry eldest) {
+                return size() > ApimlConstants.PAGE_REDIRECTION_FILTER_MAX_CACHE_ENTRIES;
+            }
+        }
+    );
 
     /**
      * Constructor
@@ -103,7 +107,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
                 //find matched url in Discovery Service
                 Optional<String> transformedUrlOp = getMatchedUrlFromDS(location);
                 if (transformedUrlOp.isPresent()) {
-                    transformedUrl = (String) transformedUrlOp.get();
+                    transformedUrl = transformedUrlOp.get();
                     //Put matched url to cache
                     routeTable.put(location, transformedUrl);
                     transformLocation(locationHeader.get(), transformedUrl);
