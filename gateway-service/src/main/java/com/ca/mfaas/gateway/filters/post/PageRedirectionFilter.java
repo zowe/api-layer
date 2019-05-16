@@ -42,11 +42,12 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     private final DiscoveryClient discovery;
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
     private final TransformService transformService;
+    private final int MAX_ENTRIES = 1000;
 
     private final Map<String, String> routeTable = Collections.synchronizedMap(
-        new LinkedHashMap<String, String>(ApimlConstants.PAGE_REDIRECTION_FILTER_MAX_CACHE_ENTRIES + 1, .75F, true) {
+        new LinkedHashMap<String, String>(MAX_ENTRIES + 1, .75F, true) {
             public boolean removeEldestEntry(Map.Entry eldest) {
-                return size() > ApimlConstants.PAGE_REDIRECTION_FILTER_MAX_CACHE_ENTRIES;
+                return size() > MAX_ENTRIES;
             }
         }
     );
