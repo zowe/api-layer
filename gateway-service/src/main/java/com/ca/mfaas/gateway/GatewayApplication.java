@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.slf4j.MDC;
 
 @Configuration
 @EnableZuulProxy
@@ -42,7 +41,6 @@ import org.slf4j.MDC;
 @EnableApiDiscovery
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
     public static void main(String[] args) {
-        MDC.put("userid", System.getProperty("user.name"));
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
