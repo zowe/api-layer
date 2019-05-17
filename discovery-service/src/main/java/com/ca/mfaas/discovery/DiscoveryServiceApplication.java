@@ -19,6 +19,7 @@ import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
+import org.slf4j.MDC;
 
 @EnableEurekaServer
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
@@ -27,6 +28,7 @@ import org.springframework.context.annotation.ComponentScan;
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
+        MDC.put("userid", System.getProperty("user.name"));
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();

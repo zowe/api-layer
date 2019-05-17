@@ -24,6 +24,7 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.reactive.config.EnableWebFlux;
+import org.slf4j.MDC;
 
 @EnableConfigurationProperties
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
@@ -38,6 +39,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 public class ApiCatalogApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
+        MDC.put("userid", System.getProperty("user.name"));
         SpringApplication app = new SpringApplication(ApiCatalogApplication.class);
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
