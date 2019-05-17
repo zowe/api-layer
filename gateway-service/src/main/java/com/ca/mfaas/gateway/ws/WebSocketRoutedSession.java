@@ -53,7 +53,6 @@ public class WebSocketRoutedSession {
             headers.add(key, header);
         });
 
-        headers.setAccessControlAllowOrigin(browserHeaders.getOrigin());
         return headers;
     }
 
