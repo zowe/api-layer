@@ -22,7 +22,7 @@ public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigure
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         String webSocketPath = "/ws/uppercase";
         log.info("Registering WebSocket handler to " + webSocketPath);
-        registry.addHandler(new WebSocketServerHandler(), webSocketPath);
+        registry.addHandler(new WebSocketServerHandler(), webSocketPath).setAllowedOrigins("*");
 
         webSocketPath = "/ws/header";
         log.info("Registering WebSocket handler to " + webSocketPath);
