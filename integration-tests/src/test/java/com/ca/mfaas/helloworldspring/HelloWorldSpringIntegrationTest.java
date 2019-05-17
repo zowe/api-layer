@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.helloworldspring;
 
-import com.ca.mfaas.utils.categories.LocalDeploymentTest;
+import com.ca.mfaas.utils.categories.AdditionalLocalTest;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
@@ -20,20 +20,16 @@ import org.junit.experimental.categories.Category;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
-@Category(LocalDeploymentTest.class)
+@Category(AdditionalLocalTest.class)
 public class HelloWorldSpringIntegrationTest {
-    private static final String SERVICE_SCHEME = "http";
-    private static final String SERVICE_HOST = "localhost";
-    private static final int SERVICE_PORT = 10020;
-    private static final String APP_INFO = "/hellospring/application/info";
-    private static final String APP_HEALTH = "/hellospring/application/health";
+    private static final String APP_INFO = "/api/hellospring/application/info";
+    private static final String APP_HEALTH = "/api/hellospring/application/health";
     private static final String API_DOC_PATH = "/api/v1/api-doc/hellospring/";
     private static final String GREETING_PATH = "/api/v1/hellospring/greeting";
     private static final String GREETING_WITH_NAME_PATH = "/api/v1/hellospring/greeting/petr";
 
-    private GatewayServiceConfiguration serviceConfiguration;
     private String scheme;
     private String host;
     private int port;
@@ -45,27 +41,27 @@ public class HelloWorldSpringIntegrationTest {
 
     @Before
     public void setUp() {
-        serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
         host = serviceConfiguration.getHost();
         port = serviceConfiguration.getPort();
     }
 
     @Test
+    //@formatter:off
     public void shouldGetApplicationInfo() {
         given()
         .when()
-            .get(String.format("%s://%s:%s%s", SERVICE_SCHEME, SERVICE_HOST, SERVICE_PORT, APP_INFO))
+            .get(String.format("%s://%s:%s%s", scheme, host, port, APP_INFO))
         .then()
-                .statusCode(is(SC_OK));
+            .statusCode(is(SC_OK));
     }
-
 
     @Test
     public void shouldGetHealth() {
         given()
         .when()
-            .get(String.format("%s://%s:%s%s", SERVICE_SCHEME, SERVICE_HOST, SERVICE_PORT, APP_HEALTH))
+            .get(String.format("%s://%s:%s%s", scheme, host, port, APP_HEALTH))
         .then()
             .statusCode(is(SC_OK))
             .body("status", is("UP"));
@@ -100,4 +96,5 @@ public class HelloWorldSpringIntegrationTest {
             .statusCode(is(SC_OK))
             .body("content", is("Hello, petr!"));
     }
+    //@formatter:on
 }

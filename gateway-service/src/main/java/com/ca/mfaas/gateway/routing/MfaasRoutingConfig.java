@@ -13,11 +13,11 @@ import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
-import com.ca.mfaas.product.routing.RoutedServicesUser;
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.security.token.TokenService;
 
+import com.ca.mfaas.product.routing.RoutedServicesUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -43,8 +43,8 @@ public class MfaasRoutingConfig {
     }
 
     @Bean
-    public ZosmfFilter zosmfFilter(TokenService tokenService) {
-        return new ZosmfFilter(tokenService);
+    public ZosmfFilter zosmfFilter(AuthenticationService authenticationService) {
+        return new ZosmfFilter(authenticationService);
     }
 
     @Bean

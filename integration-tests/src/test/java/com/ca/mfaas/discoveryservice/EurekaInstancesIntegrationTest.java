@@ -12,21 +12,22 @@ package com.ca.mfaas.discoveryservice;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.DiscoveryServiceConfiguration;
 import com.ca.mfaas.utils.config.TlsConfiguration;
+import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.PrivateKeyDetails;
-import org.apache.http.ssl.PrivateKeyStrategy;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.ssl.SSLContexts;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.net.ssl.SSLContext;
+
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -35,7 +36,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -61,6 +61,7 @@ public class EurekaInstancesIntegrationTest {
         final int instances = discoveryServiceConfiguration.getInstances();
         URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(EUREKA_STATUS).build();
 
+        //@formatter:off
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String xml =
             given()
@@ -70,6 +71,7 @@ public class EurekaInstancesIntegrationTest {
             .then()
                 .statusCode(is(200))
                 .extract().body().asString();
+        //@formatter:on
 
         xml = xml.replaceAll("com.netflix.eureka.util.StatusInfo", "StatusInfo");
 
@@ -77,7 +79,7 @@ public class EurekaInstancesIntegrationTest {
         String registeredReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.registered-replicas");
         String unavailableReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.unavailable-replicas");
         List<String> servicesList = Arrays.asList(registeredReplicas.split(","));
-        if (instances == 1 ) {
+        if (instances == 1) {
             Assert.assertEquals("", registeredReplicas);
             Assert.assertEquals("", availableReplicas);
             Assert.assertEquals("", unavailableReplicas);
@@ -86,7 +88,7 @@ public class EurekaInstancesIntegrationTest {
                 availableReplicas = availableReplicas.substring(0, availableReplicas.length() - 1);
             }
             Assert.assertNotEquals("", registeredReplicas);
-            Assert.assertNotEquals("",availableReplicas);
+            Assert.assertNotEquals("", availableReplicas);
             Assert.assertEquals("", unavailableReplicas);
             Assert.assertEquals(registeredReplicas, availableReplicas);
             Assert.assertEquals(servicesList.size(), instances - 1);
@@ -95,29 +97,27 @@ public class EurekaInstancesIntegrationTest {
 
     private SSLConfig getConfiguredSslConfig() {
         try {
-            SSLSocketFactory sslSocketFactory = new SSLSocketFactory(SSLContexts.custom()
-                    .loadKeyMaterial(new File(tlsConfiguration.getKeyStore()),
-                            tlsConfiguration.getKeyStorePassword() != null
-                                    ? tlsConfiguration.getKeyStorePassword().toCharArray()
-                                    : null,
-                            tlsConfiguration.getKeyPassword() != null ? tlsConfiguration.getKeyPassword().toCharArray()
-                                    : null,
-                            new PrivateKeyStrategy() {
-                                @Override
-                                public String chooseAlias(Map<String, PrivateKeyDetails> aliases, Socket socket) {
-                                    return tlsConfiguration.getKeyAlias();
-                                }
-                            })
-                    .loadTrustMaterial(new File(tlsConfiguration.getTrustStore()),
-                            tlsConfiguration.getTrustStorePassword() != null
-                                    ? tlsConfiguration.getTrustStorePassword().toCharArray()
-                                    : null)
-                    .build(), SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+            SSLContext sslContext = SSLContexts.custom()
+                .loadKeyMaterial(
+                    new File(tlsConfiguration.getKeyStore()),
+                    getCharArray(tlsConfiguration.getKeyStorePassword()),
+                    getCharArray(tlsConfiguration.getKeyPassword()),
+                    (aliases, socket) -> tlsConfiguration.getKeyAlias())
+                .loadTrustMaterial(
+                    new File(tlsConfiguration.getTrustStore()),
+                    getCharArray(tlsConfiguration.getTrustStorePassword()))
+                .build();
+
+            SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext,
+                NoopHostnameVerifier.INSTANCE));
             return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
         } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
-                | CertificateException | IOException e) {
+            | CertificateException | IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
+    private char[] getCharArray(String value) {
+        return value != null ? value.toCharArray() : null;
+    }
 }

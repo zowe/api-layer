@@ -41,7 +41,7 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Value("${apiml.discovery.password:password}")
     private String eurekaPassword;
 
-    @Value("${apiml.security.verifySslCertificatesOfServices:true}")
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
     @Autowired

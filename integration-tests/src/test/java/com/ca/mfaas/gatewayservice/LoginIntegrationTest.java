@@ -11,13 +11,12 @@ package com.ca.mfaas.gatewayservice;
 
 import com.ca.mfaas.security.login.LoginRequest;
 import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
+import io.restassured.http.Cookie;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static io.restassured.RestAssured.given;
@@ -27,46 +26,68 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class LoginIntegrationTest {
+    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
+    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
+    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+    private final static String BASE_PATH = "/api/v1/gateway";
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getPassword();
-    private final static String INVALID_USERNAME = "intstusr";
-    private final static String INVALID_PASSWORD = "someps33";
-
-    private GatewayServiceConfiguration serviceConfiguration;
-    private String scheme;
-    private String host;
-    private int port;
-    private String basePath;
+    private final static String ISSUER = "APIML";
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private final static String INVALID_USERNAME = "incorrectUser";
+    private final static String INVALID_PASSWORD = "incorrectPassword";
 
     @Before
     public void setUp() {
-        serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        scheme = serviceConfiguration.getScheme();
-        host = serviceConfiguration.getHost();
-        port = serviceConfiguration.getPort();
-        basePath = "/api/v1/gateway";
-
-        RestAssured.port = serviceConfiguration.getPort();
+        RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
     }
 
+    //@formatter:off
     @Test
     public void doLoginWithValidBodyLoginRequest() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
-        String token = given()
+        Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
         .then()
-            .statusCode(is(SC_OK))
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertTrue(cookie.isHttpOnly());
+        assertThat(cookie.getValue(), is(notNullValue()));
+        assertThat(cookie.getMaxAge(), is(24 * 60 * 60));
+
+        int i = cookie.getValue().lastIndexOf('.');
+        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
+        Claims claims = Jwts.parser()
+            .parseClaimsJwt(untrustedJwtString)
+            .getBody();
+
+        assertThat(claims.getId(), not(isEmptyString()));
+        assertThat(claims.getSubject(), is(USERNAME));
+        assertThat(claims.getIssuer(), is(ISSUER));
+    }
+
+    @Test
+    public void doLoginWithValidHeader() {
+        String token = given()
+            .auth().preemptive().basic(USERNAME, PASSWORD)
+            .contentType(JSON)
+        .when()
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(COOKIE_NAME);
 
@@ -76,79 +97,14 @@ public class LoginIntegrationTest {
             .parseClaimsJwt(untrustedJwtString)
             .getBody();
 
-        assertThat(claims.getSubject(), is(USERNAME));
         assertThat(claims.getId(), not(isEmptyString()));
-        assertTrue(claims.get("ltpa").toString().contains("LtpaToken2="));
-    }
-
-    @Ignore
-    @Test
-    public void doLoginWithValidHeaderLoginRequest() {
-        String token = given()
-            .auth().preemptive().basic(USERNAME, PASSWORD)
-            .contentType(JSON)
-            .when()
-            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-            .then()
-            .statusCode(is(SC_OK))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().cookie(COOKIE_NAME);
+        assertThat(claims.getSubject(), is(USERNAME));
+        assertThat(claims.getIssuer(), is(ISSUER));
     }
 
     @Test
-    public void doLoginWithInvalidCredentialsInHeaderLoginRequest() {
-        String expectedMessage = "Authentication problem: 'Login object has wrong format' for URL '/apicatalog/auth/login'";
-        given()
-            .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
-            .contentType(JSON)
-            .when()
-            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-            .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'SEC0002' }.messageContent", equalTo(expectedMessage)
-            );
-    }
-
-    @Ignore
-    @Test
-    public void doLoginWithBadHeaderLoginRequest() {
-        String expectedMessage = "Login object has wrong format";
-        given()
-            .header("Authorization", "Basic 12345")
-            .contentType(JSON)
-            .when()
-            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-            .then()
-            .statusCode(is(SC_BAD_REQUEST))
-            .body(
-                "messages.find { it.messageNumber == 'SEC0002' }.messageContent", equalTo(expectedMessage)
-            );
-    }
-
-    @Ignore
-    @Test
-    public void doLoginWithInvalidLoginRequest() {
-        String expectedMessage = "Login object has wrong format";
-        JSONObject loginRequest = new JSONObject()
-            .put("user","apimltst")
-            .put("pass","test");
-
-        given()
-            .contentType(JSON)
-            .body(loginRequest.toString())
-        .when()
-            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-        .then()
-            .statusCode(is(SC_BAD_REQUEST))
-            .body(
-                "messages.find { it.messageNumber == 'SEC0002' }.messageContent", equalTo(expectedMessage)
-            );
-    }
-
-    @Test
-    public void doLoginWithInvalidCredentials() {
-        String expectedMessage = "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'";
+    public void doLoginWithInvalidCredentialsInLoginRequest() {
+        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
@@ -156,30 +112,85 @@ public class LoginIntegrationTest {
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .post(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0005' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
             );
     }
 
-    @Ignore
+    @Test
+    public void doLoginWithInvalidCredentialsInHeader() {
+        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
+
+        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+
+        given()
+            .contentType(JSON)
+            .body(loginRequest)
+        .when()
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body(
+                "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
+    @Test
+    public void doLoginWithoutCredentials() {
+        String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
+            BASE_PATH + LOGIN_ENDPOINT + "'";
+
+        given()
+        .when()
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_BAD_REQUEST))
+            .body(
+                "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
+    @Test
+    public void doLoginWithInvalidLoginRequest() {
+        String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
+            BASE_PATH + LOGIN_ENDPOINT + "'";
+
+        JSONObject loginRequest = new JSONObject()
+            .put("user",USERNAME)
+            .put("pass",PASSWORD);
+
+        given()
+            .contentType(JSON)
+            .body(loginRequest.toString())
+        .when()
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_BAD_REQUEST))
+            .body(
+                "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
     @Test
     public void doLoginWithWrongHttpMethod() {
-        String expectedMessage = "Request method 'PUT' not supported";
+        String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
+            BASE_PATH + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
         given()
             .contentType(JSON)
             .body(loginRequest)
-            .when()
-            .put(String.format("%s://%s:%d%s%s", scheme, host, port, basePath, LOGIN_ENDPOINT))
-            .then()
+        .when()
+            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+        .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
-                "messages.find { it.messageNumber == 'SEC0002' }.messageContent", equalTo(expectedMessage)
+                "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
             );
     }
+    //@formatter:on
 }

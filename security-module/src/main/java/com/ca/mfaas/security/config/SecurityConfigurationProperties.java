@@ -16,10 +16,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
+/**
+ * General configuration of security constants: endpoints, cookie, token
+ */
 @Data
 @Component
 @Slf4j
-@ConfigurationProperties(prefix = "apiml.security", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 public class SecurityConfigurationProperties {
     public SecurityConfigurationProperties() {
         this.cookieProperties = new CookieProperties();
@@ -55,9 +58,14 @@ public class SecurityConfigurationProperties {
         private Integer cookieMaxAge = 24 * 60 * 60;
     }
 
+    /**
+     * Return the zosmf service id if it is set
+     * @throws AuthenticationServiceException if the zosmf service id is not configured
+     * @return the zosmf service id
+     */
     public String validatedZosmfServiceId() {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-            log.error("z/OSMF service name not found. Set property apiml.security.zosmfServiceId to your service name.");
+            log.error("z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name.");
             throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
         }        
         return zosmfServiceId;

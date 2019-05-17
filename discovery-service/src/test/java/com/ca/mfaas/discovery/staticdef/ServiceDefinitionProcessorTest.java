@@ -14,9 +14,7 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -39,8 +37,8 @@ public class ServiceDefinitionProcessorTest {
             "          serviceRelativeUrl: api/v1\n" +
             "        - gatewayUrl: api/v2\n" +
             "          serviceRelativeUrl: api/v2\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(routedServiceYaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -71,8 +69,8 @@ public class ServiceDefinitionProcessorTest {
             "      routedServices:\n" +
             "        - gatewayUrl: api/v1\n" +
             "          serviceRelativeUrl:\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(routedServiceYamlEmptyRelativeUrls));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYamlEmptyRelativeUrls));
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -93,8 +91,8 @@ public class ServiceDefinitionProcessorTest {
     public void testProcessServicesDataNoServicesNode() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList("something: value"));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", "something: value"));
         assertEquals(0, result.getInstances().size());
         assertEquals(1, result.getErrors().size());
         assertTrue(result.getErrors().get(0).contains("Error processing file test - Unrecognized field \"something\""));
@@ -117,8 +115,8 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - localhost:10019/casamplerestapiservice/\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(routedServiceYaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
@@ -132,8 +130,8 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - ftp://localhost:10019/casamplerestapiservice/\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(routedServiceYaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
@@ -147,8 +145,8 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - https:///casamplerestapiservice/\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(routedServiceYaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
@@ -162,8 +160,8 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - https://host/casamplerestapiservice/\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(routedServiceYaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
@@ -186,15 +184,15 @@ public class ServiceDefinitionProcessorTest {
             "        title: Tile Title\n" +
             "        description: Tile Description\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(yaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", yaml));
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(6, result.getInstances().get(0).getMetadata().size());
     }
 
     @Test
-    public void testCreateInstancesWithUndefinedInstanceBaseUrl() {
+    public void testCreateInstancesWithUndefinedInstanceBaseUrls() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String yaml =
             "services:\n" +
@@ -207,11 +205,54 @@ public class ServiceDefinitionProcessorTest {
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(yaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", yaml));
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(0));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created: null"));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice is not defined. The instance will not be created."));
+    }
+
+    @Test
+    public void testCreateInstancesWithUndefinedInstanceBaseUrl() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "      - \n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", yaml));
+        List<InstanceInfo> instances = result.getInstances();
+        assertThat(instances.size(), is(0));
+        assertTrue(result.getErrors().get(0).contains("One of the instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created."));
+    }
+
+    @Test
+    public void testCreateInstancesWithUndefinedServiceId() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: \n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", yaml));
+        List<InstanceInfo> instances = result.getInstances();
+        assertThat(instances.size(), is(0));
+        assertTrue(result.getErrors().get(0).contains("ServiceId is not defined in the file 'test'. The instance will not be created."));
     }
 
     @Test
@@ -241,11 +282,11 @@ public class ServiceDefinitionProcessorTest {
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(yaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", yaml));
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(2));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
 
     }
 
@@ -289,14 +330,14 @@ public class ServiceDefinitionProcessorTest {
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
 
-
-        List<String> yamlList = Arrays.asList(yaml, yaml2, yaml3);
-        List<String> yamlNameList = Arrays.asList("yaml", "yaml1", "yaml2");
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(yamlNameList,
-            yamlList);
+        Map<String, String> ymlSources = new HashMap<>();
+        ymlSources.put("yaml", yaml);
+        ymlSources.put("yaml1", yaml2);
+        ymlSources.put("yaml2", yaml3);
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(ymlSources);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(2));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrl of casamplerestapiservice2 is not defined. The instance will not be created: null"));
+        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
 
     }
 
@@ -316,14 +357,13 @@ public class ServiceDefinitionProcessorTest {
             "        - gatewayUrl: api/v2\n" +
             "          serviceRelativeUrl: api/v2\n";
 
-
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(routedServiceYaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(1));
         assertFalse(instances.get(0).isPortEnabled(InstanceInfo.PortType.SECURE));
         assertTrue(instances.get(0).isPortEnabled(InstanceInfo.PortType.UNSECURE));
-        assertTrue(instances.get(0).getSecurePort() == instances.get(0).getPort());
+        assertEquals(instances.get(0).getSecurePort(), instances.get(0).getPort());
         assertEquals(10019, instances.get(0).getSecurePort());
 
     }
@@ -352,8 +392,8 @@ public class ServiceDefinitionProcessorTest {
             "        title: Static API Services\n" +
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"),
-            Collections.singletonList(routedServiceYaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -395,8 +435,36 @@ public class ServiceDefinitionProcessorTest {
             "        title: Static API Services\n" +
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonList("test"), Collections.singletonList(routedServiceYaml));
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonMap("test", routedServiceYaml));
         assertEquals("The API Catalog UI tile ID adajand is invalid. The service casamplerestapiservice will not have API Catalog UI tile", result.getErrors().get(0));
+    }
+
+    @Test
+    public void testFindServicesWithTwoDirectories() throws URISyntaxException {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
+        String pathTwo = ClassLoader.getSystemResource("ext-config/").getPath();
+        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne + ";" + pathTwo);
+
+        assertThat(instances.size(), is(2));
+    }
+
+    @Test
+    public void testFindServicesWithOneDirectory() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
+        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne);
+
+        assertThat(instances.size(), is(1));
+    }
+
+    @Test
+    public void testFindServicesWithSecondEmptyDirectory() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
+        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne + ";");
+
+        assertThat(instances.size(), is(1));
     }
 
 }

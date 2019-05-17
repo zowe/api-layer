@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.eurekaservice.model.ApiInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -27,10 +27,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -48,16 +45,22 @@ public class ServiceDefinitionProcessor {
         private final List<InstanceInfo> instances;
     }
 
-    public List<InstanceInfo> findServices(String staticApiDefinitionsDirectory) {
+    public List<InstanceInfo> findServices(String staticApiDefinitionsDirectories) {
         List<InstanceInfo> instances = new ArrayList<>();
 
-        if ((staticApiDefinitionsDirectory != null) && !staticApiDefinitionsDirectory.isEmpty()) {
-            File directory = new File(staticApiDefinitionsDirectory);
-            if (directory.isDirectory()) {
-                instances.addAll(findServicesInDirectory(directory));
-            } else {
-                log.error("Directory {} is not a directory or does not exist", staticApiDefinitionsDirectory);
-            }
+        if (staticApiDefinitionsDirectories != null && !staticApiDefinitionsDirectories.isEmpty()) {
+            String[] directories = staticApiDefinitionsDirectories.split(";");
+            Arrays.stream(directories)
+                .filter(s -> !s.isEmpty())
+                .map(File::new)
+                .forEach(directory -> {
+                    if (directory.isDirectory()) {
+                        log.debug("Found directory {}", directory.getPath());
+                        instances.addAll(findServicesInDirectory(directory));
+                    } else {
+                        log.error("Directory {} is not a directory or does not exist", directory.getPath());
+                    }
+                });
         } else {
             log.info("No static definition directory defined");
         }
@@ -65,12 +68,11 @@ public class ServiceDefinitionProcessor {
         return instances;
     }
 
-    List<InstanceInfo> findServicesInDirectory(File directory) {
+    private List<InstanceInfo> findServicesInDirectory(File directory) {
         log.info("Scanning directory with static services definition: " + directory);
 
         File[] ymlFiles = directory.listFiles((dir, name) -> name.endsWith(".yml"));
-        List<String> yamlSourceName = new ArrayList<>();
-        List<String> yamlData = new ArrayList<>();
+        Map<String, String> ymlSources = new HashMap<>();
 
         if (ymlFiles == null) {
             log.error("I/O problem occurred during reading directory: {}", directory.getAbsolutePath());
@@ -82,50 +84,55 @@ public class ServiceDefinitionProcessor {
         for (File file : ymlFiles) {
             log.info("Static API definition file: {}", file.getAbsolutePath());
             try {
-                yamlSourceName.add(file.getAbsolutePath());
-                yamlData.add(new String(Files.readAllBytes(Paths.get(file.getAbsolutePath()))));
+                ymlSources.put(file.getAbsolutePath(), new String(Files.readAllBytes(Paths.get(file.getAbsolutePath()))));
             } catch (IOException e) {
                 log.error("Error loading file {}", file.getAbsolutePath(), e);
             }
         }
-        ProcessServicesDataResult result = processServicesData(yamlSourceName, yamlData);
+        ProcessServicesDataResult result = processServicesData(ymlSources);
         for (String error : result.getErrors()) {
-            log.error(error);
+            log.warn(error);
         }
         return result.getInstances();
     }
 
-    ProcessServicesDataResult processServicesData(List<String> yamlSourceNames, List<String> yamlStringList) {
+    ProcessServicesDataResult processServicesData(Map<String, String> ymlSources) {
         List<String> errors = new ArrayList<>();
-        List<Service> services = new ArrayList<>();
-        Map<String, CatalogUiTile> tiles = new HashMap<>();
+        List<InstanceInfo> instances = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        int i = 0;
-        for (String yamlString : yamlStringList) {
-            try {
-                Definition def = mapper.readValue(yamlString, Definition.class);
-                services.addAll(def.getServices());
-                if (def.getCatalogUiTiles() != null) {
-                    tiles.putAll(def.getCatalogUiTiles());
-                }
-            } catch (IOException e) {
-                errors.add(String.format("Error processing file %s - %s", yamlSourceNames.get(i), e.getMessage()));
-            }
-            i++;
+        for (Map.Entry<String, String> ymlSource : ymlSources.entrySet()) {
+            processServiceDefinition(ymlSource.getKey(), ymlSource.getValue(), mapper, errors, instances);
         }
-        ProcessServicesDataResult result = createInstances(services, tiles);
-        errors.addAll(result.getErrors());
-        return new ProcessServicesDataResult(errors, result.getInstances());
+        return new ProcessServicesDataResult(errors, instances);
     }
 
-    private ProcessServicesDataResult createInstances(List<Service> services, Map<String, CatalogUiTile> tiles) {
+    private void processServiceDefinition(String ymlFileName, String ymlData, ObjectMapper mapper, List<String> errors, List<InstanceInfo> instances) {
+        List<Service> services = new ArrayList<>();
+        Map<String, CatalogUiTile> tiles = new HashMap<>();
+        try {
+            Definition def = mapper.readValue(ymlData, Definition.class);
+            services.addAll(def.getServices());
+            if (def.getCatalogUiTiles() != null) {
+                tiles.putAll(def.getCatalogUiTiles());
+            }
+        } catch (IOException e) {
+            errors.add(String.format("Error processing file %s - %s", ymlFileName, e.getMessage()));
+        }
+        ProcessServicesDataResult result = createInstances(ymlFileName, services, tiles);
+        errors.addAll(result.getErrors());
+        instances.addAll(result.getInstances());
+    }
+
+    private ProcessServicesDataResult createInstances(String ymlFileName, List<Service> services, Map<String, CatalogUiTile> tiles) {
         List<InstanceInfo> instances = new ArrayList<>();
         List<String> errors = new ArrayList<>();
 
         for (Service service : services) {
             try {
                 String serviceId = service.getServiceId();
-
+                if (serviceId == null) {
+                    throw new ServiceDefinitionException(String.format("ServiceId is not defined in the file '%s'. The instance will not be created.", ymlFileName));
+                }
                 CatalogUiTile tile = null;
                 if (service.getCatalogUiTileId() != null) {
                     tile = tiles.get(service.getCatalogUiTileId());
@@ -136,7 +143,13 @@ public class ServiceDefinitionProcessor {
                     }
                 }
 
+                if (service.getInstanceBaseUrls() == null) {
+                    throw new ServiceDefinitionException(String.format("The instanceBaseUrls parameter of %s is not defined. The instance will not be created.", service.getServiceId()));
+                }
                 for (String instanceBaseUrl : service.getInstanceBaseUrls()) {
+                    if (instanceBaseUrl == null || instanceBaseUrl.isEmpty()) {
+                        throw new ServiceDefinitionException(String.format("One of the instanceBaseUrl of %s is not defined. The instance will not be created.", service.getServiceId()));
+                    }
                     try {
                         URL url = new URL(instanceBaseUrl);
                         if (url.getHost().isEmpty()) {
@@ -154,16 +167,15 @@ public class ServiceDefinitionProcessor {
                             instances.add(builder.build());
                         }
                     } catch (MalformedURLException e) {
-                        errors.add(String.format("The URL %s is malformed. The instance will not be created: %s",
-                            instanceBaseUrl, e.getMessage()));
+                        throw new ServiceDefinitionException(String.format("The URL %s is malformed. The instance of %s will not be created: %s",
+                            instanceBaseUrl, serviceId, e.getMessage()));
                     } catch (UnknownHostException e) {
-                        errors.add(String.format("The hostname of URL %s is unknown. The instance will not be created: %s",
-                            instanceBaseUrl, e.getMessage()));
+                        throw new ServiceDefinitionException(String.format("The hostname of URL %s is unknown. The instance of %s will not be created: %s",
+                            instanceBaseUrl, serviceId, e.getMessage()));
                     }
                 }
-
-            } catch (NullPointerException e) {
-                errors.add(String.format("The instanceBaseUrl of %s is not defined. The instance will not be created: %s", service.getServiceId(), e.getMessage()));
+            } catch (ServiceDefinitionException e) {
+                errors.add(e.getMessage());
             }
         }
         return new ProcessServicesDataResult(errors, instances);

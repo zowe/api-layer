@@ -16,8 +16,7 @@ import com.ca.mfaas.eurekaservice.client.config.Route;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
-import com.ca.mfaas.product.host.InvalidProtocolException;
-import com.ca.mfaas.product.model.ApiInfo;
+import com.ca.mfaas.eurekaservice.model.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 
@@ -136,7 +135,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
-                throw new InvalidProtocolException("Invalid protocol for baseUrl property");
+                throw new InvalidParameterException("Invalid protocol for baseUrl property");
         }
 
         return result;

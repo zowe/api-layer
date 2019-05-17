@@ -33,8 +33,8 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.port=**DISCOVERY_PORT** \
     -Dapiml.service.ipAddress=**IPADDRESS** \
     -Dapiml.service.preferIpAddress=true \
-    -Dapiml.discovery.staticApiDefinitionsDirectory=**STATIC_DEF_CONFIG** \
-    -Dapiml.security.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=**STATIC_DEF_CONFIG** \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=$DIR/../keystore/localhost/localhost.keystore.p12 \
     -Dserver.ssl.keyStoreType=PKCS12 \

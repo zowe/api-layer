@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.security.NoSuchAlgorithmException;
 
 @Configuration
 public class EurekaClientSecurityConfiguration {
@@ -28,7 +27,7 @@ public class EurekaClientSecurityConfiguration {
     }
 
     @Bean
-    public DiscoveryClient.DiscoveryClientOptionalArgs discoveryClientOptionalArgs() throws NoSuchAlgorithmException {
+    public DiscoveryClient.DiscoveryClientOptionalArgs discoveryClientOptionalArgs() {
         DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(eurekaJerseyClient);
         return args;

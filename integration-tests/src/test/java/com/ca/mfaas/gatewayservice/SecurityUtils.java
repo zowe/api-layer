@@ -17,28 +17,30 @@ import com.ca.mfaas.utils.config.ZosmfServiceConfiguration;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 
 public class SecurityUtils {
+    public final static String ZOSMF_TOKEN = "LtpaToken2";
+
     private final static String GATEWAY_TOKEN = "apimlAuthenticationToken";
     private final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
     private final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
-    public final static String ZOSMF_TOKEN = "LtpaToken2";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
 
-    private static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-    private static ZosmfServiceConfiguration zosmfServiceConfiguration = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration();
+    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private final static ZosmfServiceConfiguration zosmfServiceConfiguration = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration();
 
-    private static String gatewayScheme = serviceConfiguration.getScheme();
-    private static String gatewayHost = serviceConfiguration.getHost();
-    private static int gatewayPort = serviceConfiguration.getPort();
+    private final static String gatewayScheme = serviceConfiguration.getScheme();
+    private final static String gatewayHost = serviceConfiguration.getHost();
+    private final static int gatewayPort = serviceConfiguration.getPort();
 
-    private static String zosmfScheme = zosmfServiceConfiguration.getScheme();
-    private static String zosmfHost = zosmfServiceConfiguration.getHost();
-    private static int zosmfPort = zosmfServiceConfiguration.getPort();
+    private final static String zosmfScheme = zosmfServiceConfiguration.getScheme();
+    private final static String zosmfHost = zosmfServiceConfiguration.getHost();
+    private final static int zosmfPort = zosmfServiceConfiguration.getPort();
 
     //@formatter:off
     public static String gatewayToken(String username, String password) {
@@ -50,7 +52,7 @@ public class SecurityUtils {
         .when()
             .post(String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH, GATEWAY_LOGIN_ENDPOINT))
         .then()
-            .statusCode(is(SC_OK))
+            .statusCode(is(SC_NO_CONTENT))
             .cookie(GATEWAY_TOKEN, not(isEmptyString()))
             .extract().cookie(GATEWAY_TOKEN);
     }

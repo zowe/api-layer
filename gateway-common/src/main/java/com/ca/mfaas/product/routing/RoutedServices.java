@@ -49,12 +49,13 @@ public class RoutedServices {
         RoutedService result = null;
         int maxSize = 0;
 
-        for (String key : routedService.keySet()) {
-            if (!type.equals(ServiceType.ALL) && !key.toLowerCase().startsWith(type.name().toLowerCase())) {
+        for (Map.Entry<String, RoutedService> serviceEntry : routedService.entrySet()) {
+            if (!type.equals(ServiceType.ALL)
+                && !serviceEntry.getKey().toLowerCase().startsWith(type.name().toLowerCase())) {
                 continue;
             }
 
-            RoutedService value = routedService.get(key);
+            RoutedService value = serviceEntry.getValue();
             int size = value.getServiceUrl().length();
             if (size > maxSize &&
                 serviceUrl.toLowerCase().startsWith(value.getServiceUrl().toLowerCase())) {

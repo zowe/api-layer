@@ -9,25 +9,30 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
-import com.ca.mfaas.security.token.TokenService;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Optional;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
+/**
+ * Extract LTPA token from JWT token and set it as a cookie when accessing zOSMF
+ */
 public class ZosmfFilter extends ZuulFilter {
     private static final String ZOSMF = "zosmf";
 
     private static final String COOKIE_HEADER = "cookie";
 
-    private final TokenService tokenService;
+    private final AuthenticationService authenticationService;
 
     @Autowired
-    public ZosmfFilter(TokenService tokenService) {
-        this.tokenService = tokenService;
+    public ZosmfFilter(AuthenticationService tokenService) {
+        this.authenticationService = tokenService;
     }
 
     @Override
@@ -52,9 +57,9 @@ public class ZosmfFilter extends ZuulFilter {
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
 
-        String jwtToken = tokenService.getToken(context.getRequest());
-        if (jwtToken != null) {
-            String ltpaToken = tokenService.getLtpaToken(jwtToken);
+        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        jwtToken.ifPresent(token -> {
+            String ltpaToken = authenticationService.getLtpaTokenFromJwtToken(token);
 
             String cookie = context.getZuulRequestHeaders().get(COOKIE_HEADER);
             if (cookie != null) {
@@ -62,8 +67,11 @@ public class ZosmfFilter extends ZuulFilter {
             } else {
                 cookie = ltpaToken;
             }
+
             context.addZuulRequestHeader(COOKIE_HEADER, cookie);
-        }
+        });
+
+
         return null;
     }
 }
