@@ -54,6 +54,7 @@ public class ConfigReader {
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);
                         configuration = new EnvironmentConfiguration(credentials, gatewayServiceConfiguration, discoveryServiceConfiguration, tlsConfiguration, zosmfServiceConfiguration);
+
                     }
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
                     configuration.getCredentials().setPassword(System.getProperty("credentials.password", configuration.getCredentials().getPassword()));
@@ -70,6 +71,7 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
+                    
                     setTlsConfigurationFromSystemProperties(configuration);
 
                     instance = configuration;

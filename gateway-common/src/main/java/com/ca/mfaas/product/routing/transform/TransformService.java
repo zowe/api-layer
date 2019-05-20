@@ -14,6 +14,7 @@ import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
+import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
@@ -85,7 +86,7 @@ public class TransformService {
     private String getShortEndPoint(String routeServiceUrl, String endPoint) {
         String shortEndPoint = endPoint;
         if (!routeServiceUrl.equals(SEPARATOR)) {
-            shortEndPoint = shortEndPoint.replaceFirst(routeServiceUrl, "");
+            shortEndPoint = shortEndPoint.replaceFirst(UrlUtils.removeLastSlash(routeServiceUrl), "");
         }
         return shortEndPoint;
     }

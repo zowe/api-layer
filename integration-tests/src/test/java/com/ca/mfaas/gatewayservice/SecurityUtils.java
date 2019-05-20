@@ -13,7 +13,22 @@ package com.ca.mfaas.gatewayservice;
 import com.ca.mfaas.security.login.LoginRequest;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
+import com.ca.mfaas.utils.config.TlsConfiguration;
 import com.ca.mfaas.utils.config.ZosmfServiceConfiguration;
+import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
+import io.restassured.config.SSLConfig;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.ssl.SSLContexts;
+
+import javax.net.ssl.SSLContext;
+import java.io.File;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -68,5 +83,27 @@ public class SecurityUtils {
             .cookie(ZOSMF_TOKEN, not(isEmptyString()))
             .extract().cookie(ZOSMF_TOKEN);
     }
+
+    public static SSLConfig getConfiguredSslConfig() {
+        TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
+        try {
+            SSLContext sslContext = SSLContexts.custom()
+                .loadKeyMaterial(
+                    new File(tlsConfiguration.getKeyStore()),
+                    tlsConfiguration.getKeyStorePassword() != null ? tlsConfiguration.getKeyStorePassword().toCharArray() : null,
+                    tlsConfiguration.getKeyPassword() != null ? tlsConfiguration.getKeyPassword().toCharArray() : null,
+                    (aliases, socket) -> tlsConfiguration.getKeyAlias())
+                .loadTrustMaterial(
+                    new File(tlsConfiguration.getTrustStore()),
+                    tlsConfiguration.getTrustStorePassword() != null ? tlsConfiguration.getTrustStorePassword().toCharArray() : null)
+                .build();
+            SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier()));
+            return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
+        } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
+            | CertificateException | IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
     //@formatter:on
 }

@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.product.routing;
 
+import com.ca.mfaas.product.utils.UrlUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,8 +59,10 @@ public class RoutedServices {
 
             RoutedService value = serviceEntry.getValue();
             int size = value.getServiceUrl().length();
+            //Remove last slash for service url
+            String routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
             if (size > maxSize &&
-                serviceUrl.toLowerCase().startsWith(value.getServiceUrl().toLowerCase())) {
+                serviceUrl.toLowerCase().startsWith(routeServiceUrl)) {
                 result = value;
                 maxSize = size;
             }
