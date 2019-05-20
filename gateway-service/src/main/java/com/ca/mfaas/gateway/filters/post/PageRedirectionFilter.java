@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
-import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
