@@ -33,7 +33,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableWebSecurity
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @EnableConfigurationProperties
-@ComponentScan(value = {"com.ca.mfaas.gateway", "com.ca.mfaas.product.web", "com.ca.mfaas.enable"}, excludeFilters = {
+@ComponentScan(value = {"com.ca.mfaas.gateway", "com.ca.mfaas.product", "com.ca.mfaas.enable"}, excludeFilters = {
     @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
 @EnableEurekaClient
