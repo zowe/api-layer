@@ -109,7 +109,7 @@ describe('>>> e2e tests', async () => {
     });
 
     it('Should display the tab title and the description in the detail page', async () => {
-        const [res] = await Promise.all([page.waitForNavigation(), page.goto(defaultDetailPageUrl)]);
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(apiCatalogDetailPageUrl)]);
         await page.waitForSelector('#title');
         await page.waitForSelector('#description');
         const tab = await page.$('#title');
