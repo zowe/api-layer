@@ -198,25 +198,22 @@ public class CachedProductFamilyService {
      * @return the transformed homepage url
      */
     private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
-        String instanceHomePage = null;
+        String instanceHomePage = instanceInfo.getHomePageUrl();
 
         //Gateway homePage is used to hold DVIPA address and must not be modified
-        if (instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId())) {
-            instanceHomePage = instanceInfo.getHomePageUrl();
-        }
-
-        if (instanceHomePage == null && instanceInfo.getHomePageUrl() != null && !instanceInfo.getHomePageUrl().isEmpty()) {
+        if (instanceHomePage != null
+            && !instanceHomePage.isEmpty()
+            && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId())) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
             try {
                 instanceHomePage = transformService.transformURL(
                     ServiceType.UI,
                     instanceInfo.getVIPAddress(),
-                    instanceInfo.getHomePageUrl(),
+                    instanceHomePage,
                     routes);
             } catch (URLTransformationException e) {
                 log.warn("The home page URI was not transformed. {}",e.getMessage());
-                instanceHomePage = instanceInfo.getHomePageUrl();
             }
         }
 
