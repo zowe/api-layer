@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "REST API for the API Gateway service which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with mainframe credentials and checking authorization to mainframe resources.",
+        "description": "REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.",
         "version": "1.1.2",
         "title": "API Gateway"
     },
@@ -20,7 +20,7 @@
                     "Security"
                 ],
                 "summary": "Authenticate mainframe user credentials and return authentication token.",
-                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token.\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the credentials of the user\n  \nThe response is empty body and the token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
+                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token.\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n  \nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
                 "operationId": "loginUsingPOST",
                 "consumes": [
                     "application/json"
@@ -32,7 +32,7 @@
                     {
                         "name": "LoginRequest",
                         "in": "body",
-                        "description": "User credentials to be authenticated",
+                        "description": "Specifies the user credentials to be authenticated.",
                         "schema": {
                             "$ref": "#/definitions/LoginRequest"
                         }
@@ -73,8 +73,8 @@
                 "tags": [
                     "Security"
                 ],
-                "summary": "Validate authentication token.",
-                "description": "Use the `/query` API to validate token and retrieve the information associated within.\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication \n    **Header example:** Authorization: Bearer *token*\n    \n The response is a JSON object which contains information associated with the token.    \n",
+                "summary": "Validate the authentication token.",
+                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n    **Header example:** Authorization: Bearer *token*\n    \nThe response is a JSON object, which contains information associated with the token.\n",
                 "operationId": "validateUsingGET",
                 "produces": [
                     "application/json"
@@ -121,7 +121,7 @@
             "type": "apiKey",
             "name": "apimlAuthenticationToken",
             "in": "header",
-            "description": "Cookie with the authentication token"
+            "description": "Cookie with the authentication token."
         }
     },
     "definitions": {
@@ -151,21 +151,21 @@
             "properties": {
                 "userId": {
                     "type": "string",
-                    "description": "The logged in user's Identity."
+                    "description": "Specifies the identity of the logged-in user."
                 },
                 "domain": {
                     "type": "string",
-                    "description": "The ID of the security domain where the user has been logged."
+                    "description": "Specifies the name of the security domain where the user has been logged-in."
                 },
                 "creation": {
                     "type": "string",
                     "format": "date-time",
-                    "description": "Unix timestamp of the login time, in UTC."
+                    "description": "Specifies the UNIX timestamp of the login time, in UTC."
                 },
                 "expiration": {
                     "type": "string",
                     "format": "date-time",
-                    "description": "Unix timestamp of token expiration, in UTC."
+                    "description": "Specifies the UNIX timestamp of the token expiration time, in UTC."
                 }
             },
             "example": {
