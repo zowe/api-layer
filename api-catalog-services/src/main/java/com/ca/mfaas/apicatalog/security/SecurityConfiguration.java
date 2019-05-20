@@ -12,6 +12,7 @@ package com.ca.mfaas.apicatalog.security;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.apiml.security.handler.UnauthorizedHandler;
+import com.ca.apiml.security.login.GatewayLoginProvider;
 import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.login.SuccessfulLoginHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +42,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
       private final SuccessfulLoginHandler successfulLoginHandler;
       private final SuccessfulQueryHandler successfulQueryHandler;
-      private final ZosmfAuthenticationProvider loginAuthenticationProvider;
+
       private final TokenAuthenticationProvider tokenAuthenticationProvider;*/
 
     private final ObjectMapper securityObjectMapper;
@@ -49,18 +50,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final UnauthorizedHandler unAuthorizedHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
+    private final GatewayLoginProvider gatewayLoginProvider;
 
     public SecurityConfiguration(
         ObjectMapper securityObjectMapper,
         SecurityConfigurationProperties securityConfigurationProperties,
         SuccessfulLoginHandler successfulLoginHandler,
         UnauthorizedHandler unAuthorizedHandler,
-        FailedAuthenticationHandler authenticationFailureHandler) {
+        FailedAuthenticationHandler authenticationFailureHandler,
+        GatewayLoginProvider gatewayLoginProvider) {
         this.securityObjectMapper = securityObjectMapper;
         this.securityConfigurationProperties = securityConfigurationProperties;
         this.successfulLoginHandler = successfulLoginHandler;
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
+        this.gatewayLoginProvider =  gatewayLoginProvider;
     }
 
   /*
@@ -89,7 +93,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
-        //    auth.authenticationProvider(loginAuthenticationProvider);
+            auth.authenticationProvider(gatewayLoginProvider);
         //   auth.authenticationProvider(tokenAuthenticationProvider);
     }
 
