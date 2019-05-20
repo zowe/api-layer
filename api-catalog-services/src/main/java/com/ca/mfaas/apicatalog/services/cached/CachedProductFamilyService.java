@@ -215,7 +215,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getHomePageUrl(),
                     routes);
             } catch (URLTransformationException e) {
-                log.warn(e.getMessage());
+                log.warn("The home page URI was not transformed. {}",e.getMessage());
                 instanceHomePage = instanceInfo.getHomePageUrl();
             }
         }
