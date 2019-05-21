@@ -308,6 +308,15 @@ function trust {
     pkeytool -importcert $V -trustcacerts -noprompt -file ${CERTIFICATE} -alias "${ALIAS}" -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 }
 
+function jwt_key_gen_and_export {
+    echo "Generates key pair for JWT token secret and exports the public key"
+    pkeytool -genkeypair $V -alias "jwtsecret" -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.keystore.p12 \
+    -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype PKCS12 -validity ${SERVICE_VALIDITY} \
+    -ext KeyUsage="keyCertSign" -ext BasicConstraints:"critical=ca:true"
+
+    keytool -export -alias "jwtsecret" -keystore ${SERVICE_KEYSTORE}.keystore.p12 -file jwtsecretkey.cer -storetype PKCS12 -keypass ${SERVICE_PASSWORD}
+}
+
 function trust_zosmf {
     ALIASES_FILE=${TEMP_DIR}/aliases.txt
     rm -f ${ALIASES_FILE}
@@ -436,6 +445,9 @@ case $ACTION in
         ;;
     new-service)
         new_service
+        ;;
+    jwt_key_gen_and_export)
+        jwt_key_gen_and_export
         ;;
     new-self-signed-service)
         new_self_signed_service
