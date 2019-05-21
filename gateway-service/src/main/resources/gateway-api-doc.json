@@ -48,7 +48,7 @@
                         "description": "Authenticated",
                         "headers": {
                             "Set-Cookie": {
-                                "description": "Cookie named apimlAuthenticationToken contains authentication token",
+                                "description": "Cookie named apimlAuthenticationToken contains authentication token.",
                                 "type": "string"
                             }
                         }
