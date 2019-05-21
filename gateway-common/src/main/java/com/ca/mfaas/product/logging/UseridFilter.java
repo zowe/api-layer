@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.client;
+package com.ca.mfaas.product.logging;
 
 import org.slf4j.MDC;
 import org.slf4j.Marker;
