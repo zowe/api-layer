@@ -14,7 +14,9 @@ import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -51,7 +53,8 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.addHeader("WWW-Authenticate", ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
+        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.addHeader(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
 
         ApiMessage message = errorService.createApiMessage("apiml.gateway.security.login.invalidCredentials", request.getRequestURI());
         mapper.writeValue(response.getWriter(), message);
