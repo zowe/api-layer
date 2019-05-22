@@ -56,7 +56,7 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         response.addHeader(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
 
-        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.login.invalidCredentials", request.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidCredentials", request.getRequestURI());
         mapper.writeValue(response.getWriter(), message);
     }
 }

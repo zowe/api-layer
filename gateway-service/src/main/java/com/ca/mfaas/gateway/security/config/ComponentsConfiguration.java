@@ -25,8 +25,7 @@ public class ComponentsConfiguration {
      */
     @Bean
     public SecurityConfigurationProperties securityConfigurationProperties() {
-        return new SecurityConfigurationProperties("/api/v1/gateway/auth/login/**",
-            "/api/v1/gateway/auth/query/**");
+        return new SecurityConfigurationProperties();
     }
 
     /**

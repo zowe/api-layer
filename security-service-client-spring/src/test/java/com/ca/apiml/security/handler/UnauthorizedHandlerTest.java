@@ -7,12 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.handler;
+package com.ca.apiml.security.handler;
 
-import com.ca.apiml.security.handler.UnauthorizedHandler;
+import com.ca.apiml.security.token.TokenExpireException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
-import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,7 +55,7 @@ public class UnauthorizedHandlerTest {
         assertEquals(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader("WWW-Authenticate"));
 
 
-        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.login.invalidCredentials", httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidCredentials", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 

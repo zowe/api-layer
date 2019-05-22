@@ -9,10 +9,10 @@
  */
 package com.ca.apiml.security.handler;
 
+import com.ca.apiml.security.exceptions.AuthMethodNotSupportedException;
 import com.ca.apiml.security.query.TokenNotProvidedException;
 import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.error.ErrorService;
-import com.ca.apiml.security.exceptions.AuthMethodNotSupportedException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
@@ -56,13 +56,13 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
         ApiMessage message;
         if (exception instanceof BadCredentialsException) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            message = errorService.createApiMessage("apiml.gateway.security.login.invalidCredentials", request.getRequestURI());
+            message = errorService.createApiMessage("apiml.security.login.invalidCredentials", request.getRequestURI());
         } else if (exception instanceof AuthenticationCredentialsNotFoundException) {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
-            message = errorService.createApiMessage("apiml.gateway.security.login.invalidInput", request.getRequestURI());
+            message = errorService.createApiMessage("apiml.security.login.invalidInput", request.getRequestURI());
         } else if (exception instanceof AuthMethodNotSupportedException) {
             response.setStatus(HttpStatus.METHOD_NOT_ALLOWED.value());
-            message = errorService.createApiMessage("apiml.gateway.security.invalidMethod", exception.getMessage(), request.getRequestURI());
+            message = errorService.createApiMessage("apiml.security.invalidMethod", exception.getMessage(), request.getRequestURI());
         } else if (exception instanceof TokenNotValidException) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             message = errorService.createApiMessage("apiml.gateway.security.query.invalidToken", request.getRequestURI());
@@ -71,7 +71,7 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
             message = errorService.createApiMessage("apiml.gateway.security.query.tokenNotProvided", request.getRequestURI());
         } else {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            message = errorService.createApiMessage("apiml.gateway.security.generic", exception.getMessage(), request.getRequestURI());
+            message = errorService.createApiMessage("apiml.security.generic", exception.getMessage(), request.getRequestURI());
         }
 
         mapper.writeValue(response.getWriter(), message);

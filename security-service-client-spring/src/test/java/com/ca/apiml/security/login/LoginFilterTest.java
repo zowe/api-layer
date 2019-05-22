@@ -7,9 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.login;
+package com.ca.apiml.security.login;
 
-import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.exceptions.AuthMethodNotSupportedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;

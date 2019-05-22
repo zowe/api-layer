@@ -7,23 +7,18 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog.security;
+package com.ca.apiml.security.config;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Registers security related beans
- */
 @Configuration
-public class ComponentsConfiguration {
+public class BeansConfiguration {
 
-    /**
-     * Security configuration
-     */
     @Bean
-    public SecurityConfigurationProperties securityConfigurationProperties() {
-        return new SecurityConfigurationProperties();
+    public ErrorService errorService() {
+        return new ErrorServiceImpl("/security-service-messages.yml");
     }
 }

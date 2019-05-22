@@ -12,10 +12,10 @@ package com.ca.mfaas.gateway.security.config;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.apiml.security.handler.UnauthorizedHandler;
 import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.login.SuccessfulLoginHandler;
+import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
@@ -96,7 +96,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // login endpoint
             .and()
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
+            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getGatewayLoginPath()).permitAll()
 
             // endpoint protection
             .and()
@@ -106,8 +106,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login + query
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(securityConfigurationProperties.getGatewayLoginPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(queryFilter(securityConfigurationProperties.getServiceLQueryPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }

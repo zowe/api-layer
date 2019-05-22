@@ -24,23 +24,25 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
+
     // General properties
-    private String loginPath = "/auth/login/**";
-    private String logoutPath = "/auth/logout/**";
-    private String queryPath = "/auth/query/**";
+    private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
+    private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
+    private String gatewayLoginPath = gatewayLoginEndpoint + "/**";
+    private String gatewayQueryPath = gatewayQueryEndpoint + "/**";
+
+    private String serviceLoginPath = "/auth/login/**";
+    private String serviceLogoutPath = "/auth/logout/**";
+    private String serviceLQueryPath = "/auth/query/**";
+
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
+
     private String zosmfServiceId;
     private String provider = "zosmf";
+
     private boolean verifySslCertificatesOfServices = true;
     private String jwtKeyAlias;
-
-    public SecurityConfigurationProperties(String loginPath, String queryPath) {
-        this.tokenProperties = new TokenProperties();
-        this.cookieProperties = new CookieProperties();
-        this.loginPath = loginPath;
-        this.queryPath = queryPath;
-    }
 
     //Token properties
     @Data

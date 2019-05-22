@@ -1,12 +1,12 @@
 messages:
     # Security messages (100 - 199)
     # General messages (100 - 120)
-    - key: apiml.gateway.security.generic
+    - key: apiml.security.generic
       number: ZWEAG100E
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
 
-    - key: apiml.gateway.security.invalidMethod
+    - key: apiml.security.invalidMethod
       number: ZWEAG101E
       type: ERROR
       text: "Authentication method '%s' is not supported for URL '%s'"
@@ -22,12 +22,12 @@ messages:
       text: "Token is expired"
 
     # Login messages (120 - 130)
-    - key: apiml.gateway.security.login.invalidCredentials
+    - key: apiml.security.login.invalidCredentials
       number: ZWEAG120E
       type: ERROR
       text: "Invalid username or password for URL '%s'"
 
-    - key: apiml.gateway.security.login.invalidInput
+    - key: apiml.security.login.invalidInput
       number: ZWEAG121E
       type: ERROR
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"

@@ -16,7 +16,6 @@ import com.ca.apiml.security.login.GatewayLoginProvider;
 import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.login.SuccessfulLoginHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -127,14 +126,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // login endpoint
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(securityConfigurationProperties.getServiceLoginPath()), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
+            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getServiceLoginPath()).permitAll()
 
             // logout endpoint
             .and()
             .logout()
-            .logoutUrl(securityConfigurationProperties.getLogoutPath())
+            .logoutUrl(securityConfigurationProperties.getServiceLogoutPath())
             .logoutSuccessHandler(logoutSuccessHandler())
 
             // endpoints protection

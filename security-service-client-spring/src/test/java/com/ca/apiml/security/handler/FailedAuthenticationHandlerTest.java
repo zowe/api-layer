@@ -7,14 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.handler;
+package com.ca.apiml.security.handler;
 
-import com.ca.apiml.security.handler.FailedAuthenticationHandler;
+import com.ca.apiml.security.token.TokenExpireException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.apiml.security.exceptions.AuthMethodNotSupportedException;
 import com.ca.apiml.security.query.TokenNotProvidedException;
-import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,7 +69,7 @@ public class FailedAuthenticationHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.login.invalidCredentials", httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidCredentials", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 
@@ -82,7 +81,7 @@ public class FailedAuthenticationHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.login.invalidInput", httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidInput", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 
@@ -94,7 +93,7 @@ public class FailedAuthenticationHandlerTest {
         assertEquals(HttpStatus.METHOD_NOT_ALLOWED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.invalidMethod", authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.security.invalidMethod", authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 
@@ -130,7 +129,7 @@ public class FailedAuthenticationHandlerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.generic", tokenExpireException.getMessage(), httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.security.generic", tokenExpireException.getMessage(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 

@@ -7,10 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.login;
+package com.ca.apiml.security.login;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.apiml.security.login.SuccessfulLoginHandler;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
