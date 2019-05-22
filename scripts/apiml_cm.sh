@@ -29,6 +29,7 @@ function usage {
     echo "     - trust - adds a public certificate of a service to APIML truststore"
     echo "     - trust-zosmf - adds public certificates from z/OSMF keyring to APIML truststore"
     echo "     - clean - removes files created by setup"
+    echo "     - jwt-keygen - generates and exports JWT key pair"
     echo ""
     echo "  Called with: ${PARAMS}"
 }
@@ -446,7 +447,7 @@ case $ACTION in
     new-service)
         new_service
         ;;
-    jwt_key_gen_and_export)
+    jwt-keygen)
         jwt_key_gen_and_export
         ;;
     new-self-signed-service)
