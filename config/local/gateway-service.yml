@@ -11,8 +11,6 @@ apiml:
             zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
         ssl:
             verifySslCertificatesOfServices: true
-        jwt:
-            signatureAlgorithm: HS256
 
 spring:
     output:

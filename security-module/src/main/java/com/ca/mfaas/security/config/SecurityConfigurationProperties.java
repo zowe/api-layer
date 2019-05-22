@@ -38,8 +38,6 @@ public class SecurityConfigurationProperties {
     private String zosmfServiceId;
     private boolean verifySslCertificatesOfServices = true;
     private String ciphers = null;
-    private String signatureAlgorithm;
-    private String secretKey = null;
 
     @Data
     public static class TokenProperties {

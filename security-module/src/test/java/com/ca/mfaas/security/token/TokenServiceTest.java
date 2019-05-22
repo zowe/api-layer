@@ -18,53 +18,66 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.MockitoAnnotations;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 
+import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.Cookie;
+import java.security.Key;
 import java.util.Calendar;
 import java.util.Date;
 
 import static com.ca.mfaas.security.token.TokenService.*;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class TokenServiceTest {
     private static final String TEST_TOKEN = "token";
     private static final String TEST_DOMAIN = "domain";
     private static final String TEST_USER = "user";
     private static final String SECRET = "secret";
+    private static final String ALGORITHM = "HS256";
+
+    private Key secretKey;
 
     private SecurityConfigurationProperties securityConfigurationProperties;
-
     private TokenService tokenService;
+
+    @Mock
+    private JwtSecurityInitializer jwtSecurityInitializer;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Before
     public void setUp() {
+        secretKey = new SecretKeySpec(SECRET.getBytes(), ALGORITHM);
+        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(secretKey);
+
         securityConfigurationProperties = new SecurityConfigurationProperties();
         securityConfigurationProperties.getTokenProperties().setIssuer("test");
         securityConfigurationProperties.getTokenProperties().setExpirationInSeconds(60 * 60);
-        tokenService = new TokenService(securityConfigurationProperties);
-        MockitoAnnotations.initMocks(this);
+        tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
     }
 
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void tokenServiceWithoutSecretCannotWork() {
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(null);
         tokenService.createToken(TEST_USER);
     }
 
     @Test
     public void createTokenForGeneralUser() {
-        tokenService.setSecret(SECRET);
         String token = tokenService.createToken(TEST_USER);
-        Claims claims = Jwts.parser().setSigningKey(tokenService.getSecret())
+        Claims claims = Jwts.parser().setSigningKey(secretKey)
                 .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(TEST_USER));
@@ -78,9 +91,8 @@ public class TokenServiceTest {
         String expirationUsername = "user";
         long expiration = 10;
         securityConfigurationProperties.getTokenProperties().setExpirationInSeconds(10);
-        tokenService.setSecret(SECRET);
         String token = tokenService.createToken(expirationUsername);
-        Claims claims = Jwts.parser().setSigningKey(tokenService.getSecret())
+        Claims claims = Jwts.parser().setSigningKey(secretKey)
                 .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(expirationUsername));
@@ -91,9 +103,8 @@ public class TokenServiceTest {
 
     @Test
     public void createTokenForNonExpirationUser() {
-        tokenService.setSecret(SECRET);
         String token = tokenService.createToken(TEST_USER);
-        Claims claims = Jwts.parser().setSigningKey(tokenService.getSecret())
+        Claims claims = Jwts.parser().setSigningKey(secretKey)
                 .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(TEST_USER));
@@ -104,7 +115,6 @@ public class TokenServiceTest {
 
     @Test
     public void validateValidToken() {
-        tokenService.setSecret(SECRET);
         String token = tokenService.createToken(TEST_USER);
         TokenAuthentication authentication = new TokenAuthentication(token);
         TokenAuthentication validatedAuthentication = tokenService.validateToken(authentication);
@@ -121,7 +131,6 @@ public class TokenServiceTest {
         exception.expect(TokenExpireException.class);
         exception.expectMessage("is expired");
 
-        tokenService.setSecret(SECRET);
         String token = tokenService.createToken(expirationUser);
         TokenAuthentication authentication = new TokenAuthentication(token);
         tokenService.validateToken(authentication);
@@ -133,7 +142,6 @@ public class TokenServiceTest {
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Token is not valid");
 
-        tokenService.setSecret(SECRET);
         String token = tokenService.createToken(TEST_USER);
         TokenAuthentication authentication = new TokenAuthentication(token + signaturePadding);
         tokenService.validateToken(authentication);
@@ -141,7 +149,6 @@ public class TokenServiceTest {
 
     @Test
     public void getTokenReturnsTokenInCookie() {
-        tokenService.setSecret(SECRET);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setCookies(new Cookie("apimlAuthenticationToken", TEST_TOKEN));
 
@@ -150,7 +157,6 @@ public class TokenServiceTest {
 
     @Test
     public void getTokenReturnsTokenInAuthorizationHeader() {
-        tokenService.setSecret(SECRET);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_TYPE_PREFIX + " " + TEST_TOKEN);
 
@@ -159,25 +165,21 @@ public class TokenServiceTest {
 
     @Test
     public void getTokenReturnsNullIfTokenIsMissing() {
-        tokenService.setSecret(SECRET);
         MockHttpServletRequest request = new MockHttpServletRequest();
 
-        assertEquals(null, tokenService.getToken(request));
+        assertNull(tokenService.getToken(request));
     }
 
     @Test
     public void getLtpaTokenReturnsTokenFromJwt() {
-        tokenService.setSecret(SECRET);
         String jwtToken = Jwts.builder().claim(LTPA_CLAIM_NAME, TEST_TOKEN)
-                .signWith(SignatureAlgorithm.HS512, tokenService.getSecret())
+                .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
                 .compact();
         assertEquals(TEST_TOKEN, tokenService.getLtpaToken(jwtToken));
     }
 
     @Test
     public void parseToken() {
-        tokenService.setSecret(SECRET);
-
         Calendar calendar = Calendar.getInstance();
         calendar.set(2018, 1, 15);
         Date issuedAt = calendar.getTime();
@@ -190,7 +192,7 @@ public class TokenServiceTest {
             .setIssuedAt(issuedAt)
             .setExpiration(expiration)
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(SignatureAlgorithm.HS512, tokenService.getSecret())
+            .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
             .compact();
 
         QueryResponse response = new QueryResponse(TEST_DOMAIN, TEST_USER, issuedAt, expiration);
@@ -200,12 +202,11 @@ public class TokenServiceTest {
 
     @Test
     public void getLtpaTokenReturnsNullIfLtpaIsMissing() {
-        TokenService tokenService = new TokenService(securityConfigurationProperties);
-        tokenService.setSecret(SECRET);
+        TokenService tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
         String jwtToken = Jwts.builder().claim(DOMAIN_CLAIM_NAME, TEST_DOMAIN)
-                .signWith(SignatureAlgorithm.HS512, tokenService.getSecret())
+                .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
                 .compact();
-        assertEquals(null, tokenService.getLtpaToken(jwtToken));
+        assertNull(tokenService.getLtpaToken(jwtToken));
     }
 }
 

@@ -11,11 +11,10 @@ package com.ca.mfaas.product.web;
 
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
+import com.ca.mfaas.utils.SecurityUtils;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -107,14 +106,14 @@ public class HttpConfig {
 
     @Bean
     public SslContextFactory jettySslContextFactory() {
-        SslContextFactory sslContextFactory = new SslContextFactory(HttpsFactory.replaceFourSlashes(keyStore));
+        SslContextFactory sslContextFactory = new SslContextFactory(SecurityUtils.replaceFourSlashes(keyStore));
         sslContextFactory.setProtocol(protocol);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
         sslContextFactory.setKeyStoreType(keyStoreType);
         sslContextFactory.setCertAlias(keyAlias);
 
         if (trustStore != null) {
-            sslContextFactory.setTrustStorePath(HttpsFactory.replaceFourSlashes(trustStore));
+            sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword);
         }

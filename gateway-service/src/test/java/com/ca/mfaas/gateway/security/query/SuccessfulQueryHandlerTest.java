@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.security.query;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.product.web.HttpConfig;
+import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +23,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import javax.crypto.spec.SecretKeySpec;
+import java.security.Key;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +42,7 @@ public class SuccessfulQueryHandlerTest {
     private static final String LTPA = "ltpaToken";
 
     @Mock
-    HttpConfig httpConfig;
+    private JwtSecurityInitializer jwtSecurityInitializer;
 
     @Before
     public void setup() {
@@ -46,9 +50,11 @@ public class SuccessfulQueryHandlerTest {
         httpServletResponse = new MockHttpServletResponse();
         SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
 
-        AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties, httpConfig);
-        authenticationService.setSignatureAlgorithm("HS512");
-        when(httpConfig.getSecret()).thenReturn("very_secret");
+        String algorithm = "HS256";
+        Key key = new SecretKeySpec("very_secret".getBytes(), algorithm);
+        AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
+        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(key);
 
         jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
 

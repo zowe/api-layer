@@ -15,16 +15,13 @@ import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
-import com.ca.mfaas.product.web.HttpConfig;
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -40,15 +37,12 @@ public class AuthenticationService {
     private static final String DOMAIN_CLAIM_NAME = "dom";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
-    private final HttpConfig httpConfig;
-
-    @Value("${apiml.security.jwt.signatureAlgorithm:HS256}")
-    private String signatureAlgorithm;
+    private final JwtSecurityInitializer jwtSecurityInitializer;
 
     public AuthenticationService(SecurityConfigurationProperties securityConfigurationProperties,
-                                 HttpConfig httpConfig) {
+                                 JwtSecurityInitializer jwtSecurityInitializer) {
         this.securityConfigurationProperties = securityConfigurationProperties;
-        this.httpConfig = httpConfig;
+        this.jwtSecurityInitializer = jwtSecurityInitializer;
     }
 
     /**
@@ -72,7 +66,7 @@ public class AuthenticationService {
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.forName(signatureAlgorithm), httpConfig.getSecret())
+            .signWith(SignatureAlgorithm.forName(jwtSecurityInitializer.getSignatureAlgorithm()), jwtSecurityInitializer.getJwtSecret())
             .compact();
     }
 
@@ -87,7 +81,7 @@ public class AuthenticationService {
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(httpConfig.getSecret())
+                .setSigningKey(jwtSecurityInitializer.getJwtSecret())
                 .parseClaimsJws(token.getCredentials())
                 .getBody();
 
@@ -115,7 +109,7 @@ public class AuthenticationService {
      */
     public QueryResponse parseJwtToken(String token) {
         Claims claims = Jwts.parser()
-            .setSigningKey(httpConfig.getSecret())
+            .setSigningKey(jwtSecurityInitializer.getJwtSecret())
             .parseClaimsJws(token)
             .getBody();
 
@@ -159,7 +153,7 @@ public class AuthenticationService {
     public String getLtpaTokenFromJwtToken(String jwtToken) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(httpConfig.getSecret())
+                .setSigningKey(jwtSecurityInitializer.getJwtSecret())
                 .parseClaimsJws(jwtToken)
                 .getBody();
 
@@ -209,13 +203,5 @@ public class AuthenticationService {
         }
 
         return expiration;
-    }
-
-    public void setSignatureAlgorithm(String signatureAlgorithm) {
-        this.signatureAlgorithm = signatureAlgorithm;
-    }
-
-    public String getSignatureAlgorithm() {
-        return signatureAlgorithm;
     }
 }

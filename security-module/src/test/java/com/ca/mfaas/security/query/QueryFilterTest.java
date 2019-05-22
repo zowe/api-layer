@@ -11,6 +11,7 @@ package com.ca.mfaas.security.query;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.login.AuthMethodNotSupportedException;
+import com.ca.mfaas.security.token.JwtSecurityInitializer;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenNotValidException;
 import com.ca.mfaas.security.token.TokenService;
@@ -30,11 +31,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 public class QueryFilterTest {
@@ -52,8 +52,8 @@ public class QueryFilterTest {
     @Before
     public void setUp() {
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        TokenService tokenService = new TokenService(securityConfigurationProperties);
-
+        JwtSecurityInitializer jwtSecurityInitializer = mock(JwtSecurityInitializer.class);
+        TokenService tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
         authenticationSuccessHandler = mock(AuthenticationSuccessHandler.class);
         failureHandler = mock(AuthenticationFailureHandler.class);
         authenticationManager = mock(AuthenticationManager.class);

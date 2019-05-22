@@ -10,6 +10,7 @@
 package com.ca.mfaas.security.login;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.security.token.JwtSecurityInitializer;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,19 +22,23 @@ import org.mockito.Mockito;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.client.RestTemplate;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.security.Key;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import static org.junit.Assert.assertTrue;
 
 public class ZosmfAuthenticationProviderTest {
     private static final String USERNAME = "user";
@@ -62,8 +67,14 @@ public class ZosmfAuthenticationProviderTest {
     public void setUp() {
         usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(USERNAME, PASSWORD);
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        tokenService = new TokenService(securityConfigurationProperties);
-        tokenService.setSecret(SECRET);
+        JwtSecurityInitializer jwtSecurityInitializer = mock(JwtSecurityInitializer.class);
+        tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
+
+        String algorithm = "HS256";
+        Key key = new SecretKeySpec(SECRET.getBytes(), algorithm);
+        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(key);
+
         discovery = mock(DiscoveryClient.class);
         mapper = new ObjectMapper();
         restTemplate = mock(RestTemplate.class);
