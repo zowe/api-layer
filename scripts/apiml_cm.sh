@@ -47,6 +47,7 @@ EXTERNAL_CA_FILENAME="keystore/local_ca/extca"
 EXTERNAL_CA=
 
 SERVICE_ALIAS="localhost"
+JWT_ALIAS="jwtsecret"
 SERVICE_PASSWORD="password"
 SERVICE_KEYSTORE="keystore/localhost/localhost.keystore"
 SERVICE_TRUSTSTORE="keystore/localhost/localhost.truststore"
@@ -311,11 +312,65 @@ function trust {
 
 function jwt_key_gen_and_export {
     echo "Generates key pair for JWT token secret and exports the public key"
-    pkeytool -genkeypair $V -alias "jwtsecret" -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.keystore.p12 \
-    -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype PKCS12 -validity ${SERVICE_VALIDITY} \
-    -ext KeyUsage="keyCertSign" -ext BasicConstraints:"critical=ca:true"
+    keytool -genseckey $V -alias ${JWT_ALIAS} -keyalg HMACSHA256 -keysize 256 -keystore ${SERVICE_KEYSTORE}.p12 \
+    -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype PKCS12 -validity ${SERVICE_VALIDITY}
 
-    keytool -export -alias "jwtsecret" -keystore ${SERVICE_KEYSTORE}.keystore.p12 -file jwtsecretkey.cer -storetype PKCS12 -keypass ${SERVICE_PASSWORD}
+    export_jwt_key
+}
+
+function export_jwt_key {
+    echo "Exporting jwt secret key"
+    echo "TEMP_DIR=$TEMP_DIR"
+    cat <<EOF >$TEMP_DIR/ExportPrivateKey.java
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.security.Key;
+import java.security.KeyStore;
+import java.util.Base64;
+
+public class ExportPrivateKey {
+    private File keystoreFile;
+    private String keyStoreType;
+    private char[] keyStorePassword;
+    private char[] keyPassword;
+    private String alias;
+    private File exportedFile;
+
+    public void export() throws Exception {
+        KeyStore keystore = KeyStore.getInstance(keyStoreType);
+        keystore.load(new FileInputStream(keystoreFile), keyStorePassword);
+        Key key = keystore.getKey(alias, keyPassword);
+        String encoded = Base64.getEncoder().encodeToString(key.getEncoded());
+        FileWriter fw = new FileWriter(exportedFile);
+        for (int i = 0; i < encoded.length(); i++) {
+            if (((i % 64) == 0) && (i != (encoded.length() - 1))) {
+                fw.write("\n");
+            }
+            fw.write(encoded.charAt(i));
+        }
+        fw.close();
+    }
+
+    public static void main(String args[]) throws Exception {
+        ExportPrivateKey export = new ExportPrivateKey();
+        export.keystoreFile = new File(args[0]);
+        export.keyStoreType = args[1];
+        export.keyStorePassword = args[2].toCharArray();
+        export.alias = args[3];
+        export.keyPassword = args[4].toCharArray();
+        export.exportedFile = new File("keystore/localhost/jwtsecret.key");
+        export.export();
+    }
+}
+EOF
+    echo "cat returned $?"
+    javac ${TEMP_DIR}/ExportPrivateKey.java
+    echo "javac returned $?"
+    java -cp ${TEMP_DIR} ExportPrivateKey ${SERVICE_KEYSTORE}.p12 PKCS12 ${SERVICE_PASSWORD} ${JWT_ALIAS} ${SERVICE_PASSWORD}
+    echo "java returned $?"
+    rm ${TEMP_DIR}/ExportPrivateKey.java ${TEMP_DIR}/ExportPrivateKey.class
 }
 
 function trust_zosmf {
@@ -380,6 +435,9 @@ while [ "$1" != "" ]; do
         --service-alias )       shift
                                 SERVICE_ALIAS=$1
                                 ;;
+        --jwt-alias )           shift
+                                JWT_ALIAS=$1
+                                ;;
         --service-ext )         shift
                                 SERVICE_EXT=$1
                                 ;;
@@ -437,6 +495,7 @@ case $ACTION in
     setup)
         setup_local_ca
         new_service
+        jwt_key_gen_and_export
         ;;
     add-external-ca)
         add_external_ca
