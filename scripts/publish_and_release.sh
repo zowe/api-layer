@@ -2,7 +2,7 @@
 
 set -ex
 
-./bootstrap_gradlew.sh
+./gradle/bootstrap/bootstrap_gradlew.sh
 AUTH="-Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD"
 
 case $RELEASE_TYPE in
