@@ -212,3 +212,5 @@ spring:
     profiles.include:
         - debug
         - diag
+
+logbackServiceName: ZWEAGW1

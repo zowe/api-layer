@@ -142,3 +142,5 @@ spring:
     profiles.include:
         - debug
         - diag
+
+logbackServiceName: ZWEADS1
