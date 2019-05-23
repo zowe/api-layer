@@ -44,21 +44,16 @@ public class CachedApiDocService {
      * @return api doc info for the requested service id
      */
     public String getApiDocForService(final String serviceId, final String apiVersion) {
-        String apiDoc;
-
+        String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
         try {
             ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
-            if (apiDocInfo == null || apiDocInfo.getApiDocContent() == null) {
-                apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
-            } else {
+            if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
                 apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
             }
         } catch (Exception e) {
             log.warn("ApiDoc retrieving problem. {}", e.getMessage());
-            apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
         }
-
         return apiDoc;
     }
 

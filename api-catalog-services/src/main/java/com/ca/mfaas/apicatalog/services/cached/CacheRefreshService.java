@@ -11,7 +11,6 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
-import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -44,7 +43,6 @@ public class CacheRefreshService {
     @Autowired
     public CacheRefreshService(CachedProductFamilyService cachedProductFamilyService,
                                CachedServicesService cachedServicesService,
-                               APIServiceStatusService apiServiceStatusService,
                                InstanceRetrievalService instanceRetrievalService) {
         this.cachedProductFamilyService = cachedProductFamilyService;
         this.cachedServicesService = cachedServicesService;
@@ -148,6 +146,12 @@ public class CacheRefreshService {
                 .filter(service -> service.getName().equalsIgnoreCase(instance.getAppName())).findFirst().orElse(null);
         }
 
+        // there's no chance which this case is not called. It's just double check
+        if (application == null || application.getInstances().isEmpty()) {
+            log.debug("Instance {} couldn't get it from cache and delta", instance.getAppName());
+            return;
+        }
+
         processInstance(containersUpdated, instance, application);
     }
 
@@ -231,11 +235,11 @@ public class CacheRefreshService {
     private void updateContainer(Set<String> containersUpdated, String serviceId, InstanceInfo instanceInfo) {
         String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
         if (productFamilyId == null) {
-            log.error("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
+            log.warn("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
                 " must contain an entry for mfaas.discovery.catalogUiTile.id");
         } else {
             APIContainer container = cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);
-            log.info("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());
+            log.debug("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());
             containersUpdated.add(productFamilyId);
         }
     }
