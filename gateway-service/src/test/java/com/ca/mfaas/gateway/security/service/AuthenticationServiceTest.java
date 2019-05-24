@@ -14,6 +14,7 @@ import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.mfaas.utils.SecurityUtils;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang.time.DateUtils;
@@ -24,9 +25,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.Cookie;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.Optional;
 
@@ -39,10 +41,10 @@ public class AuthenticationServiceTest {
     private static final String USER = "Me";
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
-    private static final String SECRET = "very_secret";
-    private static final String ALGORITHM = "HS256";
+    private static final String ALGORITHM = "RS256";
 
-    private Key secretKey;
+    private Key privateKey;
+    private PublicKey publicKey;
 
     private AuthenticationService authService;
     private SecurityConfigurationProperties securityConfigurationProperties;
@@ -52,9 +54,14 @@ public class AuthenticationServiceTest {
 
     @Before
     public void setUp() {
-        secretKey = new SecretKeySpec(SECRET.getBytes(), ALGORITHM);
+        KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+        if (keyPair != null) {
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+        }
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
-        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(secretKey);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         securityConfigurationProperties = new SecurityConfigurationProperties();
         authService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
@@ -96,7 +103,7 @@ public class AuthenticationServiceTest {
 
     @Test(expected = TokenExpireException.class)
     public void shouldThrowExceptionWhenTokenIsExpired() {
-        TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(secretKey));
+        TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
         authService.validateJwtToken(token);
     }
 
@@ -165,7 +172,7 @@ public class AuthenticationServiceTest {
 
     @Test(expected = TokenExpireException.class)
     public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
-        authService.getLtpaTokenFromJwtToken(createExpiredJwtToken(secretKey));
+        authService.getLtpaTokenFromJwtToken(createExpiredJwtToken(privateKey));
     }
 
     private String createExpiredJwtToken(Key secretKey) {

@@ -13,6 +13,7 @@ import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.token.JwtSecurityInitializer;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
+import com.ca.mfaas.utils.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,8 +31,9 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.client.RestTemplate;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,7 +49,6 @@ public class ZosmfAuthenticationProviderTest {
     private static final String HOST = "localhost";
     private static final int PORT = 0;
     private static final String ZOSMF = "zosmf";
-    private static final String SECRET = "secret";
     private static final String COOKIE = "LtpaToken2=test";
     private static final String DOMAIN = "realm";
     private static final String RESPONSE = "{\"zosmf_saf_realm\": \"" + DOMAIN + "\"}";
@@ -70,10 +71,17 @@ public class ZosmfAuthenticationProviderTest {
         JwtSecurityInitializer jwtSecurityInitializer = mock(JwtSecurityInitializer.class);
         tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
 
-        String algorithm = "HS256";
-        Key key = new SecretKeySpec(SECRET.getBytes(), algorithm);
+        String algorithm = "RS256";
+        KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+        Key privateKey = null;
+        PublicKey publicKey = null;
+        if (keyPair != null) {
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+        }
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
-        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(key);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         discovery = mock(DiscoveryClient.class);
         mapper = new ObjectMapper();

@@ -13,6 +13,7 @@ import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.token.JwtSecurityInitializer;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
+import com.ca.mfaas.utils.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -20,9 +21,10 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -36,16 +38,22 @@ public class SuccessfulQueryHandlerTest {
         String user = "user";
         String domain = "domain";
         String ltpa = "ltpa";
-        String secret = "secret";
-        String algorithm = "HS256";
-        Key key = new SecretKeySpec(secret.getBytes(), algorithm);
+        String algorithm = "RS256";
+        KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+        Key privateKey = null;
+        PublicKey publicKey = null;
+        if (keyPair != null) {
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+        }
 
         SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
         JwtSecurityInitializer jwtSecurityInitializer = mock(JwtSecurityInitializer.class);
         TokenService tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
 
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
-        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(key);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         ObjectMapper mapper = new ObjectMapper();
         SuccessfulQueryHandler successfulQueryHandler = new SuccessfulQueryHandler(mapper, tokenService);

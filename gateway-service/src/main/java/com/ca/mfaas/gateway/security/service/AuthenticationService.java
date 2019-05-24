@@ -81,7 +81,7 @@ public class AuthenticationService {
     public TokenAuthentication validateJwtToken(TokenAuthentication token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecurityInitializer.getJwtSecret())
+                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
                 .parseClaimsJws(token.getCredentials())
                 .getBody();
 
@@ -109,7 +109,7 @@ public class AuthenticationService {
      */
     public QueryResponse parseJwtToken(String token) {
         Claims claims = Jwts.parser()
-            .setSigningKey(jwtSecurityInitializer.getJwtSecret())
+            .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
             .parseClaimsJws(token)
             .getBody();
 
@@ -153,7 +153,7 @@ public class AuthenticationService {
     public String getLtpaTokenFromJwtToken(String jwtToken) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecurityInitializer.getJwtSecret())
+                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
                 .parseClaimsJws(jwtToken)
                 .getBody();
 

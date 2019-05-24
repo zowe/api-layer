@@ -11,6 +11,7 @@ package com.ca.mfaas.security.token;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.query.QueryResponse;
+import com.ca.mfaas.utils.SecurityUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -25,9 +26,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 
-import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.Cookie;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -41,10 +43,10 @@ public class TokenServiceTest {
     private static final String TEST_TOKEN = "token";
     private static final String TEST_DOMAIN = "domain";
     private static final String TEST_USER = "user";
-    private static final String SECRET = "secret";
-    private static final String ALGORITHM = "HS256";
+    private static final String ALGORITHM = "RS256";
 
-    private Key secretKey;
+    private Key privateKey;
+    private PublicKey publicKey;
 
     private SecurityConfigurationProperties securityConfigurationProperties;
     private TokenService tokenService;
@@ -57,9 +59,14 @@ public class TokenServiceTest {
 
     @Before
     public void setUp() {
-        secretKey = new SecretKeySpec(SECRET.getBytes(), ALGORITHM);
+        KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+        if (keyPair != null) {
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+        }
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
-        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(secretKey);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         securityConfigurationProperties = new SecurityConfigurationProperties();
         securityConfigurationProperties.getTokenProperties().setIssuer("test");
@@ -77,7 +84,7 @@ public class TokenServiceTest {
     @Test
     public void createTokenForGeneralUser() {
         String token = tokenService.createToken(TEST_USER);
-        Claims claims = Jwts.parser().setSigningKey(secretKey)
+        Claims claims = Jwts.parser().setSigningKey(publicKey)
                 .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(TEST_USER));
@@ -92,7 +99,7 @@ public class TokenServiceTest {
         long expiration = 10;
         securityConfigurationProperties.getTokenProperties().setExpirationInSeconds(10);
         String token = tokenService.createToken(expirationUsername);
-        Claims claims = Jwts.parser().setSigningKey(secretKey)
+        Claims claims = Jwts.parser().setSigningKey(publicKey)
                 .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(expirationUsername));
@@ -104,7 +111,7 @@ public class TokenServiceTest {
     @Test
     public void createTokenForNonExpirationUser() {
         String token = tokenService.createToken(TEST_USER);
-        Claims claims = Jwts.parser().setSigningKey(secretKey)
+        Claims claims = Jwts.parser().setSigningKey(publicKey)
                 .parseClaimsJws(token).getBody();
 
         assertThat(claims.getSubject(), is(TEST_USER));
@@ -173,7 +180,7 @@ public class TokenServiceTest {
     @Test
     public void getLtpaTokenReturnsTokenFromJwt() {
         String jwtToken = Jwts.builder().claim(LTPA_CLAIM_NAME, TEST_TOKEN)
-                .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
+                .signWith(SignatureAlgorithm.forName(ALGORITHM), privateKey)
                 .compact();
         assertEquals(TEST_TOKEN, tokenService.getLtpaToken(jwtToken));
     }
@@ -192,7 +199,7 @@ public class TokenServiceTest {
             .setIssuedAt(issuedAt)
             .setExpiration(expiration)
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
+            .signWith(SignatureAlgorithm.forName(ALGORITHM), privateKey)
             .compact();
 
         QueryResponse response = new QueryResponse(TEST_DOMAIN, TEST_USER, issuedAt, expiration);
@@ -204,7 +211,7 @@ public class TokenServiceTest {
     public void getLtpaTokenReturnsNullIfLtpaIsMissing() {
         TokenService tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
         String jwtToken = Jwts.builder().claim(DOMAIN_CLAIM_NAME, TEST_DOMAIN)
-                .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
+                .signWith(SignatureAlgorithm.forName(ALGORITHM), privateKey)
                 .compact();
         assertNull(tokenService.getLtpaToken(jwtToken));
     }

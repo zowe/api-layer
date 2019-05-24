@@ -158,4 +158,16 @@ public class SecurityUtils {
     public static String replaceFourSlashes(String storeUri) {
         return storeUri == null ? null : storeUri.replaceFirst("////", "//");
     }
+
+    public static KeyPair generateKeyPair(String algorithm, int keySize) {
+        KeyPair kp = null;
+        try {
+            KeyPairGenerator kpg = KeyPairGenerator.getInstance(algorithm);
+            kpg.initialize(keySize);
+            kp = kpg.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            log.error(e.getMessage(), e);
+        }
+        return kp;
+    }
 }

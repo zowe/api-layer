@@ -13,6 +13,7 @@ import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
+import com.ca.mfaas.utils.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,8 +25,9 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
@@ -50,11 +52,18 @@ public class SuccessfulQueryHandlerTest {
         httpServletResponse = new MockHttpServletResponse();
         SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
 
-        String algorithm = "HS256";
-        Key key = new SecretKeySpec("very_secret".getBytes(), algorithm);
+        String algorithm = "RS256";
+        KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+        Key privateKey = null;
+        PublicKey publicKey = null;
+        if (keyPair != null) {
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+        }
         AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
-        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(key);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
 
