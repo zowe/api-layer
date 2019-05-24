@@ -312,7 +312,7 @@ function trust {
 
 function jwt_key_gen_and_export {
     echo "Generates key pair for JWT token secret and exports the public key"
-    keytool -genseckey $V -alias ${JWT_ALIAS} -keyalg HMACSHA256 -keysize 256 -keystore ${SERVICE_KEYSTORE}.p12 \
+    keytool -genkeypair $V -alias ${JWT_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.p12 \
     -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype PKCS12 -validity ${SERVICE_VALIDITY}
 
     export_jwt_key
