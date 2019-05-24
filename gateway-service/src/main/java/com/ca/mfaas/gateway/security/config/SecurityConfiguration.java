@@ -107,7 +107,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // add filters - login + query
             .and()
             .addFilterBefore(loginFilter(securityConfigurationProperties.getGatewayLoginPath()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(queryFilter(securityConfigurationProperties.getServiceLQueryPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(queryFilter(securityConfigurationProperties.getGatewayQueryPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }

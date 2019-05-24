@@ -10,6 +10,8 @@
 package com.ca.apiml.security.service;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.query.QueryResponse;
+import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -60,11 +62,38 @@ public class GatewaySecurityService {
                 String.class);
 
             return extractToken(response.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
-        }
-        catch (HttpClientErrorException e) {
+        } catch (HttpClientErrorException e) {
             //TODO: Should handle unsuccessful responses
             if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
                 throw new BadCredentialsException("Username or password are invalid.");
+            }
+
+            log.error("Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
+            throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
+        }
+    }
+
+    public QueryResponse query(String token) {
+
+        String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname(), securityConfigurationProperties.getGatewayQueryEndpoint());
+        String cookie = String.format("%s=%s", securityConfigurationProperties.getCookieProperties().getCookieName(), token);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.COOKIE, cookie);
+
+        try {
+            ResponseEntity<QueryResponse> response = restTemplate.exchange(
+                uri,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                QueryResponse.class);
+
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            //TODO: Should handle unsuccessful responses
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                throw new TokenNotValidException("Token is not valid.");
             }
 
             log.error("Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());

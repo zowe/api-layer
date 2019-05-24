@@ -12,7 +12,6 @@ package com.ca.apiml.security.handler;
 import com.ca.apiml.security.token.TokenExpireException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
-import com.ca.apiml.security.exceptions.AuthMethodNotSupportedException;
 import com.ca.apiml.security.query.TokenNotProvidedException;
 import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.rest.response.ApiMessage;
@@ -105,7 +104,7 @@ public class FailedAuthenticationHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage("apiml.gateway.security.query.invalidToken", httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage("apiml.security.query.invalidToken", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 
@@ -138,7 +137,7 @@ public class FailedAuthenticationHandlerTest {
     static class ContextConfiguration {
         @Bean
         public ErrorService errorService() {
-            return new ErrorServiceImpl("/gateway-messages.yml");
+            return new ErrorServiceImpl("/security-service-messages.yml");
         }
     }
 

@@ -33,7 +33,7 @@ messages:
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
 
     # Query messages (130 - 140)
-    - key: apiml.gateway.security.query.invalidToken
+    - key: apiml.security.query.invalidToken
       number: ZWEAG130E
       type: ERROR
       text: "Token is not valid for URL '%s'"

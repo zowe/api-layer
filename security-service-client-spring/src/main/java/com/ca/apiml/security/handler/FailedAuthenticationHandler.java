@@ -9,7 +9,6 @@
  */
 package com.ca.apiml.security.handler;
 
-import com.ca.apiml.security.exceptions.AuthMethodNotSupportedException;
 import com.ca.apiml.security.query.TokenNotProvidedException;
 import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.error.ErrorService;
@@ -65,7 +64,7 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
             message = errorService.createApiMessage("apiml.security.invalidMethod", exception.getMessage(), request.getRequestURI());
         } else if (exception instanceof TokenNotValidException) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            message = errorService.createApiMessage("apiml.gateway.security.query.invalidToken", request.getRequestURI());
+            message = errorService.createApiMessage("apiml.security.query.invalidToken", request.getRequestURI());
         } else if (exception instanceof TokenNotProvidedException) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             message = errorService.createApiMessage("apiml.gateway.security.query.tokenNotProvided", request.getRequestURI());

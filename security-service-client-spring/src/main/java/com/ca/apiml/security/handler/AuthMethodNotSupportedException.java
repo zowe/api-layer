@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.exceptions;
+package com.ca.apiml.security.handler;
 
 import org.springframework.security.core.AuthenticationException;
 

@@ -33,7 +33,7 @@ public class SecurityConfigurationProperties {
 
     private String serviceLoginPath = "/auth/login/**";
     private String serviceLogoutPath = "/auth/logout/**";
-    private String serviceLQueryPath = "/auth/query/**";
+    private String serviceQueryPath = "/auth/query/**";
 
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;

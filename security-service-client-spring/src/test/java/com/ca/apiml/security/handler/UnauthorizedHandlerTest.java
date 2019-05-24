@@ -63,7 +63,7 @@ public class UnauthorizedHandlerTest {
     static class ContextConfiguration {
         @Bean
         public ErrorService errorService() {
-            return new ErrorServiceImpl("/gateway-messages.yml");
+            return new ErrorServiceImpl("/security-service-messages.yml");
         }
     }
 }
