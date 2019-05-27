@@ -316,6 +316,7 @@ function jwt_key_gen_and_export {
     -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype PKCS12 -validity ${SERVICE_VALIDITY}
     keytool -export -alias ${JWT_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -keypass ${SERVICE_PASSWORD} -storetype PKCS12 \
     -file keystore/localhost/jwtsecret.cer
+    chown jenkins:jenkins keystore/localhost/jwtsecret.cer
 }
 
 function export_jwt_key {
