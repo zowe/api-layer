@@ -52,7 +52,10 @@ public class CachedApiDocService {
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
             }
         } catch (Exception e) {
-            log.warn("ApiDoc retrieving problem. {}", e.getMessage());
+            //if there's not apiDoc in cache
+            if (apiDoc == null) {
+                log.warn("ApiDoc retrieving problem. {}", e.getMessage());
+            }
         }
         return apiDoc;
     }
