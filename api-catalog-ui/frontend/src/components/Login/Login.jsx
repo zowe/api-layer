@@ -41,7 +41,7 @@ export default class Login extends React.Component {
                 case 'SEC0004':
                     messageText = `Session has expired, please login again (${error.messageNumber})`;
                     break;
-                case 'SEC0005':
+                case 'ZWEAS120E':
                     messageText = `Username or password is invalid (${error.messageNumber})`;
                     break;
                 case 'MFS0104':
