@@ -1,5 +1,6 @@
 package com.ca.mfaas.discovery.config.temporary;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
@@ -9,6 +10,7 @@ import java.io.IOException;
 
 @Component
 @WebFilter(urlPatterns = {"/*"}, description = "Session Checker Filter")
+@Profile("!dev")
 public class TemporaryFilter implements Filter {
     @Override
     public void destroy() {}
