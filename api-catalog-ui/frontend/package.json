@@ -39,7 +39,7 @@
         "uuid": "3.3.2"
     },
     "scripts": {
-        "start": "react-scripts start",
+        "start": "set HTTPS=true&&react-scripts start",
         "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mocked-backend\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm start\"",
         "start:mocked-backend": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mocked-backend/server.js",
         "build": "react-scripts build",

@@ -2,8 +2,7 @@ import * as log from 'loglevel';
 
 function handleResponse(response) {
     return response.text().then(function(text) {
-        const data = text ? text.json() : {}
-
+        const data = text ? JSON.parse(text) : {}
         if (!response.ok) {
             const [message] = data.messages;
             return Promise.reject(message);
