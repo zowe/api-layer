@@ -54,7 +54,7 @@ public class CachedApiDocService {
         } catch (Exception e) {
             //if there's not apiDoc in cache
             if (apiDoc == null) {
-                log.warn("ApiDoc retrieving problem. {}", e.getMessage());
+                log.warn("ApiDoc retrieving problem for {}. {}", serviceId, e.getMessage());
             }
         }
         return apiDoc;
