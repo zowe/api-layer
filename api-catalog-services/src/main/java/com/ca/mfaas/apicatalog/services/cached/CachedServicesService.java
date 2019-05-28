@@ -56,15 +56,6 @@ public class CachedServicesService {
     public void updateService(@NonNull final String serviceId, final Application application) {
         services.put(serviceId.toLowerCase(), application);
     }
-
-    /**
-     * Remove this service with the application object
-     * @param serviceId the service name (lowercase)
-     */
-    public void removeService(@NonNull final String serviceId) {
-        services.remove(serviceId.toLowerCase());
-    }
-
     /**
      * Clear the cache and remove all entries from the map
      */

@@ -161,7 +161,7 @@ public class InstanceRetrievalService {
             }
         } catch (Exception e) {
             String msg = "An error occurred when trying to get instance info for:  " + serviceId;
-            log.error(msg, e);
+            log.warn(msg, e.getMessage());
             throw new RetryException(msg);
         }
 

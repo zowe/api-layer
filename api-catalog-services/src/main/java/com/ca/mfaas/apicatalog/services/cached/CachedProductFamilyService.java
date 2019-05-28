@@ -344,29 +344,6 @@ public class CachedProductFamilyService {
 
         return container;
     }
-
-    /**
-     * Remove a container
-     *
-     * @param productFamilyId the product family id of the container
-     * @param serviceId       check for this service
-     */
-    @CacheEvict(key = "#productFamilyId")
-    public void removeContainerFromInstance(String productFamilyId, String serviceId) {
-        APIContainer container = products.get(productFamilyId);
-        if (container != null) {
-            Set<APIService> apiServices = container.getServices();
-            apiServices.remove(new APIService(serviceId));
-
-            if (apiServices.isEmpty()) {
-                products.remove(productFamilyId);
-            } else {
-                container.setServices(apiServices);
-                products.put(container.getId(), container);
-            }
-        }
-    }
-
     /**
      * Update the summary totals for a container based on it's running services
      *

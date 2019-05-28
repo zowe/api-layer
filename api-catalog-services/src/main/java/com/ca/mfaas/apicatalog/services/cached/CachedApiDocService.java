@@ -45,13 +45,16 @@ public class CachedApiDocService {
      */
     public String getApiDocForService(final String serviceId, final String apiVersion) {
         String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
-        if (apiDoc == null) {
+        try {
             ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
-            if (apiDocInfo.getApiDocContent() == null) {
-                return null;
-            } else {
+            if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
                 apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
+            }
+        } catch (Exception e) {
+            //if there's not apiDoc in cache
+            if (apiDoc == null) {
+                log.warn("ApiDoc retrieving problem for {}. {}", serviceId, e.getMessage());
             }
         }
         return apiDoc;
