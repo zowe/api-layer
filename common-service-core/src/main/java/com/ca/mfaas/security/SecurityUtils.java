@@ -38,19 +38,22 @@ public class SecurityUtils {
      * @return Base64 encoded secret key in {@link String}
      */
     public static String readSecret(HttpsConfig config) {
-        try {
-            Key key = loadKey(config);
-            if (key == null) {
-                throw new UnrecoverableKeyException(String.format(
-                    "No key with private key entry could be used in the keystore. Provided key alias: %s",
-                    config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
+        if (config.getKeyStore() != null) {
+            try {
+                Key key = loadKey(config);
+                if (key == null) {
+                    throw new UnrecoverableKeyException(String.format(
+                        "No key with private key entry could be used in the keystore. Provided key alias: %s",
+                        config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
+                }
+                return Base64.getEncoder().encodeToString(key.getEncoded());
+            } catch (UnrecoverableKeyException e) {
+                log.error("Error reading secret key: {}", e.getMessage(), e);
+                throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
+                    HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
-            return Base64.getEncoder().encodeToString(key.getEncoded());
-        } catch (UnrecoverableKeyException e) {
-            log.error("Error reading secret key: {}", e.getMessage(), e);
-            throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
-                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
         }
+        return null;
     }
 
     /**
