@@ -12,6 +12,7 @@ package com.ca.apiml.security.handler;
 import com.ca.apiml.security.token.TokenExpireException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -20,6 +21,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -31,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
-public class UnauthorizedHandlerTest {
+public class BasicUnauthorizedHandlerTest {
 
     @Autowired
     private ErrorService errorService;
@@ -41,16 +43,17 @@ public class UnauthorizedHandlerTest {
 
     @Test
     public void testCommence() throws IOException {
-        UnauthorizedHandler unauthorizedHandler = new UnauthorizedHandler(errorService, objectMapper);
+        BasicUnauthorizedHandler basicUnauthorizedHandler = new BasicUnauthorizedHandler(errorService, objectMapper);
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
 
         MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
 
-        unauthorizedHandler.commence(httpServletRequest, httpServletResponse, new TokenExpireException("ERROR"));
+        basicUnauthorizedHandler.commence(httpServletRequest, httpServletResponse, new TokenExpireException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
+        assertEquals(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader(HttpHeaders.WWW_AUTHENTICATE));
 
         ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidCredentials", httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);

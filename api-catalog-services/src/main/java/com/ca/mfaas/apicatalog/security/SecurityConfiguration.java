@@ -10,7 +10,9 @@
 package com.ca.mfaas.apicatalog.security;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
+import com.ca.apiml.security.handler.BasicUnauthorizedHandler;
 import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.apiml.security.handler.UnauthorizedHandler;
 import com.ca.apiml.security.login.GatewayLoginProvider;
@@ -18,6 +20,7 @@ import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.login.SuccessfulLoginHandler;
 import com.ca.apiml.security.query.GatewayQueryProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +35,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -43,6 +47,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final UnauthorizedHandler unAuthorizedHandler;
+    private final BasicUnauthorizedHandler basicUnauthorizedHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayQueryProvider gatewayQueryProvider;
@@ -51,7 +56,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         ObjectMapper securityObjectMapper,
         SecurityConfigurationProperties securityConfigurationProperties,
         SuccessfulLoginHandler successfulLoginHandler,
-        UnauthorizedHandler unAuthorizedHandler,
+        @Qualifier("auth")
+            UnauthorizedHandler unAuthorizedHandler,
+        BasicUnauthorizedHandler basicUnauthorizedHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         GatewayLoginProvider gatewayLoginProvider,
         GatewayQueryProvider gatewayQueryProvider) {
@@ -59,6 +66,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.securityConfigurationProperties = securityConfigurationProperties;
         this.successfulLoginHandler = successfulLoginHandler;
         this.unAuthorizedHandler = unAuthorizedHandler;
+        this.basicUnauthorizedHandler = basicUnauthorizedHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.gatewayLoginProvider = gatewayLoginProvider;
         this.gatewayQueryProvider = gatewayQueryProvider;
@@ -92,7 +100,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .httpStrictTransportSecurity().disable()
             .frameOptions().disable()
             .and()
-            .exceptionHandling().authenticationEntryPoint(unAuthorizedHandler)
+            .exceptionHandling()
+            .defaultAuthenticationEntryPointFor(basicUnauthorizedHandler, new AntPathRequestMatcher("/application/**"))
+            .defaultAuthenticationEntryPointFor(basicUnauthorizedHandler, new AntPathRequestMatcher("/apidoc/**"))
+            .defaultAuthenticationEntryPointFor(unAuthorizedHandler, new AntPathRequestMatcher("/**"))
 
             .and()
             .sessionManagement()
@@ -112,10 +123,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // endpoints protection
             .and()
+            .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
             .antMatchers("/containers/**").authenticated()
-            .antMatchers("/apidoc/**").authenticated();
+            .antMatchers("/apidoc/**").authenticated()
+            .antMatchers("/application/health", "/application/info").permitAll()
+            .antMatchers("/application/**").authenticated();
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
@@ -123,6 +137,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             securityObjectMapper, authenticationManager());
     }
 
+    /**
+     * Secures content with a basic authentication
+     */
+    private BasicContentFilter basicFilter() throws Exception {
+        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler);
+    }
+
+    /**
+     * Secures content with a token stored in a cookie
+     */
     private CookieContentFilter cookieFilter() throws Exception {
         return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
     }

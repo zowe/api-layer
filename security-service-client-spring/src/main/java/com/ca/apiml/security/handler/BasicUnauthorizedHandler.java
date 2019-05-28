@@ -10,13 +10,11 @@
 package com.ca.apiml.security.handler;
 
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,14 +26,11 @@ import java.io.IOException;
  * Handles unauthorized access
  */
 @Slf4j
-@Component("auth")
-public class UnauthorizedHandler implements AuthenticationEntryPoint {
-    private final ErrorService errorService;
-    private final ObjectMapper mapper;
+@Component("basicAuth")
+public class BasicUnauthorizedHandler extends UnauthorizedHandler {
 
-    public UnauthorizedHandler(ErrorService errorService, ObjectMapper objectMapper) {
-        this.errorService = errorService;
-        this.mapper = objectMapper;
+    public BasicUnauthorizedHandler(ErrorService errorService, ObjectMapper objectMapper) {
+        super(errorService, objectMapper);
     }
 
     /**
@@ -48,12 +43,8 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
      */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-        log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
+        response.addHeader(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
 
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-
-        ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidCredentials", request.getRequestURI());
-        mapper.writeValue(response.getWriter(), message);
+        super.commence(request, response, authException);
     }
 }
