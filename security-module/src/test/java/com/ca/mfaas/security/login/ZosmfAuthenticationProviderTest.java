@@ -13,7 +13,7 @@ import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.token.JwtSecurityInitializer;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
-import com.ca.mfaas.utils.SecurityUtils;
+import com.ca.mfaas.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;

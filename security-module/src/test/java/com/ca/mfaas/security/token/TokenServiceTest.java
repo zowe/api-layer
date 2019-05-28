@@ -11,7 +11,7 @@ package com.ca.mfaas.security.token;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.security.query.QueryResponse;
-import com.ca.mfaas.utils.SecurityUtils;
+import com.ca.mfaas.security.SecurityUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

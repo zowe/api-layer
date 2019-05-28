@@ -7,10 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils;
+package com.ca.mfaas.security;
 
-import com.ca.mfaas.security.HttpsConfig;
-import com.ca.mfaas.security.HttpsConfigError;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -27,10 +26,17 @@ import java.util.Base64;
 import java.util.Enumeration;
 
 @Slf4j
+@UtilityClass
 public class SecurityUtils {
 
     public static final String SAFKEYRING = "safkeyring";
 
+    /**
+     * Reads secret key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}, and encode to Base64
+     * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
+     *                                 and optional filled: keyAlias and trustStore
+     * @return Base64 encoded secret key in {@link String}
+     */
     public static String readSecret(HttpsConfig config) {
         try {
             Key key = loadKey(config);
@@ -47,6 +53,12 @@ public class SecurityUtils {
         }
     }
 
+    /**
+     * Loads secret key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}
+     * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
+     *                                  and optional filled: keyAlias and trustStore
+     * @return {@link PrivateKey} or {@link javax.crypto.SecretKey} from keystore or key ring
+     */
     public static Key loadKey(HttpsConfig config) {
         if (config.getKeyStore() != null) {
             try {
@@ -56,29 +68,42 @@ public class SecurityUtils {
                 if (config.getKeyAlias() != null) {
                     key = ks.getKey(config.getKeyAlias(), keyPasswordInChars);
                 } else {
-                    for (Enumeration<String> e = ks.aliases(); e.hasMoreElements(); ) {
-                        String alias = e.nextElement();
-                        try {
-                            key = ks.getKey(alias, keyPasswordInChars);
-                            if (key != null) {
-                                break;
-                            }
-                        } catch (UnrecoverableKeyException uke) {
-                            log.debug("Key with alias {} could not be used: {}", alias, uke.getMessage());
-                        }
-                    }
+                    key = findFirstSecretKey(ks, keyPasswordInChars);
                 }
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                 | UnrecoverableKeyException e) {
-                log.error("Error loading secret key: {}", e.getMessage(), e);
-                throw new HttpsConfigError("Error loading secret key: " + e.getMessage(), e,
+                String errorMessage = "Error loading secret key: " +  e.getMessage();
+                log.error(errorMessage, e);
+                throw new HttpsConfigError(errorMessage, e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
         }
         return null;
     }
 
+    private static Key findFirstSecretKey(KeyStore keyStore, char[] keyPasswordInChars) throws KeyStoreException, NoSuchAlgorithmException {
+        Key key = null;
+        for (Enumeration<String> e = keyStore.aliases(); e.hasMoreElements(); ) {
+            String alias = e.nextElement();
+            try {
+                key = keyStore.getKey(alias, keyPasswordInChars);
+                if (key != null) {
+                    break;
+                }
+            } catch (UnrecoverableKeyException uke) {
+                log.debug("Key with alias {} could not be used: {}", alias, uke.getMessage());
+            }
+        }
+        return key;
+    }
+
+    /**
+     * Loads public key from keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}
+     * @param config - {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
+     *                                  and optional filled: keyAlias and trustStore
+     * @return {@link PublicKey} from keystore or key ring
+     */
     public static PublicKey loadPublicKey(HttpsConfig config) {
         if (config.getKeyStore() != null) {
             try {
@@ -99,14 +124,22 @@ public class SecurityUtils {
                     return cert.getPublicKey();
                 }
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
-                log.error("Error loading secret key: {}", e.getMessage(), e);
-                throw new HttpsConfigError("Error loading secret key: " + e.getMessage(), e,
+                String errorMessage = "Error loading public key: " +  e.getMessage();
+                log.error(errorMessage, e);
+                throw new HttpsConfigError(errorMessage, e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
         }
         return null;
     }
 
+    /**
+     * Finds a private key by public key in keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}
+     * @param config {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
+     *                                 and optional filled: keyAlias and trustStore
+     * @param publicKey in byte[]
+     * @return {@link PrivateKey} from keystore or key ring
+     */
     public static Key findPrivateKeyByPublic(HttpsConfig config, byte[] publicKey) {
         if (config.getKeyStore() != null) {
             try {
@@ -133,6 +166,16 @@ public class SecurityUtils {
         return null;
     }
 
+    /**
+     * Loads keystore or key ring, if keystore URL starts with {@value #SAFKEYRING}, from specified location
+     * @param config {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword,
+     *                                 and optional filled: trustStore
+     * @return the new {@link KeyStore} or key ring as {@link KeyStore}
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     */
     public static KeyStore loadKeyStore(HttpsConfig config) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
         InputStream inputStream;
@@ -147,6 +190,13 @@ public class SecurityUtils {
         return ks;
     }
 
+    /**
+     * Creates an {@link URL} to key ring location
+     * @param uri - key ring location
+     * @param trustStore - truststore location
+     * @return the new {@link URL} with 2 slashes instead of 4
+     * @throws MalformedURLException throws in case of incorrect key ring format
+     */
     public static URL keyRingUrl(String uri, String trustStore) throws MalformedURLException {
         if (!uri.startsWith(SAFKEYRING + ":////")) {
             throw new MalformedURLException("Incorrect key ring format: " + trustStore
@@ -155,10 +205,21 @@ public class SecurityUtils {
         return new URL(replaceFourSlashes(uri));
     }
 
+    /**
+     * Replaces 4 slashes on 2 in URI
+     * @param storeUri - URI as {@link String}
+     * @return same URI, but with 2 slashes, or null, if {@param storeUri} null
+     */
     public static String replaceFourSlashes(String storeUri) {
         return storeUri == null ? null : storeUri.replaceFirst("////", "//");
     }
 
+    /**
+     * Creates a pair of {@link PrivateKey} and {@link PublicKey} keys
+     * @param algorithm - key algorithm
+     * @param keySize - key size
+     * @return the new {@link KeyPair}
+     */
     public static KeyPair generateKeyPair(String algorithm, int keySize) {
         KeyPair kp = null;
         try {

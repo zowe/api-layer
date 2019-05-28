@@ -10,7 +10,6 @@
 package com.ca.mfaas.security;
 
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
-import com.ca.mfaas.utils.SecurityUtils;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;

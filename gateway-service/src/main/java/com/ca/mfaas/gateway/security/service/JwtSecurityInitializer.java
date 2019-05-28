@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.security.service;
 
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsConfigError;
-import com.ca.mfaas.utils.SecurityUtils;
+import com.ca.mfaas.security.SecurityUtils;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +39,7 @@ public class JwtSecurityInitializer {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${apiml.security.jwt.keyAlias:jwtsecret}")
+    @Value("${apiml.security.auth.jwtKeyAlias:jwtsecret}")
     private String keyAlias;
 
     private String signatureAlgorithm;

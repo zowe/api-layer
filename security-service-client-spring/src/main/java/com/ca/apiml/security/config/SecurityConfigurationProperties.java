@@ -32,6 +32,7 @@ public class SecurityConfigurationProperties {
     private String zosmfServiceId;
     private String provider = "zosmf";
     private boolean verifySslCertificatesOfServices = true;
+    private String jwtKeyAlias;
 
     //Token properties
     @Data
