@@ -79,11 +79,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .headers().disable()
-            .exceptionHandling()
-            .authenticationEntryPoint(unAuthorizedHandler)
+            .exceptionHandling().authenticationEntryPoint(unAuthorizedHandler)
 
-            .and()
-            .headers().httpStrictTransportSecurity().disable()
             .and()
             .httpBasic()
 

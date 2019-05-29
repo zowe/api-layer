@@ -55,9 +55,10 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.headers().httpStrictTransportSecurity().disable();
+            http.csrf().disable()
+            .headers().disable()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         if (Arrays.asList(environment.getActiveProfiles()).contains("https")) {
             if (verifySslCertificatesOfServices) {

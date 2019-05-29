@@ -103,9 +103,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .exceptionHandling().authenticationEntryPoint(unAuthorizedHandler)
 
             .and()
-            .headers().httpStrictTransportSecurity().disable()
-
-            .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
