@@ -266,8 +266,12 @@ pipeline {
     post {
         always {
             junit allowEmptyResults: true, testResults: '**/test-results/**/*.xml'
-            sh 'mkdir logs'
-            sh 'mv /home/jenkins/.npm/_logs/ ./logs'
+            sh """
+                mkdir logs
+                mv /home/jenkins/.npm/_logs/ ./logs
+                cd ./logs
+                ls
+                """
             archiveArtifacts artifacts: './logs/*.log'
             archiveArtifacts '.change_class'
         }
