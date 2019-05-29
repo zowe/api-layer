@@ -159,7 +159,8 @@ pipeline {
                 stage('Test apiml_cm.sh') {
                     steps {
                         sh 'npm install'
-                        sh 'npm run test-scripts-ci'
+                        sh 'npm run test-scripts'
+
                     }
                 }
 
