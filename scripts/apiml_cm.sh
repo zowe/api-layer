@@ -316,6 +316,8 @@ function jwt_key_gen_and_export {
     -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype PKCS12 -validity ${SERVICE_VALIDITY}
     pkeytool -export -alias ${JWT_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -keypass ${SERVICE_PASSWORD} -storetype PKCS12 \
     -file ${SERVICE_KEYSTORE}.${JWT_ALIAS}.cer
+    echo "Listing generated files for self-signed service:"
+    ls -l ${SERVICE_KEYSTORE}*
 }
 
 function trust_zosmf {
