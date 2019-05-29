@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.security.service;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.constants.ApimlConstants;
-import com.ca.apiml.security.query.QueryResponse;
+import com.ca.apiml.security.token.QueryResponse;
 import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.apiml.security.token.TokenExpireException;
 import io.jsonwebtoken.*;

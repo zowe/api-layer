@@ -12,13 +12,13 @@ package com.ca.mfaas.apicatalog.security;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.apiml.security.handler.BasicUnauthorizedHandler;
+import com.ca.apiml.security.handler.BasicAuthUnauthorizedHandler;
 import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.apiml.security.handler.UnauthorizedHandler;
 import com.ca.apiml.security.login.GatewayLoginProvider;
 import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.login.SuccessfulLoginHandler;
-import com.ca.apiml.security.query.GatewayQueryProvider;
+import com.ca.apiml.security.token.GatewayTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -47,35 +47,35 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final UnauthorizedHandler unAuthorizedHandler;
-    private final BasicUnauthorizedHandler basicUnauthorizedHandler;
+    private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final GatewayLoginProvider gatewayLoginProvider;
-    private final GatewayQueryProvider gatewayQueryProvider;
+    private final GatewayTokenProvider gatewayTokenProvider;
 
     public SecurityConfiguration(
         ObjectMapper securityObjectMapper,
         SecurityConfigurationProperties securityConfigurationProperties,
         SuccessfulLoginHandler successfulLoginHandler,
-        @Qualifier("auth")
+        @Qualifier("plainAuth")
             UnauthorizedHandler unAuthorizedHandler,
-        BasicUnauthorizedHandler basicUnauthorizedHandler,
+        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         GatewayLoginProvider gatewayLoginProvider,
-        GatewayQueryProvider gatewayQueryProvider) {
+        GatewayTokenProvider gatewayTokenProvider) {
         this.securityObjectMapper = securityObjectMapper;
         this.securityConfigurationProperties = securityConfigurationProperties;
         this.successfulLoginHandler = successfulLoginHandler;
         this.unAuthorizedHandler = unAuthorizedHandler;
-        this.basicUnauthorizedHandler = basicUnauthorizedHandler;
+        this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.gatewayLoginProvider = gatewayLoginProvider;
-        this.gatewayQueryProvider = gatewayQueryProvider;
+        this.gatewayTokenProvider = gatewayTokenProvider;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
         auth.authenticationProvider(gatewayLoginProvider);
-        auth.authenticationProvider(gatewayQueryProvider);
+        auth.authenticationProvider(gatewayTokenProvider);
     }
 
     @Override
@@ -101,8 +101,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .frameOptions().disable()
             .and()
             .exceptionHandling()
-            .defaultAuthenticationEntryPointFor(basicUnauthorizedHandler, new AntPathRequestMatcher("/application/**"))
-            .defaultAuthenticationEntryPointFor(basicUnauthorizedHandler, new AntPathRequestMatcher("/apidoc/**"))
+            .defaultAuthenticationEntryPointFor(basicAuthUnauthorizedHandler, new AntPathRequestMatcher("/application/**"))
+            .defaultAuthenticationEntryPointFor(basicAuthUnauthorizedHandler, new AntPathRequestMatcher("/apidoc/**"))
             .defaultAuthenticationEntryPointFor(unAuthorizedHandler, new AntPathRequestMatcher("/**"))
 
             .and()

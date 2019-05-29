@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.handler;
 
-import com.ca.apiml.security.query.TokenNotProvidedException;
+import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;

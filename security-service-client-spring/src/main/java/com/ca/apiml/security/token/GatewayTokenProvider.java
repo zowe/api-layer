@@ -7,20 +7,19 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.query;
+package com.ca.apiml.security.token;
 
 import com.ca.apiml.security.service.GatewaySecurityService;
-import com.ca.apiml.security.token.TokenAuthentication;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GatewayQueryProvider implements AuthenticationProvider {
+public class GatewayTokenProvider implements AuthenticationProvider {
 
-    private GatewaySecurityService gatewaySecurityService;
+    private final GatewaySecurityService gatewaySecurityService;
 
-    public GatewayQueryProvider(GatewaySecurityService gatewaySecurityService) {
+    public GatewayTokenProvider(GatewaySecurityService gatewaySecurityService) {
         this.gatewaySecurityService = gatewaySecurityService;
     }
 

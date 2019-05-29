@@ -28,7 +28,7 @@ import java.io.IOException;
  * Handles unauthorized access
  */
 @Slf4j
-@Component("auth")
+@Component("plainAuth")
 public class UnauthorizedHandler implements AuthenticationEntryPoint {
     private final ErrorService errorService;
     private final ObjectMapper mapper;

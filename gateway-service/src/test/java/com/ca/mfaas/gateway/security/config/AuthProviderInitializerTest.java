@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.security.config;
 import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
-import com.ca.mfaas.gateway.security.token.TokenAuthenticationProvider;
+import com.ca.mfaas.gateway.security.query.TokenAuthenticationProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;

@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.security.config;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.apiml.security.handler.UnauthorizedHandler;
+import com.ca.apiml.security.handler.BasicAuthUnauthorizedHandler;
 import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.login.SuccessfulLoginHandler;
 import com.ca.apiml.security.handler.FailedAuthenticationHandler;
@@ -50,7 +50,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final AuthProviderInitializer authProviderInitializer;
-    private final UnauthorizedHandler unAuthorizedHandler;
+    private final BasicAuthUnauthorizedHandler unAuthorizedHandler;
 
     public SecurityConfiguration(
         ObjectMapper securityObjectMapper,
@@ -60,7 +60,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         SuccessfulQueryHandler successfulQueryHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         AuthProviderInitializer authProviderInitializer,
-        UnauthorizedHandler unAuthorizedHandler) {
+        BasicAuthUnauthorizedHandler unAuthorizedHandler) {
         this.securityObjectMapper = securityObjectMapper;
         this.authenticationService = authenticationService;
         this.securityConfigurationProperties = securityConfigurationProperties;

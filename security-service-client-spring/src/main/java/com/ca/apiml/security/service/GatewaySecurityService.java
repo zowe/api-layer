@@ -10,7 +10,7 @@
 package com.ca.apiml.security.service;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.apiml.security.query.QueryResponse;
+import com.ca.apiml.security.token.QueryResponse;
 import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;

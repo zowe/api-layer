@@ -27,9 +27,9 @@ import java.io.IOException;
  */
 @Slf4j
 @Component("basicAuth")
-public class BasicUnauthorizedHandler extends UnauthorizedHandler {
+public class BasicAuthUnauthorizedHandler extends UnauthorizedHandler {
 
-    public BasicUnauthorizedHandler(ErrorService errorService, ObjectMapper objectMapper) {
+    public BasicAuthUnauthorizedHandler(ErrorService errorService, ObjectMapper objectMapper) {
         super(errorService, objectMapper);
     }
 

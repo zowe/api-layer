@@ -43,14 +43,14 @@ public class BasicUnauthorizedHandlerTest {
 
     @Test
     public void testCommence() throws IOException {
-        BasicUnauthorizedHandler basicUnauthorizedHandler = new BasicUnauthorizedHandler(errorService, objectMapper);
+        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler = new BasicAuthUnauthorizedHandler(errorService, objectMapper);
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
 
         MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
 
-        basicUnauthorizedHandler.commence(httpServletRequest, httpServletResponse, new TokenExpireException("ERROR"));
+        basicAuthUnauthorizedHandler.commence(httpServletRequest, httpServletResponse, new TokenExpireException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader(HttpHeaders.WWW_AUTHENTICATE));

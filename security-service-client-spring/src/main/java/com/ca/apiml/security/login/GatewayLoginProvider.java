@@ -27,7 +27,7 @@ import java.util.Optional;
 @Component
 public class GatewayLoginProvider implements AuthenticationProvider {
 
-    private GatewaySecurityService gatewaySecurityService;
+    private final GatewaySecurityService gatewaySecurityService;
 
     public GatewayLoginProvider(GatewaySecurityService gatewaySecurityService) {
         this.gatewaySecurityService = gatewaySecurityService;

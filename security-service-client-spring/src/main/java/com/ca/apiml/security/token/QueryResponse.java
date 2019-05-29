@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.query;
+package com.ca.apiml.security.token;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
