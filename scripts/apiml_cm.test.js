@@ -57,10 +57,7 @@ describe(script, function() {
                 .exist('keystore/localhost/localhost.truststore.p12')
                 .exist('keystore/localhost/localhost.keystore.cer')
                 .exist('keystore/localhost/localhost.keystore.key')
-                // .exist('keystore/localhost/jwtsecret.cer')
-                .exec('pwd')
-                .exec('cd keystore/localhost/')
-                .exec('ls')
+                .exist('keystore/localhost/localhost.keystore.jwtsecret.cer')
                 .end(done);
         });
     });
