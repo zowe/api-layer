@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discoveryservice;
+package com.ca.mfaas.discoveryservice.staticdef;
 
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.DiscoveryServiceConfiguration;
@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.net.ssl.SSLContext;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -40,7 +39,7 @@ import java.util.List;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-public class EurekaInstancesIntegrationTest {
+public class StaticRestApiIntegrationTest {
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
 
@@ -50,30 +49,6 @@ public class EurekaInstancesIntegrationTest {
         tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
     }
 
-
-    @Test
-    public void shouldSeeForbiddenEurekaHomePageWithoutCert() throws Exception {
-        final String scheme = discoveryServiceConfiguration.getScheme();
-        final String username = discoveryServiceConfiguration.getUser();
-        final String password = discoveryServiceConfiguration.getPassword();
-        final String host = discoveryServiceConfiguration.getHost();
-        final int port = discoveryServiceConfiguration.getPort();
-        URI uri = new URIBuilder()
-            .setScheme(scheme)
-            .setHost(host)
-            .setPort(port)
-            .setPath("/")
-            .build();
-
-        RestAssured.useRelaxedHTTPSValidation();
-        //@formatter:off
-        given()
-            .auth().basic(username, password)
-            .when()
-            .get(uri)
-            .then()
-            .statusCode(is(403));
-    }
 
     @Test
     public void shouldSeeEurekaHomePage() throws Exception {
@@ -86,12 +61,12 @@ public class EurekaInstancesIntegrationTest {
 
         //@formatter:off
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-        given()
-            .auth().basic(username, password)
-            .when()
-            .get(uri)
-            .then()
-            .statusCode(is(200));
+            given()
+                .auth().basic(username, password)
+                .when()
+                .get(uri)
+                .then()
+                .statusCode(is(200));
     }
 
     @Test
@@ -113,9 +88,9 @@ public class EurekaInstancesIntegrationTest {
         String xml =
             given()
                 .auth().basic(username, password)
-                .when()
+            .when()
                 .get(uri)
-                .then()
+            .then()
                 .statusCode(is(200))
                 .extract().body().asString();
         //@formatter:on

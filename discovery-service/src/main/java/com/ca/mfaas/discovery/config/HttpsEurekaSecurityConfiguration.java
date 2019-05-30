@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.config.temporary;
+package com.ca.mfaas.discovery.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -24,7 +24,7 @@ import java.util.Collections;
 @EnableWebSecurity
 @Order(1)
 @Profile("https")
-public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class HttpsEurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
