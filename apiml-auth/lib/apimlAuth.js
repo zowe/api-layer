@@ -110,7 +110,7 @@ ApimlAuthenticator.prototype = {
       const req = https.request(options, (res) => {
         res.on('data', (d) => {
           let apimlCookie;
-          if (res.statusCode == 200) {
+          if (res.statusCode == 204) {
             if (typeof res.headers['set-cookie'] === 'object') {
               for (const cookie of res.headers['set-cookie']) {
                 const content = cookie.split(';')[0];
