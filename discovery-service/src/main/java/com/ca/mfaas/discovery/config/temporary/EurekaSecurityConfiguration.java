@@ -23,7 +23,7 @@ import java.util.Collections;
 @Configuration
 @EnableWebSecurity
 @Order(1)
-@Profile("!dev")
+@Profile("https")
 public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override

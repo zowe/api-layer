@@ -21,7 +21,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Arrays;
@@ -30,7 +29,7 @@ import java.util.Collections;
 @Configuration
 @EnableWebSecurity
 @Order(1)
-@Profile("dev")
+@Profile("!https")
 public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
@@ -73,11 +72,6 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     public UserDetailsService x509UserDetailsService() {
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String username) {
-                return new User("eurekaClient", "", Collections.emptyList());
-            }
-        };
+        return username -> new User("eurekaClient", "", Collections.emptyList());
     }
 }
