@@ -12,6 +12,7 @@ package com.ca.mfaas.discovery.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -20,7 +21,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Arrays;
@@ -29,6 +29,7 @@ import java.util.Collections;
 @Configuration
 @EnableWebSecurity
 @Order(1)
+@Profile("!https")
 public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
@@ -71,11 +72,6 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     public UserDetailsService x509UserDetailsService() {
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String username) {
-                return new User("eurekaClient", "", Collections.emptyList());
-            }
-        };
+        return username -> new User("eurekaClient", "", Collections.emptyList());
     }
 }

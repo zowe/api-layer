@@ -41,7 +41,6 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
 public class EurekaInstancesIntegrationTest {
-    private static final String EUREKA_STATUS = "/eureka/status";
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
 
@@ -49,6 +48,50 @@ public class EurekaInstancesIntegrationTest {
     public void setUp() {
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
+    }
+
+
+    @Test
+    public void shouldSeeForbiddenEurekaHomePageWithoutCert() throws Exception {
+        final String scheme = discoveryServiceConfiguration.getScheme();
+        final String username = discoveryServiceConfiguration.getUser();
+        final String password = discoveryServiceConfiguration.getPassword();
+        final String host = discoveryServiceConfiguration.getHost();
+        final int port = discoveryServiceConfiguration.getPort();
+        URI uri = new URIBuilder()
+            .setScheme(scheme)
+            .setHost(host)
+            .setPort(port)
+            .setPath("/")
+            .build();
+
+        RestAssured.useRelaxedHTTPSValidation();
+        //@formatter:off
+        given()
+            .auth().basic(username, password)
+            .when()
+            .get(uri)
+            .then()
+            .statusCode(is(403));
+    }
+
+    @Test
+    public void shouldSeeEurekaHomePage() throws Exception {
+        final String scheme = discoveryServiceConfiguration.getScheme();
+        final String username = discoveryServiceConfiguration.getUser();
+        final String password = discoveryServiceConfiguration.getPassword();
+        final String host = discoveryServiceConfiguration.getHost();
+        final int port = discoveryServiceConfiguration.getPort();
+        URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath("/").build();
+
+        //@formatter:off
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        given()
+            .auth().basic(username, password)
+            .when()
+            .get(uri)
+            .then()
+            .statusCode(is(200));
     }
 
     @Test
@@ -59,16 +102,20 @@ public class EurekaInstancesIntegrationTest {
         final String host = discoveryServiceConfiguration.getHost();
         final int port = discoveryServiceConfiguration.getPort();
         final int instances = discoveryServiceConfiguration.getInstances();
-        URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(EUREKA_STATUS).build();
+        URI uri = new URIBuilder()
+            .setScheme(scheme)
+            .setHost(host)
+            .setPort(port)
+            .setPath("/eureka/status").build();
 
         //@formatter:off
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String xml =
             given()
                 .auth().basic(username, password)
-            .when()
+                .when()
                 .get(uri)
-            .then()
+                .then()
                 .statusCode(is(200))
                 .extract().body().asString();
         //@formatter:on
