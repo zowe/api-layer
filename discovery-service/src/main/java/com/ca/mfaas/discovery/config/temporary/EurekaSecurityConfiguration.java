@@ -30,7 +30,7 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.headers().httpStrictTransportSecurity().disable();
+        http.headers().disable();
         http.antMatcher("/**")
             .authorizeRequests()
             .anyRequest()
