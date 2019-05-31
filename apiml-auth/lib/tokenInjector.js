@@ -3,7 +3,7 @@ const express = require('express');
 module.exports = pluginContext => {
   const r = express.Router();
   r.get('/**', (req, res) => {
-    const apimlSession = req.session['org.zowe.zlux.auth.apiml'];
+    const apimlSession = req.session.authPlugins['org.zowe.zlux.auth.apiml'];
     if (apimlSession === undefined) {
       res.status(401).send("Missing APIML authentication token in zLUX session");
     }
