@@ -7,94 +7,38 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gatewayservice;
+package com.ca.mfaas.apicatalog;
 
+import com.ca.mfaas.gatewayservice.SecurityUtils;
 import com.ca.mfaas.utils.config.ConfigReader;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.*;
+
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class GatewaySecurityTest {
+public class ApiCatalogHttpHeadersIntegrationTest {
+
+    private static final String GET_ALL_CONTAINERS_ENDPOINT = "/ui/v1/apicatalog/#";
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-    private static final String PROTECTED_ENDPOINT = "/application/routes";
     private final static String COOKIE = "apimlAuthenticationToken";
 
     @Before
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
-    }
-
-    //@formatter:off
-    @Test
-    public void accessProtectedEndpointWithoutCredentials() {
-        given()
-        .when()
-            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED));
-    }
-
-    @Test
-    public void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
-        given()
-            .auth().preemptive().basic(USERNAME, PASSWORD)
-        .when()
-            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
-            .statusCode(is(SC_OK));
-    }
-
-    @Test
-    public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
-        String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
-
-        given()
-            .cookie(COOKIE, token)
-        .when()
-            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
-            .statusCode(is(SC_OK));
-    }
-
-    @Test
-    public void accessProtectedEndpointWithInvalidToken() {
-        String invalidToken = "badToken";
-
-        given()
-            .cookie(COOKIE, invalidToken)
-        .when()
-            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED));
-    }
-
-
-    @Test
-    public void accessProtectedEndpointWithInvalidCredentials() {
-        String invalidPassword = "badPassword";
-
-        given()
-            .auth().preemptive().basic(USERNAME, invalidPassword)
-        .when()
-            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test
@@ -114,7 +58,7 @@ public class GatewaySecurityTest {
         forbiddenHeaders.add("Strict-Transport-Security");
 
         Response response =  RestAssured.given().cookie(COOKIE, token)
-                            .get(String.format("%s://%s:%d", SCHEME, HOST, PORT));
+            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, GET_ALL_CONTAINERS_ENDPOINT));
         Map<String,String> responseHeaders = new HashMap<>();
         response.getHeaders().forEach(h -> responseHeaders.put(h.getName(),h.getValue()));
 
