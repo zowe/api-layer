@@ -98,7 +98,7 @@ ApimlAuthenticator.prototype = {
       const options = {
         hostname: this.apimlConf.hostname,
         port: this.apimlConf.gatewayPort,
-        path: '/api/v1/gateway/auth/login',
+        path: '/api/v1/apicatalog/auth/login',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ ApimlAuthenticator.prototype = {
       const req = https.request(options, (res) => {
         res.on('data', (d) => {
           let apimlCookie;
-          if (res.statusCode == 204) {
+          if (res.statusCode == 200) {
             if (typeof res.headers['set-cookie'] === 'object') {
               for (const cookie of res.headers['set-cookie']) {
                 const content = cookie.split(';')[0];
