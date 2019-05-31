@@ -44,5 +44,5 @@ dependencies {
 
     compileOnly libraries.lombok
 
-    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile libraries.spring_boot_starter_test
 }
