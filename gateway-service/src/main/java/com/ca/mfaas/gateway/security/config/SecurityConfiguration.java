@@ -78,12 +78,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
-            .headers().disable()
-            .exceptionHandling()
-            .authenticationEntryPoint(unAuthorizedHandler)
-
+            .headers()
+            .httpStrictTransportSecurity().disable()
+            .frameOptions().disable()
             .and()
-            .headers().httpStrictTransportSecurity().disable()
+            .exceptionHandling().authenticationEntryPoint(unAuthorizedHandler)
+
             .and()
             .httpBasic()
 

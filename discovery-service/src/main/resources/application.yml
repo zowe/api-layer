@@ -25,6 +25,7 @@ apiml:
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         preferIpAddress: false
     discovery:
+        # Not used in HTTPS mode and not applicable for Zowe
         # The `apiml.discovery` node contains discovery-service only configuration
         userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
         password: password  # Password that Eureka server will use to check authentication of its clients (other services)

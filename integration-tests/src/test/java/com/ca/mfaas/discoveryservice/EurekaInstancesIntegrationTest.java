@@ -16,6 +16,7 @@ import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
+import io.restassured.response.Response;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -34,14 +35,16 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 public class EurekaInstancesIntegrationTest {
-    private static final String EUREKA_STATUS = "/eureka/status";
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
 
@@ -49,6 +52,83 @@ public class EurekaInstancesIntegrationTest {
     public void setUp() {
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
+    }
+
+
+    @Test
+    public void shouldSeeForbiddenEurekaHomePageWithoutCert() throws Exception {
+        final String scheme = discoveryServiceConfiguration.getScheme();
+        final String username = discoveryServiceConfiguration.getUser();
+        final String password = discoveryServiceConfiguration.getPassword();
+        final String host = discoveryServiceConfiguration.getHost();
+        final int port = discoveryServiceConfiguration.getPort();
+        URI uri = new URIBuilder()
+            .setScheme(scheme)
+            .setHost(host)
+            .setPort(port)
+            .setPath("/")
+            .build();
+
+        RestAssured.useRelaxedHTTPSValidation();
+        //@formatter:off
+        given()
+            .auth().basic(username, password)
+            .when()
+            .get(uri)
+            .then()
+            .statusCode(is(403));
+    }
+
+    @Test
+    public void shouldSeeEurekaHomePage() throws Exception {
+        final String scheme = discoveryServiceConfiguration.getScheme();
+        final String username = discoveryServiceConfiguration.getUser();
+        final String password = discoveryServiceConfiguration.getPassword();
+        final String host = discoveryServiceConfiguration.getHost();
+        final int port = discoveryServiceConfiguration.getPort();
+        URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath("/").build();
+
+        //@formatter:off
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        given()
+            .auth().basic(username, password)
+            .when()
+            .get(uri)
+            .then()
+            .statusCode(is(200));
+    }
+
+    @Test
+    public void verifyHttpHeaders() throws Exception {
+        final String scheme = discoveryServiceConfiguration.getScheme();
+        final String username = discoveryServiceConfiguration.getUser();
+        final String password = discoveryServiceConfiguration.getPassword();
+        final String host = discoveryServiceConfiguration.getHost();
+        final int port = discoveryServiceConfiguration.getPort();
+        URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath("/").build();
+
+        Map<String, String> expectedHeaders = new HashMap<>();
+        expectedHeaders.put("X-Content-Type-Options","nosniff");
+        expectedHeaders.put("X-XSS-Protection","1; mode=block");
+        expectedHeaders.put("Cache-Control","no-cache, no-store, max-age=0, must-revalidate");
+        expectedHeaders.put("Pragma","no-cache");
+        expectedHeaders.put("Content-Type","text/html;charset=UTF-8");
+        expectedHeaders.put("Transfer-Encoding","chunked");
+        expectedHeaders.put("X-Frame-Options","DENY");
+
+        List<String> forbiddenHeaders = new ArrayList<>();
+        forbiddenHeaders.add("Strict-Transport-Security");
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        Response response =  RestAssured
+            .given()
+            .auth().basic(username, password)
+            .get(uri);
+        Map<String,String> responseHeaders = new HashMap<>();
+        response.getHeaders().forEach(h -> responseHeaders.put(h.getName(),h.getValue()));
+
+        expectedHeaders.entrySet().forEach(h -> assertThat(responseHeaders, hasEntry(h.getKey(),h.getValue())));
+        forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
     }
 
     @Test
@@ -59,16 +139,20 @@ public class EurekaInstancesIntegrationTest {
         final String host = discoveryServiceConfiguration.getHost();
         final int port = discoveryServiceConfiguration.getPort();
         final int instances = discoveryServiceConfiguration.getInstances();
-        URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(EUREKA_STATUS).build();
+        URI uri = new URIBuilder()
+            .setScheme(scheme)
+            .setHost(host)
+            .setPort(port)
+            .setPath("/eureka/status").build();
 
         //@formatter:off
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String xml =
             given()
                 .auth().basic(username, password)
-            .when()
+                .when()
                 .get(uri)
-            .then()
+                .then()
                 .statusCode(is(200))
                 .extract().body().asString();
         //@formatter:on

@@ -17,7 +17,7 @@ import org.junit.Test;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertEquals;
 
-public class StaticClientEndpointsTest {
+public class StaticClientRoutingEndpointsTest {
     private static final String GREET = "/api/v1/discoverableclient/greeting";
     private static final String STATIC_GREET = "/api/v1/staticclient/greeting";
 
