@@ -47,6 +47,11 @@ public class JwtSecurityInitializerTest {
         jwtSecurityInitializer.init();
     }
 
+    @Test
+    public void shouldReturnSignatureAlgorithm() {
+        jwtSecurityInitializer.init();
+        Assert.assertEquals("RS256", jwtSecurityInitializer.getSignatureAlgorithm());
+    }
 
     @SpringBootConfiguration
     public static class TestConfig {
