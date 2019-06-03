@@ -43,7 +43,7 @@ public class TokenServiceTest {
     private static final String TEST_TOKEN = "token";
     private static final String TEST_DOMAIN = "domain";
     private static final String TEST_USER = "user";
-    private static final String ALGORITHM = "RS256";
+    private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
 
     private Key privateKey;
     private PublicKey publicKey;
@@ -180,7 +180,7 @@ public class TokenServiceTest {
     @Test
     public void getLtpaTokenReturnsTokenFromJwt() {
         String jwtToken = Jwts.builder().claim(LTPA_CLAIM_NAME, TEST_TOKEN)
-                .signWith(SignatureAlgorithm.forName(ALGORITHM), privateKey)
+                .signWith(ALGORITHM, privateKey)
                 .compact();
         assertEquals(TEST_TOKEN, tokenService.getLtpaToken(jwtToken));
     }
@@ -199,7 +199,7 @@ public class TokenServiceTest {
             .setIssuedAt(issuedAt)
             .setExpiration(expiration)
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(SignatureAlgorithm.forName(ALGORITHM), privateKey)
+            .signWith(ALGORITHM, privateKey)
             .compact();
 
         QueryResponse response = new QueryResponse(TEST_DOMAIN, TEST_USER, issuedAt, expiration);
@@ -211,7 +211,7 @@ public class TokenServiceTest {
     public void getLtpaTokenReturnsNullIfLtpaIsMissing() {
         TokenService tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
         String jwtToken = Jwts.builder().claim(DOMAIN_CLAIM_NAME, TEST_DOMAIN)
-                .signWith(SignatureAlgorithm.forName(ALGORITHM), privateKey)
+                .signWith(ALGORITHM, privateKey)
                 .compact();
         assertNull(tokenService.getLtpaToken(jwtToken));
     }
@@ -247,7 +247,7 @@ public class TokenServiceTest {
         return Jwts.builder()
             .setExpiration(new Date(expiredTimeMillis))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
+            .signWith(ALGORITHM, secretKey)
             .compact();
     }
 }

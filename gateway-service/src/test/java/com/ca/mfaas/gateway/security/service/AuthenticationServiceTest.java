@@ -41,7 +41,7 @@ public class AuthenticationServiceTest {
     private static final String USER = "Me";
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
-    private static final String ALGORITHM = "RS256";
+    private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
 
     private Key privateKey;
     private PublicKey publicKey;
@@ -181,7 +181,7 @@ public class AuthenticationServiceTest {
         return Jwts.builder()
             .setExpiration(new Date(expiredTimeMillis))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
+            .signWith(ALGORITHM, secretKey)
             .compact();
     }
 }

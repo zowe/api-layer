@@ -15,6 +15,7 @@ import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
 import com.ca.mfaas.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,7 +53,7 @@ public class SuccessfulQueryHandlerTest {
         httpServletResponse = new MockHttpServletResponse();
         SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
 
-        String algorithm = "RS256";
+        SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         Key privateKey = null;
         PublicKey publicKey = null;

@@ -15,6 +15,7 @@ import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
 import com.ca.mfaas.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +72,7 @@ public class ZosmfAuthenticationProviderTest {
         JwtSecurityInitializer jwtSecurityInitializer = mock(JwtSecurityInitializer.class);
         tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
 
-        String algorithm = "RS256";
+        SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         Key privateKey = null;
         PublicKey publicKey = null;

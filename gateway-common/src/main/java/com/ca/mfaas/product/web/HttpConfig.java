@@ -73,7 +73,6 @@ public class HttpConfig {
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
-    private String secret;
 
     @PostConstruct
     public void init() {
@@ -90,7 +89,6 @@ public class HttpConfig {
             secureSslContext = factory.createSslContext();
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
-            secret = factory.readSecret();
 
             factory.setSystemSslProperties();
         }
@@ -98,10 +96,6 @@ public class HttpConfig {
             log.error("Error in HTTPS configuration: {}", e.getMessage(), e);
             System.exit(1); // NOSONAR
         }
-    }
-
-    public String getSecret() {
-        return secret;
     }
 
     @Bean

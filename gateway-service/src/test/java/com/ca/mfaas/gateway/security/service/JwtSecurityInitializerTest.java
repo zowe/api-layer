@@ -1,6 +1,7 @@
 package com.ca.mfaas.gateway.security.service;
 
 import com.ca.mfaas.security.HttpsConfigError;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,7 +51,7 @@ public class JwtSecurityInitializerTest {
     @Test
     public void shouldReturnSignatureAlgorithm() {
         jwtSecurityInitializer.init();
-        Assert.assertEquals("RS256", jwtSecurityInitializer.getSignatureAlgorithm());
+        Assert.assertEquals(SignatureAlgorithm.RS256, jwtSecurityInitializer.getSignatureAlgorithm());
     }
 
     @SpringBootConfiguration

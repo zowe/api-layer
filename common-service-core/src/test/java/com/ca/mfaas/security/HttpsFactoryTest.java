@@ -9,46 +9,144 @@
  */
 package com.ca.mfaas.security;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.io.IOException;
-
-import org.apache.catalina.LifecycleException;
+import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
+import org.apache.http.client.HttpClient;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.junit.Before;
 import org.junit.Test;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+
+import static org.junit.Assert.*;
+
 public class HttpsFactoryTest {
+    private static final String EUREKA_URL_NO_SCHEME = "://localhost:10011/eureka/";
+    private static final String TEST_SERVICE_ID = "service1";
+    private static final String INCORRECT_PARAMETER_VALUE = "WRONG";
 
-    @Test
-    public void correctConfigurationShouldWork() throws IOException, LifecycleException {
-        HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        String secret = httpsFactory.readSecret();
-        assertNotNull(secret);
-    }
+    private HttpsConfig.HttpsConfigBuilder httpsConfigBuilder;
 
-    @Test(expected = HttpsConfigError.class)
-    public void wrongKeyPasswordConfigurationShouldFail() throws IOException, LifecycleException {
-        HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyPassword("WRONG").build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        String secret = httpsFactory.readSecret();
-        assertNotNull(secret);
+    @Before
+    public void setUp() {
+        httpsConfigBuilder = SecurityTestUtils.correctHttpsSettings();
     }
 
     @Test
-    public void specificCorrectAliasShouldWork() throws IOException, LifecycleException {
-        HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyAlias("localhost").build();
+    public void shouldCreateSecureSslSocketFactory() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        String secret = httpsFactory.readSecret();
-        assertNotNull(secret);
+        ConnectionSocketFactory socketFactory = httpsFactory.createSslSocketFactory();
+        assertEquals(SSLConnectionSocketFactory.class, socketFactory.getClass());
+    }
+
+    @Test
+    public void shouldCreateIgnoringSslSocketFactory() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        ConnectionSocketFactory socketFactory = httpsFactory.createSslSocketFactory();
+        assertEquals(SSLConnectionSocketFactory.class, socketFactory.getClass());
+    }
+
+    @Test
+    public void shouldCreateSecureHttpClient() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpClient httpClient = httpsFactory.createSecureHttpClient();
+        assertEquals("org.apache.http.impl.client.InternalHttpClient", httpClient.getClass().getName());
+    }
+
+    @Test
+    public void shouldCreateSecureSslContext() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        SSLContext sslContext = httpsFactory.createSslContext();
+        assertNotNull(sslContext);
+        assertEquals(SSLContext.class, sslContext.getClass());
+    }
+
+    @Test
+    public void shouldCreateIgnoringSslContext() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        SSLContext sslContext = httpsFactory.createSslContext();
+        assertNotNull(sslContext);
+        assertEquals(SSLContext.class, sslContext.getClass());
     }
 
     @Test(expected = HttpsConfigError.class)
-    public void specificIncorrectAliasShouldFail() throws IOException, LifecycleException {
-        HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().keyAlias("INVALID").build();
+    public void wrongKeyPasswordConfigurationShouldFail() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.keyPassword(INCORRECT_PARAMETER_VALUE).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        String secret = httpsFactory.readSecret();
-        assertNull(secret);
+        SSLContext sslContext = httpsFactory.createSslContext();
+        assertNull(sslContext);
     }
 
+    @Test(expected = HttpsConfigError.class)
+    public void specificIncorrectAliasShouldFail() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.trustStorePassword(INCORRECT_PARAMETER_VALUE).build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        SSLContext sslContext = httpsFactory.createSslContext();
+        assertNull(sslContext);
+    }
+
+    @Test(expected = HttpsConfigError.class)
+    public void incorrectProtocolShouldFail() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).protocol(INCORRECT_PARAMETER_VALUE).build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        SSLContext sslContext = httpsFactory.createSslContext();
+        assertNull(sslContext);
+    }
+
+    @Test
+    public void shouldSetSystemSslProperties() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        httpsFactory.setSystemSslProperties();
+
+        assertEquals(SecurityUtils.replaceFourSlashes(httpsConfig.getKeyStore()), System.getProperty("javax.net.ssl.keyStore"));
+        assertEquals(httpsConfig.getKeyStorePassword(), System.getProperty("javax.net.ssl.keyStorePassword"));
+        assertEquals(httpsConfig.getKeyStoreType(), System.getProperty("javax.net.ssl.keyStoreType"));
+
+        assertEquals(SecurityUtils.replaceFourSlashes(httpsConfig.getTrustStore()), System.getProperty("javax.net.ssl.trustStore"));
+        assertEquals(httpsConfig.getTrustStorePassword(), System.getProperty("javax.net.ssl.trustStorePassword"));
+        assertEquals(httpsConfig.getTrustStoreType(), System.getProperty("javax.net.ssl.trustStoreType"));
+    }
+
+    @Test
+    public void shouldCreateDefaultHostnameVerifier() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HostnameVerifier hostnameVerifier = httpsFactory.createHostnameVerifier();
+        assertEquals(DefaultHostnameVerifier.class, hostnameVerifier.getClass());
+    }
+
+    @Test
+    public void shouldCreateNoopHostnameVerifier() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HostnameVerifier hostnameVerifier = httpsFactory.createHostnameVerifier();
+        assertEquals(NoopHostnameVerifier.class, hostnameVerifier.getClass());
+    }
+
+    @Test
+    public void shouldCreateEurekaJerseyClientBuilderForHttps() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        EurekaJerseyClientImpl.EurekaJerseyClientBuilder clientBuilder =
+            httpsFactory.createEurekaJerseyClientBuilder("https" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID);
+        assertNotNull(clientBuilder);
+    }
+
+    @Test
+    public void shouldCreateEurekaJerseyClientBuilderForHttp() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        EurekaJerseyClientImpl.EurekaJerseyClientBuilder clientBuilder =
+            httpsFactory.createEurekaJerseyClientBuilder("http" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID);
+        assertNotNull(clientBuilder);
+    }
 }

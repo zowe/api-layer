@@ -15,6 +15,7 @@ import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
 import com.ca.mfaas.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,7 +39,7 @@ public class SuccessfulQueryHandlerTest {
         String user = "user";
         String domain = "domain";
         String ltpa = "ltpa";
-        String algorithm = "RS256";
+        SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         Key privateKey = null;
         PublicKey publicKey = null;

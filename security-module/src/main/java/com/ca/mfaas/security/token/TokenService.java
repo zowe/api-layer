@@ -52,7 +52,7 @@ public class TokenService {
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.forName(jwtSecurityInitializer.getSignatureAlgorithm()), jwtSecurityInitializer.getJwtSecret())
+            .signWith(jwtSecurityInitializer.getSignatureAlgorithm(), jwtSecurityInitializer.getJwtSecret())
             .compact();
     }
 

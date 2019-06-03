@@ -250,9 +250,4 @@ public class HttpsFactory {
         }
         return builder;
     }
-
-
-    public String readSecret() {
-        return SecurityUtils.readSecret(config);
-    }
 }

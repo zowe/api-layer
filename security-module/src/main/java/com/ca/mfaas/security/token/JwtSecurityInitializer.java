@@ -42,15 +42,15 @@ public class JwtSecurityInitializer {
     @Value("${apiml.security.auth.jwtKeyAlias:jwtsecret}")
     private String keyAlias;
 
-    private String signatureAlgorithm;
+    private SignatureAlgorithm signatureAlgorithm;
     private Key jwtSecret;
     private PublicKey jwtPublicKey;
 
     @PostConstruct
     public void init() {
-        signatureAlgorithm = SignatureAlgorithm.RS256.getValue();
+        signatureAlgorithm = SignatureAlgorithm.RS256;
         HttpsConfig config = HttpsConfig.builder().keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(null).build();
+            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
         try {
             jwtSecret = SecurityUtils.loadKey(config);
             jwtPublicKey = SecurityUtils.loadPublicKey(config);
@@ -64,7 +64,7 @@ public class JwtSecurityInitializer {
         }
     }
 
-    public String getSignatureAlgorithm() {
+    public SignatureAlgorithm getSignatureAlgorithm() {
         return signatureAlgorithm;
     }
 
