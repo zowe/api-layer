@@ -235,21 +235,20 @@ public class TokenServiceTest {
 
     @Test
     public void shouldThrowExceptionIfTokenExpired() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2018, 1, 15);
-        Date issuedAt = calendar.getTime();
-        calendar.set(2017, 1, 16);
-        Date expiration = calendar.getTime();
-        TokenService tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
-        String jwtToken = Jwts.builder()
-            .claim(DOMAIN_CLAIM_NAME, TEST_DOMAIN)
-            .setIssuedAt(issuedAt)
-            .setExpiration(expiration)
-            .signWith(SignatureAlgorithm.forName(ALGORITHM), privateKey)
-            .compact();
         exception.expect(TokenExpireException.class);
         exception.expectMessage("Token is expired");
-        tokenService.getLtpaToken(jwtToken);
+        TokenService tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
+        tokenService.getLtpaToken(createExpiredJwtToken(privateKey));
+    }
+
+    private String createExpiredJwtToken(Key secretKey) {
+        long expiredTimeMillis = System.currentTimeMillis() - 1000;
+
+        return Jwts.builder()
+            .setExpiration(new Date(expiredTimeMillis))
+            .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
+            .signWith(SignatureAlgorithm.forName(ALGORITHM), secretKey)
+            .compact();
     }
 }
 
