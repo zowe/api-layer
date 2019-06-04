@@ -54,6 +54,7 @@ SERVICE_TRUSTSTORE="keystore/localhost/localhost.truststore"
 SERVICE_DNAME="CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 SERVICE_EXT="SAN=dns:localhost.localdomain,dns:localhost"
 SERVICE_VALIDITY=3650
+SERVICE_STORETYPE="PKCS12"
 EXTERNAL_CERTIFICATE=
 EXTERNAL_CERTIFICATE_ALIAS=
 
@@ -313,8 +314,8 @@ function trust {
 function jwt_key_gen_and_export {
     echo "Generates key pair for JWT token secret and exports the public key"
     pkeytool -genkeypair $V -alias ${JWT_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.p12 \
-    -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype PKCS12 -validity ${SERVICE_VALIDITY}
-    pkeytool -export -alias ${JWT_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -keypass ${SERVICE_PASSWORD} -storetype PKCS12 \
+    -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype ${SERVICE_STORETYPE} -validity ${SERVICE_VALIDITY}
+    pkeytool -export -alias ${JWT_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -keypass ${SERVICE_PASSWORD} -storetype ${SERVICE_STORETYPE} \
     -file ${SERVICE_KEYSTORE}.${JWT_ALIAS}.cer
 }
 
@@ -391,6 +392,9 @@ while [ "$1" != "" ]; do
                                 ;;
         --service-truststore )  shift
                                 SERVICE_TRUSTSTORE=$1
+                                ;;
+        --service-storetype )  shift
+                                SERVICE_STORETYPE=$1
                                 ;;
         --service-dname )       shift
                                 SERVICE_DNAME=$1
