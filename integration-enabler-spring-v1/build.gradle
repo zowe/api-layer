@@ -27,7 +27,7 @@ dependencies {
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.lombok
 
-    testCompile libraries.spring_boot_starter_test
+    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
     testCompile libraries.javax_servlet_api
     testCompile libraries.gson
     testCompile libraries.powermock_api_mockito2
