@@ -40,7 +40,7 @@ public class AuthHealthIndicatorTest {
                 securityConfigurationProperties);
         Health.Builder builder = new Health.Builder();
         authHealthIndicator.doHealthCheck(builder);
-        assertEquals(builder.build().getStatus(), Status.UP);
+        assertEquals(Status.UP, builder.build().getStatus());
     }
 
     @Test
@@ -54,6 +54,6 @@ public class AuthHealthIndicatorTest {
                 securityConfigurationProperties);
         Health.Builder builder = new Health.Builder();
         authHealthIndicator.doHealthCheck(builder);
-        assertEquals(builder.build().getStatus(), Status.DOWN);
+        assertEquals(Status.DOWN, builder.build().getStatus());
     }
 }
