@@ -34,8 +34,8 @@ public class AuthHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
-        boolean authUp = this.discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId())
-                .size() > 0;
+        boolean authUp = !discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId())
+                .isEmpty();
         builder.status(authUp ? UP : DOWN).withDetail("auth", authUp ? UP.getCode() : DOWN.getCode());
     }
 }

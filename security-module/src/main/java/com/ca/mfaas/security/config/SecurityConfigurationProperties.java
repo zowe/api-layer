@@ -44,7 +44,7 @@ public class SecurityConfigurationProperties {
     public static class TokenProperties {
         private String authorizationHeader = "Authorization";
         private String bearerPrefix = "Bearer ";
-        private long expirationInSeconds = 24 * 60 * 60;
+        private long expirationInSeconds = 24L * 60 * 60;
         private String issuer = "APIML";
         private String shortTtlUsername = "expire";
         private long shortTtlExpirationInSeconds = 1;

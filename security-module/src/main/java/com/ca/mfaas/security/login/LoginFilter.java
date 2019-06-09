@@ -54,8 +54,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
-        throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
             throw new AuthMethodNotSupportedException("Authentication method not supported");
         }

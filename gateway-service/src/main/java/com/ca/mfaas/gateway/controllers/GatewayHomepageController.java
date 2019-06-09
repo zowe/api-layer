@@ -23,6 +23,8 @@ import java.util.List;
 @Controller
 public class GatewayHomepageController {
 
+    private static final String SUCCESS_ICON_NAME = "success";
+
     private final DiscoveryClient discoveryClient;
 
     @Autowired
@@ -32,28 +34,28 @@ public class GatewayHomepageController {
 
     @GetMapping("/")
     public String home(Model model) {
-        String catalogLink = null;
-        String catalogStatusText = null;
-        String catalogIconName = "success";
-        boolean linkEnabled = false;
-        List<ServiceInstance> catalogInstances = getInstancesById("apicatalog");
-        int catalogCount = catalogInstances.size();
+        initializeCatalogAttributes(model);
+        initializeDiscoveryAttributes(model);
+        initializeBuildInfos(model);
+        return "home";
+    }
 
-        if (catalogCount == 1) {
-            catalogLink = getCatalogLink(catalogInstances.get(0));
-            catalogStatusText = "The API Catalog is running";
-            linkEnabled = true;
-        } else if (catalogCount == 0) {
-            catalogStatusText = "The API Catalog is not running";
-            linkEnabled = false;
-            catalogIconName = "warning";
+    private void initializeBuildInfos(Model model) {
+        BuildInfoDetails buildInfo = new BuildInfo().getBuildInfoDetails();
+        String buildString = "Build information is not available";
+        if (!buildInfo.getVersion().equalsIgnoreCase("unknown")) {
+            buildString = String.format("Version %s build # %s", buildInfo.getVersion(), buildInfo.getNumber());
         }
 
-        List<ServiceInstance> discoveryInstances = getInstancesById("discovery");
-        int discoveryCount = discoveryInstances.size();
+        model.addAttribute("buildInfoText", buildString);
+    }
+
+    private void initializeDiscoveryAttributes(Model model) {
         String discoveryStatusText;
         String discoveryIconName;
 
+        List<ServiceInstance> discoveryInstances = getInstancesById("discovery");
+        int discoveryCount = discoveryInstances.size();
         switch (discoveryCount) {
             case 0:
                 discoveryStatusText = "The Discovery Service is not running";
@@ -61,29 +63,37 @@ public class GatewayHomepageController {
                 break;
             case 1:
                 discoveryStatusText = "The Discovery Service is running";
-                discoveryIconName = "success";
+                discoveryIconName = SUCCESS_ICON_NAME;
                 break;
             default:
                 discoveryStatusText = discoveryCount + " Discovery Service instances are running";
-                discoveryIconName = "success";
+                discoveryIconName = SUCCESS_ICON_NAME;
                 break;
-        }
-
-        BuildInfoDetails buildInfo = new BuildInfo().getBuildInfoDetails();
-        String buildString = "Build information is not available";
-        if (!buildInfo.getVersion().equalsIgnoreCase("unknown")) {
-            buildString = String.format("Version %s build # %s", buildInfo.getVersion(), buildInfo.getNumber());
         }
 
         model.addAttribute("discoveryStatusText", discoveryStatusText);
         model.addAttribute("discoveryIconName", discoveryIconName);
+    }
+
+    private void initializeCatalogAttributes(Model model) {
+        String catalogLink = null;
+        String catalogStatusText = "The API Catalog is not running";
+        String catalogIconName = "warning";
+        boolean linkEnabled = false;
+
+        List<ServiceInstance> catalogInstances = getInstancesById("apicatalog");
+        int catalogCount = catalogInstances.size();
+        if (catalogCount == 1) {
+            linkEnabled = true;
+            catalogIconName = SUCCESS_ICON_NAME;
+            catalogStatusText = "The API Catalog is running";
+            catalogLink = getCatalogLink(catalogInstances.get(0));
+        }
+
         model.addAttribute("catalogLink", catalogLink);
         model.addAttribute("catalogIconName", catalogIconName);
         model.addAttribute("linkEnabled", linkEnabled);
         model.addAttribute("catalogStatusText", catalogStatusText);
-        model.addAttribute("catalogStatusText", catalogStatusText);
-        model.addAttribute("buildInfoText", buildString);
-        return "home";
     }
 
     private List<ServiceInstance> getInstancesById(String serviceId) {
