@@ -61,10 +61,6 @@ bootJar.archiveName = "${bootJar.baseName}.jar"
 
 def uiModule = "${project(':api-catalog-ui').projectDir}"
 
-processResources {
-    dependsOn "copyUi"
-}
-
 task copyUi(type: Copy) {
     group = "ui"
 
@@ -76,3 +72,11 @@ task copyUi(type: Copy) {
     from uiModule + '/frontend/build'
     into 'src/main/resources/static'
 }
+
+task buildWithUi() {
+    group 'Build tasks'
+    description 'Assembles and tests this project with the UI'
+    dependsOn build, copyUi
+}
+
+build.finalizedBy 'buildWithUi'
