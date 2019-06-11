@@ -11,11 +11,10 @@ package com.ca.mfaas.product.web;
 
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
+import com.ca.mfaas.security.SecurityUtils;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,7 +73,6 @@ public class HttpConfig {
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
-    private String secret;
 
     @PostConstruct
     public void init() {
@@ -91,7 +89,6 @@ public class HttpConfig {
             secureSslContext = factory.createSslContext();
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
-            secret = factory.readSecret();
 
             factory.setSystemSslProperties();
         }
@@ -101,20 +98,16 @@ public class HttpConfig {
         }
     }
 
-    public String getSecret() {
-        return secret;
-    }
-
     @Bean
     public SslContextFactory jettySslContextFactory() {
-        SslContextFactory sslContextFactory = new SslContextFactory(HttpsFactory.replaceFourSlashes(keyStore));
+        SslContextFactory sslContextFactory = new SslContextFactory(SecurityUtils.replaceFourSlashes(keyStore));
         sslContextFactory.setProtocol(protocol);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
         sslContextFactory.setKeyStoreType(keyStoreType);
         sslContextFactory.setCertAlias(keyAlias);
 
         if (trustStore != null) {
-            sslContextFactory.setTrustStorePath(HttpsFactory.replaceFourSlashes(trustStore));
+            sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
             sslContextFactory.setTrustStorePassword(trustStorePassword);
         }

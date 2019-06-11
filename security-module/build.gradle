@@ -19,4 +19,5 @@ dependencies {
     testCompile libraries.spring_security_test
     testCompile libraries.lombok
     testCompile libraries.javax_servlet_api
+    testCompile libraries.spring_boot_starter_test
 }

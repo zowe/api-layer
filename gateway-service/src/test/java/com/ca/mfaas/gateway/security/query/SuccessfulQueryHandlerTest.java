@@ -12,15 +12,28 @@ package com.ca.mfaas.gateway.security.query;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
+import com.ca.mfaas.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import static org.junit.Assert.*;
 
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
 public class SuccessfulQueryHandlerTest {
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
@@ -31,16 +44,31 @@ public class SuccessfulQueryHandlerTest {
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
 
+    @Mock
+    private JwtSecurityInitializer jwtSecurityInitializer;
+
     @Before
     public void setup() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
+        SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+
+        SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
+        KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+        Key privateKey = null;
+        PublicKey publicKey = null;
+        if (keyPair != null) {
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+        }
+        AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
+        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+
+        jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
 
         ObjectMapper mapper = new ObjectMapper();
-        SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
-        AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties);
-        authenticationService.setSecret("very_secret");
-        jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
         successfulQueryHandler = new SuccessfulQueryHandler(mapper, authenticationService);
     }
 

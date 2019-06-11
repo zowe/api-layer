@@ -9,24 +9,24 @@
  */
 package com.ca.mfaas.security;
 
-import static org.junit.Assert.fail;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
 
-import lombok.extern.slf4j.Slf4j;
+import static org.junit.Assert.fail;
 
 @Slf4j
 public class SecurityTestUtils {
     private static final String STORE_PASSWORD = "password"; // NOSONAR
 
-    public static HttpsConfig.HttpsConfigBuilder correctHttpsSettings() throws IOException {
+    public static HttpsConfig.HttpsConfigBuilder correctHttpsSettings() {
         return SecurityTestUtils.correctHttpsKeyStoreSettings()
                 .trustStore(pathFromRepository("keystore/localhost/localhost.truststore.p12"))
                 .trustStorePassword(STORE_PASSWORD);
     }
 
-    public static HttpsConfig.HttpsConfigBuilder correctHttpsKeyStoreSettings() throws IOException {
+    public static HttpsConfig.HttpsConfigBuilder correctHttpsKeyStoreSettings() {
         return HttpsConfig.builder().protocol("TLSv1.2")
                 .keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost.keystore.p12"))
                 .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD);
@@ -41,5 +41,5 @@ public class SecurityTestUtils {
             fail("Invalid repository path: " + newPath);
             return null;
         }
-    }    
+    }
 }

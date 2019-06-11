@@ -19,6 +19,7 @@ dependencies {
     testCompile(libraries.junit)
     testCompile(libraries.logback_classic)
     testCompile(libraries.tomcat_embed_core)
+    testCompile(libraries.mockito_core)
 
     testCompileOnly(libraries.lombok)
 }

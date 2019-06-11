@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.Date;
 import java.util.UUID;
 
@@ -30,22 +29,11 @@ public class TokenService {
     static final String BEARER_TYPE_PREFIX = "Bearer";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final JwtSecurityInitializer jwtSecurityInitializer;
 
-    private String secret;
-
-    public TokenService(SecurityConfigurationProperties securityConfigurationProperties) {
+    public TokenService(SecurityConfigurationProperties securityConfigurationProperties, JwtSecurityInitializer jwtSecurityInitializer) {
         this.securityConfigurationProperties = securityConfigurationProperties;
-    }
-
-    public String getSecret() {
-        if (secret == null) {
-            throw new NullPointerException("The secret key for JWT token service is null");
-        }
-        return secret;
-    }
-
-    public void setSecret(String secret) {
-        this.secret = secret;
+        this.jwtSecurityInitializer = jwtSecurityInitializer;
     }
 
     public String createToken(String username) {
@@ -64,14 +52,14 @@ public class TokenService {
             .setExpiration(new Date(expiration))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.HS512, getSecret())
+            .signWith(jwtSecurityInitializer.getSignatureAlgorithm(), jwtSecurityInitializer.getJwtSecret())
             .compact();
     }
 
     TokenAuthentication validateToken(TokenAuthentication token) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(getSecret())
+                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
                 .parseClaimsJws(token.getCredentials())
                 .getBody();
 
@@ -94,7 +82,7 @@ public class TokenService {
 
     public QueryResponse parseToken(String token) {
         Claims claims = Jwts.parser()
-            .setSigningKey(getSecret())
+            .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
             .parseClaimsJws(token)
             .getBody();
 
@@ -105,16 +93,13 @@ public class TokenService {
     public String getLtpaToken(String jwtToken) {
         try {
             Claims claims = Jwts.parser()
-                .setSigningKey(getSecret())
+                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
                 .parseClaimsJws(jwtToken)
                 .getBody();
             return claims.get(LTPA_CLAIM_NAME, String.class);
         } catch (ExpiredJwtException exception) {
             log.debug("Authentication: Token with id '{}' for user '{}' is expired", exception.getClaims().getId(), exception.getClaims().getSubject());
             throw new TokenExpireException("Token is expired");
-        } catch (JwtException exception) {
-            log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
-            throw new TokenNotValidException("Token is not valid");
         } catch (Exception exception) {
             log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
             throw new TokenNotValidException("Token is not valid");

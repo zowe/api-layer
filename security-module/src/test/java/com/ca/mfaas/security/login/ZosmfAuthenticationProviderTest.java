@@ -10,9 +10,12 @@
 package com.ca.mfaas.security.login;
 
 import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.security.token.JwtSecurityInitializer;
 import com.ca.mfaas.security.token.TokenAuthentication;
 import com.ca.mfaas.security.token.TokenService;
+import com.ca.mfaas.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,19 +24,24 @@ import org.mockito.Mockito;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.client.RestTemplate;
 
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import static org.junit.Assert.assertTrue;
 
 public class ZosmfAuthenticationProviderTest {
     private static final String USERNAME = "user";
@@ -42,7 +50,6 @@ public class ZosmfAuthenticationProviderTest {
     private static final String HOST = "localhost";
     private static final int PORT = 0;
     private static final String ZOSMF = "zosmf";
-    private static final String SECRET = "secret";
     private static final String COOKIE = "LtpaToken2=test";
     private static final String DOMAIN = "realm";
     private static final String RESPONSE = "{\"zosmf_saf_realm\": \"" + DOMAIN + "\"}";
@@ -62,8 +69,21 @@ public class ZosmfAuthenticationProviderTest {
     public void setUp() {
         usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(USERNAME, PASSWORD);
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        tokenService = new TokenService(securityConfigurationProperties);
-        tokenService.setSecret(SECRET);
+        JwtSecurityInitializer jwtSecurityInitializer = mock(JwtSecurityInitializer.class);
+        tokenService = new TokenService(securityConfigurationProperties, jwtSecurityInitializer);
+
+        SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
+        KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+        Key privateKey = null;
+        PublicKey publicKey = null;
+        if (keyPair != null) {
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+        }
+        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+
         discovery = mock(DiscoveryClient.class);
         mapper = new ObjectMapper();
         restTemplate = mock(RestTemplate.class);
