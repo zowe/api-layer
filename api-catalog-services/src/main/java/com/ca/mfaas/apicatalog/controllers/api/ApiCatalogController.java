@@ -103,25 +103,11 @@ public class ApiCatalogController {
             if (apiContainers.isEmpty()) {
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             } else {
-                // Fot this single container, check the status of all it's services so it's overall status can be set here
-                apiContainers.forEach(cachedProductFamilyService::calculateContainerServiceTotals);
-
-                // add API Doc to the services to improve UI performance
                 apiContainers.forEach(apiContainer -> {
-                    apiContainer.getServices().forEach(apiService -> {
-                        // try the get teh Api Doc for this service, if it fails for any reason then do not change the existing value
-                        // it may or may not be null
-                        try {
-                            String apiDoc = cachedApiDocService.getApiDocForService(apiService.getServiceId(), "v1");
-                            if (apiDoc != null) {
-                                apiService.setApiDoc(apiDoc);
-                            }
-                        } catch (Exception e) {
-                            log.warn("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
-                                ", processing can continue but this service will not be able to display any Api Documentation.\n" +
-                                "Error Message: " + e.getMessage());
-                        }
-                    });
+                    // Fot this single container, check the status of all it's services so it's overall status can be set here
+                    cachedProductFamilyService.calculateContainerServiceTotals(apiContainer);
+                    // add API Doc to the services to improve UI performance
+                    setApiDocToService(apiContainer);
                 });
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
@@ -129,6 +115,23 @@ public class ApiCatalogController {
             log.error("Could not retrieve container: " + e.getMessage(), e);
             throw new ContainerStatusRetrievalException(e);
         }
+    }
+
+    private void setApiDocToService(APIContainer apiContainer) {
+        apiContainer.getServices().forEach(apiService -> {
+            // try the get teh Api Doc for this service, if it fails for any reason then do not change the existing value
+            // it may or may not be null
+            try {
+                String apiDoc = cachedApiDocService.getApiDocForService(apiService.getServiceId(), "v1");
+                if (apiDoc != null) {
+                    apiService.setApiDoc(apiDoc);
+                }
+            } catch (Exception e) {
+                log.warn("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
+                    ", processing can continue but this service will not be able to display any Api Documentation.\n" +
+                    "Error Message: " + e.getMessage());
+            }
+        });
     }
 
     /**
@@ -145,5 +148,4 @@ public class ApiCatalogController {
         return StreamSupport.stream(iterable.spliterator(), false)
             .collect(Collectors.toList());
     }
-
 }

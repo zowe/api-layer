@@ -41,10 +41,11 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     private final DiscoveryClient discovery;
     private final Map<String, RoutedServices> routedServicesMap = new HashMap<>();
     private final TransformService transformService;
-    private final int MAX_ENTRIES = 1000;
+    private static final int MAX_ENTRIES = 1000;
 
     private final Map<String, String> routeTable = Collections.synchronizedMap(
         new LinkedHashMap<String, String>(MAX_ENTRIES + 1, .75F, true) {
+            @Override
             public boolean removeEldestEntry(Map.Entry eldest) {
                 return size() > MAX_ENTRIES;
             }

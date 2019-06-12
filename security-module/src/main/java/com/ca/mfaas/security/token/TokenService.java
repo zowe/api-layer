@@ -131,11 +131,11 @@ public class TokenService {
         long expiration = now + (securityConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000);
 
         // calculate time for short TTL user
-        if (securityConfigurationProperties.getTokenProperties().getShortTtlUsername() != null) {
-            if (username.equals(securityConfigurationProperties.getTokenProperties().getShortTtlUsername())) {
+        if (securityConfigurationProperties.getTokenProperties().getShortTtlUsername() != null
+             && username.equals(securityConfigurationProperties.getTokenProperties().getShortTtlUsername())) {
                 expiration = now + (securityConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds() * 1000);
-            }
         }
+
         return expiration;
     }
 }

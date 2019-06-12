@@ -36,7 +36,7 @@ public class LoginAuthenticationProvider extends DaoAuthenticationProvider {
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
         try {
             usernamePasswordAuthentication

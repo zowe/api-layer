@@ -19,7 +19,7 @@ import java.lang.management.ManagementFactory;
 
 @Slf4j
 public class ServiceStartupEventHandler {
-    public static int DEFAULT_DELAY_FACTOR = 5;
+    public static final int DEFAULT_DELAY_FACTOR = 5;
 
     public void onServiceStartup(String serviceName, int delayFactor) {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();

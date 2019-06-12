@@ -35,22 +35,15 @@ public class BuildInfo {
         Properties props = new Properties();
 
         // Create the input streams
-        InputStream input = getClass().getClassLoader().getResourceAsStream(path);
-        if (input == null) {
-            log.error("Could not read properties from: {}", path);
-            return props;
-        }
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream(path)) {
+            if (input == null) {
+                log.error("Could not read properties from: {}", path);
+                return props;
+            }
 
-        try {
             props.load(input);
         } catch (IOException ioe) {
             log.error("Error reading properties from: {} Details: {}", path, ioe.toString());
-            return props;
-        } finally {
-            try {
-                input.close();
-            } catch (IOException ioe) {
-            }
         }
 
         return props;
