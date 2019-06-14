@@ -38,7 +38,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 @Slf4j
-@Category(MainframeDependentTests.class) //TODO: Remove when the catalog will use Gateway security
 public class ApiCatalogEndpointIntegrationTest {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/api/v1/apicatalog/containers";
     private static final String INVALID_CONTAINER_ENDPOINT = "/api/v1/apicatalog/containerz";
@@ -177,7 +176,6 @@ public class ApiCatalogEndpointIntegrationTest {
      * @param endpoint   execute thus
      * @param returnCode check for this
      * @return response
-     * @throws URISyntaxException oops
      * @throws IOException        oops
      */
     private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
