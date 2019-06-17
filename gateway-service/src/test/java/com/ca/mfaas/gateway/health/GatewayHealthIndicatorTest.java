@@ -25,7 +25,7 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 
-public class ApimlHealthIndicatorTest {
+public class GatewayHealthIndicatorTest {
 
     private static final String ZOSMF = "zosmf";
 
@@ -47,9 +47,9 @@ public class ApimlHealthIndicatorTest {
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(ZOSMF, "host", 10050, true)));
 
-        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient, securityConfigurationProperties);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, securityConfigurationProperties);
         Health.Builder builder = new Health.Builder();
-        apimlHealthIndicator.doHealthCheck(builder);
+        gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
     }
 
@@ -62,9 +62,9 @@ public class ApimlHealthIndicatorTest {
             Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.emptyList());
 
-        ApimlHealthIndicator apimlHealthIndicator = new ApimlHealthIndicator(discoveryClient, securityConfigurationProperties);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, securityConfigurationProperties);
         Health.Builder builder = new Health.Builder();
-        apimlHealthIndicator.doHealthCheck(builder);
+        gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
     }
 }

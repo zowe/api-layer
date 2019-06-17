@@ -12,7 +12,8 @@ package com.ca.mfaas.product.constants;
 public enum CoreService {
     GATEWAY("gateway"),
     DISCOVERY("discovery"),
-    API_CATALOG("apicatalog");
+    API_CATALOG("apicatalog"),
+    AUTH("auth");
 
     private final String serviceId;
 
