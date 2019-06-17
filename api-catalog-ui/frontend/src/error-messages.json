@@ -1,0 +1,22 @@
+{
+    "messages" : [
+        {
+            "messageKey": "SEC0001",
+            "messageText": "Authentication is required "
+        },
+        {
+            "messageKey": "SEC0004",
+            "messageText": "Session has expired, please login again "
+        },
+        {
+            "messageKey": "ZWEAS120E",
+            "messageText": "Username or password is invalid "
+        },
+        {
+            "messageKey": "MFS0104",
+            "messageText": "Request timeout, please try again later "
+        }
+
+    ]
+
+}
