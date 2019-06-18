@@ -141,3 +141,5 @@ logging:
         org.springframework: INFO
         org.apache.catalina: INFO
         com.netflix: INFO
+
+logbackServiceName: ZWEADC1

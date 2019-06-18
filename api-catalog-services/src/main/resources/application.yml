@@ -205,3 +205,5 @@ security:
     cookie:
         maxAge: -1
         secure: false
+
+logbackServiceName: ZWEAAC1
