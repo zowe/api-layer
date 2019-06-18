@@ -16,7 +16,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -68,7 +67,6 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    @Ignore
     public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
 
@@ -86,7 +84,6 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    @Ignore
     public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
 

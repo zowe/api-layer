@@ -14,36 +14,57 @@ import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.query.QueryResponse;
 import com.ca.mfaas.gateway.security.token.TokenExpireException;
 import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.mfaas.security.SecurityUtils;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.http.Cookie;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
-
+@RunWith(MockitoJUnitRunner.class)
 public class AuthenticationServiceTest {
 
     private static final String USER = "Me";
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
-    private static final String SECRET = "very_secret";
+    private static final SignatureAlgorithm ALGORITHM = SignatureAlgorithm.RS256;
+
+    private Key privateKey;
+    private PublicKey publicKey;
 
     private AuthenticationService authService;
-
     private SecurityConfigurationProperties securityConfigurationProperties;
+
+    @Mock
+    private JwtSecurityInitializer jwtSecurityInitializer;
 
     @Before
     public void setUp() {
+        KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
+        if (keyPair != null) {
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+        }
+        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        authService = new AuthenticationService(securityConfigurationProperties);
-        authService.setSecret(SECRET);
+        authService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
     }
 
     @Test
@@ -54,9 +75,9 @@ public class AuthenticationServiceTest {
         assertEquals("java.lang.String", jwtToken.getClass().getName());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void shouldThrowExceptionWithNullSecret() {
-        authService.setSecret(null);
+        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(null);
         authService.createJwtToken(USER, DOMAIN, LTPA);
     }
 
@@ -82,7 +103,7 @@ public class AuthenticationServiceTest {
 
     @Test(expected = TokenExpireException.class)
     public void shouldThrowExceptionWhenTokenIsExpired() {
-        TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(SECRET));
+        TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
         authService.validateJwtToken(token);
     }
 
@@ -151,16 +172,16 @@ public class AuthenticationServiceTest {
 
     @Test(expected = TokenExpireException.class)
     public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
-        authService.getLtpaTokenFromJwtToken(createExpiredJwtToken(SECRET));
+        authService.getLtpaTokenFromJwtToken(createExpiredJwtToken(privateKey));
     }
 
-    private String createExpiredJwtToken(String secret) {
+    private String createExpiredJwtToken(Key secretKey) {
         long expiredTimeMillis = System.currentTimeMillis() - 1000;
 
         return Jwts.builder()
             .setExpiration(new Date(expiredTimeMillis))
             .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(SignatureAlgorithm.HS512, secret)
+            .signWith(ALGORITHM, secretKey)
             .compact();
     }
 }

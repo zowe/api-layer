@@ -38,12 +38,13 @@ public class SecurityConfigurationProperties {
     private String zosmfServiceId;
     private boolean verifySslCertificatesOfServices = true;
     private String ciphers = null;
+    private String jwtKeyAlias;
 
     @Data
     public static class TokenProperties {
         private String authorizationHeader = "Authorization";
         private String bearerPrefix = "Bearer ";
-        private long expirationInSeconds = 24 * 60 * 60;
+        private long expirationInSeconds = 24L * 60 * 60;
         private String issuer = "APIML";
         private String shortTtlUsername = "expire";
         private long shortTtlExpirationInSeconds = 1;
@@ -67,7 +68,7 @@ public class SecurityConfigurationProperties {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
             log.error("z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name.");
             throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
-        }        
+        }
         return zosmfServiceId;
     }
 }

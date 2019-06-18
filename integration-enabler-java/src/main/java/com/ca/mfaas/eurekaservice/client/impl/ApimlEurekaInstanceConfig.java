@@ -22,12 +22,7 @@ public class ApimlEurekaInstanceConfig implements EurekaInstanceConfig {
     private boolean securePortEnabled;
     private boolean instanceEnabledOnit = true;
     private boolean nonSecurePortEnabled;
-    private DataCenterInfo dataCenterInfo = new DataCenterInfo() {
-        @Override
-        public Name getName() {
-            return Name.MyOwn;
-        }
-    };
+    private DataCenterInfo dataCenterInfo = () -> DataCenterInfo.Name.MyOwn;
     private int leaseExpirationDurationInSeconds = 90;
     private int leaseRenewalIntervalInSeconds = 30;
     private int nonSecurePort;

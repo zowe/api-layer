@@ -57,9 +57,9 @@ project(":zowe-install") {
 project(":integration-tests") {
     sonarqube {
         properties {
-            property "sonar.sources", "src/test/java"
-            property "sonar.test.exclusions", "**/*.java"
-            property "sonar.cpd.exclusions", "**/*.java"
+            property "sonar.sources", "nosonar"
+            property "sonar.exclusions", "nosonar/**/*"
+            property "sonar.test", "src/test/java"
             property "sonar.java.binaries", "build/libs"
         }
     }

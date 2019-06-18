@@ -14,7 +14,7 @@ import com.netflix.discovery.DefaultEurekaClientConfig;
 import java.util.List;
 
 public class EurekaClientConfiguration extends DefaultEurekaClientConfig {
-    private final int DEFAULT_RENEWAL_INTERVAL = 30;
+    private static final int DEFAULT_RENEWAL_INTERVAL = 30;
     private ApiMediationServiceConfig config;
 
     public EurekaClientConfiguration(ApiMediationServiceConfig config) {

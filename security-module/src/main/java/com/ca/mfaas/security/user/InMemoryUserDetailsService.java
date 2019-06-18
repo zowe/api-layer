@@ -37,7 +37,7 @@ public class InMemoryUserDetailsService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String username) {
 
         // hard coding the users. All passwords must be encoded.
         final List<AppUser> users = Arrays.asList(
@@ -63,7 +63,8 @@ public class InMemoryUserDetailsService implements UserDetailsService {
     @Data
     private static class AppUser {
         private Integer id;
-        private String username, password;
+        private String username;
+        private String password;
         private String role;
 
         AppUser(Integer id, String username, String password, String role) {

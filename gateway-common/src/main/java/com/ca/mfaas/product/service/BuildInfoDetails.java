@@ -16,6 +16,9 @@ import java.util.Date;
 import java.util.Properties;
 
 public class BuildInfoDetails {
+
+    private static final String UNKNOWN = "Unknown";
+
     private final Properties build;
     private final Properties git;
 
@@ -25,11 +28,11 @@ public class BuildInfoDetails {
     }
 
     public String getArtifact() {
-        return build.get("build.artifact") == null ? "Unknown" : String.valueOf(build.get("build.artifact"));
+        return build.get("build.artifact") == null ? UNKNOWN : String.valueOf(build.get("build.artifact"));
     }
 
     public String getVersion() {
-        return build.get("build.version") == null ? "Unknown" : String.valueOf(build.get("build.version"));
+        return build.get("build.version") == null ? UNKNOWN : String.valueOf(build.get("build.version"));
     }
 
     public String getNumber() {
@@ -45,16 +48,17 @@ public class BuildInfoDetails {
         Date date = null;
         try {
             date = dateFormat.parse(String.valueOf(build.get("build.time")));
-        } catch (ParseException ignore) {
+        } catch (ParseException e) {
+            //do nothing if there's parse problem
         }
         return date;
     }
 
     public String getMachine() {
-        return build.get("build.machine") == null ? "Unknown" : String.valueOf(build.get("build.machine"));
+        return build.get("build.machine") == null ? UNKNOWN : String.valueOf(build.get("build.machine"));
     }
 
     public String getCommitId() {
-        return git.get("git.commit.id.abbrev") == null ? "Unknown" : String.valueOf(git.get("git.commit.id.abbrev"));
+        return git.get("git.commit.id.abbrev") == null ? UNKNOWN : String.valueOf(git.get("git.commit.id.abbrev"));
     }
 }
