@@ -66,7 +66,7 @@ public class LoginIntegrationTest {
 
         assertTrue(cookie.isHttpOnly());
         assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(24 * 60 * 60));
+        assertThat(cookie.getMaxAge(), is(-1));
 
         int i = cookie.getValue().lastIndexOf('.');
         String untrustedJwtString = cookie.getValue().substring(0, i + 1);
