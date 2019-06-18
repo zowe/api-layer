@@ -10,17 +10,19 @@
 package com.ca.mfaas.apicatalog.config;
 
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.transform.TransformService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class BeanConfig {
     @Bean
-    public ErrorService errorService() {
-        return new ErrorServiceImpl("/messages.yml");
+    @Primary
+    public ErrorService errorServiceCatalog(ErrorService errorService) {
+        errorService.loadMessages("/messages.yml");
+        return errorService;
     }
 
     @Bean

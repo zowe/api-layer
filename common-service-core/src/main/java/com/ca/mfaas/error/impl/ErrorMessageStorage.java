@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.error.impl;
 
+import com.ca.mfaas.error.DuplicateMessageException;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +27,6 @@ public class ErrorMessageStorage {
         return keyMap.get(key);
     }
 
-    @SuppressWarnings("squid:S00112")
     public void addMessages(ErrorMessages messages) {
         for (ErrorMessage message : messages.getMessages()) {
             if (!keyMap.containsKey(message.getKey())) {
@@ -33,12 +34,12 @@ public class ErrorMessageStorage {
                     keyMap.put(message.getKey(), message);
                     numberMap.put(message.getNumber(), message);
                 } else {
-                    String exectionMessage = String.format("Message with number '%s' is already exists", message.getNumber());
-                    throw new RuntimeException(exectionMessage);
+                    String exceptionMessage = String.format("Message with number '%s' is already exists", message.getNumber());
+                    throw new DuplicateMessageException(exceptionMessage);
                 }
             } else {
-                String exectionMessage = String.format("Message with key '%s' is already exists", message.getKey());
-                throw new RuntimeException(exectionMessage);
+                String exceptionMessage = String.format("Message with key '%s' is already exists", message.getKey());
+                throw new DuplicateMessageException(exceptionMessage);
             }
         }
     }

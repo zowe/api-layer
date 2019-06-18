@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.apicatalog;
 
-import com.ca.mfaas.utils.categories.MainframeDependentTests;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import com.ca.mfaas.utils.http.HttpClientUtils;
@@ -28,10 +27,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 
 import static org.hamcrest.Matchers.equalTo;

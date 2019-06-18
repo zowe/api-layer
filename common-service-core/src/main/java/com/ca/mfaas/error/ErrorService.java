@@ -35,4 +35,10 @@ public interface ErrorService {
      * @return {@link ApiMessage} for key
      */
     ApiMessage createApiMessage(String key, List<Object[]> parameters);
+
+    /**
+     * Load messages to the context from the provided message file path
+     * @param messagesFilePath path of the message file
+     */
+    void loadMessages(String messagesFilePath);
 }
