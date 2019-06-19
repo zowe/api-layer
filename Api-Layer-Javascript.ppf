@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project default_configuration_name="Configuration 1" fallback_default_config_name="Configuration 1" file_encoding="ISO-8859-1" file_extension_set_name="javascript" ltd_name="javascript" name="Api-Layer-Javascript" version="9.0.3.11">
+	<Configuration name="Configuration 1"/>
+	<FileExtensions>
+		<FileExtension extension="js" is_exclude="false" is_project_exclusion="false" is_valid_assess="true" is_web="false"/>
+	</FileExtensions>
+	<Source exclude="false" path="." web="false"/>
+	<ProjectScanSettings cache_va="false" global_rules="false" string_analysis="false"/>
+</Project>
