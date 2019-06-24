@@ -7,19 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog.gateway;
+package com.ca.mfaas.apicatalog.instance;
 
 /**
- * Exception used to indicate that the Gateway scheme and host could not been initialized.
+ * Exception used to indicate that the instance aren't initialized properly because of incorrect metadata.
  */
-public class GatewayConfigInitializerException extends Exception {
+public class InstanceInitializationException extends RuntimeException {
     private static final long serialVersionUID = -559112794280136165L;
 
-    public GatewayConfigInitializerException(String message) {
+    public InstanceInitializationException(String message) {
         super(message);
-    }
-
-    public GatewayConfigInitializerException(String message, Throwable cause) {
-        super(message, cause);
     }
 }

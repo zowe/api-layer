@@ -7,16 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog.services.cached;
+package com.ca.mfaas.apicatalog.instance;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
+import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +30,7 @@ import java.util.concurrent.*;
  */
 @Slf4j
 @Service
-@DependsOn("instanceRetrievalService")
-public class CacheRefreshService {
+public class InstanceRefreshService {
 
     // until versioning is implemented, only v1 API docs are supported
     private final CachedProductFamilyService cachedProductFamilyService;
@@ -41,9 +40,9 @@ public class CacheRefreshService {
     private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
 
     @Autowired
-    public CacheRefreshService(CachedProductFamilyService cachedProductFamilyService,
-                               CachedServicesService cachedServicesService,
-                               InstanceRetrievalService instanceRetrievalService) {
+    public InstanceRefreshService(CachedProductFamilyService cachedProductFamilyService,
+                                  CachedServicesService cachedServicesService,
+                                  InstanceRetrievalService instanceRetrievalService) {
         this.cachedProductFamilyService = cachedProductFamilyService;
         this.cachedServicesService = cachedServicesService;
         this.instanceRetrievalService = instanceRetrievalService;
@@ -92,7 +91,7 @@ public class CacheRefreshService {
         // Updated containers
         Set<String> containersUpdated = new HashSet<>();
         Applications cachedServices = cachedServicesService.getAllCachedServices();
-        Applications deltaFromDiscovery = instanceRetrievalService.extractDeltaFromDiscovery();
+        Applications deltaFromDiscovery = instanceRetrievalService.getAllInstancesFromDiscovery(true);
 
         if (deltaFromDiscovery != null && !deltaFromDiscovery.getRegisteredApplications().isEmpty()) {
             // use the version to check if this delta has changed, it is deprecated and should be replaced as soon as a

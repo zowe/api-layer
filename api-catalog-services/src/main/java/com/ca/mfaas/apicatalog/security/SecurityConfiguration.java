@@ -94,16 +94,22 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-
             .csrf().disable()
             .headers()
             .httpStrictTransportSecurity().disable()
             .frameOptions().disable()
             .and()
             .exceptionHandling()
-            .defaultAuthenticationEntryPointFor(basicAuthUnauthorizedHandler, new AntPathRequestMatcher("/application/**"))
-            .defaultAuthenticationEntryPointFor(basicAuthUnauthorizedHandler, new AntPathRequestMatcher("/apidoc/**"))
-            .defaultAuthenticationEntryPointFor(unAuthorizedHandler, new AntPathRequestMatcher("/**"))
+
+            .defaultAuthenticationEntryPointFor(
+                basicAuthUnauthorizedHandler, new AntPathRequestMatcher("/application/**")
+            )
+            .defaultAuthenticationEntryPointFor(
+                basicAuthUnauthorizedHandler, new AntPathRequestMatcher("/apidoc/**")
+            )
+            .defaultAuthenticationEntryPointFor(
+                unAuthorizedHandler, new AntPathRequestMatcher("/**")
+            )
 
             .and()
             .sessionManagement()
@@ -111,7 +117,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // login endpoint
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getServiceLoginPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(
+                loginFilter(securityConfigurationProperties.getServiceLoginPath()),
+                UsernamePasswordAuthenticationFilter.class
+            )
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, securityConfigurationProperties.getServiceLoginPath()).permitAll()
 

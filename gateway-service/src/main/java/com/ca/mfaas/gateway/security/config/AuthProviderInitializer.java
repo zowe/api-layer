@@ -51,9 +51,9 @@ public class AuthProviderInitializer {
      */
     public void configure(AuthenticationManagerBuilder auth) {
         LoginProvider provider = getLoginProvider();
-        if (provider == LoginProvider.ZOSMF) {
+        if (provider.equals(LoginProvider.ZOSMF)) {
             auth.authenticationProvider(zosmfAuthenticationProvider);
-        } else if (provider == LoginProvider.DUMMY) {
+        } else if (provider.equals(LoginProvider.DUMMY)) {
             log.warn("Login endpoint is running in the dummy mode. Use credentials user/user to login.");
             log.warn("Do not use this option in the production environment.");
             auth.authenticationProvider(dummyAuthenticationProvider);

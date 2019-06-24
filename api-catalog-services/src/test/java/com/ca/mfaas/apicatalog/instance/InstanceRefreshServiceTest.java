@@ -7,11 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog.services.cached;
+package com.ca.mfaas.apicatalog.instance;
 
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
+import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.apicatalog.util.ContainerServiceMockUtil;
 import com.ca.mfaas.apicatalog.util.ContainerServiceState;
 import com.netflix.appinfo.InstanceInfo;
@@ -31,12 +32,12 @@ import java.util.stream.Collectors;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
-public class CacheRefreshServiceTest {
+public class InstanceRefreshServiceTest {
 
     private final ContainerServiceMockUtil containerServiceMockUtil = new ContainerServiceMockUtil();
 
     @InjectMocks
-    private CacheRefreshService cacheRefreshService;
+    private InstanceRefreshService instanceRefreshService;
 
     @Mock
     private CachedProductFamilyService cachedProductFamilyService;
@@ -70,7 +71,7 @@ public class CacheRefreshServiceTest {
 
         // Mock the discovery and cached service query
         Applications discoveredServices = new Applications("1", 1L, discoveredState.getApplications());
-        when(instanceRetrievalService.extractDeltaFromDiscovery()).thenReturn(discoveredServices);
+        when(instanceRetrievalService.getAllInstancesFromDiscovery(true)).thenReturn(discoveredServices);
 
         Applications cachedServices = new Applications("1", 1L, cachedState.getApplications());
         when(cachedServicesService.getAllCachedServices()).thenReturn(cachedServices);
@@ -78,7 +79,7 @@ public class CacheRefreshServiceTest {
         when(cachedProductFamilyService.saveContainerFromInstance("api-five", newInstanceOfService5))
             .thenReturn(new APIContainer());
 
-        cacheRefreshService.refreshCacheFromDiscovery();
+        instanceRefreshService.refreshCacheFromDiscovery();
 
         verify(cachedProductFamilyService, times(1))
             .saveContainerFromInstance("api-five", newInstanceOfService5);
@@ -109,12 +110,12 @@ public class CacheRefreshServiceTest {
 
         // Mock the discovery and cached service query
         Applications discoveredServices = new Applications("123", 2L, discoveredState.getApplications());
-        when(instanceRetrievalService.extractDeltaFromDiscovery()).thenReturn(discoveredServices);
+        when(instanceRetrievalService.getAllInstancesFromDiscovery(true)).thenReturn(discoveredServices);
         Applications cachedServices = new Applications("456", 1L, cachedState.getApplications());
         when(cachedServicesService.getAllCachedServices()).thenReturn(cachedServices);
 
 
-        cacheRefreshService.refreshCacheFromDiscovery();
+        instanceRefreshService.refreshCacheFromDiscovery();
 
         verify(cachedServicesService, times(1)).updateService(anyString(), any(Application.class));
         verify(cachedProductFamilyService, never()).saveContainerFromInstance("api-three", shutDownInstanceOfService3);
@@ -145,7 +146,7 @@ public class CacheRefreshServiceTest {
 
         // Mock the discovery and cached service query
         Applications discoveredServices = new Applications("12323", 2L, discoveredState.getApplications());
-        when(instanceRetrievalService.extractDeltaFromDiscovery()).thenReturn(discoveredServices);
+        when(instanceRetrievalService.getAllInstancesFromDiscovery(true)).thenReturn(discoveredServices);
         Applications cachedServices = new Applications("4512312316", 1L, cachedState.getApplications());
         when(cachedServicesService.getAllCachedServices()).thenReturn(cachedServices);
 
@@ -158,7 +159,7 @@ public class CacheRefreshServiceTest {
         when(cachedProductFamilyService.saveContainerFromInstance("api-three", modifiedInstanceOfService3))
             .thenReturn(apiContainer3);
 
-        cacheRefreshService.refreshCacheFromDiscovery();
+        instanceRefreshService.refreshCacheFromDiscovery();
 
         verify(cachedServicesService, times(1)).updateService(modifiedInstanceOfService3.getAppName(), service3);
         verify(cachedProductFamilyService, times(1))

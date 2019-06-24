@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NotFoundErrorController implements ErrorController {
 
-    private static final String PATH = "/not_found";
+    private static final String NOT_FOUND_ENDPOINT = "/not_found";
     private final ErrorService errorService;
 
     @Autowired
@@ -37,10 +37,10 @@ public class NotFoundErrorController implements ErrorController {
 
     @Override
     public String getErrorPath() {
-        return PATH;
+        return NOT_FOUND_ENDPOINT;
     }
 
-    @GetMapping(value = PATH, produces = "application/json")
+    @GetMapping(value = NOT_FOUND_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessage> notFound400HttpResponse(HttpServletRequest request) {
         ApiMessage message = errorService.createApiMessage("com.ca.mfaas.common.endPointNotFound",

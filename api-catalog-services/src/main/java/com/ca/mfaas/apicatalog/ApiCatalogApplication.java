@@ -12,14 +12,11 @@ package com.ca.mfaas.apicatalog;
 import com.ca.mfaas.enable.EnableApiDiscovery;
 import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.BuildInfo;
-import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -31,12 +28,11 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @EnableEurekaClient
 @EnableWebFlux
 @EnableApiDiscovery
-@ComponentScan({ "com.ca.mfaas.enable", "com.ca.mfaas.apicatalog", "com.ca.mfaas.product.security", "com.ca.mfaas.product.config",
-        "com.ca.mfaas.product.web" })
+@ComponentScan({ "com.ca.mfaas.enable", "com.ca.mfaas.apicatalog", "com.ca.mfaas.product.security", "com.ca.mfaas.product.web" })
 @EnableScheduling
 @EnableRetry
 @EnableAsync
-public class ApiCatalogApplication implements ApplicationListener<ApplicationReadyEvent> {
+public class ApiCatalogApplication {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(ApiCatalogApplication.class);
@@ -44,11 +40,5 @@ public class ApiCatalogApplication implements ApplicationListener<ApplicationRea
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);
-    }
-
-    @Override
-    public void onApplicationEvent(final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("API Catalog Service",
-                ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

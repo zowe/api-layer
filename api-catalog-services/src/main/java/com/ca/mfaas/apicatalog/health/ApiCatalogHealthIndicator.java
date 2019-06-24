@@ -9,14 +9,11 @@
  */
 package com.ca.mfaas.apicatalog.health;
 
-import static org.springframework.boot.actuate.health.Status.DOWN;
-import static org.springframework.boot.actuate.health.Status.UP;
-
 import com.ca.mfaas.product.constants.CoreService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 
@@ -31,9 +28,13 @@ public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
-        boolean gatewayUp = !this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).isEmpty();
+        String gatewayServiceId = CoreService.GATEWAY.getServiceId();
 
-        builder.status(gatewayUp ? UP : DOWN)
-            .withDetail(CoreService.GATEWAY.getServiceId(), gatewayUp ? UP.getCode() : DOWN.getCode());
+        boolean gatewayUp = !this.discoveryClient.getInstances(gatewayServiceId).isEmpty();
+        Status healthStatus = gatewayUp ? Status.UP : Status.DOWN;
+
+        builder
+            .status(healthStatus)
+            .withDetail(gatewayServiceId, healthStatus.getCode());
     }
 }

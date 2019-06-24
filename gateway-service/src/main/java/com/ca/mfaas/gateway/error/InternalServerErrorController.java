@@ -42,7 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
 public class InternalServerErrorController implements ErrorController {
-    private static final String PATH = "/internal_error";
+    private static final String ERROR_ENDPOINT = "/internal_error";
 
     private final ErrorService errorService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
@@ -57,10 +57,10 @@ public class InternalServerErrorController implements ErrorController {
 
     @Override
     public String getErrorPath() {
-        return PATH;
+        return ERROR_ENDPOINT;
     }
 
-    @RequestMapping(value = PATH, produces = "application/json")
+    @RequestMapping(value = ERROR_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessage> error(HttpServletRequest request) {
         final Throwable exc = (Throwable) request.getAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION);

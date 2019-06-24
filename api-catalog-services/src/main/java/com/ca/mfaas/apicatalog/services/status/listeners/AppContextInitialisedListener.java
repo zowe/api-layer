@@ -9,23 +9,26 @@
  */
 package com.ca.mfaas.apicatalog.services.status.listeners;
 
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.instance.InstanceInitializeService;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class AppContextInitialisedListener {
 
-    private final InstanceRetrievalService instanceRetrievalService;
+    private final InstanceInitializeService instanceInitializeService;
 
     @Autowired
-    public AppContextInitialisedListener(InstanceRetrievalService instanceRetrievalService) {
-        this.instanceRetrievalService = instanceRetrievalService;
+    public AppContextInitialisedListener(InstanceInitializeService instanceInitializeService) {
+        this.instanceInitializeService = instanceInitializeService;
     }
 
     /**
@@ -35,6 +38,7 @@ public class AppContextInitialisedListener {
      */
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws CannotRegisterServiceException {
-        instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
+        log.info("AppContextInitialisedListener");
+        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
     }
 }
