@@ -43,6 +43,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @ComponentScan("com.ca.apiml.security")
 @SuppressWarnings("squid:S00107")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+    // List of endpoints protected by content filters
+    private static final String[] PROTECTED_ENDPOINTS = {
+        "/api/v1/gateway",
+        "/application"
+    };
+
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
     private final SecurityConfigurationProperties securityConfigurationProperties;
@@ -87,9 +94,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .exceptionHandling().authenticationEntryPoint(unAuthorizedHandler)
 
             .and()
-            .httpBasic()
-
-            .and()
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
@@ -132,13 +136,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler);
+        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler, PROTECTED_ENDPOINTS);
     }
 
     /**
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
+        return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties, PROTECTED_ENDPOINTS);
     }
 }

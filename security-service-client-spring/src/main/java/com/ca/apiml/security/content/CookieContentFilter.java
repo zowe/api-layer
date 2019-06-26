@@ -30,7 +30,15 @@ public class CookieContentFilter extends AbstractSecureContentFilter {
     public CookieContentFilter(AuthenticationManager authenticationManager,
                                AuthenticationFailureHandler failureHandler,
                                SecurityConfigurationProperties securityConfigurationProperties) {
-        super(authenticationManager, failureHandler);
+        super(authenticationManager, failureHandler, new String[0]);
+        this.securityConfigurationProperties = securityConfigurationProperties;
+    }
+
+    public CookieContentFilter(AuthenticationManager authenticationManager,
+                               AuthenticationFailureHandler failureHandler,
+                               SecurityConfigurationProperties securityConfigurationProperties,
+                               String[] endpoints) {
+        super(authenticationManager, failureHandler, endpoints);
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 

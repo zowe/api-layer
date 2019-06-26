@@ -8,7 +8,7 @@ apiml:
     security:
         auth:
             provider: dummy
-            zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
+            zosmfServiceId: zosmfca32  # Replace me with the correct z/OSMF service id
         ssl:
             verifySslCertificatesOfServices: true
 

@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -33,10 +34,24 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
 
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
+    private final String[] endpoints;
 
-    AbstractSecureContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
+    AbstractSecureContentFilter(AuthenticationManager authenticationManager,
+                                AuthenticationFailureHandler failureHandler,
+                                String[] endpoints) {
         this.authenticationManager = authenticationManager;
         this.failureHandler = failureHandler;
+        this.endpoints = endpoints;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        if (endpoints == null || endpoints.length == 0) {
+            return false;
+        }
+
+        String path = request.getServletPath();
+        return Arrays.stream(endpoints).noneMatch(path::startsWith);
     }
 
     /**

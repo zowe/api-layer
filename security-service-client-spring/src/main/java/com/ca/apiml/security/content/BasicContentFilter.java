@@ -29,8 +29,15 @@ import java.util.Optional;
 @Slf4j
 public class BasicContentFilter extends AbstractSecureContentFilter {
 
-    public BasicContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
-        super(authenticationManager, failureHandler);
+    public BasicContentFilter(AuthenticationManager authenticationManager,
+                              AuthenticationFailureHandler failureHandler) {
+        super(authenticationManager, failureHandler, new String[0]);
+    }
+
+    public BasicContentFilter(AuthenticationManager authenticationManager,
+                              AuthenticationFailureHandler failureHandler,
+                              String[] endpoints) {
+        super(authenticationManager, failureHandler, endpoints);
     }
 
     /**
