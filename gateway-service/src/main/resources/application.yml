@@ -31,7 +31,7 @@ apiml:
         preferIpAddress: false
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
-        hostname: localhost  # The hostname for other services to access the gateway
+        hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         ssl:
