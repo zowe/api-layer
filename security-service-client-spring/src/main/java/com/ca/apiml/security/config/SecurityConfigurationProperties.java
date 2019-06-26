@@ -50,7 +50,7 @@ public class SecurityConfigurationProperties {
         private boolean cookieSecure = true;
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
-        private Integer cookieMaxAge = 24 * 60 * 60;
+        private Integer cookieMaxAge = -1;
     }
 
     public SecurityConfigurationProperties() {

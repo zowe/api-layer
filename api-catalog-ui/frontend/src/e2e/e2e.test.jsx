@@ -211,10 +211,25 @@ describe('>>> e2e tests', async () => {
         expect(tileHeader).toBe('API Mediation Layer API');
     });
 
+    it('Should have session cookie', async () => {
+        await page.goto(defaultDetailPageUrl);
+        const { cookies } = await page._client.send("Network.getAllCookies", {});
+
+        expect(cookies["0"].expires).toBe(-1);
+        expect(cookies["0"].name).toBe("apimlAuthenticationToken");
+    });
+
     it('Should logout and display the login page', async () => {
         await page.waitForSelector('[data-testid="logout"]');
         const [res] = await Promise.all([page.click('[data-testid="logout"]'), page.waitForNavigation()]);
         await page.waitForSelector('[data-testid="username"]');
         await page.waitForSelector('[data-testid="username"]');
+    });
+
+    it('Should delete session cookie after logout', async () => {
+        await page.goto(defaultDetailPageUrl);
+        const { cookies } = await page._client.send("Network.getAllCookies", {});
+
+        expect(cookies.length).toBe(0);
     });
 });

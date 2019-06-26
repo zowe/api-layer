@@ -197,13 +197,5 @@ spring:
         - debug
         - diag
 
----
-spring:
-    profiles: unsecure
-
-security:
-    cookie:
-        maxAge: -1
-        secure: false
 
 logbackServiceName: ZWEAAC1
