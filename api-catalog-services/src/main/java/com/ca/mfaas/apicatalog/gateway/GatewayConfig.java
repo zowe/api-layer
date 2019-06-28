@@ -27,7 +27,6 @@ public class GatewayConfig {
 
     @Bean
     public GatewayConfigProperties getGatewayConfigProperties() {
-        log.info("GatewayConfig");
         return gatewayLookupService.getGatewayConfigProperties();
     }
 }

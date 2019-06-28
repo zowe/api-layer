@@ -50,7 +50,7 @@ public class InstanceInitializeServiceTest {
 
 
     @Test
-    public void shouldChangeHomePageValue() throws CannotRegisterServiceException {
+    public void testRetrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
         String catalogId = CoreService.API_CATALOG.getServiceId();

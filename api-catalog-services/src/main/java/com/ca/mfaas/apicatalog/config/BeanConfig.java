@@ -36,7 +36,6 @@ public class BeanConfig {
 
     @Bean
     public TransformService transformService(GatewayConfigProperties gatewayConfigProperties) {
-        log.info("TransformService");
         return new TransformService(gatewayConfigProperties);
     }
 

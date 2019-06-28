@@ -10,7 +10,7 @@
 package com.ca.mfaas.apicatalog.gateway;
 
 /**
- * Exception used to indicate that the instance aren't initialized properly because of incorrect metadata.
+ * Exception thrown when there's need to interrupt {@link GatewayLookupService} retry process
  */
 public class GatewayLookupException extends RuntimeException {
     private static final long serialVersionUID = -559112794280136165L;

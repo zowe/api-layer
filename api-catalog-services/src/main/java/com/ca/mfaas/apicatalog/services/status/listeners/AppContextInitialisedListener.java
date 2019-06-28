@@ -38,7 +38,6 @@ public class AppContextInitialisedListener {
      */
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws CannotRegisterServiceException {
-        log.info("AppContextInitialisedListener");
         instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
     }
 }

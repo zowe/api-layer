@@ -44,21 +44,24 @@ public class GatewayLookupService {
         lookupGatewayParams();
     }
 
-    public GatewayConfigProperties doWithRetry(RetryContext context) {
+    /**
+     * Try to lookup gateway information from eureka
+     */
+    public void lookupGatewayParams() {
+        gatewayConfigProperties = retryTemplate.execute(this::doWithRetry, this::recover);
+    }
+
+    private GatewayConfigProperties doWithRetry(RetryContext context) {
         return initializeGatewayParams();
     }
 
-    public GatewayConfigProperties recover(RetryContext context) {
+    private GatewayConfigProperties recover(RetryContext context) {
         if (context.getLastThrowable() instanceof GatewayLookupException) {
             throw (GatewayLookupException) context.getLastThrowable();
         }
 
         lookupGatewayParams();
         return gatewayConfigProperties;
-    }
-
-    public void lookupGatewayParams() {
-        gatewayConfigProperties = retryTemplate.execute(this::doWithRetry, this::recover);
     }
 
 
