@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * Authentication error handler
@@ -38,7 +37,7 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
      * @param request   the http request
      * @param response  the http response
      * @param exception to be checked
-     * @throws IOException when the response cannot be written
+     * @throws ServletException when the response cannot be written
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws ServletException {

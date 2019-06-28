@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * Handles unauthorized access
@@ -38,7 +37,7 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
      * @param request       the http request
      * @param response      the http response
      * @param authException the authorization exception
-     * @throws IOException when the response cannot be written
+     * @throws ServletException when the response cannot be written
      */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws ServletException {

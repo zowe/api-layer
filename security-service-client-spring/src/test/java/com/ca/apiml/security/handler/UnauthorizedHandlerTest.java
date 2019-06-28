@@ -55,7 +55,7 @@ public class UnauthorizedHandlerTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 

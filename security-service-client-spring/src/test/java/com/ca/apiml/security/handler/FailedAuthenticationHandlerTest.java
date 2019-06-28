@@ -34,6 +34,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
@@ -64,7 +65,7 @@ public class FailedAuthenticationHandlerTest {
     }
 
     @Test
-    public void testAuthenticationFailure_whenExceptionIsBadCredentialsException() throws IOException {
+    public void testAuthenticationFailure_whenExceptionIsBadCredentialsException() throws IOException, ServletException {
         BadCredentialsException badCredentialsException = new BadCredentialsException("ERROR");
         failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, badCredentialsException);
 
@@ -76,7 +77,7 @@ public class FailedAuthenticationHandlerTest {
     }
 
     @Test
-    public void testAuthenticationFailure_whenExceptionIsAuthenticationCredentialsNotFoundException() throws IOException {
+    public void testAuthenticationFailure_whenExceptionIsAuthenticationCredentialsNotFoundException() throws IOException, ServletException {
         AuthenticationCredentialsNotFoundException credentialsException = new AuthenticationCredentialsNotFoundException("ERROR");
         failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, credentialsException);
 
@@ -88,7 +89,7 @@ public class FailedAuthenticationHandlerTest {
     }
 
     @Test
-    public void testAuthenticationFailure_whenExceptionIsAuthMethodNotSupportedException() throws IOException {
+    public void testAuthenticationFailure_whenExceptionIsAuthMethodNotSupportedException() throws IOException, ServletException {
         AuthMethodNotSupportedException authMethodNotSupportedException = new AuthMethodNotSupportedException("ERROR");
         failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, authMethodNotSupportedException);
 
@@ -100,7 +101,7 @@ public class FailedAuthenticationHandlerTest {
     }
 
     @Test
-    public void testAuthenticationFailure_whenExceptionIsTokenNotValidException() throws IOException {
+    public void testAuthenticationFailure_whenExceptionIsTokenNotValidException() throws IOException, ServletException {
         TokenNotValidException tokenNotValidException = new TokenNotValidException("ERROR");
         failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, tokenNotValidException);
 
@@ -112,7 +113,7 @@ public class FailedAuthenticationHandlerTest {
     }
 
     @Test
-    public void testAuthenticationFailure_whenExceptionIsTokenNotProvidedException() throws IOException {
+    public void testAuthenticationFailure_whenExceptionIsTokenNotProvidedException() throws IOException, ServletException {
         TokenNotProvidedException tokenNotProvidedException = new TokenNotProvidedException("ERROR");
         failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, tokenNotProvidedException);
 
@@ -124,7 +125,7 @@ public class FailedAuthenticationHandlerTest {
     }
 
     @Test
-    public void testAuthenticationFailure_whenOccurUnexpectedException() throws IOException {
+    public void testAuthenticationFailure_whenOccurUnexpectedException() throws IOException, ServletException {
         AuthenticationServiceException serviceException = new AuthenticationServiceException("ERROR");
         failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, serviceException);
 

@@ -29,6 +29,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
@@ -44,7 +45,7 @@ public class BasicUnauthorizedHandlerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void testCommence() throws IOException {
+    public void testCommence() throws IOException, ServletException {
         BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler = new BasicAuthUnauthorizedHandler(new AuthExceptionHandler(errorService, objectMapper));
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
