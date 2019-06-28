@@ -1,7 +1,7 @@
 messages:
     # Security messages (100 - 199)
     # General messages (100 - 120)
-    - key: apiml.service.security.generic
+    - key: apiml.security.generic
       number: ZWEAS100E
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
@@ -10,6 +10,11 @@ messages:
       number: ZWEAS101E
       type: ERROR
       text: "Authentication method '%s' is not supported for URL '%s'"
+
+    - key: apiml.security.expiredToken
+      number: ZWEAS102E
+      type: ERROR
+      text: "Token is expired for URL '%s'"
 
     # Login messages (120 - 130)
     - key: apiml.security.login.invalidCredentials
@@ -27,3 +32,8 @@ messages:
       number: ZWEAGS130E
       type: ERROR
       text: "Token is not valid for URL '%s'"
+
+    - key: apiml.security.query.tokenNotProvided
+      number: ZWEAGS131E
+      type: ERROR
+      text: "No authorization token provided for URL '%s'"

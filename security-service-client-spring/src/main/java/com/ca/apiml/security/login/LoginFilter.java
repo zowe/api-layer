@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.login;
 
-import com.ca.apiml.security.handler.AuthMethodNotSupportedException;
+import com.ca.apiml.security.error.AuthMethodNotSupportedException;
 import com.ca.mfaas.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;

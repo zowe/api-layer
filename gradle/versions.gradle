@@ -112,7 +112,7 @@ ext {
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
         tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
-        apacheCommons                      : "org.apache.commons:commons-lang3:${commonsLang3Version}",
+        apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
         junit                              : "junit:junit:${junitVersion}",

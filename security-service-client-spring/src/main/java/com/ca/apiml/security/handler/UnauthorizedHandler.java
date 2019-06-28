@@ -9,19 +9,15 @@
  */
 package com.ca.apiml.security.handler;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.rest.response.ApiMessage;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ca.apiml.security.error.AuthExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 /**
@@ -30,12 +26,10 @@ import java.io.IOException;
 @Slf4j
 @Component("plainAuth")
 public class UnauthorizedHandler implements AuthenticationEntryPoint {
-    private final ErrorService errorService;
-    private final ObjectMapper mapper;
+    private final AuthExceptionHandler handler;
 
-    public UnauthorizedHandler(ErrorService errorService, ObjectMapper objectMapper) {
-        this.errorService = errorService;
-        this.mapper = objectMapper;
+    public UnauthorizedHandler(AuthExceptionHandler handler) {
+        this.handler = handler;
     }
 
     /**
@@ -47,13 +41,8 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
      * @throws IOException when the response cannot be written
      */
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws ServletException {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
-
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-
-        ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidCredentials", request.getRequestURI());
-        mapper.writeValue(response.getWriter(), message);
+        handler.handleAuthException(request, response, authException);
     }
 }

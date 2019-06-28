@@ -9,6 +9,8 @@
  */
 package com.ca.apiml.security.handler;
 
+import com.ca.apiml.security.error.ErrorType;
+import com.ca.apiml.security.error.AuthExceptionHandler;
 import com.ca.apiml.security.token.TokenExpireException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
@@ -43,7 +45,7 @@ public class BasicUnauthorizedHandlerTest {
 
     @Test
     public void testCommence() throws IOException {
-        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler = new BasicAuthUnauthorizedHandler(errorService, objectMapper);
+        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler = new BasicAuthUnauthorizedHandler(new AuthExceptionHandler(errorService, objectMapper));
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
@@ -55,7 +57,7 @@ public class BasicUnauthorizedHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader(HttpHeaders.WWW_AUTHENTICATE));
 
-        ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidCredentials", httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 

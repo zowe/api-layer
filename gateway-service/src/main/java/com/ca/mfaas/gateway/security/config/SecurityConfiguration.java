@@ -57,7 +57,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final AuthProviderInitializer authProviderInitializer;
-    private final BasicAuthUnauthorizedHandler unAuthorizedHandler;
+    private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
 
     public SecurityConfiguration(
         ObjectMapper securityObjectMapper,
@@ -67,7 +67,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         SuccessfulQueryHandler successfulQueryHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         AuthProviderInitializer authProviderInitializer,
-        BasicAuthUnauthorizedHandler unAuthorizedHandler) {
+        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler) {
         this.securityObjectMapper = securityObjectMapper;
         this.authenticationService = authenticationService;
         this.securityConfigurationProperties = securityConfigurationProperties;
@@ -75,7 +75,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.successfulQueryHandler = successfulQueryHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.authProviderInitializer = authProviderInitializer;
-        this.unAuthorizedHandler = unAuthorizedHandler;
+        this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
     }
 
     @Override
@@ -91,7 +91,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .httpStrictTransportSecurity().disable()
             .frameOptions().disable()
             .and()
-            .exceptionHandling().authenticationEntryPoint(unAuthorizedHandler)
+            .exceptionHandling().authenticationEntryPoint(basicAuthUnauthorizedHandler)
 
             .and()
             .sessionManagement()

@@ -9,6 +9,8 @@
  */
 package com.ca.apiml.security.handler;
 
+import com.ca.apiml.security.error.ErrorType;
+import com.ca.apiml.security.error.AuthExceptionHandler;
 import com.ca.apiml.security.token.TokenExpireException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
@@ -25,6 +27,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
@@ -40,8 +43,8 @@ public class UnauthorizedHandlerTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void testCommence() throws IOException {
-        UnauthorizedHandler unauthorizedHandler = new UnauthorizedHandler(errorService, objectMapper);
+    public void testCommence() throws IOException, ServletException {
+        UnauthorizedHandler unauthorizedHandler = new UnauthorizedHandler(new AuthExceptionHandler(errorService, objectMapper));
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
@@ -52,7 +55,7 @@ public class UnauthorizedHandlerTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
 
-        ApiMessage message = errorService.createApiMessage("apiml.security.login.invalidCredentials", httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), httpServletRequest.getRequestURI());
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 

@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
-import com.ca.apiml.security.handler.AuthMethodNotSupportedException;
+import com.ca.apiml.security.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;

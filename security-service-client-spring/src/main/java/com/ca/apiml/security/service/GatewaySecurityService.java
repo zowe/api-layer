@@ -10,15 +10,14 @@
 package com.ca.apiml.security.service;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.error.ErrorType;
+import com.ca.apiml.security.handler.RestResponseHandler;
 import com.ca.apiml.security.token.QueryResponse;
-import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -32,13 +31,16 @@ public class GatewaySecurityService {
     private final GatewayConfigProperties gatewayConfigProperties;
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private final RestTemplate restTemplate;
+    private final RestResponseHandler responseHandler;
 
     public GatewaySecurityService(GatewayConfigProperties gatewayConfigProperties,
                                   SecurityConfigurationProperties securityConfigurationProperties,
-                                  RestTemplate restTemplate) {
+                                  RestTemplate restTemplate,
+                                  RestResponseHandler responseHandler) {
         this.gatewayConfigProperties = gatewayConfigProperties;
         this.securityConfigurationProperties = securityConfigurationProperties;
         this.restTemplate = restTemplate;
+        this.responseHandler = responseHandler;
     }
 
     public Optional<String> login(String username, String password) {
@@ -63,14 +65,10 @@ public class GatewaySecurityService {
 
             return extractToken(response.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
         } catch (HttpClientErrorException e) {
-            //TODO: Should handle unsuccessful responses
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                throw new BadCredentialsException("Username or password are invalid.");
-            }
-
-            log.error("Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
-            throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
+            responseHandler.handleBadResponse(e, ErrorType.BAD_CREDENTIALS,
+                "Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
         }
+        return Optional.empty();
     }
 
     public QueryResponse query(String token) {
@@ -91,14 +89,10 @@ public class GatewaySecurityService {
 
             return response.getBody();
         } catch (HttpClientErrorException e) {
-            //TODO: Should handle unsuccessful responses
-            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                throw new TokenNotValidException("Token is not valid.");
-            }
-
-            log.error("Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
-            throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
+            responseHandler.handleBadResponse(e, ErrorType.TOKEN_NOT_VALID,
+                "Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
         }
+        return null;
     }
 
     private Optional<String> extractToken(String cookies) {

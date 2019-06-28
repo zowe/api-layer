@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.login;
 
-import com.ca.apiml.security.handler.AuthMethodNotSupportedException;
+import com.ca.apiml.security.error.AuthMethodNotSupportedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;

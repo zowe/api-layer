@@ -4,7 +4,7 @@ dependencies {
     compile libraries.spring_boot_starter_web
     compile libraries.spring_security_web
     compile libraries.spring_security_config
-    compile libraries.apacheCommons
+    compile libraries.apache_commons_lang3
 
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.lombok

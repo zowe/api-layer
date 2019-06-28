@@ -9,9 +9,8 @@
  */
 package com.ca.apiml.security.handler;
 
-import com.ca.mfaas.error.ErrorService;
+import com.ca.apiml.security.error.AuthExceptionHandler;
 import com.ca.mfaas.constants.ApimlConstants;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.AuthenticationException;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 /**
@@ -29,8 +27,8 @@ import java.io.IOException;
 @Component("basicAuth")
 public class BasicAuthUnauthorizedHandler extends UnauthorizedHandler {
 
-    public BasicAuthUnauthorizedHandler(ErrorService errorService, ObjectMapper objectMapper) {
-        super(errorService, objectMapper);
+    public BasicAuthUnauthorizedHandler(AuthExceptionHandler handler) {
+        super(handler);
     }
 
     /**
