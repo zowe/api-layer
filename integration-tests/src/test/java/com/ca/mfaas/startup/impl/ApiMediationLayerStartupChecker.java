@@ -82,7 +82,7 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private boolean allInstancesUp(DocumentContext documentContext) {
-        return documentContext.read("$.details.apiml.details.gatewayCount")
-                .equals(Integer.valueOf(gatewayConfiguration.getInstances()));
+        return documentContext.read("$.details.gateway.details.gatewayCount")
+                .equals(gatewayConfiguration.getInstances());
     }
 }

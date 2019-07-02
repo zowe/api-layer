@@ -29,11 +29,11 @@ messages:
 
     # Query messages (130 - 140)
     - key: apiml.security.query.invalidToken
-      number: ZWEAGS130E
+      number: ZWEAS130E
       type: ERROR
       text: "Token is not valid for URL '%s'"
 
     - key: apiml.security.query.tokenNotProvided
-      number: ZWEAGS131E
+      number: ZWEAS131E
       type: ERROR
       text: "No authorization token provided for URL '%s'"

@@ -134,7 +134,7 @@ public class ZosmfSsoIntegrationTest {
     @Test
     public void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
-        String expectedMessage = "Token is not valid for URL '/api/zosmfca32/zosmf/restfiles/ds'";
+        String expectedMessage = "Token is not valid";
 
         given()
             .cookie("apimlAuthenticationToken", invalidToken)
@@ -144,7 +144,7 @@ public class ZosmfSsoIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
-                "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", containsString(expectedMessage));
+                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", containsString(expectedMessage));
     }
 
     @Test

@@ -104,5 +104,37 @@ public class ApiCatalogSecurityIntegrationTest {
             .statusCode(is(SC_OK));
     }
 
+    @Test
+    public void accessProtectedEndpointWithInvalidBasicAuth() {
+        String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
+        String invalid_password = "nonsense";
+
+        given()
+            .auth().preemptive().basic(USERNAME, invalid_password)
+        .when()
+            .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
+                CATALOG_SERVICE_ID, endpoint))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body("messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
+    @Test
+    public void accessProtectedEndpointWithInvalidCookie() {
+        String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
+        String invalid_token = "nonsense";
+
+        given()
+             .cookie(COOKIE, invalid_token)
+        .when()
+            .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
+                CATALOG_SERVICE_ID, endpoint))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body("messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
+            );
+    }
+
     //@formatter:on
 }

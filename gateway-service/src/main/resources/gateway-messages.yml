@@ -38,7 +38,7 @@ messages:
       type: ERROR
       text: "Token is not valid for URL '%s'"
 
-    - key: apiml.gateway.security.query.tokenNotProvided
+    - key: apiml.security.query.tokenNotProvided
       number: ZWEAG131E
       type: ERROR
       text: "No authorization token provided for URL '%s'"
