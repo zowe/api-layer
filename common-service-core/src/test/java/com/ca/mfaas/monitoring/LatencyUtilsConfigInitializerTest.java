@@ -11,21 +11,24 @@
 package com.ca.mfaas.monitoring;
 
 import org.junit.Test;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 
 import static org.junit.Assert.*;
 
 public class LatencyUtilsConfigInitializerTest {
-    private final String PROPERTY_KEY = "LatencyUtils.useActualTime";
+    private static final String PROPERTY_KEY = "LatencyUtils.useActualTime";
+    private final ConfigurableApplicationContext applicationContext = new GenericApplicationContext();
 
     @Test
     public void ShouldSetSystemPropertyWhenPropertyNotSet() {
         System.getProperties().remove(PROPERTY_KEY);
-        assertNull( System.getProperties().getProperty(PROPERTY_KEY) );
+        assertNull(System.getProperties().getProperty(PROPERTY_KEY));
 
         LatencyUtilsConfigInitializer latencyUtilsConfigInitializer = new LatencyUtilsConfigInitializer();
-        latencyUtilsConfigInitializer.initialize(null);
+        latencyUtilsConfigInitializer.initialize(applicationContext);
 
-        assertEquals(System.getProperties().getProperty(PROPERTY_KEY),"false");
+        assertEquals("false", System.getProperties().getProperty(PROPERTY_KEY));
     }
 
     @Test
@@ -33,12 +36,12 @@ public class LatencyUtilsConfigInitializerTest {
         System.getProperties().remove(PROPERTY_KEY);
         String value = "RandomValue";
         System.getProperties().setProperty(PROPERTY_KEY, value);
-        assertEquals( System.getProperties().getProperty(PROPERTY_KEY), value );
+        assertEquals(value, System.getProperties().getProperty(PROPERTY_KEY));
 
         LatencyUtilsConfigInitializer latencyUtilsConfigInitializer = new LatencyUtilsConfigInitializer();
-        latencyUtilsConfigInitializer.initialize(null);
+        latencyUtilsConfigInitializer.initialize(applicationContext);
 
-        assertEquals( System.getProperties().getProperty(PROPERTY_KEY), value );
+        assertEquals(value, System.getProperties().getProperty(PROPERTY_KEY));
     }
 
 }
