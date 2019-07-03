@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.monitoring;
+package com.ca.mfaas.product.monitoring;
 
 import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -21,7 +21,7 @@ public class LatencyUtilsConfigInitializerTest {
     private final ConfigurableApplicationContext applicationContext = new GenericApplicationContext();
 
     @Test
-    public void ShouldSetSystemPropertyWhenPropertyNotSet() {
+    public void shouldSetSystemPropertyWhenPropertyNotSet() {
         System.getProperties().remove(PROPERTY_KEY);
         assertNull(System.getProperties().getProperty(PROPERTY_KEY));
 
@@ -32,7 +32,7 @@ public class LatencyUtilsConfigInitializerTest {
     }
 
     @Test
-    public void ShouldNotSetSystemPropertyWhenPropertyIsSetFromBefore() {
+    public void shouldNotSetSystemPropertyWhenPropertyIsSetFromBefore() {
         System.getProperties().remove(PROPERTY_KEY);
         String value = "RandomValue";
         System.getProperties().setProperty(PROPERTY_KEY, value);

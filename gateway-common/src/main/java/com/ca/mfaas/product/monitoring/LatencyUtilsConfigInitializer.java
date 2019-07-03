@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.monitoring;
+package com.ca.mfaas.product.monitoring;
 
 import lombok.NonNull;
 import org.springframework.context.ApplicationContextInitializer;

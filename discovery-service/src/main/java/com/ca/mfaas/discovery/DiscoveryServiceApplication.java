@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discovery;
 
-import com.ca.mfaas.monitoring.LatencyUtilsConfigInitializer;
+import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
