@@ -30,8 +30,8 @@
         "test-scripts": "mocha scripts",
         "test-scripts-ci": "TEST_DIR=./scripts/test-results jenkins-mocha --no-coverage scripts",
 		
-		"//": ["for windows: to install sudo, run chocolatey.exe install sudo"],
-		"register-certificates-win": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\" & sudo . cmd /C \"certutil -enterprise -delstore Root \"Zowe Development Instances Certificate Authority\"  &  certutil -enterprise -f -v -AddStore Root \"keystore/local_ca/localca.cer\" || pause\""
+        "//": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\"",
+        "register-certificates-win": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\" & sudo . cmd /C \"certutil -enterprise -delstore Root \"Zowe Development Instances Certificate Authority\"  &  certutil -enterprise -f -v -AddStore Root \"keystore/local_ca/localca.cer\" || pause\""
     },
     "repository": {
         "type": "git",
