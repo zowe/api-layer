@@ -165,12 +165,14 @@ If you have the sample service described in the User Guide at [this link](https:
 
 Import [keystore/local_ca/localca.cer](/keystore/local_ca/localca.cer) to your root certificate store and trust it. 
 
-For **Windows**, you can run the following command:
+For **Windows**, you can run the following command as administrator:
 
     certutil -enterprise -f -v -AddStore "Root" keystore/local_ca/localca.cer 
     
 You have to open the terminal as administrator. This will install the certificate to the Trusted Root Certification Authorities. 
 
+*Note:* you can use `npm run register-certificates-win` to run above command, however it requires `sudo` to be installed. If you don't have `sudo` available install [chocolatey](https://chocolatey.org/docs/installation#install-downloaded-nuget-package-from-powershell), then run `chocolatey install sudo`.
+    
 If you're using **MacOS**, you can run the following command: 
 
     $ sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain keystore/local_ca/localca.cer 
