@@ -10,9 +10,9 @@
 
 package com.ca.mfaas.product.monitoring;
 
-import lombok.NonNull;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import javax.annotation.Nonnull;
 
 /**
  * This class initializes the system property that disables LatencyUtils thread that measures time by low level java api
@@ -21,7 +21,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class LatencyUtilsConfigInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
     private static final String PROPERTY_KEY = "LatencyUtils.useActualTime";
     @Override
-    public void initialize(@NonNull ConfigurableApplicationContext applicationContext) {
+    public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
         if (System.getProperties().getProperty(PROPERTY_KEY) == null) {
             System.getProperties().setProperty(PROPERTY_KEY, "false");
         }
