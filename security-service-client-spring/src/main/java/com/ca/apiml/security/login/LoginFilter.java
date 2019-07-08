@@ -10,6 +10,7 @@
 package com.ca.apiml.security.login;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import com.ca.mfaas.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -44,6 +44,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
+    private final NotFoundExceptionHandler notFoundExceptionHandler;
     private final ObjectMapper mapper;
     
     public LoginFilter(
@@ -51,11 +52,13 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         AuthenticationSuccessHandler successHandler,
         AuthenticationFailureHandler failureHandler,
         ObjectMapper mapper,
-        AuthenticationManager authenticationManager) {
+        AuthenticationManager authenticationManager,
+        NotFoundExceptionHandler notFoundExceptionHandler) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.mapper = mapper;
+        this.notFoundExceptionHandler = notFoundExceptionHandler;
         this.setAuthenticationManager(authenticationManager);
     }
 
@@ -69,7 +72,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
      * @throws AuthenticationCredentialsNotFoundException when username or password are not provided
      */
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
         }
@@ -82,7 +85,13 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
         UsernamePasswordAuthenticationToken authentication
             = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
-        return this.getAuthenticationManager().authenticate(authentication);
+        Authentication auth = null;
+        try {
+            auth = this.getAuthenticationManager().authenticate(authentication);
+        } catch (RuntimeException ex) {
+            notFoundExceptionHandler.handleException(request, response, ex);
+        }
+        return auth;
     }
 
     /**

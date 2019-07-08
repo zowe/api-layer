@@ -9,6 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,7 +23,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
@@ -34,13 +34,16 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
 
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
+    private final NotFoundExceptionHandler notFoundExceptionHandler;
     private final String[] endpoints;
 
     AbstractSecureContentFilter(AuthenticationManager authenticationManager,
                                 AuthenticationFailureHandler failureHandler,
+                                NotFoundExceptionHandler notFoundExceptionHandler,
                                 String[] endpoints) {
         this.authenticationManager = authenticationManager;
         this.failureHandler = failureHandler;
+        this.notFoundExceptionHandler = notFoundExceptionHandler;
         this.endpoints = endpoints;
     }
 
@@ -83,6 +86,8 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
             } catch (AuthenticationException authenticationException) {
                 failureHandler.onAuthenticationFailure(request, response, authenticationException);
+            } catch (RuntimeException e) {
+                notFoundExceptionHandler.handleException(request, response, e);
             }
         } else {
             filterChain.doFilter(request, response);

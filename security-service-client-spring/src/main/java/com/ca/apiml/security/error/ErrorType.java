@@ -12,11 +12,12 @@ package com.ca.apiml.security.error;
 public enum ErrorType {
     BAD_CREDENTIALS("apiml.security.login.invalidCredentials", "Username or password are invalid."),
     TOKEN_NOT_VALID("apiml.security.query.invalidToken", "Token is not valid."),
-    TOKEN_NOT_PROVIDED("apiml.security.query.tokenNotProvided", "No authorization token provided"),
-    TOKEN_EXPIRED("apiml.security.expiredToken", "Token is expired"),
-    AUTH_CREDENTIALS_NOT_FOUND("apiml.security.login.invalidInput", "Authorization header is missing, or request body is missing or invalid"),
-    AUTH_METHOD_NOT_SUPPORTED("apiml.security.invalidMethod", "Authentication method is not supported"),
-    AUTH_GENERAL("apiml.security.generic", "A failure occurred when authenticating.");
+    TOKEN_NOT_PROVIDED("apiml.security.query.tokenNotProvided", "No authorization token provided."),
+    TOKEN_EXPIRED("apiml.security.expiredToken", "Token is expired."),
+    AUTH_CREDENTIALS_NOT_FOUND("apiml.security.login.invalidInput", "Authorization header is missing, or request body is missing or invalid."),
+    AUTH_METHOD_NOT_SUPPORTED("apiml.security.invalidMethod", "Authentication method is not supported."),
+    AUTH_GENERAL("apiml.security.generic", "A failure occurred when authenticating."),
+    GATEWAY_NOT_FOUND("apiml.security.gatewayNotFound", "API Gateway Service not found.");
 
     private String errorMessageKey;
     private String defaultMessage;

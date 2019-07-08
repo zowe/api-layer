@@ -12,6 +12,7 @@ package com.ca.mfaas.apicatalog.security;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import com.ca.apiml.security.handler.BasicAuthUnauthorizedHandler;
 import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.apiml.security.handler.UnauthorizedHandler;
@@ -49,6 +50,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final UnauthorizedHandler unAuthorizedHandler;
     private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
+    private final NotFoundExceptionHandler notFoundExceptionHandler;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
 
@@ -60,7 +62,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             UnauthorizedHandler unAuthorizedHandler,
         BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
-        GatewayLoginProvider gatewayLoginProvider,
+        NotFoundExceptionHandler notFoundExceptionHandler, GatewayLoginProvider gatewayLoginProvider,
         GatewayTokenProvider gatewayTokenProvider) {
         this.securityObjectMapper = securityObjectMapper;
         this.securityConfigurationProperties = securityConfigurationProperties;
@@ -68,6 +70,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
+        this.notFoundExceptionHandler = notFoundExceptionHandler;
         this.gatewayLoginProvider = gatewayLoginProvider;
         this.gatewayTokenProvider = gatewayTokenProvider;
     }
@@ -143,21 +146,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler,
-            securityObjectMapper, authenticationManager());
+            securityObjectMapper, authenticationManager(), notFoundExceptionHandler);
     }
 
     /**
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler);
+        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler, notFoundExceptionHandler);
     }
 
     /**
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
+        return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, notFoundExceptionHandler, securityConfigurationProperties);
     }
 
     @Bean

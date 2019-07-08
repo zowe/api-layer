@@ -10,9 +10,10 @@
 package com.ca.mfaas.gateway.security.query;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.apiml.security.token.TokenAuthentication;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,7 +28,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 /**
@@ -37,6 +37,7 @@ import java.io.IOException;
 public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
+    private final NotFoundExceptionHandler notFoundExceptionHandler;
     private final AuthenticationService authenticationService;
 
     public QueryFilter(
@@ -44,11 +45,13 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         AuthenticationSuccessHandler successHandler,
         AuthenticationFailureHandler failureHandler,
         AuthenticationService authenticationService,
-        AuthenticationManager authenticationManager) {
+        AuthenticationManager authenticationManager,
+        NotFoundExceptionHandler notFoundExceptionHandler) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.authenticationService = authenticationService;
+        this.notFoundExceptionHandler = notFoundExceptionHandler;
         this.setAuthenticationManager(authenticationManager);
     }
 
@@ -62,7 +65,7 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
      * @throws AuthMethodNotSupportedException when the authentication method is not supported
      */
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws ServletException {
         if (!request.getMethod().equals(HttpMethod.GET.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
         }
@@ -70,7 +73,13 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         String token = authenticationService.getJwtTokenFromRequest(request)
             .orElseThrow(() -> new TokenNotProvidedException("Authorization token not provided."));
 
-        return this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
+        Authentication auth = null;
+        try {
+            auth = this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
+        } catch (RuntimeException ex) {
+            notFoundExceptionHandler.handleException(request, response, ex);
+        }
+        return auth;
     }
 
     /**

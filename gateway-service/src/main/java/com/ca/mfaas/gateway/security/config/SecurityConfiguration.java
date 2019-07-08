@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.security.config;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import com.ca.apiml.security.handler.BasicAuthUnauthorizedHandler;
 import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.login.SuccessfulLoginHandler;
@@ -58,6 +59,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final FailedAuthenticationHandler authenticationFailureHandler;
     private final AuthProviderInitializer authProviderInitializer;
     private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
+    private final NotFoundExceptionHandler notFoundExceptionHandler;
 
     public SecurityConfiguration(
         ObjectMapper securityObjectMapper,
@@ -67,7 +69,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         SuccessfulQueryHandler successfulQueryHandler,
         FailedAuthenticationHandler authenticationFailureHandler,
         AuthProviderInitializer authProviderInitializer,
-        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler) {
+        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
+        NotFoundExceptionHandler notFoundExceptionHandler) {
         this.securityObjectMapper = securityObjectMapper;
         this.authenticationService = authenticationService;
         this.securityConfigurationProperties = securityConfigurationProperties;
@@ -76,6 +79,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.authProviderInitializer = authProviderInitializer;
         this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
+        this.notFoundExceptionHandler = notFoundExceptionHandler;
     }
 
     @Override
@@ -121,7 +125,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler, securityObjectMapper,
-            authenticationManager());
+            authenticationManager(), notFoundExceptionHandler);
     }
 
     /**
@@ -129,20 +133,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     private QueryFilter queryFilter(String queryEndpoint) throws Exception {
         return new QueryFilter(queryEndpoint, successfulQueryHandler, authenticationFailureHandler, authenticationService,
-            authenticationManager());
+            authenticationManager(), notFoundExceptionHandler);
     }
 
     /**
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler, PROTECTED_ENDPOINTS);
+        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler, notFoundExceptionHandler, PROTECTED_ENDPOINTS);
     }
 
     /**
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties, PROTECTED_ENDPOINTS);
+        return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, notFoundExceptionHandler, securityConfigurationProperties, PROTECTED_ENDPOINTS);
     }
 }

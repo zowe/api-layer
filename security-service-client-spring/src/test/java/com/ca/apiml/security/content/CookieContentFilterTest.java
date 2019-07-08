@@ -10,6 +10,7 @@
 package com.ca.apiml.security.content;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,8 +35,9 @@ public class CookieContentFilterTest {
     public void setUp() {
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
         AuthenticationFailureHandler failureHandler = mock(AuthenticationFailureHandler.class);
+        NotFoundExceptionHandler notFoundExceptionHandler = mock(NotFoundExceptionHandler.class);
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        cookieContentFilter = new CookieContentFilter(authenticationManager, failureHandler, securityConfigurationProperties);
+        cookieContentFilter = new CookieContentFilter(authenticationManager, failureHandler, notFoundExceptionHandler, securityConfigurationProperties);
         request = new MockHttpServletRequest();
     }
 

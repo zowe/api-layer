@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.security.query;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;
@@ -23,6 +24,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
+import javax.servlet.ServletException;
 import javax.ws.rs.HttpMethod;
 import java.util.Optional;
 
@@ -44,6 +46,8 @@ public class QueryFilterTest {
     @Mock
     private AuthenticationFailureHandler authenticationFailureHandler;
     @Mock
+    private NotFoundExceptionHandler notFoundExceptionHandler;
+    @Mock
     private AuthenticationManager authenticationManager;
     @Mock
     private AuthenticationService authenticationService;
@@ -54,11 +58,12 @@ public class QueryFilterTest {
                                         authenticationSuccessHandler,
                                         authenticationFailureHandler,
                                         authenticationService,
-                                        authenticationManager);
+                                        authenticationManager,
+                                        notFoundExceptionHandler);
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticate() {
+    public void shouldCallAuthenticationManagerAuthenticate() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET);
         httpServletResponse = new MockHttpServletResponse();
@@ -73,7 +78,7 @@ public class QueryFilterTest {
     }
 
     @Test(expected = AuthMethodNotSupportedException.class)
-    public void shouldRejectHttpMethods() {
+    public void shouldRejectHttpMethods() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletResponse = new MockHttpServletResponse();
@@ -82,7 +87,7 @@ public class QueryFilterTest {
 
 
     @Test(expected = TokenNotProvidedException.class)
-    public void shouldRejectIfTokenIsNotPresent() {
+    public void shouldRejectIfTokenIsNotPresent() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET);
         httpServletResponse = new MockHttpServletResponse();

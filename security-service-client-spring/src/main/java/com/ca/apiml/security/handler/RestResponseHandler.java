@@ -11,6 +11,7 @@ package com.ca.apiml.security.handler;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.error.ErrorType;
+import com.ca.apiml.security.error.GatewayNotFoundException;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.apiml.security.token.TokenNotValidException;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.ResourceAccessException;
 
 import javax.validation.constraints.NotNull;
 
@@ -28,7 +29,7 @@ import javax.validation.constraints.NotNull;
 public class RestResponseHandler {
 
     public void handleBadResponse(@NotNull Exception exception, @NotNull ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
-        if (exception instanceof RestClientException) {
+        if (exception instanceof HttpClientErrorException) {
             HttpClientErrorException hceException = (HttpClientErrorException)exception;
             switch (hceException.getStatusCode()) {
                 case UNAUTHORIZED:
@@ -49,6 +50,8 @@ public class RestResponseHandler {
                     addLogMessage(exception, genericLogErrorMessage, logParameters);
                     throw new AuthenticationServiceException(ErrorType.AUTH_GENERAL.getDefaultMessage(), exception);
             }
+        } else if (exception instanceof ResourceAccessException) {
+            throw new GatewayNotFoundException(ErrorType.GATEWAY_NOT_FOUND.getDefaultMessage(), exception);
         }
     }
 

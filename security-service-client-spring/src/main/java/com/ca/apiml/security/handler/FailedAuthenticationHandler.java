@@ -42,6 +42,6 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws ServletException {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
-        handler.handleAuthException(request, response, exception);
+        handler.handleException(request, response, exception);
     }
 }

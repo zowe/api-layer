@@ -10,6 +10,7 @@
 package com.ca.apiml.security.login;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,6 +28,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
+import javax.servlet.ServletException;
 import javax.ws.rs.HttpMethod;
 
 import static org.mockito.Mockito.verify;
@@ -48,6 +50,8 @@ public class LoginFilterTest {
     @Mock
     private AuthenticationFailureHandler authenticationFailureHandler;
     @Mock
+    private NotFoundExceptionHandler notFoundExceptionHandler;
+    @Mock
     private AuthenticationManager authenticationManager;
 
     @Rule
@@ -59,11 +63,12 @@ public class LoginFilterTest {
             authenticationSuccessHandler,
             authenticationFailureHandler,
             mapper,
-            authenticationManager);
+            authenticationManager,
+            notFoundExceptionHandler);
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticateWithAuthHeader() {
+    public void shouldCallAuthenticationManagerAuthenticateWithAuthHeader() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, VALID_AUTH_HEADER);
@@ -77,7 +82,7 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticateWithJson() {
+    public void shouldCallAuthenticationManagerAuthenticateWithJson() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletRequest.setContent(VALID_JSON.getBytes());
@@ -91,7 +96,7 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldFailWithJsonEmptyCredentials() {
+    public void shouldFailWithJsonEmptyCredentials() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletRequest.setContent(EMPTY_JSON.getBytes());
@@ -104,7 +109,7 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldFailWithoutAuth() {
+    public void shouldFailWithoutAuth() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletResponse = new MockHttpServletResponse();
@@ -116,7 +121,7 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldFailWithWrongHttpMethod() {
+    public void shouldFailWithWrongHttpMethod() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET);
         httpServletResponse = new MockHttpServletResponse();
@@ -128,7 +133,7 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldFailWithIncorrectCredentialsFormat() {
+    public void shouldFailWithIncorrectCredentialsFormat() throws ServletException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, INVALID_AUTH_HEADER);

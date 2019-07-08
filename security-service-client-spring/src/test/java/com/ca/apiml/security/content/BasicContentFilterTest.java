@@ -9,6 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
+import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
@@ -33,7 +34,8 @@ public class BasicContentFilterTest {
     public void setUp() {
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
         AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
-        basicContentFilter = new BasicContentFilter(authenticationManager, authenticationFailureHandler);
+        NotFoundExceptionHandler notFoundExceptionHandler = mock(NotFoundExceptionHandler.class);
+        basicContentFilter = new BasicContentFilter(authenticationManager, authenticationFailureHandler, notFoundExceptionHandler);
     }
 
     @Test
