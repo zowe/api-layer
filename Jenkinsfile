@@ -277,7 +277,7 @@ pipeline {
             archiveArtifacts artifacts: 'integration-enabler-spring-v2/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'common-service-core/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'gateway-common/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'apiml-common/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'scripts/apiml_cm.sh'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
 

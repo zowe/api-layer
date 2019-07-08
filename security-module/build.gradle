@@ -1,6 +1,6 @@
 dependencies {
     compile(project(':common-service-core'))
-    compile(project(':gateway-common'))
+    compile(project(':apiml-common'))
 
     compile libraries.jjwt
     compile libraries.apacheCommons

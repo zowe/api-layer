@@ -32,7 +32,7 @@ gitProperties {
 
 dependencies {
     compile(project(':integration-enabler-spring-v2'))
-    compile(project(':gateway-common'))
+    compile(project(':apiml-common'))
 
     compile libraries.gson
     compile libraries.spring_boot_starter_actuator

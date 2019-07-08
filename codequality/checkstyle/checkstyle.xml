@@ -44,6 +44,11 @@
         <!-- follow Java naming conventions for naming variables -->
         <module name="LocalVariableName"/>
 
+        <!-- Ensure methods begin with a lower case letter, followed by letters, digits, and underscores -->
+        <module name="MethodName">
+            <property name="format" value="^[a-z](_?[a-zA-Z0-9]+)*$"/>
+        </module>
+
     </module>
 
     <!-- Read checkstyle suppressions from a file -->

@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.discovery;
 
+import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
@@ -28,6 +29,7 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
+        app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);

@@ -9,7 +9,7 @@ ext.javaEnablers = [
 
 ext.javaLibraries = [
     'common-service-core',
-    'gateway-common'
+    'apiml-common'
 ]
 
 ext.serviceJars = [ 'zowe-install' ]

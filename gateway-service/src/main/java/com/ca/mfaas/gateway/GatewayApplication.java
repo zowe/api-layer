@@ -11,6 +11,7 @@ package com.ca.mfaas.gateway;
 
 import com.ca.mfaas.enable.EnableApiDiscovery;
 import com.ca.mfaas.gateway.ribbon.GatewayRibbonConfig;
+import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
@@ -42,6 +43,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GatewayApplication.class);
+        app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);

@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog;
 
 import com.ca.mfaas.enable.EnableApiDiscovery;
+import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
@@ -39,6 +40,7 @@ public class ApiCatalogApplication implements ApplicationListener<ApplicationRea
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(ApiCatalogApplication.class);
+        app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);
