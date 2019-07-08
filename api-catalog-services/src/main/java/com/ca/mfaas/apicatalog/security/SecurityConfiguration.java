@@ -12,16 +12,11 @@ package com.ca.mfaas.apicatalog.security;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
-import com.ca.apiml.security.handler.BasicAuthUnauthorizedHandler;
-import com.ca.apiml.security.handler.FailedAuthenticationHandler;
-import com.ca.apiml.security.handler.UnauthorizedHandler;
 import com.ca.apiml.security.login.GatewayLoginProvider;
 import com.ca.apiml.security.login.LoginFilter;
-import com.ca.apiml.security.login.SuccessfulLoginHandler;
 import com.ca.apiml.security.token.GatewayTokenProvider;
+import com.ca.apiml.security.config.HandlerInitializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -46,31 +41,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper securityObjectMapper;
     private final SecurityConfigurationProperties securityConfigurationProperties;
-    private final SuccessfulLoginHandler successfulLoginHandler;
-    private final UnauthorizedHandler unAuthorizedHandler;
-    private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
-    private final FailedAuthenticationHandler authenticationFailureHandler;
-    private final NotFoundExceptionHandler notFoundExceptionHandler;
+    private final HandlerInitializer handlerInitializer;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
 
     public SecurityConfiguration(
         ObjectMapper securityObjectMapper,
         SecurityConfigurationProperties securityConfigurationProperties,
-        SuccessfulLoginHandler successfulLoginHandler,
-        @Qualifier("plainAuth")
-            UnauthorizedHandler unAuthorizedHandler,
-        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
-        FailedAuthenticationHandler authenticationFailureHandler,
-        NotFoundExceptionHandler notFoundExceptionHandler, GatewayLoginProvider gatewayLoginProvider,
+        HandlerInitializer handlerInitializer,
+        GatewayLoginProvider gatewayLoginProvider,
         GatewayTokenProvider gatewayTokenProvider) {
         this.securityObjectMapper = securityObjectMapper;
         this.securityConfigurationProperties = securityConfigurationProperties;
-        this.successfulLoginHandler = successfulLoginHandler;
-        this.unAuthorizedHandler = unAuthorizedHandler;
-        this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
-        this.authenticationFailureHandler = authenticationFailureHandler;
-        this.notFoundExceptionHandler = notFoundExceptionHandler;
+        this.handlerInitializer = handlerInitializer;
         this.gatewayLoginProvider = gatewayLoginProvider;
         this.gatewayTokenProvider = gatewayTokenProvider;
     }
@@ -105,13 +88,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .exceptionHandling()
 
             .defaultAuthenticationEntryPointFor(
-                basicAuthUnauthorizedHandler, new AntPathRequestMatcher("/application/**")
+                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/application/**")
             )
             .defaultAuthenticationEntryPointFor(
-                basicAuthUnauthorizedHandler, new AntPathRequestMatcher("/apidoc/**")
+                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/apidoc/**")
             )
             .defaultAuthenticationEntryPointFor(
-                unAuthorizedHandler, new AntPathRequestMatcher("/**")
+                handlerInitializer.getUnAuthorizedHandler(), new AntPathRequestMatcher("/**")
             )
 
             .and()
@@ -145,22 +128,22 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
-        return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler,
-            securityObjectMapper, authenticationManager(), notFoundExceptionHandler);
+        return new LoginFilter(loginEndpoint, handlerInitializer.getSuccessfulLoginHandler(), handlerInitializer.getAuthenticationFailureHandler(),
+            securityObjectMapper, authenticationManager(), handlerInitializer.getNotFoundExceptionHandler());
     }
 
     /**
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler, notFoundExceptionHandler);
+        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getNotFoundExceptionHandler());
     }
 
     /**
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, notFoundExceptionHandler, securityConfigurationProperties);
+        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getNotFoundExceptionHandler(), securityConfigurationProperties);
     }
 
     @Bean

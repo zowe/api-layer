@@ -9,14 +9,11 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
+import com.ca.apiml.security.config.HandlerInitializer;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
-import com.ca.apiml.security.handler.BasicAuthUnauthorizedHandler;
 import com.ca.apiml.security.login.LoginFilter;
-import com.ca.apiml.security.login.SuccessfulLoginHandler;
-import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
@@ -54,32 +51,23 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
     private final SecurityConfigurationProperties securityConfigurationProperties;
-    private final SuccessfulLoginHandler successfulLoginHandler;
+    private final HandlerInitializer handlerInitializer;
     private final SuccessfulQueryHandler successfulQueryHandler;
-    private final FailedAuthenticationHandler authenticationFailureHandler;
     private final AuthProviderInitializer authProviderInitializer;
-    private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
-    private final NotFoundExceptionHandler notFoundExceptionHandler;
 
     public SecurityConfiguration(
         ObjectMapper securityObjectMapper,
         AuthenticationService authenticationService,
         SecurityConfigurationProperties securityConfigurationProperties,
-        SuccessfulLoginHandler successfulLoginHandler,
+        HandlerInitializer handlerInitializer,
         SuccessfulQueryHandler successfulQueryHandler,
-        FailedAuthenticationHandler authenticationFailureHandler,
-        AuthProviderInitializer authProviderInitializer,
-        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
-        NotFoundExceptionHandler notFoundExceptionHandler) {
+        AuthProviderInitializer authProviderInitializer) {
         this.securityObjectMapper = securityObjectMapper;
         this.authenticationService = authenticationService;
         this.securityConfigurationProperties = securityConfigurationProperties;
-        this.successfulLoginHandler = successfulLoginHandler;
+        this.handlerInitializer = handlerInitializer;
         this.successfulQueryHandler = successfulQueryHandler;
-        this.authenticationFailureHandler = authenticationFailureHandler;
         this.authProviderInitializer = authProviderInitializer;
-        this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
-        this.notFoundExceptionHandler = notFoundExceptionHandler;
     }
 
     @Override
@@ -95,7 +83,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .httpStrictTransportSecurity().disable()
             .frameOptions().disable()
             .and()
-            .exceptionHandling().authenticationEntryPoint(basicAuthUnauthorizedHandler)
+            .exceptionHandling().authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())
 
             .and()
             .sessionManagement()
@@ -124,29 +112,29 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * Processes /login requests
      */
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
-        return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler, securityObjectMapper,
-            authenticationManager(), notFoundExceptionHandler);
+        return new LoginFilter(loginEndpoint, handlerInitializer.getSuccessfulLoginHandler(), handlerInitializer.getAuthenticationFailureHandler(), securityObjectMapper,
+            authenticationManager(), handlerInitializer.getNotFoundExceptionHandler());
     }
 
     /**
      * Processes /query requests
      */
     private QueryFilter queryFilter(String queryEndpoint) throws Exception {
-        return new QueryFilter(queryEndpoint, successfulQueryHandler, authenticationFailureHandler, authenticationService,
-            authenticationManager(), notFoundExceptionHandler);
+        return new QueryFilter(queryEndpoint, successfulQueryHandler, handlerInitializer.getAuthenticationFailureHandler(), authenticationService,
+            authenticationManager(), handlerInitializer.getNotFoundExceptionHandler());
     }
 
     /**
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), authenticationFailureHandler, notFoundExceptionHandler, PROTECTED_ENDPOINTS);
+        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getNotFoundExceptionHandler(), PROTECTED_ENDPOINTS);
     }
 
     /**
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), authenticationFailureHandler, notFoundExceptionHandler, securityConfigurationProperties, PROTECTED_ENDPOINTS);
+        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getNotFoundExceptionHandler(), securityConfigurationProperties, PROTECTED_ENDPOINTS);
     }
 }
