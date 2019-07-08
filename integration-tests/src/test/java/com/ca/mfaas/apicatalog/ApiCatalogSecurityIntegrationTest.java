@@ -107,10 +107,10 @@ public class ApiCatalogSecurityIntegrationTest {
     @Test
     public void accessProtectedEndpointWithInvalidBasicAuth() {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
-        String invalid_password = "nonsense";
+        String invalidPassword = "nonsense";
 
         given()
-            .auth().preemptive().basic(USERNAME, invalid_password)
+            .auth().preemptive().basic(USERNAME, invalidPassword)
         .when()
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))
@@ -123,10 +123,10 @@ public class ApiCatalogSecurityIntegrationTest {
     @Test
     public void accessProtectedEndpointWithInvalidCookie() {
         String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
-        String invalid_token = "nonsense";
+        String invalidToken = "nonsense";
 
         given()
-             .cookie(COOKIE, invalid_token)
+             .cookie(COOKIE, invalidToken)
         .when()
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))
