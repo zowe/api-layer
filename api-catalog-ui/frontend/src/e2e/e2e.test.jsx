@@ -31,6 +31,20 @@ beforeEach(async () => {
 });
 
 describe('>>> e2e tests', () => {
+    it('Should display error message if login credentials are not valid', async () => {
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(loginUrl)]);
+        await page.waitForSelector('[data-testid="username"]');
+        await page.waitForSelector('[data-testid="password"]');
+        await page.type('[data-testid="username"]', 'wrongusername'),
+            await page.type('[data-testid="password"]', 'wrongpassword'),
+            await page.click('[data-testid="submit"]');
+        await page.waitForSelector('#error-message > p');
+        const messageLabel = await page.$('#error-message > p');
+        const messageLabelText = await page.evaluate(el => el.innerText, messageLabel);
+
+        expect(messageLabelText).toBe('Invalid username or password ZWEAS120E');
+    });
+
     it('Should login and navigate to dashboard', async () => {
         const [res] = await Promise.all([page.waitForNavigation(), page.goto(loginUrl)]);
         await page.waitForSelector('[data-testid="username"]');
@@ -66,6 +80,7 @@ describe('>>> e2e tests', () => {
     it('Should display Dashboard title', async () => {
         const dashboardTitle = await page.$('div.filtering-container > h2');
         const dashboardTitleText = await page.evaluate(el => el.innerText, dashboardTitle);
+
         expect(dashboardTitleText).toBe('Available API services');
     });
 
@@ -77,6 +92,7 @@ describe('>>> e2e tests', () => {
         await page.waitForSelector(selector);
         const catalogTile = await page.$(selector);
         const catalogTileText = await page.evaluate(el => el.innerText, catalogTile);
+
         expect(catalogTileText).toBe('API Mediation Layer API');
     });
 
@@ -97,6 +113,7 @@ describe('>>> e2e tests', () => {
             page.click('div.apis > div > div:nth-child(2)'),
             page.waitForNavigation(),
         ]);
+
         expect(page.url()).toBe(defaultDetailPageUrl);
     });
 
@@ -106,6 +123,7 @@ describe('>>> e2e tests', () => {
         await page.waitForSelector('#search_no_results');
         const message = await page.$('#search_no_results');
         const messageText = await page.evaluate(el => el.innerText, message);
+
         expect(messageText).toBe('No tiles found matching search criteria');
     });
 
@@ -118,6 +136,7 @@ describe('>>> e2e tests', () => {
         const description = await page.$('#description');
         const tabTitleText = await page.evaluate(el => el.innerText, tab);
         const descriptionText = await page.evaluate(el => el.innerText, description);
+
         expect(tabTitleText).toBe('API Mediation Layer API');
         expect(descriptionText).toBe(
             'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.'
@@ -144,6 +163,7 @@ describe('>>> e2e tests', () => {
         const expectedUrl = `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/gateway ]`;
         const expectedDescriptionValue =
             'REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.';
+
         expect(serviceTitleText).toBe(expectedTitleValue);
         expect(serviceDescriptionText).toBe(expectedDescriptionValue);
         expect(serviceUrlText).toBe(expectedUrl);
@@ -155,6 +175,7 @@ describe('>>> e2e tests', () => {
         const backButton = await page.$('#go-back-button > span > span');
         await page.waitFor(2000);
         const backButtonContent = await page.evaluate(el => el.innerText, backButton);
+
         expect(backButtonContent).toBe('Back');
     });
 
@@ -182,6 +203,7 @@ describe('>>> e2e tests', () => {
         const expectedUrl = `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/apicatalog ]`;
         const expectedDescriptionValue =
             'REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.';
+
         expect(serviceTitleText).toBe(expectedTitleValue);
         expect(serviceDescriptionText).toBe(expectedDescriptionValue);
         expect(serviceUrlText).toBe(expectedUrl);
@@ -192,6 +214,7 @@ describe('>>> e2e tests', () => {
         await page.waitForSelector('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a');
         const homepageLabel = await page.$('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a');
         const homePageLabelContent = await page.evaluate(a => a.href, homepageLabel);
+
         expect(homePageLabelContent).toBe(baseUrl);
     });
 
@@ -206,8 +229,8 @@ describe('>>> e2e tests', () => {
         await page.waitForSelector('div.grid-tile.pop > div > div > div > h3');
         const filteredTiles = await page.$('div.grid-tile.pop > div > div > div > h3');
         const tileHeader = await page.evaluate(el => el.innerText, filteredTiles);
-        expect(page.url()).toBe(dashboardUrl);
 
+        expect(page.url()).toBe(dashboardUrl);
         expect(tileHeader).toBe('API Mediation Layer API');
     });
 
