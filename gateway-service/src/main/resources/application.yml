@@ -24,14 +24,20 @@ apiml:
     service:
         # The `apiml.service` node contains information required by any APIML service
         id: gateway  # Service ID of this service. It is fixed for APIML API Gateway
-        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
+        hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
+                             # Default is valid only for localhost
         port: 10010  # Default port name for gateway service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
         preferIpAddress: false
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
-        hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway
+        hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
+                                             # for transforming the URL's in DVIPA mode.
+                                             # In ZOWE, this is the same as apiml.service.hostname. Zowe has one Gateway
+                                             # and is all run from single host.
+                                             # In Brightside, this holds the DVIPA address and is overriden in PARMLIB to work
+                                             # propperly.
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         ssl:
