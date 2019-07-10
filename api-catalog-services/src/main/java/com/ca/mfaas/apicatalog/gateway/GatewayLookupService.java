@@ -60,7 +60,6 @@ public class GatewayLookupService {
             throw (GatewayLookupException) context.getLastThrowable();
         }
 
-        lookupGatewayParams();
         return gatewayConfigProperties;
     }
 
