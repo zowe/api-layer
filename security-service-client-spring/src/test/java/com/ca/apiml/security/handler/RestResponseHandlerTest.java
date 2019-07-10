@@ -87,7 +87,7 @@ public class RestResponseHandlerTest {
 
     @Test
     public void handleBadResponseEmpty() {
-        Exception exception = new Exception("General Exception");
-        handler.handleBadResponse(exception, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        GatewayNotFoundException gatewayNotFoundException = new GatewayNotFoundException("General Exception");
+        handler.handleBadResponse(gatewayNotFoundException, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 }
