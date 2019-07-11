@@ -124,7 +124,7 @@ public class InstanceInitializeService {
     }
 
     /**
-     * Query the discovery service forx all running instances
+     * Query the discovery service for all running instances
      */
     private void updateCacheWithAllInstances() {
         Applications allServices = instanceRetrievalService.getAllInstancesFromDiscovery(false);

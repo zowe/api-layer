@@ -47,11 +47,11 @@ public class GatewayLookupService {
     /**
      * Try to lookup gateway information from eureka
      */
-    public void lookupGatewayParams() {
-        gatewayConfigProperties = retryTemplate.execute(this::doWithRetry, this::recover);
+    private void lookupGatewayParams() {
+        gatewayConfigProperties = retryTemplate.execute(context -> doWithRetry(), this::recover);
     }
 
-    private GatewayConfigProperties doWithRetry(RetryContext context) {
+    private GatewayConfigProperties doWithRetry() {
         return initializeGatewayParams();
     }
 

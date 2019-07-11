@@ -40,6 +40,7 @@ public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandle
         Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), null);
         tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
         tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());
+        tokenCookie.setSecure(true);
         tokenCookie.setHttpOnly(true);
         tokenCookie.setMaxAge(0);
         httpServletResponse.addCookie(tokenCookie);

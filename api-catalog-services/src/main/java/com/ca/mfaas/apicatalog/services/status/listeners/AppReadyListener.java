@@ -27,7 +27,7 @@ public class AppReadyListener {
      */
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
-       new ServiceStartupEventHandler().onServiceStartup("API Catalog Service",
+        new ServiceStartupEventHandler().onServiceStartup("API Catalog Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

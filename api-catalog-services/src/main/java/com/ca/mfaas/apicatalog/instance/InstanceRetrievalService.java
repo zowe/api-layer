@@ -81,6 +81,7 @@ public class InstanceRetrievalService {
 
     /**
      * Retrieve instances from the discovery service
+     *
      * @param delta filter the registry information to the just updated infos
      * @return the Applications object that wraps all the registry information
      */
@@ -97,8 +98,8 @@ public class InstanceRetrievalService {
     /**
      * Parse information from the response and extract the Applications object which contains all the registry information returned by eureka server
      *
-     * @param requestInfo
-     * @param response the http response
+     * @param requestInfo contains the pair of discovery URL and discovery credentials (for HTTP access)
+     * @param response    the http response
      * @return Applications object that wraps all the registry information
      */
     private Applications extractApplications(Pair<String, Pair<String, String>> requestInfo, ResponseEntity<String> response) {

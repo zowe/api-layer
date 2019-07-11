@@ -107,7 +107,8 @@ public class InstanceRefreshService {
 
     /**
      * Check each delta instance and consider it for processing
-     * @param cachedServices the collection of cached services
+     *
+     * @param cachedServices     the collection of cached services
      * @param deltaFromDiscovery changed instances
      */
     private Set<String> processServiceInstances(Applications cachedServices, Applications deltaFromDiscovery) {
@@ -126,10 +127,11 @@ public class InstanceRefreshService {
 
     /**
      * Get this instance service details and check if it should be processed
-     * @param containersUpdated which containers were updated
-     * @param cachedServices existing services
+     *
+     * @param containersUpdated  which containers were updated
+     * @param cachedServices     existing services
      * @param deltaFromDiscovery changed service instances
-     * @param instance this instance
+     * @param instance           this instance
      */
     private void processServiceInstance(Set<String> containersUpdated, Applications cachedServices,
                                         Applications deltaFromDiscovery, InstanceInfo instance) {
