@@ -13,34 +13,121 @@ import com.ca.apiml.security.error.NotFoundExceptionHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import java.io.IOException;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class BasicContentFilterTest {
+    private final static String PRINCIPAL = "user";
+    private final static String PASSWORD = "password";
+    private final static String BASIC_AUTH = "Basic dXNlcjpwYXNzd29yZA==";
 
     private BasicContentFilter basicContentFilter;
-    private final HttpServletRequest request = mock(HttpServletRequest.class);
+    private final MockHttpServletRequest request = new MockHttpServletRequest();
+    private final MockHttpServletResponse response = new MockHttpServletResponse();
+    private final FilterChain filterChain = mock(FilterChain.class);
+    private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
+    private final AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
+    private final NotFoundExceptionHandler notFoundExceptionHandler = mock(NotFoundExceptionHandler.class);
 
     @Before
     public void setUp() {
-        AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
-        AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
-        NotFoundExceptionHandler notFoundExceptionHandler = mock(NotFoundExceptionHandler.class);
-        basicContentFilter = new BasicContentFilter(authenticationManager, authenticationFailureHandler, notFoundExceptionHandler);
+        basicContentFilter = new BasicContentFilter(
+            authenticationManager,
+            authenticationFailureHandler,
+            notFoundExceptionHandler);
+    }
+
+    @Test
+    public void authenticationWithBasicAuthHeader() throws ServletException, IOException {
+        request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
+
+        basicContentFilter.doFilter(request, response, filterChain);
+
+        verify(authenticationManager).authenticate(authentication);
+        verify(filterChain).doFilter(request, response);
+        verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
+        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+    }
+
+    @Test
+    public void shouldSkipFilter() throws ServletException, IOException {
+        String[] endpoints = {"/gateway"};
+
+        request.setContextPath(endpoints[0]);
+
+        BasicContentFilter basicContentFilter = new BasicContentFilter(authenticationManager,
+            authenticationFailureHandler,
+            notFoundExceptionHandler,
+            endpoints);
+
+        basicContentFilter.doFilter(request, response, filterChain);
+
+        verify(authenticationManager, never()).authenticate(any());
+        verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
+        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+    }
+
+
+    @Test
+    public void shouldNotAuthenticateWithBadCredentials() throws ServletException, IOException {
+        request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
+        AuthenticationException exception = new BadCredentialsException("Token not valid");
+
+        when(authenticationManager.authenticate(authentication)).thenThrow(exception);
+
+        basicContentFilter.doFilter(request, response, filterChain);
+
+        verify(authenticationManager).authenticate(authentication);
+        verify(filterChain, never()).doFilter(any(), any());
+        verify(authenticationFailureHandler).onAuthenticationFailure(request, response, exception);
+        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+    }
+
+    @Test
+    public void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
+        request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, PASSWORD);
+        RuntimeException exception = new RuntimeException("No Gateway");
+
+        when(authenticationManager.authenticate(authentication)).thenThrow(exception);
+
+        basicContentFilter.doFilter(request, response, filterChain);
+
+        verify(authenticationManager).authenticate(authentication);
+        verify(filterChain, never()).doFilter(any(), any());
+        verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
+        verify(notFoundExceptionHandler).handleException(request, response, exception);
+    }
+
+    @Test
+    public void shouldNotFilterWithNoCookie() throws ServletException, IOException {
+        basicContentFilter.doFilter(request, response, filterChain);
+
+        verify(authenticationManager, never()).authenticate(any());
+        verify(filterChain).doFilter(request, response);
+        verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
+        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
     }
 
     @Test
     public void extractContentFromRequestWithValidBasicAuth() {
-        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Basic dXNlcjpwYXNzd29yZA==");
+        request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertTrue(token.isPresent());
@@ -50,37 +137,35 @@ public class BasicContentFilterTest {
 
     @Test
     public void extractContentFromRequestWithNonsenseBasicAuth() {
-        when(request.getHeader(anyString())).thenReturn("Basic dXNlG4m3oFthR0n3syZA==");
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Basic dXNlG4m3oFthR0n3syZA==");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertTrue(token.isPresent());
         assertNull(token.get().getPrincipal());
         assertNull(token.get().getCredentials());
+    }
 
-        when(request.getHeader(anyString())).thenReturn("Duck");
-        token = basicContentFilter.extractContent(request);
+    @Test
+    public void extractContentFromRequestWithNonsense() {
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Duck");
+        Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertFalse(token.isPresent());
     }
 
     @Test
     public void extractContentFromRequestWithIncompleteBasicAuth() {
-        when(request.getHeader(anyString())).thenReturn("Basic dXNlcj11c2Vy");
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Basic dXNlcj11c2Vy");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertTrue(token.isPresent());
         assertNull(token.get().getPrincipal());
         assertNull(token.get().getCredentials());
-
-        when(request.getHeader(anyString())).thenReturn("Duck");
-        token = basicContentFilter.extractContent(request);
-
-        assertFalse(token.isPresent());
     }
 
     @Test
     public void extractContentFromRequestWithEmptyRealm() {
-        when(request.getHeader(anyString())).thenReturn("Basic ");
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Basic ");
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertFalse(token.isPresent());
@@ -88,7 +173,6 @@ public class BasicContentFilterTest {
 
     @Test
     public void extractContentFromRequestWithoutAuthHeader() {
-        when(request.getHeader(anyString())).thenReturn(null);
         Optional<AbstractAuthenticationToken> token = basicContentFilter.extractContent(request);
 
         assertFalse(token.isPresent());
