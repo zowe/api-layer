@@ -75,8 +75,8 @@
     },
     "devDependencies": {
         "babel-cli": "6.26.0",
-        "babel-eslint": "9.0.0",
-        "babel-jest": "23.6.0",
+        "babel-eslint": "10.0.1",
+        "babel-jest": "^24.8.0",
         "babel-preset-flow": "6.23.0",
         "babel-preset-react-app": "3.1.2",
         "body-parser": "1.18.3",
@@ -93,7 +93,6 @@
         "eslint-plugin-react": "7.11.1",
         "express": "4.16.4",
         "galenframework-cli": "2.4.0",
-        "jest": "23.6.0",
         "jest-environment-enzyme": "^7.0.2",
         "jest-enzyme": "7.0.1",
         "jest-html-reporter": "^2.4.2",
