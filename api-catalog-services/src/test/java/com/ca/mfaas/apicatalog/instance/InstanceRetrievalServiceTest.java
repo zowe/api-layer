@@ -37,7 +37,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -110,7 +109,7 @@ public class InstanceRetrievalServiceTest {
 
     @Test
     public void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
-        mockRetrieveAppicationService(
+        mockRetrieveApplicationService(
             discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
             "UNPARSED_JSON"
         );
@@ -149,7 +148,7 @@ public class InstanceRetrievalServiceTest {
             )));
 
 
-        mockRetrieveAppicationService(
+        mockRetrieveApplicationService(
             discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
             bodyCatalog
         );
@@ -181,7 +180,7 @@ public class InstanceRetrievalServiceTest {
 
     @Test
     public void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() {
-        mockRetrieveAppicationService(
+        mockRetrieveApplicationService(
             discoveryServiceAllAppsUrl,
             "UNPARSED_JSON"
         );
@@ -198,29 +197,24 @@ public class InstanceRetrievalServiceTest {
 
 
         Applications expectedApplications = new Applications();
-        instanceInfoMap.entrySet().forEach(f -> {
-            expectedApplications.addApplication(new Application(f.getValue().getAppName(), Collections.singletonList(f.getValue())));
-        });
+        instanceInfoMap.forEach((key, value) -> expectedApplications.addApplication(new Application(value.getAppName(), Collections.singletonList(value))));
 
         ObjectMapper mapper = new ObjectMapper();
         String bodyAll = mapper.writeValueAsString(new ApplicationsWrapper(expectedApplications));
-        mockRetrieveAppicationService(discoveryServiceAllAppsUrl, bodyAll);
+        mockRetrieveApplicationService(discoveryServiceAllAppsUrl, bodyAll);
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
 
         assertEquals(expectedApplications.size(), actualApplications.size());
 
         List<Application> actualApplicationList =
-            actualApplications.getRegisteredApplications().stream()
-                .collect(Collectors.toList());
+            new ArrayList<>(actualApplications.getRegisteredApplications());
 
 
         expectedApplications
             .getRegisteredApplications()
             .stream()
-            .forEach(expectedApplication -> {
-                assertThat(actualApplicationList, hasItem(hasProperty("name", equalTo(expectedApplication.getName()))));
-            });
+            .forEach(expectedApplication -> assertThat(actualApplicationList, hasItem(hasProperty("name", equalTo(expectedApplication.getName())))));
     }
 
 
@@ -231,21 +225,18 @@ public class InstanceRetrievalServiceTest {
         Map<String, InstanceInfo> instanceInfoMap = createInstances();
 
         Applications expectedApplications = new Applications();
-        instanceInfoMap.entrySet().forEach(f -> {
-            expectedApplications.addApplication(new Application(f.getValue().getAppName(), Collections.singletonList(f.getValue())));
-        });
+        instanceInfoMap.forEach((key, value) -> expectedApplications.addApplication(new Application(value.getAppName(), Collections.singletonList(value))));
 
         ObjectMapper mapper = new ObjectMapper();
         String bodyAll = mapper.writeValueAsString(new ApplicationsWrapper(expectedApplications));
-        mockRetrieveAppicationService(discoveryServiceAppsUrl, bodyAll);
+        mockRetrieveApplicationService(discoveryServiceAppsUrl, bodyAll);
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(true);
 
         assertEquals(expectedApplications.size(), actualApplications.size());
 
         List<Application> actualApplicationList =
-            actualApplications.getRegisteredApplications().stream()
-                .collect(Collectors.toList());
+            new ArrayList<>(actualApplications.getRegisteredApplications());
 
 
         expectedApplications
@@ -309,7 +300,7 @@ public class InstanceRetrievalServiceTest {
             .build();
     }
 
-    private void mockRetrieveAppicationService(String url, String body) {
+    private void mockRetrieveApplicationService(String url, String body) {
         when(
             restTemplate.exchange(
                 url,
