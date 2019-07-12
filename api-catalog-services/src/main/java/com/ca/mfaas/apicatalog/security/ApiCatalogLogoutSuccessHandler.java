@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.security;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,12 +21,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+@RequiredArgsConstructor
 public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
-    private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    public ApiCatalogLogoutSuccessHandler(SecurityConfigurationProperties securityConfigurationProperties) {
-        this.securityConfigurationProperties = securityConfigurationProperties;
-    }
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
     @Override
     public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,

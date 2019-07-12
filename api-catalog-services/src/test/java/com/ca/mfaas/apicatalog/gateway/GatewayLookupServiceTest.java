@@ -37,21 +37,21 @@ public class GatewayLookupServiceTest {
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
-    private InstanceRetrievalService instanceRetrievalService = mock(InstanceRetrievalService.class);
+    private final InstanceRetrievalService instanceRetrievalService = mock(InstanceRetrievalService.class);
     private RetryTemplate retryTemplate;
     //private GatewayLookupService gatewayLookupService;
 
     private final int RETRY_COUNT = 5;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         retryTemplate = spy(new RetryTemplate());
         FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
         int backOffMillis = 1;
         backOffPolicy.setBackOffPeriod(backOffMillis);
         retryTemplate.setBackOffPolicy(backOffPolicy);
         retryTemplate.setRetryPolicy(
-                new SimpleRetryPolicy(RETRY_COUNT, Collections.singletonMap(RetryException.class, true))
+            new SimpleRetryPolicy(RETRY_COUNT, Collections.singletonMap(RetryException.class, true))
         );
     }
 
@@ -102,7 +102,7 @@ public class GatewayLookupServiceTest {
     }
 
     @Test
-    public void shouldRetryWhenInvalidMetadataFromHeureka() {
+    public void shouldRetryWhenInvalidMetadataFromEureka() {
         when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId())).thenThrow(InstanceInitializationException.class);
 
         GatewayLookupService gatewayLookupService = new GatewayLookupService(retryTemplate, instanceRetrievalService);
@@ -110,7 +110,6 @@ public class GatewayLookupServiceTest {
 
         verify(instanceRetrievalService, times(RETRY_COUNT)).getInstanceInfo(any());
     }
-
 
 
 }

@@ -86,10 +86,10 @@ public class InstanceRetrievalServiceTest {
                 HttpMethod.GET,
                 getHttpEntity(),
                 String.class
-            )).thenReturn(new ResponseEntity<>( null, HttpStatus.FORBIDDEN));
+            )).thenReturn(new ResponseEntity<>(null, HttpStatus.FORBIDDEN));
 
-         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
-         assertNull(instanceInfo);
+        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
+        assertNull(instanceInfo);
     }
 
     @Test
@@ -100,12 +100,11 @@ public class InstanceRetrievalServiceTest {
                 HttpMethod.GET,
                 getHttpEntity(),
                 String.class
-            )).thenReturn(new ResponseEntity<>( null, HttpStatus.OK));
+            )).thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
 
         InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
         assertNull(instanceInfo);
     }
-
 
     @Test
     public void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
@@ -118,7 +117,6 @@ public class InstanceRetrievalServiceTest {
         assertNull(instanceInfo);
     }
 
-
     @Test(expected = InstanceInitializationException.class)
     public void testGetInstanceInfo_whenUnexpectedErrorHappened() {
         when(
@@ -127,11 +125,10 @@ public class InstanceRetrievalServiceTest {
                 HttpMethod.GET,
                 null,
                 String.class
-            )).thenReturn(new ResponseEntity<>( "{}", HttpStatus.OK));
+            )).thenReturn(new ResponseEntity<>("{}", HttpStatus.OK));
 
         instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
     }
-
 
     @Test
     public void testGetInstanceInfo() throws JsonProcessingException {
@@ -161,7 +158,6 @@ public class InstanceRetrievalServiceTest {
         assertThat(actualInstanceInfo, hasProperty("status", equalTo(expectedInstanceInfo.getStatus())));
     }
 
-
     @Test
     public void testGetAllInstancesFromDiscovery_whenResponseCodeIsNotSuccess() {
         when(
@@ -170,13 +166,12 @@ public class InstanceRetrievalServiceTest {
                 HttpMethod.GET,
                 getHttpEntity(),
                 String.class
-            )).thenReturn(new ResponseEntity<>( null, HttpStatus.FORBIDDEN));
+            )).thenReturn(new ResponseEntity<>(null, HttpStatus.FORBIDDEN));
 
 
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
         assertNull(actualApplications);
     }
-
 
     @Test
     public void testGetAllInstancesFromDiscovery_whenResponseCodeIsSuccessWithUnParsedJsonText() {
@@ -189,7 +184,6 @@ public class InstanceRetrievalServiceTest {
         Applications actualApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
         assertNull(actualApplications);
     }
-
 
     @Test
     public void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithoutFilter() throws JsonProcessingException {
@@ -213,10 +207,10 @@ public class InstanceRetrievalServiceTest {
 
         expectedApplications
             .getRegisteredApplications()
-            .stream()
-            .forEach(expectedApplication -> assertThat(actualApplicationList, hasItem(hasProperty("name", equalTo(expectedApplication.getName())))));
+            .forEach(expectedApplication ->
+                assertThat(actualApplicationList, hasItem(hasProperty("name", equalTo(expectedApplication.getName()))))
+            );
     }
-
 
     @Test
     public void testGetAllInstancesFromDiscovery_whenNeedApplicationsWithDeltaFilter() throws JsonProcessingException {
@@ -241,12 +235,10 @@ public class InstanceRetrievalServiceTest {
 
         expectedApplications
             .getRegisteredApplications()
-            .stream()
-            .forEach(expectedApplication -> {
-                assertThat(actualApplicationList, hasItem(hasProperty("name", equalTo(expectedApplication.getName()))));
-            });
+            .forEach(expectedApplication ->
+                assertThat(actualApplicationList, hasItem(hasProperty("name", equalTo(expectedApplication.getName()))))
+            );
     }
-
 
     private Map<String, InstanceInfo> createInstances() {
         Map<String, InstanceInfo> instanceInfoMap = new HashMap<>();
@@ -281,7 +273,7 @@ public class InstanceRetrievalServiceTest {
             (discoveryConfigProperties.getEurekaUserName() + ":" + discoveryConfigProperties.getEurekaUserPassword()).getBytes()
         );
 
-        headers.add("Authorization",  "Basic " + encodedCredentials);
+        headers.add("Authorization", "Basic " + encodedCredentials);
         headers.add("Content-Type", "application/json");
         headers.add("Accept", "application/json");
         List<MediaType> types = new ArrayList<>();

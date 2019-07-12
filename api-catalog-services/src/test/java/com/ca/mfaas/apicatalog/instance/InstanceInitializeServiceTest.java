@@ -34,7 +34,6 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceInitializeServiceTest {
 
-
     @Mock
     private CachedServicesService cachedServicesService;
 
@@ -60,9 +59,9 @@ public class InstanceInitializeServiceTest {
         ).thenReturn(apiCatalogInstance);
 
         Applications applications = new Applications();
-        instanceInfoMap.values().forEach(f -> {
-            applications.addApplication(new Application(f.getAppName(), Collections.singletonList(f)));
-        });
+        instanceInfoMap.values().forEach(f ->
+            applications.addApplication(new Application(f.getAppName(), Collections.singletonList(f)))
+        );
 
         when(
             instanceRetrievalService.getAllInstancesFromDiscovery(false)
@@ -89,12 +88,11 @@ public class InstanceInitializeServiceTest {
         instanceInfoMap.values()
             .stream()
             .filter(f -> !f.getAppName().equals(catalogId.toUpperCase()))
-            .forEach(instanceInfo -> {
+            .forEach(instanceInfo ->
                 verify(cachedProductFamilyService, times(1)).createContainerFromInstance(
                     instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id"),
                     instanceInfo
-                );
-            });
+                ));
     }
 
 

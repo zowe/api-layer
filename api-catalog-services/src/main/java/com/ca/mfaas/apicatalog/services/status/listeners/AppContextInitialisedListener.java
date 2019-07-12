@@ -11,8 +11,8 @@ package com.ca.mfaas.apicatalog.services.status.listeners;
 
 import com.ca.mfaas.apicatalog.instance.InstanceInitializeService;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
@@ -21,15 +21,11 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class AppContextInitialisedListener {
 
     private final InstanceInitializeService instanceInitializeService;
-
-    @Autowired
-    public AppContextInitialisedListener(InstanceInitializeService instanceInitializeService) {
-        this.instanceInitializeService = instanceInitializeService;
-    }
 
     /**
      * Create a container for the API Catalog

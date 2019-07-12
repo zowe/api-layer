@@ -14,6 +14,7 @@ import com.ca.mfaas.apicatalog.instance.InstanceRetrievalService;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.netflix.appinfo.InstanceInfo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.*;
 import org.springframework.retry.support.RetryTemplate;
@@ -25,18 +26,13 @@ import java.net.URI;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class GatewayLookupService {
 
     private GatewayConfigProperties gatewayConfigProperties;
 
     private final RetryTemplate retryTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
-
-    public GatewayLookupService(RetryTemplate retryTemplate,
-                                InstanceRetrievalService instanceRetrievalService) {
-        this.retryTemplate = retryTemplate;
-        this.instanceRetrievalService = instanceRetrievalService;
-    }
 
     @PostConstruct
     public void init() {

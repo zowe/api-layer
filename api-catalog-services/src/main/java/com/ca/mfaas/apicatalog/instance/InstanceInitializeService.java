@@ -17,8 +17,8 @@ import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InstanceInitializeService {
 
     private final CachedProductFamilyService cachedProductFamilyService;
@@ -37,15 +38,6 @@ public class InstanceInitializeService {
     private final InstanceRetrievalService instanceRetrievalService;
 
     private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
-
-    @Autowired
-    public InstanceInitializeService(CachedProductFamilyService cachedProductFamilyService,
-                                     CachedServicesService cachedServicesService,
-                                     InstanceRetrievalService instanceRetrievalService) {
-        this.cachedProductFamilyService = cachedProductFamilyService;
-        this.cachedServicesService = cachedServicesService;
-        this.instanceRetrievalService = instanceRetrievalService;
-    }
 
     /**
      * Initialise the API Catalog with all current running instances

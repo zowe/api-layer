@@ -20,8 +20,8 @@ import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -36,22 +36,15 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class APIDocRetrievalService {
+
     private final RestTemplate restTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
     private final GatewayConfigProperties gatewayConfigProperties;
 
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
-
-    @Autowired
-    public APIDocRetrievalService(RestTemplate restTemplate,
-                                  InstanceRetrievalService instanceRetrievalService,
-                                  GatewayConfigProperties gatewayConfigProperties) {
-        this.restTemplate = restTemplate;
-        this.instanceRetrievalService = instanceRetrievalService;
-        this.gatewayConfigProperties = gatewayConfigProperties;
-    }
 
     /**
      * Retrieve the API docs for a registered service

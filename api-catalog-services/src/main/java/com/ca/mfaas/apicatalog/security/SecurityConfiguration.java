@@ -17,6 +17,7 @@ import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.token.GatewayTokenProvider;
 import com.ca.apiml.security.config.HandlerInitializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -34,6 +35,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 @ComponentScan("com.ca.apiml.security")
 @Import(ComponentsConfiguration.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -43,19 +45,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final HandlerInitializer handlerInitializer;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
-
-    public SecurityConfiguration(
-        ObjectMapper securityObjectMapper,
-        SecurityConfigurationProperties securityConfigurationProperties,
-        HandlerInitializer handlerInitializer,
-        GatewayLoginProvider gatewayLoginProvider,
-        GatewayTokenProvider gatewayTokenProvider) {
-        this.securityObjectMapper = securityObjectMapper;
-        this.securityConfigurationProperties = securityConfigurationProperties;
-        this.handlerInitializer = handlerInitializer;
-        this.gatewayLoginProvider = gatewayLoginProvider;
-        this.gatewayTokenProvider = gatewayTokenProvider;
-    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {

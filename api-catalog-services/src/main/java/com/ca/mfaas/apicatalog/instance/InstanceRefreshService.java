@@ -15,8 +15,8 @@ import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +30,7 @@ import java.util.concurrent.*;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InstanceRefreshService {
 
     // until versioning is implemented, only v1 API docs are supported
@@ -38,15 +39,6 @@ public class InstanceRefreshService {
     private final InstanceRetrievalService instanceRetrievalService;
 
     private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
-
-    @Autowired
-    public InstanceRefreshService(CachedProductFamilyService cachedProductFamilyService,
-                                  CachedServicesService cachedServicesService,
-                                  InstanceRetrievalService instanceRetrievalService) {
-        this.cachedProductFamilyService = cachedProductFamilyService;
-        this.cachedServicesService = cachedServicesService;
-        this.instanceRetrievalService = instanceRetrievalService;
-    }
 
     /**
      * Periodically refresh the container/service caches

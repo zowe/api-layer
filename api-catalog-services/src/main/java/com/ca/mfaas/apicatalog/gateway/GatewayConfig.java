@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.gateway;
 
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,13 +18,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @Slf4j
+@RequiredArgsConstructor
 public class GatewayConfig {
 
     private final GatewayLookupService gatewayLookupService;
-
-    public GatewayConfig(GatewayLookupService gatewayLookupService) {
-        this.gatewayLookupService = gatewayLookupService;
-    }
 
     @Bean
     public GatewayConfigProperties getGatewayConfigProperties() {

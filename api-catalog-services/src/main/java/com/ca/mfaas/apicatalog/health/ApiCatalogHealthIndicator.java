@@ -10,7 +10,7 @@
 package com.ca.mfaas.apicatalog.health;
 
 import com.ca.mfaas.product.constants.CoreService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
@@ -18,13 +18,10 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
-    private final DiscoveryClient discoveryClient;
 
-    @Autowired
-    public ApiCatalogHealthIndicator(DiscoveryClient discoveryClient) {
-        this.discoveryClient = discoveryClient;
-    }
+    private final DiscoveryClient discoveryClient;
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
