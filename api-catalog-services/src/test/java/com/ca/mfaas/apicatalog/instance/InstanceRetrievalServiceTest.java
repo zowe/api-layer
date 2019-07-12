@@ -93,6 +93,20 @@ public class InstanceRetrievalServiceTest {
          assertNull(instanceInfo);
     }
 
+    @Test
+    public void testGetInstanceInfo_whenResponseHasNullBody() {
+        when(
+            restTemplate.exchange(
+                discoveryServiceAllAppsUrl + CoreService.API_CATALOG.getServiceId(),
+                HttpMethod.GET,
+                getHttpEntity(),
+                String.class
+            )).thenReturn(new ResponseEntity<>( null, HttpStatus.OK));
+
+        InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(CoreService.API_CATALOG.getServiceId());
+        assertNull(instanceInfo);
+    }
+
 
     @Test
     public void testGetInstanceInfo_whenResponseCodeIsSuccessWithUnParsedJsonText() {
