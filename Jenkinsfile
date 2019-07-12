@@ -80,7 +80,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'ca-jenkins-agent'
+        label 'apiml-jenkins-agent'
     }
 
     parameters {
