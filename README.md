@@ -7,7 +7,7 @@
 
 The home of Zowe API Mediation Layer
 
-## Prequisites
+## Prerequisites
 
 Following platform is required to run the API Mediation Layer:
 
@@ -31,13 +31,30 @@ Run all service on local machine:
 
     npm run api-layer
 
-## Setting up connection to z/OSMF
+## Authentication service
 
-z/OSMF is required for the API Catalog login. You need to configure a valid z/OSMF instance to `config/local/api-defs/zosmf-sample.yml` under the `instanceBaseUrls`.
+API Mediation Layer uses dummy authentication provider as the default security provider for the development purposes. In order to login,
+use the username `user` and the password `user`.
+
+### (Optional) z/OSMF Authentication
+
+z/OSMF provides the real authentication service. In order to use the it, follow the steps:
+ 
+1. Configure a valid z/OSMF instance using the following sample configuration `config/local/api-defs/zosmf-sample.yml`.
+
+2. Modify [gateway-service.yml](config/local/gateway-service.yml) with a z/OSMF configuration
+
+```
+apiml:
+    security:
+        auth:
+            provider: zosmf
+            zosmfServiceId: zosmfId  # Replace me with the z/OSMF service id
+```
 
 The certificate of z/OSMF needs to be trusted by APIML. You have to options:
 
-1. Import it to the APIML keystore using `scripts/apiml_cm.sh --action trust` as desribed at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other_services)
+1. Import it to the APIML keystore using `scripts/apiml_cm.sh --action trust` as described at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other-services)
 
 2. Disable certificate validation as described in [Disabling certificate validation on localhost](/keystore/README.md#Disabling-certificate-validation-on-localhost)
 

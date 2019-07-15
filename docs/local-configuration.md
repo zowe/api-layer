@@ -22,7 +22,7 @@ To override this and run the gateway without TLS encryption, add the following t
     
     -Denvironment.scheme=http -Denvironment.sslEnabled=false
 
-The source code contains sample certifactes that are used by configuration for testing on your local machine. 
+The source code contains sample certificates that are used by configuration for testing on your local machine. 
 Do not use these certificates in other environments. More details can be found at [/keystore/local_ca/README.md](/keystore/local_ca/README.md).
 
 
