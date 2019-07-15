@@ -9,6 +9,7 @@
  */
 
 package com.ca.apiml.security.login;
+
 import com.ca.apiml.security.service.GatewaySecurityService;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.junit.Rule;
@@ -18,9 +19,10 @@ import org.mockito.junit.MockitoRule;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+
 import java.util.Optional;
+
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,12 +30,14 @@ public class GatewayLoginProviderTest {
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
+
     private static final String USER = "USER";
     private static final String VALID_PASSWORD = "PASS";
     private static final String INVALID_PASSWORD = "WORD";
     private static final String VALID_TOKEN = "VALID_TOKEN";
-    private GatewaySecurityService gatewaySecurityService = mock(GatewaySecurityService.class);
-    private GatewayLoginProvider gatewayLoginProvider = new GatewayLoginProvider(gatewaySecurityService);
+
+    private final GatewaySecurityService gatewaySecurityService = mock(GatewaySecurityService.class);
+    private final GatewayLoginProvider gatewayLoginProvider = new GatewayLoginProvider(gatewaySecurityService);
 
     @Test
     public void shouldAuthenticateValidUsernamePassword() {
@@ -53,7 +57,7 @@ public class GatewayLoginProviderTest {
         when(gatewaySecurityService.login(USER, INVALID_PASSWORD)).thenReturn(Optional.empty());
 
         Authentication auth = new UsernamePasswordAuthenticationToken(USER, INVALID_PASSWORD);
-        Authentication processedAuthentication = gatewayLoginProvider.authenticate(auth);
+        gatewayLoginProvider.authenticate(auth);
     }
 
     @Test

@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
  * This exception is thrown in case there is an unsupported HTTP method.
  */
 public class AuthMethodNotSupportedException extends AuthenticationException {
+
     public AuthMethodNotSupportedException(String method) {
         super(method);
     }

@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class HandlerInitializer {
-
     private final SuccessfulLoginHandler successfulLoginHandler;
     private final UnauthorizedHandler unAuthorizedHandler;
     private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;

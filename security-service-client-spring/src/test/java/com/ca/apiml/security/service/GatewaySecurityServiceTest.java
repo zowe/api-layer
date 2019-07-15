@@ -32,7 +32,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class GatewaySecurityServiceTest {
-
     private static final String USERNAME = "user";
     private static final String PASSWORD = "pass";
     private static final String TOKEN = "token";

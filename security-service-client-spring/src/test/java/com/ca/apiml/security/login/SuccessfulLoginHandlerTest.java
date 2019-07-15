@@ -34,7 +34,7 @@ public class SuccessfulLoginHandlerTest {
 
         ObjectMapper mapper = new ObjectMapper();
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        successfulLoginHandler = new SuccessfulLoginHandler(mapper,securityConfigurationProperties);
+        successfulLoginHandler = new SuccessfulLoginHandler(mapper, securityConfigurationProperties);
     }
 
     @Test

@@ -10,6 +10,7 @@
 package com.ca.apiml.security.content;
 
 import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,22 +31,12 @@ import java.util.Optional;
 /**
  * Filter base abstract class to secure application content
  */
+@RequiredArgsConstructor
 public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
-
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final String[] endpoints;
-
-    AbstractSecureContentFilter(AuthenticationManager authenticationManager,
-                                AuthenticationFailureHandler failureHandler,
-                                ResourceAccessExceptionHandler resourceAccessExceptionHandler,
-                                String[] endpoints) {
-        this.authenticationManager = authenticationManager;
-        this.failureHandler = failureHandler;
-        this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
-        this.endpoints = endpoints;
-    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {

@@ -30,7 +30,6 @@ import static org.hamcrest.core.Is.is;
 
 @RunWith(value = Parameterized.class)
 public class ApiCatalogSecurityIntegrationTest {
-
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String GATEWAY_SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
@@ -41,7 +40,6 @@ public class ApiCatalogSecurityIntegrationTest {
     private static final String CATALOG_SERVICE_ID = "/apicatalog";
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc/discoverableclient/v1";
     private static final String CATALOG_ACTUATOR_ENDPOINT = "/application";
-
 
     private final static String COOKIE = "apimlAuthenticationToken";
 

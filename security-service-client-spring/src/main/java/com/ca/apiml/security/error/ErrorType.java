@@ -20,8 +20,8 @@ public enum ErrorType {
     SERVICE_UNAVAILABLE("apiml.security.serviceUnavailable", "Authentication service not available."),
     GATEWAY_NOT_FOUND("apiml.security.gatewayNotFound", "API Gateway Service not found.");
 
-    private String errorMessageKey;
-    private String defaultMessage;
+    private final String errorMessageKey;
+    private final String defaultMessage;
 
     ErrorType(String errorMessageKey, String defaultMessage) {
         this.errorMessageKey = errorMessageKey;

@@ -16,6 +16,7 @@ import com.ca.apiml.security.token.QueryResponse;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -28,25 +29,14 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class GatewaySecurityService {
-
     private final GatewayConfigProperties gatewayConfigProperties;
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private final RestTemplate restTemplate;
     private final RestResponseHandler responseHandler;
 
-    public GatewaySecurityService(GatewayConfigProperties gatewayConfigProperties,
-                                  SecurityConfigurationProperties securityConfigurationProperties,
-                                  RestTemplate restTemplate,
-                                  RestResponseHandler responseHandler) {
-        this.gatewayConfigProperties = gatewayConfigProperties;
-        this.securityConfigurationProperties = securityConfigurationProperties;
-        this.restTemplate = restTemplate;
-        this.responseHandler = responseHandler;
-    }
-
     public Optional<String> login(String username, String password) {
-
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), securityConfigurationProperties.getGatewayLoginEndpoint());
 
@@ -74,7 +64,6 @@ public class GatewaySecurityService {
     }
 
     public QueryResponse query(String token) {
-
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), securityConfigurationProperties.getGatewayQueryEndpoint());
         String cookie = String.format("%s=%s", securityConfigurationProperties.getCookieProperties().getCookieName(), token);

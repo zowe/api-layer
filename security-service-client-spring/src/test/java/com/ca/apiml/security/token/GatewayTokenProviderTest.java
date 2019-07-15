@@ -24,14 +24,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class GatewayTokenProviderTest {
-
-    @Rule
-    public MockitoRule rule = MockitoJUnit.rule();
-    private GatewaySecurityService gatewaySecurityService = mock(GatewaySecurityService.class);
-    private GatewayTokenProvider gatewayTokenProvider = new GatewayTokenProvider(gatewaySecurityService);
     private static final String USER = "USER";
     private static final String DOMAIN = "PASS";
     private static final String VALID_TOKEN = "VALID_TOKEN";
+
+    private final GatewaySecurityService gatewaySecurityService = mock(GatewaySecurityService.class);
+    private final GatewayTokenProvider gatewayTokenProvider = new GatewayTokenProvider(gatewaySecurityService);
+
+    @Rule
+    public MockitoRule rule = MockitoJUnit.rule();
 
     @Test
     public void shouldAuthenticateValidToken() {

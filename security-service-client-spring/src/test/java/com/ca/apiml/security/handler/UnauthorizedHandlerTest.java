@@ -59,6 +59,7 @@ public class UnauthorizedHandlerTest {
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 
+
     @Configuration
     static class ContextConfiguration {
         @Bean

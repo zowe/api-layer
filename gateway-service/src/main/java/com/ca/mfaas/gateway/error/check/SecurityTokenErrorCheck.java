@@ -14,6 +14,7 @@ import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.apiml.security.token.TokenExpireException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,12 +27,9 @@ import javax.servlet.http.HttpServletRequest;
  * Checks whether the error was caused by an invalid token
  */
 @Slf4j
+@RequiredArgsConstructor
 public class SecurityTokenErrorCheck implements ErrorCheck {
     private final ErrorService errorService;
-
-    public SecurityTokenErrorCheck(ErrorService errorService) {
-        this.errorService = errorService;
-    }
 
     @Override
     public ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc) {

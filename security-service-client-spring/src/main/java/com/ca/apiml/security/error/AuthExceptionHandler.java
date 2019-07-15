@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthExceptionHandler extends AbstractExceptionHandler {
 
     public AuthExceptionHandler(ErrorService errorService, ObjectMapper objectMapper) {
-       super(errorService, objectMapper);
+        super(errorService, objectMapper);
     }
 
     @Override

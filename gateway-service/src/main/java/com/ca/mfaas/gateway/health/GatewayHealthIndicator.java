@@ -16,7 +16,7 @@ import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.product.constants.CoreService;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
@@ -28,16 +28,10 @@ import org.springframework.stereotype.Component;
  * Gateway health information (/application/health)
  */
 @Component
+@RequiredArgsConstructor
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
     private final SecurityConfigurationProperties securityConfigurationProperties;
-
-    @Autowired
-    public GatewayHealthIndicator(DiscoveryClient discoveryClient,
-                                  SecurityConfigurationProperties securityConfigurationProperties) {
-        this.discoveryClient = discoveryClient;
-        this.securityConfigurationProperties = securityConfigurationProperties;
-    }
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {

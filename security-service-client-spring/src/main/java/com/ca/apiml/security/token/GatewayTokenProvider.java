@@ -10,18 +10,15 @@
 package com.ca.apiml.security.token;
 
 import com.ca.apiml.security.service.GatewaySecurityService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class GatewayTokenProvider implements AuthenticationProvider {
-
     private final GatewaySecurityService gatewaySecurityService;
-
-    public GatewayTokenProvider(GatewaySecurityService gatewaySecurityService) {
-        this.gatewaySecurityService = gatewaySecurityService;
-    }
 
     /**
      * Authenticate the token

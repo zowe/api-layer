@@ -116,13 +116,13 @@ public class AuthenticationServiceTest {
     public void shouldParseJwtTokenAsQueryResponse() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
-        String dateNow = new Date().toString().substring(0,16);
+        String dateNow = new Date().toString().substring(0, 16);
         QueryResponse parsedToken = authService.parseJwtToken(jwtToken);
 
         assertEquals("com.ca.apiml.security.token.QueryResponse", parsedToken.getClass().getTypeName());
         assertEquals(DOMAIN, parsedToken.getDomain());
         assertEquals(USER, parsedToken.getUserId());
-        assertEquals(parsedToken.getCreation().toString().substring(0,16), dateNow);
+        assertEquals(parsedToken.getCreation().toString().substring(0, 16), dateNow);
         Date toBeExpired = DateUtils.addDays(parsedToken.getCreation(), 1);
         assertEquals(parsedToken.getExpiration(), toBeExpired);
     }

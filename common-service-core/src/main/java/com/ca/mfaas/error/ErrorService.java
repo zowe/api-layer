@@ -14,14 +14,15 @@ import com.ca.mfaas.rest.response.ApiMessage;
 import java.util.List;
 
 /**
- * Service for creating {@link ApiMessage} by string key and list of paramets.
+ * Service for creating {@link ApiMessage} by string key and list of parameters.
  * See default implementation {@link com.ca.mfaas.error.impl.ErrorServiceImpl}.
  */
 public interface ErrorService {
     /**
      * Create {@link ApiMessage} that contains one {@link com.ca.mfaas.rest.response.Message}
      * for provided key with array of parameters.
-     * @param key of message in messages.yml file
+     *
+     * @param key        of message in messages.yml file
      * @param parameters for message
      * @return {@link ApiMessage} for key
      */
@@ -30,7 +31,8 @@ public interface ErrorService {
     /**
      * Create {@link ApiMessage} that contains list of {@link com.ca.mfaas.rest.response.Message}
      * with same key and provided parameters.
-     * @param key of message in messages.yml file
+     *
+     * @param key        of message in messages.yml file
      * @param parameters list that contains arrays of parameters
      * @return {@link ApiMessage} for key
      */
@@ -38,6 +40,7 @@ public interface ErrorService {
 
     /**
      * Load messages to the context from the provided message file path
+     *
      * @param messagesFilePath path of the message file
      */
     void loadMessages(String messagesFilePath);

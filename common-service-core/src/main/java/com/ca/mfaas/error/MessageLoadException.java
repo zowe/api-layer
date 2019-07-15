@@ -10,7 +10,7 @@
 package com.ca.mfaas.error;
 
 /**
- * Exception thrown when a message couldn't loaded or has wrong definition
+ * Exception thrown when a message couldn't be loaded or has wrong definition
  */
 public class MessageLoadException extends RuntimeException {
 

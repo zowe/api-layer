@@ -10,6 +10,7 @@
 package com.ca.apiml.security.handler;
 
 import com.ca.apiml.security.error.AuthExceptionHandler;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -24,12 +25,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class FailedAuthenticationHandler implements AuthenticationFailureHandler {
     private final AuthExceptionHandler handler;
-
-    public FailedAuthenticationHandler(AuthExceptionHandler handler) {
-        this.handler = handler;
-    }
 
     /**
      * Handles authentication failure, decides on the exception type and selects appropriate message

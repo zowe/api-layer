@@ -27,6 +27,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.io.IOException;
 import java.util.LinkedHashMap;
 
@@ -172,7 +173,7 @@ public class ApiCatalogEndpointIntegrationTest {
      * @param endpoint   execute thus
      * @param returnCode check for this
      * @return response
-     * @throws IOException        oops
+     * @throws IOException oops
      */
     private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
         HttpGet request = HttpRequestUtils.getRequest(endpoint);

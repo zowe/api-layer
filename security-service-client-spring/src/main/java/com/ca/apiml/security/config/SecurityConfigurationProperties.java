@@ -24,7 +24,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
-
     // General properties
     private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
     private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";

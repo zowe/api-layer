@@ -27,12 +27,13 @@ import org.springframework.web.client.ResourceAccessException;
 public class RestResponseHandlerTest {
     private final static String GENERIC_LOG_MESSAGE = "Generic Log Message";
     private final static String LOG_PARAMETERS = "https://localhost:8080/api/test/url";
-    private  HttpClientErrorException unauthorizedException;
-    private  HttpClientErrorException forbiddenException;
+
+    private HttpClientErrorException unauthorizedException;
+    private HttpClientErrorException forbiddenException;
     private RestResponseHandler handler;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         handler = new RestResponseHandler();
         unauthorizedException = new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
         forbiddenException = new HttpClientErrorException(HttpStatus.NOT_FOUND);

@@ -123,7 +123,7 @@ public class GatewaySecurityTest {
         Map<String,String> responseHeaders = new HashMap<>();
         response.getHeaders().forEach(h -> responseHeaders.put(h.getName(),h.getValue()));
 
-        expectedHeaders.entrySet().forEach(h -> assertThat(responseHeaders, hasEntry(h.getKey(),h.getValue())));
+        expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
         forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
     }
 }

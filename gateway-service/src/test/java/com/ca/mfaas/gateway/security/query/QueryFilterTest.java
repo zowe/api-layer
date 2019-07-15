@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryFilterTest {
-
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private QueryFilter queryFilter;
@@ -43,22 +42,26 @@ public class QueryFilterTest {
 
     @Mock
     private AuthenticationSuccessHandler authenticationSuccessHandler;
+
     @Mock
     private AuthenticationFailureHandler authenticationFailureHandler;
+
     @Mock
     private ResourceAccessExceptionHandler resourceAccessExceptionHandler;
+
     @Mock
     private AuthenticationManager authenticationManager;
+
     @Mock
     private AuthenticationService authenticationService;
 
     @Before
     public void setup() {
         queryFilter = new QueryFilter("TEST_ENDPOINT",
-                                        authenticationSuccessHandler,
-                                        authenticationFailureHandler,
-                                        authenticationService,
-                                        authenticationManager,
+            authenticationSuccessHandler,
+            authenticationFailureHandler,
+            authenticationService,
+            authenticationManager,
             resourceAccessExceptionHandler);
     }
 
@@ -82,9 +85,9 @@ public class QueryFilterTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletResponse = new MockHttpServletResponse();
+
         queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
-
 
     @Test(expected = TokenNotProvidedException.class)
     public void shouldRejectIfTokenIsNotPresent() throws ServletException {

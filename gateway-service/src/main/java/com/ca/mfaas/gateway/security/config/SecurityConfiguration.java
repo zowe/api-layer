@@ -18,6 +18,7 @@ import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -38,10 +39,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 @ComponentScan("com.ca.apiml.security")
-@SuppressWarnings("squid:S00107")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
         "/api/v1/gateway",
@@ -54,21 +54,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final HandlerInitializer handlerInitializer;
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final AuthProviderInitializer authProviderInitializer;
-
-    public SecurityConfiguration(
-        ObjectMapper securityObjectMapper,
-        AuthenticationService authenticationService,
-        SecurityConfigurationProperties securityConfigurationProperties,
-        HandlerInitializer handlerInitializer,
-        SuccessfulQueryHandler successfulQueryHandler,
-        AuthProviderInitializer authProviderInitializer) {
-        this.securityObjectMapper = securityObjectMapper;
-        this.authenticationService = authenticationService;
-        this.securityConfigurationProperties = securityConfigurationProperties;
-        this.handlerInitializer = handlerInitializer;
-        this.successfulQueryHandler = successfulQueryHandler;
-        this.authProviderInitializer = authProviderInitializer;
-    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {

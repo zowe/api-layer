@@ -15,13 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ErrorMessageStorage {
-    private final Map<String, ErrorMessage> keyMap;
-    private final Map<String, ErrorMessage> numberMap;
-
-    public ErrorMessageStorage() {
-        this.keyMap = new HashMap<>();
-        this.numberMap = new HashMap<>();
-    }
+    private final Map<String, ErrorMessage> keyMap = new HashMap<>();
+    private final Map<String, ErrorMessage> numberMap = new HashMap<>();
 
     public ErrorMessage getErrorMessage(String key) {
         return keyMap.get(key);
@@ -34,11 +29,11 @@ public class ErrorMessageStorage {
                     keyMap.put(message.getKey(), message);
                     numberMap.put(message.getNumber(), message);
                 } else {
-                    String exceptionMessage = String.format("Message with number '%s' is already exists", message.getNumber());
+                    String exceptionMessage = String.format("Message with number '%s' already exists", message.getNumber());
                     throw new DuplicateMessageException(exceptionMessage);
                 }
             } else {
-                String exceptionMessage = String.format("Message with key '%s' is already exists", message.getKey());
+                String exceptionMessage = String.format("Message with key '%s' already exists", message.getKey());
                 throw new DuplicateMessageException(exceptionMessage);
             }
         }

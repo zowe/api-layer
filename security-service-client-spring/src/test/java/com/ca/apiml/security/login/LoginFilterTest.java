@@ -47,10 +47,13 @@ public class LoginFilterTest {
 
     @Mock
     private AuthenticationSuccessHandler authenticationSuccessHandler;
+
     @Mock
     private AuthenticationFailureHandler authenticationFailureHandler;
+
     @Mock
     private ResourceAccessExceptionHandler resourceAccessExceptionHandler;
+
     @Mock
     private AuthenticationManager authenticationManager;
 

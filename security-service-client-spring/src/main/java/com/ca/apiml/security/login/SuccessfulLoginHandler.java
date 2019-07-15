@@ -12,6 +12,7 @@ package com.ca.apiml.security.login;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -28,17 +29,12 @@ import java.io.IOException;
  * Handles the successful login
  */
 @Component
+@RequiredArgsConstructor
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
     private static final String SUCCESSFUL_RESPONSE = "";
 
     private final ObjectMapper mapper;
     private final SecurityConfigurationProperties securityConfigurationProperties;
-
-    public SuccessfulLoginHandler(ObjectMapper securityObjectMapper,
-                                  SecurityConfigurationProperties securityConfigurationProperties) {
-        this.mapper = securityObjectMapper;
-        this.securityConfigurationProperties = securityConfigurationProperties;
-    }
 
     /**
      * Set cookie and http response on successful authentication

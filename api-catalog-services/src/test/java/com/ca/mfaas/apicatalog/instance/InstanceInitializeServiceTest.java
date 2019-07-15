@@ -43,7 +43,6 @@ public class InstanceInitializeServiceTest {
     @Mock
     private CachedProductFamilyService cachedProductFamilyService;
 
-
     @InjectMocks
     private InstanceInitializeService instanceInitializeService;
 

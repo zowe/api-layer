@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
  * This exception is thrown in case the JWT token is expired.
  */
 public class TokenExpireException extends AuthenticationException {
+
     public TokenExpireException(String msg) {
         super(msg);
     }

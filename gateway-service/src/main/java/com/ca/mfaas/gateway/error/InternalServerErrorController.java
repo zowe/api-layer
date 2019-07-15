@@ -70,14 +70,14 @@ public class InternalServerErrorController implements ErrorController {
             return entity;
         }
 
-        return logAndCreateReponseForInternalError(request, exc);
+        return logAndCreateResponseForInternalError(request, exc);
     }
 
-    private ResponseEntity<ApiMessage> logAndCreateReponseForInternalError(HttpServletRequest request, Throwable exc) {
+    private ResponseEntity<ApiMessage> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
         final String errorMessage = ErrorUtils.getErrorMessage(request);
         ApiMessage message = errorService.createApiMessage("apiml.common.internalRequestError", ErrorUtils.getGatewayUri(request),
-                ExceptionUtils.getMessage(exc), ExceptionUtils.getRootCauseMessage(exc));
+            ExceptionUtils.getMessage(exc), ExceptionUtils.getRootCauseMessage(exc));
         log.error("Unresolved request error: {}", errorMessage, exc);
         return ResponseEntity.status(status).body(message);
     }

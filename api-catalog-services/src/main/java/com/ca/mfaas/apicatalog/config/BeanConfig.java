@@ -27,6 +27,7 @@ import java.util.Collections;
 @Configuration
 @Slf4j
 public class BeanConfig {
+
     @Bean
     @Primary
     public ErrorService errorServiceCatalog(ErrorService errorService) {

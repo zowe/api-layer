@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 public class TokenAuthenticationProviderTest {
     private AuthenticationService tokenService;
 
-
     @Before
     public void setUp() {
         tokenService = mock(AuthenticationService.class);
@@ -44,7 +43,6 @@ public class TokenAuthenticationProviderTest {
 
         assertThat(authentication, is(tokenAuthentication));
     }
-
 
     @Test
     public void supportsAuthentication() {

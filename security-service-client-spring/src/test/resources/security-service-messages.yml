@@ -16,6 +16,16 @@ messages:
       type: ERROR
       text: "Token is expired for URL '%s'"
 
+    - key: apiml.security.gatewayNotFound
+      number: ZWEAS103E
+      type: ERROR
+      text: "API Gateway Service not found by URL '%s'"
+
+    - key: apiml.security.serviceUnavailable
+      number: ZWEAS104E
+      type: ERROR
+      text: "Authentication service not available by URL '%s'"
+
     # Login messages (120 - 130)
     - key: apiml.security.login.invalidCredentials
       number: ZWEAS120E

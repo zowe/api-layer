@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class ErrorServiceConfiguration {
+
     @Bean
     @Primary
     public ErrorService errorServiceGateway() {

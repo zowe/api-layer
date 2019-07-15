@@ -14,14 +14,16 @@ import com.ca.mfaas.rest.response.MessageType;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 
 public class ErrorMessageStorageTest {
-    private ErrorMessageStorage errorMessageStorage = new ErrorMessageStorage();
+    private final ErrorMessageStorage errorMessageStorage = new ErrorMessageStorage();
+
     @Test
     public void getKeyTest() {
-        ErrorMessages messages = new ErrorMessages(Arrays.asList(
+        ErrorMessages messages = new ErrorMessages(Collections.singletonList(
             new ErrorMessage("key", "number", MessageType.ERROR, "error message")
         ));
 

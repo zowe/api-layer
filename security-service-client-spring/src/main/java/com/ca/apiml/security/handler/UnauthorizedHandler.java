@@ -10,6 +10,7 @@
 package com.ca.apiml.security.handler;
 
 import com.ca.apiml.security.error.AuthExceptionHandler;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -24,12 +25,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Slf4j
 @Component("plainAuth")
+@RequiredArgsConstructor
 public class UnauthorizedHandler implements AuthenticationEntryPoint {
     private final AuthExceptionHandler handler;
-
-    public UnauthorizedHandler(AuthExceptionHandler handler) {
-        this.handler = handler;
-    }
 
     /**
      * Creates unauthorized response with the appropriate message and http status

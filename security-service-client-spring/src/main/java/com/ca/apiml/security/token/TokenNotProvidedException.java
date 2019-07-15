@@ -15,6 +15,7 @@ import org.springframework.security.core.AuthenticationException;
  * This exception is thrown in case the JWT token is not provided.
  */
 public class TokenNotProvidedException extends AuthenticationException {
+
     public TokenNotProvidedException(String msg) {
         super(msg);
     }

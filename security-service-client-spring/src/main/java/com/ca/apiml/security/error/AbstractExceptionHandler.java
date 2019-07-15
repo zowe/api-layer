@@ -12,6 +12,7 @@ package com.ca.apiml.security.error;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
+@RequiredArgsConstructor
 public abstract class AbstractExceptionHandler {
     protected static final String ERROR_MESSAGE_400 = "400 Status Code: {}";
     protected static final String ERROR_MESSAGE_500 = "500 Status Code: {}";
@@ -29,11 +31,6 @@ public abstract class AbstractExceptionHandler {
 
     protected final ErrorService errorService;
     protected final ObjectMapper mapper;
-
-    public AbstractExceptionHandler(ErrorService errorService, ObjectMapper mapper) {
-        this.errorService = errorService;
-        this.mapper = mapper;
-    }
 
     public abstract void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException;
 

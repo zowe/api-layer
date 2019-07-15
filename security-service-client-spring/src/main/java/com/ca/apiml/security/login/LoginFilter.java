@@ -41,12 +41,11 @@ import java.util.Optional;
  */
 @Slf4j
 public class LoginFilter extends AbstractAuthenticationProcessingFilter {
-
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final ObjectMapper mapper;
-    
+
     public LoginFilter(
         String authEndpoint,
         AuthenticationSuccessHandler successHandler,

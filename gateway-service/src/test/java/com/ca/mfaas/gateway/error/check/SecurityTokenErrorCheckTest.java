@@ -35,6 +35,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
@@ -72,7 +73,7 @@ public class SecurityTokenErrorCheckTest {
         ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
-        List<Message> actualMessageList = actualResponse.getBody().getMessages();
+        List<Message> actualMessageList = Objects.requireNonNull(actualResponse.getBody()).getMessages();
         assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
     }
 
@@ -89,12 +90,13 @@ public class SecurityTokenErrorCheckTest {
         ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
-        List<Message> actualMessageList = actualResponse.getBody().getMessages();
+        List<Message> actualMessageList = Objects.requireNonNull(actualResponse.getBody()).getMessages();
         assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
     }
 
     @Configuration
     static class ContextConfiguration {
+
         @Bean
         public ErrorService errorService() {
             return new ErrorServiceImpl("/gateway-messages.yml");

@@ -39,7 +39,6 @@ public class GatewayLookupServiceTest {
 
     private final InstanceRetrievalService instanceRetrievalService = mock(InstanceRetrievalService.class);
     private RetryTemplate retryTemplate;
-    //private GatewayLookupService gatewayLookupService;
 
     private final int RETRY_COUNT = 5;
 
@@ -78,7 +77,6 @@ public class GatewayLookupServiceTest {
         assertNotNull(gatewayConfigProperties);
         assertEquals("https", gatewayConfigProperties.getScheme());
         assertEquals("127.0.0.1:3500", gatewayConfigProperties.getHostname());
-
     }
 
     @Test(expected = GatewayLookupException.class)
@@ -110,6 +108,4 @@ public class GatewayLookupServiceTest {
 
         verify(instanceRetrievalService, times(RETRY_COUNT)).getInstanceInfo(any());
     }
-
-
 }

@@ -82,17 +82,18 @@ public class ErrorServiceImpl implements ErrorService {
     @Override
     public ApiMessage createApiMessage(String key, List<Object[]> parameters) {
         List<Message> messageList = parameters.stream()
-                .filter(Objects::nonNull)
-                .map(ob -> createMessage(key, ob))
-                .collect(Collectors.toList());
+            .filter(Objects::nonNull)
+            .map(ob -> createMessage(key, ob))
+            .collect(Collectors.toList());
         return new BasicApiMessage(messageList);
     }
 
 
     /**
      * Load messages to the context from the provided message file path
+     *
      * @param messagesFilePath path of the message file
-     * @throws MessageLoadException when a message couldn't loaded or has wrong definition
+     * @throws MessageLoadException      when a message couldn't loaded or has wrong definition
      * @throws DuplicateMessageException when a message is already defined before
      */
     public void loadMessages(String messagesFilePath) {

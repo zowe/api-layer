@@ -16,7 +16,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import static org.junit.Assert.*;
 
 public class SecurityConfigurationPropertiesTest {
-    private SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+    private final SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
 
     @Test(expected = AuthenticationServiceException.class)
     public void shouldThrowWhenZosmfIsNotConfigured() {
@@ -30,5 +30,4 @@ public class SecurityConfigurationPropertiesTest {
         securityConfigurationProperties.setZosmfServiceId("ZOSMF_SID");
         assertEquals("ZOSMF_SID", securityConfigurationProperties.validatedZosmfServiceId());
     }
-
 }
