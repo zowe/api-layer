@@ -35,7 +35,7 @@
         "redux-persist-transform-filter": "0.0.18",
         "redux-thunk": "2.3.0",
         "rxjs": "6.3.3",
-        "swagger-ui": "^3.23.0",
+        "swagger-ui": "^3.23.1",
         "uuid": "3.3.2"
     },
     "scripts": {
@@ -93,6 +93,7 @@
         "eslint-plugin-react": "7.11.1",
         "express": "4.16.4",
         "galenframework-cli": "2.4.0",
+        "jest": "24.7.1",
         "jest-environment-enzyme": "^7.0.2",
         "jest-enzyme": "7.0.1",
         "jest-html-reporter": "^2.4.2",
