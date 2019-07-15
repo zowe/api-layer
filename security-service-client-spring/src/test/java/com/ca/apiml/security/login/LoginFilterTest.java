@@ -10,7 +10,7 @@
 package com.ca.apiml.security.login;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,7 +50,7 @@ public class LoginFilterTest {
     @Mock
     private AuthenticationFailureHandler authenticationFailureHandler;
     @Mock
-    private NotFoundExceptionHandler notFoundExceptionHandler;
+    private ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     @Mock
     private AuthenticationManager authenticationManager;
 
@@ -64,7 +64,7 @@ public class LoginFilterTest {
             authenticationFailureHandler,
             mapper,
             authenticationManager,
-            notFoundExceptionHandler);
+            resourceAccessExceptionHandler);
     }
 
     @Test

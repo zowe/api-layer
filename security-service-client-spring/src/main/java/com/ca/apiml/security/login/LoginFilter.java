@@ -10,7 +10,7 @@
 package com.ca.apiml.security.login;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.mfaas.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
-    private final NotFoundExceptionHandler notFoundExceptionHandler;
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final ObjectMapper mapper;
     
     public LoginFilter(
@@ -53,12 +53,12 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         AuthenticationFailureHandler failureHandler,
         ObjectMapper mapper,
         AuthenticationManager authenticationManager,
-        NotFoundExceptionHandler notFoundExceptionHandler) {
+        ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.mapper = mapper;
-        this.notFoundExceptionHandler = notFoundExceptionHandler;
+        this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
         this.setAuthenticationManager(authenticationManager);
     }
 
@@ -89,7 +89,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         try {
             auth = this.getAuthenticationManager().authenticate(authentication);
         } catch (RuntimeException ex) {
-            notFoundExceptionHandler.handleException(request, response, ex);
+            resourceAccessExceptionHandler.handleException(request, response, ex);
         }
         return auth;
     }

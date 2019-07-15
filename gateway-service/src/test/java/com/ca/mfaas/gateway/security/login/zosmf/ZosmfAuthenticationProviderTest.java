@@ -11,6 +11,7 @@
 package com.ca.mfaas.gateway.security.login.zosmf;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.error.ServiceNotAccessibleException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -130,7 +131,7 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(securityConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        exception.expect(AuthenticationServiceException.class);
+        exception.expect(ServiceNotAccessibleException.class);
         exception.expectMessage("z/OSMF instance not found or incorrectly configured.");
 
         zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);

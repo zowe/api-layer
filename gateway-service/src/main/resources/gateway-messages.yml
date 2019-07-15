@@ -21,6 +21,11 @@ messages:
       type: ERROR
       text: "Token is expired"
 
+    - key: apiml.security.serviceUnavailable
+      number: ZWEAG104E
+      type: ERROR
+      text: "Authentication service not available by URL '%s'"
+
     # Login messages (120 - 130)
     - key: apiml.security.login.invalidCredentials
       number: ZWEAG120E

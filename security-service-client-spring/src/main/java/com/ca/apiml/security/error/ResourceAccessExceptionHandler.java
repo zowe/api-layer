@@ -21,22 +21,32 @@ import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Component
-public class NotFoundExceptionHandler extends AbstractExceptionHandler {
+public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
 
-    public NotFoundExceptionHandler(ErrorService errorService, ObjectMapper mapper) {
+    public ResourceAccessExceptionHandler(ErrorService errorService, ObjectMapper mapper) {
         super(errorService, mapper);
     }
 
     @Override
     public void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         if (ex instanceof GatewayNotFoundException) {
-            handleGatewayNotFound(request, response);
+            handleGatewayNotFound(request, response, ex);
+        } else if (ex instanceof ServiceNotAccessibleException) {
+            handleServiceNotAccessible(request, response, ex);
         } else {
             throw ex;
         }
     }
 
-    private void handleGatewayNotFound(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+    //400
+    private void handleGatewayNotFound(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(ERROR_MESSAGE_400, ex.getMessage());
         writeErrorResponse(ErrorType.GATEWAY_NOT_FOUND.getErrorMessageKey(), HttpStatus.NOT_FOUND, request, response);
+    }
+
+    //500
+    private void handleServiceNotAccessible(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(ERROR_MESSAGE_500, ex.getMessage());
+        writeErrorResponse(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, request, response);
     }
 }

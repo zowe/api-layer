@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -65,7 +66,7 @@ public class GatewaySecurityService {
                 String.class);
 
             return extractToken(response.getHeaders().getFirst(HttpHeaders.SET_COOKIE));
-        } catch (HttpClientErrorException | ResourceAccessException e) {
+        } catch (HttpClientErrorException | ResourceAccessException | HttpServerErrorException e) {
             responseHandler.handleBadResponse(e, ErrorType.BAD_CREDENTIALS,
                 "Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
         }

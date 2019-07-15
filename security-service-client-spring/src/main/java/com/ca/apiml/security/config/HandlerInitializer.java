@@ -10,7 +10,7 @@
 
 package com.ca.apiml.security.config;
 
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.handler.BasicAuthUnauthorizedHandler;
 import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.apiml.security.handler.UnauthorizedHandler;
@@ -27,19 +27,19 @@ public class HandlerInitializer {
     private final UnauthorizedHandler unAuthorizedHandler;
     private final BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler;
     private final FailedAuthenticationHandler authenticationFailureHandler;
-    private final NotFoundExceptionHandler notFoundExceptionHandler;
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
 
     public HandlerInitializer(SuccessfulLoginHandler successfulLoginHandler,
                               @Qualifier("plainAuth")
-                                UnauthorizedHandler unAuthorizedHandler,
+                                  UnauthorizedHandler unAuthorizedHandler,
                               BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler,
                               FailedAuthenticationHandler authenticationFailureHandler,
-                              NotFoundExceptionHandler notFoundExceptionHandler) {
+                              ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
         this.successfulLoginHandler = successfulLoginHandler;
         this.unAuthorizedHandler = unAuthorizedHandler;
         this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
-        this.notFoundExceptionHandler = notFoundExceptionHandler;
+        this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
     }
 
     public SuccessfulLoginHandler getSuccessfulLoginHandler() {
@@ -58,7 +58,7 @@ public class HandlerInitializer {
         return authenticationFailureHandler;
     }
 
-    public NotFoundExceptionHandler getNotFoundExceptionHandler() {
-        return notFoundExceptionHandler;
+    public ResourceAccessExceptionHandler getResourceAccessExceptionHandler() {
+        return resourceAccessExceptionHandler;
     }
 }

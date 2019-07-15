@@ -10,7 +10,7 @@
 package com.ca.apiml.security.content;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,18 +30,18 @@ public class CookieContentFilter extends AbstractSecureContentFilter {
 
     public CookieContentFilter(AuthenticationManager authenticationManager,
                                AuthenticationFailureHandler failureHandler,
-                               NotFoundExceptionHandler notFoundExceptionHandler,
+                               ResourceAccessExceptionHandler resourceAccessExceptionHandler,
                                SecurityConfigurationProperties securityConfigurationProperties) {
-        super(authenticationManager, failureHandler, notFoundExceptionHandler, new String[0]);
+        super(authenticationManager, failureHandler, resourceAccessExceptionHandler, new String[0]);
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 
     public CookieContentFilter(AuthenticationManager authenticationManager,
                                AuthenticationFailureHandler failureHandler,
-                               NotFoundExceptionHandler notFoundExceptionHandler,
+                               ResourceAccessExceptionHandler resourceAccessExceptionHandler,
                                SecurityConfigurationProperties securityConfigurationProperties,
                                String[] endpoints) {
-        super(authenticationManager, failureHandler, notFoundExceptionHandler, endpoints);
+        super(authenticationManager, failureHandler, resourceAccessExceptionHandler, endpoints);
         this.securityConfigurationProperties = securityConfigurationProperties;
     }
 

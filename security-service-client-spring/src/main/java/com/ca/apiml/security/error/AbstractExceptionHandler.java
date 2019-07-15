@@ -23,6 +23,8 @@ import java.io.IOException;
 
 @Slf4j
 public abstract class AbstractExceptionHandler {
+    protected static final String ERROR_MESSAGE_400 = "400 Status Code: {}";
+    protected static final String ERROR_MESSAGE_500 = "500 Status Code: {}";
     private static final String CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
 
     protected final ErrorService errorService;

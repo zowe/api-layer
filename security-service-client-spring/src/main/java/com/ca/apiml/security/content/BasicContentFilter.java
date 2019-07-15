@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.mfaas.constants.ApimlConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -32,15 +32,15 @@ public class BasicContentFilter extends AbstractSecureContentFilter {
 
     public BasicContentFilter(AuthenticationManager authenticationManager,
                               AuthenticationFailureHandler failureHandler,
-                              NotFoundExceptionHandler notFoundExceptionHandler) {
-        super(authenticationManager, failureHandler, notFoundExceptionHandler, new String[0]);
+                              ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
+        super(authenticationManager, failureHandler, resourceAccessExceptionHandler, new String[0]);
     }
 
     public BasicContentFilter(AuthenticationManager authenticationManager,
                               AuthenticationFailureHandler failureHandler,
-                              NotFoundExceptionHandler notFoundExceptionHandler,
+                              ResourceAccessExceptionHandler resourceAccessExceptionHandler,
                               String[] endpoints) {
-        super(authenticationManager, failureHandler, notFoundExceptionHandler, endpoints);
+        super(authenticationManager, failureHandler, resourceAccessExceptionHandler, endpoints);
     }
 
     /**

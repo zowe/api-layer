@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.query;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
@@ -37,7 +37,7 @@ import java.io.IOException;
 public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
-    private final NotFoundExceptionHandler notFoundExceptionHandler;
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final AuthenticationService authenticationService;
 
     public QueryFilter(
@@ -46,12 +46,12 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         AuthenticationFailureHandler failureHandler,
         AuthenticationService authenticationService,
         AuthenticationManager authenticationManager,
-        NotFoundExceptionHandler notFoundExceptionHandler) {
+        ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.authenticationService = authenticationService;
-        this.notFoundExceptionHandler = notFoundExceptionHandler;
+        this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
         this.setAuthenticationManager(authenticationManager);
     }
 
@@ -77,7 +77,7 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         try {
             auth = this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
         } catch (RuntimeException ex) {
-            notFoundExceptionHandler.handleException(request, response, ex);
+            resourceAccessExceptionHandler.handleException(request, response, ex);
         }
         return auth;
     }

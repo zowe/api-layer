@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.security.query;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;
@@ -46,7 +46,7 @@ public class QueryFilterTest {
     @Mock
     private AuthenticationFailureHandler authenticationFailureHandler;
     @Mock
-    private NotFoundExceptionHandler notFoundExceptionHandler;
+    private ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     @Mock
     private AuthenticationManager authenticationManager;
     @Mock
@@ -59,7 +59,7 @@ public class QueryFilterTest {
                                         authenticationFailureHandler,
                                         authenticationService,
                                         authenticationManager,
-                                        notFoundExceptionHandler);
+            resourceAccessExceptionHandler);
     }
 
     @Test

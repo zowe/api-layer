@@ -31,9 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class AuthExceptionHandler extends AbstractExceptionHandler {
 
-    private static final String ERROR_MESSAGE_400 = "400 Status Code: {}";
-    private static final String ERROR_MESSAGE_500 = "500 Status Code";
-
     public AuthExceptionHandler(ErrorService errorService, ObjectMapper objectMapper) {
        super(errorService, objectMapper);
     }
@@ -94,7 +91,8 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     }
 
     private void handleAuthenticationException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.error(ERROR_MESSAGE_500, ex);
+        log.error(ERROR_MESSAGE_500, ex.getMessage());
+        log.debug("", ex);
         final ApiMessage message = errorService.createApiMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), ex.getMessage(), request.getRequestURI());
         final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         writeErrorResponse(message, status, response);

@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.security.login.zosmf;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.error.ServiceNotAccessibleException;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -100,8 +102,11 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             tokenAuthentication.setAuthenticated(true);
 
             return tokenAuthentication;
+        }  catch (ResourceAccessException e) {
+            log.error("Could not get an access to z/OSMF service. Uri '{}' returned: {}", uri, e.getMessage());
+            throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         } catch (RestClientException e) {
-            log.error("Can not access z/OSMF service. Uri '{}' returned: {}", uri, e.getMessage());
+            log.error("A failure occurred when authenticating. Uri '{}' returned: {}", uri, e.getMessage());
             throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
         }
     }
@@ -113,9 +118,9 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
      * @return the uri
      */
     private String getURI(String zosmf) {
-        Supplier<AuthenticationServiceException> authenticationServiceExceptionSupplier = () -> {
+        Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
             log.error("z/OSMF instance '{}' not found or incorrectly configured.", zosmf);
-            return new AuthenticationServiceException("z/OSMF instance not found or incorrectly configured.");
+            return new ServiceNotAccessibleException("z/OSMF instance not found or incorrectly configured.");
         };
 
         return Optional.ofNullable(discovery.getInstances(zosmf))

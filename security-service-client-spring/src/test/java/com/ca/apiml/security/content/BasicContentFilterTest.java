@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
@@ -41,14 +41,14 @@ public class BasicContentFilterTest {
     private final FilterChain filterChain = mock(FilterChain.class);
     private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
     private final AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
-    private final NotFoundExceptionHandler notFoundExceptionHandler = mock(NotFoundExceptionHandler.class);
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = mock(ResourceAccessExceptionHandler.class);
 
     @Before
     public void setUp() {
         basicContentFilter = new BasicContentFilter(
             authenticationManager,
             authenticationFailureHandler,
-            notFoundExceptionHandler);
+            resourceAccessExceptionHandler);
     }
 
     @Test
@@ -61,7 +61,7 @@ public class BasicContentFilterTest {
         verify(authenticationManager).authenticate(authentication);
         verify(filterChain).doFilter(request, response);
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
     }
 
     @Test
@@ -72,14 +72,14 @@ public class BasicContentFilterTest {
 
         BasicContentFilter basicContentFilter = new BasicContentFilter(authenticationManager,
             authenticationFailureHandler,
-            notFoundExceptionHandler,
+            resourceAccessExceptionHandler,
             endpoints);
 
         basicContentFilter.doFilter(request, response, filterChain);
 
         verify(authenticationManager, never()).authenticate(any());
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
     }
 
 
@@ -96,7 +96,7 @@ public class BasicContentFilterTest {
         verify(authenticationManager).authenticate(authentication);
         verify(filterChain, never()).doFilter(any(), any());
         verify(authenticationFailureHandler).onAuthenticationFailure(request, response, exception);
-        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
     }
 
     @Test
@@ -112,7 +112,7 @@ public class BasicContentFilterTest {
         verify(authenticationManager).authenticate(authentication);
         verify(filterChain, never()).doFilter(any(), any());
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(notFoundExceptionHandler).handleException(request, response, exception);
+        verify(resourceAccessExceptionHandler).handleException(request, response, exception);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class BasicContentFilterTest {
         verify(authenticationManager, never()).authenticate(any());
         verify(filterChain).doFilter(request, response);
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
     }
 
     @Test

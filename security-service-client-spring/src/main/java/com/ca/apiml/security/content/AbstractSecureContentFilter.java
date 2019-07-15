@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,16 +34,16 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
 
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
-    private final NotFoundExceptionHandler notFoundExceptionHandler;
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final String[] endpoints;
 
     AbstractSecureContentFilter(AuthenticationManager authenticationManager,
                                 AuthenticationFailureHandler failureHandler,
-                                NotFoundExceptionHandler notFoundExceptionHandler,
+                                ResourceAccessExceptionHandler resourceAccessExceptionHandler,
                                 String[] endpoints) {
         this.authenticationManager = authenticationManager;
         this.failureHandler = failureHandler;
-        this.notFoundExceptionHandler = notFoundExceptionHandler;
+        this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
         this.endpoints = endpoints;
     }
 
@@ -87,7 +87,7 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
             } catch (AuthenticationException authenticationException) {
                 failureHandler.onAuthenticationFailure(request, response, authenticationException);
             } catch (RuntimeException e) {
-                notFoundExceptionHandler.handleException(request, response, e);
+                resourceAccessExceptionHandler.handleException(request, response, e);
             }
         } else {
             filterChain.doFilter(request, response);

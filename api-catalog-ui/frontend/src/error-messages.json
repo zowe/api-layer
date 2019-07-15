@@ -11,6 +11,10 @@
         {
             "messageKey": "MFS0104",
             "messageText": "Request timeout, please try again later "
+        },
+        {
+            "messageKey": "ZWEAS104E",
+            "messageText": "Authentication service not available, please try again later "
         }
     ]
 

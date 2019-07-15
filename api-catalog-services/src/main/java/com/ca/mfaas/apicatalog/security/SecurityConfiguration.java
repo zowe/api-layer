@@ -117,21 +117,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, handlerInitializer.getSuccessfulLoginHandler(), handlerInitializer.getAuthenticationFailureHandler(),
-            securityObjectMapper, authenticationManager(), handlerInitializer.getNotFoundExceptionHandler());
+            securityObjectMapper, authenticationManager(), handlerInitializer.getResourceAccessExceptionHandler());
     }
 
     /**
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getNotFoundExceptionHandler());
+        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
     }
 
     /**
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getNotFoundExceptionHandler(), securityConfigurationProperties);
+        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties);
     }
 
     @Bean

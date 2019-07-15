@@ -17,6 +17,7 @@ public enum ErrorType {
     AUTH_CREDENTIALS_NOT_FOUND("apiml.security.login.invalidInput", "Authorization header is missing, or request body is missing or invalid."),
     AUTH_METHOD_NOT_SUPPORTED("apiml.security.invalidMethod", "Authentication method is not supported."),
     AUTH_GENERAL("apiml.security.generic", "A failure occurred when authenticating."),
+    SERVICE_UNAVAILABLE("apiml.security.serviceUnavailable", "Authentication service not available."),
     GATEWAY_NOT_FOUND("apiml.security.gatewayNotFound", "API Gateway Service not found.");
 
     private String errorMessageKey;

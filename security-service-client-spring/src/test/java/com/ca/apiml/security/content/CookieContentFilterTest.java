@@ -10,7 +10,7 @@
 package com.ca.apiml.security.content;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.apiml.security.error.NotFoundExceptionHandler;
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,13 +41,13 @@ public class CookieContentFilterTest {
     private final FilterChain filterChain = mock(FilterChain.class);
     private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
     private final AuthenticationFailureHandler failureHandler = mock(AuthenticationFailureHandler.class);
-    private final NotFoundExceptionHandler notFoundExceptionHandler = mock(NotFoundExceptionHandler.class);
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = mock(ResourceAccessExceptionHandler.class);
 
     @Before
     public void setUp() {
         cookieContentFilter = new CookieContentFilter(authenticationManager,
             failureHandler,
-            notFoundExceptionHandler,
+            resourceAccessExceptionHandler,
             securityConfigurationProperties);
     }
 
@@ -64,7 +64,7 @@ public class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain).doFilter(request, response);
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
     }
 
     @Test
@@ -75,7 +75,7 @@ public class CookieContentFilterTest {
 
         CookieContentFilter cookieContentFilter = new CookieContentFilter(authenticationManager,
             failureHandler,
-            notFoundExceptionHandler,
+            resourceAccessExceptionHandler,
             securityConfigurationProperties,
             endpoints);
 
@@ -83,7 +83,7 @@ public class CookieContentFilterTest {
 
         verify(authenticationManager, never()).authenticate(any());
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain, never()).doFilter(any(), any());
         verify(failureHandler).onAuthenticationFailure(request, response, exception);
-        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
     }
 
     @Test
@@ -121,7 +121,7 @@ public class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain, never()).doFilter(any(), any());
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(notFoundExceptionHandler).handleException(request, response, exception);
+        verify(resourceAccessExceptionHandler).handleException(request, response, exception);
     }
 
     @Test
@@ -131,7 +131,7 @@ public class CookieContentFilterTest {
         verify(authenticationManager, never()).authenticate(any());
         verify(filterChain).doFilter(request, response);
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(notFoundExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
     }
 
     @Test

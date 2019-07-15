@@ -113,7 +113,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
         return new LoginFilter(loginEndpoint, handlerInitializer.getSuccessfulLoginHandler(), handlerInitializer.getAuthenticationFailureHandler(), securityObjectMapper,
-            authenticationManager(), handlerInitializer.getNotFoundExceptionHandler());
+            authenticationManager(), handlerInitializer.getResourceAccessExceptionHandler());
     }
 
     /**
@@ -121,20 +121,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     private QueryFilter queryFilter(String queryEndpoint) throws Exception {
         return new QueryFilter(queryEndpoint, successfulQueryHandler, handlerInitializer.getAuthenticationFailureHandler(), authenticationService,
-            authenticationManager(), handlerInitializer.getNotFoundExceptionHandler());
+            authenticationManager(), handlerInitializer.getResourceAccessExceptionHandler());
     }
 
     /**
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getNotFoundExceptionHandler(), PROTECTED_ENDPOINTS);
+        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), PROTECTED_ENDPOINTS);
     }
 
     /**
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getNotFoundExceptionHandler(), securityConfigurationProperties, PROTECTED_ENDPOINTS);
+        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties, PROTECTED_ENDPOINTS);
     }
 }

@@ -12,14 +12,17 @@ package com.ca.apiml.security.handler;
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.error.ErrorType;
 import com.ca.apiml.security.error.GatewayNotFoundException;
+import com.ca.apiml.security.error.ServiceNotAccessibleException;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.apiml.security.token.TokenNotValidException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import javax.validation.constraints.NotNull;
@@ -30,7 +33,7 @@ public class RestResponseHandler {
 
     public void handleBadResponse(@NotNull Exception exception, @NotNull ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
         if (exception instanceof HttpClientErrorException) {
-            HttpClientErrorException hceException = (HttpClientErrorException)exception;
+            HttpClientErrorException hceException = (HttpClientErrorException) exception;
             switch (hceException.getStatusCode()) {
                 case UNAUTHORIZED:
                     if (errorType.equals(ErrorType.BAD_CREDENTIALS)) {
@@ -52,6 +55,13 @@ public class RestResponseHandler {
             }
         } else if (exception instanceof ResourceAccessException) {
             throw new GatewayNotFoundException(ErrorType.GATEWAY_NOT_FOUND.getDefaultMessage(), exception);
+        } else if (exception instanceof HttpServerErrorException) {
+            HttpServerErrorException hseException = (HttpServerErrorException) exception;
+            if (hseException.getStatusCode().equals(HttpStatus.SERVICE_UNAVAILABLE)) {
+                throw new ServiceNotAccessibleException(ErrorType.SERVICE_UNAVAILABLE.getDefaultMessage(), exception);
+            } else {
+                throw hseException;
+            }
         }
     }
 
