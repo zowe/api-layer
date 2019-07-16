@@ -27,8 +27,9 @@
         "api-catalog-service-1": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local-multi/api-catalog-service.yml",
         "discoverable-client-1": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local-multi/discoverable-client.yml",
         "test": "./gradlew runAllIntegrationTests",
-        "test-scripts": "mocha --require @babel/register scripts",
-        "test-scripts-ci": "TEST_DIR=./scripts/test-results jenkins-mocha --require @babel/register --no-coverage scripts",
+        "test-scripts": "mocha scripts",
+        "test-scripts-ci": "TEST_DIR=./scripts/test-results jenkins-mocha --no-coverage scripts",
+
         "//": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\"",
         "register-certificates-win": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\" & sudo . cmd /C \"certutil -enterprise -delstore Root \"Zowe Development Instances Certificate Authority\"  &  certutil -enterprise -f -v -AddStore Root \"keystore/local_ca/localca.cer\" || pause\""
     },
@@ -44,10 +45,8 @@
     "homepage": "https://github.com/zowe/api-layer#readme",
     "dependencies": {},
     "devDependencies": {
-        "@babel/core": "^7.5.4",
-        "@babel/register": "^7.4.4",
         "concurrently": "^4.1.0",
-        "jenkins-mocha": "^8.0.0",
+        "jenkins-mocha": "^6.0.0",
         "mocha": "^5.2.0",
         "nixt": "^0.5.1"
     }
