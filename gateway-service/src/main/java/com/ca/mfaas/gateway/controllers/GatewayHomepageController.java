@@ -11,43 +11,47 @@ package com.ca.mfaas.gateway.controllers;
 
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.BuildInfoDetails;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
 
     private final DiscoveryClient discoveryClient;
 
-    @Autowired
-    public GatewayHomepageController(DiscoveryClient discoveryClient) {
-        this.discoveryClient = discoveryClient;
+    private String buildString;
+
+    @PostConstruct
+    private void init() {
+        initializeBuildInfos();
     }
+
 
     @GetMapping("/")
     public String home(Model model) {
         initializeCatalogAttributes(model);
         initializeDiscoveryAttributes(model);
-        initializeBuildInfos(model);
+
+        model.addAttribute("buildInfoText", buildString);
         return "home";
     }
 
-    private void initializeBuildInfos(Model model) {
+    private void initializeBuildInfos() {
         BuildInfoDetails buildInfo = new BuildInfo().getBuildInfoDetails();
-        String buildString = "Build information is not available";
+        buildString = "Build information is not available";
         if (!buildInfo.getVersion().equalsIgnoreCase("unknown")) {
             buildString = String.format("Version %s build # %s", buildInfo.getVersion(), buildInfo.getNumber());
         }
-
-        model.addAttribute("buildInfoText", buildString);
     }
 
     private void initializeDiscoveryAttributes(Model model) {

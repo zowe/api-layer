@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.config;
 
+import com.ca.mfaas.apicatalog.gateway.GatewayLookupRetryPolicy;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.transform.TransformService;
@@ -17,12 +18,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.retry.RetryException;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
-import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
-
-import java.util.Collections;
 
 @Configuration
 @Slf4j
@@ -41,17 +38,14 @@ public class BeanConfig {
     }
 
     @Bean
-    public RetryTemplate retryTemplate(
+    public RetryTemplate gatewayRetryTemplate(
         @Value("${mfaas.service-registry.serviceFetchDelayInMillis}") int serviceFetchDelayInMillis
     ) {
         FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
         backOffPolicy.setBackOffPeriod(serviceFetchDelayInMillis);
 
         RetryTemplate template = new RetryTemplate();
-        template.setRetryPolicy(
-            new SimpleRetryPolicy(50,
-                Collections.singletonMap(RetryException.class, true))
-        );
+        template.setRetryPolicy(new GatewayLookupRetryPolicy());
         template.setBackOffPolicy(backOffPolicy);
 
         return template;

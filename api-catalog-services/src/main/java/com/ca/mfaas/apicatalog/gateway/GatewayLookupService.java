@@ -31,7 +31,7 @@ public class GatewayLookupService {
 
     private GatewayConfigProperties gatewayConfigProperties;
 
-    private final RetryTemplate retryTemplate;
+    private final RetryTemplate gatewayRetryTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
 
     @PostConstruct
@@ -44,25 +44,11 @@ public class GatewayLookupService {
      * Try to lookup gateway information from eureka
      */
     private void lookupGatewayParams() {
-        gatewayConfigProperties = retryTemplate.execute(context -> doWithRetry(), this::recover);
+        log.info("Lookup for gateway params...");
+        gatewayConfigProperties = gatewayRetryTemplate.execute(context -> initializeGatewayParams());
     }
-
-    private GatewayConfigProperties doWithRetry() {
-        return initializeGatewayParams();
-    }
-
-    private GatewayConfigProperties recover(RetryContext context) {
-        if (context.getLastThrowable() instanceof GatewayLookupException) {
-            throw (GatewayLookupException) context.getLastThrowable();
-        }
-
-        return gatewayConfigProperties;
-    }
-
 
     private GatewayConfigProperties initializeGatewayParams() {
-        log.info("Initialize gateway configurations by discovery service");
-
         try {
             String gatewayHomePage = getGatewayHomePage();
             URI uri = new URI(gatewayHomePage);
