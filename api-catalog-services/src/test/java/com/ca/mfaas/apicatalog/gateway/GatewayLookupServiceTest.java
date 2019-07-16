@@ -18,94 +18,74 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.MockitoRule;
-import org.springframework.retry.RetryException;
-import org.springframework.retry.backoff.FixedBackOffPolicy;
-import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
-
-import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 
+@RunWith(MockitoJUnitRunner.class)
 public class GatewayLookupServiceTest {
 
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
-    private final InstanceRetrievalService instanceRetrievalService = mock(InstanceRetrievalService.class);
-    private RetryTemplate retryTemplate;
+    @Mock
+    private InstanceRetrievalService instanceRetrievalService;
 
-    private final int RETRY_COUNT = 5;
+    private RetryTemplate retryTemplate;
 
     @Before
     public void setUp() {
-        retryTemplate = spy(new RetryTemplate());
-        FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
-        int backOffMillis = 1;
-        backOffPolicy.setBackOffPeriod(backOffMillis);
-        retryTemplate.setBackOffPolicy(backOffPolicy);
-        retryTemplate.setRetryPolicy(
-            new SimpleRetryPolicy(RETRY_COUNT, Collections.singletonMap(RetryException.class, true))
-        );
+        retryTemplate = new RetryTemplate();
+        retryTemplate.setRetryPolicy(new GatewayLookupRetryPolicy());
     }
 
     @Test
-    public void postConstructInitializationShouldRepeatExactlyTimes() {
-        GatewayLookupService gatewayLookupService = new GatewayLookupService(retryTemplate, instanceRetrievalService);
-
-        gatewayLookupService.init();
-
-        verify(instanceRetrievalService, times(RETRY_COUNT)).getInstanceInfo(any());
-    }
-
-    @Test
-    public void shouldSuccessfullyRetrieveAfterInit() {
-        InstanceInfo instanceInfo = mock(InstanceInfo.class);
-        when(instanceInfo.getHomePageUrl()).thenReturn("https://127.0.0.1:3500");
-        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId())).thenReturn(instanceInfo);
-
+    public void shouldSuccessfullyRetrieveAfterSomeAttemps() {
+        InstanceInfo sampleInstance =  getStandardInstance("https://localhost:9090/");
+        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId()))
+            .thenThrow(InstanceInitializationException.class)
+            .thenThrow(InstanceInitializationException.class)
+            .thenThrow(InstanceInitializationException.class)
+            .thenReturn(null)
+            .thenReturn(sampleInstance);
 
         GatewayLookupService gatewayLookupService = new GatewayLookupService(retryTemplate, instanceRetrievalService);
         gatewayLookupService.init();
+
         GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayConfigProperties();
+
 
         assertNotNull(gatewayConfigProperties);
         assertEquals("https", gatewayConfigProperties.getScheme());
-        assertEquals("127.0.0.1:3500", gatewayConfigProperties.getHostname());
+        assertEquals("localhost:9090", gatewayConfigProperties.getHostname());
+
+        verify(instanceRetrievalService, times(5)).getInstanceInfo(CoreService.GATEWAY.getServiceId());
     }
 
     @Test(expected = GatewayLookupException.class)
     public void shouldThrowWhenInvalidUrlRetrieved() {
-        InstanceInfo instanceInfo = mock(InstanceInfo.class);
-        when(instanceInfo.getHomePageUrl()).thenReturn("Curious Cat");
-        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId())).thenReturn(instanceInfo);
+        InstanceInfo sampleInstance =  getStandardInstance("Curious Cat");
+        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId())).thenReturn(sampleInstance);
 
         GatewayLookupService gatewayLookupService = new GatewayLookupService(retryTemplate, instanceRetrievalService);
         gatewayLookupService.init();
     }
 
-    @Test(expected = GatewayLookupException.class)
-    public void shouldThrowWhenUnexpectedErrorHappens() {
-        InstanceInfo instanceInfo = mock(InstanceInfo.class);
-        when(instanceInfo.getHomePageUrl()).thenThrow(RuntimeException.class);
-        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId())).thenReturn(instanceInfo);
 
-        GatewayLookupService gatewayLookupService = new GatewayLookupService(retryTemplate, instanceRetrievalService);
-        gatewayLookupService.init();
-    }
+    private InstanceInfo getStandardInstance(String homePageUrl) {
 
-    @Test
-    public void shouldRetryWhenInvalidMetadataFromEureka() {
-        when(instanceRetrievalService.getInstanceInfo(CoreService.GATEWAY.getServiceId())).thenThrow(InstanceInitializationException.class);
-
-        GatewayLookupService gatewayLookupService = new GatewayLookupService(retryTemplate, instanceRetrievalService);
-        gatewayLookupService.init();
-
-        verify(instanceRetrievalService, times(RETRY_COUNT)).getInstanceInfo(any());
+        return InstanceInfo.Builder.newBuilder()
+            .setAppName("serviceId")
+            .setHostName("localhost")
+            .setHomePageUrl(homePageUrl, homePageUrl)
+            .build();
     }
 }
