@@ -29,7 +29,7 @@
         "test": "./gradlew runAllIntegrationTests",
         "test-scripts": "mocha scripts",
         "test-scripts-ci": "TEST_DIR=./scripts/test-results jenkins-mocha --no-coverage scripts",
-		
+
         "//": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\"",
         "register-certificates-win": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\" & sudo . cmd /C \"certutil -enterprise -delstore Root \"Zowe Development Instances Certificate Authority\"  &  certutil -enterprise -f -v -AddStore Root \"keystore/local_ca/localca.cer\" || pause\""
     },
@@ -46,7 +46,7 @@
     "dependencies": {},
     "devDependencies": {
         "concurrently": "^4.1.0",
-        "jenkins-mocha": "^6.0.0",
+        "jenkins-mocha": "^8.0.0",
         "mocha": "^5.2.0",
         "nixt": "^0.5.1"
     }
