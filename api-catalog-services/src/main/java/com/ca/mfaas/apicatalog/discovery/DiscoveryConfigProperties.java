@@ -13,6 +13,11 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Describes locations of the Discovery Service
+ * <p>
+ * eurekaUserName and eurekaUserPassword are used only for HTTP connection
+ */
 @Data
 @Configuration
 public class DiscoveryConfigProperties {

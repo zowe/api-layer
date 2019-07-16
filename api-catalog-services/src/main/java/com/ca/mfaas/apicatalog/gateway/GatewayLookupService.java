@@ -23,12 +23,13 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.net.URI;
 
-
+/**
+ * Service for obtaining the Gateway url from the Discovery Service
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class GatewayLookupService {
-
     private GatewayConfigProperties gatewayConfigProperties;
 
     private final RetryTemplate gatewayRetryTemplate;
@@ -36,15 +37,15 @@ public class GatewayLookupService {
 
     @PostConstruct
     public void init() {
-        log.info("Gateway lookup service is initializing...");
+        log.debug("Gateway lookup service is initializing.");
         lookupGatewayParams();
     }
 
     /**
-     * Try to lookup gateway information from eureka
+     * Try to lookup Gateway information from Eureka
      */
     private void lookupGatewayParams() {
-        log.info("Lookup for gateway params...");
+        log.info("Lookup for Gateway parameters.");
         gatewayConfigProperties = gatewayRetryTemplate.execute(context -> initializeGatewayParams());
     }
 
@@ -81,6 +82,11 @@ public class GatewayLookupService {
         }
     }
 
+    /**
+     * Returns information of the Gateway scheme and hostname
+     *
+     * @return Gateway location
+     */
     public GatewayConfigProperties getGatewayConfigProperties() {
         return gatewayConfigProperties;
     }

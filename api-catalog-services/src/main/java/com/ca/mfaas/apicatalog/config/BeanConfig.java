@@ -21,6 +21,9 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
+/**
+ * General configuration of the API Catalog.
+ */
 @Configuration
 @Slf4j
 public class BeanConfig {

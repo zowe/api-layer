@@ -12,8 +12,14 @@ package com.ca.mfaas.apicatalog.gateway;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
 
+/**
+ * Gateway Lookup retry policy
+ * <p>
+ * Always retry unless there is unexpected error
+ */
 public class GatewayLookupRetryPolicy extends AlwaysRetryPolicy {
 
+    @Override
     public boolean canRetry(RetryContext context) {
         if (context.getLastThrowable() instanceof GatewayLookupException) {
             throw (GatewayLookupException) context.getLastThrowable();

@@ -15,9 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-
-@Configuration
+/**
+ * Configuration of the Gateway Lookup Service which obtains Gateway url
+ */
 @Slf4j
+@Configuration
 @RequiredArgsConstructor
 public class GatewayConfig {
 
