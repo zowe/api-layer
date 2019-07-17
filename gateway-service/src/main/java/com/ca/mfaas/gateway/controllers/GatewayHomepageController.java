@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.gateway.controllers;
 
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.BuildInfoDetails;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class GatewayHomepageController {
     private static final String SUCCESS_ICON_NAME = "success";
 
     private final DiscoveryClient discoveryClient;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
 
     private String buildString;
 
@@ -41,6 +44,7 @@ public class GatewayHomepageController {
     public String home(Model model) {
         initializeCatalogAttributes(model);
         initializeDiscoveryAttributes(model);
+        initializeAuthenticationAttributes(model);
 
         model.addAttribute("buildInfoText", buildString);
         return "home";
@@ -77,6 +81,24 @@ public class GatewayHomepageController {
 
         model.addAttribute("discoveryStatusText", discoveryStatusText);
         model.addAttribute("discoveryIconName", discoveryIconName);
+    }
+
+    private void initializeAuthenticationAttributes(Model model) {
+        String authStatusText = "The Authentication service is not running";
+        String authIconName = "warning";
+        boolean authUp = true;
+
+        if (!securityConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.DUMMY.toString())) {
+            authUp = !this.discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+        }
+
+        if (authUp) {
+            authStatusText = "The Authentication service is running";
+            authIconName = SUCCESS_ICON_NAME;
+        }
+
+        model.addAttribute("authStatusText", authStatusText);
+        model.addAttribute("authIconName", authIconName);
     }
 
     private void initializeCatalogAttributes(Model model) {
