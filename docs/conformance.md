@@ -62,7 +62,8 @@ Tip: We strongly recommend all documentation be reviewed by a technical writer.
    - Some endpoints such as the login endpoint (non-sensitive diagnostics information, or API documentation) can be unprotected 
    - Services must accept basic authentication - **minimum requirement**
    - Services should accept Zowe JWT token in the cookie - **prefered** (Best practice)
-     Note: For more information, see [Zowe Authentication and Authorization Service](https://github.com/zowe/api-layer/wiki/Zowe-Authentication-and-Authorization-Service)
+
+Note: For more information, see [Zowe Authentication and Authorization Service](https://github.com/zowe/api-layer/wiki/Zowe-Authentication-and-Authorization-Service)
 
 7. Service implementation should follow the [semantic versioning model](https://semver.org/)
    - At least the last two major versions must be supported by API services
