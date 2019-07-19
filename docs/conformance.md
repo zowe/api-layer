@@ -30,7 +30,14 @@ An application is *Zowe API ML conformant* if it follows these criteria:
        - `ui/{serviceId}` reserved for UIs
        - `ws/{serviceId}` reserved for Websockets
     
-3. The API must be documented in Swagger/OpenAPI 2.0 specification.  For more information about Swagger, see https://swagger.io/resources/articles/documenting-apis-with-swagger/. Additionally, the following criteria must be satisfied: 
+3. WebSocket services 
+     - Server and client implementation must conform with WebSocket protocol specification RFC 6455 (see https://tools.ietf.org/html/rfc6455) and WebSocket API specification (see https://www.w3.org/TR/2012/CR-websockets-20120920/).
+     - Discoverable WebSocket services URI must use 'ws' or 'wss' for protocol part.
+     - Websocket connection creation must be routed through the API ML GW.
+     - All subsequent communication between WebSocket client and server must be routed through API ML GW.
+     - WebSocket connections must be properly closed by the initiator using a call to the other party through API ML GW.     
+
+4. The API must be documented in Swagger/OpenAPI 2.0 specification.  For more information about Swagger, see https://swagger.io/resources/articles/documenting-apis-with-swagger/. Additionally, the following criteria must be satisfied: 
    - Documentation must be Swagger 2.0 compliant
    - Every public resource must be documented with a description of each resource
    - Every method of each REST endpoint must be documented
@@ -41,33 +48,29 @@ An application is *Zowe API ML conformant* if it follows these criteria:
 Note: Websockets must be documented. The documentation location and format is determined by the provider.
 Tip: We strongly recommend all documentation be reviewed by a technical writer.
 
-4. API design must be consistent with the rest of the Zowe ecosystem. The following criteria must be satisfied:
+5. API design must be consistent with the rest of the Zowe ecosystem. The following criteria must be satisfied:
    - Encoded slash must not be used. For example: `/abc%2fgef` cannot be used
    - The service must interpret values independent of their URL encoding
    - Request payloads must be in JSON format
    - lowerCamelCase should be used for names of resources, parameters, and JSON properties
 
-5. Service responses
+6. Service responses
    - API Responses
      - If it is in JSON format, links must be relative and must not contain the schema, hostname, and port 
      - If there is a payload it should be in JSON format
    - WebSocket
-     - Server service implementation must conform with WebSocket protocol specification RFC 6455 (see https://tools.ietf.org/html/rfc6455) and WebSocket API specification (see https://www.w3.org/TR/2012/CR-websockets-20120920/).
-     - Discoverable WebSocket services URI must use 'ws' for protocol part. TLS version on port 443 is not currently impemented on API ML GW, hence services should not use 'wss' for protocol part of their respective URI.
-     - Websocket connection creation must be routed through the API ML GW.
-     - All subsequent communication between WebSocket client and server must be routed through API ML GW.
-     - WebSocket connections must be properly closed by the initiator using a call to the other party through API ML GW.     
-
+     - Service URIs contained in WebSocket messages payload must be addressed through API ML GW.
+     
    - UI
      - UI must use relative links and must not contain the schema, hostname, and port
 
-6. Published services must be protected by mainframe-based Authentication and Authorization
+7. Published services must be protected by mainframe-based Authentication and Authorization
    - The resources must be protected by mainframe credentials
    - Some endpoints such as the login endpoint (non-sensitive diagnostics information, or API documentation) can be unprotected 
    - Services must accept both basic authentication and the Zowe JWT token in the cookie
      Note: For more information, see [Zowe Authentication and Authorization Service](https://github.com/zowe/api-layer/wiki/Zowe-Authentication-and-Authorization-Service)
 
-7. Service implementation should follow the [semantic versioning model](https://semver.org/)
+8. Service implementation should follow the [semantic versioning model](https://semver.org/)
    - At least the last two major versions must be supported by API services
    - The major service version must be supported for at least two years from its release
 
@@ -75,7 +78,7 @@ Tip: We strongly recommend all documentation be reviewed by a technical writer.
    - The service provider must update the service to ensure compatibility with the latest two major versions of Zowe
    - The service must be updated to be compatible with the most recent version of Zowe **within a month** after its release
 
-9. The UI that runs behind the API ML Gateway must support routing to services via the API ML Gateway 
+10. The UI that runs behind the API ML Gateway must support routing to services via the API ML Gateway 
    - The UI must either refer to services and resources using relative URLs or absolute URLs which follow these formats:
      - For versioned services:
        - `https://{gatewayHost}:{gatewayPort}/api/v1/{serviceId}` reserved for REST APIs
