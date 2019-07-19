@@ -98,7 +98,7 @@ ApimlAuthenticator.prototype = {
       const options = {
         hostname: this.apimlConf.hostname,
         port: this.apimlConf.gatewayPort,
-        path: '/api/v1/gateway/auth/login',
+        path: '/api/v1/apicatalog/auth/login',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -10,7 +10,8 @@
 package com.ca.mfaas.utils.categories;
 
 /**
- * A category market for test that are intentionally slow.
+ * A category market for tests that are intentionally slow.
+ *
  * These tests will not run by default with other integration tests.
  */
 public interface SlowTests {

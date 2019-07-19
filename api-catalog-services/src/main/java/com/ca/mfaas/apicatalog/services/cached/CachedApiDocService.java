@@ -10,10 +10,11 @@
 package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocCacheKey;
+import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
+import com.ca.mfaas.apicatalog.swagger.TransformApiDocService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -25,14 +26,14 @@ import java.util.Map;
 @Slf4j
 @Service
 public class CachedApiDocService {
-
-    private static Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
-
+    private static final Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
     private final APIDocRetrievalService apiDocRetrievalService;
+    private final TransformApiDocService transformApiDocService;
 
     @Autowired
-    public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService) {
+    public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService, TransformApiDocService transformApiDocService) {
         this.apiDocRetrievalService = apiDocRetrievalService;
+        this.transformApiDocService = transformApiDocService;
     }
 
     /**
@@ -44,13 +45,16 @@ public class CachedApiDocService {
      */
     public String getApiDocForService(final String serviceId, final String apiVersion) {
         String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
-        if (apiDoc == null) {
-            ResponseEntity<String> response = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
-            if (response == null || response.getBody() == null || response.getStatusCode().isError()) {
-                return null;
-            } else {
-                CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), response.getBody());
-                apiDoc = response.getBody();
+        try {
+            ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
+            if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
+                apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
+                CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
+            }
+        } catch (Exception e) {
+            //if there's not apiDoc in cache
+            if (apiDoc == null) {
+                log.warn("ApiDoc retrieving problem for {}. {}", serviceId, e.getMessage());
             }
         }
         return apiDoc;
@@ -66,5 +70,12 @@ public class CachedApiDocService {
      */
     public void updateApiDocForService(final String serviceId, final String apiVersion, final String apiDoc) {
         CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
+    }
+
+    /**
+     * Reset the cache for this service
+     */
+    public void resetCache() {
+        serviceApiDocs.clear();
     }
 }

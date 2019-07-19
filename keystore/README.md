@@ -165,12 +165,14 @@ If you have the sample service described in the User Guide at [this link](https:
 
 Import [keystore/local_ca/localca.cer](/keystore/local_ca/localca.cer) to your root certificate store and trust it. 
 
-For **Windows**, you can run the following command:
+For **Windows**, you can run the following command as administrator:
 
     certutil -enterprise -f -v -AddStore "Root" keystore/local_ca/localca.cer 
     
 You have to open the terminal as administrator. This will install the certificate to the Trusted Root Certification Authorities. 
 
+*Note:* you can use `npm run register-certificates-win` to run above command, however it requires `sudo` to be installed. If you don't have `sudo` available install [chocolatey](https://chocolatey.org/docs/installation#install-downloaded-nuget-package-from-powershell), then run `chocolatey install sudo`.
+    
 If you're using **MacOS**, you can run the following command: 
 
     $ sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain keystore/local_ca/localca.cer 
@@ -196,9 +198,9 @@ The default configuration of services for local development is to verify certifi
 
 However, you may want to quickly register an existing service without generating a certificate for it using the `apiml_cm.sh --action new-service` command.
 
-You can do it by setting the `apiml.security.verifySslCertificatesOfServices` configuration property to `false` from the default `true` for the APIML services (gateway, discovery service and API catalog). 
+You can do it by setting the `apiml.security.ssl.verifySslCertificatesOfServices` configuration property to `false` from the default `true` for the APIML services (gateway, discovery service and API catalog). 
 This can be done by adding following options to the startup command of each service in `package.json` or in your IDE:
 
-    --apiml.security.verifySslCertificatesOfServices=false
+    --apiml.security.ssl.verifySslCertificatesOfServices=false
 
 

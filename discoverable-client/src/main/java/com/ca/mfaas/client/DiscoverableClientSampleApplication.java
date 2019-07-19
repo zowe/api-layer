@@ -10,6 +10,7 @@
 package com.ca.mfaas.client;
 
 import com.ca.mfaas.enable.EnableApiDiscovery;
+import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
@@ -25,11 +26,12 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableApiDiscovery
 @EnableConfigurationProperties
 @EnableWebSocket
-@ComponentScan(value = { "com.ca.mfaas.client", "com.ca.mfaas.enable", "com.ca.mfaas.product.web" })
+@ComponentScan(value = { "com.ca.mfaas.client", "com.ca.mfaas.enable", "com.ca.mfaas.product.security", "com.ca.mfaas.product.web" })
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoverableClientSampleApplication.class);
+        app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);

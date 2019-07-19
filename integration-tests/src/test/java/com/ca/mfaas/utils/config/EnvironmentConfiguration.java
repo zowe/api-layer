@@ -17,9 +17,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EnvironmentConfiguration {
+    private Credentials credentials;
     private GatewayServiceConfiguration gatewayServiceConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
-    private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
 }

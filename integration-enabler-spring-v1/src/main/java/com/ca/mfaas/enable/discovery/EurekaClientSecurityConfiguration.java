@@ -17,9 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.security.NoSuchAlgorithmException;
-
 import javax.annotation.PostConstruct;
 
 @Configuration
@@ -58,7 +55,7 @@ public class EurekaClientSecurityConfiguration {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${apiml.security.verifySslCertificatesOfServices:true}")
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
     private EurekaJerseyClient eurekaJerseyClient;
@@ -77,7 +74,7 @@ public class EurekaClientSecurityConfiguration {
     }
 
     @Bean
-    public DiscoveryClient.DiscoveryClientOptionalArgs discoveryClientOptionalArgs() throws NoSuchAlgorithmException {
+    public DiscoveryClient.DiscoveryClientOptionalArgs discoveryClientOptionalArgs() {
         DiscoveryClient.DiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(eurekaJerseyClient);
         return args;

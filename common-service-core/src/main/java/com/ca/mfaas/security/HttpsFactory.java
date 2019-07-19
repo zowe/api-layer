@@ -11,11 +11,9 @@ package com.ca.mfaas.security;
 
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -28,31 +26,24 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.Key;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.util.Base64;
-import java.util.Enumeration;
 import java.util.Objects;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
 
 @Slf4j
 @Data
 @NoArgsConstructor
 public class HttpsFactory {
-    private static final String SAFKEYRING = "safkeyring";
 
     private HttpsConfig config;
     private SSLContext secureSslContext;
@@ -91,7 +82,7 @@ public class HttpsFactory {
 
     private SSLContext createIgnoringSslContext() {
         try {
-            return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).build();
+            return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).setProtocol(config.getProtocol()).build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
             throw new HttpsConfigError("Error initializing SSL/TLS context: " + e.getMessage(), e,
                     ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
@@ -103,7 +94,7 @@ public class HttpsFactory {
         if (config.getTrustStore() != null) {
             sslContextBuilder.setKeyStoreType(config.getTrustStoreType()).setProtocol(config.getProtocol());
 
-            if (!config.getTrustStore().startsWith(SAFKEYRING)) {
+            if (!config.getTrustStore().startsWith(SecurityUtils.SAFKEYRING)) {
                 if (config.getTrustStorePassword() == null) {
                     throw new HttpsConfigError("server.ssl.trustStorePassword configuration parameter is not defined",
                             ErrorCode.TRUSTSTORE_PASSWORD_NOT_DEFINED, config);
@@ -130,11 +121,7 @@ public class HttpsFactory {
     }
 
     private URL keyRingUrl(String uri) throws MalformedURLException {
-        if (!uri.startsWith(SAFKEYRING + ":////")) {
-            throw new MalformedURLException("Incorrect key ring format: " + config.getTrustStore()
-                    + ". Make sure you use format safkeyring:////userId/keyRing");
-        }
-        return new URL(replaceFourSlashes(uri));
+        return SecurityUtils.keyRingUrl(uri, config.getTrustStore());
     }
 
     private void loadKeyMaterial(SSLContextBuilder sslContextBuilder) throws NoSuchAlgorithmException,
@@ -142,7 +129,7 @@ public class HttpsFactory {
         if (config.getKeyStore() != null) {
             sslContextBuilder.setKeyStoreType(config.getKeyStoreType()).setProtocol(config.getProtocol());
 
-            if (!config.getKeyStore().startsWith(SAFKEYRING)) {
+            if (!config.getKeyStore().startsWith(SecurityUtils.SAFKEYRING)) {
                 loadKeystoreMaterial(sslContextBuilder);
             } else {
                 loadKeyringMaterial(sslContextBuilder);
@@ -200,17 +187,7 @@ public class HttpsFactory {
 
     private void validateSslConfig() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if (config.getKeyAlias() != null) {
-            KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-            InputStream istream;
-            if (config.getKeyStore().startsWith(SAFKEYRING)) {
-                URL url = keyRingUrl(config.getKeyStore());
-                istream = url.openStream();
-            }
-            else {
-                File keyStoreFile = new File(config.getKeyStore());
-                istream = new FileInputStream(keyStoreFile);
-            }
-            ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
+            KeyStore ks = SecurityUtils.loadKeyStore(config);
             if (!ks.containsAlias(config.getKeyAlias())) {
                 throw new HttpsConfigError(String.format("Invalid key alias '%s'", config.getKeyAlias()), ErrorCode.WRONG_KEY_ALIAS, config);
             }
@@ -239,17 +216,13 @@ public class HttpsFactory {
     }
 
     public void setSystemSslProperties() {
-        setSystemProperty("javax.net.ssl.keyStore", replaceFourSlashes(config.getKeyStore()));
+        setSystemProperty("javax.net.ssl.keyStore", SecurityUtils.replaceFourSlashes(config.getKeyStore()));
         setSystemProperty("javax.net.ssl.keyStorePassword", config.getKeyStorePassword());
         setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
 
-        setSystemProperty("javax.net.ssl.trustStore", replaceFourSlashes(config.getTrustStore()));
+        setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.replaceFourSlashes(config.getTrustStore()));
         setSystemProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword());
         setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
-    }
-
-    public static String replaceFourSlashes(String storeUri) {
-        return storeUri == null ? null : storeUri.replaceFirst("////", "//");
     }
 
     public HostnameVerifier createHostnameVerifier() {
@@ -280,49 +253,5 @@ public class HttpsFactory {
             builder.withHostnameVerifier(createHostnameVerifier());
         }
         return builder;
-    }
-
-    public String readSecret() {
-        if (config.getKeyStore() == null) {
-            return null;
-        }
-        try {
-            KeyStore ks = KeyStore.getInstance(config.getKeyStoreType());
-            InputStream istream;
-            if (config.getKeyStore().startsWith(SAFKEYRING)) {
-                URL url = keyRingUrl(config.getKeyStore());
-                istream = url.openStream();
-            } else {
-                File keyStoreFile = new File(config.getKeyStore());
-                istream = new FileInputStream(keyStoreFile);
-            }
-            ks.load(istream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
-            char[] keyPassword = config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray();
-            Key key = null;
-            if (config.getKeyAlias() != null) {
-                key = ks.getKey(config.getKeyAlias(), keyPassword);
-            } else {
-                for (Enumeration<String> e = ks.aliases(); e.hasMoreElements();) {
-                    String alias = e.nextElement();
-                    try {
-                        key = ks.getKey(alias, keyPassword);
-                        break;
-                    } catch (UnrecoverableKeyException uke) {
-                        log.debug("Key with alias {} could not be used: {}", alias, uke.getMessage());
-                    }
-                }
-            }
-            if (key == null) {
-                throw new UnrecoverableKeyException(String.format(
-                        "No key with private key entry could be used in the keystore. Provided key alias: %s",
-                        config.getKeyAlias() == null ? "<not provided>" : config.getKeyAlias()));
-            }
-            return Base64.getEncoder().encodeToString(key.getEncoded());
-        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
-                | UnrecoverableKeyException e) {
-            log.error("Error reading secret key: {}", e.getMessage(), e);
-            throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
-                    ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
-        }
     }
 }

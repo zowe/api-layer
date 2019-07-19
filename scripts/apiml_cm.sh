@@ -29,6 +29,7 @@ function usage {
     echo "     - trust - adds a public certificate of a service to APIML truststore"
     echo "     - trust-zosmf - adds public certificates from z/OSMF keyring to APIML truststore"
     echo "     - clean - removes files created by setup"
+    echo "     - jwt-keygen - generates and exports JWT key pair"
     echo ""
     echo "  Called with: ${PARAMS}"
 }
@@ -46,12 +47,14 @@ EXTERNAL_CA_FILENAME="keystore/local_ca/extca"
 EXTERNAL_CA=
 
 SERVICE_ALIAS="localhost"
+JWT_ALIAS="jwtsecret"
 SERVICE_PASSWORD="password"
 SERVICE_KEYSTORE="keystore/localhost/localhost.keystore"
 SERVICE_TRUSTSTORE="keystore/localhost/localhost.truststore"
 SERVICE_DNAME="CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, S=Prague, C=CZ"
 SERVICE_EXT="SAN=dns:localhost.localdomain,dns:localhost"
 SERVICE_VALIDITY=3650
+SERVICE_STORETYPE="PKCS12"
 EXTERNAL_CERTIFICATE=
 EXTERNAL_CERTIFICATE_ALIAS=
 
@@ -308,6 +311,14 @@ function trust {
     pkeytool -importcert $V -trustcacerts -noprompt -file ${CERTIFICATE} -alias "${ALIAS}" -keystore ${SERVICE_TRUSTSTORE}.p12 -storepass ${SERVICE_PASSWORD} -storetype PKCS12
 }
 
+function jwt_key_gen_and_export {
+    echo "Generates key pair for JWT token secret and exports the public key"
+    pkeytool -genkeypair $V -alias ${JWT_ALIAS} -keyalg RSA -keysize 2048 -keystore ${SERVICE_KEYSTORE}.p12 \
+    -dname "${SERVICE_DNAME}" -keypass ${SERVICE_PASSWORD} -storepass ${SERVICE_PASSWORD} -storetype ${SERVICE_STORETYPE} -validity ${SERVICE_VALIDITY}
+    pkeytool -export -rfc -alias ${JWT_ALIAS} -keystore ${SERVICE_KEYSTORE}.p12 -storepass ${SERVICE_PASSWORD} -keypass ${SERVICE_PASSWORD} -storetype ${SERVICE_STORETYPE} \
+    -file ${SERVICE_KEYSTORE}.${JWT_ALIAS}.pem
+}
+
 function trust_zosmf {
     ALIASES_FILE=${TEMP_DIR}/aliases.txt
     rm -f ${ALIASES_FILE}
@@ -322,7 +333,7 @@ function trust_zosmf {
         USERID=`whoami`
         echo "It is not possible to read z/OSMF keyring ${ZOSMF_USERID}/${ZOSMF_KEYRING}. The effective user ID was: ${USERID}. You need to run this command as user that has access to the z/OSMF keyring:"
         echo "  cd ${PWD}"
-        echo "  scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring IZUKeyring.IZUDFLT --zosmf-userid IZUSVR"
+        echo "  scripts/apiml_cm.sh --action trust-zosmf --zosmf-keyring ${ZOSMF_KEYRING} --zosmf-userid ${ZOSMF_USERID}"
         exit 1
     fi
     keytool -list -keystore safkeyring://${ZOSMF_USERID}/${ZOSMF_KEYRING} -storetype JCERACFKS -J-Djava.protocol.handler.pkgs=com.ibm.crypto.provider | grep "Entry," | cut -f 1 -d , > ${ALIASES_FILE}
@@ -370,6 +381,9 @@ while [ "$1" != "" ]; do
         --service-alias )       shift
                                 SERVICE_ALIAS=$1
                                 ;;
+        --jwt-alias )           shift
+                                JWT_ALIAS=$1
+                                ;;
         --service-ext )         shift
                                 SERVICE_EXT=$1
                                 ;;
@@ -378,6 +392,9 @@ while [ "$1" != "" ]; do
                                 ;;
         --service-truststore )  shift
                                 SERVICE_TRUSTSTORE=$1
+                                ;;
+        --service-storetype )  shift
+                                SERVICE_STORETYPE=$1
                                 ;;
         --service-dname )       shift
                                 SERVICE_DNAME=$1
@@ -427,6 +444,7 @@ case $ACTION in
     setup)
         setup_local_ca
         new_service
+        jwt_key_gen_and_export
         ;;
     add-external-ca)
         add_external_ca
@@ -436,6 +454,9 @@ case $ACTION in
         ;;
     new-service)
         new_service
+        ;;
+    jwt-keygen)
+        jwt_key_gen_and_export
         ;;
     new-self-signed-service)
         new_self_signed_service

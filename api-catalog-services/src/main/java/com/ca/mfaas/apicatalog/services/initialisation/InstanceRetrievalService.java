@@ -76,7 +76,7 @@ public class InstanceRetrievalService {
      * The API Catalog itself must be UP before checking all other instances
      * If the catalog is not up, or if the fetch fails, then wait for a defined period and retry up to a max of 5 times
      *
-     * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the gateway
+     * @throws CannotRegisterServiceException if the fetch fails or the catalog is not registered with the discovery
      */
     @Retryable(
         value = {RetryException.class},
@@ -84,12 +84,12 @@ public class InstanceRetrievalService {
         maxAttempts = 5,
         backoff = @Backoff(delayExpression = "#{${mfaas.service-registry.serviceFetchDelayInMillis}}"))
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
-        log.info("Initialising API Catalog with Gateway services.");
+        log.info("Initialising API Catalog with Discovery services.");
         try {
             String serviceId = CoreService.API_CATALOG.getServiceId();
             InstanceInfo apiCatalogInstance = getInstanceInfo(serviceId);
             if (apiCatalogInstance == null) {
-                String msg = "API Catalog Instance not retrieved from gateway, retrying...";
+                String msg = "API Catalog Instance not retrieved from Discovery service";
                 log.warn(msg);
                 throw new RetryException(msg);
             } else {
@@ -99,7 +99,7 @@ public class InstanceRetrievalService {
         } catch (RetryException e) {
             throw e;
         } catch (Exception e) {
-            String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Gateway, NOT RETRYING!!";
+            String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service";
             log.warn(msg, e);
             throw new CannotRegisterServiceException(msg, e);
         }
@@ -146,25 +146,26 @@ public class InstanceRetrievalService {
      * @return service instance
      */
     public InstanceInfo getInstanceInfo(@NotBlank(message = "Service Id must be supplied") String serviceId) {
-        Pair<String, Pair<String, String>> requestInfo;
-        try {
-            if (serviceId.equalsIgnoreCase(UNKNOWN)) {
-                return null;
-            }
+        if (serviceId.equalsIgnoreCase(UNKNOWN)) {
+            return null;
+        }
 
-            requestInfo = constructServiceInfoQueryRequest(serviceId, false);
+        InstanceInfo instanceInfo = null;
+        try {
+            Pair<String, Pair<String, String>> requestInfo = constructServiceInfoQueryRequest(serviceId, false);
 
             // call Eureka REST endpoint to fetch single or all Instances
             ResponseEntity<String> response = queryDiscoveryForInstances(requestInfo);
             if (response.getStatusCode().is2xxSuccessful()) {
-                return extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
+                instanceInfo = extractSingleInstanceFromApplication(serviceId, requestInfo.getLeft(), response);
             }
         } catch (Exception e) {
             String msg = "An error occurred when trying to get instance info for:  " + serviceId;
-            log.error(msg, e);
+            log.warn(msg, e.getMessage());
             throw new RetryException(msg);
         }
-        return null;
+
+        return instanceInfo;
     }
 
     /**
@@ -183,11 +184,11 @@ public class InstanceRetrievalService {
     }
 
     /**
-     * Extract applications
+     * Parse information from the response and extract the Applications object which contains all the registry information returned by eureka server
      *
      * @param requestInfo
-     * @param response
-     * @return
+     * @param response the http response
+     * @return Applications object that wraps all the registry information
      */
     private Applications extractApplications(Pair<String, Pair<String, String>> requestInfo, ResponseEntity<String> response) {
         Applications applications = null;
@@ -207,6 +208,11 @@ public class InstanceRetrievalService {
         return applications;
     }
 
+    /**
+     * Extract the delta of the registry information returned by eureka server and contained in Applications
+     *
+     * @return the Applications object that wraps all the registry information
+     */
     public Applications extractDeltaFromDiscovery() {
 
         Pair<String, Pair<String, String>> requestInfo = constructServiceInfoQueryRequest(null, true);
@@ -261,9 +267,9 @@ public class InstanceRetrievalService {
                 log.debug("Initialising product family (creating tile for) : " + productFamilyId);
                 cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo);
             }
+
         });
     }
-
 
     /**
      * Query Discovery

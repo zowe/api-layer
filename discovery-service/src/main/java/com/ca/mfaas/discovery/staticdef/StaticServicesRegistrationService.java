@@ -31,8 +31,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 @Component
 public class StaticServicesRegistrationService {
-    @Value("${apiml.discovery.staticApiDefinitionsDirectory:#{null}}")
-    private String staticApiDefinitionsDirectory;
+    @Value("${apiml.discovery.staticApiDefinitionsDirectories:#{null}}")
+    private String staticApiDefinitionsDirectories;
 
     private final ServiceDefinitionProcessor serviceDefinitionProcessor;
 
@@ -56,7 +56,7 @@ public class StaticServicesRegistrationService {
      * Registers all statically defined APIs in locations specified by configuration.
      */
     public void registerServices() {
-        registerServices(staticApiDefinitionsDirectory);
+        registerServices(staticApiDefinitionsDirectories);
         startRenewalTimer();
     }
 
@@ -85,7 +85,7 @@ public class StaticServicesRegistrationService {
         List<InstanceInfo> oldStaticInstances = new ArrayList<>(staticInstances);
 
         staticInstances.clear();
-        Set<String> registeredIds = registerServices(staticApiDefinitionsDirectory);
+        Set<String> registeredIds = registerServices(staticApiDefinitionsDirectories);
 
         PeerAwareInstanceRegistry registry = getRegistry();
         for (InstanceInfo info: oldStaticInstances) {
@@ -101,9 +101,9 @@ public class StaticServicesRegistrationService {
     /**
      * Registers all statically defined APIs in a directory.
      */
-    Set<String> registerServices(String staticApiDefinitionsDirectory) {
+    Set<String> registerServices(String staticApiDefinitionsDirectories) {
         PeerAwareInstanceRegistry registry = getRegistry();
-        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(staticApiDefinitionsDirectory);
+        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(staticApiDefinitionsDirectories);
         Set<String> registeredIds = new LinkedHashSet<>();
 
         for (InstanceInfo instanceInfo : instances) {

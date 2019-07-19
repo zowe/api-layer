@@ -80,7 +80,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'ca-jenkins-agent'
+        label 'apiml-jenkins-agent'
     }
 
     parameters {
@@ -118,17 +118,6 @@ pipeline {
                     }
                 }
                 sh "echo ${changeClass} > .change_class"
-            }
-        }
-        /**
-        *  Stage: Bootstrap Gradlew
-        *  ========================
-        *
-        *  Downloads gradle-wrapper.jar to the gradle/wrapper/ directory.
-        **/
-        stage('Bootstrap Gradlew') {
-            steps {
-                sh './bootstrap_gradlew.sh'
             }
         }
 
@@ -177,7 +166,7 @@ pipeline {
                 stage('Build and unit test with coverage') {
                     steps {
                         timeout(time: 20, unit: 'MINUTES') {
-                            sh './gradlew build coverage'
+                            sh './gradlew build coverage -Dhttp.socketTimeout=90000 -Dhttp.connectionTimeout=90000'
                         }
                     }
                 }
@@ -288,7 +277,7 @@ pipeline {
             archiveArtifacts artifacts: 'integration-enabler-spring-v2/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'common-service-core/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'gateway-common/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'apiml-common/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'scripts/apiml_cm.sh'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
 

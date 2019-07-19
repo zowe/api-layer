@@ -1,9 +1,11 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: user
+    password: user
 gatewayServiceConfiguration:
     scheme: https
     host: localhost
     port: 10010
-    user: notused
-    password: notused
     instances: 1
 discoveryServiceConfiguration:
     scheme: https
@@ -12,10 +14,6 @@ discoveryServiceConfiguration:
     host: localhost
     port: 10011
     instances: 1
-apiCatalogServiceConfiguration:
-    # Mainframe credentials are required - see /integration-tests/README.md for instructions
-    user: REPLACEME
-    password: REPLACEME
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

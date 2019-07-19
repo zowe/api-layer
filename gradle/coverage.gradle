@@ -3,12 +3,13 @@ ext.javaProjectsWithUnitTests = [
     'common-service-core',
     'discoverable-client',
     'discovery-service',
-    'gateway-common',
+    'apiml-common',
     'gateway-service',
     'integration-enabler-spring-v2',
     'integration-enabler-java',
     'helloworld-spring',
-    'security-module'
+    'security-module',
+    'security-service-client-spring'
 ]
 
 

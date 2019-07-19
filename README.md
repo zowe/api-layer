@@ -2,8 +2,7 @@
 
 [Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
 
-[![codecov](https://codecov.io/gh/plavjanik/api-layer/branch/master/graph/badge.svg)](https://codecov.io/gh/zowe/api-layer)
-[![Waffle.io - Columns and their card count](https://badge.waffle.io/zowe/api-layer.svg?columns=all)](https://waffle.io/zowe/api-layer)
+[![codecov](https://codecov.io/gh/zowe/api-layer/branch/master/graph/badge.svg)](https://codecov.io/gh/zowe/api-layer)
 [![SonarQube](https://jayne.zowe.org:9000/api/project_badges/measure?project=zowe%3Aapi-mediation-layer&metric=alert_status)](https://jayne.zowe.org:9000/dashboard?id=zowe%3Aapi-mediation-layer)
 
 The home of Zowe API Mediation Layer
@@ -19,14 +18,6 @@ Following platform is required to run the API Mediation Layer:
 Following tools are required to build and develop API Mediation Layer:
 
 ## Quick start
-
-Bootstrap gradle to get wrapper:
-
-    UNIX
-    ./bootstrap_gradlew.sh
-
-    Windows
-    bootstrap_gradlew.bat
 
 Build all modules:
 
@@ -89,6 +80,8 @@ Follow the guidelines in [Contributing](CONTRIBUTING.md) to add new functionalit
 Follow the guidelines in [Local Configuration](docs/local-configuration.md) to set local environment properties for testing on your local machine include HTTPS setup.
 
 Also if you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
+
+If you use Visual Studio Code, see [how to configure it](docs/vscode-setup.md) to develop and debug local configurations.
 
 ## Adding services that does not support API Mediation Layer natively
 

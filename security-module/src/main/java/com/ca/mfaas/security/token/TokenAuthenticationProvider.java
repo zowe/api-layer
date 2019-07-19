@@ -12,7 +12,6 @@ package com.ca.mfaas.security.token;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -25,7 +24,7 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         return tokenService.validateToken(tokenAuthentication);
     }

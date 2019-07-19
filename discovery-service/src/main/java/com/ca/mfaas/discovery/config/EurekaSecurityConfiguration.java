@@ -12,6 +12,7 @@ package com.ca.mfaas.discovery.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -20,7 +21,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.Arrays;
@@ -29,6 +29,7 @@ import java.util.Collections;
 @Configuration
 @EnableWebSecurity
 @Order(1)
+@Profile("!https")
 public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
@@ -41,7 +42,7 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Value("${apiml.discovery.password:password}")
     private String eurekaPassword;
 
-    @Value("${apiml.security.verifySslCertificatesOfServices:true}")
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
     @Autowired
@@ -54,9 +55,10 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable();
-        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http.headers().httpStrictTransportSecurity().disable();
+            http.csrf().disable()
+            .headers().httpStrictTransportSecurity().disable().and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         if (Arrays.asList(environment.getActiveProfiles()).contains("https")) {
             if (verifySslCertificatesOfServices) {
@@ -71,11 +73,6 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     public UserDetailsService x509UserDetailsService() {
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String username) {
-                return new User("eurekaClient", "", Collections.emptyList());
-            }
-        };
+        return username -> new User("eurekaClient", "", Collections.emptyList());
     }
 }

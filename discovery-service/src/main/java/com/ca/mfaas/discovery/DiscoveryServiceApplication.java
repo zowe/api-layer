@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.discovery;
 
+import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
@@ -23,11 +24,12 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableEurekaServer
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @EnableConfigurationProperties
-@ComponentScan({"com.ca.mfaas.discovery", "com.ca.mfaas.product.config", "com.ca.mfaas.product.discovery", "com.ca.mfaas.product.web"})
+@ComponentScan({"com.ca.mfaas.discovery", "com.ca.mfaas.product.config", "com.ca.mfaas.product.security", "com.ca.mfaas.product.discovery", "com.ca.mfaas.product.web"})
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
+        app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
         new BuildInfo().logBuildInfo();
         app.run(args);

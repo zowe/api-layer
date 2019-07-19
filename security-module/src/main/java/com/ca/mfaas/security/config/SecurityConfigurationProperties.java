@@ -16,10 +16,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
+/**
+ * General configuration of security constants: endpoints, cookie, token
+ */
 @Data
 @Component
 @Slf4j
-@ConfigurationProperties(prefix = "apiml.security", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 public class SecurityConfigurationProperties {
     public SecurityConfigurationProperties() {
         this.cookieProperties = new CookieProperties();
@@ -34,12 +37,14 @@ public class SecurityConfigurationProperties {
     private CookieProperties cookieProperties;
     private String zosmfServiceId;
     private boolean verifySslCertificatesOfServices = true;
+    private String ciphers = null;
+    private String jwtKeyAlias;
 
     @Data
     public static class TokenProperties {
         private String authorizationHeader = "Authorization";
         private String bearerPrefix = "Bearer ";
-        private long expirationInSeconds = 24 * 60 * 60;
+        private long expirationInSeconds = 24L * 60 * 60;
         private String issuer = "APIML";
         private String shortTtlUsername = "expire";
         private long shortTtlExpirationInSeconds = 1;
@@ -51,14 +56,19 @@ public class SecurityConfigurationProperties {
         private boolean cookieSecure = true;
         private String cookiePath = "/";
         private String cookieComment = "API Mediation Layer security token";
-        private Integer cookieMaxAge = 24 * 60 * 60;
+        private Integer cookieMaxAge = -1;
     }
 
+    /**
+     * Return the zosmf service id if it is set
+     * @throws AuthenticationServiceException if the zosmf service id is not configured
+     * @return the zosmf service id
+     */
     public String validatedZosmfServiceId() {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-            log.error("z/OSMF service name not found. Set property apiml.security.zosmfServiceId to your service name.");
+            log.error("z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name.");
             throw new AuthenticationServiceException("Parameter 'zosmfServiceId' is not configured.");
-        }        
+        }
         return zosmfServiceId;
     }
 }

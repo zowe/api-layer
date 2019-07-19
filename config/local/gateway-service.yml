@@ -6,7 +6,11 @@ apiml:
         port: 10010
         discoveryServiceUrls: https://localhost:10011/eureka/
     security:
-        verifySslCertificatesOfServices: true
+        auth:
+            provider: dummy
+            zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
+        ssl:
+            verifySslCertificatesOfServices: true
 
 spring:
     output:

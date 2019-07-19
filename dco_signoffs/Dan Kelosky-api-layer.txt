@@ -1,0 +1,2 @@
+I, Dan Kelosky hereby sign-off-by all of my past commits to this repo subject to the Developer Certificate of Origin (DCO), Version 1.1. In the past I have used emails: dkelosky@gmail.com
+137a50d24162ebac356bfc4f2241fedd37d34b6f Fix retrieve API doc twice (#181)

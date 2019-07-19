@@ -18,4 +18,4 @@ Testing
 
 To run the tests go to the repository root and issue:
 
-    npm run test-script
+    npm run test-scripts

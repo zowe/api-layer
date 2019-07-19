@@ -16,11 +16,16 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 @Slf4j
 @Component
+@SuppressWarnings("squid:S1075")
 public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         String webSocketPath = "/ws/uppercase";
         log.info("Registering WebSocket handler to " + webSocketPath);
-        registry.addHandler(new WebSocketServerHandler(), webSocketPath);
+        registry.addHandler(new WebSocketServerHandler(), webSocketPath).setAllowedOrigins("*");
+
+        webSocketPath = "/ws/header";
+        log.info("Registering WebSocket handler to " + webSocketPath);
+        registry.addHandler(new HeaderSocketServerHandler(), webSocketPath);
     }
 }

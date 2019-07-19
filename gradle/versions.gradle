@@ -5,9 +5,9 @@ ext {
 
     lombokVersion = '1.16.20'
     slf4jVersion = '1.7.25'
+    jsonVersion = '20180813'
     jsonPathVersion = '2.4.0'
     springFoxVersion = '2.8.0'
-    jsonWebTokenVersion = '0.8.0'
     httpClientVersion = '4.5.3'
     guavaVersion = '23.2-jre'
     mockSpringRestVersion = '1.0.2'
@@ -80,6 +80,7 @@ ext {
         spring_security_test               : "org.springframework.security:spring-security-test:${springSecurityVersion}",
 
         jsoup                              : "org.jsoup:jsoup:${jsoupVersion}",
+        json                               : "org.json:json:${jsonVersion}",
         json_path                          : "com.jayway.jsonpath:json-path:${jsonPathVersion}",
         springFox                          : "io.springfox:springfox-swagger2:${springFoxVersion}",
         springFoxSwaggerUI                 : "io.springfox:springfox-swagger-ui:${springFoxVersion}",

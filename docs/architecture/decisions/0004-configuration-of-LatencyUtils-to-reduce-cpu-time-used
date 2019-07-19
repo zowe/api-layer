@@ -1,0 +1,21 @@
+# 4. Configuration of LatencyUtils to reduce cpu time used
+
+Date: 2019-07-02
+
+## Status
+
+Accepted
+
+## Context
+
+CPU time used by Api Mediation Layer when idle should be minimal. We managed to reproduce a case where high cpu (hours per day) was consumed on one of our system. It has been identified that one of LatencyUtils threads is spending time constantly measuring time and accumulating used cpu time. LatencyUtils is transitive dependency of Spring Actuator 
+
+## Decision
+
+Decision has been accepted that we will configure LatencyUtils to measure time in a different mode. System property `LatencyUtils.useActualTime` will be set to `false` programmatically before the Spring application is started. 
+
+## Consequences
+
+Actuator metrics functionality is not impacted by this change.
+
+This should be retested whenever we upgrade version of SpringBoot.

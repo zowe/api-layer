@@ -12,6 +12,9 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
 
 apiml:
+    security:
+        ssl:
+            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
     # The `apiml` node contains API Mediation Layer specific configuration
     service:
         # The `apiml.service` node contains information required by any APIML service
@@ -19,7 +22,7 @@ apiml:
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10012  # Default port name for discoverable-clinet service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        preferIpAddress: false
+        preferIpAddress: false        
 
 spring:
     application:
@@ -42,7 +45,8 @@ server:
     ssl:
         enabled: true
         protocol: TLSv1.2
-        ciphers: TLS_RSA_WITH_AES_128_CBC_SHA,TLS_DHE_RSA_WITH_AES_256_CBC_SHA,TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+        enabled-protocols: TLSv1.2
+        ciphers: ${apiml.security.ssl.ciphers}
         keyStoreType: PKCS12
         trustStoreType: PKCS12
 
@@ -69,9 +73,12 @@ eureka:
                 ws_v1:
                     gateway-url: "ws/v1"
                     service-url: ${server.servlet.contextPath}/ws
-                api-doc:
-                    gateway-url: "api/v1/api-doc"
-                    service-url: ${server.servlet.contextPath}/api-doc
+            apiml:
+                apiInfo:
+                    - apiId: org.zowe.discoverableclient
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
+                      documentationUrl: https://www.zowe.org
             mfaas:
                 api-info:
                     apiVersionProperties:
@@ -134,3 +141,5 @@ logging:
         org.springframework: INFO
         org.apache.catalina: INFO
         com.netflix: INFO
+
+logbackServiceName: ZWEADC1

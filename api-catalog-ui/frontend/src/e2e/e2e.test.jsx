@@ -12,6 +12,7 @@ const loginUrl = `${baseUrl}/#/login`;
 const dashboardUrl = `${baseUrl}/#/dashboard`;
 const defaultDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer`;
 const apiCatalogDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer/apicatalog`;
+const gatewayDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer/gateway`;
 
 beforeAll(async () => {
     browser = await puppeteer.launch({
@@ -109,7 +110,7 @@ describe('>>> e2e tests', async () => {
     });
 
     it('Should display the tab title and the description in the detail page', async () => {
-        const [res] = await Promise.all([page.waitForNavigation(), page.goto(defaultDetailPageUrl)]);
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(apiCatalogDetailPageUrl)]);
         await page.waitForSelector('#title');
         await page.waitForSelector('#description');
         const tab = await page.$('#title');
@@ -121,6 +122,31 @@ describe('>>> e2e tests', async () => {
         expect(descriptionText).toBe(
             'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.'
         );
+    });
+
+    it('Should display the Gateway information in the detail page', async () => {
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(gatewayDetailPageUrl)]);
+        await page.waitForSelector(
+            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
+        );
+        await page.waitFor(2000);
+        const serviceUrl = await page.$('pre.base-url');
+        const serviceDescription = await page.$(
+            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
+        );
+        const serviceTitle = await page.$(
+            '#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > h2'
+        );
+        const serviceTitleText = await page.evaluate(el => el.innerText, serviceTitle);
+        const serviceDescriptionText = await page.evaluate(el => el.innerText, serviceDescription);
+        const serviceUrlText = await page.evaluate(el => el.innerText, serviceUrl);
+        const expectedTitleValue = 'API Gateway';
+        const expectedUrl = `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/gateway ]`;
+        const expectedDescriptionValue =
+            'REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.';
+        expect(serviceTitleText).toBe(expectedTitleValue);
+        expect(serviceDescriptionText).toBe(expectedDescriptionValue);
+        expect(serviceUrlText).toBe(expectedUrl);
     });
 
     it('Should display the back button', async () => {
@@ -161,6 +187,14 @@ describe('>>> e2e tests', async () => {
         expect(serviceUrlText).toBe(expectedUrl);
     });
 
+    it('Should display the service homepage', async () => {
+        const [res] = await Promise.all([page.waitForNavigation(), page.goto(apiCatalogDetailPageUrl)]);
+        await page.waitForSelector('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a');
+        const homepageLabel = await page.$('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a');
+        const homePageLabelContent = await page.evaluate(a => a.href, homepageLabel);
+        expect(homePageLabelContent).toBe(baseUrl);
+    });
+
     it('Should go back to the dashboard page, check the URL and check if the search bar works', async () => {
         await page.goto(defaultDetailPageUrl);
         await page.waitForSelector('#go-back-button');
@@ -177,10 +211,25 @@ describe('>>> e2e tests', async () => {
         expect(tileHeader).toBe('API Mediation Layer API');
     });
 
+    it('Should have session cookie', async () => {
+        await page.goto(defaultDetailPageUrl);
+        const { cookies } = await page._client.send("Network.getAllCookies", {});
+
+        expect(cookies["0"].expires).toBe(-1);
+        expect(cookies["0"].name).toBe("apimlAuthenticationToken");
+    });
+
     it('Should logout and display the login page', async () => {
         await page.waitForSelector('[data-testid="logout"]');
         const [res] = await Promise.all([page.click('[data-testid="logout"]'), page.waitForNavigation()]);
         await page.waitForSelector('[data-testid="username"]');
         await page.waitForSelector('[data-testid="username"]');
+    });
+
+    it('Should delete session cookie after logout', async () => {
+        await page.goto(defaultDetailPageUrl);
+        const { cookies } = await page._client.send("Network.getAllCookies", {});
+
+        expect(cookies.length).toBe(0);
     });
 });
