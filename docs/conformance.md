@@ -75,11 +75,11 @@ Tip: We strongly recommend all documentation be reviewed by a technical writer.
 9. The UI that runs behind the API ML Gateway must support routing to services via the API ML Gateway 
     - The UI must either refer to services and resources using relative URLs or absolute URLs must contain the API ML Gateway hostname and port.
 
+Note: Static resources such as images can be addressed directly.
+
 10. WebSocket services 
      - Websocket connection creation and all subsequent communication between WebSocket client and server must be routed through the API ML Gateway.
      - WebSocket connections must be properly closed by the initiator through API ML Gateway.   
-
-Note: Static resources such as images can be addressed directly.
 
 ### Day 2 Requirements
 
