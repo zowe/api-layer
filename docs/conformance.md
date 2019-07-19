@@ -51,8 +51,13 @@ Tip: We strongly recommend all documentation be reviewed by a technical writer.
    - API Responses
      - If it is in JSON format, links must be relative and must not contain the schema, hostname, and port 
      - If there is a payload it should be in JSON format
-   - Websocket
-     - TBD
+   - WebSocket
+     - Server service implementation must conform with WebSocket protocol specification RFC 6455 (see https://tools.ietf.org/html/rfc6455) and WebSocket API specification (see https://www.w3.org/TR/2012/CR-websockets-20120920/).
+     - Discoverable WebSocket services URI must use 'ws' for protocol part. TLS version on port 443 is not currently impemented on API ML GW, hence services should not use 'wss' for protocol part of their respective URI.
+     - Websocket connection creation must be routed through the API ML GW.
+     - All subsequent communication between WebSocket client and server must be routed through API ML GW.
+     - WebSocket connections must be properly closed by the initiator using a call to the other party through API ML GW.     
+
    - UI
      - UI must use relative links and must not contain the schema, hostname, and port
 
