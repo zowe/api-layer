@@ -30,6 +30,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -252,7 +253,7 @@ public class ZosmfAuthenticationProviderTest {
     }
 
     @Test
-    public void shouldThrowANewExceptionIfRestClientException() {
+    public void shouldThrowNewExceptionIfRestClientException() {
         securityConfigurationProperties.setZosmfServiceId(ZOSMF);
 
         List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
@@ -267,6 +268,27 @@ public class ZosmfAuthenticationProviderTest {
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("A failure occurred when authenticating.");
+
+        zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
+
+    }
+
+    @Test
+    public void shouldThrowNewExceptionIfResourceAccessException() {
+        securityConfigurationProperties.setZosmfServiceId(ZOSMF);
+
+        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
+        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        when(restTemplate.exchange(Mockito.anyString(),
+            Mockito.eq(HttpMethod.GET),
+            Mockito.any(),
+            Mockito.<Class<Object>>any()))
+            .thenThrow(ResourceAccessException.class);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider
+            = new ZosmfAuthenticationProvider(securityConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+
+        exception.expect(ServiceNotAccessibleException.class);
+        exception.expectMessage("Could not get an access to z/OSMF service.");
 
         zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
 

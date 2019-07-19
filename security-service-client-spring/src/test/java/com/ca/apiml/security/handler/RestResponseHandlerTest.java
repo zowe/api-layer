@@ -12,6 +12,7 @@ package com.ca.apiml.security.handler;
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.error.ErrorType;
 import com.ca.apiml.security.error.GatewayNotFoundException;
+import com.ca.apiml.security.error.ServiceNotAccessibleException;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.apiml.security.token.TokenNotValidException;
 import org.junit.Before;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 
@@ -62,34 +64,46 @@ public class RestResponseHandlerTest {
     @Test(expected = AuthenticationCredentialsNotFoundException.class)
     public void handleBadResponseWithCredentialsNotFound() {
         HttpClientErrorException badRequestException = new HttpClientErrorException(HttpStatus.BAD_REQUEST);
-        handler.handleBadResponse(badRequestException, ErrorType.AUTH_CREDENTIALS_NOT_FOUND, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        handler.handleBadResponse(badRequestException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 
     @Test(expected = AuthMethodNotSupportedException.class)
     public void handleBadResponseWithAuthMethodNotSupported() {
         HttpClientErrorException methodNotAllowedException = new HttpClientErrorException(HttpStatus.METHOD_NOT_ALLOWED);
-        handler.handleBadResponse(methodNotAllowedException, ErrorType.AUTH_METHOD_NOT_SUPPORTED, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        handler.handleBadResponse(methodNotAllowedException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 
     @Test(expected = AuthenticationServiceException.class)
     public void handleBadResponseWithNoLogMessage() {
-        handler.handleBadResponse(forbiddenException, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE);
+        handler.handleBadResponse(forbiddenException, null, GENERIC_LOG_MESSAGE);
     }
 
     @Test(expected = AuthenticationServiceException.class)
     public void handleBadResponseWithLogMessage() {
-        handler.handleBadResponse(forbiddenException, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        handler.handleBadResponse(forbiddenException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 
     @Test(expected = GatewayNotFoundException.class)
     public void handleBadResponseWithGatewayNotFound() {
         ResourceAccessException raException = new ResourceAccessException("Resource Access Exception");
-        handler.handleBadResponse(raException, ErrorType.GATEWAY_NOT_FOUND, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        handler.handleBadResponse(raException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+    }
+
+    @Test(expected = ServiceNotAccessibleException.class)
+    public void handleBadResponseWithServiceUnavailable() {
+        HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE, "Authentication service unavailable");
+        handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+    }
+
+    @Test(expected = HttpServerErrorException.class)
+    public void handleBadResponseWithHttpServerError() {
+        HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Some server error");
+        handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 
     @Test
     public void handleBadResponseEmpty() {
         GatewayNotFoundException gatewayNotFoundException = new GatewayNotFoundException("General Exception");
-        handler.handleBadResponse(gatewayNotFoundException, ErrorType.AUTH_GENERAL, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+        handler.handleBadResponse(gatewayNotFoundException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 }

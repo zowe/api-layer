@@ -9,10 +9,14 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
-import com.ca.apiml.security.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
+import com.ca.apiml.security.error.*;
+import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.apiml.security.token.TokenNotProvidedException;
+import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.mfaas.rest.response.ApiMessage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,11 +30,11 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 
 import javax.servlet.ServletException;
 import javax.ws.rs.HttpMethod;
+import java.io.IOException;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryFilterTest {
@@ -99,5 +103,35 @@ public class QueryFilterTest {
         );
 
         queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+    }
+
+    @Test
+    public void shouldFailWithGatewayNotFound() throws IOException, ServletException {
+        testFailWithResourceAccessError(new GatewayNotFoundException("API Gateway service not found"), ErrorType.GATEWAY_NOT_FOUND);
+    }
+
+    @Test
+    public void shouldFailWithServiceNotAccessible() throws IOException, ServletException {
+        testFailWithResourceAccessError(new ServiceNotAccessibleException("Authentication service not available"), ErrorType.SERVICE_UNAVAILABLE);
+    }
+
+    private void testFailWithResourceAccessError(RuntimeException exception, ErrorType errorType) throws IOException, ServletException {
+        ObjectMapper objectMapper = mock(ObjectMapper.class);
+        ErrorService errorService = new ErrorServiceImpl("/security-service-messages.yml");
+        ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(errorService, objectMapper);
+        queryFilter = new QueryFilter("TEST_ENDPOINT", authenticationSuccessHandler,
+            authenticationFailureHandler, authenticationService, authenticationManager, resourceAccessExceptionHandler);
+
+        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of(VALID_TOKEN));
+        when(authenticationManager.authenticate(new TokenAuthentication(VALID_TOKEN))).thenThrow(exception);
+
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setMethod(HttpMethod.GET);
+        httpServletResponse = new MockHttpServletResponse();
+
+        queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+
+        ApiMessage message = errorService.createApiMessage(errorType.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
     }
 }

@@ -38,7 +38,7 @@ use the username `user` and the password `user`.
 
 ### (Optional) z/OSMF Authentication
 
-z/OSMF provides the real authentication service. In order to use the it, follow the steps:
+z/OSMF provides the real authentication service. In order to use it, follow the steps:
  
 1. Configure a valid z/OSMF instance using the following sample configuration `config/local/api-defs/zosmf-sample.yml`.
 

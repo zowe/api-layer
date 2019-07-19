@@ -31,28 +31,9 @@ import javax.validation.constraints.NotNull;
 @Component
 public class RestResponseHandler {
 
-    public void handleBadResponse(@NotNull Exception exception, @NotNull ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
+    public void handleBadResponse(@NotNull Exception exception, ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
         if (exception instanceof HttpClientErrorException) {
-            HttpClientErrorException hceException = (HttpClientErrorException) exception;
-            switch (hceException.getStatusCode()) {
-                case UNAUTHORIZED:
-                    if (errorType.equals(ErrorType.BAD_CREDENTIALS)) {
-                        throw new BadCredentialsException(errorType.getDefaultMessage(), exception);
-                    } else if (errorType.equals(ErrorType.TOKEN_NOT_VALID)) {
-                        throw new TokenNotValidException(errorType.getDefaultMessage(), exception);
-                    } else if (errorType.equals(ErrorType.TOKEN_NOT_PROVIDED)) {
-                        throw new TokenNotProvidedException(errorType.getDefaultMessage());
-                    } else {
-                        throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage(), exception);
-                    }
-                case BAD_REQUEST:
-                    throw new AuthenticationCredentialsNotFoundException(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getDefaultMessage(), exception);
-                case METHOD_NOT_ALLOWED:
-                    throw new AuthMethodNotSupportedException(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getDefaultMessage());
-                default:
-                    addLogMessage(exception, genericLogErrorMessage, logParameters);
-                    throw new AuthenticationServiceException(ErrorType.AUTH_GENERAL.getDefaultMessage(), exception);
-            }
+            handleHttpClientError(exception, errorType, genericLogErrorMessage, logParameters);
         } else if (exception instanceof ResourceAccessException) {
             throw new GatewayNotFoundException(ErrorType.GATEWAY_NOT_FOUND.getDefaultMessage(), exception);
         } else if (exception instanceof HttpServerErrorException) {
@@ -62,6 +43,30 @@ public class RestResponseHandler {
             } else {
                 throw hseException;
             }
+        }
+    }
+
+    private void handleHttpClientError(@NotNull Exception exception, ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
+        HttpClientErrorException hceException = (HttpClientErrorException) exception;
+        switch (hceException.getStatusCode()) {
+            case UNAUTHORIZED:
+                if (errorType != null) {
+                    if (errorType.equals(ErrorType.BAD_CREDENTIALS)) {
+                        throw new BadCredentialsException(errorType.getDefaultMessage(), exception);
+                    } else if (errorType.equals(ErrorType.TOKEN_NOT_VALID)) {
+                        throw new TokenNotValidException(errorType.getDefaultMessage(), exception);
+                    } else if (errorType.equals(ErrorType.TOKEN_NOT_PROVIDED)) {
+                        throw new TokenNotProvidedException(errorType.getDefaultMessage());
+                    }
+                }
+                throw new BadCredentialsException(ErrorType.BAD_CREDENTIALS.getDefaultMessage(), exception);
+            case BAD_REQUEST:
+                throw new AuthenticationCredentialsNotFoundException(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getDefaultMessage(), exception);
+            case METHOD_NOT_ALLOWED:
+                throw new AuthMethodNotSupportedException(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getDefaultMessage());
+            default:
+                addLogMessage(exception, genericLogErrorMessage, logParameters);
+                throw new AuthenticationServiceException(ErrorType.AUTH_GENERAL.getDefaultMessage(), exception);
         }
     }
 
