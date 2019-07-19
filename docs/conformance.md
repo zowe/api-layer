@@ -94,4 +94,3 @@ Tip: We strongly recommend all documentation be reviewed by a technical writer.
 ### Conformance Validation
  * Initially confromance criteria are valiedated manually. 
  * Later an automated validation will be implemented as a REST API endpoint in the API ML. This validation includes a check of the Swagger JSON by an existing tool
-
