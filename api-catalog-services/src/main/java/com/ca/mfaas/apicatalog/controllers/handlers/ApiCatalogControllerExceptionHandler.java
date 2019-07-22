@@ -41,7 +41,7 @@ public class ApiCatalogControllerExceptionHandler {
     /**
      * Could not retrieve container details
      * @param exception ContainerStatusRetrievalException
-     * @return 500 and the message 'Could not retrieve container statuses, <optional text>'
+     * @return 500 and the message 'Could not retrieve container statuses, {optional text}'
      */
     @ExceptionHandler(ContainerStatusRetrievalException.class)
     public ResponseEntity<ApiMessage> handleServiceNotFoundException(ContainerStatusRetrievalException exception) {

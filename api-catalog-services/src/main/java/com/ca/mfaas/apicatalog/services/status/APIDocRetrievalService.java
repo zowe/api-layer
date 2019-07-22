@@ -53,7 +53,7 @@ public class APIDocRetrievalService {
      * order:
      * <p>
      * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
-     * 2. 'apiml.apiInfo' is present & 'swaggerUrl' is not, ApiDoc info is automatically generated
+     * 2. 'apiml.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
      * 3. URL is constructed from 'routed-services.api-doc.service-url'. This method is deprecated and used for
      * backwards compatibility only
      *
