@@ -14,7 +14,7 @@ An application is *Zowe API ML conformant* if it follows these criteria:
 1. An application must provide at least one service or UI
 2. All exposed services of the application must be discoverable by the API Mediation Layer Discovery Service 
    - A service must be registered by one of the following methods:
-     - Dynamic registration - **prefered** (Best practice)
+     - Dynamic registration - **preferred** (Best practice)
      - Static definition - **minimum requirement**
    - The service must provide a default service ID that is prefixed by the provider name (for example: `ca`, `ibm`, `rocket`)
    - The service ID must be configurable externally after deployment
@@ -24,11 +24,11 @@ An application is *Zowe API ML conformant* if it follows these criteria:
      - For versioned APIs, service URLs must contain a service version before the service ID, in the following formats:
        - `api/v1/{serviceId}` reserved for REST APIs
        - `ui/v1/{serviceId}` reserved for UIs
-       - `ws/v1/{serviceId}` reserved for Websockets
+       - `ws/v1/{serviceId}` reserved for WebSockets
      - For non-versioned APIs or APIs versioned differently (e.g. z/OSMF) use the following formats: 
        - `api/{serviceId}` reserved for REST APIs
        - `ui/{serviceId}` reserved for UIs
-       - `ws/{serviceId}` reserved for Websockets
+       - `ws/{serviceId}` reserved for WebSockets
 
 3. The API must be documented in Swagger/OpenAPI 2.0 specification.  For more information about Swagger, see https://swagger.io/resources/articles/documenting-apis-with-swagger/. Additionally, the following criteria must be satisfied: 
    - Documentation must be Swagger 2.0 compliant
@@ -38,7 +38,7 @@ An application is *Zowe API ML conformant* if it follows these criteria:
    - Every parameter (headers, query parameters, payload, cookies, etc.) must be documented with definitions of all possible values and their associated meanings
    - Every error code, including errors returned in the payload must be documented
 
-Note: Websockets must be documented. The documentation location and format is determined by the provider.
+Note: WebSockets must be documented. The documentation location and format is determined by the provider.
 Tip: We strongly recommend all documentation be reviewed by a technical writer.
 
 4. API design must be consistent with the rest of the Zowe ecosystem. The following criteria must be satisfied:
@@ -61,7 +61,7 @@ Tip: We strongly recommend all documentation be reviewed by a technical writer.
    - The resources must be protected by mainframe credentials
    - Some endpoints such as the login endpoint (non-sensitive diagnostics information, or API documentation) can be unprotected 
    - Services must accept basic authentication - **minimum requirement**
-   - Services should accept Zowe JWT token in the cookie - **prefered** (Best practice)
+   - Services should accept Zowe JWT token in the cookie - **preferred** (Best practice)
 
 Note: For more information, see [Zowe Authentication and Authorization Service](https://github.com/zowe/api-layer/wiki/Zowe-Authentication-and-Authorization-Service)
 
@@ -79,7 +79,7 @@ Note: For more information, see [Zowe Authentication and Authorization Service](
 Note: Static resources such as images can be addressed directly.
 
 10. WebSocket services 
-     - Websocket connection creation and all subsequent communication between WebSocket client and server must be routed through the API ML Gateway.
+     - WebSocket connection creation and all subsequent communication between WebSocket client and server must be routed through the API ML Gateway.
      - WebSocket connections must be properly closed by the initiator through API ML Gateway.   
 
 ### Day 2 Requirements
@@ -92,5 +92,5 @@ Note: Static resources such as images can be addressed directly.
 **High Availability** - The application that provides an API is *highly available* when multiple instances can be registered under the same service ID and provide the same responses regardless of which instance is accessed by an API client
 
 ### Conformance Validation
- * Initially confromance criteria are valiedated manually. 
+ * Initially conformance criteria are validated manually. 
  * Later an automated validation will be implemented as a REST API endpoint in the API ML. This validation includes a check of the Swagger JSON by an existing tool
