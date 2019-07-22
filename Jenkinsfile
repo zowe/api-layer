@@ -132,7 +132,7 @@ pipeline {
 
                 stage ('Build API Catalog') {
                     steps {
-                        timeout(time: 10, unit: 'MINUTES') {
+                        timeout(time: 60, unit: 'MINUTES') {
                             sh './gradlew :api-catalog-services:build'
                         }
                     }
@@ -165,8 +165,8 @@ pipeline {
 
                 stage('Build and unit test with coverage') {
                     steps {
-                        timeout(time: 20, unit: 'MINUTES') {
-                            sh './gradlew build coverage -Dhttp.socketTimeout=90000 -Dhttp.connectionTimeout=90000'
+                        timeout(time: 60, unit: 'MINUTES') {
+                            sh './gradlew build coverage'
                         }
                     }
                 }
