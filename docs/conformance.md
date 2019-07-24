@@ -39,18 +39,19 @@ An application is *Zowe API ML conformant* if it follows these criteria:
    - Every error code, including errors returned in the payload must be documented
 
 Note: WebSockets must be documented. The documentation location and format is determined by the provider.
+
 Tip: We strongly recommend all documentation be reviewed by a technical writer.
 
-4. API design must be consistent with the rest of the Zowe ecosystem. The following criteria must be satisfied:
+4. API design must be consistent with the rest of the Zowe ecosystem. The following criteria apply:
    - Encoded slash must not be used. For example: `/abc%2fgef` cannot be used
    - The service must interpret values independent of their URL encoding
-   - Request payloads must be in JSON format
+   - Request payloads should be in JSON or binary data format
    - lowerCamelCase should be used for names of resources, parameters, and JSON properties
 
 5. Service responses
    - API Responses
-     - If it is in JSON format, links must be relative and must not contain the schema, hostname, and port 
-     - If there is a payload it should be in JSON format
+     - Payload should be in JSON or binary data format
+     - In JSON format, links must be relative, and must not contain the schema, hostname, and port 
    - WebSocket
      - Service URIs contained in WebSocket messages payload must be addressed through the API Meditation Layer Gateway.
      
@@ -69,16 +70,12 @@ Note: For more information, see [Zowe Authentication and Authorization Service](
    - At least the last two major versions must be supported by API services
    - The major service version must be supported for at least two years from its release
 
-8. Zowe version compatibility
-   - The service provider must update the service to ensure compatibility with the latest two major versions of Zowe
-   - The service must be updated to be compatible with the most recent version of Zowe **within a month** after its release
-
-9. The UI that runs behind the API ML Gateway must support routing to services via the API ML Gateway 
+8. The UI that runs behind the API ML Gateway must support routing to services via the API ML Gateway 
     - The UI must either refer to services and resources using relative URLs or absolute URLs must contain the API ML Gateway hostname and port.
 
 Note: Static resources such as images can be addressed directly.
 
-10. WebSocket services 
+9. WebSocket services 
      - WebSocket connection creation and all subsequent communication between WebSocket client and server must be routed through the API ML Gateway.
      - WebSocket connections must be properly closed by the initiator through API ML Gateway.   
 
