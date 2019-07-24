@@ -83,7 +83,9 @@ pipeline {
         label 'apiml-jenkins-agent'
     }
 
-    options { timestamps () }
+    options {
+        timestamps ()
+    }
 
     parameters {
         string(name: 'CHANGE_CLASS', defaultValue: '', description: 'Override change class - for testing (empty, doc, full, api-catalog)', )
@@ -134,7 +136,7 @@ pipeline {
 
                 stage ('Build API Catalog') {
                     steps {
-                        timeout(time: 60, unit: 'MINUTES') {
+                        timeout(time: 10, unit: 'MINUTES') {
                             sh './gradlew :api-catalog-services:build'
                         }
                     }
@@ -167,7 +169,7 @@ pipeline {
 
                 stage('Build and unit test with coverage') {
                     steps {
-                        timeout(time: 60, unit: 'MINUTES') {
+                        timeout(time: 20, unit: 'MINUTES') {
                             sh './gradlew build coverage --scan'
                         }
                     }
