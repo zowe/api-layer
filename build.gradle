@@ -68,11 +68,6 @@ allprojects {
     }
 }
 
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-}
-
 subprojects {
     license {
         header rootProject.file('.licence/EPL-2.0-licence-header.txt')
