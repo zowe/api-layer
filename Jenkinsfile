@@ -83,6 +83,8 @@ pipeline {
         label 'apiml-jenkins-agent'
     }
 
+    options { timestamps () }
+
     parameters {
         string(name: 'CHANGE_CLASS', defaultValue: '', description: 'Override change class - for testing (empty, doc, full, api-catalog)', )
     }
