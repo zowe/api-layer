@@ -73,7 +73,7 @@ buildScan {
     termsOfServiceAgree = 'yes'
 }
 
-    subprojects {
+subprojects {
     license {
         header rootProject.file('.licence/EPL-2.0-licence-header.txt')
         ext.year = Calendar.getInstance().get(Calendar.YEAR)
