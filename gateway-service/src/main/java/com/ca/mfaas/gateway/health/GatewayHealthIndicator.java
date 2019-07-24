@@ -9,13 +9,9 @@
  */
 package com.ca.mfaas.gateway.health;
 
-import static org.springframework.boot.actuate.health.Status.DOWN;
-import static org.springframework.boot.actuate.health.Status.UP;
-
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.product.constants.CoreService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -23,6 +19,9 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
+
+import static org.springframework.boot.actuate.health.Status.DOWN;
+import static org.springframework.boot.actuate.health.Status.UP;
 
 /**
  * Gateway health information (/application/health)
@@ -52,7 +51,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
         int gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
 
-        builder.status(toStatus(discoveryUp && authUp))
+        builder.status(toStatus(discoveryUp))
             .withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode())
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryUp).getCode())
             .withDetail(CoreService.AUTH.getServiceId(), toStatus(authUp).getCode())
