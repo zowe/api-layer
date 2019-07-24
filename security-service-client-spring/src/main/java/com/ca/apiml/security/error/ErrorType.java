@@ -9,6 +9,13 @@
  */
 package com.ca.apiml.security.error;
 
+import com.ca.mfaas.error.ErrorService;
+
+/**
+ * Enum of error types
+ * binding error keys and default error messages
+ * see {@link ErrorService}
+ */
 public enum ErrorType {
     BAD_CREDENTIALS("apiml.security.login.invalidCredentials", "Username or password are invalid."),
     TOKEN_NOT_VALID("apiml.security.query.invalidToken", "Token is not valid."),

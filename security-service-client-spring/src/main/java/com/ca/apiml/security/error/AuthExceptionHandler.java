@@ -27,6 +27,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Exception handler that deals with exceptions thrown during authentication process
+ */
 @Slf4j
 @Component
 public class AuthExceptionHandler extends AbstractExceptionHandler {
@@ -35,6 +38,14 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         super(errorService, objectMapper);
     }
 
+    /**
+     * Entry method, that takes care about exception passed to it
+     *
+     * @param request  Http request
+     * @param response Http response
+     * @param ex       Exception to be handled
+     * @throws ServletException Fallback exception if exception cannot be handled
+     */
     @Override
     public void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         if (ex instanceof BadCredentialsException

@@ -19,6 +19,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * Exception handler that deals with exceptions related to accessing other services/resources
+ */
 @Slf4j
 @Component
 public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
@@ -27,6 +30,14 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
         super(errorService, mapper);
     }
 
+    /**
+     * Entry method, that takes care about exception passed to it
+     *
+     * @param request  Http request
+     * @param response Http response
+     * @param ex       Exception to be handled
+     * @throws ServletException Fallback exception if exception cannot be handled
+     */
     @Override
     public void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         if (ex instanceof GatewayNotFoundException) {
