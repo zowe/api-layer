@@ -41,6 +41,8 @@ spring:
     output:
         ansi:
             enabled: detect
+    main:
+        banner-mode: 'off'            
 
 server:
     address: ${apiml.service.ipAddress}
