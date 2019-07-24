@@ -25,12 +25,12 @@ beforeAll(async () => {
 
 afterAll(() => browser.close());
 
-beforeEach(() => {
-    page.goto(dashboardUrl);
+beforeEach(async () => {
+    await page.goto(dashboardUrl);
     window.jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
 });
 
-describe('>>> e2e tests', async () => {
+describe('>>> e2e tests', () => {
     it('Should login and navigate to dashboard', async () => {
         const [res] = await Promise.all([page.waitForNavigation(), page.goto(loginUrl)]);
         await page.waitForSelector('[data-testid="username"]');
