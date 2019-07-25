@@ -15,6 +15,9 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+/**
+ * Authentication provider that authenticates TokenAuthentication against Gateway
+ */
 @Component
 @RequiredArgsConstructor
 public class GatewayTokenProvider implements AuthenticationProvider {

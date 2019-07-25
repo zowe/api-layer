@@ -27,10 +27,21 @@ import org.springframework.web.client.ResourceAccessException;
 
 import javax.validation.constraints.NotNull;
 
+/**
+ * Handler for exceptions that are thrown during rest calls of security client
+ */
 @Slf4j
 @Component
 public class RestResponseHandler {
 
+    /**
+     * Consumes exception and transforms into manageable exception
+     *
+     * @param exception Input exception
+     * @param errorType Error type enum, see {@link ErrorType}
+     * @param genericLogErrorMessage Message that gets printed in log
+     * @param logParameters Additional elements that are printed into the log after generic message
+     */
     public void handleBadResponse(@NotNull Exception exception, ErrorType errorType, String genericLogErrorMessage, Object... logParameters) {
         if (exception instanceof HttpClientErrorException) {
             handleHttpClientError(exception, errorType, genericLogErrorMessage, logParameters);

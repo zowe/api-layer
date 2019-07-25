@@ -27,6 +27,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
+/**
+ * Core class of security client
+ * provides facility for performing login and validating jwt token
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,6 +40,13 @@ public class GatewaySecurityService {
     private final RestTemplate restTemplate;
     private final RestResponseHandler responseHandler;
 
+    /**
+     * Logs in on gateway with username and password and retrieves valid JWT token
+     *
+     * @param username Username
+     * @param password Password
+     * @return Valid JWT token for the supplied credentials
+     */
     public Optional<String> login(String username, String password) {
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), securityConfigurationProperties.getGatewayLoginEndpoint());
@@ -63,6 +74,12 @@ public class GatewaySecurityService {
         return Optional.empty();
     }
 
+    /**
+     * Verifies JWT token validity and returns JWT token data
+     *
+     * @param token JWT token to be validated
+     * @return JWT token data as {@link QueryResponse}
+     */
     public QueryResponse query(String token) {
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), securityConfigurationProperties.getGatewayQueryEndpoint());

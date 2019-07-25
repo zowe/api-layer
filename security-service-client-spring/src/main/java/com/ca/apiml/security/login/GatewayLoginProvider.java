@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 /**
- * Authentication provider that verifies credentials against z/OSMF service
+ * Authentication provider that authenticates UsernamePasswordAuthenticationToken against Gateway
  */
 @Slf4j
 @Component
