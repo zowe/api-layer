@@ -33,6 +33,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+/**
+ * Main configuration class of Spring web security for Api Catalog
+ * binds authentication managers
+ * configures ignores for static content
+ * adds endpoints and secures them
+ * adds security filters
+ */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor

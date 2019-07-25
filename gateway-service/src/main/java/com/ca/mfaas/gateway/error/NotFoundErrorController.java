@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Not found endpoint controller
+ */
 @Controller
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -35,6 +38,13 @@ public class NotFoundErrorController implements ErrorController {
         return NOT_FOUND_ENDPOINT;
     }
 
+    /**
+     * Not found endpoint controller
+     * Creates response and logs the error
+     *
+     * @param request Http request
+     * @return Http response entity
+     */
     @GetMapping(value = NOT_FOUND_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessage> notFound400HttpResponse(HttpServletRequest request) {

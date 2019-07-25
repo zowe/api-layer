@@ -14,14 +14,29 @@ import com.ca.mfaas.error.DuplicateMessageException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Error message storage class
+ */
 public class ErrorMessageStorage {
     private final Map<String, ErrorMessage> keyMap = new HashMap<>();
     private final Map<String, ErrorMessage> numberMap = new HashMap<>();
 
+    /**
+     * Retrieve error message from the storage by message key
+     *
+     * @param key Message Key
+     * @return Error message
+     */
     public ErrorMessage getErrorMessage(String key) {
         return keyMap.get(key);
     }
 
+
+    /**
+     * Method for adding messages to storage
+     *
+     * @param messages Error message
+     */
     public void addMessages(ErrorMessages messages) {
         for (ErrorMessage message : messages.getMessages()) {
             if (!keyMap.containsKey(message.getKey())) {

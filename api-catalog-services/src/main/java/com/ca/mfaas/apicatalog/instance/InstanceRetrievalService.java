@@ -32,6 +32,9 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 
+/**
+ * Service for instance retrieval from Eureka
+ */
 @Slf4j
 @Service
 public class InstanceRetrievalService {
@@ -53,6 +56,8 @@ public class InstanceRetrievalService {
     }
 
     /**
+     * Retrieves {@link InstanceInfo} of particular service
+     *
      * @param serviceId the service to search for
      * @return service instance
      */

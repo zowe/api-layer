@@ -17,6 +17,9 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 
+/**
+ * Api Catalog health information (/application/health)
+ */
 @Component
 @RequiredArgsConstructor
 public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {

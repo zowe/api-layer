@@ -28,6 +28,9 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+/**
+ * Initialise the API Catalog with all current running instances
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor

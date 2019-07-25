@@ -19,6 +19,10 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+/**
+ * This class fires on ContextRefreshedEvent event during Spring context initialization
+ * Initializes Catalog instances from Eureka
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -28,7 +32,7 @@ public class AppContextInitialisedListener {
     private final InstanceInitializeService instanceInitializeService;
 
     /**
-     * Create a container for the API Catalog
+     * Retrieves and Registers all instances known to Eureka
      *
      * @param event spring event
      */

@@ -31,6 +31,13 @@ import javax.servlet.http.HttpServletRequest;
 public class SecurityTokenErrorCheck implements ErrorCheck {
     private final ErrorService errorService;
 
+    /**
+     * Validate whether the exception thrown is related to token and sets the proper response and status code
+     *
+     * @param request Http request
+     * @param exc Exception thrown
+     * @return Response entity with appropriate response and status code
+     */
     @Override
     public ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException && (exc.getCause() instanceof AuthenticationException)) {

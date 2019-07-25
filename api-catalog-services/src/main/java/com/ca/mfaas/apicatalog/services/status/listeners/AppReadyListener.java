@@ -15,13 +15,17 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * This class fires on ApplicationReadyEvent event during Spring context initialization
+ */
 @Slf4j
 @Component
 public class AppReadyListener {
 
 
     /**
-     * Create a container for the API Catalog
+     * Fires on ApplicationReadyEvent
+     * triggers ServiceStartupEventHandler
      *
      * @param event spring event
      */

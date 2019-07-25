@@ -9,6 +9,9 @@
  */
 package com.ca.mfaas.product.constants;
 
+/**
+ * Api Mediation Layer core service enumeration
+ */
 public enum CoreService {
     GATEWAY("gateway"),
     DISCOVERY("discovery"),

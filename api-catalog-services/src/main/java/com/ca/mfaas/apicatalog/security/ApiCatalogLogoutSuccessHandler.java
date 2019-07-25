@@ -21,11 +21,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+/**
+ * Handles logout success by removing cookie and clearing security context
+ */
 @RequiredArgsConstructor
 public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
+    /**
+     * Clears cookie, session, context and sets response code
+     *
+     * @param httpServletRequest Http request
+     * @param httpServletResponse Http response
+     * @param authentication Valid authentication
+     */
     @Override
     public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                                 Authentication authentication) {

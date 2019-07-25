@@ -15,9 +15,7 @@ import com.ca.mfaas.gateway.error.check.SecurityTokenErrorCheck;
 import com.ca.mfaas.gateway.error.check.TimeoutErrorCheck;
 import com.ca.mfaas.gateway.error.check.TlsErrorCheck;
 import com.ca.mfaas.rest.response.ApiMessage;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -29,10 +27,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Handles errors in REST API processing.
@@ -60,6 +57,13 @@ public class InternalServerErrorController implements ErrorController {
         return ERROR_ENDPOINT;
     }
 
+    /**
+     * Error endpoint controller
+     * Creates response and logs the error
+     *
+     * @param request Http request
+     * @return Http response entity
+     */
     @RequestMapping(value = ERROR_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessage> error(HttpServletRequest request) {
