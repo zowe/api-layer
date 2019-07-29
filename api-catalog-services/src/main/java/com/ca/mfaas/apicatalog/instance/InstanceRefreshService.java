@@ -120,7 +120,7 @@ public class InstanceRefreshService {
     /**
      * Get this instance service details and check if it should be processed
      *
-     * @param containersUpdated  which containers were updated
+     * @param containersUpdated  containers, which were updated
      * @param cachedServices     existing services
      * @param deltaFromDiscovery changed service instances
      * @param instance           this instance
@@ -151,7 +151,7 @@ public class InstanceRefreshService {
     /**
      * Go ahead amd retrieve this instances API doc and update the cache
      *
-     * @param containersUpdated which containers were updated
+     * @param containersUpdated containers, which were updated
      * @param instance          the instance
      * @param application       the service
      */

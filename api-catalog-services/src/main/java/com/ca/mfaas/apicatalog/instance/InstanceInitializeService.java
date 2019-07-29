@@ -29,7 +29,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 /**
- * Initialise the API Catalog with all current running instances
+ * Initialize the API catalog with the running instances.
  */
 @Slf4j
 @Service

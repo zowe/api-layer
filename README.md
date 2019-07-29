@@ -33,12 +33,11 @@ Run all service on local machine:
 
 ## Authentication service
 
-API Mediation Layer uses dummy authentication provider as the default security provider for the development purposes. In order to login,
-use the username `user` and the password `user`.
+The API Mediation Layer uses a dummy authentication provides as a default security provider for the development purposes. To log in, use `user` as username and password.
 
 ### (Optional) z/OSMF Authentication
 
-z/OSMF provides the real authentication service. In order to use it, follow the steps:
+Perform the following steps to use the real authentication service:
  
 1. Configure a valid z/OSMF instance using the following sample configuration `config/local/api-defs/zosmf-sample.yml`.
 
@@ -52,11 +51,11 @@ apiml:
             zosmfServiceId: zosmfId  # Replace me with the z/OSMF service id
 ```
 
-The certificate of z/OSMF needs to be trusted by APIML. You have to options:
+Ensure that the z/OSMF certificate is trusted by APIML. You have two options:
 
-1. Import it to the APIML keystore using `scripts/apiml_cm.sh --action trust` as described at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other-services)
+1. Import the certificate to the APIML keystore using `scripts/apiml_cm.sh --action trust` as described at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other-services)
 
-2. Disable certificate validation as described in [Disabling certificate validation on localhost](/keystore/README.md#Disabling-certificate-validation-on-localhost)
+2. Disable certificate validation. For more information, see [Disabling certificate validation on localhost](/keystore/README.md#Disabling-certificate-validation-on-localhost)
 
 ## Run unit tests
 

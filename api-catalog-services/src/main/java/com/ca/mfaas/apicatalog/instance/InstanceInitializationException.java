@@ -10,7 +10,7 @@
 package com.ca.mfaas.apicatalog.instance;
 
 /**
- * Exception used to indicate that the instance aren't initialized properly because of incorrect metadata.
+ * This exception is used to indicate the failed initialization of the instance caused by incorrect metadata.
  */
 public class InstanceInitializationException extends RuntimeException {
     private static final long serialVersionUID = -559112794280136165L;
