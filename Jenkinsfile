@@ -83,6 +83,10 @@ pipeline {
         label 'apiml-jenkins-agent'
     }
 
+    options {
+        timestamps ()
+    }
+
     parameters {
         string(name: 'CHANGE_CLASS', defaultValue: '', description: 'Override change class - for testing (empty, doc, full, api-catalog)', )
     }
@@ -166,7 +170,7 @@ pipeline {
                 stage('Build and unit test with coverage') {
                     steps {
                         timeout(time: 20, unit: 'MINUTES') {
-                            sh './gradlew build coverage -Dhttp.socketTimeout=90000 -Dhttp.connectionTimeout=90000'
+                            sh './gradlew build coverage'
                         }
                     }
                 }
