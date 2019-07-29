@@ -54,7 +54,7 @@ public abstract class AbstractExceptionHandler {
      * @param status Http response status that will be set
      * @param request Http request
      * @param response Http response
-     * @throws ServletException thrown when message cannot be written to response
+     * @throws ServletException throws when message cannot be written to response
      */
     protected void writeErrorResponse(String messageKey, HttpStatus status, HttpServletRequest request, HttpServletResponse response) throws ServletException {
         final ApiMessage message = errorService.createApiMessage(messageKey, request.getRequestURI());
@@ -64,7 +64,7 @@ public abstract class AbstractExceptionHandler {
     /**
      * Write message to http response
      *
-     * @param message Message string
+     * @param message Message object, which contains message key, type, number and text
      * @param status Http response status that will be set
      * @param response Http response
      * @throws ServletException thrown when message cannot be written to response

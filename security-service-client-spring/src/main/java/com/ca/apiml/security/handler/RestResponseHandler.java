@@ -37,7 +37,7 @@ public class RestResponseHandler {
     /**
      * Consumes exception and transforms into manageable exception
      *
-     * @param exception Input exception
+     * @param exception Input exception, can not be null
      * @param errorType Error type enum, see {@link ErrorType}
      * @param genericLogErrorMessage Message that gets printed in log
      * @param logParameters Additional elements that are printed into the log after generic message

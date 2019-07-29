@@ -32,9 +32,9 @@ public class AppContextInitialisedListener {
     private final InstanceInitializeService instanceInitializeService;
 
     /**
-     * Retrieves and Registers all instances known to Eureka
+     * Retrieves and registers all instances known to Eureka
      *
-     * @param event spring event
+     * @param event Spring event
      */
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws CannotRegisterServiceException {

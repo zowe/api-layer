@@ -27,7 +27,7 @@ public class AppReadyListener {
      * Fires on ApplicationReadyEvent
      * triggers ServiceStartupEventHandler
      *
-     * @param event spring event
+     * @param event Spring event
      */
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {

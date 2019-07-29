@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Convenience class to simplify writing spring security configuration
+ * Class contains most important handlers
  */
 @Getter
 @Component

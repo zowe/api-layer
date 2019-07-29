@@ -41,7 +41,7 @@ public class GatewaySecurityService {
     private final RestResponseHandler responseHandler;
 
     /**
-     * Logs in on gateway with username and password and retrieves valid JWT token
+     * Login to the gateway with username and password and retrieves valid JWT token
      *
      * @param username Username
      * @param password Password

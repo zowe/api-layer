@@ -17,11 +17,14 @@ import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.retry.RetryException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +33,7 @@ import java.util.Optional;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.isA;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceInitializeServiceTest {
@@ -45,6 +49,9 @@ public class InstanceInitializeServiceTest {
 
     @InjectMocks
     private InstanceInitializeService instanceInitializeService;
+
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
 
 
     @Test
@@ -94,6 +101,27 @@ public class InstanceInitializeServiceTest {
                 ));
     }
 
+    @Test
+    public void shouldThrowExceptionWhenCatalogNotFound() throws CannotRegisterServiceException {
+        String catalogId = CoreService.API_CATALOG.getServiceId();
+        when(instanceRetrievalService.getInstanceInfo(catalogId)).thenReturn(null);
+
+        exception.expect(CannotRegisterServiceException.class);
+        exception.expectCause(isA(RetryException.class));
+
+        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+    }
+
+    @Test
+    public void shouldThrowRetryExceptionOnInstanceInitializationException() throws CannotRegisterServiceException {
+        String catalogId = CoreService.API_CATALOG.getServiceId();
+        when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new InstanceInitializationException("ERROR"));
+
+        exception.expect(RetryException.class);
+        exception.expectMessage("ERROR");
+
+        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+    }
 
     private Map<String, InstanceInfo> createInstances() {
         Map<String, InstanceInfo> instanceInfoMap = new HashMap<>();
