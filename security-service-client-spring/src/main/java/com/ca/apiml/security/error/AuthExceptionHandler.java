@@ -48,8 +48,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
      */
     @Override
     public void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        if (ex instanceof BadCredentialsException
-            || ex instanceof InsufficientAuthenticationException) {
+        if (ex instanceof InsufficientAuthenticationException) {
+            handleAuthenticationRequired(request, response, ex);
+        } else if (ex instanceof BadCredentialsException) {
             handleBadCredentials(request, response, ex);
         } else if (ex instanceof AuthenticationCredentialsNotFoundException) {
             handleAuthenticationCredentialsNotFound(request, response, ex);
@@ -69,6 +70,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     }
 
     // 400
+    private void handleAuthenticationRequired(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(ERROR_MESSAGE_400, ex.getMessage());
+        writeErrorResponse(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
+    }
+
     private void handleBadCredentials(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
         writeErrorResponse(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);

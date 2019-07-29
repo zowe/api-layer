@@ -46,7 +46,7 @@ public class CookieContentFilter extends AbstractSecureContentFilter {
     }
 
     /**
-     * Extract the username and valid JWT token from the cookies
+     * Extract the valid JWT token from the cookies
      *
      * @param request the http request
      * @return the {@link TokenAuthentication} object containing username and valid JWT token

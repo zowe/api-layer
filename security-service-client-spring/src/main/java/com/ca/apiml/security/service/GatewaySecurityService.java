@@ -96,7 +96,7 @@ public class GatewaySecurityService {
                 QueryResponse.class);
 
             return response.getBody();
-        } catch (HttpClientErrorException e) {
+        } catch (HttpClientErrorException | ResourceAccessException | HttpServerErrorException e) {
             responseHandler.handleBadResponse(e, ErrorType.TOKEN_NOT_VALID,
                 "Can not access Gateway service. Uri '{}' returned: {}", uri, e.getMessage());
         }

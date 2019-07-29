@@ -65,7 +65,7 @@ public class ApiCatalogSecurityIntegrationTest {
     //@formatter:off
     @Test
     public void accessProtectedEndpointWithoutCredentials() {
-        String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
+        String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
 
         given()
         .when()
@@ -74,7 +74,7 @@ public class ApiCatalogSecurityIntegrationTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .header(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
-            .body("messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
+            .body("messages.find { it.messageNumber == 'ZWEAS105E' }.messageContent", equalTo(expectedMessage)
             );
     }
 

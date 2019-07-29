@@ -167,14 +167,7 @@ public class ApiCatalogEndpointIntegrationTest {
         assertEquals("/api/v1/apicatalog", swaggerBasePath);
     }
 
-    /**
-     * Execute the endpoint and check the response for a return code
-     *
-     * @param endpoint   execute thus
-     * @param returnCode check for this
-     * @return response
-     * @throws IOException oops
-     */
+    // Execute the endpoint and check the response for a return code
     private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
         HttpGet request = HttpRequestUtils.getRequest(endpoint);
         String cookie = HttpSecurityUtils.getCookieForGateway();

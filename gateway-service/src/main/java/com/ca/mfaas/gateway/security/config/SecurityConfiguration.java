@@ -97,23 +97,36 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * Processes /login requests
      */
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
-        return new LoginFilter(loginEndpoint, handlerInitializer.getSuccessfulLoginHandler(), handlerInitializer.getAuthenticationFailureHandler(), securityObjectMapper,
-            authenticationManager(), handlerInitializer.getResourceAccessExceptionHandler());
+        return new LoginFilter(
+            loginEndpoint,
+            handlerInitializer.getSuccessfulLoginHandler(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            securityObjectMapper,
+            authenticationManager(),
+            handlerInitializer.getResourceAccessExceptionHandler());
     }
 
     /**
      * Processes /query requests
      */
     private QueryFilter queryFilter(String queryEndpoint) throws Exception {
-        return new QueryFilter(queryEndpoint, successfulQueryHandler, handlerInitializer.getAuthenticationFailureHandler(), authenticationService,
-            authenticationManager(), handlerInitializer.getResourceAccessExceptionHandler());
+        return new QueryFilter(
+            queryEndpoint,
+            successfulQueryHandler,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            authenticationService,
+            authenticationManager());
     }
 
     /**
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), PROTECTED_ENDPOINTS);
+        return new BasicContentFilter(
+            authenticationManager(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            PROTECTED_ENDPOINTS);
     }
 
     /**

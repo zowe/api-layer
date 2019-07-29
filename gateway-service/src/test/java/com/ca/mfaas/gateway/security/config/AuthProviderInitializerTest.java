@@ -33,7 +33,7 @@ public class AuthProviderInitializerTest {
     }
 
     @Test
-    public void testDummyProvider() {
+    public void testConfigure_whenProviderIsDummy() {
         String authProvider = LoginProvider.DUMMY.toString();
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider, authProvider);
@@ -47,8 +47,22 @@ public class AuthProviderInitializerTest {
     }
 
     @Test
-    public void testZosmfProvider() {
+    public void testConfigure_whenProviderIsZOSMF() {
         String authProvider = LoginProvider.ZOSMF.toString();
+
+        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider, authProvider);
+
+        AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
+        authProviderInitializer.configure(authenticationManagerBuilder);
+
+        verify(authenticationManagerBuilder).authenticationProvider(tokenAuthenticationProvider);
+        verify(authenticationManagerBuilder).authenticationProvider(zosmfAuthenticationProvider);
+        verify(authenticationManagerBuilder, never()).authenticationProvider(dummyAuthenticationProvider);
+    }
+
+    @Test
+    public void testConfigure_whenProviderIsUnexpectedString() {
+        String authProvider = "unexpectedProvider";
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider, authProvider);
 

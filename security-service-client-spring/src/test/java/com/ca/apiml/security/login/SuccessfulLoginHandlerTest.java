@@ -11,11 +11,9 @@ package com.ca.apiml.security.login;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -32,27 +30,19 @@ public class SuccessfulLoginHandlerTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
 
-        ObjectMapper mapper = new ObjectMapper();
         securityConfigurationProperties = new SecurityConfigurationProperties();
-        successfulLoginHandler = new SuccessfulLoginHandler(mapper, securityConfigurationProperties);
+        successfulLoginHandler = new SuccessfulLoginHandler(securityConfigurationProperties);
     }
 
     @Test
-    public void shouldSetResponseParameters() throws Exception {
-        TokenAuthentication tokenAuthentication = new TokenAuthentication("TEST_TOKEN_STRING");
-        httpServletResponse.setStatus(HttpStatus.EXPECTATION_FAILED.value());
-        assertNotEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
+    public void testOnAuthenticationSuccess() {
+        successfulLoginHandler.onAuthenticationSuccess(
+            httpServletRequest,
+            httpServletResponse,
+            new TokenAuthentication("TEST_TOKEN_STRING")
+        );
 
-        successfulLoginHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
-
-        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.NO_CONTENT.value(), httpServletResponse.getStatus());
-    }
-
-    @Test
-    public void shouldSetResponseCookie() throws Exception {
-        TokenAuthentication tokenAuthentication = new TokenAuthentication("TEST_TOKEN_STRING");
-        successfulLoginHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
         assertNotNull(httpServletResponse.getCookie(securityConfigurationProperties.getCookieProperties().getCookieName()));
     }
 }

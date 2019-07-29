@@ -11,10 +11,8 @@ package com.ca.apiml.security.login;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -23,7 +21,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
 
 /**
  * Handles the successful login
@@ -31,9 +28,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
-    private static final String SUCCESSFUL_RESPONSE = "";
 
-    private final ObjectMapper mapper;
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
     /**
@@ -42,18 +37,14 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
      * @param request        the http request
      * @param response       the http response
      * @param authentication the successful authentication
-     * @throws IOException when the response cannot be written
      */
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-        throws IOException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         String token = tokenAuthentication.getCredentials();
 
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-        response.setStatus(HttpStatus.NO_CONTENT.value());
-
         setCookie(token, response);
+        response.setStatus(HttpStatus.NO_CONTENT.value());
     }
 
     /**
@@ -62,7 +53,7 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
      * @param token    the authentication token
      * @param response send back this response
      */
-    private void setCookie(String token, HttpServletResponse response) throws IOException {
+    private void setCookie(String token, HttpServletResponse response) {
         Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
         tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());
         tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
@@ -71,6 +62,5 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
         tokenCookie.setSecure(securityConfigurationProperties.getCookieProperties().isCookieSecure());
 
         response.addCookie(tokenCookie);
-        mapper.writeValue(response.getWriter(), SUCCESSFUL_RESPONSE);
     }
 }

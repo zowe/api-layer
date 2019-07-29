@@ -35,11 +35,11 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 public class SecurityTokenErrorCheckTest {
@@ -71,9 +71,10 @@ public class SecurityTokenErrorCheckTest {
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
         ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
-        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
-        List<Message> actualMessageList = Objects.requireNonNull(actualResponse.getBody()).getMessages();
+        assertNotNull(actualResponse);
+        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
+        List<Message> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
     }
 
@@ -88,9 +89,11 @@ public class SecurityTokenErrorCheckTest {
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
         ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
+
+        assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
-        List<Message> actualMessageList = Objects.requireNonNull(actualResponse.getBody()).getMessages();
+        List<Message> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
     }
 

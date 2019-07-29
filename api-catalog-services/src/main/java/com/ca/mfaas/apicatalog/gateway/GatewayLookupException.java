@@ -10,7 +10,7 @@
 package com.ca.mfaas.apicatalog.gateway;
 
 /**
- * Exception thrown when there's need to interrupt {@link GatewayLookupService} retry process
+ * Exception thrown when there's a need to interrupt {@link GatewayLookupService} retry process
  */
 public class GatewayLookupException extends RuntimeException {
     private static final long serialVersionUID = -559112794280136165L;

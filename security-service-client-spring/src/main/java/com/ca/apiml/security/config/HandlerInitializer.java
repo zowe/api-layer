@@ -15,14 +15,14 @@ import com.ca.apiml.security.handler.BasicAuthUnauthorizedHandler;
 import com.ca.apiml.security.handler.FailedAuthenticationHandler;
 import com.ca.apiml.security.handler.UnauthorizedHandler;
 import com.ca.apiml.security.login.SuccessfulLoginHandler;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
  * Convenience class to simplify writing spring security configuration
  */
-@Slf4j
+@Getter
 @Component
 public class HandlerInitializer {
     private final SuccessfulLoginHandler successfulLoginHandler;
@@ -42,25 +42,5 @@ public class HandlerInitializer {
         this.basicAuthUnauthorizedHandler = basicAuthUnauthorizedHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
-    }
-
-    public SuccessfulLoginHandler getSuccessfulLoginHandler() {
-        return successfulLoginHandler;
-    }
-
-    public UnauthorizedHandler getUnAuthorizedHandler() {
-        return unAuthorizedHandler;
-    }
-
-    public BasicAuthUnauthorizedHandler getBasicAuthUnauthorizedHandler() {
-        return basicAuthUnauthorizedHandler;
-    }
-
-    public FailedAuthenticationHandler getAuthenticationFailureHandler() {
-        return authenticationFailureHandler;
-    }
-
-    public ResourceAccessExceptionHandler getResourceAccessExceptionHandler() {
-        return resourceAccessExceptionHandler;
     }
 }

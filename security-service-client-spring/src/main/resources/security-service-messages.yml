@@ -26,6 +26,12 @@ messages:
       type: ERROR
       text: "Authentication service not available by URL '%s'"
 
+
+    - key: apiml.security.authRequired
+      number: ZWEAS105E
+      type: ERROR
+      text: "Authentication is required for URL '%s'"
+
     # Login messages (120 - 130)
     - key: apiml.security.login.invalidCredentials
       number: ZWEAS120E
