@@ -10,7 +10,7 @@
 package com.ca.apiml.security.error;
 
 /**
- * Exception thrown when an other service is not accessible
+ * Exception thrown when requested service is not accessible
  */
 public class ServiceNotAccessibleException extends RuntimeException {
 

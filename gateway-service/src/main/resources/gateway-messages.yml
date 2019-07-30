@@ -24,7 +24,7 @@ messages:
     - key: apiml.security.serviceUnavailable
       number: ZWEAG104E
       type: ERROR
-      text: "Authentication service not available by URL '%s'"
+      text: "Authentication service is not available at URL '%s'"
 
     - key: apiml.security.authRequired
       number: ZWEAG105E

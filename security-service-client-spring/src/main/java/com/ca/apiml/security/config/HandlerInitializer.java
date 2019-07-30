@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 /**
- * Convenience class to simplify writing spring security configuration
+ * Convenience class that simplifies spring security configuration
  * Class contains most important handlers
  */
 @Getter

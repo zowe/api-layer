@@ -24,7 +24,7 @@ import java.io.IOException;
 
 /**
  * Base class for exception handlers
- * aggregates boilerplate code and constants reused by concrete classes
+ * Aggregates boilerplate and constants, which are reused by concrete classes
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -37,7 +37,7 @@ public abstract class AbstractExceptionHandler {
     protected final ObjectMapper mapper;
 
     /**
-     * Entry method, that takes care about exception passed to it
+     * Entry method that takes care of an exception passed to it
      *
      * @param request Http request
      * @param response Http response
@@ -48,13 +48,13 @@ public abstract class AbstractExceptionHandler {
 
     /**
      * Write message (by message key) to http response
-     * Error service is used to resolve the message, see {@link ErrorService}
+     * Error service resolves the message, see {@link ErrorService}
      *
      * @param messageKey Message key
-     * @param status Http response status that will be set
+     * @param status Http response status
      * @param request Http request
      * @param response Http response
-     * @throws ServletException throws when message cannot be written to response
+     * @throws ServletException throws when a message cannot be written to response
      */
     protected void writeErrorResponse(String messageKey, HttpStatus status, HttpServletRequest request, HttpServletResponse response) throws ServletException {
         final ApiMessage message = errorService.createApiMessage(messageKey, request.getRequestURI());
@@ -62,10 +62,10 @@ public abstract class AbstractExceptionHandler {
     }
 
     /**
-     * Write message to http response
+     * Write a message to http response
      *
      * @param message Message object, which contains message key, type, number and text
-     * @param status Http response status that will be set
+     * @param status Http response status
      * @param response Http response
      * @throws ServletException thrown when message cannot be written to response
      */

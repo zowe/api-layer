@@ -19,12 +19,12 @@ messages:
     - key: apiml.security.gatewayNotFound
       number: ZWEAS103E
       type: ERROR
-      text: "API Gateway Service not found by URL '%s'"
+      text: "API Gateway Service is not found by URL '%s'"
 
     - key: apiml.security.serviceUnavailable
       number: ZWEAS104E
       type: ERROR
-      text: "Authentication service not available by URL '%s'"
+      text: "Authentication service is not available by URL '%s'"
 
 
     - key: apiml.security.authRequired

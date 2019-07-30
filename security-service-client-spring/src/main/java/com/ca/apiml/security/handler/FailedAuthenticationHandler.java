@@ -30,7 +30,7 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
     private final AuthExceptionHandler handler;
 
     /**
-     * Handles authentication failure, decides on the exception type and selects appropriate message
+     * Handles authentication failure by printing a debug message and passes control to {@link AuthExceptionHandler}
      *
      * @param request   the http request
      * @param response  the http response

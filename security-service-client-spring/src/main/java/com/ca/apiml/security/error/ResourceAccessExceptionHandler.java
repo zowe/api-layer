@@ -31,7 +31,7 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
     }
 
     /**
-     * Entry method, that takes care about exception passed to it
+     * Entry method that takes care of an exception passed to it
      *
      * @param request  Http request
      * @param response Http response

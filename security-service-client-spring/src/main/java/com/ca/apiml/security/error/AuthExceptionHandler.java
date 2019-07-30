@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Exception handler that deals with exceptions thrown during authentication process
+ * Exception handler deals with exceptions (methods listed below) that are thrown during the authentication process
  */
 @Slf4j
 @Component
@@ -39,7 +39,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     }
 
     /**
-     * Entry method, that takes care about exception passed to it
+     * Entry method that takes care about the exception passed to it
      *
      * @param request  Http request
      * @param response Http response
