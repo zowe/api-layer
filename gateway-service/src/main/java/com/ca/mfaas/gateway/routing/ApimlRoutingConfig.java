@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-public class MfaasRoutingConfig {
+public class ApimlRoutingConfig {
 
     @Bean
     public LocationFilter locationFilter() {
@@ -73,6 +73,6 @@ public class MfaasRoutingConfig {
         routedServicesUsers.add(webSocketProxyServerHandler);
         routedServicesUsers.add(pageRedirectionFilter);
 
-        return new MfaasRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
+        return new ApimlRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
     }
 }

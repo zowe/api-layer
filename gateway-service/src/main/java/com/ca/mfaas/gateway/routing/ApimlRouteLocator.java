@@ -34,12 +34,12 @@ import java.util.Set;
 import java.util.TreeMap;
 
 @Slf4j
-class MfaasRouteLocator extends DiscoveryClientRouteLocator {
+class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final DiscoveryClient discovery;
     private final ZuulProperties properties;
     private final List<RoutedServicesUser> routedServicesUsers;
 
-    MfaasRouteLocator(String servletPath, DiscoveryClient discovery, ZuulProperties properties,
+    ApimlRouteLocator(String servletPath, DiscoveryClient discovery, ZuulProperties properties,
                       ServiceRouteMapper serviceRouteMapper, List<RoutedServicesUser> routedServicesUsers) {
         super(servletPath, discovery, properties, serviceRouteMapper, null);
         this.discovery = discovery;
@@ -81,8 +81,8 @@ class MfaasRouteLocator extends DiscoveryClientRouteLocator {
                 // configured
                 RoutedServices routedServices = new RoutedServices();
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
-                if (serviceInstances == null) {
-                    log.error("Cannot find any instances of service: " + serviceId);
+                if (serviceInstances == null || serviceInstances.isEmpty()) {
+                    log.error("No instance of the service {} found. Routing will not be available.", serviceId);
                     return null;
                 }
 
