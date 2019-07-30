@@ -11,9 +11,9 @@ package com.ca.mfaas.gateway.security.service;
 
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
-import com.ca.mfaas.gateway.security.query.QueryResponse;
-import com.ca.mfaas.gateway.security.token.TokenExpireException;
-import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.apiml.security.token.QueryResponse;
+import com.ca.apiml.security.token.TokenExpireException;
+import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.security.SecurityUtils;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -116,13 +116,13 @@ public class AuthenticationServiceTest {
     public void shouldParseJwtTokenAsQueryResponse() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
-        String dateNow = new Date().toString().substring(0,16);
+        String dateNow = new Date().toString().substring(0, 16);
         QueryResponse parsedToken = authService.parseJwtToken(jwtToken);
 
-        assertEquals("com.ca.mfaas.gateway.security.query.QueryResponse", parsedToken.getClass().getTypeName());
+        assertEquals("com.ca.apiml.security.token.QueryResponse", parsedToken.getClass().getTypeName());
         assertEquals(DOMAIN, parsedToken.getDomain());
         assertEquals(USER, parsedToken.getUserId());
-        assertEquals(parsedToken.getCreation().toString().substring(0,16), dateNow);
+        assertEquals(parsedToken.getCreation().toString().substring(0, 16), dateNow);
         Date toBeExpired = DateUtils.addDays(parsedToken.getCreation(), 1);
         assertEquals(parsedToken.getExpiration(), toBeExpired);
     }

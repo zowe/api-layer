@@ -9,7 +9,8 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,13 +21,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+/**
+ * Handles logout success by removing cookie and clearing security context
+ */
+@RequiredArgsConstructor
 public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
+
     private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    public ApiCatalogLogoutSuccessHandler(SecurityConfigurationProperties securityConfigurationProperties) {
-        this.securityConfigurationProperties = securityConfigurationProperties;
-    }
-
+    /**
+     * Clears cookie, session, context and sets response code
+     *
+     * @param httpServletRequest Http request
+     * @param httpServletResponse Http response
+     * @param authentication Valid authentication
+     */
     @Override
     public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                                 Authentication authentication) {
@@ -40,6 +49,7 @@ public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandle
         Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), null);
         tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
         tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());
+        tokenCookie.setSecure(true);
         tokenCookie.setHttpOnly(true);
         tokenCookie.setMaxAge(0);
         httpServletResponse.addCookie(tokenCookie);

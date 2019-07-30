@@ -12,7 +12,7 @@ package com.ca.mfaas.apicatalog.services.status;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.instance.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
 import com.ca.mfaas.eurekaservice.model.ApiInfo;
@@ -20,8 +20,8 @@ import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -36,22 +36,15 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class APIDocRetrievalService {
+
     private final RestTemplate restTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
     private final GatewayConfigProperties gatewayConfigProperties;
 
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
-
-    @Autowired
-    public APIDocRetrievalService(RestTemplate restTemplate,
-                                  InstanceRetrievalService instanceRetrievalService,
-                                  GatewayConfigProperties gatewayConfigProperties) {
-        this.restTemplate = restTemplate;
-        this.instanceRetrievalService = instanceRetrievalService;
-        this.gatewayConfigProperties = gatewayConfigProperties;
-    }
 
     /**
      * Retrieve the API docs for a registered service
@@ -60,7 +53,7 @@ public class APIDocRetrievalService {
      * order:
      * <p>
      * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
-     * 2. 'apiml.apiInfo' is present & 'swaggerUrl' is not, ApiDoc info is automatically generated
+     * 2. 'apiml.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
      * 3. URL is constructed from 'routed-services.api-doc.service-url'. This method is deprecated and used for
      * backwards compatibility only
      *

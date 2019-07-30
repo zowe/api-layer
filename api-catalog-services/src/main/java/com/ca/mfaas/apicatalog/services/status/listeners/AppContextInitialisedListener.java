@@ -9,32 +9,35 @@
  */
 package com.ca.mfaas.apicatalog.services.status.listeners;
 
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.instance.InstanceInitializeService;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+/**
+ * This class fires on ContextRefreshedEvent event during Spring context initialization
+ * Initializes Catalog instances from Eureka
+ */
 @Slf4j
 @Component
+@RequiredArgsConstructor
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class AppContextInitialisedListener {
 
-    private final InstanceRetrievalService instanceRetrievalService;
-
-    @Autowired
-    public AppContextInitialisedListener(InstanceRetrievalService instanceRetrievalService) {
-        this.instanceRetrievalService = instanceRetrievalService;
-    }
+    private final InstanceInitializeService instanceInitializeService;
 
     /**
-     * Create a container for the API Catalog
+     * Retrieves and registers all instances known to Eureka
      *
-     * @param event spring event
+     * @param event Spring event
      */
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws CannotRegisterServiceException {
-        instanceRetrievalService.retrieveAndRegisterAllInstancesWithCatalog();
+        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
     }
 }

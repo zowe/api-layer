@@ -27,7 +27,7 @@ For coverage use ``npm run coverage`` or gradle task "javaScriptCoverage"
 
 2. run `npm install` inside the repo folder to install all dependencies
 
-3. run `npm start` to run the live reload server (will automatically open new browser tab on <http://localhost:3000/> where the app runs)
+3. run `npm run start` to run the live reload server (will automatically open new browser tab on <https://localhost:3000/> where the app runs)
 
 ## Testing
 

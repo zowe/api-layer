@@ -9,6 +9,8 @@
  */
 package com.ca.apiml.security.content;
 
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,21 +24,28 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
  * Filter base abstract class to secure application content
  */
+@RequiredArgsConstructor
 public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
-
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
+    private final String[] endpoints;
 
-    AbstractSecureContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
-        this.authenticationManager = authenticationManager;
-        this.failureHandler = failureHandler;
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        if (endpoints == null || endpoints.length == 0) {
+            return false;
+        }
+
+        String path = request.getServletPath();
+        return Arrays.stream(endpoints).noneMatch(path::startsWith);
     }
 
     /**
@@ -68,6 +77,8 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
             } catch (AuthenticationException authenticationException) {
                 failureHandler.onAuthenticationFailure(request, response, authenticationException);
+            } catch (RuntimeException e) {
+                resourceAccessExceptionHandler.handleException(request, response, e);
             }
         } else {
             filterChain.doFilter(request, response);

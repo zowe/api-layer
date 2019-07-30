@@ -28,33 +28,17 @@ export default class Login extends React.Component {
 
     handleError = error => {
         let messageText;
+        const errorMessages = require("../../error-messages.json");
         if (
             error.messageNumber !== undefined &&
             error.messageNumber !== null &&
             error.messageType !== undefined &&
             error.messageType !== null
         ) {
-            switch (error.messageNumber) {
-                case 'SEC0001':
-                    messageText = `Authentication is required (${error.messageNumber})`;
-                    break;
-                case 'SEC0004':
-                    messageText = `Session has expired, please login again (${error.messageNumber})`;
-                    break;
-                case 'SEC0005':
-                    messageText = `Username or password is invalid (${error.messageNumber})`;
-                    break;
-                case 'MFS0104':
-                    messageText = `Request timeout, please try again later (${error.messageNumber})`;
-                    break;
-                case 'UI0001':
-                    messageText = error.message;
-                    this.setState({ errorMessage: messageText });
-                    break;
-                default:
-                    messageText = `Unexpected error, please try again later (${error.messageNumber})`;
-                    break;
-            }
+            messageText = `Unexpected error, please try again later (${error.messageNumber})`;
+            const filter = errorMessages.messages.filter(x => x.messageKey != null && x.messageKey === error.messageNumber);
+            if (filter.length !== 0)
+                messageText = filter[0].messageText + `${error.messageNumber}`;
         }
         return messageText;
     };
@@ -72,12 +56,6 @@ export default class Login extends React.Component {
 
         if (username && password) {
             login({ username, password });
-        } else if (!username || !password) {
-            this.handleError({
-                messageType: 'ERROR',
-                messageNumber: 'UI0001',
-                message: 'Please provide a valid username and password',
-            });
         }
     }
 

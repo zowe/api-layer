@@ -10,21 +10,23 @@
 package com.ca.mfaas.apicatalog.gateway;
 
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration of the Gateway Lookup Service which obtains Gateway url
+ */
+@Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class GatewayConfig {
 
-    private final GatewayConfigInitializer gatewayConfigInitializer;
-
-    public GatewayConfig(GatewayConfigInitializer gatewayConfigInitializer) {
-        this.gatewayConfigInitializer = gatewayConfigInitializer;
-    }
-
+    private final GatewayLookupService gatewayLookupService;
 
     @Bean
-    public GatewayConfigProperties getGatewayConfigProperties() throws GatewayConfigInitializerException {
-        return gatewayConfigInitializer.getGatewayConfigProperties();
+    public GatewayConfigProperties getGatewayConfigProperties() {
+        return gatewayLookupService.getGatewayConfigProperties();
     }
 }

@@ -11,7 +11,7 @@ Types of Contributions
 ### Work on User Stories
 
 As a member of core development team you will introduce new functionality from 
-your teams' backlog.
+your team's backlog.
 
 ### Report Bugs
 

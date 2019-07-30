@@ -9,26 +9,20 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.mfaas.security.config.SecurityConfigurationProperties;
-import com.ca.mfaas.security.handler.FailedAuthenticationHandler;
-import com.ca.mfaas.security.handler.UnauthorizedHandler;
-import com.ca.mfaas.security.login.LoginFilter;
-import com.ca.mfaas.security.login.SuccessfulLoginHandler;
-import com.ca.mfaas.security.login.ZosmfAuthenticationProvider;
-import com.ca.mfaas.security.query.QueryFilter;
-import com.ca.mfaas.security.query.SuccessfulQueryHandler;
-import com.ca.mfaas.security.token.CookieFilter;
-import com.ca.mfaas.security.token.TokenAuthenticationProvider;
-import com.ca.mfaas.security.token.TokenFilter;
-import com.ca.mfaas.security.token.TokenService;
+import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.content.BasicContentFilter;
+import com.ca.apiml.security.content.CookieContentFilter;
+import com.ca.apiml.security.login.GatewayLoginProvider;
+import com.ca.apiml.security.login.LoginFilter;
+import com.ca.apiml.security.token.GatewayTokenProvider;
+import com.ca.apiml.security.config.HandlerInitializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -37,48 +31,32 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+/**
+ * Main configuration class of Spring web security for Api Catalog
+ * binds authentication managers
+ * configures ignores for static content
+ * adds endpoints and secures them
+ * adds security filters
+ */
 @Configuration
 @EnableWebSecurity
-@ComponentScan("com.ca.mfaas.security")
+@RequiredArgsConstructor
+@ComponentScan("com.ca.apiml.security")
 @Import(ComponentsConfiguration.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    private final ObjectMapper securityObjectMapper;
-    private final TokenService tokenService;
-    private final UnauthorizedHandler unAuthorizedHandler;
-    private final SuccessfulLoginHandler successfulLoginHandler;
-    private final SuccessfulQueryHandler successfulQueryHandler;
-    private final FailedAuthenticationHandler authenticationFailureHandler;
-    private final ZosmfAuthenticationProvider loginAuthenticationProvider;
-    private final TokenAuthenticationProvider tokenAuthenticationProvider;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
 
-    public SecurityConfiguration(
-        @Qualifier("securityObjectMapper") ObjectMapper securityObjectMapper,
-        UnauthorizedHandler unAuthorizedHandler,
-        SuccessfulLoginHandler successfulLoginHandler,
-        SuccessfulQueryHandler successfulQueryHandler,
-        FailedAuthenticationHandler authenticationFailureHandler,
-        ZosmfAuthenticationProvider loginAuthenticationProvider,
-        TokenAuthenticationProvider tokenAuthenticationProvider,
-        TokenService tokenService,
-        SecurityConfigurationProperties securityConfigurationProperties) {
-        super();
-        this.securityObjectMapper = securityObjectMapper;
-        this.unAuthorizedHandler = unAuthorizedHandler;
-        this.successfulLoginHandler = successfulLoginHandler;
-        this.successfulQueryHandler = successfulQueryHandler;
-        this.authenticationFailureHandler = authenticationFailureHandler;
-        this.loginAuthenticationProvider = loginAuthenticationProvider;
-        this.tokenAuthenticationProvider = tokenAuthenticationProvider;
-        this.tokenService = tokenService;
-        this.securityConfigurationProperties = securityConfigurationProperties;
-    }
+    private final ObjectMapper securityObjectMapper;
+    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final HandlerInitializer handlerInitializer;
+    private final GatewayLoginProvider gatewayLoginProvider;
+    private final GatewayTokenProvider gatewayTokenProvider;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
-        auth.authenticationProvider(loginAuthenticationProvider);
-        auth.authenticationProvider(tokenAuthenticationProvider);
+        auth.authenticationProvider(gatewayLoginProvider);
+        auth.authenticationProvider(gatewayTokenProvider);
     }
 
     @Override
@@ -97,13 +75,22 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-
             .csrf().disable()
             .headers()
             .httpStrictTransportSecurity().disable()
             .frameOptions().disable()
             .and()
-            .exceptionHandling().authenticationEntryPoint(unAuthorizedHandler)
+            .exceptionHandling()
+
+            .defaultAuthenticationEntryPointFor(
+                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/application/**")
+            )
+            .defaultAuthenticationEntryPointFor(
+                handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/apidoc/**")
+            )
+            .defaultAuthenticationEntryPointFor(
+                handlerInitializer.getUnAuthorizedHandler(), new AntPathRequestMatcher("/**")
+            )
 
             .and()
             .sessionManagement()
@@ -111,52 +98,47 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // login endpoint
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getLoginPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(
+                loginFilter(securityConfigurationProperties.getServiceLoginPath()),
+                UsernamePasswordAuthenticationFilter.class
+            )
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getLoginPath()).permitAll()
-
-            // query endpoint
-            .and()
-            .addFilterBefore(queryFilter(securityConfigurationProperties.getQueryPath()), UsernamePasswordAuthenticationFilter.class)
-            .authorizeRequests()
+            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getServiceLoginPath()).permitAll()
 
             // logout endpoint
             .and()
             .logout()
-            .logoutUrl(securityConfigurationProperties.getLogoutPath())
+            .logoutUrl(securityConfigurationProperties.getServiceLogoutPath())
             .logoutSuccessHandler(logoutSuccessHandler())
 
             // endpoints protection
             .and()
-            .addFilterBefore(cookieTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(headerTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
             .antMatchers("/containers/**").authenticated()
-            .antMatchers("/apidoc/**").authenticated();
-    }
-
-    private TokenFilter headerTokenFilter() throws Exception {
-        return new TokenFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
+            .antMatchers("/apidoc/**").authenticated()
+            .antMatchers("/application/health", "/application/info").permitAll()
+            .antMatchers("/application/**").authenticated();
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
-        return new LoginFilter(loginEndpoint, successfulLoginHandler, authenticationFailureHandler,
-            securityObjectMapper, authenticationManager());
+        return new LoginFilter(loginEndpoint, handlerInitializer.getSuccessfulLoginHandler(), handlerInitializer.getAuthenticationFailureHandler(),
+            securityObjectMapper, authenticationManager(), handlerInitializer.getResourceAccessExceptionHandler());
     }
 
-    private QueryFilter queryFilter(String queryEndpoint) throws Exception {
-        return new QueryFilter(queryEndpoint, successfulQueryHandler, authenticationFailureHandler, tokenService,
-            authenticationManager());
+    /**
+     * Secures content with a basic authentication
+     */
+    private BasicContentFilter basicFilter() throws Exception {
+        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
     }
 
-    private CookieFilter cookieTokenFilter() throws Exception {
-        return new CookieFilter(authenticationManager(), authenticationFailureHandler, securityConfigurationProperties);
-    }
-
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
+    /**
+     * Secures content with a token stored in a cookie
+     */
+    private CookieContentFilter cookieFilter() throws Exception {
+        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties);
     }
 
     @Bean

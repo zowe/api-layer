@@ -13,7 +13,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 /**
- * Carries information of the Gateway scheme and port.
+ * Carries information of the Gateway scheme and hostname.
  */
 @Builder
 @Getter

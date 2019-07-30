@@ -9,15 +9,19 @@
  */
 package com.ca.mfaas.gatewayservice;
 
+import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.utils.config.ConfigReader;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.http.HttpHeaders;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.not;
@@ -47,7 +51,8 @@ public class GatewaySecurityTest {
         .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED));
+            .statusCode(is(SC_UNAUTHORIZED))
+            .header(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
     }
 
     @Test
@@ -118,7 +123,7 @@ public class GatewaySecurityTest {
         Map<String,String> responseHeaders = new HashMap<>();
         response.getHeaders().forEach(h -> responseHeaders.put(h.getName(),h.getValue()));
 
-        expectedHeaders.entrySet().forEach(h -> assertThat(responseHeaders, hasEntry(h.getKey(),h.getValue())));
+        expectedHeaders.forEach((key, value) -> assertThat(responseHeaders, hasEntry(key, value)));
         forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
     }
 }

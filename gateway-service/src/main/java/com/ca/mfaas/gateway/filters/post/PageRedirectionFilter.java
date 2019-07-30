@@ -29,8 +29,9 @@ import static org.apache.http.HttpHeaders.LOCATION;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 /**
- * This is a post filter for request which returns status code 3XX
- * <ul>The filter checks Location in response header, and transforms the url to gateway url if the url satisfies 2 conditions:
+ * This is a post filter for request which returns status code 3XX.
+ * The filter checks Location in response header, and transforms the url to gateway url if the url satisfies 2 conditions:
+ * <ul>
  * <li>Hostname and port of the url are registered in Discovery Service</li>
  * <li>The url can be matched to gateway url</li>
  * </ul>

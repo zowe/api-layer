@@ -211,7 +211,7 @@ public class SecurityUtils {
     /**
      * Replaces 4 slashes on 2 in URI
      * @param storeUri - URI as {@link String}
-     * @return same URI, but with 2 slashes, or null, if {@param storeUri} null
+     * @return same URI, but with 2 slashes, or null, if {@code storeUri} is null
      */
     public static String replaceFourSlashes(String storeUri) {
         return storeUri == null ? null : storeUri.replaceFirst("////", "//");

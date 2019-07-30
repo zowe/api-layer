@@ -23,7 +23,7 @@ dependencies {
     compile libraries.spring_boot_starter_websocket
     compile libraries.json
     compile libraries.jjwt
-    compile(project(':security-module'))
+    compile(project(':security-service-client-spring'))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest

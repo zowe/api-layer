@@ -9,7 +9,9 @@
  */
 package com.ca.mfaas.error.impl;
 
+import com.ca.mfaas.error.DuplicateMessageException;
 import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.error.MessageLoadException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.ca.mfaas.rest.response.Message;
 import com.ca.mfaas.rest.response.MessageType;
@@ -22,7 +24,11 @@ import org.yaml.snakeyaml.error.YAMLException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Collections;
+import java.util.IllegalFormatConversionException;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link ErrorService} that uses messages.yml as source for messages.
@@ -38,17 +44,9 @@ public class ErrorServiceImpl implements ErrorService {
     /**
      * Constructor that creates only common messages.
      */
-    @SuppressWarnings("squid:S00112")
     public ErrorServiceImpl() {
         messageStorage = new ErrorMessageStorage();
-        try (InputStream in = ErrorServiceImpl.class.getResourceAsStream(COMMON_MESSAGES)) {
-            Yaml yaml = new Yaml();
-            ErrorMessages messages = yaml.loadAs(in, ErrorMessages.class);
-            messageStorage.addMessages(messages);
-        } catch (YAMLException | IOException e) {
-            throw new RuntimeException("There is problem with reading common messages file: " + COMMON_MESSAGES +
-                ", " + e.getMessage(), e);
-        }
+        loadMessages(COMMON_MESSAGES);
     }
 
     /**
@@ -56,16 +54,9 @@ public class ErrorServiceImpl implements ErrorService {
      *
      * @param messagesFilePath path to file with messages.
      */
-    @SuppressWarnings("squid:S00112")
     public ErrorServiceImpl(String messagesFilePath) {
         this();
-        try (InputStream in = ErrorServiceImpl.class.getResourceAsStream(messagesFilePath)) {
-            Yaml yaml = new Yaml();
-            ErrorMessages applicationMessages = yaml.loadAs(in, ErrorMessages.class);
-            messageStorage.addMessages(applicationMessages);
-        } catch (YAMLException | IOException e) {
-            throw new RuntimeException("There is problem with reading application messages file: " + messagesFilePath, e);
-        }
+        loadMessages(messagesFilePath);
     }
 
     /**
@@ -90,11 +81,29 @@ public class ErrorServiceImpl implements ErrorService {
      */
     @Override
     public ApiMessage createApiMessage(String key, List<Object[]> parameters) {
-        List<Message> messageList = new ArrayList<>();
-        for (Object[] ob : parameters) {
-            messageList.add(createMessage(key, ob));
-        }
+        List<Message> messageList = parameters.stream()
+            .filter(Objects::nonNull)
+            .map(ob -> createMessage(key, ob))
+            .collect(Collectors.toList());
         return new BasicApiMessage(messageList);
+    }
+
+
+    /**
+     * Load messages to the context from the provided message file path
+     *
+     * @param messagesFilePath path of the message file
+     * @throws MessageLoadException      when a message couldn't loaded or has wrong definition
+     * @throws DuplicateMessageException when a message is already defined before
+     */
+    public void loadMessages(String messagesFilePath) {
+        try (InputStream in = ErrorServiceImpl.class.getResourceAsStream(messagesFilePath)) {
+            Yaml yaml = new Yaml();
+            ErrorMessages applicationMessages = yaml.loadAs(in, ErrorMessages.class);
+            messageStorage.addMessages(applicationMessages);
+        } catch (YAMLException | IOException e) {
+            throw new MessageLoadException("There is problem with reading application messages file: " + messagesFilePath, e);
+        }
     }
 
     /**

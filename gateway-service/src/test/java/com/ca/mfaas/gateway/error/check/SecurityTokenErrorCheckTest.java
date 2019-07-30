@@ -13,8 +13,8 @@ package com.ca.mfaas.gateway.error.check;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.error.ErrorUtils;
-import com.ca.mfaas.gateway.security.token.TokenExpireException;
-import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.apiml.security.token.TokenExpireException;
+import com.ca.apiml.security.token.TokenNotValidException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.ca.mfaas.rest.response.Message;
 import com.ca.mfaas.rest.response.MessageType;
@@ -39,6 +39,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 public class SecurityTokenErrorCheckTest {
@@ -70,8 +71,9 @@ public class SecurityTokenErrorCheckTest {
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
         ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
-        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
+        assertNotNull(actualResponse);
+        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
         List<Message> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
     }
@@ -87,6 +89,8 @@ public class SecurityTokenErrorCheckTest {
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
         ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
+
+        assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
         List<Message> actualMessageList = actualResponse.getBody().getMessages();
@@ -95,6 +99,7 @@ public class SecurityTokenErrorCheckTest {
 
     @Configuration
     static class ContextConfiguration {
+
         @Bean
         public ErrorService errorService() {
             return new ErrorServiceImpl("/gateway-messages.yml");

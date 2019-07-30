@@ -31,7 +31,7 @@ const appRouter = app => {
 
         if (validateCredentials(credentials)) {
             console.log('LOGIN');
-            setTimeout(() => res.status(200).send(loginSuccess), 2000);
+            setTimeout(() => res.status(204).send(loginSuccess), 2000);
         } else {
             console.log(invalidCredentials);
             res.status(401).send(invalidCredentials);

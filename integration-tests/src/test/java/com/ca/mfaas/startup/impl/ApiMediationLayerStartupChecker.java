@@ -69,7 +69,7 @@ public class ApiMediationLayerStartupChecker {
             final String jsonResponse = EntityUtils.toString(response.getEntity());
             DocumentContext documentContext = JsonPath.parse(jsonResponse);
             return documentContext.read("$.status").equals("UP") && allInstancesUp(documentContext)
-                    && testApplicationUp(documentContext);
+                && testApplicationUp(documentContext);
         } catch (IOException | PathNotFoundException e) {
             log.warn("Check failed: {}", e.getMessage());
         }
@@ -78,11 +78,14 @@ public class ApiMediationLayerStartupChecker {
 
     private boolean testApplicationUp(DocumentContext documentContext) {
         return documentContext.read("$.details.discoveryComposite.details.discoveryClient.details.services").toString()
-                .contains("discoverableclient");
+            .contains("discoverableclient");
     }
 
     private boolean allInstancesUp(DocumentContext documentContext) {
-        return documentContext.read("$.details.apiml.details.gatewayCount")
-                .equals(Integer.valueOf(gatewayConfiguration.getInstances()));
+        return documentContext.read("$.details.gateway.details.apicatalog").equals("UP")
+            && documentContext.read("$.details.gateway.details.discovery").equals("UP")
+            && documentContext.read("$.details.gateway.details.auth").equals("UP")
+            && documentContext.read("$.details.gateway.details.gatewayCount")
+            .equals(gatewayConfiguration.getInstances());
     }
 }

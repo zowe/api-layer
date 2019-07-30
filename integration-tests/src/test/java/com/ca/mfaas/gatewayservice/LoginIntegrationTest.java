@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.security.login.LoginRequest;
+import com.ca.apiml.security.login.LoginRequest;
 import com.ca.mfaas.utils.config.ConfigReader;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

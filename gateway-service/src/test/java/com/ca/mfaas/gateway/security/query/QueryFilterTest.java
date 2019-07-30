@@ -9,7 +9,8 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
-import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
+import com.ca.apiml.security.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,17 +22,14 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-
 import javax.ws.rs.HttpMethod;
 import java.util.Optional;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryFilterTest {
-
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private QueryFilter queryFilter;
@@ -40,20 +38,23 @@ public class QueryFilterTest {
 
     @Mock
     private AuthenticationSuccessHandler authenticationSuccessHandler;
+
     @Mock
     private AuthenticationFailureHandler authenticationFailureHandler;
+
     @Mock
     private AuthenticationManager authenticationManager;
+
     @Mock
     private AuthenticationService authenticationService;
 
     @Before
     public void setup() {
         queryFilter = new QueryFilter("TEST_ENDPOINT",
-                                        authenticationSuccessHandler,
-                                        authenticationFailureHandler,
-                                        authenticationService,
-                                        authenticationManager);
+            authenticationSuccessHandler,
+            authenticationFailureHandler,
+            authenticationService,
+            authenticationManager);
     }
 
     @Test
@@ -76,9 +77,9 @@ public class QueryFilterTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST);
         httpServletResponse = new MockHttpServletResponse();
+
         queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
-
 
     @Test(expected = TokenNotProvidedException.class)
     public void shouldRejectIfTokenIsNotPresent() {

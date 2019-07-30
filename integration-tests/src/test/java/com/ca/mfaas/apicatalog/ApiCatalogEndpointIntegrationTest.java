@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.apicatalog;
 
-import com.ca.mfaas.utils.categories.MainframeDependentTests;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import com.ca.mfaas.utils.http.HttpClientUtils;
@@ -28,17 +27,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.LinkedHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 @Slf4j
-@Category(MainframeDependentTests.class) //TODO: Remove when the catalog will use Gateway security
 public class ApiCatalogEndpointIntegrationTest {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/api/v1/apicatalog/containers";
     private static final String INVALID_CONTAINER_ENDPOINT = "/api/v1/apicatalog/containerz";
@@ -171,15 +167,7 @@ public class ApiCatalogEndpointIntegrationTest {
         assertEquals("/api/v1/apicatalog", swaggerBasePath);
     }
 
-    /**
-     * Execute the endpoint and check the response for a return code
-     *
-     * @param endpoint   execute thus
-     * @param returnCode check for this
-     * @return response
-     * @throws URISyntaxException oops
-     * @throws IOException        oops
-     */
+    // Execute the endpoint and check the response for a return code
     private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
         HttpGet request = HttpRequestUtils.getRequest(endpoint);
         String cookie = HttpSecurityUtils.getCookieForGateway();

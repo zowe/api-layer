@@ -10,10 +10,11 @@
 package com.ca.mfaas.gateway.error.check;
 
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.gateway.security.token.TokenExpireException;
-import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.apiml.security.token.TokenNotValidException;
+import com.ca.apiml.security.token.TokenExpireException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.netflix.zuul.exception.ZuulException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,13 +27,17 @@ import javax.servlet.http.HttpServletRequest;
  * Checks whether the error was caused by an invalid token
  */
 @Slf4j
+@RequiredArgsConstructor
 public class SecurityTokenErrorCheck implements ErrorCheck {
     private final ErrorService errorService;
 
-    public SecurityTokenErrorCheck(ErrorService errorService) {
-        this.errorService = errorService;
-    }
-
+    /**
+     * Validate whether the exception thrown is related to token and sets the proper response and status code
+     *
+     * @param request Http request
+     * @param exc Exception thrown
+     * @return Response entity with appropriate response and status code
+     */
     @Override
     public ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException && (exc.getCause() instanceof AuthenticationException)) {

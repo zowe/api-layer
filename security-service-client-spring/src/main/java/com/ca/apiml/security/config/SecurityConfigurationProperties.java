@@ -25,12 +25,21 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class SecurityConfigurationProperties {
     // General properties
-    private String loginPath = "/api/v1/gateway/auth/login/**";
-    private String queryPath = "/api/v1/gateway/auth/query/**";
+    private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
+    private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
+    private String gatewayLoginPath = gatewayLoginEndpoint + "/**";
+    private String gatewayQueryPath = gatewayQueryEndpoint + "/**";
+
+    private String serviceLoginPath = "/auth/login/**";
+    private String serviceLogoutPath = "/auth/logout/**";
+    private String serviceQueryPath = "/auth/query/**";
+
     private TokenProperties tokenProperties;
     private CookieProperties cookieProperties;
+
     private String zosmfServiceId;
     private String provider = "zosmf";
+
     private boolean verifySslCertificatesOfServices = true;
     private String jwtKeyAlias;
 

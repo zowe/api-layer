@@ -11,7 +11,7 @@ package com.ca.mfaas.apicatalog.services.status;
 
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
-import com.ca.mfaas.apicatalog.services.initialisation.InstanceRetrievalService;
+import com.ca.mfaas.apicatalog.instance.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Before;
@@ -188,7 +188,7 @@ public class LocalApiDocServiceTest {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(),true));
+            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
         when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
@@ -207,7 +207,7 @@ public class LocalApiDocServiceTest {
         String responseBody = "api-doc body";
 
         when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
-            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(),false));
+            .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), false));
 
         ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
         when(restTemplate.exchange("http://service:8080/service/api-doc", HttpMethod.GET, getObjectHttpEntity(), String.class))

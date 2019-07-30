@@ -9,9 +9,10 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
-import com.ca.mfaas.gateway.security.AuthMethodNotSupportedException;
-import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.apiml.security.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.apiml.security.token.TokenNotProvidedException;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +27,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 /**

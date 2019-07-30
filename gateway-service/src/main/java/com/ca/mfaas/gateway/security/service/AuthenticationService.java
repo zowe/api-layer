@@ -12,10 +12,11 @@ package com.ca.mfaas.gateway.security.service;
 import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.mfaas.constants.ApimlConstants;
-import com.ca.mfaas.gateway.security.query.QueryResponse;
-import com.ca.mfaas.gateway.security.token.TokenExpireException;
-import com.ca.mfaas.gateway.security.token.TokenNotValidException;
+import com.ca.apiml.security.token.QueryResponse;
+import com.ca.apiml.security.token.TokenNotValidException;
+import com.ca.apiml.security.token.TokenExpireException;
 import io.jsonwebtoken.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -30,20 +31,15 @@ import java.util.UUID;
 /**
  * Service for the JWT and LTPA tokens operations
  */
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class AuthenticationService {
     private static final String LTPA_CLAIM_NAME = "ltpa";
     private static final String DOMAIN_CLAIM_NAME = "dom";
 
     private final SecurityConfigurationProperties securityConfigurationProperties;
     private final JwtSecurityInitializer jwtSecurityInitializer;
-
-    public AuthenticationService(SecurityConfigurationProperties securityConfigurationProperties,
-                                 JwtSecurityInitializer jwtSecurityInitializer) {
-        this.securityConfigurationProperties = securityConfigurationProperties;
-        this.jwtSecurityInitializer = jwtSecurityInitializer;
-    }
 
     /**
      * Create the JWT token and set the LTPA token, the expiration time, the domain, the subject, the date of issue, the issuer and the id.

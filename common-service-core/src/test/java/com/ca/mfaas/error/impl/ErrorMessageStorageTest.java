@@ -9,18 +9,21 @@
  */
 package com.ca.mfaas.error.impl;
 
+import com.ca.mfaas.error.DuplicateMessageException;
 import com.ca.mfaas.rest.response.MessageType;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 
 public class ErrorMessageStorageTest {
-    private ErrorMessageStorage errorMessageStorage = new ErrorMessageStorage();
+    private final ErrorMessageStorage errorMessageStorage = new ErrorMessageStorage();
+
     @Test
     public void getKeyTest() {
-        ErrorMessages messages = new ErrorMessages(Arrays.asList(
+        ErrorMessages messages = new ErrorMessages(Collections.singletonList(
             new ErrorMessage("key", "number", MessageType.ERROR, "error message")
         ));
 
@@ -34,7 +37,7 @@ public class ErrorMessageStorageTest {
         assertEquals("error message", existingKeyMessage.getText());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = DuplicateMessageException.class)
     public void addDuplicatedKeyMessages() {
         ErrorMessages messages = new ErrorMessages(Arrays.asList(
             new ErrorMessage("key", "number1", MessageType.ERROR, "error message"),
@@ -44,7 +47,7 @@ public class ErrorMessageStorageTest {
         errorMessageStorage.addMessages(messages);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = DuplicateMessageException.class)
     public void addDuplicatedNumberMessages() {
         ErrorMessages messages = new ErrorMessages(Arrays.asList(
             new ErrorMessage("key1", "number", MessageType.ERROR, "error message"),

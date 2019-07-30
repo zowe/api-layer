@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.security.config;
 import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
-import com.ca.mfaas.gateway.security.token.TokenAuthenticationProvider;
+import com.ca.mfaas.gateway.security.query.TokenAuthenticationProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -51,9 +51,9 @@ public class AuthProviderInitializer {
      */
     public void configure(AuthenticationManagerBuilder auth) {
         LoginProvider provider = getLoginProvider();
-        if (provider == LoginProvider.ZOSMF) {
+        if (provider.equals(LoginProvider.ZOSMF)) {
             auth.authenticationProvider(zosmfAuthenticationProvider);
-        } else if (provider == LoginProvider.DUMMY) {
+        } else if (provider.equals(LoginProvider.DUMMY)) {
             log.warn("Login endpoint is running in the dummy mode. Use credentials user/user to login.");
             log.warn("Do not use this option in the production environment.");
             auth.authenticationProvider(dummyAuthenticationProvider);

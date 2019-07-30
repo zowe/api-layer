@@ -32,10 +32,10 @@ gitProperties {
 }
 
 dependencies {
+    compile(project(':common-service-core'))
     compile(project(':apiml-common'))
     compile(project(':integration-enabler-spring-v2'))
-    compile(project(':common-service-core'))
-    compile(project(':security-module'))
+    compile(project(':security-service-client-spring'))
 
     compileOnly libraries.lombok
 
@@ -47,7 +47,7 @@ dependencies {
     compile libraries.spring_retry
     compile libraries.swagger_core
     compile libraries.json_path
-    compile libraries.apacheCommons
+    compile libraries.apache_commons_lang3
     compile libraries.spring_boot_starter_thymeleaf
     compile libraries.apache_velocity
 

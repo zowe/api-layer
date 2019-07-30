@@ -9,7 +9,9 @@
  */
 package com.ca.mfaas.error.impl;
 
+import com.ca.mfaas.error.DuplicateMessageException;
 import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.error.MessageLoadException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import org.junit.Test;
 
@@ -48,10 +50,10 @@ public class ErrorServiceImplTest {
         assertEquals("No arguments message", message.getMessages().get(0).getMessageContent());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = MessageLoadException.class)
     public void constructorWithNotExistingFile() {
-        ErrorService errorServiceFromFile = new ErrorServiceImpl("/some-not-existing-messages.yml");
-        errorServiceFromFile.createApiMessage("com.ca.mfaas.test.noArguments");
+        errorService.loadMessages("/some-not-existing-messages.yml");
+        errorService.createApiMessage("com.ca.mfaas.test.noArguments");
     }
 
     @Test
@@ -69,8 +71,9 @@ public class ErrorServiceImplTest {
 
     @Test
     public void invalidMessageTextFormat() {
-        ErrorService errorServiceFromFile = new ErrorServiceImpl("/test-messages.yml");
-        ApiMessage message = errorServiceFromFile.createApiMessage("com.ca.mfaas.test.invalidParameterFormat",
+        errorService.loadMessages("/test-messages.yml");
+
+        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.test.invalidParameterFormat",
             "test", "someParameter2");
 
         assertEquals("MFS0002", message.getMessages().get(0).getMessageNumber());
@@ -78,9 +81,9 @@ public class ErrorServiceImplTest {
             message.getMessages().get(0).getMessageContent());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = DuplicateMessageException.class)
     public void constructorWithDuplicatedMessages() {
-        ErrorService errorServiceFromFile = new ErrorServiceImpl("/test-duplicate-messages.yml");
-        errorServiceFromFile.createApiMessage("com.ca.mfaas.test.noArguments");
+        errorService.loadMessages("/test-duplicate-messages.yml");
+        errorService.createApiMessage("com.ca.mfaas.test.noArguments");
     }
 }

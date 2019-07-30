@@ -12,7 +12,7 @@ package com.ca.mfaas.gateway.error;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.rest.response.ApiMessage;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -23,28 +23,33 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Not found endpoint controller
+ */
 @Controller
+@RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NotFoundErrorController implements ErrorController {
-
-    private static final String PATH = "/not_found";
+    private static final String NOT_FOUND_ENDPOINT = "/not_found";
     private final ErrorService errorService;
-
-    @Autowired
-    public NotFoundErrorController(ErrorService errorService) {
-        this.errorService = errorService;
-    }
 
     @Override
     public String getErrorPath() {
-        return PATH;
+        return NOT_FOUND_ENDPOINT;
     }
 
-    @GetMapping(value = PATH, produces = "application/json")
+    /**
+     * Not found endpoint controller
+     * Creates response and logs the error
+     *
+     * @param request Http request
+     * @return Http response entity
+     */
+    @GetMapping(value = NOT_FOUND_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessage> notFound400HttpResponse(HttpServletRequest request) {
         ApiMessage message = errorService.createApiMessage("com.ca.mfaas.common.endPointNotFound",
-                ErrorUtils.getGatewayUri(request));
+            ErrorUtils.getGatewayUri(request));
         return ResponseEntity.status(ErrorUtils.getErrorStatus(request)).body(message);
     }
 }

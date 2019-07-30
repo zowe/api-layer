@@ -9,6 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
+import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.mfaas.constants.ApimlConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -29,8 +30,17 @@ import java.util.Optional;
 @Slf4j
 public class BasicContentFilter extends AbstractSecureContentFilter {
 
-    public BasicContentFilter(AuthenticationManager authenticationManager, AuthenticationFailureHandler failureHandler) {
-        super(authenticationManager, failureHandler);
+    public BasicContentFilter(AuthenticationManager authenticationManager,
+                              AuthenticationFailureHandler failureHandler,
+                              ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
+        super(authenticationManager, failureHandler, resourceAccessExceptionHandler, new String[0]);
+    }
+
+    public BasicContentFilter(AuthenticationManager authenticationManager,
+                              AuthenticationFailureHandler failureHandler,
+                              ResourceAccessExceptionHandler resourceAccessExceptionHandler,
+                              String[] endpoints) {
+        super(authenticationManager, failureHandler, resourceAccessExceptionHandler, endpoints);
     }
 
     /**

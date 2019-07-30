@@ -11,6 +11,7 @@
 package com.ca.mfaas.gateway.security.token;
 
 import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.mfaas.gateway.security.query.TokenAuthenticationProvider;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +28,6 @@ import static org.mockito.Mockito.when;
 public class TokenAuthenticationProviderTest {
     private AuthenticationService tokenService;
 
-
     @Before
     public void setUp() {
         tokenService = mock(AuthenticationService.class);
@@ -43,7 +43,6 @@ public class TokenAuthenticationProviderTest {
 
         assertThat(authentication, is(tokenAuthentication));
     }
-
 
     @Test
     public void supportsAuthentication() {

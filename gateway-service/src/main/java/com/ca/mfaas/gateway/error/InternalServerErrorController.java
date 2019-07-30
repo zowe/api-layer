@@ -15,9 +15,7 @@ import com.ca.mfaas.gateway.error.check.SecurityTokenErrorCheck;
 import com.ca.mfaas.gateway.error.check.TimeoutErrorCheck;
 import com.ca.mfaas.gateway.error.check.TlsErrorCheck;
 import com.ca.mfaas.rest.response.ApiMessage;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -29,10 +27,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Handles errors in REST API processing.
@@ -42,7 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
 public class InternalServerErrorController implements ErrorController {
-    private static final String PATH = "/internal_error";
+    private static final String ERROR_ENDPOINT = "/internal_error";
 
     private final ErrorService errorService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
@@ -57,10 +54,17 @@ public class InternalServerErrorController implements ErrorController {
 
     @Override
     public String getErrorPath() {
-        return PATH;
+        return ERROR_ENDPOINT;
     }
 
-    @RequestMapping(value = PATH, produces = "application/json")
+    /**
+     * Error endpoint controller
+     * Creates response and logs the error
+     *
+     * @param request Http request
+     * @return Http response entity
+     */
+    @RequestMapping(value = ERROR_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessage> error(HttpServletRequest request) {
         final Throwable exc = (Throwable) request.getAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION);
@@ -70,14 +74,14 @@ public class InternalServerErrorController implements ErrorController {
             return entity;
         }
 
-        return logAndCreateReponseForInternalError(request, exc);
+        return logAndCreateResponseForInternalError(request, exc);
     }
 
-    private ResponseEntity<ApiMessage> logAndCreateReponseForInternalError(HttpServletRequest request, Throwable exc) {
+    private ResponseEntity<ApiMessage> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
         final String errorMessage = ErrorUtils.getErrorMessage(request);
         ApiMessage message = errorService.createApiMessage("apiml.common.internalRequestError", ErrorUtils.getGatewayUri(request),
-                ExceptionUtils.getMessage(exc), ExceptionUtils.getRootCauseMessage(exc));
+            ExceptionUtils.getMessage(exc), ExceptionUtils.getRootCauseMessage(exc));
         log.error("Unresolved request error: {}", errorMessage, exc);
         return ResponseEntity.status(status).body(message);
     }

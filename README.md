@@ -7,7 +7,7 @@
 
 The home of Zowe API Mediation Layer
 
-## Prequisites
+## Prerequisites
 
 Following platform is required to run the API Mediation Layer:
 
@@ -31,15 +31,31 @@ Run all service on local machine:
 
     npm run api-layer
 
-## Setting up connection to z/OSMF
+## Authentication service
 
-z/OSMF is required for the API Catalog login. You need to configure a valid z/OSMF instance to `config/local/api-defs/zosmf-sample.yml` under the `instanceBaseUrls`.
+The API Mediation Layer uses a dummy authentication provides as a default security provider for the development purposes. To log in, use `user` as username and password.
 
-The certificate of z/OSMF needs to be trusted by APIML. You have to options:
+### (Optional) z/OSMF Authentication
 
-1. Import it to the APIML keystore using `scripts/apiml_cm.sh --action trust` as desribed at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other_services)
+Perform the following steps to use the real authentication service:
+ 
+1. Configure a valid z/OSMF instance using the following sample configuration `config/local/api-defs/zosmf-sample.yml`.
 
-2. Disable certificate validation as described in [Disabling certificate validation on localhost](/keystore/README.md#Disabling-certificate-validation-on-localhost)
+2. Modify [gateway-service.yml](config/local/gateway-service.yml) with a z/OSMF configuration
+
+```
+apiml:
+    security:
+        auth:
+            provider: zosmf
+            zosmfServiceId: zosmfId  # Replace me with the z/OSMF service id
+```
+
+Ensure that the z/OSMF certificate is trusted by APIML. You have two options:
+
+1. Import the certificate to the APIML keystore using `scripts/apiml_cm.sh --action trust` as described at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other-services)
+
+2. Disable certificate validation. For more information, see [Disabling certificate validation on localhost](/keystore/README.md#Disabling-certificate-validation-on-localhost)
 
 ## Run unit tests
 
