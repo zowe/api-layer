@@ -20,8 +20,8 @@
 	<Source exclude="false" path="./discoverable-client/src/test/java" web="false"/>
 	<Source exclude="false" path="./discovery-service/src/main/java" web="false"/>
 	<Source exclude="false" path="./discovery-service/src/test/java" web="false"/>
-	<Source exclude="false" path="./gateway-common/src/main/java" web="false"/>
-	<Source exclude="false" path="./gateway-common/src/test/java" web="false"/>
+	<Source exclude="false" path="./apiml-common/src/main/java" web="false"/>
+	<Source exclude="false" path="./apiml-common/src/test/java" web="false"/>
 	<Source exclude="false" path="./gateway-service/src/main/java" web="false"/>
 	<Source exclude="false" path="./gateway-service/src/test/java" web="false"/>
 	<Source exclude="false" path="./helloworld-jersey/src/main/java" web="false"/>
@@ -37,8 +37,6 @@
 	<Source exclude="false" path="./integration-enabler-spring-v2/src/main/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v2/src/test/java" web="false"/>
 	<Source exclude="false" path="./integration-tests/src/test/java" web="false"/>
-	<Source exclude="false" path="./security-module/src/main/java" web="false"/>
-	<Source exclude="false" path="./security-module/src/test/java" web="false"/>
 	<Source exclude="false" path="./security-service-client-spring/src/main/java" web="false"/>
 	<Source exclude="false" path="./security-service-client-spring/src/test/java" web="false"/>
 	<Properties>
