@@ -28,7 +28,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @EnableEurekaClient
 @EnableWebFlux
 @EnableApiDiscovery
-@ComponentScan({"com.ca.mfaas.enable", "com.ca.mfaas.apicatalog", "com.ca.mfaas.product.security", "com.ca.mfaas.product.web"})
+@ComponentScan({"com.ca.mfaas.enable", "com.ca.mfaas.apicatalog", "com.ca.mfaas.product.security", "com.ca.mfaas.product.web", "com.ca.mfaas.product.gateway"})
 @EnableScheduling
 @EnableRetry
 @EnableAsync

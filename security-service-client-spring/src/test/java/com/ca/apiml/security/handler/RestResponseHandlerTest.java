@@ -11,7 +11,7 @@ package com.ca.apiml.security.handler;
 
 import com.ca.apiml.security.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.error.ErrorType;
-import com.ca.apiml.security.error.GatewayNotFoundException;
+import com.ca.mfaas.product.gateway.GatewayNotFoundException;
 import com.ca.apiml.security.error.ServiceNotAccessibleException;
 import com.ca.apiml.security.token.TokenNotProvidedException;
 import com.ca.apiml.security.token.TokenNotValidException;

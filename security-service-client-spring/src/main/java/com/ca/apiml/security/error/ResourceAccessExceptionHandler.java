@@ -10,6 +10,7 @@
 package com.ca.apiml.security.error;
 
 import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.product.gateway.GatewayNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

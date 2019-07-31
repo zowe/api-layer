@@ -12,6 +12,7 @@ package com.ca.apiml.security.login;
 import com.ca.apiml.security.error.*;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import com.ca.mfaas.product.gateway.GatewayNotFoundException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;

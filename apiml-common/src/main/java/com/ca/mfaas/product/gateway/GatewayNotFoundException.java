@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.error;
+package com.ca.mfaas.product.gateway;
 
 /**
  * Exception thrown when an API Gateway Service is not accessible

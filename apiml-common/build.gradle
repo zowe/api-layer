@@ -10,6 +10,7 @@ dependencies {
     compile libraries.http_client
     compile libraries.http_core
     compile libraries.jetty_websocket_client
+    compile libraries.spring_retry
 
     compileOnly libraries.spring_boot_configuration_processor
     compileOnly libraries.lombok
