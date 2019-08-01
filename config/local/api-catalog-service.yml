@@ -39,6 +39,9 @@ mfaas:
         cacheRefreshUpdateThresholdInMillis: 120000
         serviceFetchDelayInMillis: 10000
 
+apiml:
+    banner: console
+
 spring:
     output:
         ansi:

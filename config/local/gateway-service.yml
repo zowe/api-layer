@@ -11,6 +11,7 @@ apiml:
             zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
         ssl:
             verifySslCertificatesOfServices: true
+    banner: console
 
 spring:
     output:

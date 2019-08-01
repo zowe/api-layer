@@ -10,6 +10,7 @@ apiml:
     security:
         ssl:
             verifySslCertificatesOfServices: true
+    banner: console
 
 spring:
     output:
