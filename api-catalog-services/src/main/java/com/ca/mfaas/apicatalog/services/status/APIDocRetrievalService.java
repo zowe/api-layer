@@ -55,7 +55,7 @@ public class APIDocRetrievalService {
      * <p>
      * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
      * 2. 'apiml.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
-     * 3. URL is constructed from 'routed-services.api-doc.service-url'. This method is deprecated and used for
+     * 3. URL is constructed from 'routes.api-doc.serviceUrl'. This method is deprecated and used for
      * backwards compatibility only
      *
      * @param serviceId  the unique service id
@@ -168,7 +168,7 @@ public class APIDocRetrievalService {
     }
 
     /**
-     * Creates a URL from the routing metadata 'routed-services.api-doc.service-url' when 'apiml.apiInfo.swaggerUrl' is
+     * Creates a URL from the routing metadata 'routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
      *
      * @param instanceInfo the information about service instance

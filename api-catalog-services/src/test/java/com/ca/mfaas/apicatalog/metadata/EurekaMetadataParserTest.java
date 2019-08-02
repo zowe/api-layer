@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
 import static org.junit.Assert.assertEquals;
 
 public class EurekaMetadataParserTest {
@@ -41,16 +42,16 @@ public class EurekaMetadataParserTest {
     @Test
     public void testParseRoutes() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("routed-services.api-v1.gateway-url", "api/v1");
-        metadata.put("routed-services.api-v1.service-url", "/");
+        metadata.put(ROUTES + ".api-v1." + GATEWAY_URL, "api/v1");
+        metadata.put(ROUTES + ".api-v1." + SERVICE_URL, "/");
         metadata.put("other.parameter", "value");
-        metadata.put("routed-services.api-v2.service-url", "/test");
+        metadata.put(ROUTES + ".api-v2." + SERVICE_URL, "/test");
         metadata.put("some.garbage.again", "null");
-        metadata.put("routed-services.api-v2.gateway-url", "api/v2");
-        metadata.put("routed-services.api-v3.gateway-url", "incomplete");
-        metadata.put("routed-services.api-v4.service-url", "incomplete");
-        metadata.put("routed-services.api-v5.gateway-url", "/api/v5/");
-        metadata.put("routed-services.api-v5.service-url", "test");
+        metadata.put(ROUTES + ".api-v2." + GATEWAY_URL, "api/v2");
+        metadata.put(ROUTES + ".api-v3." + GATEWAY_URL, "incomplete");
+        metadata.put(ROUTES + ".api-v4." + SERVICE_URL, "incomplete");
+        metadata.put(ROUTES + ".api-v5." + GATEWAY_URL, "/api/v5/");
+        metadata.put(ROUTES + ".api-v5." + SERVICE_URL, "test");
 
         RoutedServices routes = new EurekaMetadataParser().parseRoutes(metadata);
 

@@ -15,10 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RoutedServices {
-    public static final String ROUTED_SERVICES_PARAMETER = "routed-services";
-    public static final String GATEWAY_URL_PARAMETER = "gateway-url";
-    public static final String SERVICE_URL_PARAMETER = "service-url";
-
     private final Map<String, RoutedService> routedService = new HashMap<>();
 
     /**

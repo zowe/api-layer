@@ -29,6 +29,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+
 @Slf4j
 @Component
 public class ServiceDefinitionProcessor {
@@ -40,7 +42,7 @@ public class ServiceDefinitionProcessor {
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
 
     @Data
-    class ProcessServicesDataResult {
+    static class ProcessServicesDataResult {
         private final List<String> errors;
         private final List<InstanceInfo> instances;
     }
@@ -251,6 +253,7 @@ public class ServiceDefinitionProcessor {
     private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) {
         Map<String, String> mt = new HashMap<>();
 
+        mt.put(VERSION, CURRENT_VERSION);
         mt.put("mfaas.discovery.service.title", service.getTitle());
         mt.put("mfaas.discovery.service.description", service.getDescription());
 
@@ -260,8 +263,8 @@ public class ServiceDefinitionProcessor {
                 String key = gatewayUrl.replace("/", "-");
                 String serviceUrl = url.getPath()
                     + (rs.getServiceRelativeUrl() == null ? "" : rs.getServiceRelativeUrl());
-                mt.put(String.format("routed-services.%s.gateway-url", key), gatewayUrl);
-                mt.put(String.format("routed-services.%s.service-url", key), serviceUrl);
+                mt.put(String.format("%s.%s.%s", ROUTES, key, GATEWAY_URL), gatewayUrl);
+                mt.put(String.format("%s.%s.%s", ROUTES, key, SERVICE_URL), serviceUrl);
             }
         }
 

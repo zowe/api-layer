@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+
 @Slf4j
 public class EurekaMetadataParser {
 
@@ -74,14 +76,13 @@ public class EurekaMetadataParser {
 
         for (Map.Entry<String, String> metadata : orderedMetadata.entrySet()) {
             String[] keys = metadata.getKey().split("\\.");
-            if (keys.length == 3 && keys[0].equals(RoutedServices.ROUTED_SERVICES_PARAMETER)) {
-
-                if (keys[2].equals(RoutedServices.GATEWAY_URL_PARAMETER)) {
+            if (keys.length == 3 && keys[0].equals(ROUTES)) {
+                if (keys[2].equals(GATEWAY_URL)) {
                     String gatewayURL = UrlUtils.removeFirstAndLastSlash(metadata.getValue());
                     routeMap.put(keys[1], gatewayURL);
                 }
 
-                if (keys[2].equals(RoutedServices.SERVICE_URL_PARAMETER) && routeMap.containsKey(keys[1])) {
+                if (keys[2].equals(SERVICE_URL) && routeMap.containsKey(keys[1])) {
                     String serviceURL = UrlUtils.addFirstSlash(metadata.getValue());
                     routes.addRoutedService(new RoutedService(keys[1], routeMap.get(keys[1]), serviceURL));
                     routeMap.remove(keys[1]);
