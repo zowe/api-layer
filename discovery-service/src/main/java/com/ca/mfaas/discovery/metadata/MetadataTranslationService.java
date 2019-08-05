@@ -22,10 +22,12 @@ public class MetadataTranslationService {
     public void translateMetadata(Map<String, String> metadata) {
         // Version check
         String version = metadata.get(VERSION);
-        if (version != null && version.equals(CURRENT_VERSION)) {
-            return;
+        if (version == null) {
+            translateV1toV2(metadata);
         }
+    }
 
+    private void translateV1toV2(Map<String, String> metadata) {
         // Routing
         Map<String, String> newRoutes = metadata.entrySet().stream()
             .filter(entry -> entry.getKey().contains(V1_ROUTES))
@@ -36,5 +38,12 @@ public class MetadataTranslationService {
                 Map.Entry::getValue));
         metadata.putAll(newRoutes);
         metadata.keySet().removeIf(key -> key.contains(V1_ROUTES));
+
+        // Catalog
+        String title = metadata.get(V1_CATALOG_TITLE);
+        if (title != null) {
+            metadata.remove(V1_CATALOG_TITLE);
+            metadata.put(CATALOG_TITLE, title);
+        }
     }
 }

@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.ca.mfaas.product.constants.EurekaMetadataFormat.CATALOG_TITLE;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -43,8 +44,6 @@ import static java.util.stream.Collectors.toList;
 @Service
 @CacheConfig(cacheNames = {"products"})
 public class CachedProductFamilyService {
-
-    private static final String CATALOG_UI_TITLE_KEY = "mfaas.discovery.catalogUiTile.title";
     private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.description";
     private static final String CATALOG_UI_VERSION_KEY = "mfaas.discovery.catalogUiTile.version";
 
@@ -229,7 +228,7 @@ public class CachedProductFamilyService {
      */
     private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo instanceInfo) {
         Map<String, String> instanceInfoMetadata = instanceInfo.getMetadata();
-        String title = instanceInfoMetadata.get(CATALOG_UI_TITLE_KEY);
+        String title = instanceInfoMetadata.get(CATALOG_TITLE);
         String description = instanceInfoMetadata.get(CATALOG_UI_DESCRIPTION_KEY);
         String version = instanceInfoMetadata.get(CATALOG_UI_VERSION_KEY);
         APIContainer container = new APIContainer();
@@ -269,7 +268,7 @@ public class CachedProductFamilyService {
             int result = instanceVer.compareTo(containerVer);
             if (result > 0) {
                 container.setVersion(versionFromInstance);
-                String title = instanceInfo.getMetadata().get(CATALOG_UI_TITLE_KEY);
+                String title = instanceInfo.getMetadata().get(CATALOG_TITLE);
                 String description = instanceInfo.getMetadata().get(CATALOG_UI_DESCRIPTION_KEY);
                 if (!container.getTitle().equals(title)) {
                     container.setTitle(title);
@@ -330,7 +329,7 @@ public class CachedProductFamilyService {
             container.setServices(apiServices);
             //update container
             String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_UI_VERSION_KEY);
-            String title = instanceInfo.getMetadata().get(CATALOG_UI_TITLE_KEY);
+            String title = instanceInfo.getMetadata().get(CATALOG_TITLE);
             String description = instanceInfo.getMetadata().get(CATALOG_UI_DESCRIPTION_KEY);
 
             container.setVersion(versionFromInstance);
