@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -26,23 +26,23 @@ import java.util.Optional;
  * Authenticate the JWT token stored in the cookie
  */
 public class CookieContentFilter extends AbstractSecureContentFilter {
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     public CookieContentFilter(AuthenticationManager authenticationManager,
                                AuthenticationFailureHandler failureHandler,
                                ResourceAccessExceptionHandler resourceAccessExceptionHandler,
-                               SecurityConfigurationProperties securityConfigurationProperties) {
+                               AuthConfigurationProperties authConfigurationProperties) {
         super(authenticationManager, failureHandler, resourceAccessExceptionHandler, new String[0]);
-        this.securityConfigurationProperties = securityConfigurationProperties;
+        this.authConfigurationProperties = authConfigurationProperties;
     }
 
     public CookieContentFilter(AuthenticationManager authenticationManager,
                                AuthenticationFailureHandler failureHandler,
                                ResourceAccessExceptionHandler resourceAccessExceptionHandler,
-                               SecurityConfigurationProperties securityConfigurationProperties,
+                               AuthConfigurationProperties authConfigurationProperties,
                                String[] endpoints) {
         super(authenticationManager, failureHandler, resourceAccessExceptionHandler, endpoints);
-        this.securityConfigurationProperties = securityConfigurationProperties;
+        this.authConfigurationProperties = authConfigurationProperties;
     }
 
     /**
@@ -58,7 +58,7 @@ public class CookieContentFilter extends AbstractSecureContentFilter {
         }
 
         return Arrays.stream(cookies)
-            .filter(cookie -> cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName()))
+            .filter(cookie -> cookie.getName().equals(authConfigurationProperties.getCookieProperties().getCookieName()))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()
             .map(cookie -> new TokenAuthentication(cookie.getValue()));

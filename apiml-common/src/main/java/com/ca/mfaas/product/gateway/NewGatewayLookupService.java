@@ -15,31 +15,29 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.AlwaysRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
-import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-@Service
 @Slf4j
 public class NewGatewayLookupService {
 
-    private GatewayConfigProperties foundGatewayConfigProperties;
+    private GatewayConfigProperties gatewayConfigProperties;
+
     private final RetryTemplate retryTemplate;
 
     private final EurekaClient eurekaClient;
     private final Timer startupTimer = new Timer();
 
-    public NewGatewayLookupService(@Qualifier("eurekaClient") EurekaClient eurekaClient) {
+    public NewGatewayLookupService(EurekaClient eurekaClient) {
         this.eurekaClient = eurekaClient;
         this.retryTemplate = new RetryTemplate();
 
@@ -60,28 +58,29 @@ public class NewGatewayLookupService {
         }, 100);
     }
 
-    private void init(){
+    private void init() {
         log.info("Looking for GW");
-       foundGatewayConfigProperties = retryTemplate.execute(context -> findGateway());
+        gatewayConfigProperties = retryTemplate.execute(context -> findGateway());
     }
 
-    private GatewayConfigProperties findGateway() {
+    public GatewayConfigProperties findGateway() {
         log.info("Looking ...");
 
         Application application = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());
-        if (application==null) {
+        if (application == null) {
             log.error("No Application");
             throw new RetryException("nan");
         }
+
         log.info("Found" + application.toString());
 
         List<InstanceInfo> appInstances = application.getInstances();
-        if(appInstances.isEmpty()) {
+        if (appInstances.isEmpty()) {
             log.error("no Instance");
             throw new RetryException("nan");
         }
 
-        InstanceInfo firstInstance=appInstances.get(0);
+        InstanceInfo firstInstance = appInstances.get(0);
         log.info("Found" + firstInstance.toString());
 
         //return firstInstance;
@@ -104,15 +103,14 @@ public class NewGatewayLookupService {
 
     }
 
-    public GatewayConfigProperties getGatewayInstance() {
 
-        if(foundGatewayConfigProperties ==null) {
+    public GatewayConfigProperties getGatewayConfigProperties() {
+        if (gatewayConfigProperties == null) {
             //TODO meaningful exception here
             throw new GatewayNotFoundException("No Gateway Instance is known at the moment");
         }
 
-        return foundGatewayConfigProperties;
+        return gatewayConfigProperties;
     }
-
 
 }

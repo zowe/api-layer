@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.health;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.mfaas.product.constants.CoreService;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,12 +28,12 @@ public class GatewayHealthIndicatorTest {
 
     private static final String ZOSMF = "zosmf";
 
-    private SecurityConfigurationProperties securityConfigurationProperties;
+    private AuthConfigurationProperties authConfigurationProperties;
 
     @Before
     public void setUp() {
-        securityConfigurationProperties = new SecurityConfigurationProperties();
-        securityConfigurationProperties.setZosmfServiceId(ZOSMF);
+        authConfigurationProperties = new AuthConfigurationProperties();
+        authConfigurationProperties.setZosmfServiceId(ZOSMF);
     }
 
     @Test
@@ -46,7 +46,7 @@ public class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(ZOSMF, "host", 10050, true)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, securityConfigurationProperties);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, authConfigurationProperties);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
@@ -60,7 +60,7 @@ public class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.emptyList());
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, securityConfigurationProperties);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, authConfigurationProperties);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());

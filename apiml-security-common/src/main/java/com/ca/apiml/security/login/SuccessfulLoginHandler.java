@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.login;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequiredArgsConstructor
 public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
 
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     /**
      * Set cookie and http response on successful authentication
@@ -54,12 +54,12 @@ public class SuccessfulLoginHandler implements AuthenticationSuccessHandler {
      * @param response send back this response
      */
     private void setCookie(String token, HttpServletResponse response) {
-        Cookie tokenCookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
-        tokenCookie.setComment(securityConfigurationProperties.getCookieProperties().getCookieComment());
-        tokenCookie.setPath(securityConfigurationProperties.getCookieProperties().getCookiePath());
+        Cookie tokenCookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
+        tokenCookie.setComment(authConfigurationProperties.getCookieProperties().getCookieComment());
+        tokenCookie.setPath(authConfigurationProperties.getCookieProperties().getCookiePath());
         tokenCookie.setHttpOnly(true);
-        tokenCookie.setMaxAge(securityConfigurationProperties.getCookieProperties().getCookieMaxAge());
-        tokenCookie.setSecure(securityConfigurationProperties.getCookieProperties().isCookieSecure());
+        tokenCookie.setMaxAge(authConfigurationProperties.getCookieProperties().getCookieMaxAge());
+        tokenCookie.setSecure(authConfigurationProperties.getCookieProperties().isCookieSecure());
 
         response.addCookie(tokenCookie);
     }

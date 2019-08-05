@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
 import com.ca.apiml.security.login.GatewayLoginProvider;
@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -44,11 +43,10 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 @RequiredArgsConstructor
 @ComponentScan("com.ca.apiml.security")
-@Import(ComponentsConfiguration.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper securityObjectMapper;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
     private final HandlerInitializer handlerInitializer;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
@@ -99,16 +97,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // login endpoint
             .and()
             .addFilterBefore(
-                loginFilter(securityConfigurationProperties.getServiceLoginPath()),
+                loginFilter(authConfigurationProperties.getServiceLoginPath()),
                 UsernamePasswordAuthenticationFilter.class
             )
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getServiceLoginPath()).permitAll()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginPath()).permitAll()
 
             // logout endpoint
             .and()
             .logout()
-            .logoutUrl(securityConfigurationProperties.getServiceLogoutPath())
+            .logoutUrl(authConfigurationProperties.getServiceLogoutPath())
             .logoutSuccessHandler(logoutSuccessHandler())
 
             // endpoints protection
@@ -138,11 +136,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties);
+        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), authConfigurationProperties);
     }
 
     @Bean
     public LogoutSuccessHandler logoutSuccessHandler() {
-        return new ApiCatalogLogoutSuccessHandler(securityConfigurationProperties);
+        return new ApiCatalogLogoutSuccessHandler(authConfigurationProperties);
     }
 }

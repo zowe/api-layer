@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,14 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  */
 @Configuration
 public class ComponentsConfiguration {
-
-    /**
-     * Security configuration
-     */
-    @Bean
-    public SecurityConfigurationProperties securityConfigurationProperties() {
-        return new SecurityConfigurationProperties();
-    }
 
     /**
      * Used for dummy authentication provider

@@ -1,6 +1,6 @@
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -30,7 +30,7 @@ public class ApiCatalogLogoutSuccessHandlerTest {
 
         MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
 
-        SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+        AuthConfigurationProperties securityConfigurationProperties = new AuthConfigurationProperties();
         ApiCatalogLogoutSuccessHandler apiCatalogLogoutSuccessHandler = new ApiCatalogLogoutSuccessHandler(securityConfigurationProperties);
 
         apiCatalogLogoutSuccessHandler.onLogoutSuccess(

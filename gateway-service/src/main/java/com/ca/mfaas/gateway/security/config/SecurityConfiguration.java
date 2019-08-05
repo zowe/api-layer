@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.config.HandlerInitializer;
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
 import com.ca.apiml.security.login.LoginFilter;
@@ -50,7 +50,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
     private final HandlerInitializer handlerInitializer;
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final AuthProviderInitializer authProviderInitializer;
@@ -77,7 +77,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // login endpoint
             .and()
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getGatewayLoginPath()).permitAll()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginPath()).permitAll()
 
             // endpoint protection
             .and()
@@ -87,8 +87,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login + query
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getGatewayLoginPath()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(queryFilter(securityConfigurationProperties.getGatewayQueryPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryPath()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
@@ -133,6 +133,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties, PROTECTED_ENDPOINTS);
+        return new CookieContentFilter(
+            authenticationManager(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            authConfigurationProperties,
+            PROTECTED_ENDPOINTS);
     }
 }

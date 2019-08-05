@@ -15,19 +15,19 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 
 import static org.junit.Assert.*;
 
-public class SecurityConfigurationPropertiesTest {
-    private final SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+public class AuthConfigurationPropertiesTest {
+    private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
     @Test(expected = AuthenticationServiceException.class)
     public void shouldThrowWhenZosmfIsNotConfigured() {
-        securityConfigurationProperties.setZosmfServiceId(null);
-        securityConfigurationProperties.validatedZosmfServiceId();
+        authConfigurationProperties.setZosmfServiceId(null);
+        authConfigurationProperties.validatedZosmfServiceId();
 
     }
 
     @Test
     public void shouldReturnWhenZosmfIsConfigured() {
-        securityConfigurationProperties.setZosmfServiceId("ZOSMF_SID");
-        assertEquals("ZOSMF_SID", securityConfigurationProperties.validatedZosmfServiceId());
+        authConfigurationProperties.setZosmfServiceId("ZOSMF_SID");
+        assertEquals("ZOSMF_SID", authConfigurationProperties.validatedZosmfServiceId());
     }
 }

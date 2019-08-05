@@ -11,6 +11,9 @@ package com.ca.apiml.security.config;
 
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import com.ca.mfaas.product.gateway.NewGatewayLookupService;
+import com.netflix.discovery.EurekaClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +22,12 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class SecurityServiceConfiguration {
+
+    @Bean
+    public NewGatewayLookupService newGatewayLookupService(
+        @Qualifier("eurekaClient") EurekaClient eurekaClient) {
+        return new NewGatewayLookupService(eurekaClient);
+    }
 
     @Bean
     public ErrorService errorService() {

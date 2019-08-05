@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.login;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import static org.junit.Assert.*;
 
 public class SuccessfulLoginHandlerTest {
-    private SecurityConfigurationProperties securityConfigurationProperties;
+    private AuthConfigurationProperties authConfigurationProperties;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private SuccessfulLoginHandler successfulLoginHandler;
@@ -30,8 +30,8 @@ public class SuccessfulLoginHandlerTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
 
-        securityConfigurationProperties = new SecurityConfigurationProperties();
-        successfulLoginHandler = new SuccessfulLoginHandler(securityConfigurationProperties);
+        authConfigurationProperties = new AuthConfigurationProperties();
+        successfulLoginHandler = new SuccessfulLoginHandler(authConfigurationProperties);
     }
 
     @Test
@@ -43,6 +43,6 @@ public class SuccessfulLoginHandlerTest {
         );
 
         assertEquals(HttpStatus.NO_CONTENT.value(), httpServletResponse.getStatus());
-        assertNotNull(httpServletResponse.getCookie(securityConfigurationProperties.getCookieProperties().getCookieName()));
+        assertNotNull(httpServletResponse.getCookie(authConfigurationProperties.getCookieProperties().getCookieName()));
     }
 }

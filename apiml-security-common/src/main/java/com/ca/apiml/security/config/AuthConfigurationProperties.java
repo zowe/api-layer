@@ -15,15 +15,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 
-/**
- * General configuration of security constants: endpoints, cookie, token
- */
+
 @Slf4j
 @Data
 @Component
 @ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 @SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
-public class SecurityConfigurationProperties {
+public class AuthConfigurationProperties {
+
     // General properties
     private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
     private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
@@ -34,8 +33,8 @@ public class SecurityConfigurationProperties {
     private String serviceLogoutPath = "/auth/logout/**";
     private String serviceQueryPath = "/auth/query/**";
 
-    private TokenProperties tokenProperties;
-    private CookieProperties cookieProperties;
+    private AuthConfigurationProperties.TokenProperties tokenProperties;
+    private AuthConfigurationProperties.CookieProperties cookieProperties;
 
     private String zosmfServiceId;
     private String provider = "zosmf";
@@ -62,9 +61,9 @@ public class SecurityConfigurationProperties {
         private Integer cookieMaxAge = -1;
     }
 
-    public SecurityConfigurationProperties() {
-        this.cookieProperties = new CookieProperties();
-        this.tokenProperties = new TokenProperties();
+    public AuthConfigurationProperties() {
+        this.cookieProperties = new AuthConfigurationProperties.CookieProperties();
+        this.tokenProperties = new AuthConfigurationProperties.TokenProperties();
     }
 
     /**
@@ -81,4 +80,6 @@ public class SecurityConfigurationProperties {
 
         return zosmfServiceId;
     }
+
+
 }

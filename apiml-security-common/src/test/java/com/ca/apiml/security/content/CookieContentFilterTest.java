@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.content;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.token.TokenAuthentication;
 import org.junit.Before;
@@ -35,7 +35,7 @@ import static org.mockito.Mockito.*;
 public class CookieContentFilterTest {
 
     private CookieContentFilter cookieContentFilter;
-    private final SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+    private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private final MockHttpServletRequest request = new MockHttpServletRequest();
     private final MockHttpServletResponse response = new MockHttpServletResponse();
     private final FilterChain filterChain = mock(FilterChain.class);
@@ -48,7 +48,7 @@ public class CookieContentFilterTest {
         cookieContentFilter = new CookieContentFilter(authenticationManager,
             failureHandler,
             resourceAccessExceptionHandler,
-            securityConfigurationProperties);
+            authConfigurationProperties);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class CookieContentFilterTest {
         String token = "token";
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
-        Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
         request.setCookies(cookie);
 
         cookieContentFilter.doFilter(request, response, filterChain);
@@ -76,7 +76,7 @@ public class CookieContentFilterTest {
         CookieContentFilter cookieContentFilter = new CookieContentFilter(authenticationManager,
             failureHandler,
             resourceAccessExceptionHandler,
-            securityConfigurationProperties,
+            authConfigurationProperties,
             endpoints);
 
         cookieContentFilter.doFilter(request, response, filterChain);
@@ -92,7 +92,7 @@ public class CookieContentFilterTest {
         AuthenticationException exception = new BadCredentialsException("Token not valid");
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
-        Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
         request.setCookies(cookie);
 
         when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
@@ -111,7 +111,7 @@ public class CookieContentFilterTest {
         RuntimeException exception = new RuntimeException("No Gateway");
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token);
-        Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), token);
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
         request.setCookies(cookie);
 
         when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
@@ -143,7 +143,7 @@ public class CookieContentFilterTest {
 
     @Test
     public void shouldExtractContent() {
-        Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), "cookie");
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), "cookie");
         request.setCookies(cookie);
 
         Optional<AbstractAuthenticationToken> content = cookieContentFilter.extractContent(request);
@@ -157,7 +157,7 @@ public class CookieContentFilterTest {
 
     @Test
     public void shouldReturnEmptyIfCookieValueIsEmpty() {
-        Cookie cookie = new Cookie(securityConfigurationProperties.getCookieProperties().getCookieName(), "");
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), "");
         request.setCookies(cookie);
 
         Optional<AbstractAuthenticationToken> content = cookieContentFilter.extractContent(request);

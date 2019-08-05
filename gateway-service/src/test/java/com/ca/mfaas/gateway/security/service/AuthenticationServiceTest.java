@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.service;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.token.TokenAuthentication;
 import com.ca.apiml.security.token.QueryResponse;
 import com.ca.apiml.security.token.TokenExpireException;
@@ -47,7 +47,7 @@ public class AuthenticationServiceTest {
     private PublicKey publicKey;
 
     private AuthenticationService authService;
-    private SecurityConfigurationProperties securityConfigurationProperties;
+    private AuthConfigurationProperties authConfigurationProperties;
 
     @Mock
     private JwtSecurityInitializer jwtSecurityInitializer;
@@ -63,8 +63,8 @@ public class AuthenticationServiceTest {
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
         when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
-        securityConfigurationProperties = new SecurityConfigurationProperties();
-        authService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
+        authConfigurationProperties = new AuthConfigurationProperties();
+        authService = new AuthenticationService(authConfigurationProperties, jwtSecurityInitializer);
     }
 
     @Test
@@ -180,7 +180,7 @@ public class AuthenticationServiceTest {
 
         return Jwts.builder()
             .setExpiration(new Date(expiredTimeMillis))
-            .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
+            .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
             .signWith(ALGORITHM, secretKey)
             .compact();
     }

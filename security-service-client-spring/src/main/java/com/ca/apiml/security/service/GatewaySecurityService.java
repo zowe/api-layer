@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.service;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.error.ErrorType;
 import com.ca.apiml.security.handler.RestResponseHandler;
 import com.ca.apiml.security.token.QueryResponse;
@@ -38,7 +38,7 @@ import java.util.Optional;
 public class GatewaySecurityService {
     //private final GatewayConfigProperties gatewayConfigProperties;
     private final NewGatewayLookupService gatewayLookupService;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
     private final RestTemplate restTemplate;
     private final RestResponseHandler responseHandler;
 
@@ -50,9 +50,9 @@ public class GatewaySecurityService {
      * @return Valid JWT token for the supplied credentials
      */
     public Optional<String> login(String username, String password) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayInstance();
+        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
-            gatewayConfigProperties.getHostname(), securityConfigurationProperties.getGatewayLoginEndpoint());
+            gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode loginRequest = mapper.createObjectNode();
@@ -84,10 +84,10 @@ public class GatewaySecurityService {
      * @return JWT token data as {@link QueryResponse}
      */
     public QueryResponse query(String token) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayInstance();
+        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
-            gatewayConfigProperties.getHostname(), securityConfigurationProperties.getGatewayQueryEndpoint());
-        String cookie = String.format("%s=%s", securityConfigurationProperties.getCookieProperties().getCookieName(), token);
+            gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
+        String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.COOKIE, cookie);
@@ -108,7 +108,7 @@ public class GatewaySecurityService {
     }
 
     private Optional<String> extractToken(String cookies) {
-        String cookieName = securityConfigurationProperties.getCookieProperties().getCookieName();
+        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
 
         if (cookies == null || cookies.isEmpty() || !cookies.contains(cookieName)) {
             return Optional.empty();
