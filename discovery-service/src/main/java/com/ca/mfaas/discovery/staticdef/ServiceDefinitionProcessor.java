@@ -271,7 +271,7 @@ public class ServiceDefinitionProcessor {
         if (tile != null) {
             mt.put("mfaas.discovery.catalogUiTile.id", tile.getId());
             mt.put("mfaas.discovery.catalogUiTile.version", DEFAULT_TILE_VERSION);
-            mt.put("mfaas.discovery.catalogUiTile.title", tile.getTitle());
+            mt.put(CATALOG_TITLE, tile.getTitle());
             mt.put("mfaas.discovery.catalogUiTile.description", tile.getDescription());
 
             if (service.getApiInfo() != null) {

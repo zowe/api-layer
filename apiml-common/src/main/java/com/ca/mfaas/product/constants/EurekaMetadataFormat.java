@@ -22,9 +22,11 @@ public final class EurekaMetadataFormat {
     public static final String ROUTES = "routes";
     public static final String GATEWAY_URL = "gatewayUrl";
     public static final String SERVICE_URL = "serviceUrl";
+    public static final String CATALOG_TITLE = "catalog.title";
 
     //v1
     public static final String V1_ROUTES = "routed-services";
     public static final String V1_GATEWAY_URL = "gateway-url";
     public static final String V1_SERVICE_URL = "service-url";
+    public static final String V1_CATALOG_TITLE = "mfaas.discovery.catalogUiTile.title";
 }

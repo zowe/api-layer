@@ -22,6 +22,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 
+import static com.ca.mfaas.product.constants.EurekaMetadataFormat.CATALOG_TITLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.when;
@@ -31,7 +32,6 @@ import static org.mockito.Mockito.when;
 public class CachedProductFamilyTest {
 
     private static final String CATALOG_UI_ID_KEY = "mfaas.discovery.catalogUiTile.id";
-    private static final String CATALOG_UI_TITLE_KEY = "mfaas.discovery.catalogUiTile.title";
     private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.description";
     private static final String CATALOG_UI_VERSION_KEY = "mfaas.discovery.catalogUiTile.version";
 
@@ -160,14 +160,14 @@ public class CachedProductFamilyTest {
         HashMap<String, String> metadata = new HashMap<>();
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title");
+        metadata.put(CATALOG_TITLE, "Title");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description");
         metadata.put(CATALOG_UI_VERSION_KEY, "1.0.0");
         InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         APIContainer originalContainer = service.getContainer("demoapp", instance);
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
 
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title 2");
+        metadata.put(CATALOG_TITLE, "Title 2");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description 2");
         metadata.put(CATALOG_UI_VERSION_KEY, "1.0.1");
         instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
@@ -179,7 +179,7 @@ public class CachedProductFamilyTest {
         boolean equals = updatedTimestamp.equals(createTimestamp);
         assertFalse(equals);
 
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title 2");
+        metadata.put(CATALOG_TITLE, "Title 2");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description 2");
         metadata.put(CATALOG_UI_VERSION_KEY, "2.0.0");
         instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
@@ -197,14 +197,14 @@ public class CachedProductFamilyTest {
         HashMap<String, String> metadata = new HashMap<>();
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title");
+        metadata.put(CATALOG_TITLE, "Title");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description");
         metadata.put(CATALOG_UI_VERSION_KEY, "1.0.0");
         InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         APIContainer originalContainer = service.getContainer("demoapp", instance);
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
 
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title 2");
+        metadata.put(CATALOG_TITLE, "Title 2");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description 2");
         metadata.put(CATALOG_UI_VERSION_KEY, "1.0.1");
         instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
@@ -216,7 +216,7 @@ public class CachedProductFamilyTest {
         boolean equals = updatedTimestamp.equals(createTimestamp);
         assertFalse(equals);
 
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title 2");
+        metadata.put(CATALOG_TITLE, "Title 2");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description 2");
         metadata.put(CATALOG_UI_VERSION_KEY, "2.0.0");
         instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
@@ -337,7 +337,7 @@ public class CachedProductFamilyTest {
     public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew() {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title");
+        metadata.put(CATALOG_TITLE, "Title");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description");
         metadata.put(CATALOG_UI_VERSION_KEY, "1.0.0");
         metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle");
@@ -350,7 +350,7 @@ public class CachedProductFamilyTest {
         assertEquals(1, lsContainer.size());
 
         assertEquals(metadata.get(CATALOG_UI_ID_KEY), actualDemoAppContainer.getId());
-        assertEquals(metadata.get(CATALOG_UI_TITLE_KEY), actualDemoAppContainer.getTitle());
+        assertEquals(metadata.get(CATALOG_TITLE), actualDemoAppContainer.getTitle());
         assertEquals(metadata.get(CATALOG_UI_DESCRIPTION_KEY), actualDemoAppContainer.getDescription());
         assertEquals(metadata.get(CATALOG_UI_VERSION_KEY), actualDemoAppContainer.getVersion());
 
@@ -369,7 +369,7 @@ public class CachedProductFamilyTest {
     public void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title");
+        metadata.put(CATALOG_TITLE, "Title");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description");
         metadata.put(CATALOG_UI_VERSION_KEY, "1.0.0");
         metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle");
@@ -380,7 +380,7 @@ public class CachedProductFamilyTest {
         Thread.sleep(100);
 
 
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title2");
+        metadata.put(CATALOG_TITLE, "Title2");
         metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description2");
         metadata.put(CATALOG_UI_VERSION_KEY, "2.0.0");
         metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle2");
@@ -396,7 +396,7 @@ public class CachedProductFamilyTest {
         assertEquals(1, lsContainer.size());
 
         assertEquals(metadata.get(CATALOG_UI_ID_KEY), actualDemoAppContainer.getId());
-        assertEquals(metadata.get(CATALOG_UI_TITLE_KEY), actualDemoAppContainer.getTitle());
+        assertEquals(metadata.get(CATALOG_TITLE), actualDemoAppContainer.getTitle());
         assertEquals(metadata.get(CATALOG_UI_DESCRIPTION_KEY), actualDemoAppContainer.getDescription());
         assertEquals(metadata.get(CATALOG_UI_VERSION_KEY), actualDemoAppContainer.getVersion());
 

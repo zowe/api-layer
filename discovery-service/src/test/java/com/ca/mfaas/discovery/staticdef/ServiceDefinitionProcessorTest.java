@@ -404,7 +404,7 @@ public class ServiceDefinitionProcessorTest {
         assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get("mfaas.discovery.service.title"));
         assertEquals("2.0.0", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.version"));
         assertEquals("1.0.0", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.version"));
-        assertEquals("Static API Services", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.title"));
+        assertEquals("Static API Services", instances.get(0).getMetadata().get(CATALOG_TITLE));
         assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.swaggerUrl"));
         assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get("mfaas.discovery.service.description"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
