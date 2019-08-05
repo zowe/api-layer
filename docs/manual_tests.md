@@ -13,7 +13,7 @@ Note 2: In all the steps above, the loading spinner should display in waiting pe
 
 ### For API Gateway
 Basic routing of an API endpoint (automated by integration tests) 
-   - Issue an HTTP GET request on ``http://yourhost:10010/api/v1/helloworld/greeting`` (via Curl, or Httpie)
+   - Issue an HTTP GET request on ``http://yourhost:10010/api/v1/discoverableclient/greeting`` (via Curl, or Httpie)
    - Check that the response code is 200 OK
 
 
@@ -31,7 +31,7 @@ Basic routing of an API endpoint (automated by integration tests)
     - Text on search bar should disappear
     - All tiles should show up again
 - Click Sample API Mediation Layer Application
-    - No error should be displayed and API Mediation Layer API page(<https://yourhost:10010/ui/v1/apicatalog/#/tile/apicatalog/apicatalog>) should appear
+    - No error should be displayed and API Mediation Layer API page(<https://yourhost:10010/ui/v1/apicatalog/#/tile/cademoapps/>) should appear
     - Full service title should appear when you hover mouse on top of tab names (discoverableclient, enablerv1samleapp)
 - Click on the provided URL </api/v1/apicatalog/apidoc/discoverableclient/v1>
     - A full JSON response should return in a new browser tab, with no HTTP errors
@@ -49,4 +49,4 @@ Basic routing of an API endpoint (automated by integration tests)
 - Click on the `Logout` button 
     - you should log out from the API Catalog and be redirected to the login page
 - Try to insert some invalid credentials and press the `Sign in` button
-    - should display a message saying `Username or password is invalid` and you should not be able to log into the API Catalog
+    - should display a message saying `Invalid username or password` and you should not be able to log into the API Catalog
