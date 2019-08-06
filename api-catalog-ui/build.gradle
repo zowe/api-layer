@@ -45,6 +45,16 @@ task runTests(type: NpmTask) {
     args = ['run', 'test']
 }
 
+
+task npmCi(type: NpmTask) {
+    dependsOn npmSetup
+    npmCommand = ["ci"]
+    inputs.file("package.json")
+    inputs.file("package-lock.json")
+    outputs.dir("node_modules")
+}
+
+
 task bundle(type: NpmTask) {
     inputs.dir('frontend/src')
     inputs.dir('frontend/public')
@@ -54,7 +64,7 @@ task bundle(type: NpmTask) {
 
     outputs.dir('frontend/build')
 
-    dependsOn npmInstall
+    dependsOn npmCi
     args = ['run', 'build']
 }
 
