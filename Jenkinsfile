@@ -137,8 +137,10 @@ pipeline {
                 stage ('Build API Catalog') {
                     steps {
                         timeout(time: 10, unit: 'MINUTES') {
-                            sh 'cp /tmp/node_modules ./api-catalog-ui/frontend'
-                            sh './gradlew :api-catalog-services:build'
+                            sh """
+                            cp /tmp/node_modules ./api-catalog-ui/frontend
+                            ./gradlew :api-catalog-services:build
+                            """
                         }
                     }
                 }
