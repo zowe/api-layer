@@ -24,7 +24,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
 
 @Slf4j
 class ApimlRouteLocator extends DiscoveryClientRouteLocator {

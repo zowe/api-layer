@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataFormat.CATALOG_TITLE;
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -44,9 +44,6 @@ import static java.util.stream.Collectors.toList;
 @Service
 @CacheConfig(cacheNames = {"products"})
 public class CachedProductFamilyService {
-    private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.description";
-    private static final String CATALOG_UI_VERSION_KEY = "mfaas.discovery.catalogUiTile.version";
-
     private final Map<String, APIContainer> products = new HashMap<>();
 
     private final CachedServicesService cachedServicesService;
@@ -229,8 +226,8 @@ public class CachedProductFamilyService {
     private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo instanceInfo) {
         Map<String, String> instanceInfoMetadata = instanceInfo.getMetadata();
         String title = instanceInfoMetadata.get(CATALOG_TITLE);
-        String description = instanceInfoMetadata.get(CATALOG_UI_DESCRIPTION_KEY);
-        String version = instanceInfoMetadata.get(CATALOG_UI_VERSION_KEY);
+        String description = instanceInfoMetadata.get(CATALOG_DESCRIPTION);
+        String version = instanceInfoMetadata.get(CATALOG_VERSION);
         APIContainer container = new APIContainer();
         container.setStatus("UP");
         container.setId(productFamilyId);
@@ -253,7 +250,7 @@ public class CachedProductFamilyService {
      * @param container    parent container
      */
     private void checkIfContainerShouldBeUpdatedFromInstance(InstanceInfo instanceInfo, APIContainer container) {
-        String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_UI_VERSION_KEY);
+        String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_VERSION);
         // if the instance has a parent version
         if (versionFromInstance != null) {
             final SemanticVersion instanceVer = new SemanticVersion(versionFromInstance);
@@ -269,7 +266,7 @@ public class CachedProductFamilyService {
             if (result > 0) {
                 container.setVersion(versionFromInstance);
                 String title = instanceInfo.getMetadata().get(CATALOG_TITLE);
-                String description = instanceInfo.getMetadata().get(CATALOG_UI_DESCRIPTION_KEY);
+                String description = instanceInfo.getMetadata().get(CATALOG_DESCRIPTION);
                 if (!container.getTitle().equals(title)) {
                     container.setTitle(title);
                 }
@@ -328,9 +325,9 @@ public class CachedProductFamilyService {
             apiServices.add(service);
             container.setServices(apiServices);
             //update container
-            String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_UI_VERSION_KEY);
+            String versionFromInstance = instanceInfo.getMetadata().get(CATALOG_VERSION);
             String title = instanceInfo.getMetadata().get(CATALOG_TITLE);
-            String description = instanceInfo.getMetadata().get(CATALOG_UI_DESCRIPTION_KEY);
+            String description = instanceInfo.getMetadata().get(CATALOG_DESCRIPTION);
 
             container.setVersion(versionFromInstance);
             container.setTitle(title);

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
 
 @Service
 public class MetadataTranslationService {
@@ -40,10 +40,17 @@ public class MetadataTranslationService {
         metadata.keySet().removeIf(key -> key.contains(V1_ROUTES));
 
         // Catalog
-        String title = metadata.get(V1_CATALOG_TITLE);
-        if (title != null) {
-            metadata.remove(V1_CATALOG_TITLE);
-            metadata.put(CATALOG_TITLE, title);
+        translateParameter(V1_CATALOG_ID, CATALOG_ID, metadata);
+        translateParameter(V1_CATALOG_VERSION, CATALOG_VERSION, metadata);
+        translateParameter(V1_CATALOG_TITLE, CATALOG_TITLE, metadata);
+        translateParameter(V1_CATALOG_DESCRIPTION, CATALOG_DESCRIPTION, metadata);
+    }
+
+    private void translateParameter(String oldParameter, String newParameter, Map<String, String> metadata) {
+        String parameterValue = metadata.get(oldParameter);
+        if (parameterValue != null) {
+            metadata.remove(oldParameter);
+            metadata.put(newParameter, parameterValue);
         }
     }
 }

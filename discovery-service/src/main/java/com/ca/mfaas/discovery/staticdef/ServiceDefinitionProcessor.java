@@ -29,7 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
 
 @Slf4j
 @Component
@@ -269,10 +269,10 @@ public class ServiceDefinitionProcessor {
         }
 
         if (tile != null) {
-            mt.put("mfaas.discovery.catalogUiTile.id", tile.getId());
-            mt.put("mfaas.discovery.catalogUiTile.version", DEFAULT_TILE_VERSION);
+            mt.put(CATALOG_ID, tile.getId());
+            mt.put(CATALOG_VERSION, DEFAULT_TILE_VERSION);
             mt.put(CATALOG_TITLE, tile.getTitle());
-            mt.put("mfaas.discovery.catalogUiTile.description", tile.getDescription());
+            mt.put(CATALOG_DESCRIPTION, tile.getDescription());
 
             if (service.getApiInfo() != null) {
                 for (ApiInfo apiInfo : service.getApiInfo()) {

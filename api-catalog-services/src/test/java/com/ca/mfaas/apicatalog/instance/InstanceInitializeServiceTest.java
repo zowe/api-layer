@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.isA;
 import static org.mockito.Mockito.*;
@@ -80,7 +80,7 @@ public class InstanceInitializeServiceTest {
         instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
 
         verify(cachedProductFamilyService, times(2)).createContainerFromInstance(
-            apiCatalogInstance.getMetadata().get("mfaas.discovery.catalogUiTile.id"),
+            apiCatalogInstance.getMetadata().get(CATALOG_ID),
             apiCatalogInstance
         );
 
@@ -99,7 +99,7 @@ public class InstanceInitializeServiceTest {
             .filter(f -> !f.getAppName().equals(catalogId.toUpperCase()))
             .forEach(instanceInfo ->
                 verify(cachedProductFamilyService, times(1)).createContainerFromInstance(
-                    instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id"),
+                    instanceInfo.getMetadata().get(CATALOG_ID),
                     instanceInfo
                 ));
     }
@@ -196,7 +196,7 @@ public class InstanceInitializeServiceTest {
 
     private HashMap<String, String> getMetadataByCatalogUiTitleId(String catalogUiTileId, String uiRoute) {
         HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("mfaas.discovery.catalogUiTile.id", catalogUiTileId);
+        metadata.put(CATALOG_ID, catalogUiTileId);
         metadata.put(ROUTES + ".ui-v1." + SERVICE_URL, uiRoute);
         metadata.put(ROUTES + ".ui-v1." + GATEWAY_URL, "ui/v1");
         metadata.put(ROUTES + ".api-v1." + SERVICE_URL, "api/v1");

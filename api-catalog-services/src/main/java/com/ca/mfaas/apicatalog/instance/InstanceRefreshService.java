@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.*;
 
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.CATALOG_ID;
+
 /**
  * Refresh the cache with the latest state of the discovery service
  * Use deltas to get latest changes from Eureka
@@ -235,10 +237,10 @@ public class InstanceRefreshService {
      * @param instanceInfo      the instance
      */
     private void updateContainer(Set<String> containersUpdated, String serviceId, InstanceInfo instanceInfo) {
-        String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
+        String productFamilyId = instanceInfo.getMetadata().get(CATALOG_ID);
         if (productFamilyId == null) {
             log.warn("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
-                " must contain an entry for mfaas.discovery.catalogUiTile.id");
+                " must contain an entry for {}", CATALOG_ID);
         } else {
             APIContainer container = cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);
             log.debug("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
 
 /**
  * Main page for Gateway, displaying status of Apiml services and build version information

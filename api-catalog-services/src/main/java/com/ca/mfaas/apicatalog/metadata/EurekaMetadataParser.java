@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
 
 @Slf4j
 public class EurekaMetadataParser {
