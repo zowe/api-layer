@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataFormat.*;
+import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.assertEquals;
 
 public class EurekaMetadataParserTest {
