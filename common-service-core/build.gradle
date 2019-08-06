@@ -6,7 +6,6 @@ dependencies {
     compile(libraries.jackson_databind)
     compile(libraries.slf4j_api)
     compile(libraries.snakeyaml)
-    compile(libraries.spring_hateoas)
 
     compileOnly(libraries.javax_servlet_api)
     compileOnly(libraries.lombok)
