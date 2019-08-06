@@ -1,0 +1,43 @@
+serviceId: hellozowe
+title: Hello ZOWE REST API
+description: Example for exposing a REST API using plain Java API discovery enabler
+baseUrl: http://localhost:10021/hello-zowe
+homePageRelativeUrl:
+statusPageRelativeUrl: /application/info
+healthCheckRelativeUrl: /application/health
+
+eureka:
+    hostname: localhost
+    ipAddress: 127.0.0.1
+    port: 10021
+    instance:
+
+discoveryServiceUrls:
+    - https://${eureka.hostname}:${eureka.port}/eureka
+ssl:
+    verifySslCertificatesOfServices: true
+    protocol: TLSv1.2
+    keyAlias: localhost
+    keyPassword: password
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    keyStorePassword: password
+    keyStoreType: PKCS12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+    trustStoreType: PKCS12
+routes:
+    - gatewayUrl: api
+      serviceUrl: /hello-zowe
+    - gatewayUrl: api/v1
+      serviceUrl: /hello-zowe/api/v1
+    - gatewayUrl: api/v1/api-doc
+      serviceUrl: /hello-zowe/api-doc
+apiInfo:
+    - apiId: org.zowe.hello-zowe
+      gatewayUrl: api/v1
+      swaggerUrl: http://localhost:10021/hello-zowe/api-doc
+catalogUiTile:
+    id: cademoapps
+    title: Sample API ML Applications
+    description: Applications which demonstrate how to make a service integrated to the API ML ecosystem using plain Java API discovery enabler
+    version: 1.0.0
