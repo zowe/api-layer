@@ -33,10 +33,12 @@ import java.util.TimerTask;
 @Slf4j
 public class GatewayLookupService {
 
-    private GatewayConfigProperties foundGatewayConfigProperties;
     private final RetryTemplate retryTemplate;
     private final EurekaClient eurekaClient;
     private final Timer startupTimer = new Timer();
+
+    @Autowired
+    private GatewayClient gatewayClient;
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
@@ -52,9 +54,10 @@ public class GatewayLookupService {
 
     @EventListener
     public void postContextStart(ApplicationReadyEvent event) {
-        if (foundGatewayConfigProperties != null) {
+        if (gatewayClient.isInitialized()) {
             return;
         }
+
         startupTimer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -64,17 +67,22 @@ public class GatewayLookupService {
     }
 
     private void initialize() {
-        if (foundGatewayConfigProperties != null) {
+        if (gatewayClient.isInitialized()) {
             log.warn("GatewayLookupService is already initialized");
             return;
         }
 
         log.info("GatewayLookupService starting asynchronous initialization of Gateway configuration");
 
-        foundGatewayConfigProperties = retryTemplate.execute(context -> findGateway());
+        GatewayConfigProperties foundGatewayConfigProperties = retryTemplate.execute(context -> findGateway());
         String message = String.format("GatewayLookupService has been initialized with Gateway instance on url: %s://%s",
             foundGatewayConfigProperties.getScheme(), foundGatewayConfigProperties.getHostname());
         log.info(message);
+
+        gatewayClient.setGatewayConfigProperties(foundGatewayConfigProperties);
+        log.info("Updated bean:gatewayClient");//debug
+
+
         applicationEventPublisher.publishEvent(new GatewayLookupCompleteEvent(this));
     }
 
@@ -108,12 +116,5 @@ public class GatewayLookupService {
             throw new RuntimeException(msg, e);
         }
 
-    }
-
-    public GatewayConfigProperties getGatewayInstance() {
-        if (foundGatewayConfigProperties == null) {
-            throw new GatewayNotFoundException("No Gateway Instance is known at the moment");
-        }
-        return foundGatewayConfigProperties;
     }
 }

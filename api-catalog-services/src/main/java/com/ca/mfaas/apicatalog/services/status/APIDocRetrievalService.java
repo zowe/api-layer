@@ -15,8 +15,8 @@ import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
 import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.gateway.GatewayLookupService;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
@@ -42,7 +42,7 @@ public class APIDocRetrievalService {
 
     private final RestTemplate restTemplate;
     private final InstanceRetrievalService instanceRetrievalService;
-    private final GatewayLookupService gatewayLookupService;
+    private final GatewayClient gatewayClient;
 
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
@@ -138,7 +138,7 @@ public class APIDocRetrievalService {
     private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
                                                         RoutedServices routes,
                                                         ApiInfo apiInfo) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayInstance();
+        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String response = swaggerGenerator.generateSubstituteSwaggerForService(
             instanceInfo,
             apiInfo,

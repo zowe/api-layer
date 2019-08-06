@@ -14,7 +14,7 @@ import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
 import com.ca.mfaas.product.constants.CoreService;
-import com.ca.mfaas.product.gateway.GatewayLookupService;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.routing.transform.TransformService;
@@ -56,13 +56,13 @@ public class CachedProductFamilyService {
     private final TransformService transformService;
 
     @Autowired
-    public CachedProductFamilyService(GatewayLookupService gatewayLookupService,
+    public CachedProductFamilyService(GatewayClient gatewayClient,
                                       CachedServicesService cachedServicesService,
                                       @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
                                           Integer cacheRefreshUpdateThresholdInMillis) {
         this.cachedServicesService = cachedServicesService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
-        this.transformService = new TransformService(gatewayLookupService);
+        this.transformService = new TransformService(gatewayClient);
     }
 
     /**

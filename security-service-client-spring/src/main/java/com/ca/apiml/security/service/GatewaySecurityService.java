@@ -13,8 +13,8 @@ import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.error.ErrorType;
 import com.ca.apiml.security.handler.RestResponseHandler;
 import com.ca.apiml.security.token.QueryResponse;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.gateway.GatewayLookupService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class GatewaySecurityService {
-    private final GatewayLookupService gatewayLookupService;
+    private final GatewayClient gatewayClient;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final RestTemplate restTemplate;
     private final RestResponseHandler responseHandler;
@@ -49,7 +49,7 @@ public class GatewaySecurityService {
      * @return Valid JWT token for the supplied credentials
      */
     public Optional<String> login(String username, String password) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayInstance();
+        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
 
@@ -83,7 +83,7 @@ public class GatewaySecurityService {
      * @return JWT token data as {@link QueryResponse}
      */
     public QueryResponse query(String token) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayInstance();
+        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
         String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);

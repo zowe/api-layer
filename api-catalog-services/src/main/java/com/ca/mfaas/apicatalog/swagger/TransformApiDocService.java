@@ -12,8 +12,8 @@ package com.ca.mfaas.apicatalog.swagger;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.eurekaservice.model.ApiInfo;
 import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.gateway.GatewayLookupService;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -44,10 +44,10 @@ public class TransformApiDocService {
     private static final String HARDCODED_VERSION = "/v1";
     private static final String SEPARATOR = "/";
 
-    private final GatewayLookupService gatewayLookupService;
+    private final GatewayClient gatewayClient;
 
-    public TransformApiDocService(GatewayLookupService gatewayLookupService) {
-        this.gatewayLookupService = gatewayLookupService;
+    public TransformApiDocService(GatewayClient gatewayClient) {
+        this.gatewayClient = gatewayClient;
     }
 
     /**
@@ -91,7 +91,7 @@ public class TransformApiDocService {
      * @param hidden    do not add link for automatically generated API doc
      */
     private void updateSchemeHostAndLink(Swagger swagger, String serviceId, boolean hidden) {
-        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayInstance();
+        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
             CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
         String swaggerLink = "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";

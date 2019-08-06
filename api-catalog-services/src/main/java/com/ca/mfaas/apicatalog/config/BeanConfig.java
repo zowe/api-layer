@@ -10,7 +10,7 @@
 package com.ca.mfaas.apicatalog.config;
 
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.product.gateway.GatewayLookupService;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.routing.transform.TransformService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -32,8 +32,8 @@ public class BeanConfig {
     }
 
     @Bean
-    public TransformService transformService(GatewayLookupService gatewayLookupService) {
-        return new TransformService(gatewayLookupService);
+    public TransformService transformService(GatewayClient gatewayClient) {
+        return new TransformService(gatewayClient);
     }
 
 }

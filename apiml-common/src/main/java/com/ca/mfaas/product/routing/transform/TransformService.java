@@ -10,9 +10,8 @@
 
 package com.ca.mfaas.product.routing.transform;
 
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.gateway.GatewayLookupService;
-import com.ca.mfaas.product.gateway.GatewayNotFoundException;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
@@ -26,15 +25,10 @@ public class TransformService {
 
     private static final String SEPARATOR = "/";
 
-    private GatewayLookupService gatewayLookupService;
-    private GatewayConfigProperties gatewayConfigProperties;
+    private final GatewayClient gatewayClient;
 
-    public TransformService(GatewayLookupService gatewayLookupService) {
-        this.gatewayLookupService = gatewayLookupService;
-    }
-
-    public TransformService(GatewayConfigProperties gatewayConfigProperties) {
-        this.gatewayConfigProperties = gatewayConfigProperties;
+    public TransformService(GatewayClient gatewayClient) {
+        this.gatewayClient = gatewayClient;
     }
 
     /**
@@ -52,17 +46,10 @@ public class TransformService {
                                String serviceUrl,
                                RoutedServices routes) throws URLTransformationException {
 
-        GatewayConfigProperties localGatewayConfigProperties = null;
-        if (gatewayConfigProperties == null) {
-            try {
-                localGatewayConfigProperties = gatewayLookupService.getGatewayInstance();
-            } catch (GatewayNotFoundException e) {
-                String message = "Gateway not found yet, transform service cannot perform the request";
-                log.error(message);
-                throw new URLTransformationException(message);
-            }
-        } else {
-            localGatewayConfigProperties = this.gatewayConfigProperties;
+        if (!gatewayClient.isInitialized()) {
+            String message = "Gateway not found yet, transform service cannot perform the request";
+            log.error(message);
+            throw new URLTransformationException(message);
         }
 
         URI serviceUri = URI.create(serviceUrl);
@@ -88,9 +75,11 @@ public class TransformService {
             throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
         }
 
+        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
+
         return String.format("%s://%s/%s/%s%s",
-            localGatewayConfigProperties.getScheme(),
-            localGatewayConfigProperties.getHostname(),
+            gatewayConfigProperties.getScheme(),
+            gatewayConfigProperties.getHostname(),
             route.getGatewayUrl(),
             serviceId,
             endPoint);

@@ -12,8 +12,7 @@ package com.ca.mfaas.apicatalog.instance;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
-import com.ca.mfaas.product.gateway.GatewayLookupService;
-import com.ca.mfaas.product.gateway.GatewayNotFoundException;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -36,7 +35,7 @@ import java.util.concurrent.*;
 public class InstanceRefreshService {
 
     // until versioning is implemented, only v1 API docs are supported
-    private final GatewayLookupService gatewayLookupService;
+    private final GatewayClient gatewayClient;
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
@@ -50,11 +49,8 @@ public class InstanceRefreshService {
         initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
         fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
-
-        try {
-            gatewayLookupService.getGatewayInstance();
-        }
-        catch (GatewayNotFoundException e) {
+        //TODO: it's just replaced with new impl. Should be checked the case
+        if (!gatewayClient.isInitialized()) {
             log.debug("Gateway not found yet, skipping the InstanceRefreshService refresh");
             return;
         }
