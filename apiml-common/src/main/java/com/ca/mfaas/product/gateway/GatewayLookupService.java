@@ -15,8 +15,10 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.RetryException;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
@@ -33,20 +35,20 @@ public class GatewayLookupService {
 
     private GatewayConfigProperties foundGatewayConfigProperties;
     private final RetryTemplate retryTemplate;
-
     private final EurekaClient eurekaClient;
     private final Timer startupTimer = new Timer();
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     public GatewayLookupService(@Qualifier("eurekaClient") EurekaClient eurekaClient) {
         this.eurekaClient = eurekaClient;
         this.retryTemplate = new RetryTemplate();
-
         retryTemplate.setRetryPolicy(new AlwaysRetryPolicy());
         FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
         backOffPolicy.setBackOffPeriod(1000);
         retryTemplate.setBackOffPolicy(backOffPolicy);
     }
-
 
     @EventListener
     public void postContextStart(ApplicationReadyEvent event) {
@@ -70,7 +72,10 @@ public class GatewayLookupService {
         log.info("GatewayLookupService starting asynchronous initialization of Gateway configuration");
 
         foundGatewayConfigProperties = retryTemplate.execute(context -> findGateway());
-        log.info("GatewayLookupService has been initialized with Gateway instance on url: " + foundGatewayConfigProperties.getScheme() + "://" + foundGatewayConfigProperties.getHostname());
+        String message = String.format("GatewayLookupService has been initialized with Gateway instance on url: %s://%s",
+            foundGatewayConfigProperties.getScheme(), foundGatewayConfigProperties.getHostname());
+        log.info(message);
+        applicationEventPublisher.publishEvent(new GatewayLookupCompleteEvent(this));
     }
 
     private GatewayConfigProperties findGateway() {
