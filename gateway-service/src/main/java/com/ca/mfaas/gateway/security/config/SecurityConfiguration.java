@@ -20,7 +20,6 @@ import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -40,7 +39,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@ComponentScan("com.ca.apiml.security")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {

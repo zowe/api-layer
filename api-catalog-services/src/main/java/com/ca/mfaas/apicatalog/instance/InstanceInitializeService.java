@@ -13,6 +13,7 @@ import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayNotFoundException;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
@@ -67,7 +68,7 @@ public class InstanceInitializeService {
                 log.info("API Catalog instance found, retrieving all services.");
                 getAllInstances(apiCatalogInstance);
             }
-        } catch (InstanceInitializationException e) {
+        } catch (InstanceInitializationException | GatewayNotFoundException e) {
             throw new RetryException(e.getMessage());
         } catch (Exception e) {
             String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service";

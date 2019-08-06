@@ -9,10 +9,11 @@
  */
 package com.ca.mfaas.apicatalog.swagger;
 
-import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
-import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import com.ca.mfaas.product.gateway.GatewayLookupService;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,7 +27,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.validation.UnexpectedTypeException;
-
 import java.io.IOException;
 import java.util.*;
 
@@ -44,10 +44,10 @@ public class TransformApiDocService {
     private static final String HARDCODED_VERSION = "/v1";
     private static final String SEPARATOR = "/";
 
-    private final GatewayConfigProperties gatewayConfigProperties;
+    private final GatewayLookupService gatewayLookupService;
 
-    public TransformApiDocService(GatewayConfigProperties gatewayConfigProperties) {
-        this.gatewayConfigProperties = gatewayConfigProperties;
+    public TransformApiDocService(GatewayLookupService gatewayLookupService) {
+        this.gatewayLookupService = gatewayLookupService;
     }
 
     /**
@@ -91,6 +91,7 @@ public class TransformApiDocService {
      * @param hidden    do not add link for automatically generated API doc
      */
     private void updateSchemeHostAndLink(Swagger swagger, String serviceId, boolean hidden) {
+        GatewayConfigProperties gatewayConfigProperties = gatewayLookupService.getGatewayInstance();
         String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
             CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
         String swaggerLink = "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";

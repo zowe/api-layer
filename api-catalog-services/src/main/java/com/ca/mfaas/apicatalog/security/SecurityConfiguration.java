@@ -10,16 +10,15 @@
 package com.ca.mfaas.apicatalog.security;
 
 import com.ca.apiml.security.config.AuthConfigurationProperties;
+import com.ca.apiml.security.config.HandlerInitializer;
 import com.ca.apiml.security.content.BasicContentFilter;
 import com.ca.apiml.security.content.CookieContentFilter;
 import com.ca.apiml.security.login.GatewayLoginProvider;
 import com.ca.apiml.security.login.LoginFilter;
 import com.ca.apiml.security.token.GatewayTokenProvider;
-import com.ca.apiml.security.config.HandlerInitializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -42,7 +41,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@ComponentScan("com.ca.apiml.security")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper securityObjectMapper;

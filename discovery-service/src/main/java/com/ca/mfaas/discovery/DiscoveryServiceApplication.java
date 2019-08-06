@@ -24,7 +24,10 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableEurekaServer
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @EnableConfigurationProperties
-@ComponentScan({"com.ca.mfaas.discovery", "com.ca.mfaas.product.security", "com.ca.mfaas.product.web"})
+@ComponentScan({
+    "com.ca.mfaas.discovery",
+    "com.ca.mfaas.product.security",
+    "com.ca.mfaas.product.web"})
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {

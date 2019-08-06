@@ -10,11 +10,8 @@
 package com.ca.mfaas.apicatalog.services.status.listeners;
 
 import com.ca.mfaas.apicatalog.instance.InstanceInitializeService;
-import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -36,8 +33,10 @@ public class AppContextInitialisedListener {
      *
      * @param event Spring event
      */
-    @EventListener
+    //TODO Synchronize with GatewayLookupService when gateway is found with custom event
+    //TODO if it's needed
+    /*@EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws CannotRegisterServiceException {
         instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
-    }
+    }*/
 }

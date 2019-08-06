@@ -15,6 +15,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.RetryException;
@@ -28,16 +29,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 @Slf4j
-public class NewGatewayLookupService {
+public class GatewayLookupService {
 
-    private GatewayConfigProperties gatewayConfigProperties;
-
+    private GatewayConfigProperties foundGatewayConfigProperties;
     private final RetryTemplate retryTemplate;
 
     private final EurekaClient eurekaClient;
     private final Timer startupTimer = new Timer();
 
-    public NewGatewayLookupService(EurekaClient eurekaClient) {
+    public GatewayLookupService(@Qualifier("eurekaClient") EurekaClient eurekaClient) {
         this.eurekaClient = eurekaClient;
         this.retryTemplate = new RetryTemplate();
 
@@ -49,41 +49,43 @@ public class NewGatewayLookupService {
 
 
     @EventListener
-    public void startUp(ApplicationReadyEvent event) {
+    public void postContextStart(ApplicationReadyEvent event) {
+        if(foundGatewayConfigProperties!=null){
+            return;
+        }
         startupTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                init();
+                initialize();
             }
         }, 100);
     }
 
-    private void init() {
-        log.info("Looking for GW");
-        gatewayConfigProperties = retryTemplate.execute(context -> findGateway());
+    private void initialize(){
+        if(foundGatewayConfigProperties!=null){
+            log.warn("GatewayLookupService is already initialized");
+            return;
+        }
+
+        log.info("GatewayLookupService starting asynchronous initialization of Gateway configuration");
+
+        foundGatewayConfigProperties = retryTemplate.execute(context -> findGateway());
+        log.info("GatewayLookupService has been initialized with Gateway instance on url: " + foundGatewayConfigProperties.getScheme() + "://" + foundGatewayConfigProperties.getHostname());
     }
 
-    public GatewayConfigProperties findGateway() {
-        log.info("Looking ...");
+    private GatewayConfigProperties findGateway() {
 
         Application application = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());
         if (application == null) {
-            log.error("No Application");
-            throw new RetryException("nan");
+            throw new RetryException("No Gateway Application is registered in Discovery Client");
         }
-
-        log.info("Found" + application.toString());
 
         List<InstanceInfo> appInstances = application.getInstances();
         if (appInstances.isEmpty()) {
-            log.error("no Instance");
-            throw new RetryException("nan");
+            throw new RetryException("No Gateway Instances registered within Gateway Application in Discovery Client");
         }
 
         InstanceInfo firstInstance = appInstances.get(0);
-        log.info("Found" + firstInstance.toString());
-
-        //return firstInstance;
 
         try {
             String gatewayHomePage = firstInstance.getHomePageUrl();
@@ -96,21 +98,17 @@ public class NewGatewayLookupService {
         } catch (RetryException e) {
             throw e;
         } catch (Exception e) {
-            String msg = "An unexpected exception occurred when trying to retrieve Gateway instance from Discovery service";
+            String msg = "An unexpected error occurred while retrieving Gateway instance from Discovery service";
             log.warn(msg, e);
             throw new RuntimeException(msg, e);
         }
 
     }
 
-
-    public GatewayConfigProperties getGatewayConfigProperties() {
-        if (gatewayConfigProperties == null) {
-            //TODO meaningful exception here
+    public GatewayConfigProperties getGatewayInstance() {
+        if(foundGatewayConfigProperties ==null) {
             throw new GatewayNotFoundException("No Gateway Instance is known at the moment");
         }
-
-        return gatewayConfigProperties;
+        return foundGatewayConfigProperties;
     }
-
 }
