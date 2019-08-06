@@ -20,18 +20,14 @@ import org.springframework.stereotype.Component;
 @Data
 @Component
 @ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
-@SuppressWarnings("squid:S1075") //Suppress because endpoints are okay
 public class AuthConfigurationProperties {
 
     // General properties
-    private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
-    private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
-    private String gatewayLoginPath = gatewayLoginEndpoint + "/**";
-    private String gatewayQueryPath = gatewayQueryEndpoint + "/**";
+    private String gatewayLoginEndpoint = "/auth/login";
+    private String gatewayQueryEndpoint = "/auth/query";
 
-    private String serviceLoginPath = "/auth/login/**";
-    private String serviceLogoutPath = "/auth/logout/**";
-    private String serviceQueryPath = "/auth/query/**";
+    private String serviceLoginEndpoint = "/auth/login";
+    private String serviceLogoutEndpoint = "/auth/logout";
 
     private AuthConfigurationProperties.TokenProperties tokenProperties;
     private AuthConfigurationProperties.CookieProperties cookieProperties;

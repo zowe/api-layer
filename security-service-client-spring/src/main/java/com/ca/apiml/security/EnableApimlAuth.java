@@ -7,18 +7,18 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.error;
+package com.ca.apiml.security;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
-import org.springframework.context.annotation.Bean;
+import com.ca.apiml.security.config.SecurityServiceConfiguration;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
+import java.lang.annotation.*;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+@Documented
+@Import(SecurityServiceConfiguration.class)
 @Configuration
-public class ErrorServiceConfiguration {
-
-    @Bean
-    public ErrorService errorServiceGateway() {
-        return new ErrorServiceImpl("/gateway-messages.yml");
-    }
+public @interface EnableApimlAuth {
 }

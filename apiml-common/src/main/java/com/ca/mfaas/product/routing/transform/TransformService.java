@@ -53,8 +53,8 @@ public class TransformService {
                                RoutedServices routes) throws URLTransformationException {
 
         GatewayConfigProperties localGatewayConfigProperties = null;
-        if (gatewayConfigProperties==null) {
-            try{
+        if (gatewayConfigProperties == null) {
+            try {
                 localGatewayConfigProperties = gatewayLookupService.getGatewayInstance();
             } catch (GatewayNotFoundException e) {
                 String message = "Gateway not found yet, transform service cannot perform the request";

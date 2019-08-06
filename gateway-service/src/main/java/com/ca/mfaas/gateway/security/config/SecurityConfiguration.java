@@ -75,7 +75,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // login endpoint
             .and()
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginPath()).permitAll()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
 
             // endpoint protection
             .and()
@@ -85,8 +85,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login + query
             .and()
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginPath()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }

@@ -52,7 +52,7 @@ public class GatewayLookupService {
 
     @EventListener
     public void postContextStart(ApplicationReadyEvent event) {
-        if(foundGatewayConfigProperties!=null){
+        if (foundGatewayConfigProperties != null) {
             return;
         }
         startupTimer.schedule(new TimerTask() {
@@ -63,8 +63,8 @@ public class GatewayLookupService {
         }, 100);
     }
 
-    private void initialize(){
-        if(foundGatewayConfigProperties!=null){
+    private void initialize() {
+        if (foundGatewayConfigProperties != null) {
             log.warn("GatewayLookupService is already initialized");
             return;
         }
@@ -111,7 +111,7 @@ public class GatewayLookupService {
     }
 
     public GatewayConfigProperties getGatewayInstance() {
-        if(foundGatewayConfigProperties ==null) {
+        if (foundGatewayConfigProperties == null) {
             throw new GatewayNotFoundException("No Gateway Instance is known at the moment");
         }
         return foundGatewayConfigProperties;

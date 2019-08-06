@@ -15,12 +15,14 @@ import com.ca.mfaas.product.gateway.GatewayLookupService;
 import com.netflix.discovery.EurekaClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * General configuration of security client
  */
 @Configuration
+@ComponentScan("com.ca.apiml.security")
 public class SecurityServiceConfiguration {
 
     @Bean

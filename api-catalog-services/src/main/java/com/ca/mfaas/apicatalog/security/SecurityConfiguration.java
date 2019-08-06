@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
+import com.ca.apiml.security.EnableApimlAuth;
 import com.ca.apiml.security.config.AuthConfigurationProperties;
 import com.ca.apiml.security.config.HandlerInitializer;
 import com.ca.apiml.security.content.BasicContentFilter;
@@ -41,6 +42,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableApimlAuth
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper securityObjectMapper;
@@ -95,16 +97,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // login endpoint
             .and()
             .addFilterBefore(
-                loginFilter(authConfigurationProperties.getServiceLoginPath()),
+                loginFilter(authConfigurationProperties.getServiceLoginEndpoint()),
                 UsernamePasswordAuthenticationFilter.class
             )
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginPath()).permitAll()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll()
 
             // logout endpoint
             .and()
             .logout()
-            .logoutUrl(authConfigurationProperties.getServiceLogoutPath())
+            .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
             .logoutSuccessHandler(logoutSuccessHandler())
 
             // endpoints protection
@@ -119,22 +121,36 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     private LoginFilter loginFilter(String loginEndpoint) throws Exception {
-        return new LoginFilter(loginEndpoint, handlerInitializer.getSuccessfulLoginHandler(), handlerInitializer.getAuthenticationFailureHandler(),
-            securityObjectMapper, authenticationManager(), handlerInitializer.getResourceAccessExceptionHandler());
+        return new LoginFilter(
+            loginEndpoint,
+            handlerInitializer.getSuccessfulLoginHandler(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            securityObjectMapper,
+            authenticationManager(),
+            handlerInitializer.getResourceAccessExceptionHandler()
+        );
     }
 
     /**
      * Secures content with a basic authentication
      */
     private BasicContentFilter basicFilter() throws Exception {
-        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
+        return new BasicContentFilter(
+            authenticationManager(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler()
+        );
     }
 
     /**
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), authConfigurationProperties);
+        return new CookieContentFilter(
+            authenticationManager(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            authConfigurationProperties);
     }
 
     @Bean
