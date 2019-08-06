@@ -246,8 +246,8 @@ public class LocalApiDocServiceTest {
         metadata.put("apiml.apiInfo.1.gatewayUrl", GATEWAY_URL);
         metadata.put("apiml.apiInfo.1.version", SERVICE_VERSION);
         metadata.put("apiml.apiInfo.1.swaggerUrl", SWAGGER_URL);
-        metadata.put("routed-services.api-v1.gateway-url", "api");
-        metadata.put("routed-services.api-v1.service-url", "/");
+        metadata.put("routes.api-v1.gateway-url", "api");
+        metadata.put("routes.api-v1.service-url", "/");
         metadata.put("mfaas.discovery.service.title", "Test service");
         metadata.put("mfaas.discovery.service.description", "Test service description");
 
@@ -259,8 +259,8 @@ public class LocalApiDocServiceTest {
         metadata.put("apiml.apiInfo.1.apiId", API_ID);
         metadata.put("apiml.apiInfo.1.gatewayUrl", GATEWAY_URL);
         metadata.put("apiml.apiInfo.1.version", SERVICE_VERSION);
-        metadata.put("routed-services.api-v1.gateway-url", "api");
-        metadata.put("routed-services.api-v1.service-url", "/");
+        metadata.put("routes.api-v1.gateway-url", "api");
+        metadata.put("routes.api-v1.service-url", "/");
         metadata.put("mfaas.discovery.service.title", "Test service");
         metadata.put("mfaas.discovery.service.description", "Test service description");
 
@@ -269,10 +269,10 @@ public class LocalApiDocServiceTest {
 
     private Map<String, String> getMetadataWithoutApiInfo() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("routed-services.api-v1.gateway-url", "api");
-        metadata.put("routed-services.api-v1.service-url", "/");
-        metadata.put("routed-services.apidoc.gateway-url", "api/v1/api-doc");
-        metadata.put("routed-services.apidoc.service-url", SERVICE_ID + "/api-doc");
+        metadata.put("routes.api-v1.gateway-url", "api");
+        metadata.put("routes.api-v1.service-url", "/");
+        metadata.put("routes.apidoc.gateway-url", "api/v1/api-doc");
+        metadata.put("routes.apidoc.service-url", SERVICE_ID + "/api-doc");
         metadata.put("mfaas.discovery.service.title", "Test service");
         metadata.put("mfaas.discovery.service.description", "Test service description");
 

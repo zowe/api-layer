@@ -49,8 +49,8 @@ eureka:
         statusPageUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/info
         healthCheckUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/health
         homePageUrl:
-        metadata-map:
-            routed-services:
+        metadata:
+            routes:
                 api_v1:
                     gateway-url: "api/v1"
                     service-url: ${mfaas.server.contextPath}/api/v1

@@ -10,8 +10,8 @@ Example:
 
     eureka:
         instance:
-            metadata-map:
-                routed-services:
+            metadata:
+                routes:
                     ws_v1:
                         gateway-url: "ws/v1"
                         service-url: /discoverableclient/ws

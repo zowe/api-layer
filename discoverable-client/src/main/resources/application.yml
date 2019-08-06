@@ -62,8 +62,8 @@ eureka:
         homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
         statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
         healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
-        metadata-map:
-            routed-services:
+        metadata:
+            routes:
                 ui_v1:
                     gateway-url: "ui/v1"
                     service-url: ${server.servlet.contextPath}

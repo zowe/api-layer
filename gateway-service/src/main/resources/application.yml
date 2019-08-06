@@ -141,8 +141,8 @@ eureka:
         statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
         secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
-        metadata-map:
-            routed-services:
+        metadata:
+            routes:
                 api-v1:
                     gateway-url: /api/v1
                     service-url: /api/v1/gateway

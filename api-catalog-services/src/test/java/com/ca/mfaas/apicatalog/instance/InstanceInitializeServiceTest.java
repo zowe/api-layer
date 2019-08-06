@@ -183,10 +183,10 @@ public class InstanceInitializeServiceTest {
     private HashMap<String, String> getMetadataByCatalogUiTitleId(String catalogUiTileId, String uiRoute) {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put("mfaas.discovery.catalogUiTile.id", catalogUiTileId);
-        metadata.put("routed-services.ui-v1.service-url", uiRoute);
-        metadata.put("routed-services.ui-v1.gateway-url", "ui/v1");
-        metadata.put("routed-services.api-v1.gateway-url", "api/v1");
-        metadata.put("routed-services.api-v1.service-url", "/");
+        metadata.put("routes.ui-v1.service-url", uiRoute);
+        metadata.put("routes.ui-v1.gateway-url", "ui/v1");
+        metadata.put("routes.api-v1.gateway-url", "api/v1");
+        metadata.put("routes.api-v1.service-url", "/");
         return metadata;
     }
 

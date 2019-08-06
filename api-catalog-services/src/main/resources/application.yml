@@ -108,8 +108,8 @@ eureka:
         securePort: ${mfaas.server.port}
         nonSecurePortEnabled: ${mfaas.discovery.nonSecurePortEnabled}
         securePortEnabled: ${mfaas.discovery.securePortEnabled}
-        metadata-map:
-            routed-services:
+        metadata:
+            routes:
                 ui_v1:
                     gateway-url: "ui/v1"
                     service-url: /apicatalog

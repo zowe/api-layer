@@ -128,7 +128,7 @@ eureka:
         statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/info
         healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
         secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
-        metadata-map:
+        metadata:
             mfaas:
                 discovery:
                     enableApiDoc: false

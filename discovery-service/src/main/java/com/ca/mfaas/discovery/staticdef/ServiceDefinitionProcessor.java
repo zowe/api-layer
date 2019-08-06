@@ -260,8 +260,8 @@ public class ServiceDefinitionProcessor {
                 String key = gatewayUrl.replace("/", "-");
                 String serviceUrl = url.getPath()
                     + (rs.getServiceRelativeUrl() == null ? "" : rs.getServiceRelativeUrl());
-                mt.put(String.format("routed-services.%s.gateway-url", key), gatewayUrl);
-                mt.put(String.format("routed-services.%s.service-url", key), serviceUrl);
+                mt.put(String.format("routes.%s.gateway-url", key), gatewayUrl);
+                mt.put(String.format("routes.%s.service-url", key), serviceUrl);
             }
         }
 

@@ -12,8 +12,8 @@ function apiLayerServiceModule() {
             "mfaas.discovery.catalogUiTile.version": options.catalogUiTile.version,
             "mfaas.discovery.service.title": options.title,
             "mfaas.discovery.service.description": options.description,
-            "routed-services.0.gateway-url": options.routes[0].gatewayUrl,
-            "routed-services.0.service-url": options.routes[0].serviceRelativeUrl
+            "routes.0.gateway-url": options.routes[0].gatewayUrl,
+            "routes.0.service-url": options.routes[0].serviceRelativeUrl
         };
 
         const client = new eureka.Eureka({

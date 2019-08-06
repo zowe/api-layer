@@ -127,8 +127,8 @@ public class GatewayHomepageController {
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {
-        String gatewayUrl = catalogInstance.getMetadata().get("routed-services.ui_v1.gateway-url");
-        String serviceUrl = catalogInstance.getMetadata().get("routed-services.ui_v1.service-url");
+        String gatewayUrl = catalogInstance.getMetadata().get("routes.ui_v1.gateway-url");
+        String serviceUrl = catalogInstance.getMetadata().get("routes.ui_v1.service-url");
         return gatewayUrl + serviceUrl;
     }
 

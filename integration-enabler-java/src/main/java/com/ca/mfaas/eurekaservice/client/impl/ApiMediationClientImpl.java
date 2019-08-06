@@ -150,8 +150,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
             String serviceUrl = route.getServiceUrl();
             String key = gatewayUrl.replace("/", "-");
-            metadata.put(String.format("routed-services.%s.gateway-url", key), gatewayUrl);
-            metadata.put(String.format("routed-services.%s.service-url", key), serviceUrl);
+            metadata.put(String.format("routes.%s.gateway-url", key), gatewayUrl);
+            metadata.put(String.format("routes.%s.service-url", key), serviceUrl);
         }
 
         // fill tile metadata

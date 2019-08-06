@@ -48,10 +48,10 @@ public class ServiceDefinitionProcessorTest {
                 instances.get(0).getSecureHealthCheckUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
                 instances.get(0).getStatusPageUrl());
-        assertEquals("api/v1", instances.get(0).getMetadata().get("routed-services.api-v1.gateway-url"));
-        assertEquals("api/v2", instances.get(0).getMetadata().get("routed-services.api-v2.gateway-url"));
+        assertEquals("api/v1", instances.get(0).getMetadata().get("routes.api-v1.gateway-url"));
+        assertEquals("api/v2", instances.get(0).getMetadata().get("routes.api-v2.gateway-url"));
         assertEquals("/casamplerestapiservice/api/v1",
-                instances.get(0).getMetadata().get("routed-services.api-v1.service-url"));
+                instances.get(0).getMetadata().get("routes.api-v1.service-url"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -80,9 +80,9 @@ public class ServiceDefinitionProcessorTest {
                 instances.get(0).getSecureHealthCheckUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
                 instances.get(0).getStatusPageUrl());
-        assertEquals("api/v1", instances.get(0).getMetadata().get("routed-services.api-v1.gateway-url"));
+        assertEquals("api/v1", instances.get(0).getMetadata().get("routes.api-v1.gateway-url"));
         assertEquals("/casamplerestapiservice/",
-                instances.get(0).getMetadata().get("routed-services.api-v1.service-url"));
+                instances.get(0).getMetadata().get("routes.api-v1.service-url"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -398,8 +398,8 @@ public class ServiceDefinitionProcessorTest {
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
         assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
-        assertEquals("api/v2", instances.get(0).getMetadata().get("routed-services.api-v2.gateway-url"));
-        assertEquals("/v2", instances.get(0).getMetadata().get("routed-services.api-v2.service-url"));
+        assertEquals("api/v2", instances.get(0).getMetadata().get("routes.api-v2.gateway-url"));
+        assertEquals("/v2", instances.get(0).getMetadata().get("routes.api-v2.service-url"));
         assertEquals("static", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.id"));
         assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get("mfaas.discovery.service.title"));
         assertEquals("2.0.0", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.version"));
