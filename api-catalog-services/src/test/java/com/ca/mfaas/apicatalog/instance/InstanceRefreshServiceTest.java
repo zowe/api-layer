@@ -169,4 +169,11 @@ public class InstanceRefreshServiceTest {
         verify(cachedProductFamilyService, times(1))
             .saveContainerFromInstance("api-three", modifiedInstanceOfService3);
     }
+
+    @Test
+    public void testGatewayClientNotInitialized() {
+        instanceRefreshService.refreshCacheFromDiscovery();
+
+        verify(cachedServicesService, times(0)).updateService(anyString(), any(Application.class));
+    }
 }
