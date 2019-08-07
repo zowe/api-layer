@@ -132,7 +132,7 @@ public class GatewayLookupService {
         } catch (Exception e) {
             String msg = "An unexpected error occurred while retrieving Gateway instance from Discovery service";
             log.warn(msg, e);
-            throw new RuntimeException(msg, e);
+            throw new GatewayLookupException(msg, e);
         }
 
     }
