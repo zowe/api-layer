@@ -11,6 +11,9 @@ package com.ca.mfaas.product.gateway;
 
 import org.springframework.stereotype.Component;
 
+/**
+ * Container object for {@link GatewayConfigProperties}
+ */
 @Component
 public class GatewayClient {
 
@@ -27,6 +30,12 @@ public class GatewayClient {
         this.gatewayConfigProperties = gatewayConfigProperties;
     }
 
+    /**
+     * Retrieve Gateway configuration
+     * When Gateway configuration is not known, GatewayNotFoundException is thrown
+     *
+     * @return GatewayConfigProperties object
+     */
     public GatewayConfigProperties getGatewayConfigProperties() {
         if (gatewayConfigProperties == null) {
             throw new GatewayNotFoundException("No Gateway Instance is known at the moment");
@@ -35,6 +44,11 @@ public class GatewayClient {
         return gatewayConfigProperties;
     }
 
+    /**
+     * Check whether the GatewayClient contains GatewayConfigProperties instance
+     *
+     * @return
+     */
     public boolean isInitialized() {
         return gatewayConfigProperties != null;
     }

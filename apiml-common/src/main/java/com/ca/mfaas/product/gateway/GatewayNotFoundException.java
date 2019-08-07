@@ -10,7 +10,7 @@
 package com.ca.mfaas.product.gateway;
 
 /**
- * Exception thrown when an API Gateway Service is not accessible
+ * Exception thrown when an API Gateway Service is not accessible or found
  */
 public class GatewayNotFoundException extends RuntimeException {
 

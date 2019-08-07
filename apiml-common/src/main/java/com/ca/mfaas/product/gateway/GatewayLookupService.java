@@ -30,6 +30,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Service that is looking up Gateway instance from the Eureka client
+ * It is performing asynchronous lookup after the application context is started
+ */
+
 @Slf4j
 public class GatewayLookupService {
 
@@ -48,16 +53,21 @@ public class GatewayLookupService {
         this.retryTemplate = new RetryTemplate();
         retryTemplate.setRetryPolicy(new AlwaysRetryPolicy());
         FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
-        backOffPolicy.setBackOffPeriod(1000);
+        backOffPolicy.setBackOffPeriod(5000);
         retryTemplate.setBackOffPolicy(backOffPolicy);
     }
 
+    /**
+     * Event hook that starts the lookup. The execution is decoupled from context startup by using Timer to allow
+     * for context startup to finish independent of the actual lookup.
+     *
+     * @param event trigger on ApplicationReadyEvent
+     */
     @EventListener
     public void postContextStart(ApplicationReadyEvent event) {
         if (gatewayClient.isInitialized()) {
             return;
         }
-
         startupTimer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -66,6 +76,12 @@ public class GatewayLookupService {
         }, 100);
     }
 
+    /**
+     * This method does the lookup using RetryTemplate. It keeps retrying unless it finds the Gateway
+     * After Gateway is found:
+     * - Gateway client is initialized with the Gateway configuration
+     * - {@link GatewayLookupCompleteEvent} is published
+     */
     private void initialize() {
         if (gatewayClient.isInitialized()) {
             log.warn("GatewayLookupService is already initialized");
@@ -80,12 +96,15 @@ public class GatewayLookupService {
         log.info(message);
 
         gatewayClient.setGatewayConfigProperties(foundGatewayConfigProperties);
-        log.info("Updated bean:gatewayClient");//debug
-
 
         applicationEventPublisher.publishEvent(new GatewayLookupCompleteEvent(this));
     }
 
+    /**
+     * Retryable lookup logic
+     *
+     * @return initialized {@link GatewayConfigProperties} object
+     */
     private GatewayConfigProperties findGateway() {
 
         Application application = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());

@@ -44,12 +44,12 @@ public class InstanceRefreshService {
 
     /**
      * Periodically refresh the container/service caches
+     * Depends on the GatewayClient: no refreshes happen when it's not initialized
      */
     @Scheduled(
         initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
         fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
-        //TODO: it's just replaced with new impl. Should be checked the case
         if (!gatewayClient.isInitialized()) {
             log.debug("Gateway not found yet, skipping the InstanceRefreshService refresh");
             return;
