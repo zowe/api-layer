@@ -20,6 +20,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -65,8 +66,9 @@ public class StaticServicesRegistrationServiceTest {
 
     @Test
     public void testFindServicesInDirectoryOneFile() throws IOException, URISyntaxException {
+        URL url = ClassLoader.getSystemResource("/api-defs/staticclient.yml");
         Files.copy(
-            Paths.get(ClassLoader.getSystemResource("api-defs/staticclient.yml").toURI()).toAbsolutePath(),
+            Paths.get(url.toURI()).toAbsolutePath(),
             Paths.get(folder.getRoot().getAbsolutePath(), "test.yml")
         );
 

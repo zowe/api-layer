@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.metadata;
 
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.product.service.ApiDoc;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.utils.UrlUtils;
@@ -22,23 +22,25 @@ import java.util.Map.Entry;
 public class EurekaMetadataParser {
 
     /**
-     * Parse eureka metadata and construct ApiInfo with the values found
+     * Parse eureka metadata and construct ApiDoc with the values found
      *
      * @param eurekaMetadata the eureka metadata
-     * @return ApiInfo list
+     * @return ApiDoc list
      */
-    public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
-        Map<String, ApiInfo> apiInfo = new HashMap<>();
+    public List<ApiDoc> parseApiInfo(Map<String, String> eurekaMetadata) {
+        Map<String, ApiDoc> apiInfo = new HashMap<>();
 
         for (Entry<String, String> entry : eurekaMetadata.entrySet()) {
             String[] keys = entry.getKey().split("\\.");
-            if (keys.length == 4 && keys[0].equals("apiml") && keys[1].equals("apiInfo")) {
-                apiInfo.putIfAbsent(keys[2], new ApiInfo());
-                ApiInfo api = apiInfo.get(keys[2]);
+            if (keys.length == 4 && keys[0].equals("apiml") && keys[1].equals("apiDocs")) {
+                apiInfo.putIfAbsent(keys[2], new ApiDoc());
+                ApiDoc api = apiInfo.get(keys[2]);
                 switch (keys[3]) {
+                    /*#281:
                     case "apiId":
                         api.setApiId(entry.getValue());
                         break;
+                    */
                     case "gatewayUrl":
                         api.setGatewayUrl(entry.getValue());
                         break;

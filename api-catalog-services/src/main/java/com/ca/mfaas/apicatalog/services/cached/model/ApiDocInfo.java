@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.cached.model;
 
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.product.service.ApiDoc;
 import com.ca.mfaas.product.routing.RoutedServices;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +21,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ApiDocInfo {
-    ApiInfo apiInfo;
+    ApiDoc apiDoc;
     String apiDocContent;
     RoutedServices routes;
 }

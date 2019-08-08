@@ -32,7 +32,7 @@ services:
           version: 2.3.0
           documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
 
-catalogs:
+catalog:
     zosmf:
         title: z/OSMF services
         description: IBM z/OS Management Facility REST services

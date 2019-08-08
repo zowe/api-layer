@@ -12,7 +12,7 @@ package com.ca.mfaas.apicatalog.swagger;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.product.service.ApiDoc;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -183,11 +183,11 @@ public class TransformApiDocService {
      * @return the RoutedService
      */
     private RoutedService getRoutedServiceByApiInfo(ApiDocInfo apiDocInfo, String endPoint) {
-        ApiInfo apiInfo = apiDocInfo.getApiInfo();
-        if (apiInfo == null) {
+        ApiDoc apiDoc = apiDocInfo.getApiDoc();
+        if (apiDoc == null) {
             return null;
         } else {
-            String gatewayUrl = apiInfo.getGatewayUrl();
+            String gatewayUrl = apiDoc.getGatewayUrl();
             RoutedService route = apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
             if (endPoint.toLowerCase().startsWith(route.getServiceUrl())) {
                 return route;
@@ -234,10 +234,10 @@ public class TransformApiDocService {
      * @param apiDocInfo the service information
      */
     private void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
-        if (apiDocInfo.getApiInfo() == null)
+        if (apiDocInfo.getApiDoc() == null)
             return;
 
-        String externalDoc = apiDocInfo.getApiInfo().getDocumentationUrl();
+        String externalDoc = apiDocInfo.getApiDoc().getDocumentationUrl();
 
         if (externalDoc != null) {
             swagger.setExternalDocs(new ExternalDocs(EXTERNAL_DOCUMENTATION, externalDoc));

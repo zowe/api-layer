@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.swagger;
 
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.product.service.ApiDoc;
 import com.netflix.appinfo.InstanceInfo;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -29,7 +29,7 @@ public class SubstituteSwaggerGenerator {
     }
 
     public String generateSubstituteSwaggerForService(InstanceInfo service,
-                                                      ApiInfo api,
+                                                      ApiDoc api,
                                                       String gatewayScheme, String gatewayHost) {
         String title = service.getMetadata().get("service.title");
         String description = service.getMetadata().get("service.description");

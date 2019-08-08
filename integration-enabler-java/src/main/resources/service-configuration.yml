@@ -1,6 +1,7 @@
 serviceId: hellozowe
 title: Hello ZOWE REST API
 description: Example for exposing a REST API using plain Java API discovery enabler
+
 baseUrl: http://localhost:10021/hello-zowe
 homePageRelativeUrl:
 statusPageRelativeUrl: /application/info
@@ -14,6 +15,7 @@ eureka:
 
 discoveryServiceUrls:
     - https://${eureka.hostname}:${eureka.port}/eureka
+    -
 ssl:
     verifySslCertificatesOfServices: true
     protocol: TLSv1.2
@@ -25,6 +27,7 @@ ssl:
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
     trustStoreType: PKCS12
+
 routes:
     - gatewayUrl: api
       serviceUrl: /hello-zowe
@@ -32,10 +35,13 @@ routes:
       serviceUrl: /hello-zowe/api/v1
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hello-zowe/api-doc
-apiInfo:
+
+apiDocs:
     - apiId: org.zowe.hello-zowe
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hello-zowe/api-doc
+      version: v1
+
 catalog:
     id: cademoapps
     title: Sample API ML Applications

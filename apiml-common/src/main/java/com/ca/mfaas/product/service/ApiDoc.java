@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice.model;
+package com.ca.mfaas.product.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -27,7 +27,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class ApiInfo {
+public class ApiDoc {
     @JsonProperty(required = true)
     private String apiId;
     private String gatewayUrl;
@@ -36,9 +36,9 @@ public class ApiInfo {
     private String documentationUrl;
 
     /**
-     * Generate Eureka metadata for ApiInfo configuration
+     * Generate Eureka metadata for ApiDoc configuration
      *
-     * @param serviceId the identifier of a service which ApiInfo configuration belongs
+     * @param serviceId the identifier of a service which ApiDoc configuration belongs
      * @return the generated Eureka metadata
      */
     public Map<String, String> generateMetadata(String serviceId) {
@@ -47,13 +47,13 @@ public class ApiInfo {
 
         if (gatewayUrl != null) {
             encodedGatewayUrl = gatewayUrl.replaceAll("\\W", "-");
-            metadata.put(String.format("apiml.apiInfo.%s.gatewayUrl", encodedGatewayUrl), gatewayUrl);
+            metadata.put(String.format("apiml.apiDocs.%s.gatewayUrl", encodedGatewayUrl), gatewayUrl);
         } else {
             encodedGatewayUrl = RandomStringUtils.randomAlphanumeric(10);
         }
 
         if (version != null) {
-            metadata.put(String.format("apiml.apiInfo.%s.version", encodedGatewayUrl), version);
+            metadata.put(String.format("apiml.apiDocs.%s.version", encodedGatewayUrl), version);
         }
 
         if (swaggerUrl != null) {
@@ -64,7 +64,7 @@ public class ApiInfo {
                     String.format("The Swagger URL \"%s\" for service %s is not valid: %s",
                         swaggerUrl, serviceId, e.getMessage()));
             }
-            metadata.put(String.format("apiml.apiInfo.%s.swaggerUrl", encodedGatewayUrl), swaggerUrl);
+            metadata.put(String.format("apiml.apiDocs.%s.swaggerUrl", encodedGatewayUrl), swaggerUrl);
         }
 
         if (documentationUrl != null) {
@@ -75,7 +75,7 @@ public class ApiInfo {
                     String.format("The documentation URL \"%s\" for service %s is not valid: %s",
                         documentationUrl, serviceId, e.getMessage()));
             }
-            metadata.put(String.format("apiml.apiInfo.%s.documentationUrl", encodedGatewayUrl), documentationUrl);
+            metadata.put(String.format("apiml.apiDocs.%s.documentationUrl", encodedGatewayUrl), documentationUrl);
         }
 
         return metadata;

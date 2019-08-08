@@ -13,7 +13,7 @@ routes:
       serviceUrl: /hellospring/api/v1
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellospring/api-doc
-apiInfo:
+apiDocs:
     - apiId: org.zowe.hellospring
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hellospring/api-doc

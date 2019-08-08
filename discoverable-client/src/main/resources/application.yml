@@ -73,12 +73,11 @@ eureka:
                 ws_v1:
                     gatewayUrl: "ws/v1"
                     serviceUrl: ${server.servlet.contextPath}/ws
-            apiml:
-                apiInfo:
-                    - apiId: org.zowe.discoverableclient
-                      gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
-                      documentationUrl: https://www.zowe.org
+            apis:
+                - apiId: org.zowe.discoverableclient
+                  gatewayUrl: api/v1
+                  swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
+                  documentationUrl: https://www.zowe.org
             mfaas:
                 api-info:
                     apiVersionProperties:

@@ -1,17 +1,21 @@
 serviceId: hellojersey
-eureka:
-    hostname: localhost
-    ipAddress: 127.0.0.1
-    port: 10016
 title: Hello Jersey REST API
 description: Example for exposing a Jersey REST API
-defaultZone: https://localhost:10011/eureka/
+
 baseUrl: https://localhost:10016/hellojersey
 homePageRelativeUrl:
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
+
+defaultZone: https://localhost:10011/eureka/
 discoveryServiceUrls:
     - https://localhost:10011/eureka
+
+eureka:
+    hostname: localhost
+    ipAddress: 127.0.0.1
+    port: 10016
+
 ssl:
     verifySslCertificatesOfServices: true
     protocol: TLSv1.2
@@ -23,15 +27,18 @@ ssl:
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
     trustStoreType: PKCS12
+
 routes:
     - gatewayUrl: api/v1
       serviceUrl: /hellojersey/api/v1
     - gatewayUrl: ui/v1
       serviceUrl: /
-apiInfo:
+
+apiDocs:
     - apiId: org.zowe.hellojersey
       gatewayUrl: api/v1
       swaggerUrl: https://localhost:10016/hellojersey/swagger.json
+
 catalog:
     id: cademoapps
     title: Sample API Mediation Layer Applications

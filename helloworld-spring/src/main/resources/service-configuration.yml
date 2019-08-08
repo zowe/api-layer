@@ -1,16 +1,21 @@
 serviceId: hellospring
 title: Hello Spring REST API
-eureka:
-    hostname: localhost
-    ipAddress: 127.0.0.1
-    port: 10021
 description: Example for exposing a Spring REST API
+
 baseUrl: http://localhost:10021/hellospring
 homePageRelativeUrl:
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
+
+defaultZone: https://localhost:10011/eureka/
 discoveryServiceUrls:
     - https://localhost:10011/eureka
+
+eureka:
+    hostname: localhost
+    ipAddress: 127.0.0.1
+    port: 10021
+
 ssl:
     verifySslCertificatesOfServices: true
     protocol: TLSv1.2
@@ -22,6 +27,7 @@ ssl:
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
     trustStoreType: PKCS12
+
 routes:
     - gatewayUrl: api
       serviceUrl: /hellospring
@@ -29,10 +35,12 @@ routes:
       serviceUrl: /hellospring/api/v1
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellospring/api-doc
-apiInfo:
+
+apiDocs:
     - apiId: org.zowe.hellospring
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hellospring/api-doc
+
 catalog:
     id: cademoapps
     title: Sample API Mediation Layer Applications

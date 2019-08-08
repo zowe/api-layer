@@ -16,7 +16,7 @@ import com.ca.mfaas.eurekaservice.client.config.Route;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.product.service.ApiDoc;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 
@@ -167,8 +167,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         metadata.put("service.description", config.getDescription());
 
         // fill api-doc info
-        for (ApiInfo apiInfo : config.getApiInfo()) {
-            metadata.putAll(apiInfo.generateMetadata(config.getServiceId()));
+        for (ApiDoc apiDoc : config.getApiDocs()) {
+            metadata.putAll(apiDoc.generateMetadata(config.getServiceId()));
         }
 
         return metadata;
