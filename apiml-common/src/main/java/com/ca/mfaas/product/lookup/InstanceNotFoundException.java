@@ -7,19 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+package com.ca.mfaas.product.lookup;
 
-package com.ca.mfaas.product.gateway;
+public class InstanceNotFoundException extends RuntimeException {
 
-/**
- * Exception for unexpected problems of GateawayLookupService
- */
-public class GatewayLookupException extends RuntimeException {
+    private static final long serialVersionUID = -559112794280136165L;
 
-    public GatewayLookupException(String message) {
+    public InstanceNotFoundException(String message) {
         super(message);
     }
 
-    public GatewayLookupException(String message, Throwable cause) {
-        super(message, cause);
-    }
 }

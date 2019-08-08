@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class AppContextInitialisedListener {
+public class GatewayLookupEventListener {
 
     private final InstanceInitializeService instanceInitializeService;
 

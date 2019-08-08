@@ -14,7 +14,7 @@ import org.springframework.context.ApplicationEvent;
 public class GatewayLookupCompleteEvent extends ApplicationEvent {
 
     /**
-     * Event that occurs when {@link GatewayLookupService} finds the Gateway instance.
+     * Event that occurs when {@link GatewayInstanceInitializer} finds the Gateway instance.
      *
      * @param source the object on which the event initially occurred (never {@code null})
      */
