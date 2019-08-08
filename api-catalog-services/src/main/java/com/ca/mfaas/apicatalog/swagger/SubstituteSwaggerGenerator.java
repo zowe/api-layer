@@ -19,6 +19,9 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 
 import java.io.StringWriter;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.SERVICE_TITLE;
+
 public class SubstituteSwaggerGenerator {
     private final VelocityEngine ve = new VelocityEngine();
 
@@ -31,8 +34,8 @@ public class SubstituteSwaggerGenerator {
     public String generateSubstituteSwaggerForService(InstanceInfo service,
                                                       ApiInfo api,
                                                       String gatewayScheme, String gatewayHost) {
-        String title = service.getMetadata().get("mfaas.discovery.service.title");
-        String description = service.getMetadata().get("mfaas.discovery.service.description");
+        String title = service.getMetadata().get(SERVICE_TITLE);
+        String description = service.getMetadata().get(SERVICE_DESCRIPTION);
         String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + api.getGatewayUrl()
             + (api.getGatewayUrl().endsWith("/") ? "" : "/") + service.getAppName().toLowerCase();
 

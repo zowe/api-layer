@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.Map.Entry;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 @Slf4j
 public class EurekaMetadataParser {
@@ -34,10 +34,10 @@ public class EurekaMetadataParser {
 
         for (Entry<String, String> entry : eurekaMetadata.entrySet()) {
             String[] keys = entry.getKey().split("\\.");
-            if (keys.length == 4 && keys[0].equals("apiml") && keys[1].equals("apiInfo")) {
-                apiInfo.putIfAbsent(keys[2], new ApiInfo());
-                ApiInfo api = apiInfo.get(keys[2]);
-                switch (keys[3]) {
+            if (keys.length == 3 && keys[0].equals(APIS)) {
+                apiInfo.putIfAbsent(keys[1], new ApiInfo());
+                ApiInfo api = apiInfo.get(keys[1]);
+                switch (keys[2]) {
                     case "apiId":
                         api.setApiId(entry.getValue());
                         break;
@@ -77,12 +77,12 @@ public class EurekaMetadataParser {
         for (Map.Entry<String, String> metadata : orderedMetadata.entrySet()) {
             String[] keys = metadata.getKey().split("\\.");
             if (keys.length == 3 && keys[0].equals(ROUTES)) {
-                if (keys[2].equals(GATEWAY_URL)) {
+                if (keys[2].equals(ROUTES_GATEWAY_URL)) {
                     String gatewayURL = UrlUtils.removeFirstAndLastSlash(metadata.getValue());
                     routeMap.put(keys[1], gatewayURL);
                 }
 
-                if (keys[2].equals(SERVICE_URL) && routeMap.containsKey(keys[1])) {
+                if (keys[2].equals(ROUTES_SERVICE_URL) && routeMap.containsKey(keys[1])) {
                     String serviceURL = UrlUtils.addFirstSlash(metadata.getValue());
                     routes.addRoutedService(new RoutedService(keys[1], routeMap.get(keys[1]), serviceURL));
                     routeMap.remove(keys[1]);

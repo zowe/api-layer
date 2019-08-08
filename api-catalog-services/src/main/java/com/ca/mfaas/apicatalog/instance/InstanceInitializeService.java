@@ -30,7 +30,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.CATALOG_ID;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
 
 /**
  * Initialize the API catalog with the running instances.
@@ -43,8 +43,6 @@ public class InstanceInitializeService {
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
-
-    private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
 
     /**
      * Initialise the API Catalog with all current running instances
@@ -104,22 +102,10 @@ public class InstanceInitializeService {
     }
 
     private void processInstance(Applications filteredServices, Application application) {
-        InstanceInfo instanceInfo = application.getInstances().get(0);
-        String value = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
-        boolean apiEnabled = true;
-        if (value != null) {
-            apiEnabled = Boolean.parseBoolean(value);
+        if (filteredServices == null) {
+            filteredServices = new Applications();
         }
-
-        // only add api enabled services
-        if (apiEnabled) {
-            if (filteredServices == null) {
-                filteredServices = new Applications();
-            }
-            filteredServices.addApplication(application);
-        } else {
-            log.debug("Service: " + application.getName() + " is not API enabled, it will be ignored by the API Catalog");
-        }
+        filteredServices.addApplication(application);
     }
 
     /**

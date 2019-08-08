@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.CATALOG_ID;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)

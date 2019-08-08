@@ -21,6 +21,8 @@ import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.APIS;
+
 /**
  * Represents one API provided by a service
  */
@@ -47,13 +49,13 @@ public class ApiInfo {
 
         if (gatewayUrl != null) {
             encodedGatewayUrl = gatewayUrl.replaceAll("\\W", "-");
-            metadata.put(String.format("apiml.apiInfo.%s.gatewayUrl", encodedGatewayUrl), gatewayUrl);
+            metadata.put(String.format("%s.%s.gatewayUrl", APIS, encodedGatewayUrl), gatewayUrl);
         } else {
             encodedGatewayUrl = RandomStringUtils.randomAlphanumeric(10);
         }
 
         if (version != null) {
-            metadata.put(String.format("apiml.apiInfo.%s.version", encodedGatewayUrl), version);
+            metadata.put(String.format("%s.%s.version", APIS, encodedGatewayUrl), version);
         }
 
         if (swaggerUrl != null) {
@@ -64,7 +66,7 @@ public class ApiInfo {
                     String.format("The Swagger URL \"%s\" for service %s is not valid: %s",
                         swaggerUrl, serviceId, e.getMessage()));
             }
-            metadata.put(String.format("apiml.apiInfo.%s.swaggerUrl", encodedGatewayUrl), swaggerUrl);
+            metadata.put(String.format("%s.%s.swaggerUrl", APIS, encodedGatewayUrl), swaggerUrl);
         }
 
         if (documentationUrl != null) {
@@ -75,7 +77,7 @@ public class ApiInfo {
                     String.format("The documentation URL \"%s\" for service %s is not valid: %s",
                         documentationUrl, serviceId, e.getMessage()));
             }
-            metadata.put(String.format("apiml.apiInfo.%s.documentationUrl", encodedGatewayUrl), documentationUrl);
+            metadata.put(String.format("%s.%s.documentationUrl", APIS, encodedGatewayUrl), documentationUrl);
         }
 
         return metadata;

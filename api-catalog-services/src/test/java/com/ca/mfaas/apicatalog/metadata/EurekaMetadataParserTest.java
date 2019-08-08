@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.assertEquals;
 
 public class EurekaMetadataParserTest {
@@ -26,10 +26,10 @@ public class EurekaMetadataParserTest {
     @Test
     public void testParseApiInfo() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.apiInfo.1.gatewayUrl", "gatewayUrl");
-        metadata.put("apiml.apiInfo.2.gatewayUrl", "gatewayUrl2");
-        metadata.put("apiml.apiInfo.2.swaggerUrl", "swagger");
-        metadata.put("apiml.apiInfo.2.documentationUrl", "doc");
+        metadata.put(APIS + ".1.gatewayUrl", "gatewayUrl");
+        metadata.put(APIS + ".2.gatewayUrl", "gatewayUrl2");
+        metadata.put(APIS + ".2.swaggerUrl", "swagger");
+        metadata.put(APIS + ".2.documentationUrl", "doc");
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
         assertEquals(2, info.size());
@@ -42,16 +42,16 @@ public class EurekaMetadataParserTest {
     @Test
     public void testParseRoutes() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(ROUTES + ".api-v1." + GATEWAY_URL, "api/v1");
-        metadata.put(ROUTES + ".api-v1." + SERVICE_URL, "/");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         metadata.put("other.parameter", "value");
-        metadata.put(ROUTES + ".api-v2." + SERVICE_URL, "/test");
+        metadata.put(ROUTES + ".api-v2." + ROUTES_SERVICE_URL, "/test");
         metadata.put("some.garbage.again", "null");
-        metadata.put(ROUTES + ".api-v2." + GATEWAY_URL, "api/v2");
-        metadata.put(ROUTES + ".api-v3." + GATEWAY_URL, "incomplete");
-        metadata.put(ROUTES + ".api-v4." + SERVICE_URL, "incomplete");
-        metadata.put(ROUTES + ".api-v5." + GATEWAY_URL, "/api/v5/");
-        metadata.put(ROUTES + ".api-v5." + SERVICE_URL, "test");
+        metadata.put(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL, "api/v2");
+        metadata.put(ROUTES + ".api-v3." + ROUTES_GATEWAY_URL, "incomplete");
+        metadata.put(ROUTES + ".api-v4." + ROUTES_SERVICE_URL, "incomplete");
+        metadata.put(ROUTES + ".api-v5." + ROUTES_GATEWAY_URL, "/api/v5/");
+        metadata.put(ROUTES + ".api-v5." + ROUTES_SERVICE_URL, "test");
 
         RoutedServices routes = new EurekaMetadataParser().parseRoutes(metadata);
 

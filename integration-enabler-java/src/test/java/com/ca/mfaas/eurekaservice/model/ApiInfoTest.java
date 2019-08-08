@@ -16,9 +16,11 @@ import org.junit.rules.ExpectedException;
 import java.security.InvalidParameterException;
 import java.util.Map;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.APIS;
 import static org.junit.Assert.*;
 
 public class ApiInfoTest {
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
@@ -29,7 +31,7 @@ public class ApiInfoTest {
         String version = "1.0.0";
         String swaggerUrl = "https://service/api-doc";
         String documentationUrl = "https://www.zowe.org";
-        String metadataPrefix = "apiml.apiInfo.api-v1.";
+        String metadataPrefix = APIS + ".api-v1.";
 
         ApiInfo apiInfo = new ApiInfo("org.zowe", gatewayUrl, version, swaggerUrl, documentationUrl);
         Map<String, String> metadata = apiInfo.generateMetadata(serviceId);

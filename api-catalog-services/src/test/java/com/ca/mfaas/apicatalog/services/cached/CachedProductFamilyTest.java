@@ -22,7 +22,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.when;
@@ -30,9 +30,6 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"squid:S2925"}) // replace with proper wait test library
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class CachedProductFamilyTest {
-    private static final String CATALOG_UI_SERVICE_TITLE_KEY = "mfaas.discovery.service.title";
-    private static final String CATALOG_UI_SERVICE_DESCRIPTION_KEY = "mfaas.discovery.service.description";
-
     private final Integer cacheRefreshUpdateThresholdInMillis = 2000;
 
     private CachedProductFamilyService service;
@@ -335,8 +332,8 @@ public class CachedProductFamilyTest {
         metadata.put(CATALOG_TITLE, "Title");
         metadata.put(CATALOG_DESCRIPTION, "Description");
         metadata.put(CATALOG_VERSION, "1.0.0");
-        metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle");
-        metadata.put(CATALOG_UI_SERVICE_DESCRIPTION_KEY, "sDescription");
+        metadata.put(SERVICE_TITLE, "sTitle");
+        metadata.put(SERVICE_DESCRIPTION, "sDescription");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
 
         APIContainer actualDemoAppContainer = service.saveContainerFromInstance("demoapp", instance);
@@ -354,8 +351,8 @@ public class CachedProductFamilyTest {
 
         APIService actualService = apiServices.iterator().next();
         assertEquals(instance.getAppName().toLowerCase(), actualService.getServiceId());
-        assertEquals(metadata.get(CATALOG_UI_SERVICE_TITLE_KEY), actualService.getTitle());
-        assertEquals(metadata.get(CATALOG_UI_SERVICE_DESCRIPTION_KEY), actualService.getDescription());
+        assertEquals(metadata.get(SERVICE_TITLE), actualService.getTitle());
+        assertEquals(metadata.get(SERVICE_DESCRIPTION), actualService.getDescription());
         assertEquals(instance.isPortEnabled(InstanceInfo.PortType.SECURE), actualService.isSecured());
         assertEquals(instance.getHomePageUrl(), actualService.getHomePageUrl());
     }
@@ -367,8 +364,8 @@ public class CachedProductFamilyTest {
         metadata.put(CATALOG_TITLE, "Title");
         metadata.put(CATALOG_DESCRIPTION, "Description");
         metadata.put(CATALOG_VERSION, "1.0.0");
-        metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle");
-        metadata.put(CATALOG_UI_SERVICE_DESCRIPTION_KEY, "sDescription");
+        metadata.put(SERVICE_TITLE, "sTitle");
+        metadata.put(SERVICE_DESCRIPTION, "sDescription");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         APIContainer actualDemoAppContainer = service.saveContainerFromInstance("demoapp", instance);
         Calendar createTimestamp = actualDemoAppContainer.getLastUpdatedTimestamp();
@@ -378,8 +375,8 @@ public class CachedProductFamilyTest {
         metadata.put(CATALOG_TITLE, "Title2");
         metadata.put(CATALOG_DESCRIPTION, "Description2");
         metadata.put(CATALOG_VERSION, "2.0.0");
-        metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle2");
-        metadata.put(CATALOG_UI_SERVICE_DESCRIPTION_KEY, "sDescription2");
+        metadata.put(SERVICE_TITLE, "sTitle2");
+        metadata.put(SERVICE_DESCRIPTION, "sDescription2");
         instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         APIContainer updatedContainer = service.saveContainerFromInstance("demoapp", instance);
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
@@ -400,8 +397,8 @@ public class CachedProductFamilyTest {
 
         APIService actualService = apiServices.iterator().next();
         assertEquals(instance.getAppName().toLowerCase(), actualService.getServiceId());
-        assertEquals(metadata.get(CATALOG_UI_SERVICE_TITLE_KEY), actualService.getTitle());
-        assertEquals(metadata.get(CATALOG_UI_SERVICE_DESCRIPTION_KEY), actualService.getDescription());
+        assertEquals(metadata.get(SERVICE_TITLE), actualService.getTitle());
+        assertEquals(metadata.get(SERVICE_DESCRIPTION), actualService.getDescription());
         assertEquals(instance.isPortEnabled(InstanceInfo.PortType.SECURE), actualService.isSecured());
         assertEquals(instance.getHomePageUrl(), actualService.getHomePageUrl());
     }

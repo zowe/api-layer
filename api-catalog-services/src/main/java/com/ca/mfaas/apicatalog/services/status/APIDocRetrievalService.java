@@ -53,8 +53,8 @@ public class APIDocRetrievalService {
      * API doc URL is taken from the application metadata in the following
      * order:
      * <p>
-     * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
-     * 2. 'apiml.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
+     * 1. 'apis.swaggerUrl' (preferred way)
+     * 2. 'apis' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
      * 3. URL is constructed from 'routes.api-doc.serviceUrl'. This method is deprecated and used for
      * backwards compatibility only
      *
@@ -168,12 +168,12 @@ public class APIDocRetrievalService {
     }
 
     /**
-     * Creates a URL from the routing metadata 'routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
+     * Creates a URL from the routing metadata 'routes.api-doc.serviceUrl' when 'apis.swaggerUrl' is
      * not present
      *
      * @param instanceInfo the information about service instance
      * @return the URL of API doc endpoint
-     * @deprecated Added to support services which were on-boarded before 'apiml.apiInfo.swaggerUrl' parameter was
+     * @deprecated Added to support services which were on-boarded before 'apis.swaggerUrl' parameter was
      * introduced. It will be removed when all services will be using the new configuration style.
      */
     @Deprecated

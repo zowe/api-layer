@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -290,8 +290,8 @@ public class CachedProductFamilyService {
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
         return new APIService(
             instanceInfo.getAppName().toLowerCase(),
-            instanceInfo.getMetadata().get("mfaas.discovery.service.title"),
-            instanceInfo.getMetadata().get("mfaas.discovery.service.description"),
+            instanceInfo.getMetadata().get(SERVICE_TITLE),
+            instanceInfo.getMetadata().get(SERVICE_DESCRIPTION),
             secureEnabled, instanceHomePage);
     }
 
