@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.health;
 
-import com.ca.apiml.security.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.product.constants.CoreService;
 import lombok.RequiredArgsConstructor;

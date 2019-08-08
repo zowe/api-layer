@@ -9,19 +9,19 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.*;
-
-import com.ca.apiml.security.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.netflix.zuul.context.RequestContext;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class ConvertAuthTokenInUriToCookieFilterTest {
 

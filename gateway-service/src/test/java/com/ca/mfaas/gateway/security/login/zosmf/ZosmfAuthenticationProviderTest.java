@@ -10,8 +10,8 @@
 
 package com.ca.mfaas.gateway.security.login.zosmf;
 
-import com.ca.apiml.security.config.AuthConfigurationProperties;
-import com.ca.apiml.security.error.ServiceNotAccessibleException;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;

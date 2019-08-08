@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.gateway.security.login.dummy;
 
+import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.apiml.security.token.TokenAuthentication;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;

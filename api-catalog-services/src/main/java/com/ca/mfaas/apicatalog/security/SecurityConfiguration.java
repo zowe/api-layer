@@ -9,14 +9,14 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.apiml.security.EnableApimlAuth;
-import com.ca.apiml.security.config.AuthConfigurationProperties;
-import com.ca.apiml.security.config.HandlerInitializer;
-import com.ca.apiml.security.content.BasicContentFilter;
-import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.apiml.security.login.GatewayLoginProvider;
-import com.ca.apiml.security.login.LoginFilter;
-import com.ca.apiml.security.token.GatewayTokenProvider;
+import com.ca.apiml.security.client.EnableApimlAuth;
+import com.ca.apiml.security.client.login.GatewayLoginProvider;
+import com.ca.apiml.security.client.token.GatewayTokenProvider;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.HandlerInitializer;
+import com.ca.apiml.security.common.content.BasicContentFilter;
+import com.ca.apiml.security.common.content.CookieContentFilter;
+import com.ca.apiml.security.common.login.LoginFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

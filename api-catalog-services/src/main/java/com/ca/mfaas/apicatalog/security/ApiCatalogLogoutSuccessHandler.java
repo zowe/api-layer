@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.apiml.security.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;

@@ -35,7 +35,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
     "com.ca.mfaas.gateway",
     "com.ca.mfaas.product",
     "com.ca.mfaas.enable",
-    "com.ca.apiml.security"},
+    "com.ca.apiml.security.common"},
     excludeFilters = {
     @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)

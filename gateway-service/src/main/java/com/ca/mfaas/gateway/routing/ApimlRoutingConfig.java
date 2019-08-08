@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.routing;
 
-import com.ca.apiml.security.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import com.ca.mfaas.gateway.filters.post.PageRedirectionFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;

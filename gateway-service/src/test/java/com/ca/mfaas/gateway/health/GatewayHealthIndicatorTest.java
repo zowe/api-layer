@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.health;
 
-import com.ca.apiml.security.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.product.constants.CoreService;
 import org.junit.Before;
 import org.junit.Test;

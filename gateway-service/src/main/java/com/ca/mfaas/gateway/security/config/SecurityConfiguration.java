@@ -9,11 +9,11 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
-import com.ca.apiml.security.config.AuthConfigurationProperties;
-import com.ca.apiml.security.config.HandlerInitializer;
-import com.ca.apiml.security.content.BasicContentFilter;
-import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.apiml.security.login.LoginFilter;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.HandlerInitializer;
+import com.ca.apiml.security.common.content.BasicContentFilter;
+import com.ca.apiml.security.common.content.CookieContentFilter;
+import com.ca.apiml.security.common.login.LoginFilter;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;

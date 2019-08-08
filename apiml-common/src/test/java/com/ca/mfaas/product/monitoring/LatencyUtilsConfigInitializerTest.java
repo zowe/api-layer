@@ -14,7 +14,8 @@ import org.junit.Test;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class LatencyUtilsConfigInitializerTest {
     private static final String PROPERTY_KEY = "LatencyUtils.useActualTime";

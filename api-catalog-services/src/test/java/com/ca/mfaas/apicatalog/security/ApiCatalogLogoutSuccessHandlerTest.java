@@ -1,12 +1,17 @@
 package com.ca.mfaas.apicatalog.security;
 
-import com.ca.apiml.security.config.AuthConfigurationProperties;
-import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.token.TokenAuthentication;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
+
+import javax.servlet.http.Cookie;
+
+import static org.junit.Assert.*;
+
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -16,9 +21,6 @@ import org.springframework.mock.web.MockHttpSession;
  *
  * Copyright Contributors to the Zowe Project.
  */
-import javax.servlet.http.Cookie;
-
-import static org.junit.Assert.*;
 
 public class ApiCatalogLogoutSuccessHandlerTest {
 

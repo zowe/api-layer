@@ -9,11 +9,11 @@
  */
 package com.ca.mfaas.gateway.security.service;
 
-import com.ca.apiml.security.config.AuthConfigurationProperties;
-import com.ca.apiml.security.token.TokenAuthentication;
-import com.ca.apiml.security.token.QueryResponse;
-import com.ca.apiml.security.token.TokenExpireException;
-import com.ca.apiml.security.token.TokenNotValidException;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.token.QueryResponse;
+import com.ca.apiml.security.common.token.TokenAuthentication;
+import com.ca.apiml.security.common.token.TokenExpireException;
+import com.ca.apiml.security.common.token.TokenNotValidException;
 import com.ca.mfaas.security.SecurityUtils;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -119,7 +119,7 @@ public class AuthenticationServiceTest {
         String dateNow = new Date().toString().substring(0, 16);
         QueryResponse parsedToken = authService.parseJwtToken(jwtToken);
 
-        assertEquals("com.ca.apiml.security.token.QueryResponse", parsedToken.getClass().getTypeName());
+        assertEquals("com.ca.apiml.security.common.token.QueryResponse", parsedToken.getClass().getTypeName());
         assertEquals(DOMAIN, parsedToken.getDomain());
         assertEquals(USER, parsedToken.getUserId());
         assertEquals(parsedToken.getCreation().toString().substring(0, 16), dateNow);
