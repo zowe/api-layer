@@ -111,12 +111,12 @@ public class ServiceDefinitionProcessor {
                                           List<String> errors,
                                           List<InstanceInfo> instances) {
         List<Service> services = new ArrayList<>();
-        Map<String, CatalogUiTile> tiles = new HashMap<>();
+        Map<String, Catalog> tiles = new HashMap<>();
         try {
             Definition def = mapper.readValue(ymlData, Definition.class);
             services.addAll(def.getServices());
-            if (def.getCatalogUiTiles() != null) {
-                tiles.putAll(def.getCatalogUiTiles());
+            if (def.getCatalogs() != null) {
+                tiles.putAll(def.getCatalogs());
             }
         } catch (IOException e) {
             errors.add(String.format("Error processing file %s - %s", ymlFileName, e.getMessage()));
@@ -128,7 +128,7 @@ public class ServiceDefinitionProcessor {
 
     private ProcessServicesDataResult createInstances(String ymlFileName,
                                                       List<Service> services,
-                                                      Map<String, CatalogUiTile> tiles) {
+                                                      Map<String, Catalog> tiles) {
         List<InstanceInfo> instances = new ArrayList<>();
         List<String> errors = new ArrayList<>();
 
@@ -143,13 +143,13 @@ public class ServiceDefinitionProcessor {
                     throw new ServiceDefinitionException(String.format("The instanceBaseUrls parameter of %s is not defined. The instance will not be created.", service.getServiceId()));
                 }
 
-                CatalogUiTile tile = null;
-                if (service.getCatalogUiTileId() != null) {
-                    tile = tiles.get(service.getCatalogUiTileId());
+                Catalog tile = null;
+                if (service.getCatalogId() != null) {
+                    tile = tiles.get(service.getCatalogId());
                     if (tile == null) {
-                        errors.add(String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), serviceId));
+                        errors.add(String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogId(), serviceId));
                     } else {
-                        tile.setId(service.getCatalogUiTileId());
+                        tile.setId(service.getCatalogId());
                     }
                 }
 
@@ -166,7 +166,7 @@ public class ServiceDefinitionProcessor {
 
     private void buildInstanceInfo(List<InstanceInfo> instances,
                                    List<String> errors, Service service,
-                                   CatalogUiTile tile, String instanceBaseUrl) throws ServiceDefinitionException {
+                                   Catalog tile, String instanceBaseUrl) throws ServiceDefinitionException {
         if (instanceBaseUrl == null || instanceBaseUrl.isEmpty()) {
             throw new ServiceDefinitionException(String.format("One of the instanceBaseUrl of %s is not defined. The instance will not be created.", service.getServiceId()));
         }
@@ -205,7 +205,7 @@ public class ServiceDefinitionProcessor {
                                        String instanceId, String instanceBaseUrl,
                                        URL url,
                                        String ipAddress,
-                                       CatalogUiTile tile) {
+                                       Catalog tile) {
         String serviceId = service.getServiceId();
 
         builder.setAppName(serviceId).setInstanceId(instanceId).setHostName(url.getHost()).setIPAddr(ipAddress)
@@ -248,11 +248,11 @@ public class ServiceDefinitionProcessor {
         }
     }
 
-    private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) {
+    private Map<String, String> createMetadata(Service service, URL url, Catalog tile) {
         Map<String, String> mt = new HashMap<>();
 
-        mt.put("mfaas.discovery.service.title", service.getTitle());
-        mt.put("mfaas.discovery.service.description", service.getDescription());
+        mt.put("service.title", service.getTitle());
+        mt.put("service.description", service.getDescription());
 
         if (service.getRoutes() != null) {
             for (Route rs : service.getRoutes()) {
@@ -260,16 +260,16 @@ public class ServiceDefinitionProcessor {
                 String key = gatewayUrl.replace("/", "-");
                 String serviceUrl = url.getPath()
                     + (rs.getServiceRelativeUrl() == null ? "" : rs.getServiceRelativeUrl());
-                mt.put(String.format("routes.%s.gateway-url", key), gatewayUrl);
-                mt.put(String.format("routes.%s.service-url", key), serviceUrl);
+                mt.put(String.format("routes.%s.gatewayUrl", key), gatewayUrl);
+                mt.put(String.format("routes.%s.serviceUrl", key), serviceUrl);
             }
         }
 
         if (tile != null) {
-            mt.put("mfaas.discovery.catalogUiTile.id", tile.getId());
-            mt.put("mfaas.discovery.catalogUiTile.version", DEFAULT_TILE_VERSION);
-            mt.put("mfaas.discovery.catalogUiTile.title", tile.getTitle());
-            mt.put("mfaas.discovery.catalogUiTile.description", tile.getDescription());
+            mt.put("catalog.id", tile.getId());
+            mt.put("catalog.version", DEFAULT_TILE_VERSION);
+            mt.put("catalog.title", tile.getTitle());
+            mt.put("catalog.description", tile.getDescription());
 
             if (service.getApiInfo() != null) {
                 for (ApiInfo apiInfo : service.getApiInfo()) {

@@ -25,7 +25,7 @@ import java.util.List;
     private String serviceId;
     private String title;
     private String description;
-    private String catalogUiTileId;
+    private String catalogId;
     private List<String> instanceBaseUrls;
     private String homePageRelativeUrl;
     private String statusPageRelativeUrl;

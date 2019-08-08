@@ -1,6 +1,6 @@
 services:
     - serviceId: petstore
-      catalogUiTileId: static
+      catalogId: static
       title: Petstore Sample API Service
       description: This is a sample server Petstore REST API service
       instanceBaseUrls:
@@ -14,7 +14,7 @@ services:
           swaggerUrl: http://localhost:8080/v2/swagger.json
           version: 2.0.0
 
-catalogUiTiles:
+catalogs:
     static:
         title: Static API Services
         description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions

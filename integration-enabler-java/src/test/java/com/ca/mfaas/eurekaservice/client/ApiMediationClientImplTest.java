@@ -28,7 +28,7 @@ public class ApiMediationClientImplTest {
     @Test
     public void startEurekaClient() {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
-        CatalogUiTile catalogUiTile = new CatalogUiTile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0");
+        Catalog catalog = new Catalog("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0");
         Eureka eureka = new Eureka("10021", "localhost", "127.0.0.1");
         Ssl ssl = new Ssl(false, "TLSv1.2", "localhost", "password",
             "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
@@ -42,7 +42,7 @@ public class ApiMediationClientImplTest {
         ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
             .apiInfo(Collections.singletonList(apiInfo))
             .eureka(eureka)
-            .catalogUiTile(catalogUiTile)
+            .catalog(catalog)
             .routes(routes)
             .description("Example for exposing a Spring REST API")
             .title("Hello Spring REST API")

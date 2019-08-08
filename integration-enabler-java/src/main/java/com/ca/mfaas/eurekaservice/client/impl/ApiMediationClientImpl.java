@@ -150,21 +150,21 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
             String serviceUrl = route.getServiceUrl();
             String key = gatewayUrl.replace("/", "-");
-            metadata.put(String.format("routes.%s.gateway-url", key), gatewayUrl);
-            metadata.put(String.format("routes.%s.service-url", key), serviceUrl);
+            metadata.put(String.format("routes.%s.gatewayUrl", key), gatewayUrl);
+            metadata.put(String.format("routes.%s.serviceUrl", key), serviceUrl);
         }
 
         // fill tile metadata
-        if (config.getCatalogUiTile() != null) {
-            metadata.put("mfaas.discovery.catalogUiTile.id", config.getCatalogUiTile().getId());
-            metadata.put("mfaas.discovery.catalogUiTile.version", config.getCatalogUiTile().getVersion());
-            metadata.put("mfaas.discovery.catalogUiTile.title", config.getCatalogUiTile().getTitle());
-            metadata.put("mfaas.discovery.catalogUiTile.description", config.getCatalogUiTile().getDescription());
+        if (config.getCatalog() != null) {
+            metadata.put("catalog.id", config.getCatalog().getId());
+            metadata.put("catalog.version", config.getCatalog().getVersion());
+            metadata.put("catalog.title", config.getCatalog().getTitle());
+            metadata.put("catalog.description", config.getCatalog().getDescription());
         }
 
         // fill service metadata
-        metadata.put("mfaas.discovery.service.title", config.getTitle());
-        metadata.put("mfaas.discovery.service.description", config.getDescription());
+        metadata.put("service.title", config.getTitle());
+        metadata.put("service.description", config.getDescription());
 
         // fill api-doc info
         for (ApiInfo apiInfo : config.getApiInfo()) {

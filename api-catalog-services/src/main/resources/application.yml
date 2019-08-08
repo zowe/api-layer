@@ -111,11 +111,11 @@ eureka:
         metadata:
             routes:
                 ui_v1:
-                    gateway-url: "ui/v1"
-                    service-url: /apicatalog
+                    gatewayUrl: "ui/v1"
+                    serviceUrl: /apicatalog
                 api_v1:
-                    gateway-url: "api/v1"
-                    service-url: /apicatalog
+                    gatewayUrl: "api/v1"
+                    serviceUrl: /apicatalog
             apiml:
                 apiInfo:
                     - apiId: org.zowe.apicatalog
@@ -131,15 +131,15 @@ eureka:
                             basePackage: com.ca.mfaas.apicatalog.controllers.api
 
                 discovery:
-                    catalogUiTile:
-                        id: ${mfaas.catalog-ui-tile.id}
-                        title: ${mfaas.catalog-ui-tile.title}
-                        description: ${mfaas.catalog-ui-tile.description}
-                        version: ${mfaas.catalog-ui-tile.version}
                     enableApiDoc: ${mfaas.discovery.info.enableApiDoc:false}
-                    service:
-                        title: ${mfaas.discovery.info.serviceTitle}
-                        description: ${mfaas.discovery.info.description}
+            service:
+                title: ${mfaas.discovery.info.serviceTitle}
+                description: ${mfaas.discovery.info.description}
+            catalog:
+                id: ${mfaas.catalog-ui-tile.id}
+                title: ${mfaas.catalog-ui-tile.title}
+                description: ${mfaas.catalog-ui-tile.description}
+                version: ${mfaas.catalog-ui-tile.version}
     client:
         healthcheck:
             enabled: true

@@ -20,5 +20,5 @@ import java.util.Map;
  */
 @Data class Definition {
     private List<Service> services;
-    private Map<String, CatalogUiTile> catalogUiTiles;
+    private Map<String, Catalog> catalogs;
 }

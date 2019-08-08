@@ -36,7 +36,7 @@ apiInfo:
     - apiId: org.zowe.hello-zowe
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hello-zowe/api-doc
-catalogUiTile:
+catalog:
     id: cademoapps
     title: Sample API ML Applications
     description: Applications which demonstrate how to make a service integrated to the API ML ecosystem using plain Java API discovery enabler

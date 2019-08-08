@@ -6,14 +6,14 @@ function apiLayerServiceModule() {
             "apiml.apiInfo.0.apiId": options.apiInfo[0].apiId,
             "apiml.apiInfo.0.gatewayUrl": options.apiInfo[0].gatewayUrl,
             "apiml.apiInfo.0.swaggerUrl": options.apiInfo[0].swaggerUrl,
-            "mfaas.discovery.catalogUiTile.description": options.catalogUiTile.description,
-            "mfaas.discovery.catalogUiTile.id": options.catalogUiTile.tileId,
-            "mfaas.discovery.catalogUiTile.title": options.catalogUiTile.title,
-            "mfaas.discovery.catalogUiTile.version": options.catalogUiTile.version,
-            "mfaas.discovery.service.title": options.title,
-            "mfaas.discovery.service.description": options.description,
-            "routes.0.gateway-url": options.routes[0].gatewayUrl,
-            "routes.0.service-url": options.routes[0].serviceRelativeUrl
+            "catalog.description": options.catalog.description,
+            "catalog.id": options.catalog.tileId,
+            "catalog.title": options.catalog.title,
+            "catalog.version": options.catalog.version,
+            "service.title": options.title,
+            "service.description": options.description,
+            "routes.0.gatewayUrl": options.routes[0].gatewayUrl,
+            "routes.0.serviceUrl": options.routes[0].serviceRelativeUrl
         };
 
         const client = new eureka.Eureka({

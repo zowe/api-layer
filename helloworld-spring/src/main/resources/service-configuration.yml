@@ -33,7 +33,7 @@ apiInfo:
     - apiId: org.zowe.hellospring
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hellospring/api-doc
-catalogUiTile:
+catalog:
     id: cademoapps
     title: Sample API Mediation Layer Applications
     description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem

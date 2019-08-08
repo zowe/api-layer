@@ -41,16 +41,16 @@ public class EurekaMetadataParserTest {
     @Test
     public void testParseRoutes() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("routes.api-v1.gateway-url", "api/v1");
-        metadata.put("routes.api-v1.service-url", "/");
+        metadata.put("routes.api-v1.gatewayUrl", "api/v1");
+        metadata.put("routes.api-v1.serviceUrl", "/");
         metadata.put("other.parameter", "value");
-        metadata.put("routes.api-v2.service-url", "/test");
+        metadata.put("routes.api-v2.serviceUrl", "/test");
         metadata.put("some.garbage.again", "null");
-        metadata.put("routes.api-v2.gateway-url", "api/v2");
-        metadata.put("routes.api-v3.gateway-url", "incomplete");
-        metadata.put("routes.api-v4.service-url", "incomplete");
-        metadata.put("routes.api-v5.gateway-url", "/api/v5/");
-        metadata.put("routes.api-v5.service-url", "test");
+        metadata.put("routes.api-v2.gatewayUrl", "api/v2");
+        metadata.put("routes.api-v3.gatewayUrl", "incomplete");
+        metadata.put("routes.api-v4.serviceUrl", "incomplete");
+        metadata.put("routes.api-v5.gatewayUrl", "/api/v5/");
+        metadata.put("routes.api-v5.serviceUrl", "test");
 
         RoutedServices routes = new EurekaMetadataParser().parseRoutes(metadata);
 

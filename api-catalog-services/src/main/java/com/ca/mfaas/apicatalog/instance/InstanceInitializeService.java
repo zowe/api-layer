@@ -152,7 +152,7 @@ public class InstanceInitializeService {
     private void createContainers(Application application) {
         cachedServicesService.updateService(application.getName(), application);
         application.getInstances().forEach(instanceInfo -> {
-            String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
+            String productFamilyId = instanceInfo.getMetadata().get("catalog.id");
             if (productFamilyId != null) {
                 log.debug("Initialising product family (creating tile for) : " + productFamilyId);
                 cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo);
@@ -162,7 +162,7 @@ public class InstanceInitializeService {
     }
 
     private void getAllInstances(InstanceInfo apiCatalogInstance) {
-        String productFamilyId = apiCatalogInstance.getMetadata().get("mfaas.discovery.catalogUiTile.id");
+        String productFamilyId = apiCatalogInstance.getMetadata().get("catalog.id");
         if (productFamilyId != null) {
             log.debug("Initialising product family (creating tile for) : " + productFamilyId);
             cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance);

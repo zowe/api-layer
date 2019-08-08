@@ -34,7 +34,7 @@ public class ApiMediationServiceConfig {
     @Singular
     private List<Route> routes;
     private List<ApiInfo> apiInfo;
-    private CatalogUiTile catalogUiTile;
+    private Catalog catalog;
     private Ssl ssl;
     private Eureka eureka;
 }

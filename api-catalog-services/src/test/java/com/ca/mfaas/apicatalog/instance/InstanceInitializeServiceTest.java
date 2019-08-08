@@ -77,7 +77,7 @@ public class InstanceInitializeServiceTest {
         instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
 
         verify(cachedProductFamilyService, times(2)).createContainerFromInstance(
-            apiCatalogInstance.getMetadata().get("mfaas.discovery.catalogUiTile.id"),
+            apiCatalogInstance.getMetadata().get("catalog.id"),
             apiCatalogInstance
         );
 
@@ -96,7 +96,7 @@ public class InstanceInitializeServiceTest {
             .filter(f -> !f.getAppName().equals(catalogId.toUpperCase()))
             .forEach(instanceInfo ->
                 verify(cachedProductFamilyService, times(1)).createContainerFromInstance(
-                    instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id"),
+                    instanceInfo.getMetadata().get("catalog.id"),
                     instanceInfo
                 ));
     }
@@ -129,7 +129,7 @@ public class InstanceInitializeServiceTest {
         InstanceInfo instanceInfo = getStandardInstance(
             CoreService.GATEWAY.getServiceId(),
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.GATEWAY.getServiceId()),
+            getMetadataByCatalogId("apimediationlayer", "/" + CoreService.GATEWAY.getServiceId()),
             "gateway",
             "https://localhost:9090/");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -137,7 +137,7 @@ public class InstanceInitializeServiceTest {
         instanceInfo = getStandardInstance(
             CoreService.API_CATALOG.getServiceId(),
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.API_CATALOG.getServiceId()),
+            getMetadataByCatalogId("apimediationlayer", "/" + CoreService.API_CATALOG.getServiceId()),
             "apicatalog",
             "https://localhost:9090/");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -146,7 +146,7 @@ public class InstanceInitializeServiceTest {
         instanceInfo = getStandardInstance(
             "STATICCLIENT",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("static", "/discoverableclient"),
+            getMetadataByCatalogId("static", "/discoverableclient"),
             "staticclient",
             "https://localhost:9090/discoverableclient");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -155,7 +155,7 @@ public class InstanceInitializeServiceTest {
         instanceInfo = getStandardInstance(
             "STATICCLIENT2",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("static", "/discoverableclient"),
+            getMetadataByCatalogId("static", "/discoverableclient"),
             "staticclient2",
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -164,7 +164,7 @@ public class InstanceInitializeServiceTest {
         instanceInfo = getStandardInstance(
             "ZOSMFTSO21",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf", "/zosmftso21"),
+            getMetadataByCatalogId("zosmf", "/zosmftso21"),
             "zosmftso21",
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -172,7 +172,7 @@ public class InstanceInitializeServiceTest {
         instanceInfo = getStandardInstance(
             "ZOSMFCA32",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf", "/zosmfca32"),
+            getMetadataByCatalogId("zosmf", "/zosmfca32"),
             "zosmfca32",
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
@@ -180,13 +180,13 @@ public class InstanceInitializeServiceTest {
         return instanceInfoMap;
     }
 
-    private HashMap<String, String> getMetadataByCatalogUiTitleId(String catalogUiTileId, String uiRoute) {
+    private HashMap<String, String> getMetadataByCatalogId(String catalogId, String uiRoute) {
         HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("mfaas.discovery.catalogUiTile.id", catalogUiTileId);
-        metadata.put("routes.ui-v1.service-url", uiRoute);
-        metadata.put("routes.ui-v1.gateway-url", "ui/v1");
-        metadata.put("routes.api-v1.gateway-url", "api/v1");
-        metadata.put("routes.api-v1.service-url", "/");
+        metadata.put("catalog.id", catalogId);
+        metadata.put("routes.ui-v1.serviceUrl", uiRoute);
+        metadata.put("routes.ui-v1.gatewayUrl", "ui/v1");
+        metadata.put("routes.api-v1.gatewayUrl", "api/v1");
+        metadata.put("routes.api-v1.serviceUrl", "/");
         return metadata;
     }
 

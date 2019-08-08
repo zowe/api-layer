@@ -32,7 +32,7 @@ apiInfo:
     - apiId: org.zowe.hellojersey
       gatewayUrl: api/v1
       swaggerUrl: https://localhost:10016/hellojersey/swagger.json
-catalogUiTile:
+catalog:
     id: cademoapps
     title: Sample API Mediation Layer Applications
     description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem

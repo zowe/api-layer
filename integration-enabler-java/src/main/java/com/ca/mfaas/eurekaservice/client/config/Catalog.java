@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CatalogUiTile {
+public class Catalog {
     private String id;
     private String title;
     private String description;

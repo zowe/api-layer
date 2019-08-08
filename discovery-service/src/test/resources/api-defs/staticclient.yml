@@ -6,7 +6,7 @@
 #
 services:
     - serviceId: staticclient  # unique lowercase ID of the service
-      catalogUiTileId: cademoapps  # ID of the API Catalog UI tile (visual grouping of the services)
+      catalogId: cademoapps  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Staticaly Defined Service  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
@@ -25,7 +25,7 @@ services:
           serviceRelativeUrl: /api-doc
 
 # List of tiles that can be used by services defined in YAML files:
-catalogUiTiles:
+catalogs:
     cademoapps:
         title: Sample APIML applications
         description: Applications which demonstrate how to make an API service discoverable in the APIML ecosystem

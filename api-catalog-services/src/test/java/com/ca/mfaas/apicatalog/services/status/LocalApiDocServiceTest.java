@@ -130,7 +130,7 @@ public class LocalApiDocServiceTest {
     }
 
     @Test
-    public void shouldGenerateSubstituteSwaggerIfSwaggerUrlNull() {
+    public void shouldUrlNull() { //GenerateSubstituteSwaggerIfSwagger
         String generatedResponseBody = "{\n" +
             "    \"swagger\": \"2.0\",\n" +
             "    \"info\": {\n" +
@@ -246,10 +246,10 @@ public class LocalApiDocServiceTest {
         metadata.put("apiml.apiInfo.1.gatewayUrl", GATEWAY_URL);
         metadata.put("apiml.apiInfo.1.version", SERVICE_VERSION);
         metadata.put("apiml.apiInfo.1.swaggerUrl", SWAGGER_URL);
-        metadata.put("routes.api-v1.gateway-url", "api");
-        metadata.put("routes.api-v1.service-url", "/");
-        metadata.put("mfaas.discovery.service.title", "Test service");
-        metadata.put("mfaas.discovery.service.description", "Test service description");
+        metadata.put("routes.api-v1.gatewayUrl", "api");
+        metadata.put("routes.api-v1.serviceUrl", "/");
+        metadata.put("service.title", "Test service");
+        metadata.put("service.description", "Test service description");
 
         return metadata;
     }
@@ -259,22 +259,22 @@ public class LocalApiDocServiceTest {
         metadata.put("apiml.apiInfo.1.apiId", API_ID);
         metadata.put("apiml.apiInfo.1.gatewayUrl", GATEWAY_URL);
         metadata.put("apiml.apiInfo.1.version", SERVICE_VERSION);
-        metadata.put("routes.api-v1.gateway-url", "api");
-        metadata.put("routes.api-v1.service-url", "/");
-        metadata.put("mfaas.discovery.service.title", "Test service");
-        metadata.put("mfaas.discovery.service.description", "Test service description");
+        metadata.put("routes.api-v1.gatewayUrl", "api");
+        metadata.put("routes.api-v1.serviceUrl", "/");
+        metadata.put("service.title", "Test service");
+        metadata.put("service.description", "Test service description");
 
         return metadata;
     }
 
     private Map<String, String> getMetadataWithoutApiInfo() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("routes.api-v1.gateway-url", "api");
-        metadata.put("routes.api-v1.service-url", "/");
-        metadata.put("routes.apidoc.gateway-url", "api/v1/api-doc");
-        metadata.put("routes.apidoc.service-url", SERVICE_ID + "/api-doc");
-        metadata.put("mfaas.discovery.service.title", "Test service");
-        metadata.put("mfaas.discovery.service.description", "Test service description");
+        metadata.put("routes.api-v1.gatewayUrl", "api");
+        metadata.put("routes.api-v1.serviceUrl", "/");
+        metadata.put("routes.apidoc.gatewayUrl", "api/v1/api-doc");
+        metadata.put("routes.apidoc.serviceUrl", SERVICE_ID + "/api-doc");
+        metadata.put("service.title", "Test service");
+        metadata.put("service.description", "Test service description");
 
         return metadata;
     }

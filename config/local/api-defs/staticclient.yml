@@ -6,7 +6,7 @@
 #
 services:
     - serviceId: staticclient  # unique lowercase ID of the service
-      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+      catalogId: static  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Statically Defined API Service  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service with Swagger to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
@@ -28,7 +28,7 @@ services:
           swaggerUrl: https://localhost:10012/discoverableclient/api-doc
 
     - serviceId: staticclient2  # unique lowercase ID of the service
-      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+      catalogId: static  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Staticaly Defined Service 2  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
@@ -50,7 +50,7 @@ services:
           version: 1.0.0
 
 # List of tiles that can be used by services defined in the YAML file:
-catalogUiTiles:
+catalogs:
     static:
         title: Static API Services
         description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions

@@ -13,8 +13,8 @@ Example:
             metadata:
                 routes:
                     ws_v1:
-                        gateway-url: "ws/v1"
-                        service-url: /discoverableclient/ws
+                        gatewayUrl: "ws/v1"
+                        serviceUrl: /discoverableclient/ws
 
 This maps requests `wss://gatewayHost:port/ws/v1/serviceId/path` to `ws://serviceHost:port/discoverableclient/ws/path` where `serviceId` is the service ID of the service and `path` is the ramaining path segment in the URL.
 

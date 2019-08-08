@@ -132,8 +132,9 @@ eureka:
             mfaas:
                 discovery:
                     enableApiDoc: false
-                    serviceTitle: API Gateway
-                    description: API Gateway to access REST APIs of registered services
+            service:
+                title: API Gateway
+                description: API Gateway to access REST APIs of registered services
     client:
         fetchRegistry: true
         registerWithEureka: true

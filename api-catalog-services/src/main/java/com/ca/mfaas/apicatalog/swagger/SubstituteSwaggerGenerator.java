@@ -31,8 +31,8 @@ public class SubstituteSwaggerGenerator {
     public String generateSubstituteSwaggerForService(InstanceInfo service,
                                                       ApiInfo api,
                                                       String gatewayScheme, String gatewayHost) {
-        String title = service.getMetadata().get("mfaas.discovery.service.title");
-        String description = service.getMetadata().get("mfaas.discovery.service.description");
+        String title = service.getMetadata().get("service.title");
+        String description = service.getMetadata().get("service.description");
         String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + api.getGatewayUrl()
             + (api.getGatewayUrl().endsWith("/") ? "" : "/") + service.getAppName().toLowerCase();
 

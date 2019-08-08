@@ -60,7 +60,7 @@ function registerServiceToDiscoveryService() {
                 swaggerUrl: `https://${args.hostName}:${args.port}/swagger.json`
             }
         ],
-        catalogUiTile: {
+        catalog: {
             tileId: "cademoapps",
             title: "Sample API Mediation Layer Applications",
             description:

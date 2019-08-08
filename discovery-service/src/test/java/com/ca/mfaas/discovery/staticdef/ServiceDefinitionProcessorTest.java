@@ -48,10 +48,10 @@ public class ServiceDefinitionProcessorTest {
                 instances.get(0).getSecureHealthCheckUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
                 instances.get(0).getStatusPageUrl());
-        assertEquals("api/v1", instances.get(0).getMetadata().get("routes.api-v1.gateway-url"));
-        assertEquals("api/v2", instances.get(0).getMetadata().get("routes.api-v2.gateway-url"));
+        assertEquals("api/v1", instances.get(0).getMetadata().get("routes.api-v1.gatewayUrl"));
+        assertEquals("api/v2", instances.get(0).getMetadata().get("routes.api-v2.gatewayUrl"));
         assertEquals("/casamplerestapiservice/api/v1",
-                instances.get(0).getMetadata().get("routes.api-v1.service-url"));
+                instances.get(0).getMetadata().get("routes.api-v1.serviceUrl"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -80,9 +80,9 @@ public class ServiceDefinitionProcessorTest {
                 instances.get(0).getSecureHealthCheckUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
                 instances.get(0).getStatusPageUrl());
-        assertEquals("api/v1", instances.get(0).getMetadata().get("routes.api-v1.gateway-url"));
+        assertEquals("api/v1", instances.get(0).getMetadata().get("routes.api-v1.gatewayUrl"));
         assertEquals("/casamplerestapiservice/",
-                instances.get(0).getMetadata().get("routes.api-v1.service-url"));
+                instances.get(0).getMetadata().get("routes.api-v1.serviceUrl"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -176,10 +176,10 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      title: Title\n" +
             "      description: Description\n" +
-            "      catalogUiTileId: tileid\n" +
+            "      catalogId: tileid\n" +
             "      instanceBaseUrls:\n" +
             "        - https://localhost:10019/casamplerestapiservice/\n" +
-            "catalogUiTiles:\n" +
+            "catalogs:\n" +
             "    tileid:\n" +
             "        title: Tile Title\n" +
             "        description: Tile Description\n";
@@ -199,9 +199,9 @@ public class ServiceDefinitionProcessorTest {
                 "    - serviceId: casamplerestapiservice\n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
-                "catalogUiTiles:\n" +
+                "catalogs:\n" +
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
@@ -220,10 +220,10 @@ public class ServiceDefinitionProcessorTest {
                 "    - serviceId: casamplerestapiservice\n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
                 "      - \n" +
-                "catalogUiTiles:\n" +
+                "catalogs:\n" +
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
@@ -242,9 +242,9 @@ public class ServiceDefinitionProcessorTest {
                 "    - serviceId: \n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
-                "catalogUiTiles:\n" +
+                "catalogs:\n" +
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
@@ -263,21 +263,21 @@ public class ServiceDefinitionProcessorTest {
                 "    - serviceId: casamplerestapiservice\n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
                 "       - https://localhost:10012/casamplerestapiservice2\n" +
                 "    - serviceId: casamplerestapiservice2\n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
                 "    - serviceId: casamplerestapiservice3\n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
                 "       - https://localhost:10012/casamplerestapiservice3\n" +
-                "catalogUiTiles:\n" +
+                "catalogs:\n" +
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
@@ -298,10 +298,10 @@ public class ServiceDefinitionProcessorTest {
                 "    - serviceId: casamplerestapiservice\n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
                 "       - https://localhost:10012/casamplerestapiservice\n" +
-                "catalogUiTiles:\n" +
+                "catalogs:\n" +
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
@@ -310,10 +310,10 @@ public class ServiceDefinitionProcessorTest {
                 "    - serviceId: casamplerestapiservice2\n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
                 "        \n" +
-                "catalogUiTiles:\n" +
+                "catalogs:\n" +
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
@@ -322,10 +322,10 @@ public class ServiceDefinitionProcessorTest {
                 "    - serviceId: casamplerestapiservice3\n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
-                "      catalogUiTileId: tileid\n" +
+                "      catalogId: tileid\n" +
                 "      instanceBaseUrls:\n" +
                 "       - https://localhost:10012/casamplerestapiservice3\n" +
-                "catalogUiTiles:\n" +
+                "catalogs:\n" +
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
@@ -373,7 +373,7 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
-            "      catalogUiTileId: static\n" +
+            "      catalogId: static\n" +
             "      title: Petstore Sample API Service\n" +
             "      description: This is a sample server Petstore REST API service\n" +
             "      instanceBaseUrls:\n" +
@@ -387,7 +387,7 @@ public class ServiceDefinitionProcessorTest {
             "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
             "          version: 2.0.0\n" +
             "\n" +
-            "catalogUiTiles:\n" +
+            "catalogs:\n" +
             "    static:\n" +
             "        title: Static API Services\n" +
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
@@ -398,15 +398,15 @@ public class ServiceDefinitionProcessorTest {
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
         assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
-        assertEquals("api/v2", instances.get(0).getMetadata().get("routes.api-v2.gateway-url"));
-        assertEquals("/v2", instances.get(0).getMetadata().get("routes.api-v2.service-url"));
-        assertEquals("static", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.id"));
-        assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get("mfaas.discovery.service.title"));
+        assertEquals("api/v2", instances.get(0).getMetadata().get("routes.api-v2.gatewayUrl"));
+        assertEquals("/v2", instances.get(0).getMetadata().get("routes.api-v2.serviceUrl"));
+        assertEquals("static", instances.get(0).getMetadata().get("catalog.id"));
+        assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get("service.title"));
         assertEquals("2.0.0", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.version"));
-        assertEquals("1.0.0", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.version"));
-        assertEquals("Static API Services", instances.get(0).getMetadata().get("mfaas.discovery.catalogUiTile.title"));
+        assertEquals("1.0.0", instances.get(0).getMetadata().get("catalog.version"));
+        assertEquals("Static API Services", instances.get(0).getMetadata().get("catalog.title"));
         assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.swaggerUrl"));
-        assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get("mfaas.discovery.service.description"));
+        assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get("service.description"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -416,7 +416,7 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
-            "      catalogUiTileId: adajand\n" +
+            "      catalogId: adajand\n" +
             "      title: Petstore Sample API Service\n" +
             "      description: This is a sample server Petstore REST API service\n" +
             "      instanceBaseUrls:\n" +
@@ -430,7 +430,7 @@ public class ServiceDefinitionProcessorTest {
             "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
             "          version: 2.0.0\n" +
             "\n" +
-            "catalogUiTiles:\n" +
+            "catalogs:\n" +
             "    static:\n" +
             "        title: Static API Services\n" +
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";

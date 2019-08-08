@@ -52,11 +52,11 @@ eureka:
         metadata:
             routes:
                 api_v1:
-                    gateway-url: "api/v1"
-                    service-url: ${mfaas.server.contextPath}/api/v1
+                    gatewayUrl: "api/v1"
+                    serviceUrl: ${mfaas.server.contextPath}/api/v1
                 api-doc:
-                    gateway-url: "api/v1/api-doc"
-                    service-url: ${mfaas.server.contextPath}/api-doc
+                    gatewayUrl: "api/v1/api-doc"
+                    serviceUrl: ${mfaas.server.contextPath}/api-doc
             mfaas:
                 api-info:
                     swagger:
@@ -68,15 +68,15 @@ eureka:
                             version: 1.0.0
                             basePackage: com.ca.mfaas.sample.enable.v1.controller
                 discovery:
-                    catalogUiTile:
-                        id: ${mfaas.catalog-ui-tile.id}
-                        title:  ${mfaas.catalog-ui-tile.title}
-                        description: ${mfaas.catalog-ui-tile.description}
-                        version: ${mfaas.catalog-ui-tile.version}
                     enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
-                    service:
-                        title: ${mfaas.discovery.info.serviceTitle}
-                        description: ${mfaas.discovery.info.description}
+            service:
+                title: ${mfaas.discovery.info.serviceTitle}
+                description: ${mfaas.discovery.info.description}
+            catalog:
+                id: ${mfaas.catalog-ui-tile.id}
+                title:  ${mfaas.catalog-ui-tile.title}
+                description: ${mfaas.catalog-ui-tile.description}
+                version: ${mfaas.catalog-ui-tile.version}
     client:
         healthcheck:
             enabled: true
