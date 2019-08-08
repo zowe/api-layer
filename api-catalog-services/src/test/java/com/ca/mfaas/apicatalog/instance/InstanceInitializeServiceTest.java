@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.*;
 import static org.hamcrest.Matchers.isA;
@@ -197,10 +197,10 @@ public class InstanceInitializeServiceTest {
     private HashMap<String, String> getMetadataByCatalogUiTitleId(String catalogUiTileId, String uiRoute) {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(CATALOG_ID, catalogUiTileId);
-        metadata.put(ROUTES + ".ui-v1." + SERVICE_URL, uiRoute);
-        metadata.put(ROUTES + ".ui-v1." + GATEWAY_URL, "ui/v1");
-        metadata.put(ROUTES + ".api-v1." + SERVICE_URL, "api/v1");
-        metadata.put(ROUTES + ".api-v1." + GATEWAY_URL, "/");
+        metadata.put(ROUTES + ".ui-v1." + ROUTES_SERVICE_URL, uiRoute);
+        metadata.put(ROUTES + ".ui-v1." + ROUTES_GATEWAY_URL, "ui/v1");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "api/v1");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "/");
         return metadata;
     }
 

@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.*;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.CATALOG_ID;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
 
 /**
  * Refresh the cache with the latest state of the discovery service

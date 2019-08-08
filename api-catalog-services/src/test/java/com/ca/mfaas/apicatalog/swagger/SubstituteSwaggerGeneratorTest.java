@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.APIS;
 import static org.junit.Assert.assertTrue;
 
 public class SubstituteSwaggerGeneratorTest {
@@ -29,13 +30,13 @@ public class SubstituteSwaggerGeneratorTest {
         String gatewayHost = "localhost:8080";
 
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.apiInfo.1.gatewayUrl", "api/v1");
-        metadata.put("apiml.apiInfo.1.documentationUrl", "https://doc.ca.com/api");
+        metadata.put(APIS + ".1.gatewayUrl", "api/v1");
+        metadata.put(APIS + ".1.documentationUrl", "https://doc.ca.com/api");
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
 
         InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName("serviceId").setHostName("localhost")
-                .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
+            .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
 
         String result = new SubstituteSwaggerGenerator().generateSubstituteSwaggerForService(service,
             info.get(0), gatewayScheme, gatewayHost);

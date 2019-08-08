@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 /**
  * Main page for Gateway, displaying status of Apiml services and build version information
@@ -132,8 +132,8 @@ public class GatewayHomepageController {
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {
-        String gatewayUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, GATEWAY_URL));
-        String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, SERVICE_URL));
+        String gatewayUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_GATEWAY_URL));
+        String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_SERVICE_URL));
         return gatewayUrl + serviceUrl;
     }
 

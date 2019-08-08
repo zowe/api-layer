@@ -16,7 +16,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
@@ -48,10 +48,10 @@ public class ServiceDefinitionProcessorTest {
             instances.get(0).getSecureHealthCheckUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
             instances.get(0).getStatusPageUrl());
-        assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + GATEWAY_URL));
-        assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + GATEWAY_URL));
+        assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
+        assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
         assertEquals("/casamplerestapiservice/api/v1",
-            instances.get(0).getMetadata().get(ROUTES + ".api-v1." + SERVICE_URL));
+            instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -80,9 +80,9 @@ public class ServiceDefinitionProcessorTest {
             instances.get(0).getSecureHealthCheckUrl());
         assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
             instances.get(0).getStatusPageUrl());
-        assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + GATEWAY_URL));
+        assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
         assertEquals("/casamplerestapiservice/",
-            instances.get(0).getMetadata().get(ROUTES + ".api-v1." + SERVICE_URL));
+            instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }
@@ -398,15 +398,15 @@ public class ServiceDefinitionProcessorTest {
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
         assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
-        assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + GATEWAY_URL));
-        assertEquals("/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + SERVICE_URL));
+        assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
+        assertEquals("/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_SERVICE_URL));
         assertEquals("static", instances.get(0).getMetadata().get(CATALOG_ID));
-        assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get("mfaas.discovery.service.title"));
-        assertEquals("2.0.0", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.version"));
+        assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get(SERVICE_TITLE));
+        assertEquals("2.0.0", instances.get(0).getMetadata().get(APIS + ".api-v2.version"));
         assertEquals("1.0.0", instances.get(0).getMetadata().get(CATALOG_VERSION));
         assertEquals("Static API Services", instances.get(0).getMetadata().get(CATALOG_TITLE));
-        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.swaggerUrl"));
-        assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get("mfaas.discovery.service.description"));
+        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get(APIS + ".api-v2.swaggerUrl"));
+        assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get(SERVICE_DESCRIPTION));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
     }

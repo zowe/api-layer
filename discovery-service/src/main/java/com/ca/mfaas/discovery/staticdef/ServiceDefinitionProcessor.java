@@ -29,7 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-import static com.ca.mfaas.product.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 @Slf4j
 @Component
@@ -254,8 +254,8 @@ public class ServiceDefinitionProcessor {
         Map<String, String> mt = new HashMap<>();
 
         mt.put(VERSION, CURRENT_VERSION);
-        mt.put("mfaas.discovery.service.title", service.getTitle());
-        mt.put("mfaas.discovery.service.description", service.getDescription());
+        mt.put(SERVICE_TITLE, service.getTitle());
+        mt.put(SERVICE_DESCRIPTION, service.getDescription());
 
         if (service.getRoutes() != null) {
             for (Route rs : service.getRoutes()) {
@@ -263,8 +263,8 @@ public class ServiceDefinitionProcessor {
                 String key = gatewayUrl.replace("/", "-");
                 String serviceUrl = url.getPath()
                     + (rs.getServiceRelativeUrl() == null ? "" : rs.getServiceRelativeUrl());
-                mt.put(String.format("%s.%s.%s", ROUTES, key, GATEWAY_URL), gatewayUrl);
-                mt.put(String.format("%s.%s.%s", ROUTES, key, SERVICE_URL), serviceUrl);
+                mt.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
+                mt.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
             }
         }
 
@@ -279,9 +279,6 @@ public class ServiceDefinitionProcessor {
                     mt.putAll(apiInfo.generateMetadata(service.getServiceId()));
                 }
             }
-
-        } else {
-            mt.put("mfaas.discovery.enableApiDoc", "false");
         }
 
         return mt;
