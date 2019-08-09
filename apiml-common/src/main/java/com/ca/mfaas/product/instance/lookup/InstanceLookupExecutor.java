@@ -25,9 +25,6 @@ import java.util.function.Consumer;
 @Slf4j
 public class InstanceLookupExecutor {
 
-    private static final int INITIAL_DELAY = 100;
-    private static final int PERIOD = 5000;
-
     private final EurekaClient eurekaClient;
     private final ScheduledExecutorService executorService =
         Executors.newSingleThreadScheduledExecutor(r -> {
@@ -37,8 +34,20 @@ public class InstanceLookupExecutor {
         }
     );
 
+    private int initialDelay;
+    private int period;
+
     public InstanceLookupExecutor(EurekaClient eurekaClient) {
+        this(eurekaClient, 100, 5000);
+    }
+
+
+    public InstanceLookupExecutor(EurekaClient eurekaClient,
+                                  int initialDelay,
+                                  int period) {
         this.eurekaClient = eurekaClient;
+        this.initialDelay = initialDelay;
+        this.period = period;
     }
 
     private InstanceInfo findEurekaInstance(String serviceId) {
@@ -79,7 +88,7 @@ public class InstanceLookupExecutor {
                 }
 
             },
-            INITIAL_DELAY, PERIOD, TimeUnit.MILLISECONDS
+            initialDelay, period, TimeUnit.MILLISECONDS
         );
     }
 }

@@ -10,126 +10,146 @@
 package com.ca.mfaas.product.instance.lookup;
 
 
-//@RunWith(MockitoJUnitRunner.class)
+import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.instance.InstanceInitializationException;
+import com.ca.mfaas.product.instance.InstanceNotFoundException;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
+import static org.junit.Assert.*;
+import static org.powermock.api.mockito.PowerMockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
 public class InstanceLookupExecutorTest {
 
-//    private static final int INITIAL_DELAY = 100;
-//    private static final int PERIOD = 5000;
-//
-//    @Mock
-//    private volatile EurekaClient eurekaClient;
-//
-//
-//
-//    @Rule
-//    public final ExpectedException expectedException = ExpectedException.none();
-//
-//    private InstanceLookupExecutor instanceLookupExecutor;
-//
-//    private volatile boolean isRunning = true;
-//
-//    @Before
-//    public void setUp() {
-//        instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient);
-//    }
-//
-//
-//    public void test() {
-//
-//    }
-//
-//
-//    public void ds() {
-//        String serviceId = CoreService.GATEWAY.getServiceId();
-//
-//        List<InstanceInfo> generatedInstances = Stream.iterate(0, i -> i + 1)
-//            .limit(5)
-//            .map(mIndex -> getInstance(mIndex, serviceId)).collect(Collectors.toList());
-//
-//
-//        instanceLookupExecutor.run(
-//            serviceId,
-//            instanceInfo -> {
-//                isRunning = false;
-//            },
-//            (exception, isStopped) -> {
-//                assertTrue(exception instanceof InstanceNotFoundException);
-//                assertEquals("No gateway Application is registered in Discovery Client",
-//                    exception.getMessage());
-//
-//                when(eurekaClient.getApplication(serviceId))
-//                    .thenReturn(new Application(serviceId, generatedInstances));
-//
-//
-//                isRunning = !isStopped;
-//            }
-//        );
-//
-//        while (isRunning) ;
-//    }
-//
-//    public void tesddtRun4() {
-//        String serviceId = CoreService.GATEWAY.getServiceId();
-//
-//        List<InstanceInfo> generatedInstances = Stream.iterate(0, i -> i + 1)
-//            .limit(5)
-//            .map(mIndex -> getInstance(mIndex, serviceId)).collect(Collectors.toList());
-//
-//        when(eurekaClient.getApplication(serviceId))
-//            .thenReturn(new Application(serviceId, Collections.emptyList()));
-//
-//        instanceLookupExecutor.run(
-//            serviceId,
-//            instanceInfo -> {
-//                isRunning = false;
-//            },
-//            (exception, isStopped) -> {
-//                exception.printStackTrace();
-//                assertTrue(exception instanceof InstanceNotFoundException);
-//                assertNotEquals("No gateway Instances registered within application in Discovery Client",
-//                    exception.getMessage());
-//
-//                when(eurekaClient.getApplication(serviceId))
-//                    .thenReturn(new Application(serviceId, generatedInstances));
-//
-//
-//                isRunning = !isStopped;
-//            }
-//        );
-//
-//        while (isRunning) ;
-//    }
-//
-//
-//    private void testRegisteredApplicationInEureka_whenApplicationIsNotExist(Exception exception) {
-//
-//    }
-//
-//    private void testRegisteredApplicationInEureka_whenInstancesArentExist(String serviceId, Exception exception) {
-//        when(eurekaClient.getApplication(serviceId))
-//            .thenReturn(new Application(serviceId, null));
-//
-//        assertTrue(exception instanceof InstanceNotFoundException);
-//        assertEquals("No gateway Application is registered in Discovery Client",
-//            exception.getMessage());
-//    }
-//
-//    private InstanceInfo getInstance(int index, String serviceId) {
-//        InstanceInfo instance = createInstance(
-//            serviceId,
-//            serviceId + ":" + index,
-//            InstanceInfo.InstanceStatus.UP,
-//            InstanceInfo.ActionType.ADDED,
-//            new HashMap<>());
-//        return instance;
-//    }
-//
-//    public InstanceInfo createInstance(String serviceId, String instanceId,
-//                                       InstanceInfo.InstanceStatus status,
-//                                       InstanceInfo.ActionType actionType,
-//                                       HashMap<String, String> metadata) {
-//        return new InstanceInfo(instanceId, serviceId.toUpperCase(), null, "192.168.0.1", null,
-//            new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
-//            status, null, null, null, null, metadata, null, null, actionType, null);
-//    }
+    private static final int INITIAL_DELAY = 1;
+    private static final int PERIOD = 10;
+    private static final String SERVICE_ID = CoreService.API_CATALOG.getServiceId();
+
+    @Mock
+    private EurekaClient eurekaClient;
+
+    private InstanceLookupExecutor instanceLookupExecutor;
+    private List<InstanceInfo> instances;
+
+    private volatile boolean isRunning = true;
+    private Exception lastException;
+    private InstanceInfo lastInstancInfo;
+
+    @Before
+    public void setUp() {
+        instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient, INITIAL_DELAY, PERIOD);
+        instances = Collections.singletonList(
+            getInstance(SERVICE_ID));
+    }
+
+
+    @Test(timeout = 2000)
+    public void testRun_whenNoApplicationRegisteredInDiscovery() {
+        instanceLookupExecutor.run(
+            SERVICE_ID, null,
+            (exception, isStopped) -> {
+                lastException = exception;
+                isRunning = false;
+            }
+        );
+
+        while (isRunning);
+
+        assertNotNull(lastException);
+        assertTrue(lastException instanceof InstanceNotFoundException);
+        assertEquals("No " + SERVICE_ID + " Application is registered in Discovery Client",
+            lastException.getMessage());
+    }
+
+
+    @Test(timeout = 2000)
+    public void testRun_whenNoInstancesExistInDiscovery() {
+        when(eurekaClient.getApplication(SERVICE_ID))
+            .thenReturn(new Application(SERVICE_ID, Collections.emptyList()));
+
+        instanceLookupExecutor.run(
+            SERVICE_ID, null,
+            (exception, isStopped) -> {
+                lastException = exception;
+                isRunning = false;
+            }
+        );
+
+        while (isRunning);
+
+        assertNotNull(lastException);
+        assertTrue(lastException instanceof InstanceNotFoundException);
+        assertEquals("No " + SERVICE_ID + " Instances registered within Application in Discovery Client",
+            lastException.getMessage());
+    }
+
+    @Test(timeout = 2000)
+    public void testRun_whenUnxpectedExceptionHappened() {
+        when(eurekaClient.getApplication(SERVICE_ID))
+            .thenThrow(new InstanceInitializationException("Unexpected Exception"));
+
+        instanceLookupExecutor.run(
+            SERVICE_ID, null,
+            (exception, isStopped) -> {
+                lastException = exception;
+                isRunning = !isStopped;
+            }
+        );
+
+        while (isRunning);
+
+        assertNotNull(lastException);
+        assertTrue(lastException instanceof InstanceInitializationException);
+    }
+
+    @Test(timeout = 2000)
+    public void testRun_whenInstanceExistInDiscovery() {
+        when(eurekaClient.getApplication(SERVICE_ID))
+            .thenReturn(new Application(SERVICE_ID, instances));
+
+        instanceLookupExecutor.run(
+            SERVICE_ID,
+            instanceInfo -> {
+                lastInstancInfo = instanceInfo;
+                isRunning = false;
+            },null
+        );
+
+        while (isRunning);
+
+        assertNull(lastException);
+        assertNotNull(lastInstancInfo);
+        assertEquals(instances.get(0), lastInstancInfo);
+    }
+
+
+    private InstanceInfo getInstance(String serviceId) {
+        InstanceInfo instance = createInstance(
+            serviceId,
+            serviceId,
+            InstanceInfo.InstanceStatus.UP,
+            InstanceInfo.ActionType.ADDED,
+            new HashMap<>());
+        return instance;
+    }
+
+    public InstanceInfo createInstance(String serviceId, String instanceId,
+                                       InstanceInfo.InstanceStatus status,
+                                       InstanceInfo.ActionType actionType,
+                                       HashMap<String, String> metadata) {
+        return new InstanceInfo(instanceId, serviceId.toUpperCase(), null, "192.168.0.1", null,
+            new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
+            status, null, null, null, null, metadata, null, null, actionType, null);
+    }
 }
