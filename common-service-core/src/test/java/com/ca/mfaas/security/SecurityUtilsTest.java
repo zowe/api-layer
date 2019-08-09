@@ -118,7 +118,7 @@ public class SecurityUtilsTest {
     private byte[] loadPublicKeyFromFile() {
         byte[] publicKey = null;
         try {
-            String keyInBase64 = new String(Files.readAllBytes(Paths.get(ClassLoader.getSystemResource(PUBLIC_KEY_FILE).toURI())));
+            String keyInBase64 = new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(PUBLIC_KEY_FILE).toURI())));
             publicKey = Base64.getDecoder().decode(keyInBase64);
         } catch (IOException | URISyntaxException e) {
             fail("Error reading secret key from file " + PUBLIC_KEY_FILE + ": " + e.getMessage());

@@ -25,7 +25,7 @@ services:
           serviceRelativeUrl: /api-doc
 
 # List of tiles that can be used by services defined in YAML files:
-catalog:
+catalogs:
     cademoapps:
         title: Sample APIML applications
         description: Applications which demonstrate how to make an API service discoverable in the APIML ecosystem

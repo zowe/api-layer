@@ -103,7 +103,7 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
         List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(
-            Paths.get(ClassLoader.getSystemResource("api-defs/staticclient.yml").toURI()).toAbsolutePath().toString());
+            Paths.get(getClass().getClassLoader().getResource("api-defs/staticclient.yml").toURI()).toAbsolutePath().toString());
 
         assertThat(instances.size(), is(0));
     }
@@ -442,8 +442,8 @@ public class ServiceDefinitionProcessorTest {
     @Test
     public void testFindServicesWithTwoDirectories() throws URISyntaxException {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
-        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
-        String pathTwo = ClassLoader.getSystemResource("ext-config/").getPath();
+        String pathOne = getClass().getClassLoader().getResource("api-defs/").getPath();
+        String pathTwo = getClass().getClassLoader().getResource("ext-config/").getPath();
         List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne + ";" + pathTwo);
 
         assertThat(instances.size(), is(2));
@@ -452,7 +452,7 @@ public class ServiceDefinitionProcessorTest {
     @Test
     public void testFindServicesWithOneDirectory() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
-        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
+        String pathOne = getClass().getClassLoader().getResource("api-defs/").getPath();
         List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne);
 
         assertThat(instances.size(), is(1));
@@ -461,7 +461,7 @@ public class ServiceDefinitionProcessorTest {
     @Test
     public void testFindServicesWithSecondEmptyDirectory() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
-        String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
+        String pathOne = getClass().getClassLoader().getResource("api-defs/").getPath();
         List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne + ";");
 
         assertThat(instances.size(), is(1));

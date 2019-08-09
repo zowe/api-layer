@@ -66,7 +66,7 @@ public class StaticServicesRegistrationServiceTest {
 
     @Test
     public void testFindServicesInDirectoryOneFile() throws IOException, URISyntaxException {
-        URL url = ClassLoader.getSystemResource("/api-defs/staticclient.yml");
+        URL url = getClass().getClassLoader().getResource("api-defs/staticclient.yml");
         Files.copy(
             Paths.get(url.toURI()).toAbsolutePath(),
             Paths.get(folder.getRoot().getAbsolutePath(), "test.yml")
