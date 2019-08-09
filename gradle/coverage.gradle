@@ -9,7 +9,8 @@ ext.javaProjectsWithUnitTests = [
     'integration-enabler-java',
     'helloworld-spring',
     'security-module',
-    'security-service-client-spring'
+    'security-service-client-spring',
+    'apiml-security-common'
 ]
 
 
