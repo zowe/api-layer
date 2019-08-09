@@ -89,6 +89,12 @@ public class RestResponseHandlerTest {
         handler.handleBadResponse(raException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 
+    @Test(expected = GatewayNotFoundException.class)
+    public void handleBadResponseWithGatewayNotFoundWithCause() {
+        ResourceAccessException raException = new ResourceAccessException("Resource Access Exception");
+        handler.handleBadResponse(raException, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
+    }
+
     @Test(expected = ServiceNotAccessibleException.class)
     public void handleBadResponseWithServiceUnavailable() {
         HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.SERVICE_UNAVAILABLE, "Authentication service unavailable");

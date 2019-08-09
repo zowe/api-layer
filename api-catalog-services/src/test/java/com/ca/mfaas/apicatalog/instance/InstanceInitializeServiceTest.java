@@ -13,6 +13,7 @@ package com.ca.mfaas.apicatalog.instance;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayNotFoundException;
 import com.ca.mfaas.product.instance.InstanceInitializationException;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
@@ -117,6 +118,17 @@ public class InstanceInitializeServiceTest {
     public void shouldThrowRetryExceptionOnInstanceInitializationException() throws CannotRegisterServiceException {
         String catalogId = CoreService.API_CATALOG.getServiceId();
         when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new InstanceInitializationException("ERROR"));
+
+        exception.expect(RetryException.class);
+        exception.expectMessage("ERROR");
+
+        instanceInitializeService.retrieveAndRegisterAllInstancesWithCatalog();
+    }
+
+    @Test
+    public void shouldThrowRetryExceptionOnGatewayNotFoundException() throws CannotRegisterServiceException {
+        String catalogId = CoreService.API_CATALOG.getServiceId();
+        when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new GatewayNotFoundException("ERROR"));
 
         exception.expect(RetryException.class);
         exception.expectMessage("ERROR");
