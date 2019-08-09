@@ -49,7 +49,7 @@ public class InstanceLookupExecutor {
 
         List<InstanceInfo> appInstances = application.getInstances();
         if (appInstances.isEmpty()) {
-            throw new InstanceNotFoundException("No " + serviceId + " Instances registered within application in Discovery Client");
+            throw new InstanceNotFoundException("No " + serviceId + " Instances registered within Application in Discovery Client");
         }
 
         return appInstances.get(0);
@@ -65,7 +65,7 @@ public class InstanceLookupExecutor {
             () -> {
                 try {
                     InstanceInfo instanceInfo = findEurekaInstance(serviceId);
-                    log.debug("App founded {}", instanceInfo.getAppName());
+                    log.debug("App found {}", instanceInfo.getAppName());
 
                     action.accept(instanceInfo);
                     executorService.shutdownNow();
@@ -75,7 +75,7 @@ public class InstanceLookupExecutor {
                 } catch (Exception e) {
                     executorService.shutdownNow();
                     handleFailureConsumer.accept(e, true);
-                    log.debug("Unexpected exception, when {} has been tried to get from Eureka", serviceId);
+                    log.debug("Unexpected exception while retrieving {} service from Eureka", serviceId);
                 }
 
             },
