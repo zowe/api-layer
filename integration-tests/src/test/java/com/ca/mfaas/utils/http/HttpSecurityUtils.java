@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.net.URI;
 
 public class HttpSecurityUtils {
-    private static final String GATEWAY_LOGIN_ENDPOINT = "/api/v1/gateway/auth/login/";
+    private static final String GATEWAY_LOGIN_ENDPOINT = "/api/v1/gateway/auth/login";
 
     public static String getCookieForGateway() throws IOException {
         Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
