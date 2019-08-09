@@ -10,7 +10,8 @@
 package com.ca.mfaas.product.gateway;
 
 import com.ca.mfaas.product.constants.CoreService;
-import com.ca.mfaas.product.lookup.InstanceLookupExecutor;
+import com.ca.mfaas.product.instance.InstanceInitializationException;
+import com.ca.mfaas.product.instance.lookup.InstanceLookupExecutor;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -45,9 +46,7 @@ public class GatewayInstanceInitializer {
                 .hostname(uri.getHost() + ":" + uri.getPort())
                 .build();
         } catch (Exception e) {
-            String msg = "An unexpected error occurred while retrieving Gateway instance from Discovery service";
-            log.warn(msg, e);
-            throw new RuntimeException(msg, e);
+            throw new InstanceInitializationException(e.getMessage());
         }
 
     }
@@ -58,7 +57,7 @@ public class GatewayInstanceInitializer {
             return;
         }
 
-        log.info("GatewayLookupService starting asynchronous initialization of Gateway configuration");
+        log.info("GatewayInstanceInitializer starting asynchronous initialization of Gateway configuration");
 
         instanceLookupExecutor.run(
             CoreService.GATEWAY.getServiceId(),
@@ -66,13 +65,19 @@ public class GatewayInstanceInitializer {
                 GatewayConfigProperties foundGatewayConfigProperties = process(instance);
 
                 log.info(
-                    "GatewayLookupService has been initialized with Gateway instance on url: {}://{}",
+                    "GatewayInstanceInitializer has been initialized with Gateway instance on url: {}://{}",
                     foundGatewayConfigProperties.getScheme(),
                     foundGatewayConfigProperties.getHostname()
                 );
 
                 gatewayClient.setGatewayConfigProperties(foundGatewayConfigProperties);
                 applicationEventPublisher.publishEvent(new GatewayLookupCompleteEvent(this));
-            });
+            },
+            (exception, isStopped) -> {
+                if (isStopped) {
+                    log.warn("GatewayInstanceInitializer has been stopped", exception);
+                }
+            }
+        );
     }
 }

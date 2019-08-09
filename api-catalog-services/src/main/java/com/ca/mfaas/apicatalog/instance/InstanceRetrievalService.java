@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.instance;
 
 import com.ca.mfaas.apicatalog.discovery.DiscoveryConfigProperties;
+import com.ca.mfaas.product.instance.InstanceInitializationException;
 import com.ca.mfaas.product.registry.ApplicationWrapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;

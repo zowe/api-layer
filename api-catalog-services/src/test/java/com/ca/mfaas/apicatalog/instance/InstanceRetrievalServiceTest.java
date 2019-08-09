@@ -13,6 +13,7 @@ package com.ca.mfaas.apicatalog.instance;
 import com.ca.mfaas.apicatalog.discovery.DiscoveryConfigProperties;
 import com.ca.mfaas.apicatalog.util.ApplicationsWrapper;
 import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.instance.InstanceInitializationException;
 import com.ca.mfaas.product.registry.ApplicationWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

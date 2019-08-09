@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.apicatalog.instance;
+package com.ca.mfaas.product.instance;
 
 /**
  * This exception is used to indicate the failed initialization of the instance caused by incorrect metadata.

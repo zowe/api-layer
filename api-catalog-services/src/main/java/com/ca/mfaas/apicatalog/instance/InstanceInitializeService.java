@@ -14,6 +14,7 @@ import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayNotFoundException;
+import com.ca.mfaas.product.instance.InstanceInitializationException;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;

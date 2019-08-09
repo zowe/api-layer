@@ -23,8 +23,8 @@ import org.springframework.stereotype.Component;
 public class AuthConfigurationProperties {
 
     // General properties
-    private String gatewayLoginEndpoint = "/auth/login";
-    private String gatewayQueryEndpoint = "/auth/query";
+    private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
+    private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
 
     private String serviceLoginEndpoint = "/auth/login";
     private String serviceLogoutEndpoint = "/auth/logout";
@@ -35,7 +35,6 @@ public class AuthConfigurationProperties {
     private String zosmfServiceId;
     private String provider = "zosmf";
 
-    private boolean verifySslCertificatesOfServices = true;
     private String jwtKeyAlias;
 
     //Token properties
