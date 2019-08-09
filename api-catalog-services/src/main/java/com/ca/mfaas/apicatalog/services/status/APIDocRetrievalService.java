@@ -15,7 +15,7 @@ import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.instance.InstanceRetrievalService;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
-import com.ca.mfaas.product.service.ApiDoc;
+import com.ca.mfaas.product.service.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
@@ -53,8 +53,8 @@ APIDocRetrievalService {
      * API doc URL is taken from the application metadata in the following
      * order:
      * <p>
-     * 1. 'apiml.apiDocs.swaggerUrl' (preferred way)
-     * 2. 'apiml.apiDocs' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
+     * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
+     * 2. 'apiml.apiInfo' is present and 'swaggerUrl' is not, ApiInfo info is automatically generated
      * 3. URL is constructed from 'routes.api-doc.serviceUrl'. This method is deprecated and used for
      * backwards compatibility only
      *
@@ -69,34 +69,34 @@ APIDocRetrievalService {
             throw new ApiDocNotFoundException("Could not load instance information for service " + serviceId + " .");
         }
 
-        List<ApiDoc> apiDocList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
-        ApiDoc apiDoc = findApi(apiDocList, apiVersion);
-        String apiDocUrl = getApiDocUrl(apiDoc, instanceInfo, routes);
+        ApiInfo apiInfo = findApi(apiInfoList, apiVersion);
+        String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo, routes);
         if (apiDocUrl == null) {
-            return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiDoc);
+            return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
         }
 
         String apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
-        return new ApiDocInfo(apiDoc, apiDocContent, routes);
+        return new ApiDocInfo(apiInfo, apiDocContent, routes);
     }
 
 
     /**
-     * Get ApiDoc url
+     * Get ApiInfo url
      *
-     * @param apiDoc      the apiinfo of service instance
+     * @param apiInfo      the apiinfo of service instance
      * @param instanceInfo the information about service instance
      * @param routes       the routes of service instance
      * @return the url of apidoc
      */
-    private String getApiDocUrl(ApiDoc apiDoc, InstanceInfo instanceInfo, RoutedServices routes) {
+    private String getApiDocUrl(ApiInfo apiInfo, InstanceInfo instanceInfo, RoutedServices routes) {
         String apiDocUrl = null;
-        if (apiDoc == null) {
+        if (apiInfo == null) {
             apiDocUrl = createApiDocUrlFromRouting(instanceInfo, routes);
-        } else if (apiDoc.getSwaggerUrl() != null) {
-            apiDocUrl = apiDoc.getSwaggerUrl();
+        } else if (apiInfo.getSwaggerUrl() != null) {
+            apiDocUrl = apiInfo.getSwaggerUrl();
         }
 
         return apiDocUrl;
@@ -104,7 +104,7 @@ APIDocRetrievalService {
 
 
     /**
-     * Get ApiDoc content by Url
+     * Get ApiInfo content by Url
      *
      * @param serviceId the unique service id
      * @param apiDocUrl the url of apidoc
@@ -132,47 +132,47 @@ APIDocRetrievalService {
      *
      * @param instanceInfo the information about service instance
      * @param routes       the routes of service instance
-     * @param apiDoc      the apiinfo of service instance
+     * @param apiInfo      the apiinfo of service instance
      * @return the information about APIDocInfo
      */
     private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
                                                         RoutedServices routes,
-                                                        ApiDoc apiDoc) {
+                                                        ApiInfo apiInfo) {
         String response = swaggerGenerator.generateSubstituteSwaggerForService(
             instanceInfo,
-            apiDoc,
+            apiInfo,
             gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname());
-        return new ApiDocInfo(apiDoc, response, routes);
+        return new ApiDocInfo(apiInfo, response, routes);
     }
 
     /**
-     * Find ApiDoc for the corresponding version, if not found the first one is returned
+     * Find ApiInfo for the corresponding version, if not found the first one is returned
      *
-     * @param apiDocs   the list of APIs information
+     * @param apiInfos   the list of APIs information
      * @param apiVersion the version to be find
      * @return the information about API
      */
-    private ApiDoc findApi(List<ApiDoc> apiDocs, String apiVersion) {
-        if (apiDocs.isEmpty()) {
+    private ApiInfo findApi(List<ApiInfo> apiInfos, String apiVersion) {
+        if (apiInfos.isEmpty()) {
             return null;
         }
 
-        return apiDocs.stream()
+        return apiInfos.stream()
             .filter(
                 f -> f.getGatewayUrl().equals(apiVersion == null ? "api" : "api/" + apiVersion)
             )
             .findFirst()
-            .orElse(apiDocs.get(0));
+            .orElse(apiInfos.get(0));
     }
 
     /**
-     * Creates a URL from the routing metadata 'routes.api-doc.serviceUrl' when 'apiml.apiDocs.swaggerUrl' is
+     * Creates a URL from the routing metadata 'routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
      *
      * @param instanceInfo the information about service instance
      * @return the URL of API doc endpoint
-     * @deprecated Added to support services which were on-boarded before 'apiml.apiDocs.swaggerUrl' parameter was
+     * @deprecated Added to support services which were on-boarded before 'apiml.apiInfo.swaggerUrl' parameter was
      * introduced. It will be removed when all services will be using the new configuration style.
      */
     @Deprecated

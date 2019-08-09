@@ -26,7 +26,7 @@ services:
           serviceRelativeUrl: /
         - gatewayUrl: ui
           serviceRelativeUrl: /
-      apiDocs:
+      apiInfo:
         - apiId: com.ibm.zosmf
           gatewayUrl: api
           version: 2.3.0

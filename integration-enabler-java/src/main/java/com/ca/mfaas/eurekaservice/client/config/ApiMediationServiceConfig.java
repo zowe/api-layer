@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.eurekaservice.client.config;
 
-import com.ca.mfaas.product.service.ApiDoc;
+import com.ca.mfaas.product.service.ApiInfo;
 import lombok.*;
 
 import java.util.List;
@@ -33,7 +33,7 @@ public class ApiMediationServiceConfig {
     private Boolean securePortEnabled;
     @Singular
     private List<Route> routes;
-    private List<ApiDoc> apiDocs;
+    private List<ApiInfo> apiInfo;
     private Catalog catalog;
     private Ssl ssl;
     private Eureka eureka;

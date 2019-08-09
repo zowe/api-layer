@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.ca.mfaas.product.service.ApiDoc;
+import com.ca.mfaas.product.service.ApiInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 
@@ -32,5 +32,5 @@ import java.util.List;
     private String healthCheckRelativeUrl;
     @JsonAlias({"routedServices"})
     private List<Route> routes;
-    private List<ApiDoc> apiDocs;
+    private List<ApiInfo> apiInfo;
 }

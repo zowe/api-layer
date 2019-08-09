@@ -127,7 +127,7 @@ public class ApiCatalogController {
                     apiService.setApiDoc(apiDoc);
                 }
             } catch (Exception e) {
-                log.warn("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
+                log.warn("An error occurred when trying to fetch ApiInfo for service: " + apiService.getServiceId() +
                     ", processing can continue but this service will not be able to display any Api Documentation.\n" +
                     "Error Message: " + e.getMessage());
             }

@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.ca.mfaas.product.service.ApiDoc;
+import com.ca.mfaas.product.service.ApiInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -271,9 +271,9 @@ public class ServiceDefinitionProcessor {
             mt.put("catalog.title", tile.getTitle());
             mt.put("catalog.description", tile.getDescription());
 
-            if (service.getApiDocs() != null) {
-                for (ApiDoc apiDoc : service.getApiDocs()) {
-                    mt.putAll(apiDoc.generateMetadata(service.getServiceId()));
+            if (service.getApiInfo() != null) {
+                for (ApiInfo apiInfo : service.getApiInfo()) {
+                    mt.putAll(apiInfo.generateMetadata(service.getServiceId()));
                 }
             }
 

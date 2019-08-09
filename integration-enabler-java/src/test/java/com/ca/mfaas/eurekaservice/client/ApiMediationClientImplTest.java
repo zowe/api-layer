@@ -12,7 +12,7 @@ package com.ca.mfaas.eurekaservice.client;
 import com.ca.mfaas.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
-import com.ca.mfaas.product.service.ApiDoc;
+import com.ca.mfaas.product.service.ApiInfo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -27,7 +27,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void startEurekaClient() {
-        ApiDoc apiDoc = new ApiDoc("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
+        ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalog = new Catalog("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0");
         Eureka eureka = new Eureka("10021", "localhost", "127.0.0.1");
         Ssl ssl = new Ssl(false, "TLSv1.2", "localhost", "password",
@@ -40,7 +40,7 @@ public class ApiMediationClientImplTest {
         routes.add(apiDocRoute);
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
-            .apiDocs(Collections.singletonList(apiDoc))
+            .apiInfo(Collections.singletonList(apiInfo))
             .eureka(eureka)
             .catalog(catalog)
             .routes(routes)

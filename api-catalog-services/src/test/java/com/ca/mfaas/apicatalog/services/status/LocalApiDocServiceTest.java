@@ -75,10 +75,10 @@ public class LocalApiDocServiceTest {
 
         ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
 
-        //#281: assertEquals(API_ID, actualResponse.getApiDoc().getApiId());
-        assertEquals(GATEWAY_URL, actualResponse.getApiDoc().getGatewayUrl());
-        assertEquals(SERVICE_VERSION, actualResponse.getApiDoc().getVersion());
-        assertEquals(SWAGGER_URL, actualResponse.getApiDoc().getSwaggerUrl());
+        //#281: assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+        assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
 
         assertNotNull(actualResponse);
         assertNotNull(actualResponse.getApiDocContent());
@@ -171,10 +171,10 @@ public class LocalApiDocServiceTest {
 
         ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION);
 
-        //#281: assertEquals(API_ID, actualResponse.getApiDoc().getApiId());
-        assertEquals(GATEWAY_URL, actualResponse.getApiDoc().getGatewayUrl());
-        assertEquals(SERVICE_VERSION, actualResponse.getApiDoc().getVersion());
-        assertNull(actualResponse.getApiDoc().getSwaggerUrl());
+        //#281: assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+        assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+        assertNull(actualResponse.getApiInfo().getSwaggerUrl());
 
         assertNotNull(actualResponse);
         assertNotNull(actualResponse.getApiDocContent());

@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Retrieve information about this service from application.yml, used to send information to the apiDocs discovery service
+ * Retrieve information about this service from application.yml, used to send information to the apiInfo discovery service
  */
 @Component
 @ConditionalOnProperty(prefix = "eureka.instance.metadata.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)

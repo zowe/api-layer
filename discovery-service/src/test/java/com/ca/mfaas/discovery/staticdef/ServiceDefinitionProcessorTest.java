@@ -381,7 +381,7 @@ public class ServiceDefinitionProcessorTest {
             "      routes:\n" +
             "        - gatewayUrl: api/v2\n" +
             "          serviceRelativeUrl: /v2\n" +
-            "      apiDocs:\n" +
+            "      apiInfo:\n" +
             "        - apiId: swagger.io.petstore\n" +
             "          gatewayUrl: api/v2\n" +
             "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
@@ -402,10 +402,10 @@ public class ServiceDefinitionProcessorTest {
         assertEquals("/v2", instances.get(0).getMetadata().get("routes.api-v2.serviceUrl"));
         assertEquals("static", instances.get(0).getMetadata().get("catalog.id"));
         assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get("service.title"));
-        assertEquals("2.0.0", instances.get(0).getMetadata().get("apiml.apiDocs.api-v2.version"));
+        assertEquals("2.0.0", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.version"));
         assertEquals("1.0.0", instances.get(0).getMetadata().get("catalog.version"));
         assertEquals("Static API Services", instances.get(0).getMetadata().get("catalog.title"));
-        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get("apiml.apiDocs.api-v2.swaggerUrl"));
+        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get("apiml.apiInfo.api-v2.swaggerUrl"));
         assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get("service.description"));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());
@@ -424,7 +424,7 @@ public class ServiceDefinitionProcessorTest {
             "      routes:\n" +
             "        - gatewayUrl: api/v2\n" +
             "          serviceRelativeUrl: /v2\n" +
-            "      apiDocs:\n" +
+            "      apiInfo:\n" +
             "        - apiId: swagger.io.petstore\n" +
             "          gatewayUrl: api/v2\n" +
             "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +

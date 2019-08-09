@@ -36,7 +36,7 @@ routes:
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hello-zowe/api-doc
 
-apiDocs:
+apiInfo:
     - apiId: org.zowe.hello-zowe
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hello-zowe/api-doc

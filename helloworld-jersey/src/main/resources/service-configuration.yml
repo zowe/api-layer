@@ -34,7 +34,7 @@ routes:
     - gatewayUrl: ui/v1
       serviceUrl: /
 
-apiDocs:
+apiInfo:
     - apiId: org.zowe.hellojersey
       gatewayUrl: api/v1
       swaggerUrl: https://localhost:10016/hellojersey/swagger.json

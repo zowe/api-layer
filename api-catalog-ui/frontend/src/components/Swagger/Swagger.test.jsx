@@ -4,7 +4,7 @@ import { shallow } from "enzyme";
 import SwaggerUI from "./Swagger";
 
 describe(">>> Swagger component tests", () => {
-    it("should not render swagger if apiDocs is null", () => {
+    it("should not render swagger if apiInfo is null", () => {
         const service = {
             "serviceId": "testservice",
             "title": "Spring Boot Enabler Service",
