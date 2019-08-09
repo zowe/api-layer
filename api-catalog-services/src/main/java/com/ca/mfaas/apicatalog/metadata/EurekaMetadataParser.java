@@ -38,19 +38,19 @@ public class EurekaMetadataParser {
                 apiInfo.putIfAbsent(keys[1], new ApiInfo());
                 ApiInfo api = apiInfo.get(keys[1]);
                 switch (keys[2]) {
-                    case "apiId":
+                    case APIS_API_ID:
                         api.setApiId(entry.getValue());
                         break;
-                    case "gatewayUrl":
+                    case APIS_GATEWAY_URL:
                         api.setGatewayUrl(entry.getValue());
                         break;
-                    case "version":
+                    case APIS_VERSION:
                         api.setVersion(entry.getValue());
                         break;
-                    case "swaggerUrl":
+                    case APIS_SWAGGER_URL:
                         api.setSwaggerUrl(entry.getValue());
                         break;
-                    case "documentationUrl":
+                    case APIS_DOCUMENTATION_URL:
                         api.setDocumentationUrl(entry.getValue());
                         break;
                     default:

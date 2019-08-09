@@ -32,6 +32,11 @@ public final class EurekaMetadataDefinition {
     public static final String SERVICE_DESCRIPTION = "service.description";
 
     public static final String APIS = "apis";
+    public static final String APIS_API_ID = "apiId";
+    public static final String APIS_GATEWAY_URL = "gatewayUrl";
+    public static final String APIS_VERSION = "version";
+    public static final String APIS_SWAGGER_URL = "swaggerUrl";
+    public static final String APIS_DOCUMENTATION_URL = "documentationUrl";
 
     //v1
     public static final String V1_ROUTES = "routed-services";

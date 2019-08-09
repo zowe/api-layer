@@ -10,7 +10,6 @@
 package com.ca.mfaas.apicatalog.services.status;
 
 import com.ca.mfaas.product.gateway.GatewayClient;
-import com.ca.mfaas.constants.EurekaMetadataDefinition;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.instance.InstanceRetrievalService;
@@ -246,11 +245,11 @@ public class LocalApiDocServiceTest {
 
     private Map<String, String> getStandardMetadata() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(APIS + ".1.apiId", API_ID);
-        metadata.put(APIS + ".1.gatewayUrl", GATEWAY_URL);
-        metadata.put(APIS + ".1.version", SERVICE_VERSION);
-        metadata.put(APIS + ".1.swaggerUrl", SWAGGER_URL);
-        metadata.put(ROUTES + ".api-v1." + EurekaMetadataDefinition.ROUTES_GATEWAY_URL, "api");
+        metadata.put(APIS + ".1." + APIS_API_ID, API_ID);
+        metadata.put(APIS + ".1." + APIS_GATEWAY_URL, GATEWAY_URL);
+        metadata.put(APIS + ".1." + APIS_VERSION, SERVICE_VERSION);
+        metadata.put(APIS + ".1." + APIS_SWAGGER_URL, SWAGGER_URL);
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         metadata.put(SERVICE_TITLE, "Test service");
         metadata.put(SERVICE_DESCRIPTION, "Test service description");
@@ -260,10 +259,10 @@ public class LocalApiDocServiceTest {
 
     private Map<String, String> getMetadataWithoutSwaggerUrl() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(APIS + ".1.apiId", API_ID);
-        metadata.put(APIS + ".1.gatewayUrl", GATEWAY_URL);
-        metadata.put(APIS + ".1.version", SERVICE_VERSION);
-        metadata.put(ROUTES + ".api-v1." + EurekaMetadataDefinition.ROUTES_GATEWAY_URL, "api");
+        metadata.put(APIS + ".1." + APIS_API_ID, API_ID);
+        metadata.put(APIS + ".1." + APIS_GATEWAY_URL, GATEWAY_URL);
+        metadata.put(APIS + ".1." + APIS_VERSION, SERVICE_VERSION);
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         metadata.put(SERVICE_TITLE, "Test service");
         metadata.put(SERVICE_DESCRIPTION, "Test service description");
@@ -273,9 +272,9 @@ public class LocalApiDocServiceTest {
 
     private Map<String, String> getMetadataWithoutApiInfo() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(ROUTES + ".api-v1." + EurekaMetadataDefinition.ROUTES_GATEWAY_URL, "api");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
-        metadata.put(ROUTES + ".apidoc." + EurekaMetadataDefinition.ROUTES_GATEWAY_URL, "api/v1/api-doc");
+        metadata.put(ROUTES + ".apidoc." + ROUTES_GATEWAY_URL, "api/v1/api-doc");
         metadata.put(ROUTES + ".apidoc." + ROUTES_SERVICE_URL, SERVICE_ID + "/api-doc");
         metadata.put(SERVICE_TITLE, "Test service");
         metadata.put(SERVICE_DESCRIPTION, "Test service description");

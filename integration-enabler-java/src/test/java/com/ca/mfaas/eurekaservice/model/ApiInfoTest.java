@@ -16,7 +16,7 @@ import org.junit.rules.ExpectedException;
 import java.security.InvalidParameterException;
 import java.util.Map;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.APIS;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.*;
 
 public class ApiInfoTest {
@@ -36,19 +36,19 @@ public class ApiInfoTest {
         ApiInfo apiInfo = new ApiInfo("org.zowe", gatewayUrl, version, swaggerUrl, documentationUrl);
         Map<String, String> metadata = apiInfo.generateMetadata(serviceId);
 
-        String metaVersion = metadata.get(metadataPrefix + "version");
+        String metaVersion = metadata.get(metadataPrefix + APIS_VERSION);
         assertNotNull(metaVersion);
         assertEquals(version, metaVersion);
 
-        String metaGatewayUrl = metadata.get(metadataPrefix + "gatewayUrl");
+        String metaGatewayUrl = metadata.get(metadataPrefix + APIS_GATEWAY_URL);
         assertNotNull(metaGatewayUrl);
         assertEquals(gatewayUrl, metaGatewayUrl);
 
-        String metaSwaggerUrl = metadata.get(metadataPrefix + "swaggerUrl");
+        String metaSwaggerUrl = metadata.get(metadataPrefix + APIS_SWAGGER_URL);
         assertNotNull(metaSwaggerUrl);
         assertEquals(swaggerUrl, metaSwaggerUrl);
 
-        String metaDocumentationUrl = metadata.get(metadataPrefix + "documentationUrl");
+        String metaDocumentationUrl = metadata.get(metadataPrefix + APIS_DOCUMENTATION_URL);
         assertNotNull(metaDocumentationUrl);
         assertEquals(documentationUrl, metaDocumentationUrl);
     }
