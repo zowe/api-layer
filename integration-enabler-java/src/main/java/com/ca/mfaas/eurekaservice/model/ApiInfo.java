@@ -21,7 +21,7 @@ import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.APIS;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 /**
  * Represents one API provided by a service
@@ -30,6 +30,8 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.APIS;
 @AllArgsConstructor
 @Data
 public class ApiInfo {
+    private static final String METADATA_FORMAT = "%s.%s.%s";
+
     @JsonProperty(required = true)
     private String apiId;
     private String gatewayUrl;
@@ -49,13 +51,13 @@ public class ApiInfo {
 
         if (gatewayUrl != null) {
             encodedGatewayUrl = gatewayUrl.replaceAll("\\W", "-");
-            metadata.put(String.format("%s.%s.gatewayUrl", APIS, encodedGatewayUrl), gatewayUrl);
+            metadata.put(String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, APIS_GATEWAY_URL), gatewayUrl);
         } else {
             encodedGatewayUrl = RandomStringUtils.randomAlphanumeric(10);
         }
 
         if (version != null) {
-            metadata.put(String.format("%s.%s.version", APIS, encodedGatewayUrl), version);
+            metadata.put(String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, APIS_VERSION), version);
         }
 
         if (swaggerUrl != null) {
@@ -66,7 +68,7 @@ public class ApiInfo {
                     String.format("The Swagger URL \"%s\" for service %s is not valid: %s",
                         swaggerUrl, serviceId, e.getMessage()));
             }
-            metadata.put(String.format("%s.%s.swaggerUrl", APIS, encodedGatewayUrl), swaggerUrl);
+            metadata.put(String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, APIS_SWAGGER_URL), swaggerUrl);
         }
 
         if (documentationUrl != null) {
@@ -77,7 +79,7 @@ public class ApiInfo {
                     String.format("The documentation URL \"%s\" for service %s is not valid: %s",
                         documentationUrl, serviceId, e.getMessage()));
             }
-            metadata.put(String.format("%s.%s.documentationUrl", APIS, encodedGatewayUrl), documentationUrl);
+            metadata.put(String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, APIS_DOCUMENTATION_URL), documentationUrl);
         }
 
         return metadata;

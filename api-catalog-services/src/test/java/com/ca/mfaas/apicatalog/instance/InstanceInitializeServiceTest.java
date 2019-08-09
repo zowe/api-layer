@@ -201,6 +201,7 @@ public class InstanceInitializeServiceTest {
         metadata.put(ROUTES + ".ui-v1." + ROUTES_GATEWAY_URL, "ui/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "/");
+
         return metadata;
     }
 

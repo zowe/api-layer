@@ -43,8 +43,6 @@ public class InstanceRefreshService {
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
 
-    private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
-
     /**
      * Periodically refresh the container/service caches
      * Depends on the GatewayClient: no refreshes happen when it's not initialized
@@ -171,42 +169,11 @@ public class InstanceRefreshService {
 
         if (!InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             // update any containers which contain this service
-            updateContainers(containersUpdated, instance);
+            updateContainer(containersUpdated, instance.getAppName(), instance);
         }
 
         // Update the service cache
         updateService(instance.getAppName(), application);
-    }
-
-
-    /**
-     * Only include services for caching if they have API doc enabled in their metadata
-     *
-     * @param discoveredServices all discovered services
-     * @return only API Doc enabled services
-     */
-    private Applications filterByApiEnabled(Applications discoveredServices) {
-        Applications filteredServices = new Applications();
-        for (Application application : discoveredServices.getRegisteredApplications()) {
-            if (!application.getInstances().isEmpty()) {
-
-                InstanceInfo instanceInfo = application.getInstances().get(0);
-                String value = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
-                boolean apiEnabled = true;
-                if (value != null) {
-                    apiEnabled = Boolean.parseBoolean(value);
-                }
-
-                // only add api enabled services
-                if (apiEnabled) {
-                    filteredServices.addApplication(application);
-                } else {
-                    log.debug("Service: " + application.getName() + " is not API enabled, it will be ignored by the API Catalog");
-                }
-            }
-        }
-
-        return filteredServices;
     }
 
     private void updateService(String serviceId, Application application) {
@@ -216,16 +183,6 @@ public class InstanceRefreshService {
         } else {
             cachedServicesService.updateService(serviceId, application);
             log.debug("Updated service cache for service: " + serviceId);
-        }
-    }
-
-    private void updateContainers(Set<String> containersUpdated,
-                                  InstanceInfo instanceInfo) {
-        String apiEnabled = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
-
-        // only register API enabled services
-        if (apiEnabled == null || Boolean.parseBoolean(apiEnabled)) {
-            updateContainer(containersUpdated, instanceInfo.getAppName(), instanceInfo);
         }
     }
 
@@ -255,8 +212,6 @@ public class InstanceRefreshService {
      * @return changed instances
      */
     private Set<InstanceInfo> updateDelta(Applications delta) {
-        // only process instances which are API Doc enabled
-        delta = filterByApiEnabled(delta);
         int deltaCount = 0;
         Set<InstanceInfo> updatedInstances = new HashSet<>();
         for (Application app : delta.getRegisteredApplications()) {

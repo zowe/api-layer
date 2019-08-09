@@ -136,5 +136,4 @@ public class GatewayHomepageController {
         String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_SERVICE_URL));
         return gatewayUrl + serviceUrl;
     }
-
 }

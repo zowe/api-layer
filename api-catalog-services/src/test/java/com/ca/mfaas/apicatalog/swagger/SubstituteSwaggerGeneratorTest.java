@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.APIS;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.assertTrue;
 
 public class SubstituteSwaggerGeneratorTest {
@@ -30,8 +30,8 @@ public class SubstituteSwaggerGeneratorTest {
         String gatewayHost = "localhost:8080";
 
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(APIS + ".1.gatewayUrl", "api/v1");
-        metadata.put(APIS + ".1.documentationUrl", "https://doc.ca.com/api");
+        metadata.put(APIS + ".1." + APIS_GATEWAY_URL, "api/v1");
+        metadata.put(APIS + ".1." + APIS_DOCUMENTATION_URL, "https://doc.ca.com/api");
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
 
