@@ -136,6 +136,18 @@ public class TransformServiceTest {
         transformService.transformURL(null, null, url, null);
     }
 
+    @Test
+    public void givenEmptyGatewayClient_thenThrowException() throws URLTransformationException {
+        String url = "https:localhost:8080/wss";
+
+        GatewayClient emptyGatewayClient = new GatewayClient();
+        TransformService transformService = new TransformService(emptyGatewayClient);
+
+        exception.expect(URLTransformationException.class);
+        exception.expectMessage("Gateway not found yet, transform service cannot perform the request");
+        transformService.transformURL(null, null, url, null);
+    }
+
 
     @Test
     public void givenHomePage_whenPathIsNotValid_thenThrowException() throws URLTransformationException {
