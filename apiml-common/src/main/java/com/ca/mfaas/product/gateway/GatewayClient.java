@@ -31,8 +31,8 @@ public class GatewayClient {
     }
 
     /**
-     * Retrieve Gateway configuration
-     * When Gateway configuration is not known, GatewayNotFoundException is thrown
+     * Retrieves GatewayConfigProperties object, which holds the Gateway url and schema
+     * When GatewayConfigProperties is unknown (not discovered yet), GatewayNotFoundException is thrown
      *
      * @return GatewayConfigProperties object
      */
