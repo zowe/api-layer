@@ -13,6 +13,7 @@ import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.instance.InstanceInitializationException;
 import com.ca.mfaas.product.instance.lookup.InstanceLookupExecutor;
 import com.netflix.appinfo.InstanceInfo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -21,20 +22,12 @@ import org.springframework.context.event.EventListener;
 import java.net.URI;
 
 @Slf4j
+@RequiredArgsConstructor
 public class GatewayInstanceInitializer {
 
     private final InstanceLookupExecutor instanceLookupExecutor;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final GatewayClient gatewayClient;
-
-    public GatewayInstanceInitializer(
-        InstanceLookupExecutor instanceLookupExecutor,
-        ApplicationEventPublisher applicationEventPublisher,
-        GatewayClient gatewayClient) {
-        this.instanceLookupExecutor = instanceLookupExecutor;
-        this.applicationEventPublisher = applicationEventPublisher;
-        this.gatewayClient = gatewayClient;
-    }
 
     private GatewayConfigProperties process(InstanceInfo instanceInfo) {
         try {

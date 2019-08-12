@@ -41,7 +41,6 @@ public class InstanceLookupExecutor {
         this(eurekaClient, 100, 5000);
     }
 
-
     public InstanceLookupExecutor(EurekaClient eurekaClient,
                                   int initialDelay,
                                   int period) {
@@ -63,7 +62,6 @@ public class InstanceLookupExecutor {
 
         return appInstances.get(0);
     }
-
 
     public void run(String serviceId,
                     Consumer<InstanceInfo> action,
