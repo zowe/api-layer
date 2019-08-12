@@ -52,7 +52,7 @@ public class GatewayInstanceInitializer {
     }
 
     @EventListener
-    private void init(ApplicationReadyEvent applicationReadyEvent) {
+    public void init(ApplicationReadyEvent applicationReadyEvent) {
         if (gatewayClient.isInitialized()) {
             return;
         }

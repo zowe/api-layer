@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GatewayClient {
 
-    private GatewayConfigProperties gatewayConfigProperties;
+    private volatile GatewayConfigProperties gatewayConfigProperties;
 
     public GatewayClient() {
     }
