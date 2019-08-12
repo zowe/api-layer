@@ -10,48 +10,34 @@
 
 package com.ca.mfaas.product.gateway;
 
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 public class GatewayClientTest {
 
-    GatewayClient gatewayClient;
-    private GatewayConfigProperties gatewayConfigProperties;
-
-    @Before
-    public void setup() {
-        gatewayConfigProperties = GatewayConfigProperties.builder()
-            .scheme("https")
-            .hostname("localhost")
-            .build();
-        gatewayClient = new GatewayClient(gatewayConfigProperties);
-    }
+    private final GatewayConfigProperties gatewayConfigProperties = GatewayConfigProperties.builder()
+        .scheme("https")
+        .hostname("localhost")
+        .build();
+    private final GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
     @Test
-    public void shouldSetGatewayConfigProperties() {
-        gatewayClient.setGatewayConfigProperties(gatewayConfigProperties);
-        Assert.assertEquals(gatewayClient.getGatewayConfigProperties(), gatewayConfigProperties);
+    public void testGetGatewayConfigProperties_whenItIsNotNull() {
+        assertEquals(gatewayClient.getGatewayConfigProperties(), gatewayConfigProperties);
     }
 
     @Test(expected = GatewayNotFoundException.class)
-    public void shouldThrowGatewayNotFoundException() {
+    public void testGetGatewayConfigProperties_whenItNull() {
         gatewayClient.setGatewayConfigProperties(null);
         gatewayClient.getGatewayConfigProperties();
     }
 
     @Test
-    public void shouldGetGatewayConfigProperties() {
-        gatewayConfigProperties = GatewayConfigProperties.builder()
-            .scheme("https")
-            .hostname("localhost2")
-            .build();
-        gatewayClient.setGatewayConfigProperties(gatewayConfigProperties);
-        Assert.assertEquals(gatewayConfigProperties, gatewayClient.getGatewayConfigProperties());
-    }
-
-    @Test
-    public void isInitialized() {
-        Assert.assertTrue(gatewayClient.isInitialized());
+    public void testIsInitialized() {
+        assertTrue(gatewayClient.isInitialized());
+        gatewayClient.setGatewayConfigProperties(null);
+        assertFalse(gatewayClient.isInitialized());
     }
 }

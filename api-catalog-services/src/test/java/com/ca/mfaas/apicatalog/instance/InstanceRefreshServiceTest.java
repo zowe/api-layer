@@ -19,6 +19,7 @@ import com.ca.mfaas.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -41,7 +42,7 @@ public class InstanceRefreshServiceTest {
     private InstanceRefreshService instanceRefreshService;
 
     @Mock
-    GatewayClient gatewayClient;
+    private GatewayClient gatewayClient;
 
     @Mock
     private CachedProductFamilyService cachedProductFamilyService;
@@ -52,10 +53,16 @@ public class InstanceRefreshServiceTest {
     @Mock
     private InstanceRetrievalService instanceRetrievalService;
 
+
+    @Before
+    public void setup() {
+        when(gatewayClient.isInitialized()).thenReturn(true);
+    }
+
     @Test
     public void testServiceAddedToDiscoveryThatIsNotInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
-        containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications(), gatewayClient);
+        containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
         ContainerServiceState discoveredState = new ContainerServiceState();
         discoveredState.setServices(new ArrayList<>());
@@ -92,7 +99,7 @@ public class InstanceRefreshServiceTest {
     @Test
     public void testServiceRemovedFromDiscoveryThatIsInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
-        containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications(), gatewayClient);
+        containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
         // retrieve service 3 and update its instance status so it will be removed
         Application service3 = cachedState.getApplications()
@@ -128,7 +135,7 @@ public class InstanceRefreshServiceTest {
     @Test
     public void testServiceModifiedFromDiscoveryThatIsInCache() {
         ContainerServiceState cachedState = containerServiceMockUtil.createContainersServicesAndInstances();
-        containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications(), gatewayClient);
+        containerServiceMockUtil.mockServiceRetrievalFromCache(cachedServicesService, cachedState.getApplications());
 
         // retrieve service 3 and update its instance status so it will be updated
         Application service3 = cachedState.getApplications()
@@ -171,9 +178,10 @@ public class InstanceRefreshServiceTest {
     }
 
     @Test
-    public void testGatewayClientNotInitialized() {
+    public void testRefreshCacheFromDiscovery_whenGatewayClientIsNotInitialized() {
         instanceRefreshService.refreshCacheFromDiscovery();
 
-        verify(cachedServicesService, times(0)).updateService(anyString(), any(Application.class));
+        verify(cachedServicesService, never())
+            .updateService(anyString(), any(Application.class));
     }
 }

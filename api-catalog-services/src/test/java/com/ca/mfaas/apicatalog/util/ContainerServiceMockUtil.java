@@ -12,7 +12,6 @@ package com.ca.mfaas.apicatalog.util;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
-import com.ca.mfaas.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 
@@ -60,10 +59,9 @@ public class ContainerServiceMockUtil {
     }
 
     public void mockServiceRetrievalFromCache(CachedServicesService cachedServicesService,
-                                              List<Application> applications, GatewayClient gatewayClient) {
+                                              List<Application> applications) {
         applications.forEach(application ->
             when(cachedServicesService.getService(application.getName())).thenReturn(application));
-            when(gatewayClient.isInitialized()).thenReturn(true);
     }
 
     public InstanceInfo createInstance(String serviceId, String instanceId,
