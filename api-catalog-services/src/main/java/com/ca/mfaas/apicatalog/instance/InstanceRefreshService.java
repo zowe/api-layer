@@ -12,6 +12,7 @@ package com.ca.mfaas.apicatalog.instance;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
@@ -50,7 +51,7 @@ public class InstanceRefreshService {
         initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
         fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
-        if (!gatewayClient.isInitialized()) {
+        if (!gatewayClient.isInitialized() && isApiCatalogInCache()) {
             log.debug("Gateway not found yet, skipping the InstanceRefreshService refresh");
             return;
         }
@@ -275,5 +276,10 @@ public class InstanceRefreshService {
 
         log.debug("The total number of changed instances fetched by the delta processor : {}", deltaCount);
         return updatedInstances;
+    }
+
+    private boolean isApiCatalogInCache() {
+        Application service = this.cachedServicesService.getService(CoreService.API_CATALOG.getServiceId());
+        return service == null && service.getInstances().isEmpty();
     }
 }
