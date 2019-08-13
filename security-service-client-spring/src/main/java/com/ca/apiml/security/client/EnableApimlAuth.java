@@ -15,6 +15,11 @@ import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
 
+/**
+ * Annotation to enable the security client and integration of the security-service-client-spring library.
+ * The annotation handles necessary component scans, creates the GatewaySecurityService and starts the Gateway lookup logic.
+ */
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Documented

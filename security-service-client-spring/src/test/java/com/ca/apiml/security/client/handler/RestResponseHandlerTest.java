@@ -108,6 +108,7 @@ public class RestResponseHandlerTest {
     }
 
     @Test
+    @SuppressWarnings("squid:S2699")
     public void handleBadResponseEmpty() {
         GatewayNotFoundException gatewayNotFoundException = new GatewayNotFoundException("General Exception");
         handler.handleBadResponse(gatewayNotFoundException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
