@@ -20,7 +20,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
- * This class fires on ContextRefreshedEvent event during Spring context initialization
+ * This class fires on GatewayLookupCompleteEvent event
  * Initializes Catalog instances from Eureka
  */
 @Slf4j
