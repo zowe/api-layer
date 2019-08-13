@@ -61,7 +61,7 @@ public class GatewayInstanceInitializerTest {
             eurekaClient.getApplication(SERVICE_ID)
         ).thenReturn(application);
 
-        gatewayInstanceInitializer.init(null);
+        gatewayInstanceInitializer.init();
 
         while (!gatewayClient.isInitialized()) ;
 

@@ -15,6 +15,7 @@ import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.apicatalog.util.ContainerServiceMockUtil;
 import com.ca.mfaas.apicatalog.util.ContainerServiceState;
+import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
@@ -57,6 +58,7 @@ public class InstanceRefreshServiceTest {
     @Before
     public void setup() {
         when(gatewayClient.isInitialized()).thenReturn(true);
+        addApiCatalogToCache();
     }
 
     @Test
@@ -179,9 +181,38 @@ public class InstanceRefreshServiceTest {
 
     @Test
     public void testRefreshCacheFromDiscovery_whenGatewayClientIsNotInitialized() {
+        when(gatewayClient.isInitialized()).thenReturn(false);
+
         instanceRefreshService.refreshCacheFromDiscovery();
 
         verify(cachedServicesService, never())
             .updateService(anyString(), any(Application.class));
+    }
+
+    @Test
+    public void testRefreshCacheFromDiscovery_whenApiCatalogIsNotInCache() {
+        when(cachedServicesService.getService(CoreService.API_CATALOG.getServiceId())).thenReturn(null);
+
+        instanceRefreshService.refreshCacheFromDiscovery();
+
+        verify(cachedServicesService, never())
+            .updateService(anyString(), any(Application.class));
+    }
+
+
+    private void addApiCatalogToCache() {
+        InstanceInfo apiCatalogInstance = containerServiceMockUtil.createInstance(
+            CoreService.API_CATALOG.getServiceId(),
+            "service:9999",
+            InstanceInfo.InstanceStatus.UP,
+            InstanceInfo.ActionType.ADDED,
+            new HashMap<>());
+
+        when(cachedServicesService.getService(CoreService.API_CATALOG.getServiceId()))
+            .thenReturn(
+                new Application(CoreService.API_CATALOG.getServiceId(),
+                    Collections.singletonList(apiCatalogInstance)
+                )
+            );
     }
 }
