@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+/**
+ * Main page for Gateway, displaying status of Apiml services and build version information
+ */
 @Controller
 @RequiredArgsConstructor
 public class GatewayHomepageController {
