@@ -75,6 +75,4 @@ public class AuthConfigurationProperties {
 
         return zosmfServiceId;
     }
-
-
 }

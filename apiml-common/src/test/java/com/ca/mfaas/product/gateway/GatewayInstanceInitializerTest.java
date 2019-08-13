@@ -63,7 +63,7 @@ public class GatewayInstanceInitializerTest {
 
         gatewayInstanceInitializer.init(null);
 
-        while (!gatewayClient.isInitialized());
+        while (!gatewayClient.isInitialized()) ;
 
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         assertNotNull(gatewayConfigProperties);

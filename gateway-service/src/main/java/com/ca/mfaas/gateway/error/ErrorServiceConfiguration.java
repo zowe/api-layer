@@ -14,6 +14,9 @@ import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Error service configuration
+ */
 @Configuration
 public class ErrorServiceConfiguration {
 

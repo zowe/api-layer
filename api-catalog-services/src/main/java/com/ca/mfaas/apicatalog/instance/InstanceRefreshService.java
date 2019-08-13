@@ -51,7 +51,7 @@ public class InstanceRefreshService {
         initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
         fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
-        if (!gatewayClient.isInitialized() && isApiCatalogInCache()) {
+        if (!gatewayClient.isInitialized()) {
             log.debug("Gateway not found yet, skipping the InstanceRefreshService refresh");
             return;
         }
@@ -276,10 +276,5 @@ public class InstanceRefreshService {
 
         log.debug("The total number of changed instances fetched by the delta processor : {}", deltaCount);
         return updatedInstances;
-    }
-
-    private boolean isApiCatalogInCache() {
-        Application service = this.cachedServicesService.getService(CoreService.API_CATALOG.getServiceId());
-        return service == null && service.getInstances().isEmpty();
     }
 }

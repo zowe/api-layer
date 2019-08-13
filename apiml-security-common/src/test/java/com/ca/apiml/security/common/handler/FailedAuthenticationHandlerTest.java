@@ -23,7 +23,6 @@ import static org.mockito.Mockito.verify;
 
 public class FailedAuthenticationHandlerTest {
 
-
     @Test
     public void testOnAuthenticationFailure() throws ServletException {
         AuthExceptionHandler authExceptionHandler = mock(AuthExceptionHandler.class);

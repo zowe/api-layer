@@ -20,6 +20,8 @@ import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
 
+import javax.annotation.Nonnull;
+
 @EnableEurekaServer
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @ComponentScan({
@@ -38,7 +40,7 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
     }
 
     @Override
-    public void onApplicationEvent(final ApplicationReadyEvent event) {
+    public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
         new ServiceStartupEventHandler().onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

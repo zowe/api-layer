@@ -57,7 +57,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     /**
      * Constructor
      *
-     * @param discovery discovery client
+     * @param discovery               discovery client
      * @param gatewayConfigProperties gateway config properties
      */
     public PageRedirectionFilter(DiscoveryClient discovery, GatewayConfigProperties gatewayConfigProperties) {
@@ -197,7 +197,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
      * Replace Location header with transformed url
      *
      * @param locationHeader Location header
-     * @param transformedUrl  transformed url
+     * @param transformedUrl transformed url
      */
     private void transformLocation(Pair<String, String> locationHeader, String transformedUrl) {
         locationHeader.setSecond(transformedUrl);

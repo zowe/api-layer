@@ -102,7 +102,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             tokenAuthentication.setAuthenticated(true);
 
             return tokenAuthentication;
-        }  catch (ResourceAccessException e) {
+        } catch (ResourceAccessException e) {
             log.error("Could not get an access to z/OSMF service. Uri '{}' returned: {}", uri, e.getMessage());
             throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         } catch (RestClientException e) {

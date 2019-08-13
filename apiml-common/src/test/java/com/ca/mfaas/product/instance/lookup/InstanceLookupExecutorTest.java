@@ -25,6 +25,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -42,29 +43,30 @@ public class InstanceLookupExecutorTest {
     private InstanceLookupExecutor instanceLookupExecutor;
     private List<InstanceInfo> instances;
 
-    private volatile boolean isRunning = true;
     private Exception lastException;
-    private InstanceInfo lastInstancInfo;
+    private InstanceInfo lastInstanceInfo;
+    private CountDownLatch latch;
 
     @Before
     public void setUp() {
         instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient, INITIAL_DELAY, PERIOD);
         instances = Collections.singletonList(
             getInstance(SERVICE_ID));
+        latch = new CountDownLatch(1);
     }
 
 
     @Test(timeout = 2000)
-    public void testRun_whenNoApplicationRegisteredInDiscovery() {
+    public void testRun_whenNoApplicationRegisteredInDiscovery() throws InterruptedException {
         instanceLookupExecutor.run(
             SERVICE_ID, null,
             (exception, isStopped) -> {
                 lastException = exception;
-                isRunning = false;
+                latch.countDown();
             }
         );
 
-        while (isRunning);
+        latch.await();
 
         assertNotNull(lastException);
         assertTrue(lastException instanceof InstanceNotFoundException);
@@ -74,7 +76,7 @@ public class InstanceLookupExecutorTest {
 
 
     @Test(timeout = 2000)
-    public void testRun_whenNoInstancesExistInDiscovery() {
+    public void testRun_whenNoInstancesExistInDiscovery() throws InterruptedException {
         when(eurekaClient.getApplication(SERVICE_ID))
             .thenReturn(new Application(SERVICE_ID, Collections.emptyList()));
 
@@ -82,11 +84,11 @@ public class InstanceLookupExecutorTest {
             SERVICE_ID, null,
             (exception, isStopped) -> {
                 lastException = exception;
-                isRunning = false;
+                latch.countDown();
             }
         );
 
-        while (isRunning);
+        latch.await();
 
         assertNotNull(lastException);
         assertTrue(lastException instanceof InstanceNotFoundException);
@@ -95,7 +97,7 @@ public class InstanceLookupExecutorTest {
     }
 
     @Test(timeout = 2000)
-    public void testRun_whenUnxpectedExceptionHappened() {
+    public void testRun_whenUnexpectedExceptionHappened() throws InterruptedException {
         when(eurekaClient.getApplication(SERVICE_ID))
             .thenThrow(new InstanceInitializationException("Unexpected Exception"));
 
@@ -103,45 +105,44 @@ public class InstanceLookupExecutorTest {
             SERVICE_ID, null,
             (exception, isStopped) -> {
                 lastException = exception;
-                isRunning = !isStopped;
+                latch.countDown();
             }
         );
 
-        while (isRunning);
+        latch.await();
 
         assertNotNull(lastException);
         assertTrue(lastException instanceof InstanceInitializationException);
     }
 
     @Test(timeout = 2000)
-    public void testRun_whenInstanceExistInDiscovery() {
+    public void testRun_whenInstanceExistInDiscovery() throws InterruptedException {
         when(eurekaClient.getApplication(SERVICE_ID))
             .thenReturn(new Application(SERVICE_ID, instances));
 
         instanceLookupExecutor.run(
             SERVICE_ID,
             instanceInfo -> {
-                lastInstancInfo = instanceInfo;
-                isRunning = false;
-            },null
+                lastInstanceInfo = instanceInfo;
+                latch.countDown();
+            }, null
         );
 
-        while (isRunning);
+        latch.await();
 
         assertNull(lastException);
-        assertNotNull(lastInstancInfo);
-        assertEquals(instances.get(0), lastInstancInfo);
+        assertNotNull(lastInstanceInfo);
+        assertEquals(instances.get(0), lastInstanceInfo);
     }
 
 
     private InstanceInfo getInstance(String serviceId) {
-        InstanceInfo instance = createInstance(
+        return createInstance(
             serviceId,
             serviceId,
             InstanceInfo.InstanceStatus.UP,
             InstanceInfo.ActionType.ADDED,
             new HashMap<>());
-        return instance;
     }
 
     public InstanceInfo createInstance(String serviceId, String instanceId,

@@ -99,7 +99,7 @@ public class ZosmfAuthenticationProviderTest {
         assertTrue(tokenAuthentication.isAuthenticated());
         assertEquals(USERNAME, tokenAuthentication.getPrincipal());
     }
-//
+
     @Test
     public void loginWithBadUser() {
         authConfigurationProperties.setZosmfServiceId(ZOSMF);

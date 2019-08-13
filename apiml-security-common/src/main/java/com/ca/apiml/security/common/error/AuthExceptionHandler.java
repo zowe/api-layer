@@ -107,6 +107,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
 
+    //500
     private void handleAuthenticationException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.error(ERROR_MESSAGE_500, ex.getMessage());
         log.debug("", ex);

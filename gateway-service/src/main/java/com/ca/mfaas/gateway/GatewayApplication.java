@@ -27,17 +27,19 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
+import javax.annotation.Nonnull;
+
 @EnableZuulProxy
 @EnableWebSecurity
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @ComponentScan(
     value = {
-    "com.ca.mfaas.gateway",
-    "com.ca.mfaas.product",
-    "com.ca.mfaas.enable",
-    "com.ca.apiml.security.common"},
+        "com.ca.mfaas.gateway",
+        "com.ca.mfaas.product",
+        "com.ca.mfaas.enable",
+        "com.ca.apiml.security.common"},
     excludeFilters = {
-    @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
+        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
 @EnableEurekaClient
 @EnableWebSocket
@@ -52,7 +54,7 @@ public class GatewayApplication implements ApplicationListener<ApplicationReadyE
     }
 
     @Override
-    public void onApplicationEvent(final ApplicationReadyEvent event) {
+    public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
         new ServiceStartupEventHandler().onServiceStartup("Gateway Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }

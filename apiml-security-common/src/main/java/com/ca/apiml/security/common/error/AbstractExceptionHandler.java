@@ -39,9 +39,9 @@ public abstract class AbstractExceptionHandler {
     /**
      * Entry method that takes care of an exception passed to it
      *
-     * @param request Http request
+     * @param request  Http request
      * @param response Http response
-     * @param ex    Exception to be handled
+     * @param ex       Exception to be handled
      * @throws ServletException Fallback exception if exception cannot be handled
      */
     public abstract void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException;
@@ -51,9 +51,9 @@ public abstract class AbstractExceptionHandler {
      * Error service resolves the message, see {@link ErrorService}
      *
      * @param messageKey Message key
-     * @param status Http response status
-     * @param request Http request
-     * @param response Http response
+     * @param status     Http response status
+     * @param request    Http request
+     * @param response   Http response
      * @throws ServletException throws when a message cannot be written to response
      */
     protected void writeErrorResponse(String messageKey, HttpStatus status, HttpServletRequest request, HttpServletResponse response) throws ServletException {
@@ -64,8 +64,8 @@ public abstract class AbstractExceptionHandler {
     /**
      * Write a message to http response
      *
-     * @param message Message object, which contains message key, type, number and text
-     * @param status Http response status
+     * @param message  Message object, which contains message key, type, number and text
+     * @param status   Http response status
      * @param response Http response
      * @throws ServletException thrown when message cannot be written to response
      */

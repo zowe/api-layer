@@ -40,7 +40,6 @@ public class GatewaySecurityServiceTest {
     private static final String GATEWAY_HOST = "localhost:10010";
 
     private GatewayConfigProperties gatewayConfigProperties;
-    private GatewayClient gatewayClient;
     private AuthConfigurationProperties authConfigurationProperties;
     private RestTemplate restTemplate;
     private GatewaySecurityService securityService;
@@ -55,7 +54,7 @@ public class GatewaySecurityServiceTest {
             .scheme(GATEWAY_SCHEME)
             .hostname(GATEWAY_HOST)
             .build();
-        gatewayClient = new GatewayClient(gatewayConfigProperties);
+        GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
         authConfigurationProperties = new AuthConfigurationProperties();
         restTemplate = mock(RestTemplate.class);
         RestResponseHandler responseHandler = new RestResponseHandler();
