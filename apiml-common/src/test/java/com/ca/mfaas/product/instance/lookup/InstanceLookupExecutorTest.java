@@ -70,7 +70,7 @@ public class InstanceLookupExecutorTest {
 
         assertNotNull(lastException);
         assertTrue(lastException instanceof InstanceNotFoundException);
-        assertEquals("No " + SERVICE_ID + " Application is registered in Discovery Client",
+        assertEquals("Service '" + SERVICE_ID + "' is not registered to Discovery Service",
             lastException.getMessage());
     }
 
@@ -92,7 +92,7 @@ public class InstanceLookupExecutorTest {
 
         assertNotNull(lastException);
         assertTrue(lastException instanceof InstanceNotFoundException);
-        assertEquals("No " + SERVICE_ID + " Instances registered within Application in Discovery Client",
+        assertEquals("'" + SERVICE_ID + "' has no running instances registered to Discovery Service",
             lastException.getMessage());
     }
 

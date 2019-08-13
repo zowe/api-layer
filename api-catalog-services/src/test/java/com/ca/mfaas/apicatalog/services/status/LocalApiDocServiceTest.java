@@ -51,14 +51,13 @@ public class LocalApiDocServiceTest {
     private InstanceRetrievalService instanceRetrievalService;
 
     private APIDocRetrievalService apiDocRetrievalService;
-    private GatewayClient gatewayClient;
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setup() {
-        gatewayClient = new GatewayClient(getProperties());
+        GatewayClient gatewayClient = new GatewayClient(getProperties());
         apiDocRetrievalService = new APIDocRetrievalService(
             restTemplate,
             instanceRetrievalService,

@@ -22,6 +22,7 @@ import io.swagger.models.Path;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TransformApiDocService {
     private static final String SWAGGER_LOCATION_LINK = "[Swagger/OpenAPI JSON Document]";
     private static final String EXTERNAL_DOCUMENTATION = "External documentation";
@@ -46,10 +48,6 @@ public class TransformApiDocService {
 
     private final GatewayClient gatewayClient;
 
-    public TransformApiDocService(GatewayClient gatewayClient) {
-        this.gatewayClient = gatewayClient;
-    }
-
     /**
      * Does transformation API documentation
      *
@@ -57,7 +55,7 @@ public class TransformApiDocService {
      * @param apiDocInfo the API doc and additional information about transformation
      * @return the transformed API documentation relative to Gateway
      * @throws ApiDocTransformationException if could not convert Swagger to JSON
-     * @throws UnexpectedTypeException if response is not a Swagger type object
+     * @throws UnexpectedTypeException       if response is not a Swagger type object
      */
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
         Swagger swagger;
@@ -216,7 +214,7 @@ public class TransformApiDocService {
     /**
      * Get endpoint
      *
-     * @param swaggerBasePath  swagger basepath
+     * @param swaggerBasePath  swagger base path
      * @param originalEndpoint the endpoint of method
      * @return endpoint
      */

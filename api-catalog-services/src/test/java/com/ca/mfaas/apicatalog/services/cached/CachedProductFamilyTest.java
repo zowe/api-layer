@@ -11,8 +11,6 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
-import com.ca.mfaas.product.gateway.GatewayClient;
-import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import org.junit.Assert;
@@ -244,7 +242,6 @@ public class CachedProductFamilyTest {
     public void testCalculationOfContainerTotalsWithAllServicesUp() {
         HashMap<String, String> metadata = new HashMap<>();
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
-        GatewayClient gatewayClient = Mockito.mock(GatewayClient.class);
 
         metadata.put(CATALOG_UI_ID_KEY, "demoapp");
         InstanceInfo instance1 = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
@@ -412,13 +409,6 @@ public class CachedProductFamilyTest {
         assertEquals(metadata.get(CATALOG_UI_SERVICE_DESCRIPTION_KEY), actualService.getDescription());
         assertEquals(instance.isPortEnabled(InstanceInfo.PortType.SECURE), actualService.isSecured());
         assertEquals(instance.getHomePageUrl(), actualService.getHomePageUrl());
-    }
-
-    private GatewayConfigProperties getProperties() {
-        return GatewayConfigProperties.builder()
-            .scheme("https")
-            .hostname("localhost:10010")
-            .build();
     }
 
     private InstanceInfo getStandardInstance(String serviceId,

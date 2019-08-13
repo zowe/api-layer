@@ -192,7 +192,7 @@ public class InstanceRefreshService {
                 String value = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
                 boolean apiEnabled = true;
                 if (value != null) {
-                    apiEnabled = Boolean.valueOf(value);
+                    apiEnabled = Boolean.parseBoolean(value);
                 }
 
                 // only add api enabled services
@@ -222,7 +222,7 @@ public class InstanceRefreshService {
         String apiEnabled = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
 
         // only register API enabled services
-        if (apiEnabled == null || Boolean.valueOf(apiEnabled)) {
+        if (apiEnabled == null || Boolean.parseBoolean(apiEnabled)) {
             updateContainer(containersUpdated, instanceInfo.getAppName(), instanceInfo);
         }
     }

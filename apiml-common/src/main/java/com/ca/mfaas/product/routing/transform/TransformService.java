@@ -16,20 +16,18 @@ import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.utils.UrlUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 
 @Slf4j
+@RequiredArgsConstructor
 public class TransformService {
 
     private static final String SEPARATOR = "/";
 
     private final GatewayClient gatewayClient;
-
-    public TransformService(GatewayClient gatewayClient) {
-        this.gatewayClient = gatewayClient;
-    }
 
     /**
      * Construct the URL using gateway hostname and route

@@ -67,7 +67,7 @@ public class GatewayInstanceInitializer {
                 applicationEventPublisher.publishEvent(new GatewayLookupCompleteEvent(this));
             },
             (exception, isStopped) -> {
-                if (isStopped) {
+                if (Boolean.TRUE.equals(isStopped)) {
                     log.warn("GatewayInstanceInitializer has been stopped", exception);
                 }
             }

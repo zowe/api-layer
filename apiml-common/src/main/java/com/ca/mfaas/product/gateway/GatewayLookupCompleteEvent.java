@@ -11,14 +11,16 @@ package com.ca.mfaas.product.gateway;
 
 import org.springframework.context.ApplicationEvent;
 
+import javax.validation.constraints.NotNull;
+
 public class GatewayLookupCompleteEvent extends ApplicationEvent {
 
     /**
      * Event that occurs when {@link GatewayInstanceInitializer} finds the Gateway instance.
      *
-     * @param source the object on which the event initially occurred (never {@code null})
+     * @param source the object on which the event initially occurred
      */
-    public GatewayLookupCompleteEvent(Object source) {
+    public GatewayLookupCompleteEvent(@NotNull Object source) {
         super(source);
     }
 }

@@ -106,7 +106,7 @@ public class InstanceInitializeService {
         String value = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
         boolean apiEnabled = true;
         if (value != null) {
-            apiEnabled = Boolean.valueOf(value);
+            apiEnabled = Boolean.parseBoolean(value);
         }
 
         // only add api enabled services

@@ -9,22 +9,19 @@
  */
 package com.ca.mfaas.product.gateway;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
  * Container object for {@link GatewayConfigProperties}
  */
 @Component
+@NoArgsConstructor
+@AllArgsConstructor
 public class GatewayClient {
 
     private volatile GatewayConfigProperties gatewayConfigProperties;
-
-    public GatewayClient() {
-    }
-
-    public GatewayClient(GatewayConfigProperties gatewayConfigProperties) {
-        this.gatewayConfigProperties = gatewayConfigProperties;
-    }
 
     public void setGatewayConfigProperties(GatewayConfigProperties gatewayConfigProperties) {
         this.gatewayConfigProperties = gatewayConfigProperties;
@@ -47,7 +44,7 @@ public class GatewayClient {
     /**
      * Check whether the GatewayClient contains GatewayConfigProperties instance
      *
-     * @return
+     * @return true when GatewayConfigProperties are initialized
      */
     public boolean isInitialized() {
         return gatewayConfigProperties != null;

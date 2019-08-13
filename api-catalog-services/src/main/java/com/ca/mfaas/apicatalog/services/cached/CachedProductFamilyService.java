@@ -212,7 +212,7 @@ public class CachedProductFamilyService {
                     instanceHomePage,
                     routes);
             } catch (URLTransformationException e) {
-                log.warn("The home page URI was not transformed. {}",e.getMessage());
+                log.warn("The home page URI was not transformed. {}", e.getMessage());
             }
         }
 
@@ -343,6 +343,7 @@ public class CachedProductFamilyService {
 
         return container;
     }
+
     /**
      * Update the summary totals for a container based on it's running services
      *

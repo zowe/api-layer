@@ -32,9 +32,9 @@ public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandle
     /**
      * Clears cookie, session, context and sets response code
      *
-     * @param httpServletRequest Http request
+     * @param httpServletRequest  Http request
      * @param httpServletResponse Http response
-     * @param authentication Valid authentication
+     * @param authentication      Valid authentication
      */
     @Override
     public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
