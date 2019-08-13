@@ -22,6 +22,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+/**
+ * Generic executor that searches the EurekaClient for specific instance
+ */
 @Slf4j
 public class InstanceLookupExecutor {
 
@@ -37,10 +40,20 @@ public class InstanceLookupExecutor {
     private int initialDelay;
     private int period;
 
+    /**
+     * Constructor with predefined initial delay of 100ms and retry frequency of 5000ms
+     * @param eurekaClient EurekaClient to use for search
+     */
     public InstanceLookupExecutor(EurekaClient eurekaClient) {
         this(eurekaClient, 100, 5000);
     }
 
+    /**
+     * Constructor, that allows to set InitialDelay and Retry frequency
+     * @param eurekaClient EurekaClient to use for search
+     * @param initialDelay Initial delay before search begins in milliseconds
+     * @param period Search retry frequency in milliseconds
+     */
     public InstanceLookupExecutor(EurekaClient eurekaClient,
                                   int initialDelay,
                                   int period) {
@@ -63,6 +76,12 @@ public class InstanceLookupExecutor {
         return appInstances.get(0);
     }
 
+    /**
+     * Run the lookup and provide the logic to be executed
+     * @param serviceId service id being looked up
+     * @param action Consumer interface lambda to process and accept the retrieved InstanceInfo
+     * @param handleFailureConsumer BiConsumer interface lambda to provide exception handling logic
+     */
     public void run(String serviceId,
                     Consumer<InstanceInfo> action,
                     BiConsumer<Exception, Boolean> handleFailureConsumer) {
