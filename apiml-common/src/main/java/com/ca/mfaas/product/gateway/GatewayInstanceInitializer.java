@@ -21,6 +21,10 @@ import org.springframework.context.event.EventListener;
 
 import java.net.URI;
 
+/**
+ * GatewayInstanceInitializer takes care about starting the lookup for Gateway instance after the context is started
+ * Its meant to be created as a bean, as it is for example by SecurityServiceConfiguration in security-service-client-spring
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class GatewayInstanceInitializer {
@@ -44,6 +48,10 @@ public class GatewayInstanceInitializer {
 
     }
 
+    /**
+     * EventListener method that starts the lookup for Gateway
+     * Listens for {@link ApplicationReadyEvent} to start the {@link InstanceLookupExecutor} and provides the processing logic for the executor
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
         if (gatewayClient.isInitialized()) {

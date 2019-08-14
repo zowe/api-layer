@@ -158,7 +158,7 @@ public class InstanceRefreshService {
     }
 
     /**
-     * Go ahead amd retrieve this instances API doc and update the cache
+     * Go ahead and retrieve this instances API doc and update the cache
      *
      * @param containersUpdated containers, which were updated
      * @param instance          the instance

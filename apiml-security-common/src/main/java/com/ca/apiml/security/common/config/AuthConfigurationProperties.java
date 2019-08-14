@@ -16,6 +16,9 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.stereotype.Component;
 
 
+/**
+ * Configuration class for authentication-related security properties
+ */
 @Slf4j
 @Data
 @Component

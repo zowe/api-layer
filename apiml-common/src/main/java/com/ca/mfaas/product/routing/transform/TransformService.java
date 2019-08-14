@@ -21,6 +21,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 
+/**
+ * Class for producing service URL using Gateway hostname and service route
+ */
+
 @Slf4j
 @RequiredArgsConstructor
 public class TransformService {

@@ -16,6 +16,9 @@ import ch.qos.logback.core.spi.FilterReply;
 import org.slf4j.MDC;
 import org.slf4j.Marker;
 
+/**
+ * Filter for logging that extracts system property 'user.name' to variable 'userid' accessible by logback
+ */
 public class UseridFilter extends TurboFilter {
 
     @Override

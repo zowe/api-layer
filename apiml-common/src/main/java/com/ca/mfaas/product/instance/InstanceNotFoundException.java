@@ -9,6 +9,9 @@
  */
 package com.ca.mfaas.product.instance;
 
+/**
+ * Exception thrown when retrieving service instance from Eureka but no suitable instance is retrieved
+ */
 public class InstanceNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = -559112794280136165L;

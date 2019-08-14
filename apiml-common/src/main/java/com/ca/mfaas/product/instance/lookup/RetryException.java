@@ -9,6 +9,10 @@
  */
 package com.ca.mfaas.product.instance.lookup;
 
+/**
+ * Exception thrown when retryable logic does not succeed to produce desired result
+ * When this exception is thrown and handled, the logic is expected to be retried
+ */
 public class RetryException extends RuntimeException {
 
     private static final long serialVersionUID = -559112794280136165L;
