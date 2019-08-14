@@ -165,9 +165,9 @@ public class InstanceRefreshService {
      * @param application       the service
      */
     private void processInstance(Set<String> containersUpdated, InstanceInfo instance, Application application) {
-        if (InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
-            application.removeInstance(instance);
-        } else {
+        application.addInstance(instance);
+
+        if (!InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             // update any containers which contain this service
             updateContainers(containersUpdated, instance);
         }

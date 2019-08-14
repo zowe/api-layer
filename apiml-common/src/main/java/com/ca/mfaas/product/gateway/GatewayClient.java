@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("squid:S3077")
 public class GatewayClient {
 
     private volatile GatewayConfigProperties gatewayConfigProperties;

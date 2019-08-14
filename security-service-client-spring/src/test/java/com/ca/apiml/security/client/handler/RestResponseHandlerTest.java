@@ -106,11 +106,4 @@ public class RestResponseHandlerTest {
         HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Some server error");
         handler.handleBadResponse(exception, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
-
-    @Test
-    @SuppressWarnings("squid:S2699")
-    public void handleBadResponseEmpty() {
-        GatewayNotFoundException gatewayNotFoundException = new GatewayNotFoundException("General Exception");
-        handler.handleBadResponse(gatewayNotFoundException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
-    }
 }

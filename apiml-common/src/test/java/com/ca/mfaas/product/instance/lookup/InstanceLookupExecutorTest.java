@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.*;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceLookupExecutorTest {
