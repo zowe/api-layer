@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.services.status;
 
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.instance.InstanceRetrievalService;
@@ -56,10 +57,11 @@ public class LocalApiDocServiceTest {
 
     @Before
     public void setup() {
+        GatewayClient gatewayClient = new GatewayClient(getProperties());
         apiDocRetrievalService = new APIDocRetrievalService(
             restTemplate,
             instanceRetrievalService,
-            getProperties());
+            gatewayClient);
     }
 
     @Test

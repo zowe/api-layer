@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.controllers;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.BuildInfoDetails;
@@ -23,6 +23,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import javax.annotation.PostConstruct;
 import java.util.List;
 
+/**
+ * Main page for Gateway, displaying status of Apiml services and build version information
+ */
 @Controller
 @RequiredArgsConstructor
 public class GatewayHomepageController {
@@ -30,7 +33,7 @@ public class GatewayHomepageController {
     private static final String SUCCESS_ICON_NAME = "success";
 
     private final DiscoveryClient discoveryClient;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     private String buildString;
 
@@ -88,8 +91,8 @@ public class GatewayHomepageController {
         String authIconName = "warning";
         boolean authUp = true;
 
-        if (!securityConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.DUMMY.toString())) {
-            authUp = !this.discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+        if (!authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.DUMMY.toString())) {
+            authUp = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
         }
 
         if (authUp) {

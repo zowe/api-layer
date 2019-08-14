@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.gateway.security.login.zosmf;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.apiml.security.error.ServiceNotAccessibleException;
-import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
+import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -47,18 +47,18 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     private static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
     private static final String ZOSMF_DOMAIN = "zosmf_saf_realm";
 
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
     private final AuthenticationService authenticationService;
     private final DiscoveryClient discovery;
     private final ObjectMapper securityObjectMapper;
     private final RestTemplate restTemplate;
 
-    public ZosmfAuthenticationProvider(SecurityConfigurationProperties securityConfigurationProperties,
+    public ZosmfAuthenticationProvider(AuthConfigurationProperties authConfigurationProperties,
                                        AuthenticationService authenticationService,
                                        DiscoveryClient discovery,
                                        ObjectMapper securityObjectMapper,
                                        RestTemplate restTemplate) {
-        this.securityConfigurationProperties = securityConfigurationProperties;
+        this.authConfigurationProperties = authConfigurationProperties;
         this.discovery = discovery;
         this.authenticationService = authenticationService;
         this.securityObjectMapper = securityObjectMapper;
@@ -73,7 +73,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
      */
     @Override
     public Authentication authenticate(Authentication authentication) {
-        String zosmf = securityConfigurationProperties.validatedZosmfServiceId();
+        String zosmf = authConfigurationProperties.validatedZosmfServiceId();
         String uri = getURI(zosmf);
 
         String user = authentication.getPrincipal().toString();
@@ -102,7 +102,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             tokenAuthentication.setAuthenticated(true);
 
             return tokenAuthentication;
-        }  catch (ResourceAccessException e) {
+        } catch (ResourceAccessException e) {
             log.error("Could not get an access to z/OSMF service. Uri '{}' returned: {}", uri, e.getMessage());
             throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         } catch (RestClientException e) {

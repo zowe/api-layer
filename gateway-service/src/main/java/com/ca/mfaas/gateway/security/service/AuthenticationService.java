@@ -9,13 +9,16 @@
  */
 package com.ca.mfaas.gateway.security.service;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.token.QueryResponse;
+import com.ca.apiml.security.common.token.TokenAuthentication;
+import com.ca.apiml.security.common.token.TokenExpireException;
+import com.ca.apiml.security.common.token.TokenNotValidException;
 import com.ca.mfaas.constants.ApimlConstants;
-import com.ca.apiml.security.token.QueryResponse;
-import com.ca.apiml.security.token.TokenNotValidException;
-import com.ca.apiml.security.token.TokenExpireException;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -38,7 +41,7 @@ public class AuthenticationService {
     private static final String LTPA_CLAIM_NAME = "ltpa";
     private static final String DOMAIN_CLAIM_NAME = "dom";
 
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
     private final JwtSecurityInitializer jwtSecurityInitializer;
 
     /**
@@ -60,7 +63,7 @@ public class AuthenticationService {
             .claim(LTPA_CLAIM_NAME, ltpaToken)
             .setIssuedAt(new Date(now))
             .setExpiration(new Date(expiration))
-            .setIssuer(securityConfigurationProperties.getTokenProperties().getIssuer())
+            .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
             .signWith(jwtSecurityInitializer.getSignatureAlgorithm(), jwtSecurityInitializer.getJwtSecret())
             .compact();
@@ -133,7 +136,7 @@ public class AuthenticationService {
         }
 
         return Arrays.stream(cookies)
-            .filter(cookie -> cookie.getName().equals(securityConfigurationProperties.getCookieProperties().getCookieName()))
+            .filter(cookie -> cookie.getName().equals(authConfigurationProperties.getCookieProperties().getCookieName()))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()
             .map(Cookie::getValue);
@@ -190,12 +193,12 @@ public class AuthenticationService {
      * @return the calculated expiration time
      */
     private long calculateExpiration(long now, String username) {
-        long expiration = now + (securityConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000);
+        long expiration = now + (authConfigurationProperties.getTokenProperties().getExpirationInSeconds() * 1000);
 
         // calculate time for short TTL user
-        if (securityConfigurationProperties.getTokenProperties().getShortTtlUsername() != null
-            && username.equals(securityConfigurationProperties.getTokenProperties().getShortTtlUsername())) {
-            expiration = now + (securityConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds() * 1000);
+        if (authConfigurationProperties.getTokenProperties().getShortTtlUsername() != null
+            && username.equals(authConfigurationProperties.getTokenProperties().getShortTtlUsername())) {
+            expiration = now + (authConfigurationProperties.getTokenProperties().getShortTtlExpirationInSeconds() * 1000);
         }
 
         return expiration;

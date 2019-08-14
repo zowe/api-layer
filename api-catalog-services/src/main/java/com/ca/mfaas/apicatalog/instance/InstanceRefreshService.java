@@ -12,6 +12,8 @@ package com.ca.mfaas.apicatalog.instance;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
+import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -34,6 +36,7 @@ import java.util.concurrent.*;
 public class InstanceRefreshService {
 
     // until versioning is implemented, only v1 API docs are supported
+    private final GatewayClient gatewayClient;
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
@@ -42,11 +45,17 @@ public class InstanceRefreshService {
 
     /**
      * Periodically refresh the container/service caches
+     * Depends on the GatewayClient: no refreshes happen when it's not initialized
      */
     @Scheduled(
         initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
         fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
+        if (!gatewayClient.isInitialized() || !isApiCatalogInCache()) {
+            log.debug("Gateway not found yet, skipping the InstanceRefreshService refresh");
+            return;
+        }
+
         log.debug("Refreshing API Catalog with the latest state of discovery service");
 
         Callable<Set<String>> callableTask = this::compareServices;
@@ -149,16 +158,16 @@ public class InstanceRefreshService {
     }
 
     /**
-     * Go ahead amd retrieve this instances API doc and update the cache
+     * Go ahead and retrieve this instances API doc and update the cache
      *
      * @param containersUpdated containers, which were updated
      * @param instance          the instance
      * @param application       the service
      */
     private void processInstance(Set<String> containersUpdated, InstanceInfo instance, Application application) {
-        if (InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
-            application.removeInstance(instance);
-        } else {
+        application.addInstance(instance);
+
+        if (!InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             // update any containers which contain this service
             updateContainers(containersUpdated, instance);
         }
@@ -183,7 +192,7 @@ public class InstanceRefreshService {
                 String value = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
                 boolean apiEnabled = true;
                 if (value != null) {
-                    apiEnabled = Boolean.valueOf(value);
+                    apiEnabled = Boolean.parseBoolean(value);
                 }
 
                 // only add api enabled services
@@ -213,7 +222,7 @@ public class InstanceRefreshService {
         String apiEnabled = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
 
         // only register API enabled services
-        if (apiEnabled == null || Boolean.valueOf(apiEnabled)) {
+        if (apiEnabled == null || Boolean.parseBoolean(apiEnabled)) {
             updateContainer(containersUpdated, instanceInfo.getAppName(), instanceInfo);
         }
     }
@@ -268,4 +277,10 @@ public class InstanceRefreshService {
         log.debug("The total number of changed instances fetched by the delta processor : {}", deltaCount);
         return updatedInstances;
     }
+
+    private boolean isApiCatalogInCache() {
+        Application service = this.cachedServicesService.getService(CoreService.API_CATALOG.getServiceId());
+        return service != null;
+    }
+
 }

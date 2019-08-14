@@ -13,13 +13,14 @@ import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
+/**
+ * Error service configuration
+ */
 @Configuration
 public class ErrorServiceConfiguration {
 
     @Bean
-    @Primary
     public ErrorService errorServiceGateway() {
         return new ErrorServiceImpl("/gateway-messages.yml");
     }

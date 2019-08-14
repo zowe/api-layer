@@ -9,10 +9,11 @@
  */
 package com.ca.mfaas.apicatalog.swagger;
 
-import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
-import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayClient;
+import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,12 +22,12 @@ import io.swagger.models.Path;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import javax.validation.UnexpectedTypeException;
-
 import java.io.IOException;
 import java.util.*;
 
@@ -35,6 +36,7 @@ import java.util.*;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TransformApiDocService {
     private static final String SWAGGER_LOCATION_LINK = "[Swagger/OpenAPI JSON Document]";
     private static final String EXTERNAL_DOCUMENTATION = "External documentation";
@@ -44,11 +46,7 @@ public class TransformApiDocService {
     private static final String HARDCODED_VERSION = "/v1";
     private static final String SEPARATOR = "/";
 
-    private final GatewayConfigProperties gatewayConfigProperties;
-
-    public TransformApiDocService(GatewayConfigProperties gatewayConfigProperties) {
-        this.gatewayConfigProperties = gatewayConfigProperties;
-    }
+    private final GatewayClient gatewayClient;
 
     /**
      * Does transformation API documentation
@@ -57,7 +55,7 @@ public class TransformApiDocService {
      * @param apiDocInfo the API doc and additional information about transformation
      * @return the transformed API documentation relative to Gateway
      * @throws ApiDocTransformationException if could not convert Swagger to JSON
-     * @throws UnexpectedTypeException if response is not a Swagger type object
+     * @throws UnexpectedTypeException       if response is not a Swagger type object
      */
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
         Swagger swagger;
@@ -91,6 +89,7 @@ public class TransformApiDocService {
      * @param hidden    do not add link for automatically generated API doc
      */
     private void updateSchemeHostAndLink(Swagger swagger, String serviceId, boolean hidden) {
+        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
             CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
         String swaggerLink = "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
@@ -215,7 +214,7 @@ public class TransformApiDocService {
     /**
      * Get endpoint
      *
-     * @param swaggerBasePath  swagger basepath
+     * @param swaggerBasePath  swagger base path
      * @param originalEndpoint the endpoint of method
      * @return endpoint
      */

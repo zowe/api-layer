@@ -10,25 +10,28 @@
 
 package com.ca.mfaas.product.routing.transform;
 
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.utils.UrlUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 
+/**
+ * Class for producing service URL using Gateway hostname and service route
+ */
+
 @Slf4j
+@RequiredArgsConstructor
 public class TransformService {
 
     private static final String SEPARATOR = "/";
 
-    private final GatewayConfigProperties gatewayConfigProperties;
-
-    public TransformService(GatewayConfigProperties gatewayConfigProperties) {
-        this.gatewayConfigProperties = gatewayConfigProperties;
-    }
+    private final GatewayClient gatewayClient;
 
     /**
      * Construct the URL using gateway hostname and route
@@ -44,6 +47,13 @@ public class TransformService {
                                String serviceId,
                                String serviceUrl,
                                RoutedServices routes) throws URLTransformationException {
+
+        if (!gatewayClient.isInitialized()) {
+            String message = "Gateway not found yet, transform service cannot perform the request";
+            log.error(message);
+            throw new URLTransformationException(message);
+        }
+
         URI serviceUri = URI.create(serviceUrl);
         String serviceUriPath = serviceUri.getPath();
         if (serviceUriPath == null) {
@@ -66,6 +76,8 @@ public class TransformService {
         if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
             throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
         }
+
+        GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
 
         return String.format("%s://%s/%s/%s%s",
             gatewayConfigProperties.getScheme(),

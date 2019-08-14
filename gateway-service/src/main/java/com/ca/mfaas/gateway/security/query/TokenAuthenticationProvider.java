@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
-import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -11,7 +11,6 @@ package com.ca.mfaas.apicatalog.services.cached;
 
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
-import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import org.junit.Assert;
@@ -46,7 +45,7 @@ public class CachedProductFamilyTest {
     @Before
     public void setup() {
         service = new CachedProductFamilyService(
-            getProperties(),
+            null,
             null,
             cacheRefreshUpdateThresholdInMillis);
     }
@@ -253,7 +252,7 @@ public class CachedProductFamilyTest {
 
         when(cachedServicesService.getService("service1")).thenReturn(application);
         service = new CachedProductFamilyService(
-            getProperties(),
+            null,
             cachedServicesService,
             cacheRefreshUpdateThresholdInMillis);
 
@@ -286,7 +285,7 @@ public class CachedProductFamilyTest {
         when(cachedServicesService.getService("service1")).thenReturn(application1);
         when(cachedServicesService.getService("service2")).thenReturn(application2);
         service = new CachedProductFamilyService(
-            getProperties(),
+            null,
             cachedServicesService,
             cacheRefreshUpdateThresholdInMillis);
 
@@ -318,7 +317,7 @@ public class CachedProductFamilyTest {
         when(cachedServicesService.getService("service1")).thenReturn(application1);
         when(cachedServicesService.getService("service2")).thenReturn(application2);
         service = new CachedProductFamilyService(
-            getProperties(),
+            null,
             cachedServicesService,
             cacheRefreshUpdateThresholdInMillis);
 
@@ -410,13 +409,6 @@ public class CachedProductFamilyTest {
         assertEquals(metadata.get(CATALOG_UI_SERVICE_DESCRIPTION_KEY), actualService.getDescription());
         assertEquals(instance.isPortEnabled(InstanceInfo.PortType.SECURE), actualService.isSecured());
         assertEquals(instance.getHomePageUrl(), actualService.getHomePageUrl());
-    }
-
-    private GatewayConfigProperties getProperties() {
-        return GatewayConfigProperties.builder()
-            .scheme("https")
-            .hostname("localhost:10010")
-            .build();
     }
 
     private InstanceInfo getStandardInstance(String serviceId,

@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
-import com.ca.apiml.security.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.token.TokenAuthentication;
-import com.ca.apiml.security.token.TokenNotProvidedException;
+import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.common.token.TokenAuthentication;
+import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;

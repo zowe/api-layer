@@ -11,6 +11,7 @@
 package com.ca.mfaas.apicatalog.swagger;
 
 
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.product.constants.CoreService;
@@ -36,7 +37,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
-
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class TransformApiDocServiceTest {
 
@@ -51,11 +51,13 @@ public class TransformApiDocServiceTest {
 
     private TransformApiDocService transformApiDocService;
     private GatewayConfigProperties gatewayConfigProperties;
+    private GatewayClient gatewayClient;
 
     @Before
     public void setUp() {
         gatewayConfigProperties = getProperties();
-        transformApiDocService = new TransformApiDocService(gatewayConfigProperties);
+        gatewayClient = new GatewayClient(gatewayConfigProperties);
+        transformApiDocService = new TransformApiDocService(gatewayClient);
     }
 
     @Rule
@@ -74,7 +76,7 @@ public class TransformApiDocServiceTest {
     }
 
     @Test
-    public void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedVsalues() {
+    public void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
         Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
         String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
 
@@ -95,69 +97,21 @@ public class TransformApiDocServiceTest {
 
         assertNotNull(actualSwagger);
 
-        String expectedDescription = new StringBuilder()
-            .append(dummySwaggerObject.getInfo().getDescription())
-            .append("\n\n")
-            .append(SWAGGER_LOCATION_LINK)
-            .append("(")
-            .append(gatewayConfigProperties.getScheme())
-            .append("://")
-            .append(gatewayConfigProperties.getHostname())
-            .append(CATALOG_VERSION)
-            .append(SEPARATOR)
-            .append(CoreService.API_CATALOG.getServiceId())
-            .append(CATALOG_APIDOC_ENDPOINT)
-            .append(SEPARATOR)
-            .append(SERVICE_ID)
-            .append(HARDCODED_VERSION)
-            .append(")").toString();
-
-        assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
-        assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
-        assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
-        assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
-        assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
-
-        assertThat(actualSwagger.getSchemes(), hasItem(Scheme.forValue(gatewayConfigProperties.getScheme())));
-        assertThat(actualSwagger.getPaths(), is(dummySwaggerObject.getPaths()));
-    }
-
-    @Test
-    public void givenSwaggerValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
-        Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
-        String apiDocContent = convertSwaggerToJson(dummySwaggerObject);
-
-        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
-        RoutedService routedService2 = new RoutedService("ui_v1", "ui/v1", "/apicatalog");
-
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(routedService);
-        routedServices.addRoutedService(routedService2);
-
-        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
-
-        String actualContent = transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
-        Swagger actualSwagger = convertJsonToSwagger(actualContent);
-
-        assertNotNull(actualSwagger);
-
-        String expectedDescription = new StringBuilder()
-            .append(dummySwaggerObject.getInfo().getDescription())
-            .append("\n\n")
-            .append(SWAGGER_LOCATION_LINK)
-            .append("(")
-            .append(gatewayConfigProperties.getScheme())
-            .append("://")
-            .append(gatewayConfigProperties.getHostname())
-            .append(CATALOG_VERSION)
-            .append(SEPARATOR)
-            .append(CoreService.API_CATALOG.getServiceId())
-            .append(CATALOG_APIDOC_ENDPOINT)
-            .append(SEPARATOR)
-            .append(SERVICE_ID)
-            .append(HARDCODED_VERSION)
-            .append(")").toString();
+        String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
+            "\n\n" +
+            SWAGGER_LOCATION_LINK +
+            "(" +
+            gatewayClient.getGatewayConfigProperties().getScheme() +
+            "://" +
+            gatewayClient.getGatewayConfigProperties().getHostname() +
+            CATALOG_VERSION +
+            SEPARATOR +
+            CoreService.API_CATALOG.getServiceId() +
+            CATALOG_APIDOC_ENDPOINT +
+            SEPARATOR +
+            SERVICE_ID +
+            HARDCODED_VERSION +
+            ")";
 
         assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
         assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
@@ -260,22 +214,21 @@ public class TransformApiDocServiceTest {
 
         assertNotNull(actualSwagger);
 
-        String expectedDescription = new StringBuilder()
-            .append(dummySwaggerObject.getInfo().getDescription())
-            .append("\n\n")
-            .append(SWAGGER_LOCATION_LINK)
-            .append("(")
-            .append(gatewayConfigProperties.getScheme())
-            .append("://")
-            .append(gatewayConfigProperties.getHostname())
-            .append(CATALOG_VERSION)
-            .append(SEPARATOR)
-            .append(CoreService.API_CATALOG.getServiceId())
-            .append(CATALOG_APIDOC_ENDPOINT)
-            .append(SEPARATOR)
-            .append(SERVICE_ID)
-            .append(HARDCODED_VERSION)
-            .append(")").toString();
+        String expectedDescription = dummySwaggerObject.getInfo().getDescription() +
+            "\n\n" +
+            SWAGGER_LOCATION_LINK +
+            "(" +
+            gatewayClient.getGatewayConfigProperties().getScheme() +
+            "://" +
+            gatewayClient.getGatewayConfigProperties().getHostname() +
+            CATALOG_VERSION +
+            SEPARATOR +
+            CoreService.API_CATALOG.getServiceId() +
+            CATALOG_APIDOC_ENDPOINT +
+            SEPARATOR +
+            SERVICE_ID +
+            HARDCODED_VERSION +
+            ")";
 
         assertEquals(expectedDescription, actualSwagger.getInfo().getDescription());
         assertEquals(gatewayConfigProperties.getHostname(), actualSwagger.getHost());
@@ -309,9 +262,9 @@ public class TransformApiDocServiceTest {
 
         assertEquals("/api/v1/" + SERVICE_ID, actualSwagger.getBasePath());
 
-        dummySwaggerObject.getPaths().forEach((k, v) -> {
-            assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k));
-        });
+        dummySwaggerObject.getPaths().forEach((k, v) ->
+            assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k))
+        );
     }
 
     private String convertSwaggerToJson(Swagger swagger) {

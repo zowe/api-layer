@@ -9,14 +9,16 @@
  */
 package com.ca.mfaas.product.logging;
 
-import org.slf4j.MDC;
-import org.slf4j.Marker;
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.turbo.TurboFilter;
 import ch.qos.logback.core.spi.FilterReply;
+import org.slf4j.MDC;
+import org.slf4j.Marker;
 
+/**
+ * Filter for logging that extracts system property 'user.name' to variable 'userid' accessible by logback
+ */
 public class UseridFilter extends TurboFilter {
 
     @Override

@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.utils.http;
 
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.utils.config.ConfigReader;
 import com.ca.mfaas.utils.config.Credentials;
 import org.apache.http.Header;
@@ -22,18 +23,18 @@ import java.io.IOException;
 import java.net.URI;
 
 public class HttpSecurityUtils {
-    private static final String GATEWAY_LOGIN_ENDPOINT = "/api/v1/gateway/auth/login/";
 
     public static String getCookieForGateway() throws IOException {
+        AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
         Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
         String user = credentials.getUser();
         String password = credentials.getPassword();
-        URI uri = HttpRequestUtils.getUriFromGateway(GATEWAY_LOGIN_ENDPOINT);
+        URI uri = HttpRequestUtils.getUriFromGateway(authConfigurationProperties.getGatewayLoginEndpoint());
 
         return getCookie(uri, user, password);
     }
 
-    public static String getCookie(URI loginUrl, String user, String password) throws IOException {
+    private static String getCookie(URI loginUrl, String user, String password) throws IOException {
         HttpPost request = new HttpPost(loginUrl);
         HttpClient client = HttpClientUtils.client();
         String credentials = String.format("{\"username\":\"%s\", \"password\":\"%s\"}", user, password);

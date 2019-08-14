@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
@@ -56,12 +57,14 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
     /**
      * Constructor
      *
-     * @param discovery discovery client
+     * @param discovery               discovery client
      * @param gatewayConfigProperties gateway config properties
      */
     public PageRedirectionFilter(DiscoveryClient discovery, GatewayConfigProperties gatewayConfigProperties) {
         this.discovery = discovery;
-        transformService = new TransformService(gatewayConfigProperties);
+        transformService = new TransformService(
+            new GatewayClient(gatewayConfigProperties)
+        );
     }
 
     /**
@@ -194,7 +197,7 @@ public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesU
      * Replace Location header with transformed url
      *
      * @param locationHeader Location header
-     * @param transformedUrl  transformed url
+     * @param transformedUrl transformed url
      */
     private void transformLocation(Pair<String, String> locationHeader, String transformedUrl) {
         locationHeader.setSecond(transformedUrl);

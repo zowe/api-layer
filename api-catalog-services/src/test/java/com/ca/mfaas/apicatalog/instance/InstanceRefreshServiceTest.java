@@ -15,9 +15,12 @@ import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.apicatalog.util.ContainerServiceMockUtil;
 import com.ca.mfaas.apicatalog.util.ContainerServiceState;
+import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -40,6 +43,9 @@ public class InstanceRefreshServiceTest {
     private InstanceRefreshService instanceRefreshService;
 
     @Mock
+    private GatewayClient gatewayClient;
+
+    @Mock
     private CachedProductFamilyService cachedProductFamilyService;
 
     @Mock
@@ -47,6 +53,13 @@ public class InstanceRefreshServiceTest {
 
     @Mock
     private InstanceRetrievalService instanceRetrievalService;
+
+
+    @Before
+    public void setup() {
+        when(gatewayClient.isInitialized()).thenReturn(true);
+        addApiCatalogToCache();
+    }
 
     @Test
     public void testServiceAddedToDiscoveryThatIsNotInCache() {
@@ -164,5 +177,42 @@ public class InstanceRefreshServiceTest {
         verify(cachedServicesService, times(1)).updateService(modifiedInstanceOfService3.getAppName(), service3);
         verify(cachedProductFamilyService, times(1))
             .saveContainerFromInstance("api-three", modifiedInstanceOfService3);
+    }
+
+    @Test
+    public void testRefreshCacheFromDiscovery_whenGatewayClientIsNotInitialized() {
+        when(gatewayClient.isInitialized()).thenReturn(false);
+
+        instanceRefreshService.refreshCacheFromDiscovery();
+
+        verify(cachedServicesService, never())
+            .updateService(anyString(), any(Application.class));
+    }
+
+    @Test
+    public void testRefreshCacheFromDiscovery_whenApiCatalogIsNotInCache() {
+        when(cachedServicesService.getService(CoreService.API_CATALOG.getServiceId())).thenReturn(null);
+
+        instanceRefreshService.refreshCacheFromDiscovery();
+
+        verify(cachedServicesService, never())
+            .updateService(anyString(), any(Application.class));
+    }
+
+
+    private void addApiCatalogToCache() {
+        InstanceInfo apiCatalogInstance = containerServiceMockUtil.createInstance(
+            CoreService.API_CATALOG.getServiceId(),
+            "service:9999",
+            InstanceInfo.InstanceStatus.UP,
+            InstanceInfo.ActionType.ADDED,
+            new HashMap<>());
+
+        when(cachedServicesService.getService(CoreService.API_CATALOG.getServiceId()))
+            .thenReturn(
+                new Application(CoreService.API_CATALOG.getServiceId(),
+                    Collections.singletonList(apiCatalogInstance)
+                )
+            );
     }
 }

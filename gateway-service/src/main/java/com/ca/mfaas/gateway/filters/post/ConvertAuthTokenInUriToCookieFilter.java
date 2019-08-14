@@ -9,25 +9,25 @@
  */
 package com.ca.mfaas.gateway.filters.post;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.POST_TYPE;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SEND_RESPONSE_FILTER_ORDER;
 
 /**
  * Uses the authentication token provided as a query parameter and puts it to
  * the expected place (cookie).
  */
 public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
-    public ConvertAuthTokenInUriToCookieFilter(SecurityConfigurationProperties securityConfigurationProperties) {
-        this.securityConfigurationProperties = securityConfigurationProperties;
+    public ConvertAuthTokenInUriToCookieFilter(AuthConfigurationProperties authConfigurationProperties) {
+        this.authConfigurationProperties = authConfigurationProperties;
     }
 
     public String filterType() {
@@ -44,7 +44,7 @@ public class ConvertAuthTokenInUriToCookieFilter extends ZuulFilter {
 
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
-        SecurityConfigurationProperties.CookieProperties cp = securityConfigurationProperties.getCookieProperties();
+        AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
         if ((context.getRequestQueryParams() != null) && context.getRequestQueryParams().containsKey(cp.getCookieName())) {
             HttpServletResponse servletResponse = context.getResponse();
             Cookie cookie = new Cookie(cp.getCookieName(), context.getRequestQueryParams().get(cp.getCookieName()).get(0));

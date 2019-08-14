@@ -9,12 +9,10 @@
  */
 package com.ca.mfaas.gateway.routing;
 
-import com.ca.mfaas.product.utils.UrlUtils;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
-import com.ca.mfaas.product.constants.CoreService;
-
+import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -24,14 +22,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapp
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 
 @Slf4j
 class ApimlRouteLocator extends DiscoveryClientRouteLocator {
@@ -69,9 +60,6 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
 
             // Add routes for discovered services and itself by default
             List<String> services = this.discovery.getServices();
-            if (!services.contains(CoreService.GATEWAY.getServiceId())) {
-                services.add(CoreService.GATEWAY.getServiceId());
-            }
 
             String[] ignored = this.properties.getIgnoredServices()
                 .toArray(new String[0]);

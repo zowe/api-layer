@@ -17,25 +17,29 @@ import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.cloud.netflix.ribbon.RibbonClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
-@Configuration
+import javax.annotation.Nonnull;
+
 @EnableZuulProxy
 @EnableWebSecurity
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
-@EnableConfigurationProperties
-@ComponentScan(value = {"com.ca.mfaas.gateway", "com.ca.mfaas.product", "com.ca.mfaas.enable"}, excludeFilters = {
-    @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
+@ComponentScan(
+    value = {
+        "com.ca.mfaas.gateway",
+        "com.ca.mfaas.product",
+        "com.ca.mfaas.enable",
+        "com.ca.apiml.security.common"},
+    excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
 @EnableEurekaClient
 @EnableWebSocket
@@ -50,7 +54,7 @@ public class GatewayApplication implements ApplicationListener<ApplicationReadyE
     }
 
     @Override
-    public void onApplicationEvent(final ApplicationReadyEvent event) {
+    public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
         new ServiceStartupEventHandler().onServiceStartup("Gateway Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }

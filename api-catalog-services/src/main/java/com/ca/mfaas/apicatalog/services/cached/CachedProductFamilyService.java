@@ -9,12 +9,12 @@
  */
 package com.ca.mfaas.apicatalog.services.cached;
 
-import com.ca.mfaas.product.constants.CoreService;
-import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
+import com.ca.mfaas.product.constants.CoreService;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.routing.transform.TransformService;
@@ -29,7 +29,6 @@ import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -57,13 +56,13 @@ public class CachedProductFamilyService {
     private final TransformService transformService;
 
     @Autowired
-    public CachedProductFamilyService(@Lazy GatewayConfigProperties gatewayConfigProperties,
+    public CachedProductFamilyService(GatewayClient gatewayClient,
                                       CachedServicesService cachedServicesService,
                                       @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
                                           Integer cacheRefreshUpdateThresholdInMillis) {
         this.cachedServicesService = cachedServicesService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
-        this.transformService = new TransformService(gatewayConfigProperties);
+        this.transformService = new TransformService(gatewayClient);
     }
 
     /**
@@ -213,7 +212,7 @@ public class CachedProductFamilyService {
                     instanceHomePage,
                     routes);
             } catch (URLTransformationException e) {
-                log.warn("The home page URI was not transformed. {}",e.getMessage());
+                log.warn("The home page URI was not transformed. {}", e.getMessage());
             }
         }
 
@@ -344,6 +343,7 @@ public class CachedProductFamilyService {
 
         return container;
     }
+
     /**
      * Update the summary totals for a container based on it's running services
      *

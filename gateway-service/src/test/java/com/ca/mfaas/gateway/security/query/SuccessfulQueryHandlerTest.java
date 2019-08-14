@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
 import com.ca.mfaas.security.SecurityUtils;
@@ -51,7 +51,7 @@ public class SuccessfulQueryHandlerTest {
     public void setup() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
-        SecurityConfigurationProperties securityConfigurationProperties = new SecurityConfigurationProperties();
+        AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
         SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
@@ -61,7 +61,7 @@ public class SuccessfulQueryHandlerTest {
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
         }
-        AuthenticationService authenticationService = new AuthenticationService(securityConfigurationProperties, jwtSecurityInitializer);
+        AuthenticationService authenticationService = new AuthenticationService(authConfigurationProperties, jwtSecurityInitializer);
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
         when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);

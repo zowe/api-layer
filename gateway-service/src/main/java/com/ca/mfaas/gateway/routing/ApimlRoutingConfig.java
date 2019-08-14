@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.routing;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import com.ca.mfaas.gateway.filters.post.PageRedirectionFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
@@ -57,8 +57,8 @@ public class ApimlRoutingConfig {
 
     @Bean
     @Autowired
-    public ConvertAuthTokenInUriToCookieFilter convertAuthTokenInUriToCookieFilter(SecurityConfigurationProperties securityConfigurationProperties) {
-        return new ConvertAuthTokenInUriToCookieFilter(securityConfigurationProperties);
+    public ConvertAuthTokenInUriToCookieFilter convertAuthTokenInUriToCookieFilter(AuthConfigurationProperties authConfigurationProperties) {
+        return new ConvertAuthTokenInUriToCookieFilter(authConfigurationProperties);
     }
 
     @Bean

@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.gateway.security.query;
 
-import com.ca.apiml.security.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.token.TokenNotProvidedException;
+import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,8 +22,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+
 import javax.ws.rs.HttpMethod;
 import java.util.Optional;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

@@ -10,7 +10,7 @@
 
 package com.ca.mfaas.gateway.security.token;
 
-import com.ca.apiml.security.token.TokenAuthentication;
+import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.query.TokenAuthenticationProvider;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;
@@ -19,9 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.health;
 
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.product.constants.CoreService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
 @RequiredArgsConstructor
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
@@ -41,9 +41,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         boolean discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
 
         boolean authUp = true;
-        if (!securityConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.DUMMY.toString())) {
+        if (!authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.DUMMY.toString())) {
             try {
-                authUp = !this.discoveryClient.getInstances(securityConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+                authUp = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
             } catch (AuthenticationServiceException ex) {
                 System.exit(-1);
             }

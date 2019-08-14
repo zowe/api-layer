@@ -9,18 +9,17 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
-import com.ca.apiml.security.config.HandlerInitializer;
-import com.ca.apiml.security.config.SecurityConfigurationProperties;
-import com.ca.apiml.security.content.BasicContentFilter;
-import com.ca.apiml.security.content.CookieContentFilter;
-import com.ca.apiml.security.login.LoginFilter;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.HandlerInitializer;
+import com.ca.apiml.security.common.content.BasicContentFilter;
+import com.ca.apiml.security.common.content.CookieContentFilter;
+import com.ca.apiml.security.common.login.LoginFilter;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -40,7 +39,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@ComponentScan("com.ca.apiml.security")
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
@@ -50,7 +48,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
-    private final SecurityConfigurationProperties securityConfigurationProperties;
+    private final AuthConfigurationProperties authConfigurationProperties;
     private final HandlerInitializer handlerInitializer;
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final AuthProviderInitializer authProviderInitializer;
@@ -77,7 +75,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // login endpoint
             .and()
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, securityConfigurationProperties.getGatewayLoginPath()).permitAll()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
 
             // endpoint protection
             .and()
@@ -87,8 +85,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login + query
             .and()
-            .addFilterBefore(loginFilter(securityConfigurationProperties.getGatewayLoginPath()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(queryFilter(securityConfigurationProperties.getGatewayQueryPath()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
@@ -133,6 +131,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * Secures content with a token stored in a cookie
      */
     private CookieContentFilter cookieFilter() throws Exception {
-        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties, PROTECTED_ENDPOINTS);
+        return new CookieContentFilter(
+            authenticationManager(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            authConfigurationProperties,
+            PROTECTED_ENDPOINTS);
     }
 }
