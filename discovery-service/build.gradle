@@ -33,6 +33,7 @@ gitProperties {
 
 dependencies {
     compile(project(':apiml-common'))
+    compile(project(':security-service-client-spring'))
 
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_security

@@ -27,7 +27,9 @@ import javax.annotation.Nonnull;
 @ComponentScan({
     "com.ca.mfaas.discovery",
     "com.ca.mfaas.product.security",
-    "com.ca.mfaas.product.web"
+    "com.ca.mfaas.product.web",
+    //TODO evaluate these for the @EnableApimlAuth
+    "com.ca.mfaas.product.gateway"
 })
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
 
