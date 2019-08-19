@@ -30,40 +30,40 @@ public class MetadataTranslationService {
     private void translateV1toV2(Map<String, String> metadata) {
         // Routing
         Map<String, String> newRoutes = metadata.entrySet().stream()
-            .filter(entry -> entry.getKey().contains(V1_ROUTES))
+            .filter(entry -> entry.getKey().contains(ROUTES_V1))
             .collect(Collectors.toMap(entry -> entry.getKey()
-                    .replace(V1_ROUTES, ROUTES)
-                    .replace(V1_ROUTES_GATEWAY_URL, ROUTES_GATEWAY_URL)
-                    .replace(V1_ROUTES_SERVICE_URL, ROUTES_SERVICE_URL),
+                    .replace(ROUTES_V1, ROUTES)
+                    .replace(ROUTES_GATEWAY_URL_V1, ROUTES_GATEWAY_URL)
+                    .replace(ROUTES_SERVICE_URL_V1, ROUTES_SERVICE_URL),
                 Map.Entry::getValue));
         metadata.putAll(newRoutes);
-        metadata.keySet().removeIf(key -> key.contains(V1_ROUTES));
+        metadata.keySet().removeIf(key -> key.contains(ROUTES_V1));
 
         // Catalog
-        translateParameter(V1_CATALOG_ID, CATALOG_ID, metadata);
-        translateParameter(V1_CATALOG_VERSION, CATALOG_VERSION, metadata);
-        translateParameter(V1_CATALOG_TITLE, CATALOG_TITLE, metadata);
-        translateParameter(V1_CATALOG_DESCRIPTION, CATALOG_DESCRIPTION, metadata);
+        translateParameter(CATALOG_ID_V1, CATALOG_ID, metadata);
+        translateParameter(CATALOG_VERSION_V1, CATALOG_VERSION, metadata);
+        translateParameter(CATALOG_TITLE_V1, CATALOG_TITLE, metadata);
+        translateParameter(CATALOG_DESCRIPTION_V1, CATALOG_DESCRIPTION, metadata);
 
         // Service
-        translateParameter(V1_SERVICE_TITLE, SERVICE_TITLE, metadata);
-        translateParameter(V1_SERVICE_DESCRIPTION, SERVICE_DESCRIPTION, metadata);
+        translateParameter(SERVICE_TITLE_V1, SERVICE_TITLE, metadata);
+        translateParameter(SERVICE_DESCRIPTION_V1, SERVICE_DESCRIPTION, metadata);
 
         // Apis
         Map<String, String> newApis = metadata.entrySet().stream()
-            .filter(entry -> entry.getKey().contains(V1_APIS))
-            .collect(Collectors.toMap(entry -> entry.getKey().replace(V1_APIS, APIS), Map.Entry::getValue));
+            .filter(entry -> entry.getKey().contains(APIS_V1))
+            .collect(Collectors.toMap(entry -> entry.getKey().replace(APIS_V1, APIS), Map.Entry::getValue));
         metadata.putAll(newApis);
-        metadata.keySet().removeIf(key -> key.contains(V1_APIS));
+        metadata.keySet().removeIf(key -> key.contains(APIS_V1));
 
         // Api-info
-        metadata.remove(V1_API_INFO_BASE_PACKAGE);
-        metadata.remove(V1_API_INFO_TITLE);
-        metadata.remove(V1_API_INFO_VERSION);
-        metadata.remove(V1_API_INFO_DESCRIPTION);
+        metadata.remove(API_INFO_BASE_PACKAGE_V1);
+        metadata.remove(API_INFO_TITLE_V1);
+        metadata.remove(API_INFO_VERSION_V1);
+        metadata.remove(API_INFO_DESCRIPTION_V1);
 
         // Other
-        metadata.remove(V1_ENABLE_APIDOC);
+        metadata.remove(ENABLE_APIDOC_V1);
     }
 
     private void translateParameter(String oldParameter, String newParameter, Map<String, String> metadata) {
