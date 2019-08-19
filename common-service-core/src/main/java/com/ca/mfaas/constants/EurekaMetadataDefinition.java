@@ -39,23 +39,23 @@ public final class EurekaMetadataDefinition {
     public static final String APIS_DOCUMENTATION_URL = "documentationUrl";
 
     //v1
-    public static final String V1_ROUTES = "routed-services";
-    public static final String V1_ROUTES_GATEWAY_URL = "gateway-url";
-    public static final String V1_ROUTES_SERVICE_URL = "service-url";
+    public static final String ROUTES_V1 = "routed-services";
+    public static final String ROUTES_GATEWAY_URL_V1 = "gateway-url";
+    public static final String ROUTES_SERVICE_URL_V1 = "service-url";
 
-    public static final String V1_CATALOG_ID = "mfaas.discovery.catalogUiTile.id";
-    public static final String V1_CATALOG_VERSION = "mfaas.discovery.catalogUiTile.version";
-    public static final String V1_CATALOG_TITLE = "mfaas.discovery.catalogUiTile.title";
-    public static final String V1_CATALOG_DESCRIPTION = "mfaas.discovery.catalogUiTile.description";
+    public static final String CATALOG_ID_V1 = "mfaas.discovery.catalogUiTile.id";
+    public static final String CATALOG_VERSION_V1 = "mfaas.discovery.catalogUiTile.version";
+    public static final String CATALOG_TITLE_V1 = "mfaas.discovery.catalogUiTile.title";
+    public static final String CATALOG_DESCRIPTION_V1 = "mfaas.discovery.catalogUiTile.description";
 
-    public static final String V1_SERVICE_TITLE = "mfaas.discovery.service.title";
-    public static final String V1_SERVICE_DESCRIPTION = "mfaas.discovery.service.description";
-    public static final String V1_ENABLE_APIDOC = "mfaas.discovery.enableApiDoc";
+    public static final String SERVICE_TITLE_V1 = "mfaas.discovery.service.title";
+    public static final String SERVICE_DESCRIPTION_V1 = "mfaas.discovery.service.description";
+    public static final String ENABLE_APIDOC_V1 = "mfaas.discovery.enableApiDoc";
 
-    public static final String V1_APIS = "apiml.apiInfo";
+    public static final String APIS_V1 = "apiml.apiInfo";
 
-    public static final String V1_API_INFO_BASE_PACKAGE = "mfaas.api-info.apiVersionProperties.v1.basePackage";
-    public static final String V1_API_INFO_TITLE = "mfaas.api-info.apiVersionProperties.v1.title";
-    public static final String V1_API_INFO_VERSION = "mfaas.api-info.apiVersionProperties.v1.version";
-    public static final String V1_API_INFO_DESCRIPTION = "mfaas.api-info.apiVersionProperties.v1.description";
+    public static final String API_INFO_BASE_PACKAGE_V1 = "mfaas.api-info.apiVersionProperties.v1.basePackage";
+    public static final String API_INFO_TITLE_V1 = "mfaas.api-info.apiVersionProperties.v1.title";
+    public static final String API_INFO_VERSION_V1 = "mfaas.api-info.apiVersionProperties.v1.version";
+    public static final String API_INFO_DESCRIPTION_V1 = "mfaas.api-info.apiVersionProperties.v1.description";
 }
