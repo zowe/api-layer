@@ -30,8 +30,8 @@ import static springfox.documentation.builders.PathSelectors.regex;
 
 @SuppressWarnings("Duplicates")
 @Slf4j
-@ConditionalOnProperty(prefix = "eureka.instance.metadata.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
-@ConditionalOnMissingProperty("eureka.instance.metadata.mfaas.api-info.swagger.location")
+@ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
+@ConditionalOnMissingProperty("eureka.instance.metadata-map.mfaas.api-info.swagger.location")
 @Configuration
 @EnableSwagger2
 public class EnablerV1SpringFoxConfig {

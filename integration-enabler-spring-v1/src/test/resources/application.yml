@@ -49,7 +49,7 @@ eureka:
         statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
         healthCheckUrlPath: ${mfaas.discovery.endpoints.healthPage}
         homePageUrlPath: ${mfaas.discovery.endpoints.homePage}
-        metadata:
+        metadata-map:
             routes:
                 api_v1:
                     gatewayUrl: "api/v1"

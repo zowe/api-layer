@@ -108,7 +108,7 @@ eureka:
         securePort: ${mfaas.server.port}
         nonSecurePortEnabled: ${mfaas.discovery.nonSecurePortEnabled}
         securePortEnabled: ${mfaas.discovery.securePortEnabled}
-        metadata:
+        metadata-map:
             routes:
                 ui_v1:
                     gatewayUrl: "ui/v1"

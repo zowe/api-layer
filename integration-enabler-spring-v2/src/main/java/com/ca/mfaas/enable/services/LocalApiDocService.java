@@ -24,8 +24,8 @@ import springfox.documentation.swagger2.mappers.ServiceModelToSwagger2Mapper;
 import java.util.*;
 
 @Service
-@ConditionalOnProperty(prefix = "eureka.instance.metadata.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
-@ConditionalOnMissingProperty("eureka.instance.metadata.mfaas.api-info.swagger.location")
+@ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
+@ConditionalOnMissingProperty("eureka.instance.metadata-map.mfaas.api-info.swagger.location")
 public class LocalApiDocService {
 
     private final DocumentationCache documentationCache;

@@ -10,7 +10,7 @@ Example:
 
     eureka:
         instance:
-            metadata:
+            metadata-map:
                 routes:
                     ws_v1:
                         gatewayUrl: "ws/v1"

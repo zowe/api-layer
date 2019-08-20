@@ -52,8 +52,8 @@ public class ApiDocController {
      */
     @Autowired
     public ApiDocController(
-        @Value("${eureka.instance.metadata.mfaas.discovery.enableApiDoc:true}") boolean apiDocEnabled,
-        @Value("${eureka.instance.metadata.mfaas.api-info.swagger.location:}") String swaggerLocation,
+        @Value("${eureka.instance.metadata-map.mfaas.discovery.enableApiDoc:true}") boolean apiDocEnabled,
+        @Value("${eureka.instance.metadata-map.mfaas.api-info.swagger.location:}") String swaggerLocation,
         @Autowired(required = false) LocalApiDocService localApiDocService) {
         this.apiDocEnabled = apiDocEnabled;
         this.localApiDocService = localApiDocService;

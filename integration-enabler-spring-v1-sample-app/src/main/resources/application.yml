@@ -49,7 +49,7 @@ eureka:
         statusPageUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/info
         healthCheckUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/health
         homePageUrl:
-        metadata:
+        metadata-map:
             routes:
                 api_v1:
                     gatewayUrl: "api/v1"

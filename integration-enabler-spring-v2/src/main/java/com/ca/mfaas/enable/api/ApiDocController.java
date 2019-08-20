@@ -39,7 +39,7 @@ import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 @Slf4j
 @RestController
 @RequestMapping("/")
-@ConditionalOnProperty(prefix = "eureka.instance.metadata.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
 public class ApiDocController {
 
     private final boolean apiDocEnabled;
@@ -55,8 +55,8 @@ public class ApiDocController {
      */
     @Autowired
     public ApiDocController(
-        @Value("${eureka.instance.metadata.mfaas.discovery.enableApiDoc:true}") boolean apiDocEnabled,
-        @Value("${eureka.instance.metadata.mfaas.api-info.swagger.location:}") String swaggerLocation,
+        @Value("${eureka.instance.metadata-map.mfaas.discovery.enableApiDoc:true}") boolean apiDocEnabled,
+        @Value("${eureka.instance.metadata-map.mfaas.api-info.swagger.location:}") String swaggerLocation,
         @Nullable LocalApiDocService localApiDocService)  {
         this.apiDocEnabled = apiDocEnabled;
         this.swaggerLocation = swaggerLocation;
