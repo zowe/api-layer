@@ -29,15 +29,7 @@ public class MetadataTranslationService {
 
     private void translateV1toV2(Map<String, String> metadata) {
         // Routing
-        Map<String, String> newRoutes = metadata.entrySet().stream()
-            .filter(entry -> entry.getKey().contains(ROUTES_V1))
-            .collect(Collectors.toMap(entry -> entry.getKey()
-                    .replace(ROUTES_V1, ROUTES)
-                    .replace(ROUTES_GATEWAY_URL_V1, ROUTES_GATEWAY_URL)
-                    .replace(ROUTES_SERVICE_URL_V1, ROUTES_SERVICE_URL),
-                Map.Entry::getValue));
-        metadata.putAll(newRoutes);
-        metadata.keySet().removeIf(key -> key.contains(ROUTES_V1));
+        translateRoutes(metadata);
 
         // Catalog
         translateParameter(CATALOG_ID_V1, CATALOG_ID, metadata);
@@ -50,11 +42,7 @@ public class MetadataTranslationService {
         translateParameter(SERVICE_DESCRIPTION_V1, SERVICE_DESCRIPTION, metadata);
 
         // Apis
-        Map<String, String> newApis = metadata.entrySet().stream()
-            .filter(entry -> entry.getKey().contains(APIS_V1))
-            .collect(Collectors.toMap(entry -> entry.getKey().replace(APIS_V1, APIS), Map.Entry::getValue));
-        metadata.putAll(newApis);
-        metadata.keySet().removeIf(key -> key.contains(APIS_V1));
+        translateApis(metadata);
 
         // Api-info
         metadata.remove(API_INFO_BASE_PACKAGE_V1);
@@ -64,6 +52,41 @@ public class MetadataTranslationService {
 
         // Other
         metadata.remove(ENABLE_APIDOC_V1);
+    }
+
+    private void translateRoutes(Map<String, String> metadata) {
+        Map<String, String> newRoutes = metadata.entrySet().stream()
+            .filter(
+                entry -> entry.getKey().contains(ROUTES_V1)
+            )
+            .collect(
+                Collectors.toMap(this::translateRouteMapKey, Map.Entry::getValue)
+            );
+
+        metadata.putAll(newRoutes);
+        metadata.keySet().removeIf(key -> key.contains(ROUTES_V1));
+    }
+
+    private String translateRouteMapKey(Map.Entry<String, String> map) {
+        return map.getKey()
+            .replace(ROUTES_V1, ROUTES)
+            .replace(ROUTES_GATEWAY_URL_V1, ROUTES_GATEWAY_URL)
+            .replace(ROUTES_SERVICE_URL_V1, ROUTES_SERVICE_URL);
+    }
+
+    private void translateApis(Map<String, String> metadata) {
+        Map<String, String> newApis = metadata.entrySet().stream()
+            .filter(
+                entry -> entry.getKey().contains(APIS_V1)
+            )
+            .collect(
+                Collectors.toMap(
+                    entry -> entry.getKey().replace(APIS_V1, APIS),
+                    Map.Entry::getValue)
+            );
+
+        metadata.putAll(newApis);
+        metadata.keySet().removeIf(key -> key.contains(APIS_V1));
     }
 
     private void translateParameter(String oldParameter, String newParameter, Map<String, String> metadata) {
