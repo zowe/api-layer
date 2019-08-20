@@ -9,56 +9,77 @@
  */
 package com.ca.mfaas.discovery.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ca.apiml.security.client.EnableApimlAuth;
+import com.ca.apiml.security.client.login.GatewayLoginProvider;
+import com.ca.apiml.security.client.token.GatewayTokenProvider;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.apiml.security.common.config.HandlerInitializer;
+import com.ca.apiml.security.common.content.BasicContentFilter;
+import com.ca.apiml.security.common.content.CookieContentFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
+@EnableApimlAuth
 @Order(1)
-@Profile("!https")
 public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
-    @Value("${apiml.service.id:#{null}}")
-    private String serviceId;
-
-    @Value("${apiml.discovery.userid:eureka}")
-    private String eurekaUserid;
-
-    @Value("${apiml.discovery.password:password}")
-    private String eurekaPassword;
+    private final HandlerInitializer handlerInitializer;
+    private final AuthConfigurationProperties securityConfigurationProperties;
+    private final GatewayLoginProvider gatewayLoginProvider;
+    private final GatewayTokenProvider gatewayTokenProvider;
+    private final Environment environment;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
-    @Autowired
-    private Environment environment;
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) {
+        auth.authenticationProvider(gatewayLoginProvider);
+        auth.authenticationProvider(gatewayTokenProvider);
+    }
 
-    @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication().withUser(eurekaUserid).password("{noop}" + eurekaPassword).roles("EUREKA");
+    @Override
+    public void configure(WebSecurity web) {
+        // skip security filters matchers
+        String[] noSecurityAntMatchers = {
+            "/static/**",
+            "/favicon.ico"
+        };
+        web.ignoring().antMatchers(noSecurityAntMatchers);
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-            http.csrf().disable()
-            .headers().httpStrictTransportSecurity().disable().and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        http.csrf().disable()
+            .headers().httpStrictTransportSecurity().disable()
+            .and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
+            .and()
+            .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
+            .authorizeRequests()
+
+            .anyRequest().authenticated();
 
         if (Arrays.asList(environment.getActiveProfiles()).contains("https")) {
             if (verifySslCertificatesOfServices) {
@@ -74,5 +95,19 @@ public class EurekaSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     public UserDetailsService x509UserDetailsService() {
         return username -> new User("eurekaClient", "", Collections.emptyList());
+    }
+
+    /**
+     * Secures content with a basic authentication
+     */
+    private BasicContentFilter basicFilter() throws Exception {
+        return new BasicContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
+    }
+
+    /**
+     * Secures content with a token stored in a cookie
+     */
+    private CookieContentFilter cookieFilter() throws Exception {
+        return new CookieContentFilter(authenticationManager(), handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties);
     }
 }
