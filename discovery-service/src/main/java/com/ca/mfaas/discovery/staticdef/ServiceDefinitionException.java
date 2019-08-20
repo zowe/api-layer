@@ -16,12 +16,4 @@ public class ServiceDefinitionException extends Exception {
     public ServiceDefinitionException(String message) {
         super(message);
     }
-
-    public ServiceDefinitionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ServiceDefinitionException(Throwable cause) {
-        super(cause);
-    }
 }

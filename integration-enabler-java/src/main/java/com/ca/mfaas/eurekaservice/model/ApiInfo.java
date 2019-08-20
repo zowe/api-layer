@@ -20,6 +20,7 @@ import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
@@ -47,41 +48,54 @@ public class ApiInfo {
      */
     public Map<String, String> generateMetadata(String serviceId) {
         Map<String, String> metadata = new HashMap<>();
-        String encodedGatewayUrl;
+        String encodedGatewayUrl = getEncodedGatewayUrl(gatewayUrl);
 
         if (gatewayUrl != null) {
-            encodedGatewayUrl = gatewayUrl.replaceAll("\\W", "-");
-            metadata.put(String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, APIS_GATEWAY_URL), gatewayUrl);
-        } else {
-            encodedGatewayUrl = RandomStringUtils.randomAlphanumeric(10);
+            metadata.put(createMetadataKey(encodedGatewayUrl, APIS_GATEWAY_URL), gatewayUrl);
         }
 
         if (version != null) {
-            metadata.put(String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, APIS_VERSION), version);
+            metadata.put(createMetadataKey(encodedGatewayUrl, APIS_VERSION), version);
         }
 
         if (swaggerUrl != null) {
-            try {
-                new URL(swaggerUrl);
-            } catch (MalformedURLException e) {
-                throw new InvalidParameterException(
-                    String.format("The Swagger URL \"%s\" for service %s is not valid: %s",
-                        swaggerUrl, serviceId, e.getMessage()));
-            }
-            metadata.put(String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, APIS_SWAGGER_URL), swaggerUrl);
+            validateUrl(swaggerUrl,
+                () -> String.format("The Swagger URL \"%s\" for service %s is not valid", swaggerUrl, serviceId)
+            );
+
+            metadata.put(createMetadataKey(encodedGatewayUrl, APIS_SWAGGER_URL), swaggerUrl);
         }
 
         if (documentationUrl != null) {
-            try {
-                new URL(documentationUrl);
-            } catch (MalformedURLException e) {
-                throw new InvalidParameterException(
-                    String.format("The documentation URL \"%s\" for service %s is not valid: %s",
-                        documentationUrl, serviceId, e.getMessage()));
-            }
-            metadata.put(String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, APIS_DOCUMENTATION_URL), documentationUrl);
+            validateUrl(documentationUrl,
+                () -> String.format("The documentation URL \"%s\" for service %s is not valid", documentationUrl, serviceId)
+            );
+
+            metadata.put(createMetadataKey(encodedGatewayUrl, APIS_DOCUMENTATION_URL), documentationUrl);
         }
 
         return metadata;
     }
+
+    private String createMetadataKey(String encodedGatewayUrl, String url) {
+        return String.format(METADATA_FORMAT, APIS, encodedGatewayUrl, url);
+    }
+
+    private String getEncodedGatewayUrl(String gatewayUrl) {
+        if (gatewayUrl != null) {
+            return gatewayUrl.replaceAll("\\W", "-");
+        } else {
+            return RandomStringUtils.randomAlphanumeric(10);
+        }
+    }
+
+    private void validateUrl(String url, Supplier<String> exceptionSupplier) {
+        try {
+            new URL(url);
+        } catch (MalformedURLException e) {
+            throw new InvalidParameterException(exceptionSupplier.get() + ": " + e.getMessage());
+        }
+    }
+
+    //TODO: move methods to EurekaMetadataParser
 }
