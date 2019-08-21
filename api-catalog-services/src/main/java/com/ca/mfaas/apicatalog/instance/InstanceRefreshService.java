@@ -169,7 +169,7 @@ public class InstanceRefreshService {
 
         if (!InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             // update any containers which contain this service
-            updateContainer(containersUpdated, instance.getAppName(), instance);
+            updateContainer(containersUpdated, instance);
         }
 
         // Update the service cache
@@ -190,13 +190,12 @@ public class InstanceRefreshService {
      * Update the container
      *
      * @param containersUpdated what containers were updated
-     * @param serviceId         the service
      * @param instanceInfo      the instance
      */
-    private void updateContainer(Set<String> containersUpdated, String serviceId, InstanceInfo instanceInfo) {
+    private void updateContainer(Set<String> containersUpdated, InstanceInfo instanceInfo) {
         String productFamilyId = instanceInfo.getMetadata().get(CATALOG_ID);
         if (productFamilyId == null) {
-            log.warn("Cannot create a tile without a parent id, the metadata for service: " + serviceId +
+            log.warn("Cannot create a tile without a parent id, the metadata for service: " + instanceInfo.getAppName() +
                 " must contain an entry for {}", CATALOG_ID);
         } else {
             APIContainer container = cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);
