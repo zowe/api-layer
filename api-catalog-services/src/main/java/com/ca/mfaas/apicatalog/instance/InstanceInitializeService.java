@@ -28,6 +28,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
@@ -85,53 +86,30 @@ public class InstanceInitializeService {
     }
 
     /**
-     * Only include services for caching if they have API doc enabled in their metadata
-     *
-     * @param discoveredServices all discovered services
-     * @return only API Doc enabled services
-     */
-    private Applications filterByApiEnabled(Applications discoveredServices) {
-        Applications filteredServices = new Applications();
-        for (Application application : discoveredServices.getRegisteredApplications()) {
-            if (!application.getInstances().isEmpty()) {
-                processInstance(filteredServices, application);
-            }
-        }
-
-        return filteredServices;
-    }
-
-    private void processInstance(Applications filteredServices, Application application) {
-        if (filteredServices == null) {
-            filteredServices = new Applications();
-        }
-        filteredServices.addApplication(application);
-    }
-
-    /**
      * Query the discovery service for all running instances
      */
     private void updateCacheWithAllInstances() {
-        Applications allServices = instanceRetrievalService.getAllInstancesFromDiscovery(false);
+        Applications discoveryApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
 
-        // Only include services which have API doc enabled
-        allServices = filterByApiEnabled(allServices);
+        // Only include services which have a instances
+        List<Application> listApplication = discoveryApplications.getRegisteredApplications()
+            .stream()
+            .filter(application -> !application.getInstances().isEmpty())
+            .collect(Collectors.toList());
 
         // Return an empty string if no services are found after filtering
-        if (allServices.getRegisteredApplications().isEmpty()) {
+        if (listApplication.isEmpty()) {
             log.info("No services found");
             return;
         }
 
-        log.debug("Found: " + allServices.size() + " services on startup.");
-        String s = allServices.getRegisteredApplications().stream()
+        log.debug("Found: " + listApplication.size() + " services on startup.");
+        String s = listApplication.stream()
             .map(Application::getName).collect(Collectors.joining(", "));
         log.debug("Discovered Services: " + s);
 
         // create containers for services
-        for (Application application : allServices.getRegisteredApplications()) {
-            createContainers(application);
-        }
+        listApplication.forEach(this::createContainers);
 
         // populate the cache
         Collection<APIContainer> containers = cachedProductFamilyService.getAllContainers();
