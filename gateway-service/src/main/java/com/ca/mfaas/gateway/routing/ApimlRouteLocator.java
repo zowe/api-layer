@@ -143,18 +143,18 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
 
             for (Map.Entry<String, String> metadata : metadataMap.entrySet()) {
                 String[] url = metadata.getKey().split("\\.");
-                if (url.length == 3 && url[0].equals(ROUTES)) {
+                if (url.length == 4 && metadata.getKey().startsWith(ROUTES)) {
 
-                    if (url[2].equals(ROUTES_GATEWAY_URL)) {
+                    if (url[3].equals(ROUTES_GATEWAY_URL)) {
                         String gatewayURL = UrlUtils.removeFirstAndLastSlash(metadata.getValue());
-                        routeMap.put(url[1], gatewayURL);
+                        routeMap.put(url[2], gatewayURL);
                         keys.add("/" + gatewayURL + "/" + mapRouteToService(serviceId) + "/**");
                     }
 
-                    if (url[2].equals(ROUTES_SERVICE_URL) && routeMap.containsKey(url[1])) {
+                    if (url[3].equals(ROUTES_SERVICE_URL) && routeMap.containsKey(url[2])) {
                         String serviceURL = UrlUtils.addFirstSlash(metadata.getValue());
-                        routes.addRoutedService(new RoutedService(url[1], routeMap.get(url[1]), serviceURL));
-                        routeMap.remove(url[1]);
+                        routes.addRoutedService(new RoutedService(url[2], routeMap.get(url[2]), serviceURL));
+                        routeMap.remove(url[2]);
                     }
                 }
             }
