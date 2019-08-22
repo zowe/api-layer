@@ -41,14 +41,11 @@ public class MetadataTranslationService {
         translateParameter(SERVICE_TITLE_V1, SERVICE_TITLE, metadata);
         translateParameter(SERVICE_DESCRIPTION_V1, SERVICE_DESCRIPTION, metadata);
 
-        // Apis
-        translateApis(metadata);
-
-        // Api-info
-        metadata.remove(API_INFO_BASE_PACKAGE_V1);
-        metadata.remove(API_INFO_TITLE_V1);
-        metadata.remove(API_INFO_VERSION_V1);
-        metadata.remove(API_INFO_DESCRIPTION_V1);
+        // Api-version
+        metadata.remove(API_VERSION_PROPERTIES_BASE_PACKAGE_V1);
+        metadata.remove(API_VERSION_PROPERTIES_TITLE_V1);
+        metadata.remove(API_VERSION_PROPERTIES_VERSION_V1);
+        metadata.remove(API_VERSION_PROPERTIES_DESCRIPTION_V1);
 
         // Other
         metadata.remove(ENABLE_APIDOC_V1);
@@ -72,21 +69,6 @@ public class MetadataTranslationService {
             .replace(ROUTES_V1, ROUTES)
             .replace(ROUTES_GATEWAY_URL_V1, ROUTES_GATEWAY_URL)
             .replace(ROUTES_SERVICE_URL_V1, ROUTES_SERVICE_URL);
-    }
-
-    private void translateApis(Map<String, String> metadata) {
-        Map<String, String> newApis = metadata.entrySet().stream()
-            .filter(
-                entry -> entry.getKey().contains(APIS_V1)
-            )
-            .collect(
-                Collectors.toMap(
-                    entry -> entry.getKey().replace(APIS_V1, APIS),
-                    Map.Entry::getValue)
-            );
-
-        metadata.putAll(newApis);
-        metadata.keySet().removeIf(key -> key.contains(APIS_V1));
     }
 
     private void translateParameter(String oldParameter, String newParameter, Map<String, String> metadata) {

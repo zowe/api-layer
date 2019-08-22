@@ -30,8 +30,8 @@ public class SubstituteSwaggerGeneratorTest {
         String gatewayHost = "localhost:8080";
 
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(APIS + ".1." + APIS_GATEWAY_URL, "api/v1");
-        metadata.put(APIS + ".1." + APIS_DOCUMENTATION_URL, "https://doc.ca.com/api");
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "api/v1");
+        metadata.put(API_INFO + ".1." + API_INFO_DOCUMENTATION_URL, "https://doc.ca.com/api");
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
 

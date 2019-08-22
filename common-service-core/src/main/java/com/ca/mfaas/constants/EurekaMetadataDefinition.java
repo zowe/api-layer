@@ -19,24 +19,24 @@ public final class EurekaMetadataDefinition {
 
     //v2
     public static final String VERSION = "version";
-    public static final String ROUTES = "routes";
+    public static final String ROUTES = "apiml.routes";
     public static final String ROUTES_GATEWAY_URL = "gatewayUrl";
     public static final String ROUTES_SERVICE_URL = "serviceUrl";
 
-    public static final String CATALOG_ID = "catalog.id";
-    public static final String CATALOG_VERSION = "catalog.version";
-    public static final String CATALOG_TITLE = "catalog.title";
-    public static final String CATALOG_DESCRIPTION = "catalog.description";
+    public static final String CATALOG_ID = "apiml.catalog.tile.id";
+    public static final String CATALOG_VERSION = "apiml.catalog.tile.version";
+    public static final String CATALOG_TITLE = "apiml.catalog.tile.title";
+    public static final String CATALOG_DESCRIPTION = "apiml.catalog.tile.description";
 
-    public static final String SERVICE_TITLE = "service.title";
-    public static final String SERVICE_DESCRIPTION = "service.description";
+    public static final String SERVICE_TITLE = "apiml.service.title";
+    public static final String SERVICE_DESCRIPTION = "apiml.service.description";
 
-    public static final String APIS = "apis";
-    public static final String APIS_API_ID = "apiId";
-    public static final String APIS_GATEWAY_URL = "gatewayUrl";
-    public static final String APIS_VERSION = "version";
-    public static final String APIS_SWAGGER_URL = "swaggerUrl";
-    public static final String APIS_DOCUMENTATION_URL = "documentationUrl";
+    public static final String API_INFO = "apiml.apiInfo";
+    public static final String API_INFO_API_ID = "apiId";
+    public static final String API_INFO_GATEWAY_URL = "gatewayUrl";
+    public static final String API_INFO_VERSION = "version";
+    public static final String API_INFO_SWAGGER_URL = "swaggerUrl";
+    public static final String API_INFO_DOCUMENTATION_URL = "documentationUrl";
 
     //v1
     public static final String ROUTES_V1 = "routed-services";
@@ -52,10 +52,8 @@ public final class EurekaMetadataDefinition {
     public static final String SERVICE_DESCRIPTION_V1 = "mfaas.discovery.service.description";
     public static final String ENABLE_APIDOC_V1 = "mfaas.discovery.enableApiDoc";
 
-    public static final String APIS_V1 = "apiml.apiInfo";
-
-    public static final String API_INFO_BASE_PACKAGE_V1 = "mfaas.api-info.apiVersionProperties.v1.basePackage";
-    public static final String API_INFO_TITLE_V1 = "mfaas.api-info.apiVersionProperties.v1.title";
-    public static final String API_INFO_VERSION_V1 = "mfaas.api-info.apiVersionProperties.v1.version";
-    public static final String API_INFO_DESCRIPTION_V1 = "mfaas.api-info.apiVersionProperties.v1.description";
+    public static final String API_VERSION_PROPERTIES_BASE_PACKAGE_V1 = "mfaas.api-info.apiVersionProperties.v1.basePackage";
+    public static final String API_VERSION_PROPERTIES_TITLE_V1 = "mfaas.api-info.apiVersionProperties.v1.title";
+    public static final String API_VERSION_PROPERTIES_VERSION_V1 = "mfaas.api-info.apiVersionProperties.v1.version";
+    public static final String API_VERSION_PROPERTIES_DESCRIPTION_V1 = "mfaas.api-info.apiVersionProperties.v1.description";
 }

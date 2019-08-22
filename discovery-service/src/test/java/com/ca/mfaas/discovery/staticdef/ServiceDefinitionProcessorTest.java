@@ -402,10 +402,10 @@ public class ServiceDefinitionProcessorTest {
         assertEquals("/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_SERVICE_URL));
         assertEquals("static", instances.get(0).getMetadata().get(CATALOG_ID));
         assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get(SERVICE_TITLE));
-        assertEquals("2.0.0", instances.get(0).getMetadata().get(APIS + ".api-v2." + APIS_VERSION));
+        assertEquals("2.0.0", instances.get(0).getMetadata().get(API_INFO + ".api-v2." + API_INFO_VERSION));
         assertEquals("1.0.0", instances.get(0).getMetadata().get(CATALOG_VERSION));
         assertEquals("Static API Services", instances.get(0).getMetadata().get(CATALOG_TITLE));
-        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get(APIS + ".api-v2." + APIS_SWAGGER_URL));
+        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get(API_INFO + ".api-v2." + API_INFO_SWAGGER_URL));
         assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get(SERVICE_DESCRIPTION));
         assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
         assertEquals(0, result.getErrors().size());

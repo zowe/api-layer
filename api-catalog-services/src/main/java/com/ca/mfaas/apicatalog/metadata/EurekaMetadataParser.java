@@ -16,7 +16,6 @@ import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
@@ -32,33 +31,36 @@ public class EurekaMetadataParser {
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
         Map<String, ApiInfo> apiInfo = new HashMap<>();
 
-        for (Entry<String, String> entry : eurekaMetadata.entrySet()) {
-            String[] keys = entry.getKey().split("\\.");
-            if (keys.length == 3 && keys[0].equals(APIS)) {
-                apiInfo.putIfAbsent(keys[1], new ApiInfo());
-                ApiInfo api = apiInfo.get(keys[1]);
-                switch (keys[2]) {
-                    case APIS_API_ID:
-                        api.setApiId(entry.getValue());
-                        break;
-                    case APIS_GATEWAY_URL:
-                        api.setGatewayUrl(entry.getValue());
-                        break;
-                    case APIS_VERSION:
-                        api.setVersion(entry.getValue());
-                        break;
-                    case APIS_SWAGGER_URL:
-                        api.setSwaggerUrl(entry.getValue());
-                        break;
-                    case APIS_DOCUMENTATION_URL:
-                        api.setDocumentationUrl(entry.getValue());
-                        break;
-                    default:
-                        log.warn("Invalid parameter in metadata: {}", entry);
-                        break;
+        eurekaMetadata.entrySet()
+            .stream()
+            .filter(metadata -> metadata.getKey().startsWith(API_INFO))
+            .forEach(metadata -> {
+                String[] keys = metadata.getKey().split("\\.");
+                if (keys.length == 4) {
+                    apiInfo.putIfAbsent(keys[2], new ApiInfo());
+                    ApiInfo api = apiInfo.get(keys[2]);
+                    switch (keys[3]) {
+                        case API_INFO_API_ID:
+                            api.setApiId(metadata.getValue());
+                            break;
+                        case API_INFO_GATEWAY_URL:
+                            api.setGatewayUrl(metadata.getValue());
+                            break;
+                        case API_INFO_VERSION:
+                            api.setVersion(metadata.getValue());
+                            break;
+                        case API_INFO_SWAGGER_URL:
+                            api.setSwaggerUrl(metadata.getValue());
+                            break;
+                        case API_INFO_DOCUMENTATION_URL:
+                            api.setDocumentationUrl(metadata.getValue());
+                            break;
+                        default:
+                            log.warn("Invalid parameter in metadata: {}", metadata);
+                            break;
+                    }
                 }
-            }
-        }
+            });
 
         return new ArrayList<>(apiInfo.values());
     }
@@ -72,24 +74,66 @@ public class EurekaMetadataParser {
     public RoutedServices parseRoutes(Map<String, String> eurekaMetadata) {
         RoutedServices routes = new RoutedServices();
         Map<String, String> routeMap = new HashMap<>();
-        Map<String, String> orderedMetadata = new TreeMap<>(eurekaMetadata);
 
-        for (Map.Entry<String, String> metadata : orderedMetadata.entrySet()) {
-            String[] keys = metadata.getKey().split("\\.");
-            if (keys.length == 3 && keys[0].equals(ROUTES)) {
-                if (keys[2].equals(ROUTES_GATEWAY_URL)) {
-                    String gatewayURL = UrlUtils.removeFirstAndLastSlash(metadata.getValue());
-                    routeMap.put(keys[1], gatewayURL);
-                }
+        eurekaMetadata.entrySet()
+            .stream()
+            .filter(this::filterMetadatas)
+            .map(metadata -> mapMetadataToRoutedService(metadata, routeMap))
+            .filter(Objects::nonNull)
+            .forEach(routes::addRoutedService);
 
-                if (keys[2].equals(ROUTES_SERVICE_URL) && routeMap.containsKey(keys[1])) {
-                    String serviceURL = UrlUtils.addFirstSlash(metadata.getValue());
-                    routes.addRoutedService(new RoutedService(keys[1], routeMap.get(keys[1]), serviceURL));
-                    routeMap.remove(keys[1]);
-                }
+        return routes;
+    }
+
+    private boolean filterMetadatas(Map.Entry<String, String> metadata) {
+        return metadata.getKey().startsWith(ROUTES)
+            && (metadata.getKey().endsWith(ROUTES_GATEWAY_URL) || metadata.getKey().endsWith(ROUTES_SERVICE_URL));
+    }
+
+    private RoutedService mapMetadataToRoutedService(Map.Entry<String, String> metadata,
+                                                     Map<String, String> routeMap) {
+        String routeKey = metadata.getKey();
+        String routeURL = metadata.getValue();
+
+        String[] routeKeys = routeKey.split("\\.");
+        if (routeKeys.length != 4) {
+            return null;
+        }
+
+        String subServiceId = routeKeys[2];
+        String routeKeyURL = routeKeys[3];
+
+        return processUrls(routeMap, routeKeyURL, subServiceId, routeURL);
+    }
+
+    private RoutedService processUrls(Map<String, String> routeMap,
+                                      String routeKeyURL,
+                                      String subServiceId,
+                                      String routeURL) {
+        if (routeKeyURL.equals(ROUTES_GATEWAY_URL)) {
+            String gatewayURL = UrlUtils.removeFirstAndLastSlash(routeURL);
+
+            if (routeMap.containsKey(subServiceId)) {
+                String serviceUrl = routeMap.get(subServiceId);
+                routeMap.remove(subServiceId);
+                return new RoutedService(subServiceId, gatewayURL, serviceUrl);
+            } else {
+                routeMap.put(subServiceId, gatewayURL);
             }
         }
 
-        return routes;
+        if (routeKeyURL.equals(ROUTES_SERVICE_URL)) {
+            String serviceURL = UrlUtils.addFirstSlash(routeURL);
+
+            if (routeMap.containsKey(subServiceId)) {
+                String gatewayUrl = routeMap.get(subServiceId);
+                routeMap.remove(subServiceId);
+                return new RoutedService(subServiceId, gatewayUrl, serviceURL);
+            } else {
+                routeMap.put(subServiceId, serviceURL);
+            }
+        }
+
+        return null;
     }
 }

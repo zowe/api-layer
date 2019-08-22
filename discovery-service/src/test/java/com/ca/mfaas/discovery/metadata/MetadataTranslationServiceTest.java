@@ -43,15 +43,15 @@ public class MetadataTranslationServiceTest {
         assertThat(metadata, hasEntry(SERVICE_TITLE, "service title"));
         assertThat(metadata, hasEntry(SERVICE_DESCRIPTION, "service description"));
 
-        assertThat(metadata, hasEntry(APIS + ".0.apiId", "apiId"));
-        assertThat(metadata, hasEntry(APIS + ".0.swaggerUrl", "swaggerUrl"));
-        assertThat(metadata, hasEntry(APIS + ".0.documentationUrl", "documentationUrl"));
-        assertThat(metadata, hasEntry(APIS + ".0.gatewayUrl", "gatewayUrl"));
+        assertThat(metadata, hasEntry(API_INFO + ".0.apiId", "apiId"));
+        assertThat(metadata, hasEntry(API_INFO + ".0.swaggerUrl", "swaggerUrl"));
+        assertThat(metadata, hasEntry(API_INFO + ".0.documentationUrl", "documentationUrl"));
+        assertThat(metadata, hasEntry(API_INFO + ".0.gatewayUrl", "gatewayUrl"));
 
-        assertThat(metadata, not(hasEntry(API_INFO_BASE_PACKAGE_V1, "api info base package")));
-        assertThat(metadata, not(hasEntry(API_INFO_TITLE_V1, "api info title")));
-        assertThat(metadata, not(hasEntry(API_INFO_VERSION_V1, "api info version")));
-        assertThat(metadata, not(hasEntry(API_INFO_DESCRIPTION_V1, "api info description")));
+        assertThat(metadata, not(hasEntry(API_VERSION_PROPERTIES_BASE_PACKAGE_V1, "api info base package")));
+        assertThat(metadata, not(hasEntry(API_VERSION_PROPERTIES_TITLE_V1, "api info title")));
+        assertThat(metadata, not(hasEntry(API_VERSION_PROPERTIES_VERSION_V1, "api info version")));
+        assertThat(metadata, not(hasEntry(API_VERSION_PROPERTIES_DESCRIPTION_V1, "api info description")));
 
         assertThat(metadata, not(hasEntry(ENABLE_APIDOC_V1, "true")));
     }
@@ -75,16 +75,16 @@ public class MetadataTranslationServiceTest {
         metadatas.put(SERVICE_DESCRIPTION_V1, "service description");
 
         //apis
-        metadatas.put(APIS_V1 + ".0.apiId", "apiId");
-        metadatas.put(APIS_V1 + ".0.swaggerUrl", "swaggerUrl");
-        metadatas.put(APIS_V1 + ".0.documentationUrl", "documentationUrl");
-        metadatas.put(APIS_V1 + ".0.gatewayUrl", "gatewayUrl");
+        metadatas.put(API_INFO + ".0.apiId", "apiId");
+        metadatas.put(API_INFO + ".0.swaggerUrl", "swaggerUrl");
+        metadatas.put(API_INFO + ".0.documentationUrl", "documentationUrl");
+        metadatas.put(API_INFO + ".0.gatewayUrl", "gatewayUrl");
 
         //api-info
-        metadatas.put(API_INFO_BASE_PACKAGE_V1, "api info base package");
-        metadatas.put(API_INFO_TITLE_V1, "api info title");
-        metadatas.put(API_INFO_VERSION_V1, "api info version");
-        metadatas.put(API_INFO_DESCRIPTION_V1, "api info description");
+        metadatas.put(API_VERSION_PROPERTIES_BASE_PACKAGE_V1, "api info base package");
+        metadatas.put(API_VERSION_PROPERTIES_TITLE_V1, "api info title");
+        metadatas.put(API_VERSION_PROPERTIES_VERSION_V1, "api info version");
+        metadatas.put(API_VERSION_PROPERTIES_DESCRIPTION_V1, "api info description");
 
         //other
         metadatas.put(ENABLE_APIDOC_V1, "true");

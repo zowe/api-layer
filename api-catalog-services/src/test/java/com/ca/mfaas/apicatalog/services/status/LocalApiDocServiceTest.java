@@ -245,10 +245,10 @@ public class LocalApiDocServiceTest {
 
     private Map<String, String> getStandardMetadata() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(APIS + ".1." + APIS_API_ID, API_ID);
-        metadata.put(APIS + ".1." + APIS_GATEWAY_URL, GATEWAY_URL);
-        metadata.put(APIS + ".1." + APIS_VERSION, SERVICE_VERSION);
-        metadata.put(APIS + ".1." + APIS_SWAGGER_URL, SWAGGER_URL);
+        metadata.put(API_INFO + ".1." + API_INFO_API_ID, API_ID);
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, GATEWAY_URL);
+        metadata.put(API_INFO + ".1." + API_INFO_VERSION, SERVICE_VERSION);
+        metadata.put(API_INFO + ".1." + API_INFO_SWAGGER_URL, SWAGGER_URL);
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         metadata.put(SERVICE_TITLE, "Test service");
@@ -259,9 +259,9 @@ public class LocalApiDocServiceTest {
 
     private Map<String, String> getMetadataWithoutSwaggerUrl() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(APIS + ".1." + APIS_API_ID, API_ID);
-        metadata.put(APIS + ".1." + APIS_GATEWAY_URL, GATEWAY_URL);
-        metadata.put(APIS + ".1." + APIS_VERSION, SERVICE_VERSION);
+        metadata.put(API_INFO + ".1." + API_INFO_API_ID, API_ID);
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, GATEWAY_URL);
+        metadata.put(API_INFO + ".1." + API_INFO_VERSION, SERVICE_VERSION);
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         metadata.put(SERVICE_TITLE, "Test service");
