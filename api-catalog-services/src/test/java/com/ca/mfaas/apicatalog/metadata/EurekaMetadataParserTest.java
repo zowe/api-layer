@@ -26,10 +26,10 @@ public class EurekaMetadataParserTest {
     @Test
     public void testParseApiInfo() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put(APIS + ".1." + APIS_GATEWAY_URL, "gatewayUrl");
-        metadata.put(APIS + ".2." + APIS_GATEWAY_URL, "gatewayUrl2");
-        metadata.put(APIS + ".2." + APIS_SWAGGER_URL, "swagger");
-        metadata.put(APIS + ".2." + APIS_DOCUMENTATION_URL, "doc");
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "gatewayUrl");
+        metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, "gatewayUrl2");
+        metadata.put(API_INFO + ".2." + API_INFO_SWAGGER_URL, "swagger");
+        metadata.put(API_INFO + ".2." + API_INFO_DOCUMENTATION_URL, "doc");
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
         assertEquals(2, info.size());
@@ -40,7 +40,7 @@ public class EurekaMetadataParserTest {
     }
 
     @Test
-    public void testParseRoutes() {
+    public void  testParseRoutes() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");

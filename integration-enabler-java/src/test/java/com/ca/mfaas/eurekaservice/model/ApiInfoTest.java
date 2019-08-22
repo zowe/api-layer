@@ -31,24 +31,24 @@ public class ApiInfoTest {
         String version = "1.0.0";
         String swaggerUrl = "https://service/api-doc";
         String documentationUrl = "https://www.zowe.org";
-        String metadataPrefix = APIS + ".api-v1.";
+        String metadataPrefix = API_INFO + ".api-v1.";
 
         ApiInfo apiInfo = new ApiInfo("org.zowe", gatewayUrl, version, swaggerUrl, documentationUrl);
         Map<String, String> metadata = apiInfo.generateMetadata(serviceId);
 
-        String metaVersion = metadata.get(metadataPrefix + APIS_VERSION);
+        String metaVersion = metadata.get(metadataPrefix + API_INFO_VERSION);
         assertNotNull(metaVersion);
         assertEquals(version, metaVersion);
 
-        String metaGatewayUrl = metadata.get(metadataPrefix + APIS_GATEWAY_URL);
+        String metaGatewayUrl = metadata.get(metadataPrefix + API_INFO_GATEWAY_URL);
         assertNotNull(metaGatewayUrl);
         assertEquals(gatewayUrl, metaGatewayUrl);
 
-        String metaSwaggerUrl = metadata.get(metadataPrefix + APIS_SWAGGER_URL);
+        String metaSwaggerUrl = metadata.get(metadataPrefix + API_INFO_SWAGGER_URL);
         assertNotNull(metaSwaggerUrl);
         assertEquals(swaggerUrl, metaSwaggerUrl);
 
-        String metaDocumentationUrl = metadata.get(metadataPrefix + APIS_DOCUMENTATION_URL);
+        String metaDocumentationUrl = metadata.get(metadataPrefix + API_INFO_DOCUMENTATION_URL);
         assertNotNull(metaDocumentationUrl);
         assertEquals(documentationUrl, metaDocumentationUrl);
     }
