@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.swagger;
 
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.config.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;

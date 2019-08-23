@@ -10,7 +10,7 @@
 package com.ca.mfaas.apicatalog.swagger;
 
 import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.config.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.PortType;
 import org.junit.Test;
