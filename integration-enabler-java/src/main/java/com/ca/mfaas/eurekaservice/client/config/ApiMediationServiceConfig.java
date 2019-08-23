@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.eurekaservice.client.config;
 
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.config.ApiInfo;
 import lombok.*;
 
 import java.util.List;
