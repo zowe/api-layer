@@ -18,6 +18,7 @@ import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
@@ -45,8 +46,7 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-
-//decide on HTTP
+import static org.junit.Assert.assertTrue;
 
 /**
  * This test suite must be run with HTTPS on and Certificate validation ON for Discovery service
@@ -62,20 +62,85 @@ public class EurekaInstancesIntegrationTest {
     private int port;
 
 
-    //TODO How does integration test run on Mainframe, and which credentials is it using
     @Before
     public void setUp() {
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
         scheme = discoveryServiceConfiguration.getScheme();
-        username = discoveryServiceConfiguration.getUser();
-        password = discoveryServiceConfiguration.getPassword();
+        username = ConfigReader.environmentConfiguration().getCredentials().getUser();
+        password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
         host = discoveryServiceConfiguration.getHost();
         port = discoveryServiceConfiguration.getPort();
     }
 
+    // /eureka endpoints
     @Test
-    public void shouldSeeHealthEndpointWithoutAnything() throws Exception {
+    public void eurekaAppsWithCertIs200() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/eureka/apps"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+    }
+
+    @Test
+    public void eurekaAppsWithoutAnythingIs403() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/eureka/apps"))
+            .then()
+            .statusCode(is(HttpStatus.SC_FORBIDDEN));
+    }
+
+    @Test
+    public void eurekaAppsWithoutAnythingDoesNotHaveBasicHeader() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        List<String> headers = given()
+            .when()
+            .get(getDiscoveryUriWithPath("/eureka/apps"))
+            .headers().getValues(HttpHeaders.WWW_AUTHENTICATE);
+        assertTrue(headers.isEmpty());
+    }
+
+    @Test
+    public void eurekaAppsWithBasicIs403() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .auth().basic(username, password)
+            .when()
+            .get(getDiscoveryUriWithPath("/eureka/apps"))
+            .then()
+            .statusCode(is(HttpStatus.SC_FORBIDDEN));
+    }
+
+    // Gateway is discovered
+    @Test
+    public void eurekaAppsGatewayWithCertIs200() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/eureka/apps/gateway"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+    }
+
+    // /application health info
+
+    @Test
+    public void applicationInfoWithoutAnythingIs200() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/application/info"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+    }
+    @Test
+    public void applicationHealthWithoutAnythingIs200() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
@@ -84,107 +149,121 @@ public class EurekaInstancesIntegrationTest {
             .statusCode(is(HttpStatus.SC_OK));
     }
 
+    // /application endpoints
     @Test
-    public void shouldSeeInfoEndpointWithoutAnything() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/info"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
-    @Test
-    public void shouldGetAuthenticationRequestOnDiscoveryEndpoint() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
-            .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
-    }
-
-
-    @Test
-    public void shouldSeeDiscoveryEndpointWithBasic() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .auth().basic(username, password)
-            .when()
-            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-    @Test
-    public void shouldSeeDiscoveryEndpointWithCert() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
-
-    @Test
-    public void shouldGetAuthenticationRequestOnEurekaEndpoint() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-            .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
-            .extract().headers().hasHeaderWithName("WWW-Authenticate");
-    }
-    @Test
-    public void shouldSeeEurekaEndpointWithCertOnly() throws Exception {
-        //@formatter:off
-        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-    }
-
-    @Test
-    public void shouldGetAuthenticationRequestOnActuatorEndpoint() throws Exception {
+    public void applicationBeansWithoutAnythingIs401() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
             .get(getDiscoveryUriWithPath("/application/beans"))
             .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
-            .extract().headers().hasHeaderWithName("WWW-Authenticate");
+            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
     }
-
-
     @Test
-    public void shouldGetBasicAuthRequestWithoutCertOnHomepage() throws Exception {
+    public void applicationBeansWithoutAnythingHasBasicHeader() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        //@formatter:off
-        given()
+        List<String> headers = given()
             .when()
-            .get(getDiscoveryUriWithPath("/"))
-            .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
-            .extract().headers().hasHeaderWithName("WWW-Authenticate");
+            .get(getDiscoveryUriWithPath("/application/beans"))
+            .headers().getValues(HttpHeaders.WWW_AUTHENTICATE);
+        assertTrue(!headers.isEmpty());
     }
-
     @Test
-    public void shouldSeeEurekaHomePageWithCertOnly() throws Exception {
-        //@formatter:off
-        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+    public void applicationBeansWithBasicIs200() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
         given()
+            .auth().basic(username, password)
             .when()
-            .get(getDiscoveryUriWithPath("/"))
+            .get(getDiscoveryUriWithPath("/application/beans"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+    }
+    @Test
+    public void applicationBeansWithTokenIs200() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        String jwtToken = SecurityUtils.gatewayToken(username, password);
+        given()
+            .cookie(COOKIE, jwtToken)
+            .when()
+            .get(getDiscoveryUriWithPath("/application/beans"))
             .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
 
+    // /discovery endpoints
     @Test
-    public void shouldSeeEurekaHomePageWithBasicOnly() throws Exception {
+    public void discoveryWithoutAnythingIs401() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
+            .then()
+            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+    }
+    @Test
+    public void discoveryWithoutAnythingHasBasicHeader() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        List<String> headers = given()
+            .when()
+            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
+            .headers().getValues(HttpHeaders.WWW_AUTHENTICATE);
+        assertTrue(!headers.isEmpty());
+    }
+
+
+    @Test
+    public void discoveryWithBasicIs200() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .auth().basic(username, password)
+            .when()
+            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+    }
+    @Test
+    public void discoveryWithTokenIs200() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        String jwtToken = SecurityUtils.gatewayToken(username, password);
+        given()
+            .cookie(COOKIE, jwtToken)
+            .when()
+            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+    }
+    @Test
+    public void discoveryWithCertIs200() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
+            .then()
+            .statusCode(is(HttpStatus.SC_OK));
+    }
+
+    // root & ui
+    @Test
+    public void uiWithoutAnythingIs401() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        given()
+            .when()
+            .get(getDiscoveryUriWithPath("/"))
+            .then()
+            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+    }
+    @Test
+    public void uiWithoutAnythingHasBasicHeader() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        List<String> headers = given()
+            .when()
+            .get(getDiscoveryUriWithPath("/"))
+            .headers().getValues(HttpHeaders.WWW_AUTHENTICATE);
+        assertTrue(!headers.isEmpty());
+    }
+    @Test
+    public void uiWithBasicIs200() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .auth().basic(username, password)
@@ -193,47 +272,21 @@ public class EurekaInstancesIntegrationTest {
             .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
-
     @Test
-    public void shouldGetUnauthorizedOnEurekaHomePageWithWrongBasic() throws Exception {
-        String wrongUsername = username+"wrong";
-        String wrongPassword = password+"wrong";
-        RestAssured.useRelaxedHTTPSValidation();
-        given()
-            .auth().basic(wrongUsername, wrongPassword)
-            .when()
-            .get(getDiscoveryUriWithPath("/"))
-            .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
-    }
-
-    @Test
-    public void shouldSeeEurekaHomepageWithCookieOnly() throws Exception {
+    public void uiWithTokenIs200() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
         given()
             .cookie(COOKIE, jwtToken)
-        .when()
+            .when()
             .get(getDiscoveryUriWithPath("/"))
-        .then()
+            .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
 
     @Test
-    public void shouldGetUnauthorizedOnEurekaHomepageWithInvalidTokenInCookie() throws Exception {
+    public void verifyHttpHeadersOnUi() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        String jwtToken = SecurityUtils.gatewayToken(username, password)+"wrong";
-        given()
-            .cookie(COOKIE, jwtToken)
-            .when()
-            .get(getDiscoveryUriWithPath("/"))
-            .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
-    }
-
-
-    @Test
-    public void verifyHttpHeaders() throws Exception {
         Map<String, String> expectedHeaders = new HashMap<>();
         expectedHeaders.put("X-Content-Type-Options","nosniff");
         expectedHeaders.put("X-XSS-Protection","1; mode=block");
@@ -246,11 +299,59 @@ public class EurekaInstancesIntegrationTest {
         List<String> forbiddenHeaders = new ArrayList<>();
         forbiddenHeaders.add("Strict-Transport-Security");
 
-        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         Response response =  RestAssured
             .given()
             .auth().basic(username, password)
             .get(getDiscoveryUriWithPath("/"));
+        Map<String,String> responseHeaders = new HashMap<>();
+        response.getHeaders().forEach(h -> responseHeaders.put(h.getName(),h.getValue()));
+
+        expectedHeaders.entrySet().forEach(h -> assertThat(responseHeaders, hasEntry(h.getKey(),h.getValue())));
+        forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
+    }
+
+    @Test
+    public void verifyHttpHeadersOnApi() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        Map<String, String> expectedHeaders = new HashMap<>();
+        expectedHeaders.put("X-Content-Type-Options","nosniff");
+        expectedHeaders.put("X-XSS-Protection","1; mode=block");
+        expectedHeaders.put("Cache-Control","no-cache, no-store, max-age=0, must-revalidate");
+        expectedHeaders.put("Pragma","no-cache");
+        expectedHeaders.put("X-Frame-Options","DENY");
+
+        List<String> forbiddenHeaders = new ArrayList<>();
+        forbiddenHeaders.add("Strict-Transport-Security");
+
+        Response response =  RestAssured
+            .given()
+            .auth().basic(username, password)
+            .get(getDiscoveryUriWithPath("/application/info"));
+        Map<String,String> responseHeaders = new HashMap<>();
+        response.getHeaders().forEach(h -> responseHeaders.put(h.getName(),h.getValue()));
+
+        expectedHeaders.entrySet().forEach(h -> assertThat(responseHeaders, hasEntry(h.getKey(),h.getValue())));
+        forbiddenHeaders.forEach(h -> assertThat(responseHeaders, not(hasKey(h))));
+    }
+
+    @Test
+    public void verifyHttpHeadersOnEureka() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        Map<String, String> expectedHeaders = new HashMap<>();
+        expectedHeaders.put("X-Content-Type-Options","nosniff");
+        expectedHeaders.put("X-XSS-Protection","1; mode=block");
+        expectedHeaders.put("Cache-Control","no-cache, no-store, max-age=0, must-revalidate");
+        expectedHeaders.put("Pragma","no-cache");
+        expectedHeaders.put("Content-Type","application/xml");
+        expectedHeaders.put("X-Frame-Options","DENY");
+
+        List<String> forbiddenHeaders = new ArrayList<>();
+        forbiddenHeaders.add("Strict-Transport-Security");
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        Response response =  RestAssured
+            .given()
+            .get(getDiscoveryUriWithPath("/eureka/apps"));
         Map<String,String> responseHeaders = new HashMap<>();
         response.getHeaders().forEach(h -> responseHeaders.put(h.getName(),h.getValue()));
 
