@@ -30,17 +30,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 public class WebSecurityConfigHttp extends WebSecurityConfigurerAdapter {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
-    @Value("${apiml.service.id:#{null}}")
-    private String serviceId;
-
     @Value("${apiml.discovery.userid:eureka}")
     private String eurekaUserid;
 
     @Value("${apiml.discovery.password:password}")
     private String eurekaPassword;
-
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
