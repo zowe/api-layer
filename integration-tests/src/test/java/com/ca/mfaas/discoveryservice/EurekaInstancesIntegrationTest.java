@@ -41,17 +41,19 @@ import java.security.cert.CertificateException;
 import java.util.*;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * This test suite must be run with HTTPS on and Certificate validation ON for Discovery service
  */
 public class EurekaInstancesIntegrationTest {
+
+    private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
+
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
     private final static String COOKIE = "apimlAuthenticationToken";
@@ -76,7 +78,6 @@ public class EurekaInstancesIntegrationTest {
     // /eureka endpoints
     @Test
     public void eurekaAppsWithCertIs200() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
             .when()
@@ -92,17 +93,8 @@ public class EurekaInstancesIntegrationTest {
             .when()
             .get(getDiscoveryUriWithPath("/eureka/apps"))
             .then()
-            .statusCode(is(HttpStatus.SC_FORBIDDEN));
-    }
-
-    @Test
-    public void eurekaAppsWithoutAnythingDoesNotHaveBasicHeader() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        List<String> headers = given()
-            .when()
-            .get(getDiscoveryUriWithPath("/eureka/apps"))
-            .headers().getValues(HttpHeaders.WWW_AUTHENTICATE);
-        assertTrue(headers.isEmpty());
+            .statusCode(is(HttpStatus.SC_FORBIDDEN))
+            .header(HttpHeaders.WWW_AUTHENTICATE, nullValue());
     }
 
     @Test
@@ -157,17 +149,10 @@ public class EurekaInstancesIntegrationTest {
             .when()
             .get(getDiscoveryUriWithPath("/application/beans"))
             .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
+            .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
-    @Test
-    public void applicationBeansWithoutAnythingHasBasicHeader() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        List<String> headers = given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/beans"))
-            .headers().getValues(HttpHeaders.WWW_AUTHENTICATE);
-        assertTrue(!headers.isEmpty());
-    }
+
     @Test
     public void applicationBeansWithBasicIs200() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
@@ -198,18 +183,9 @@ public class EurekaInstancesIntegrationTest {
             .when()
             .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
             .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
+            .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
-    @Test
-    public void discoveryWithoutAnythingHasBasicHeader() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        List<String> headers = given()
-            .when()
-            .get(getDiscoveryUriWithPath("/discovery/api/v1/staticApi"))
-            .headers().getValues(HttpHeaders.WWW_AUTHENTICATE);
-        assertTrue(!headers.isEmpty());
-    }
-
 
     @Test
     public void discoveryWithBasicIs200() throws Exception {
@@ -221,6 +197,7 @@ public class EurekaInstancesIntegrationTest {
             .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
+
     @Test
     public void discoveryWithTokenIs200() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
@@ -232,9 +209,9 @@ public class EurekaInstancesIntegrationTest {
             .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
+
     @Test
     public void discoveryWithCertIs200() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
             .when()
@@ -251,17 +228,10 @@ public class EurekaInstancesIntegrationTest {
             .when()
             .get(getDiscoveryUriWithPath("/"))
             .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+            .statusCode(is(HttpStatus.SC_UNAUTHORIZED))
+            .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
-    @Test
-    public void uiWithoutAnythingHasBasicHeader() throws Exception {
-        RestAssured.useRelaxedHTTPSValidation();
-        List<String> headers = given()
-            .when()
-            .get(getDiscoveryUriWithPath("/"))
-            .headers().getValues(HttpHeaders.WWW_AUTHENTICATE);
-        assertTrue(!headers.isEmpty());
-    }
+
     @Test
     public void uiWithBasicIs200() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
@@ -272,6 +242,7 @@ public class EurekaInstancesIntegrationTest {
             .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
+
     @Test
     public void uiWithTokenIs200() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
@@ -362,12 +333,6 @@ public class EurekaInstancesIntegrationTest {
     @Test
     public void shouldSeeEurekaReplicasIfRegistered() throws Exception {
         final int instances = discoveryServiceConfiguration.getInstances();
-        URI uri = new URIBuilder()
-            .setScheme(scheme)
-            .setHost(host)
-            .setPort(port)
-            .setPath("/eureka/status").build();
-
         //@formatter:off
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String xml =
