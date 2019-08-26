@@ -77,7 +77,7 @@ public class EurekaInstancesIntegrationTest {
 
     // /eureka endpoints
     @Test
-    public void eurekaAppsWithCertIs200() throws Exception {
+    public void testEurekaEndpoints_whenProvidedCertificate() throws Exception {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
             .when()
@@ -87,7 +87,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void eurekaAppsWithoutAnythingIs403() throws Exception {
+    public void testEurekaEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
@@ -98,7 +98,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void eurekaAppsWithBasicIs403() throws Exception {
+    public void testEurekaEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .auth().basic(username, password)
@@ -110,7 +110,7 @@ public class EurekaInstancesIntegrationTest {
 
     // Gateway is discovered
     @Test
-    public void eurekaAppsGatewayWithCertIs200() throws Exception {
+    public void testGatewayIsDiscoveredByEureka() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
@@ -120,10 +120,10 @@ public class EurekaInstancesIntegrationTest {
             .statusCode(is(HttpStatus.SC_OK));
     }
 
-    // /application health info
+    // /application health,info
 
     @Test
-    public void applicationInfoWithoutAnythingIs200() throws Exception {
+    public void testApplicationInfoEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
@@ -132,7 +132,7 @@ public class EurekaInstancesIntegrationTest {
             .statusCode(is(HttpStatus.SC_OK));
     }
     @Test
-    public void applicationHealthWithoutAnythingIs200() throws Exception {
+    public void testApplicationHealthEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
@@ -143,7 +143,7 @@ public class EurekaInstancesIntegrationTest {
 
     // /application endpoints
     @Test
-    public void applicationBeansWithoutAnythingIs401() throws Exception {
+    public void testApplicationBeansEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
@@ -154,7 +154,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void applicationBeansWithBasicIs200() throws Exception {
+    public void testApplicationInfoEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .auth().basic(username, password)
@@ -163,8 +163,9 @@ public class EurekaInstancesIntegrationTest {
             .then()
             .statusCode(is(HttpStatus.SC_OK));
     }
+
     @Test
-    public void applicationBeansWithTokenIs200() throws Exception {
+    public void testApplicationInfoEndpoints_whenProvidedToken() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
         given()
@@ -177,7 +178,7 @@ public class EurekaInstancesIntegrationTest {
 
     // /discovery endpoints
     @Test
-    public void discoveryWithoutAnythingIs401() throws Exception {
+    public void testDiscoveryEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
@@ -188,7 +189,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void discoveryWithBasicIs200() throws Exception {
+    public void testDiscoveryEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .auth().basic(username, password)
@@ -199,7 +200,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void discoveryWithTokenIs200() throws Exception {
+    public void testDiscoveryEndpoints_whenProvidedToken() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
         given()
@@ -211,7 +212,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void discoveryWithCertIs200() throws Exception {
+    public void testDiscoveryEndpoints_whenProvidedCertification() throws Exception {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
             .when()
@@ -222,7 +223,7 @@ public class EurekaInstancesIntegrationTest {
 
     // root & ui
     @Test
-    public void uiWithoutAnythingIs401() throws Exception {
+    public void testUIEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .when()
@@ -233,7 +234,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void uiWithBasicIs200() throws Exception {
+    public void testUIEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .auth().basic(username, password)
@@ -244,7 +245,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void uiWithTokenIs200() throws Exception {
+    public void testUIEndpoints_whenProvidedToken() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
         given()
