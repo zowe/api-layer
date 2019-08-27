@@ -53,8 +53,8 @@ public class APIDocRetrievalService {
      * API doc URL is taken from the application metadata in the following
      * order:
      * <p>
-     * 1. 'apis.swaggerUrl' (preferred way)
-     * 2. 'apis' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
+     * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
+     * 2. 'apiml.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
      * 3. URL is constructed from 'routes.api-doc.serviceUrl'. This method is deprecated and used for
      * backwards compatibility only
      *
@@ -86,7 +86,7 @@ public class APIDocRetrievalService {
     /**
      * Get ApiDoc url
      *
-     * @param apiInfo      the apiinfo of service instance
+     * @param apiInfo      the apiInfo of service instance
      * @param instanceInfo the information about service instance
      * @param routes       the routes of service instance
      * @return the url of apidoc
@@ -108,7 +108,7 @@ public class APIDocRetrievalService {
      *
      * @param serviceId the unique service id
      * @param apiDocUrl the url of apidoc
-     * @return the information about APIDoc content as application/json
+     * @return the information about ApiDoc content as application/json
      * @throws ApiDocNotFoundException if the response is error
      */
     private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
@@ -132,7 +132,7 @@ public class APIDocRetrievalService {
      *
      * @param instanceInfo the information about service instance
      * @param routes       the routes of service instance
-     * @param apiInfo      the apiinfo of service instance
+     * @param apiInfo      the apiInfo of service instance
      * @return the information about APIDocInfo
      */
     private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
@@ -168,7 +168,7 @@ public class APIDocRetrievalService {
     }
 
     /**
-     * Creates a URL from the routing metadata 'routes.api-doc.serviceUrl' when 'apis.swaggerUrl' is
+     * Creates a URL from the routing metadata 'routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
      *
      * @param instanceInfo the information about service instance

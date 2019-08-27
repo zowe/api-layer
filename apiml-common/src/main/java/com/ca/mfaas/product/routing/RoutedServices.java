@@ -40,7 +40,7 @@ public class RoutedServices {
      * Get best matching service url
      *
      * @param serviceUrl service url
-     * @param type  service type
+     * @param type       service type
      * @return the route
      */
     public RoutedService getBestMatchingServiceUrl(String serviceUrl, ServiceType type) {

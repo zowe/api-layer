@@ -77,7 +77,7 @@ public class EurekaMetadataParser {
 
         eurekaMetadata.entrySet()
             .stream()
-            .filter(this::filterMetadatas)
+            .filter(this::filterMetadata)
             .map(metadata -> mapMetadataToRoutedService(metadata, routeMap))
             .filter(Objects::nonNull)
             .forEach(routes::addRoutedService);
@@ -85,7 +85,7 @@ public class EurekaMetadataParser {
         return routes;
     }
 
-    private boolean filterMetadatas(Map.Entry<String, String> metadata) {
+    private boolean filterMetadata(Map.Entry<String, String> metadata) {
         return metadata.getKey().startsWith(ROUTES)
             && (metadata.getKey().endsWith(ROUTES_GATEWAY_URL) || metadata.getKey().endsWith(ROUTES_SERVICE_URL));
     }

@@ -16,9 +16,17 @@ import java.util.stream.Collectors;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
+/**
+ * Translation service for Eureka metadata
+ */
 @Service
 public class MetadataTranslationService {
 
+    /**
+     * Translates service instance Eureka metadata from older versions to the current version
+     *
+     * @param metadata to be translated
+     */
     public void translateMetadata(Map<String, String> metadata) {
         // Version check
         String version = metadata.get(VERSION);

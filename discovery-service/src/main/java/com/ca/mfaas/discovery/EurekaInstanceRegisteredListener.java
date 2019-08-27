@@ -15,11 +15,17 @@ import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegis
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+/**
+ * Called by Eureka when the service instance is registered
+ */
 @Component
 @RequiredArgsConstructor
 public class EurekaInstanceRegisteredListener {
     private final MetadataTranslationService metadataTranslationService;
 
+    /**
+     * Translates service instance Eureka metadata from older versions to the current version
+     */
     @EventListener
     public void listen(EurekaInstanceRegisteredEvent event) {
         metadataTranslationService.translateMetadata(event.getInstanceInfo().getMetadata());
