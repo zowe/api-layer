@@ -40,7 +40,7 @@ public class EurekaMetadataParserTest {
     }
 
     @Test
-    public void  testParseRoutes() {
+    public void testParseRoutes() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");

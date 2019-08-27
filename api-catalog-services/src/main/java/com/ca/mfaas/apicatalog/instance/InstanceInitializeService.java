@@ -79,7 +79,6 @@ public class InstanceInitializeService {
         }
     }
 
-
     @Recover
     public void recover(RetryException e) {
         log.warn("Failed to initialise API Catalog with services running in the Gateway.");

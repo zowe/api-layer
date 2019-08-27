@@ -46,6 +46,7 @@ public class ApiInfo {
      * @param serviceId the identifier of a service which ApiInfo configuration belongs
      * @return the generated Eureka metadata
      */
+    //TODO: move to EurekaMetadataParser
     public Map<String, String> generateMetadata(String serviceId) {
         Map<String, String> metadata = new HashMap<>();
         String encodedGatewayUrl = getEncodedGatewayUrl(gatewayUrl);
@@ -76,6 +77,7 @@ public class ApiInfo {
 
         return metadata;
     }
+<<<<<<< HEAD
 
     private String createMetadataKey(String encodedGatewayUrl, String url) {
         return String.format(METADATA_FORMAT, API_INFO, encodedGatewayUrl, url);
@@ -98,4 +100,6 @@ public class ApiInfo {
     }
 
     //TODO: move methods to EurekaMetadataParser
+=======
+>>>>>>> 1792192... Minor changes
 }

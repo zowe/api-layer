@@ -195,8 +195,8 @@ public class InstanceRefreshService {
     private void updateContainer(Set<String> containersUpdated, InstanceInfo instanceInfo) {
         String productFamilyId = instanceInfo.getMetadata().get(CATALOG_ID);
         if (productFamilyId == null) {
-            log.warn("Cannot create a tile without a parent id, the metadata for service: " + instanceInfo.getAppName() +
-                " must contain an entry for {}", CATALOG_ID);
+            log.warn("Cannot create a tile without a parent id, the metadata for service '{}' must contain an entry for '{}'",
+                instanceInfo.getAppName(), CATALOG_ID);
         } else {
             APIContainer container = cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);
             log.debug("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());

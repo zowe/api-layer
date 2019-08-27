@@ -57,37 +57,37 @@ public class MetadataTranslationServiceTest {
     }
 
     private Map<String, String> generateMetadataV1() {
-        Map<String, String> metadatas = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
         //routes
-        metadatas.put(ROUTES_V1 + ".ui__v1." + ROUTES_SERVICE_URL_V1, "/" + INSTANCE_NAME);
-        metadatas.put(ROUTES_V1 + ".ui__v1." + ROUTES_GATEWAY_URL_V1, "ui/v1");
-        metadatas.put(ROUTES_V1 + ".api__v1." + ROUTES_SERVICE_URL_V1, "/" + INSTANCE_NAME + "/api/v1");
-        metadatas.put(ROUTES_V1 + ".api__v1." + ROUTES_GATEWAY_URL_V1, "/api/v1");
+        metadata.put(ROUTES_V1 + ".ui__v1." + ROUTES_SERVICE_URL_V1, "/" + INSTANCE_NAME);
+        metadata.put(ROUTES_V1 + ".ui__v1." + ROUTES_GATEWAY_URL_V1, "ui/v1");
+        metadata.put(ROUTES_V1 + ".api__v1." + ROUTES_SERVICE_URL_V1, "/" + INSTANCE_NAME + "/api/v1");
+        metadata.put(ROUTES_V1 + ".api__v1." + ROUTES_GATEWAY_URL_V1, "/api/v1");
 
         //catalog
-        metadatas.put(CATALOG_ID_V1, "id");
-        metadatas.put(CATALOG_TITLE_V1, "Title");
-        metadatas.put(CATALOG_DESCRIPTION_V1, "Description");
-        metadatas.put(CATALOG_VERSION_V1, "Version");
+        metadata.put(CATALOG_ID_V1, "id");
+        metadata.put(CATALOG_TITLE_V1, "Title");
+        metadata.put(CATALOG_DESCRIPTION_V1, "Description");
+        metadata.put(CATALOG_VERSION_V1, "Version");
 
         //service
-        metadatas.put(SERVICE_TITLE_V1, "service title");
-        metadatas.put(SERVICE_DESCRIPTION_V1, "service description");
+        metadata.put(SERVICE_TITLE_V1, "service title");
+        metadata.put(SERVICE_DESCRIPTION_V1, "service description");
 
         //apis
-        metadatas.put(API_INFO + ".0.apiId", "apiId");
-        metadatas.put(API_INFO + ".0.swaggerUrl", "swaggerUrl");
-        metadatas.put(API_INFO + ".0.documentationUrl", "documentationUrl");
-        metadatas.put(API_INFO + ".0.gatewayUrl", "gatewayUrl");
+        metadata.put(API_INFO + ".0.apiId", "apiId");
+        metadata.put(API_INFO + ".0.swaggerUrl", "swaggerUrl");
+        metadata.put(API_INFO + ".0.documentationUrl", "documentationUrl");
+        metadata.put(API_INFO + ".0.gatewayUrl", "gatewayUrl");
 
         //api-info
-        metadatas.put(API_VERSION_PROPERTIES_BASE_PACKAGE_V1, "api info base package");
-        metadatas.put(API_VERSION_PROPERTIES_TITLE_V1, "api info title");
-        metadatas.put(API_VERSION_PROPERTIES_VERSION_V1, "api info version");
-        metadatas.put(API_VERSION_PROPERTIES_DESCRIPTION_V1, "api info description");
+        metadata.put(API_VERSION_PROPERTIES_BASE_PACKAGE_V1, "api info base package");
+        metadata.put(API_VERSION_PROPERTIES_TITLE_V1, "api info title");
+        metadata.put(API_VERSION_PROPERTIES_VERSION_V1, "api info version");
+        metadata.put(API_VERSION_PROPERTIES_DESCRIPTION_V1, "api info description");
 
         //other
-        metadatas.put(ENABLE_APIDOC_V1, "true");
-        return metadatas;
+        metadata.put(ENABLE_APIDOC_V1, "true");
+        return metadata;
     }
 }
