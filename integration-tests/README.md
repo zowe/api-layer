@@ -40,6 +40,13 @@ completely and ready for tests to start.
     ./gradlew runAllLocalIntegrationTests
     ```
 
+### Manual testing of Discovery Service in HTTP mode
+
+1. Set the `spring.profiles` value in the Discovery Service configuration file to `http`.
+2. Change the `discoveryServiceUrls` value in the configuration file of the service that you want to register to `http://eureka:password@localhost:10011/eureka/`.
+3. Run Discovery Service and verify that you can login into the Discovery Service homepage by using basic authentication with Eureka credentials.
+4. Run your service and check that it is registered to Eureka.
+
 ### Running all tests (including slow)
 
 Some tests can be categorized as slow using:
