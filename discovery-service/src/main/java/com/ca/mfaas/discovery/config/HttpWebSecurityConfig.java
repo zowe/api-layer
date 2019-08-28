@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -27,7 +28,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @Configuration
 @EnableWebSecurity
 @Profile("!https")
-public class WebSecurityConfigHttp extends WebSecurityConfigurerAdapter {
+public class HttpWebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
     @Value("${apiml.discovery.userid:eureka}")
@@ -40,7 +41,17 @@ public class WebSecurityConfigHttp extends WebSecurityConfigurerAdapter {
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication().withUser(eurekaUserid).password("{noop}" + eurekaPassword).roles("EUREKA");
     }
-
+    @Override
+    public void configure(WebSecurity web) {
+        String[] noSecurityAntMatchers = {
+            "/favicon.ico",
+            "/eureka/css/**",
+            "/eureka/js/**",
+            "/eureka/fonts/**",
+            "/eureka/images/**"
+        };
+        web.ignoring().antMatchers(noSecurityAntMatchers);
+    }
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()

@@ -25,6 +25,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -45,7 +46,7 @@ import java.util.Collections;
 @EnableApimlAuth
 @Slf4j
 @Profile("https")
-public class WebSecurityConfigHttps {
+public class HttpsWebSecurityConfig {
 
     private final HandlerInitializer handlerInitializer;
     private final AuthConfigurationProperties securityConfigurationProperties;
@@ -58,7 +59,7 @@ public class WebSecurityConfigHttps {
      */
     @Configuration
     @Order(1)
-    public class HttpOne extends WebSecurityConfigurerAdapter {
+    public class FilterChainBasicAuthOrToken extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
@@ -70,11 +71,8 @@ public class WebSecurityConfigHttps {
         protected void configure(HttpSecurity http) throws Exception {
             http.requestMatchers().antMatchers(
                 "/application/**",
-                "/*",
-                "/eureka/css/**",
-                "/eureka/js/**",
-                "/eureka/fonts/**",
-                "/eureka/images/**")
+                "/*"
+                )
                 .and()
                 .csrf().disable()
                 .headers().httpStrictTransportSecurity().disable()
@@ -83,7 +81,7 @@ public class WebSecurityConfigHttps {
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                    .antMatchers("/application/health", "/application/info").permitAll()
+                    .antMatchers("/application/health", "/application/info", "/favicon.ico").permitAll()
                     .antMatchers("/**").authenticated()
                 .and()
                 .httpBasic().realmName(DISCOVERY_REALM);
@@ -91,11 +89,23 @@ public class WebSecurityConfigHttps {
     }
 
     /**
-     * Filter chain for protecting endpoints with x509 certificate
+     * Filter chain for protecting endpoints with client certificate
      */
     @Configuration
     @Order(2)
-    public class HttpTwo extends WebSecurityConfigurerAdapter {
+    public class FilterChainClientCertificate extends WebSecurityConfigurerAdapter {
+
+        @Override
+        public void configure(WebSecurity web) {
+            String[] noSecurityAntMatchers = {
+                "/eureka/css/**",
+                "/eureka/js/**",
+                "/eureka/fonts/**",
+                "/eureka/images/**"
+            };
+            web.ignoring().antMatchers(noSecurityAntMatchers);
+        }
+
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.antMatcher("/eureka/**")

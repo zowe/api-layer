@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
  * General configuration of security client
  */
 @Configuration
-@ComponentScan("com.ca.apiml.security")
+@ComponentScan({"com.ca.apiml.security", "com.ca.mfaas.product.gateway"})
 public class SecurityServiceConfiguration {
 
     @Bean
