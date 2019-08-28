@@ -123,7 +123,7 @@ public class HttpsWebSecurityConfig {
      */
     @Configuration
     @Order(3)
-    public class HttpThree extends WebSecurityConfigurerAdapter {
+    public class FilterChainBasicAuthOrTokenOrClientCertificate extends WebSecurityConfigurerAdapter {
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
