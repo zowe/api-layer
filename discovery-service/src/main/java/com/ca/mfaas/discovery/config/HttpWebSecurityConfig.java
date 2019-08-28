@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.discovery.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
  * This configuration is applied if "https" Spring profile is not active
  */
 @Configuration
+@Slf4j
 @EnableWebSecurity
 @Profile("!https")
 public class HttpWebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -54,6 +56,7 @@ public class HttpWebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        log.warn("Discovery service is configured to use insecure HTTP protocol");
         http.csrf().disable()
             .headers().httpStrictTransportSecurity().disable().and()
             .sessionManagement()
