@@ -46,3 +46,11 @@ dependencies {
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
 }
+
+
+bootRun {
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+    systemProperties = System.properties
+}
