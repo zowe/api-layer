@@ -27,8 +27,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -59,7 +57,7 @@ public class HttpsWebSecurityConfig {
      */
     @Configuration
     @Order(1)
-    public class FilterChainBasicAuthOrToken extends WebSecurityConfigurerAdapter {
+    public class FilterChainBasicAuthOrToken extends AbstractWebSecurityConfigurer {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
@@ -69,15 +67,11 @@ public class HttpsWebSecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.requestMatchers().antMatchers(
+            baseConfigure(http.requestMatchers().antMatchers(
                 "/application/**",
                 "/*"
                 )
-                .and()
-                .csrf().disable()
-                .headers().httpStrictTransportSecurity().disable()
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+                .and())
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
@@ -93,7 +87,7 @@ public class HttpsWebSecurityConfig {
      */
     @Configuration
     @Order(2)
-    public class FilterChainClientCertificate extends WebSecurityConfigurerAdapter {
+    public class FilterChainClientCertificate extends AbstractWebSecurityConfigurer {
 
         @Override
         public void configure(WebSecurity web) {
@@ -105,14 +99,9 @@ public class HttpsWebSecurityConfig {
             };
             web.ignoring().antMatchers(noSecurityAntMatchers);
         }
-
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.antMatcher("/eureka/**")
-                .csrf().disable()
-                .headers().httpStrictTransportSecurity().disable()
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+            baseConfigure(http.antMatcher("/eureka/**"))
                 .authorizeRequests().anyRequest().authenticated()
                 .and().x509().userDetailsService(x509UserDetailsService());
         }
@@ -123,7 +112,7 @@ public class HttpsWebSecurityConfig {
      */
     @Configuration
     @Order(3)
-    public class FilterChainBasicAuthOrTokenOrClientCertificate extends WebSecurityConfigurerAdapter {
+    public class FilterChainBasicAuthOrTokenOrCert extends AbstractWebSecurityConfigurer {
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
@@ -131,11 +120,7 @@ public class HttpsWebSecurityConfig {
         }
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            http.antMatcher("/discovery/**")
-                .csrf().disable()
-                .headers().httpStrictTransportSecurity().disable()
-                .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+            baseConfigure(http.antMatcher("/discovery/**"))
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .httpBasic().realmName(DISCOVERY_REALM)

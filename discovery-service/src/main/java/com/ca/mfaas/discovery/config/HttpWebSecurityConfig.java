@@ -18,8 +18,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 
 /**
  * Main class configuring Spring security for Discovery Service
@@ -30,7 +28,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @Slf4j
 @EnableWebSecurity
 @Profile("!https")
-public class HttpWebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
     @Value("${apiml.discovery.userid:eureka}")
@@ -57,11 +55,8 @@ public class HttpWebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         log.warn("Discovery service is configured to use insecure HTTP protocol");
-        http.csrf().disable()
-            .headers().httpStrictTransportSecurity().disable().and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and().httpBasic().realmName(DISCOVERY_REALM)
+        baseConfigure(http)
+            .httpBasic().realmName(DISCOVERY_REALM)
             .and()
             .authorizeRequests()
             .antMatchers("/application/info", "/application/health").permitAll()
