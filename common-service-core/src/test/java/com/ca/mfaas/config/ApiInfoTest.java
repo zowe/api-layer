@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.config;
 
-import com.ca.mfaas.config.ApiInfo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
