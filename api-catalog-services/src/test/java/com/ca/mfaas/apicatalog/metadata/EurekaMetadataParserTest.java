@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog.metadata;
 
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import org.junit.Test;
