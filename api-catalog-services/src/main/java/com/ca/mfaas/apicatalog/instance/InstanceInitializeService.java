@@ -105,7 +105,7 @@ public class InstanceInitializeService {
         log.debug("Found: " + listApplication.size() + " services on startup.");
         String s = listApplication.stream()
             .map(Application::getName).collect(Collectors.joining(", "));
-        log.debug("Discovered Services: " + s);
+        log.info("Discovered Services: " + s);
 
         // create containers for services
         listApplication.forEach(this::createContainers);
