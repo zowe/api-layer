@@ -23,8 +23,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
 
@@ -84,6 +86,17 @@ public class InstanceRefreshService {
         }
     }
 
+    private void tempLog(String type, Applications services) {
+        String servicesLog = services.getRegisteredApplications()
+            .stream()
+            .flatMap(fm -> fm.getInstances().stream())
+            .filter(Objects::nonNull)
+            .map(m -> m.getAppName() + " - " + m.getStatus())
+            .collect(Collectors.joining(";"));
+        log.info("{}: {}", type, servicesLog);
+    }
+
+
     /**
      * @return a list of changed services
      */
@@ -92,7 +105,9 @@ public class InstanceRefreshService {
         // Updated containers
         Set<String> containersUpdated = new HashSet<>();
         Applications cachedServices = cachedServicesService.getAllCachedServices();
+        tempLog("cachedServices", cachedServices);
         Applications deltaFromDiscovery = instanceRetrievalService.getAllInstancesFromDiscovery(true);
+        tempLog("deltaFromDiscovery", deltaFromDiscovery);
 
         if (deltaFromDiscovery != null && !deltaFromDiscovery.getRegisteredApplications().isEmpty()) {
             // use the version to check if this delta has changed, it is deprecated and should be replaced as soon as a
