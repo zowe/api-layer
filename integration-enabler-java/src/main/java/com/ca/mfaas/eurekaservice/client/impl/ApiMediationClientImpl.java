@@ -10,10 +10,7 @@
 package com.ca.mfaas.eurekaservice.client.impl;
 
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
-import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.config.EurekaClientConfiguration;
-import com.ca.mfaas.eurekaservice.client.config.Route;
-import com.ca.mfaas.eurekaservice.client.config.Ssl;
+import com.ca.mfaas.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 import com.ca.mfaas.config.ApiInfo;
@@ -37,6 +34,8 @@ import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 public class ApiMediationClientImpl implements ApiMediationClient {
     private static final Logger log = LoggerFactory.getLogger(ApiMediationClientImpl.class);
@@ -150,21 +149,24 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
             String serviceUrl = route.getServiceUrl();
             String key = gatewayUrl.replace("/", "-");
-            metadata.put(String.format("routed-services.%s.gateway-url", key), gatewayUrl);
-            metadata.put(String.format("routed-services.%s.service-url", key), serviceUrl);
+            metadata.put(ROUTES + key + ROUTES_GATEWAY_URL, gatewayUrl);
+            metadata.put(ROUTES + key + ROUTES_SERVICE_URL, serviceUrl);
         }
 
         // fill tile metadata
-        if (config.getCatalogUiTile() != null) {
-            metadata.put("mfaas.discovery.catalogUiTile.id", config.getCatalogUiTile().getId());
-            metadata.put("mfaas.discovery.catalogUiTile.version", config.getCatalogUiTile().getVersion());
-            metadata.put("mfaas.discovery.catalogUiTile.title", config.getCatalogUiTile().getTitle());
-            metadata.put("mfaas.discovery.catalogUiTile.description", config.getCatalogUiTile().getDescription());
+        if (config.getCatalog() != null) {
+            Catalog.Tile tile = config.getCatalog().getTile();
+            if (tile != null) {
+                metadata.put(CATALOG_ID, tile.getId()); //"mfaas.discovery.catalog.id"
+                metadata.put(CATALOG_VERSION, tile.getVersion()); // "mfaas.discovery.catalog.version"
+                metadata.put(CATALOG_TITLE, tile.getTitle()); // "mfaas.discovery.catalog.title"
+                metadata.put(CATALOG_DESCRIPTION, tile.getDescription()); //"mfaas.discovery.catalog.description"
+            }
         }
 
         // fill service metadata
-        metadata.put("mfaas.discovery.service.title", config.getTitle());
-        metadata.put("mfaas.discovery.service.description", config.getDescription());
+        metadata.put(SERVICE_TITLE, config.getTitle()); // "mfaas.discovery.service.title"
+        metadata.put(SERVICE_DESCRIPTION, config.getDescription()); //"mfaas.discovery.service.description"
 
         // fill api-doc info
         for (ApiInfo apiInfo : config.getApiInfo()) {
