@@ -16,6 +16,7 @@ import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
@@ -73,16 +74,21 @@ public class EurekaMetadataParser {
      */
     public RoutedServices parseRoutes(Map<String, String> eurekaMetadata) {
         RoutedServices routes = new RoutedServices();
+        parseToListRoute(eurekaMetadata)
+            .forEach(routes::addRoutedService);
+        return routes;
+    }
+
+
+    public List<RoutedService> parseToListRoute(Map<String, String> eurekaMetadata) {
         Map<String, String> routeMap = new HashMap<>();
 
-        eurekaMetadata.entrySet()
+        return eurekaMetadata.entrySet()
             .stream()
             .filter(this::filterMetadata)
             .map(metadata -> mapMetadataToRoutedService(metadata, routeMap))
             .filter(Objects::nonNull)
-            .forEach(routes::addRoutedService);
-
-        return routes;
+            .collect(Collectors.toList());
     }
 
     private boolean filterMetadata(Map.Entry<String, String> metadata) {
