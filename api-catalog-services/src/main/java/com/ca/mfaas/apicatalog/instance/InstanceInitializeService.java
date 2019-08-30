@@ -28,10 +28,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
 
 /**
  * Initialize the API catalog with the running instances.
@@ -44,6 +42,8 @@ public class InstanceInitializeService {
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
+
+    private static final String API_ENABLED_METADATA_KEY = "mfaas.discovery.enableApiDoc";
 
     /**
      * Initialise the API Catalog with all current running instances
@@ -79,36 +79,79 @@ public class InstanceInitializeService {
         }
     }
 
+
     @Recover
     public void recover(RetryException e) {
         log.warn("Failed to initialise API Catalog with services running in the Gateway.");
     }
 
     /**
+     * Only include services for caching if they have API doc enabled in their metadata
+     *
+     * @param discoveredServices all discovered services
+     * @return only API Doc enabled services
+     */
+    private Applications filterByApiEnabled(Applications discoveredServices) {
+        Applications filteredServices = new Applications();
+        for (Application application : discoveredServices.getRegisteredApplications()) {
+            if (!application.getInstances().isEmpty()) {
+                processInstance(filteredServices, application);
+            }
+        }
+
+        return filteredServices;
+    }
+
+    private void processInstance(Applications filteredServices, Application application) {
+        InstanceInfo instanceInfo = application.getInstances().get(0);
+        String value = instanceInfo.getMetadata().get(API_ENABLED_METADATA_KEY);
+        boolean apiEnabled = true;
+        if (value != null) {
+            apiEnabled = Boolean.parseBoolean(value);
+        }
+
+        // only add api enabled services
+        if (apiEnabled) {
+            if (filteredServices == null) {
+                filteredServices = new Applications();
+            }
+            filteredServices.addApplication(application);
+        } else {
+            log.debug("Service: " + application.getName() + " is not API enabled, it will be ignored by the API Catalog");
+        }
+    }
+
+    /**
      * Query the discovery service for all running instances
      */
     private void updateCacheWithAllInstances() {
-        Applications discoveryApplications = instanceRetrievalService.getAllInstancesFromDiscovery(false);
-
-        // Only include services which have a instances
-        List<Application> listApplication = discoveryApplications.getRegisteredApplications()
+        Applications allServices = instanceRetrievalService.getAllInstancesFromDiscovery(false);
+        String servicesLog = allServices.getRegisteredApplications()
             .stream()
-            .filter(application -> !application.getInstances().isEmpty())
-            .collect(Collectors.toList());
+            .flatMap(fm -> fm.getInstances().stream())
+            .filter(Objects::nonNull)
+            .map(m -> m.getAppName() + " - " + m.getStatus())
+            .collect(Collectors.joining(";"));
+        log.info("InstanceInitializeService first iniitialize: {}", servicesLog);
+
+        // Only include services which have API doc enabled
+        allServices = filterByApiEnabled(allServices);
 
         // Return an empty string if no services are found after filtering
-        if (listApplication.isEmpty()) {
+        if (allServices.getRegisteredApplications().isEmpty()) {
             log.info("No services found");
             return;
         }
 
-        log.debug("Found: " + listApplication.size() + " services on startup.");
-        String s = listApplication.stream()
+        log.debug("Found: " + allServices.size() + " services on startup.");
+        String s = allServices.getRegisteredApplications().stream()
             .map(Application::getName).collect(Collectors.joining(", "));
         log.info("Discovered Services: " + s);
 
         // create containers for services
-        listApplication.forEach(this::createContainers);
+        for (Application application : allServices.getRegisteredApplications()) {
+            createContainers(application);
+        }
 
         // populate the cache
         Collection<APIContainer> containers = cachedProductFamilyService.getAllContainers();
@@ -119,7 +162,7 @@ public class InstanceInitializeService {
     private void createContainers(Application application) {
         cachedServicesService.updateService(application.getName(), application);
         application.getInstances().forEach(instanceInfo -> {
-            String productFamilyId = instanceInfo.getMetadata().get(CATALOG_ID);
+            String productFamilyId = instanceInfo.getMetadata().get("mfaas.discovery.catalogUiTile.id");
             if (productFamilyId != null) {
                 log.debug("Initialising product family (creating tile for) : " + productFamilyId);
                 cachedProductFamilyService.createContainerFromInstance(productFamilyId, instanceInfo);
@@ -129,7 +172,7 @@ public class InstanceInitializeService {
     }
 
     private void getAllInstances(InstanceInfo apiCatalogInstance) {
-        String productFamilyId = apiCatalogInstance.getMetadata().get(CATALOG_ID);
+        String productFamilyId = apiCatalogInstance.getMetadata().get("mfaas.discovery.catalogUiTile.id");
         if (productFamilyId != null) {
             log.debug("Initialising product family (creating tile for) : " + productFamilyId);
             cachedProductFamilyService.createContainerFromInstance(productFamilyId, apiCatalogInstance);
