@@ -53,10 +53,11 @@ public class InstanceRefreshService {
         initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
         fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
+        log.info("gatewayClient.isInitialized() : {}", gatewayClient.isInitialized());
+        log.info("isApiCatalogInCache : {}", isApiCatalogInCache());
+
         if (!gatewayClient.isInitialized() || !isApiCatalogInCache()) {
             log.info("Gateway not found yet, skipping the InstanceRefreshService refresh");
-            log.info("gatewayClient.isInitialized() : {}", gatewayClient.isInitialized());
-            log.info("isApiCatalogInCache : {}", isApiCatalogInCache());
             return;
         }
 
