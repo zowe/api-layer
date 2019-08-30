@@ -52,6 +52,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
         };
         web.ignoring().antMatchers(noSecurityAntMatchers);
     }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         log.warn("Discovery service is configured to use insecure HTTP protocol");

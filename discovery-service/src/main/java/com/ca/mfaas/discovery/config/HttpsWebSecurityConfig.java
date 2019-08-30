@@ -99,6 +99,7 @@ public class HttpsWebSecurityConfig {
             };
             web.ignoring().antMatchers(noSecurityAntMatchers);
         }
+
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.antMatcher("/eureka/**"))
@@ -113,11 +114,13 @@ public class HttpsWebSecurityConfig {
     @Configuration
     @Order(3)
     public class FilterChainBasicAuthOrTokenOrCert extends AbstractWebSecurityConfigurer {
+
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
             auth.authenticationProvider(gatewayTokenProvider);
         }
+
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.antMatcher("/discovery/**"))
@@ -133,9 +136,11 @@ public class HttpsWebSecurityConfig {
     private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
         return new BasicContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
     }
+
     private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
         return new CookieContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties);
     }
+
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("eurekaClient", "", Collections.emptyList());
     }

@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 public abstract class AbstractWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
+
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
         return http.csrf().disable()
             .headers().httpStrictTransportSecurity().disable()
