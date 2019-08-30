@@ -61,7 +61,7 @@ if [ "$RC" -ne "0" ]; then
 fi
 
 if [[ "**VERIFY_CERTIFICATES**" == "true" ]]; then
-  scripts/apiml_cm.sh --verbose --log $LOG_FILE --action trust-zosmf
+  scripts/apiml_cm.sh --verbose --log $LOG_FILE --action trust-zosmf --zosmf-keyring **ZOSMF_KEYRING** --zosmf-userid **ZOSMF_USER**
   RC=$?
 
   echo "apiml_cm.sh --action trust-zosmf returned: $RC" >> $LOG_FILE
