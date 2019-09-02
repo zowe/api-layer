@@ -50,13 +50,12 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
         }
     }
 
-    //503
+    //500
     private void handleGatewayNotAvailable(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_500, ex.getMessage());
         writeErrorResponse(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, request, response);
     }
 
-    //500
     private void handleServiceNotAccessible(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_500, ex.getMessage());
         writeErrorResponse(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, request, response);
