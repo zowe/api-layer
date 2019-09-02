@@ -19,6 +19,7 @@ import com.ca.apiml.security.common.content.BasicContentFilter;
 import com.ca.apiml.security.common.content.CookieContentFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
@@ -51,6 +52,9 @@ public class HttpsWebSecurityConfig {
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
+
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
 
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token)
@@ -102,9 +106,13 @@ public class HttpsWebSecurityConfig {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            baseConfigure(http.antMatcher("/eureka/**"))
-                .authorizeRequests().anyRequest().authenticated()
+            baseConfigure(http.antMatcher("/eureka/**"));
+            if (verifySslCertificatesOfServices) {
+                http.authorizeRequests().anyRequest().authenticated()
                 .and().x509().userDetailsService(x509UserDetailsService());
+            } else {
+                http.authorizeRequests().anyRequest().permitAll();
+            }
         }
     }
 
