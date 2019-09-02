@@ -28,7 +28,7 @@ public class GatewayClientTest {
         assertEquals(gatewayClient.getGatewayConfigProperties(), gatewayConfigProperties);
     }
 
-    @Test(expected = GatewayNotFoundException.class)
+    @Test(expected = GatewayNotAvailableException.class)
     public void testGetGatewayConfigProperties_whenItNull() {
         gatewayClient.setGatewayConfigProperties(null);
         gatewayClient.getGatewayConfigProperties();

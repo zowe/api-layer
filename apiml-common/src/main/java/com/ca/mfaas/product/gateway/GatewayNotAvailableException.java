@@ -12,13 +12,13 @@ package com.ca.mfaas.product.gateway;
 /**
  * Exception thrown when an API Gateway Service is not accessible or found
  */
-public class GatewayNotFoundException extends RuntimeException {
+public class GatewayNotAvailableException extends RuntimeException {
 
-    public GatewayNotFoundException(String message) {
+    public GatewayNotAvailableException(String message) {
         super(message);
     }
 
-    public GatewayNotFoundException(String message, Throwable cause) {
+    public GatewayNotAvailableException(String message, Throwable cause) {
         super(message, cause);
     }
 }

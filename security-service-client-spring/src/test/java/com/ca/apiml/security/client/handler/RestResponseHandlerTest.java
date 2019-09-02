@@ -14,7 +14,7 @@ import com.ca.apiml.security.common.error.ErrorType;
 import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
 import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.product.gateway.GatewayNotFoundException;
+import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -83,14 +83,14 @@ public class RestResponseHandlerTest {
         handler.handleBadResponse(forbiddenException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 
-    @Test(expected = GatewayNotFoundException.class)
-    public void handleBadResponseWithGatewayNotFound() {
+    @Test(expected = GatewayNotAvailableException.class)
+    public void handleBadResponseWithGatewayNotAvailable() {
         ResourceAccessException raException = new ResourceAccessException("Resource Access Exception");
         handler.handleBadResponse(raException, null, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }
 
-    @Test(expected = GatewayNotFoundException.class)
-    public void handleBadResponseWithGatewayNotFoundWithCause() {
+    @Test(expected = GatewayNotAvailableException.class)
+    public void handleBadResponseWithGatewayNotAvailableWithCause() {
         ResourceAccessException raException = new ResourceAccessException("Resource Access Exception");
         handler.handleBadResponse(raException, ErrorType.BAD_CREDENTIALS, GENERIC_LOG_MESSAGE, LOG_PARAMETERS);
     }

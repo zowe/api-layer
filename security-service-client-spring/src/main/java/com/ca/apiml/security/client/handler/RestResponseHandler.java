@@ -14,7 +14,7 @@ import com.ca.apiml.security.common.error.ErrorType;
 import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
 import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.product.gateway.GatewayNotFoundException;
+import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -46,7 +46,7 @@ public class RestResponseHandler {
         if (exception instanceof HttpClientErrorException) {
             handleHttpClientError(exception, errorType, genericLogErrorMessage, logParameters);
         } else if (exception instanceof ResourceAccessException) {
-            throw new GatewayNotFoundException(ErrorType.GATEWAY_NOT_FOUND.getDefaultMessage(), exception);
+            throw new GatewayNotAvailableException(ErrorType.GATEWAY_NOT_AVAILABLE.getDefaultMessage(), exception);
         } else if (exception instanceof HttpServerErrorException) {
             HttpServerErrorException hseException = (HttpServerErrorException) exception;
             if (hseException.getStatusCode().equals(HttpStatus.SERVICE_UNAVAILABLE)) {

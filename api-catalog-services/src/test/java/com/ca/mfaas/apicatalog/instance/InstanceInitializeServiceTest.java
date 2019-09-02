@@ -13,7 +13,7 @@ package com.ca.mfaas.apicatalog.instance;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.product.constants.CoreService;
-import com.ca.mfaas.product.gateway.GatewayNotFoundException;
+import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
 import com.ca.mfaas.product.instance.InstanceInitializationException;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
@@ -34,8 +34,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.mockito.Mockito.*;
 import static org.hamcrest.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceInitializeServiceTest {
@@ -126,9 +126,9 @@ public class InstanceInitializeServiceTest {
     }
 
     @Test
-    public void shouldThrowRetryExceptionOnGatewayNotFoundException() throws CannotRegisterServiceException {
+    public void shouldThrowRetryExceptionOnGatewayNotAvailableException() throws CannotRegisterServiceException {
         String catalogId = CoreService.API_CATALOG.getServiceId();
-        when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new GatewayNotFoundException("ERROR"));
+        when(instanceRetrievalService.getInstanceInfo(catalogId)).thenThrow(new GatewayNotAvailableException("ERROR"));
 
         exception.expect(RetryException.class);
         exception.expectMessage("ERROR");

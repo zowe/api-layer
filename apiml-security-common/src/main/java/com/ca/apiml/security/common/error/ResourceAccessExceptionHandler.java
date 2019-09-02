@@ -10,7 +10,7 @@
 package com.ca.apiml.security.common.error;
 
 import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.product.gateway.GatewayNotFoundException;
+import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -41,8 +41,8 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
      */
     @Override
     public void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        if (ex instanceof GatewayNotFoundException) {
-            handleGatewayNotFound(request, response, ex);
+        if (ex instanceof GatewayNotAvailableException) {
+            handleGatewayNotAvailable(request, response, ex);
         } else if (ex instanceof ServiceNotAccessibleException) {
             handleServiceNotAccessible(request, response, ex);
         } else {
@@ -50,10 +50,10 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
         }
     }
 
-    //400
-    private void handleGatewayNotFound(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
-        writeErrorResponse(ErrorType.GATEWAY_NOT_FOUND.getErrorMessageKey(), HttpStatus.NOT_FOUND, request, response);
+    //503
+    private void handleGatewayNotAvailable(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+        log.debug(ERROR_MESSAGE_500, ex.getMessage());
+        writeErrorResponse(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, request, response);
     }
 
     //500
