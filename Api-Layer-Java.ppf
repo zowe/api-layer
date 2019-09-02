@@ -22,6 +22,8 @@
 	<Source exclude="false" path="./discovery-service/src/test/java" web="false"/>
 	<Source exclude="false" path="./apiml-common/src/main/java" web="false"/>
 	<Source exclude="false" path="./apiml-common/src/test/java" web="false"/>
+	<Source exclude="false" path="./apiml-security-common/src/main/java" web="false"/>
+	<Source exclude="false" path="./apiml-security-common/src/test/java" web="false"/>
 	<Source exclude="false" path="./gateway-service/src/main/java" web="false"/>
 	<Source exclude="false" path="./gateway-service/src/test/java" web="false"/>
 	<Source exclude="false" path="./helloworld-jersey/src/main/java" web="false"/>
