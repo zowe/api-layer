@@ -19,6 +19,17 @@ import java.util.List;
 @NoArgsConstructor
 @Builder(toBuilder = true)
 public class ApiMediationServiceConfig {
+    /**
+     * Service configuration version. Allows to work with different versions of configuration for backward compatibility
+     * of already deployed services, e.g. old versions can be converted to new versions on the fly, using converter
+     * filters deployed in API ML discovery service.
+     *
+     * Original version 1.0 is implicit and is not stated in the YAML files.
+     * Starting from version 2.0 there is a converter for the old versions, so API ML GW can expect to obtain only a
+     * single actual version of metadata.
+     */
+    private String version;
+
     @Singular
     private List<String> discoveryServiceUrls;
     private String serviceId;
