@@ -53,9 +53,6 @@ public class HttpsWebSecurityConfig {
     private final GatewayTokenProvider gatewayTokenProvider;
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
-
     /**
      * Filter chain for protecting endpoints with MF credentials (basic or token)
      */
@@ -93,6 +90,9 @@ public class HttpsWebSecurityConfig {
     @Order(2)
     public class FilterChainClientCertificate extends AbstractWebSecurityConfigurer {
 
+        @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+        private boolean verifySslCertificatesOfServices;
+
         @Override
         public void configure(WebSecurity web) {
             String[] noSecurityAntMatchers = {
@@ -108,8 +108,9 @@ public class HttpsWebSecurityConfig {
         protected void configure(HttpSecurity http) throws Exception {
             baseConfigure(http.antMatcher("/eureka/**"));
             if (verifySslCertificatesOfServices) {
-                http.authorizeRequests().anyRequest().authenticated()
-                .and().x509().userDetailsService(x509UserDetailsService());
+                http.authorizeRequests()
+                    .anyRequest().authenticated()
+                    .and().x509().userDetailsService(x509UserDetailsService());
             } else {
                 http.authorizeRequests().anyRequest().permitAll();
             }
@@ -142,11 +143,18 @@ public class HttpsWebSecurityConfig {
     }
 
     private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-        return new BasicContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
+        return new BasicContentFilter(
+            authenticationManager,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler());
     }
 
     private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
-        return new CookieContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler(), securityConfigurationProperties);
+        return new CookieContentFilter(
+            authenticationManager,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            securityConfigurationProperties);
     }
 
     private UserDetailsService x509UserDetailsService() {
