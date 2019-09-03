@@ -12,7 +12,6 @@ package com.ca.mfaas.eurekaservice.client.util;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
-import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -111,7 +110,7 @@ public class EurekaMetadataParser {
                                       String subServiceId,
                                       String routeURL) {
         if (routeKeyURL.equals(ROUTES_GATEWAY_URL)) {
-            String gatewayURL = UrlUtils.removeFirstAndLastSlash(routeURL);
+            String gatewayURL = StringUtils.removeFirstAndLastSlash(routeURL);
 
             if (routeMap.containsKey(subServiceId)) {
                 String serviceUrl = routeMap.get(subServiceId);
@@ -123,7 +122,7 @@ public class EurekaMetadataParser {
         }
 
         if (routeKeyURL.equals(ROUTES_SERVICE_URL)) {
-            String serviceURL = UrlUtils.addFirstSlash(routeURL);
+            String serviceURL = StringUtils.addFirstSlash(routeURL);
 
             if (routeMap.containsKey(subServiceId)) {
                 String gatewayUrl = routeMap.get(subServiceId);
@@ -136,4 +135,43 @@ public class EurekaMetadataParser {
 
         return null;
     }
+
+
+    /**
+     * Generate Eureka metadata for ApiInfo configuration
+     *
+     * @param serviceId the identifier of a service which ApiInfo configuration belongs
+     * @return the generated Eureka metadata
+     */
+    public Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) {
+        Map<String, String> metadata = new HashMap<>();
+        String encodedGatewayUrl = UrlUtils.getEncodedUrl(apiInfo.getGatewayUrl());
+
+        if (apiInfo.getGatewayUrl() != null) {
+            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_GATEWAY_URL), apiInfo.getGatewayUrl());
+        }
+
+        if (apiInfo.getVersion() != null) {
+            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_VERSION), apiInfo.getVersion());
+        }
+
+        if (apiInfo.getSwaggerUrl() != null) {
+            UrlUtils.validateUrl(apiInfo.getSwaggerUrl(),
+                () -> String.format("The Swagger URL \"%s\" for service %s is not valid", apiInfo.getSwaggerUrl(), serviceId)
+            );
+
+            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_SWAGGER_URL), apiInfo.getSwaggerUrl());
+        }
+
+        if (apiInfo.getDocumentationUrl() != null) {
+            UrlUtils.validateUrl(apiInfo.getDocumentationUrl(),
+                () -> String.format("The documentation URL \"%s\" for service %s is not valid", apiInfo.getDocumentationUrl(), serviceId)
+            );
+
+            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
+        }
+
+        return metadata;
+    }
+
 }

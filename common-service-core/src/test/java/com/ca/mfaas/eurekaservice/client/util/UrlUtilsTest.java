@@ -15,6 +15,17 @@ import static org.junit.Assert.*;
 
 public class UrlUtilsTest {
     @Test
+    public void testTrimSlashes() {
+        assertEquals("abc", UrlUtils.trimSlashes("abc"));
+        assertEquals("abc", UrlUtils.trimSlashes("abc/"));
+        assertEquals("abc", UrlUtils.trimSlashes("/abc"));
+        assertEquals("abc", UrlUtils.trimSlashes("/abc/"));
+        assertEquals("", UrlUtils.trimSlashes(""));
+        assertEquals("/", UrlUtils.trimSlashes("///"));
+        assertEquals("", UrlUtils.trimSlashes("//"));
+    }
+
+    @Test
     public void trimSlashes() {
         String urlStringWithSlashes = "/api/v1/endpoint/";
 
@@ -23,6 +34,4 @@ public class UrlUtilsTest {
         assertFalse(result.matches("^/"));
         assertFalse(result.matches("/$"));
     }
-
-
 }

@@ -10,6 +10,8 @@
 package com.ca.mfaas.discovery.staticdef;
 
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
+import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -40,6 +42,9 @@ public class ServiceDefinitionProcessor {
     private static final DataCenterInfo DEFAULT_INFO = () -> DataCenterInfo.Name.MyOwn;
 
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
+
+    // TODO: Think of spring bean with corresponding interface
+    private EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
 
     @Data
     static class ProcessServicesDataResult {
@@ -276,7 +281,7 @@ public class ServiceDefinitionProcessor {
 
             if (service.getApiInfo() != null) {
                 for (ApiInfo apiInfo : service.getApiInfo()) {
-                    mt.putAll(apiInfo.generateMetadata(service.getServiceId()));
+                    mt.putAll(eurekaMetadataParser.generateMetadata(service.getServiceId(), apiInfo));
                 }
             }
         }

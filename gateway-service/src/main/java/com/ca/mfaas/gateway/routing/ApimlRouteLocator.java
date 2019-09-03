@@ -9,11 +9,11 @@
  */
 package com.ca.mfaas.gateway.routing;
 
+import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
 
-import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -21,7 +21,6 @@ import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.util.PatternMatchUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -112,7 +111,7 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
             if (!path.startsWith("/")) {
                 path = "/" + path;
             }
-            if (StringUtils.hasText(this.properties.getPrefix())) {
+            if (org.springframework.util.StringUtils.hasText(this.properties.getPrefix())) {
                 path = this.properties.getPrefix() + path;
                 if (!path.startsWith("/")) {
                     path = "/" + path;
@@ -146,13 +145,13 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
                 if (url.length == 4 && metadata.getKey().startsWith(ROUTES)) {
 
                     if (url[3].equals(ROUTES_GATEWAY_URL)) {
-                        String gatewayURL = UrlUtils.removeFirstAndLastSlash(metadata.getValue());
+                        String gatewayURL = StringUtils.removeFirstAndLastSlash(metadata.getValue());
                         routeMap.put(url[2], gatewayURL);
                         keys.add("/" + gatewayURL + "/" + mapRouteToService(serviceId) + "/**");
                     }
 
                     if (url[3].equals(ROUTES_SERVICE_URL) && routeMap.containsKey(url[2])) {
-                        String serviceURL = UrlUtils.addFirstSlash(metadata.getValue());
+                        String serviceURL = StringUtils.addFirstSlash(metadata.getValue());
                         routes.addRoutedService(new RoutedService(url[2], routeMap.get(url[2]), serviceURL));
                         routeMap.remove(url[2]);
                     }

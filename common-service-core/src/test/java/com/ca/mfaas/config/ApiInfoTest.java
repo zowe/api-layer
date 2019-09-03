@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.config;
 
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,6 +25,8 @@ public class ApiInfoTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
+    EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
+
     @Test
     public void generateFullMetadata() {
         String serviceId = "test service";
@@ -34,7 +37,7 @@ public class ApiInfoTest {
         String metadataPrefix = API_INFO + ".api-v1.";
 
         ApiInfo apiInfo = new ApiInfo("org.zowe", gatewayUrl, version, swaggerUrl, documentationUrl);
-        Map<String, String> metadata = apiInfo.generateMetadata(serviceId);
+        Map<String, String> metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
         String metaVersion = metadata.get(metadataPrefix + API_INFO_VERSION);
         assertNotNull(metaVersion);
@@ -59,7 +62,7 @@ public class ApiInfoTest {
         String version = "1.0.0";
 
         ApiInfo apiInfo = new ApiInfo(null, null, version, null, null);
-        Map<String, String> metadata = apiInfo.generateMetadata(serviceId);
+        Map<String, String> metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
         assertEquals(1, metadata.size());
         assertTrue(metadata.toString().contains(version));
@@ -70,7 +73,7 @@ public class ApiInfoTest {
         String serviceId = "test service";
 
         ApiInfo apiInfo = new ApiInfo();
-        Map<String, String> metadata = apiInfo.generateMetadata(serviceId);
+        Map<String, String> metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
         assertEquals(0, metadata.size());
     }
@@ -85,7 +88,7 @@ public class ApiInfoTest {
         exceptionRule.expectMessage("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid: no protocol: " + swaggerUrl);
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null);
-        apiInfo.generateMetadata(serviceId);
+        eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
     }
 
 
@@ -99,6 +102,6 @@ public class ApiInfoTest {
         exceptionRule.expectMessage("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid: no protocol: " + documentationUrl);
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, documentationUrl);
-        apiInfo.generateMetadata(serviceId);
+        eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
     }
 }

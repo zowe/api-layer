@@ -11,6 +11,7 @@ package com.ca.mfaas.eurekaservice.client.impl;
 
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.*;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 import com.ca.mfaas.config.ApiInfo;
@@ -41,6 +42,9 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     private static final Logger log = LoggerFactory.getLogger(ApiMediationClientImpl.class);
 
     private EurekaClient eurekaClient;
+
+    // TODO: Think of spring bean with corresponding interface. Currently is in module, which doesn't dependent on Spring.
+    private EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
 
     @Override
     public synchronized void register(ApiMediationServiceConfig config) {
@@ -165,12 +169,16 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         }
 
         // fill service metadata
+        if (config.getVersion() != null) {
+            metadata.put(VERSION, config.getVersion());
+        }
+
         metadata.put(SERVICE_TITLE, config.getTitle()); // "mfaas.discovery.service.title"
         metadata.put(SERVICE_DESCRIPTION, config.getDescription()); //"mfaas.discovery.service.description"
 
         // fill api-doc info
         for (ApiInfo apiInfo : config.getApiInfo()) {
-            metadata.putAll(apiInfo.generateMetadata(config.getServiceId()));
+            metadata.putAll(eurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
         }
 
         return metadata;
