@@ -33,6 +33,7 @@ gitProperties {
 
 dependencies {
     compile(project(':security-service-client-spring'))
+    compile(project(':common-service-core'))
 
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_security
