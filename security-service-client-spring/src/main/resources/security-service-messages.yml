@@ -19,7 +19,7 @@ messages:
     - key: apiml.security.gatewayNotAvailable
       number: ZWEAS103E
       type: ERROR
-      text: "API Gateway Service is not available by URL '%s' (API Gateway is needed because it provides the authentication functionality)"
+      text: "API Gateway Service is not available by URL '%s' (API Gateway is required because it provides the authentication functionality)"
 
     - key: apiml.security.serviceUnavailable
       number: ZWEAS104E
