@@ -7,23 +7,19 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
-package com.ca.mfaas.discovery.config;
+package com.ca.apiml.security.client.config;
 
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
-/**
- * Error service configuration
- */
 @Configuration
-@Profile("!https")
 public class ErrorServiceConfig {
+
     @Bean
-    public ErrorService errorServiceGateway() {
+    public ErrorService errorService() {
         return new ErrorServiceImpl("/security-service-messages.yml");
     }
+
 }
