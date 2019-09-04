@@ -9,8 +9,8 @@ gatewayServiceConfiguration:
     instances: 1
 discoveryServiceConfiguration:
     scheme: https
-    user: eureka
-    password: password
+    user: user
+    password: user
     host: localhost
     port: 10011
     instances: 1

@@ -30,13 +30,13 @@ public class GatewayClient {
 
     /**
      * Retrieves GatewayConfigProperties object, which holds the Gateway url and schema
-     * When GatewayConfigProperties is unknown (not discovered yet), GatewayNotFoundException is thrown
+     * When GatewayConfigProperties is not available (or not discovered yet), GatewayNotAvailableException is thrown
      *
      * @return GatewayConfigProperties object
      */
     public GatewayConfigProperties getGatewayConfigProperties() {
         if (gatewayConfigProperties == null) {
-            throw new GatewayNotFoundException("No Gateway Instance is known at the moment");
+            throw new GatewayNotAvailableException("No Gateway Instance is available at the moment");
         }
 
         return gatewayConfigProperties;

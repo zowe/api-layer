@@ -9,8 +9,6 @@
  */
 package com.ca.apiml.security.client.config;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayInstanceInitializer;
 import com.ca.mfaas.product.instance.lookup.InstanceLookupExecutor;
@@ -25,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
  * General configuration of security client
  */
 @Configuration
-@ComponentScan("com.ca.apiml.security")
+@ComponentScan({"com.ca.apiml.security", "com.ca.mfaas.product.gateway"})
 public class SecurityServiceConfiguration {
 
     @Bean
@@ -39,10 +37,5 @@ public class SecurityServiceConfiguration {
             new InstanceLookupExecutor(eurekaClient),
             applicationEventPublisher,
             gatewayClient);
-    }
-
-    @Bean
-    public ErrorService errorService() {
-        return new ErrorServiceImpl("/security-service-messages.yml");
     }
 }

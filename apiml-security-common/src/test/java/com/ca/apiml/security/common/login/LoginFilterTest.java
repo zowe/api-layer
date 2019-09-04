@@ -15,7 +15,7 @@ import com.ca.apiml.security.common.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
 import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.error.impl.ErrorServiceImpl;
-import com.ca.mfaas.product.gateway.GatewayNotFoundException;
+import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
 import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -156,8 +156,8 @@ public class LoginFilterTest {
     }
 
     @Test
-    public void shouldFailWithGatewayNotFound() throws IOException, ServletException {
-        testFailWithResourceAccessError(new GatewayNotFoundException("API Gateway service not found"), ErrorType.GATEWAY_NOT_FOUND);
+    public void shouldFailWithGatewayNotAvailable() throws IOException, ServletException {
+        testFailWithResourceAccessError(new GatewayNotAvailableException("API Gateway service not available"), ErrorType.GATEWAY_NOT_AVAILABLE);
     }
 
     @Test

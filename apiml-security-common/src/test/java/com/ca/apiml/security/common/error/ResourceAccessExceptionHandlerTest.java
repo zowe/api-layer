@@ -57,7 +57,7 @@ public class ResourceAccessExceptionHandlerTest {
 
     @Test(expected = ServletException.class)
     public void shouldThrowServletExceptionOnIOException() throws Exception {
-        ApiMessage message = errorService.createApiMessage(ErrorType.GATEWAY_NOT_FOUND.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        ApiMessage message = errorService.createApiMessage(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), httpServletRequest.getRequestURI());
         doThrow(new IOException("Error in writing response")).when(objectMapper).writeValue(httpServletResponse.getWriter(), message);
 
         resourceAccessExceptionHandler.writeErrorResponse(message, HttpStatus.NOT_FOUND, httpServletResponse);

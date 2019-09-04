@@ -26,7 +26,7 @@ public enum ErrorType {
     AUTH_REQUIRED("apiml.security.authRequired", "Authentication is required."),
     AUTH_GENERAL("apiml.security.generic", "A failure occurred when authenticating."),
     SERVICE_UNAVAILABLE("apiml.security.serviceUnavailable", "Authentication service not available."),
-    GATEWAY_NOT_FOUND("apiml.security.gatewayNotFound", "API Gateway Service not found.");
+    GATEWAY_NOT_AVAILABLE("apiml.security.gatewayNotAvailable", "API Gateway Service not available.");
 
     private final String errorMessageKey;
     private final String defaultMessage;
