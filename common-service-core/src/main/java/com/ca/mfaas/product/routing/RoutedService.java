@@ -11,11 +11,12 @@ package com.ca.mfaas.product.routing;
 
 import lombok.Data;
 
+/**
+ * Defines routing table
+ */
 @Data
 public class RoutedService {
-
     private final String subServiceId;
     private final String gatewayUrl;
     private final String serviceUrl;
-
 }

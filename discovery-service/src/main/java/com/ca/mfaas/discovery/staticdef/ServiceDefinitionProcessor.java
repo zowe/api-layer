@@ -31,6 +31,9 @@ import java.util.*;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
+/**
+ * Processes static definition files and creates service instances
+ */
 @Slf4j
 @Component
 public class ServiceDefinitionProcessor {
@@ -47,6 +50,12 @@ public class ServiceDefinitionProcessor {
         private final List<InstanceInfo> instances;
     }
 
+    /**
+     * Creates a list of instances from static definition files
+     *
+     * @param staticApiDefinitionsDirectories directories containing static definitions
+     * @return list of instances
+     */
     public List<InstanceInfo> findServices(String staticApiDefinitionsDirectories) {
         List<InstanceInfo> instances = new ArrayList<>();
 

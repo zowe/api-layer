@@ -35,10 +35,17 @@ public class EurekaMetadataParserTest {
         metadata.put(API_INFO + ".2." + API_INFO_GATEWAY_URL, "gatewayUrl2");
         metadata.put(API_INFO + ".2." + API_INFO_SWAGGER_URL, "swagger");
         metadata.put(API_INFO + ".2." + API_INFO_DOCUMENTATION_URL, "doc");
+        metadata.put(API_INFO + ".1." + API_INFO_API_ID, "org.zowe.test");
+        metadata.put(API_INFO + ".1." + API_INFO_VERSION, "1.0.0");
+        metadata.put(API_INFO + ".1.badArgument", "garbage");
+
 
         List<ApiInfo> info = eurekaMetadataParser.parseApiInfo(metadata);
+
         assertEquals(2, info.size());
         assertEquals("gatewayUrl", info.get(0).getGatewayUrl());
+        assertEquals("org.zowe.test", info.get(0).getApiId());
+        assertEquals("1.0.0", info.get(0).getVersion());
         assertEquals("gatewayUrl2", info.get(1).getGatewayUrl());
         assertEquals("swagger", info.get(1).getSwaggerUrl());
         assertEquals("doc", info.get(1).getDocumentationUrl());
@@ -95,6 +102,5 @@ public class EurekaMetadataParserTest {
 
         assertEquals("List route size is different", 3, actualRoutes.size());
         assertThat(actualRoutes, containsInAnyOrder(expectedListRoute.toArray()));
-
     }
 }

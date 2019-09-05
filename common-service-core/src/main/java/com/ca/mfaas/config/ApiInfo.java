@@ -97,6 +97,4 @@ public class ApiInfo {
             throw new InvalidParameterException(exceptionSupplier.get() + ": " + e.getMessage());
         }
     }
-
-    //TODO: move methods to EurekaMetadataParser
 }

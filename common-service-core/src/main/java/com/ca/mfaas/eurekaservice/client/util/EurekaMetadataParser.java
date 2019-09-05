@@ -80,6 +80,12 @@ public class EurekaMetadataParser {
     }
 
 
+    /**
+     * Parse eureka metadata and return list of routes
+     *
+     * @param eurekaMetadata the eureka metadata
+     * @return list of all routes
+     */
     public List<RoutedService> parseToListRoute(Map<String, String> eurekaMetadata) {
         Map<String, String> routeMap = new HashMap<>();
 
