@@ -33,6 +33,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -93,8 +94,9 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                 new HttpEntity<>(null, headers),
                 String.class);
 
-            String cookie = response.getHeaders().getFirst(HttpHeaders.SET_COOKIE);
-            String ltpaToken = readLtpaToken(cookie);
+            List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
+
+            String ltpaToken = readLtpaToken(cookies);
             String domain = readDomain(response.getBody());
             String jwtToken = authenticationService.createJwtToken(user, domain, ltpaToken);
 
@@ -133,19 +135,22 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
     }
 
     /**
-     * Read the LTPA token from the cookie
+     * Read the LTPA token from the cookies
      *
-     * @param cookie the cookie
+     * @param cookies the cookies
      * @return the LPTA token
      * @throws BadCredentialsException if the cookie does not contain valid LTPA token
      */
-    private String readLtpaToken(String cookie) {
-        if (cookie == null || cookie.isEmpty() || !cookie.contains("LtpaToken2")) {
-            throw new BadCredentialsException("Username or password are invalid.");
-        } else {
-            int end = cookie.indexOf(';');
-            return (end > 0) ? cookie.substring(0, end) : cookie;
+    private String readLtpaToken(List<String> cookies) {
+        if (cookies != null && !cookies.isEmpty()) {
+            for (String cookie : cookies) {
+                if (cookie.contains("LtpaToken2")) {
+                    int end = cookie.indexOf(';');
+                    return (end > 0) ? cookie.substring(0, end) : cookie;
+                }
+            }
         }
+        throw new BadCredentialsException("Username or password are invalid.");
     }
 
     /**
