@@ -32,7 +32,7 @@ public class ZosmfController {
 
     @GetMapping(value = "/request")
     public String request() {
-        String uri = "https://ca32.lvn.broadcom.net:1443/zosmf/restjobs/jobs";
+        String uri = "https://usilca3x.lvn.broadcom.net:1443/zosmf/restjobs/jobs";
 
         String credentials = "apimtst:tstmipa1";
         String base64Credentials = new String(Base64.encodeBase64(credentials.getBytes()));
