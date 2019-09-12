@@ -76,3 +76,10 @@ task copyUi(type: Copy) {
     from uiModule + '/frontend/build'
     into 'src/main/resources/static'
 }
+
+bootRun {
+    if (project.hasProperty('args')) {
+             args project.args.split(',')
+    }
+    systemProperties = System.properties
+}

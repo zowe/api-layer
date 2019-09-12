@@ -16,7 +16,7 @@ import com.ca.mfaas.eurekaservice.client.config.Route;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
 
