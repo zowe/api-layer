@@ -142,15 +142,20 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
      * @throws BadCredentialsException if the cookie does not contain valid LTPA token
      */
     private String readLtpaToken(List<String> cookies) {
-        if (cookies != null && !cookies.isEmpty()) {
-            for (String cookie : cookies) {
-                if (cookie.contains("LtpaToken2")) {
-                    int end = cookie.indexOf(';');
-                    return (end > 0) ? cookie.substring(0, end) : cookie;
-                }
-            }
-        }
-        throw new BadCredentialsException("Username or password are invalid.");
+        Supplier<BadCredentialsException> exceptionSupplier = () -> new BadCredentialsException("Username or password are invalid.");
+
+        return Optional.ofNullable(cookies)
+            .orElseThrow(exceptionSupplier)
+            .stream()
+            .filter(cookie -> cookie != null && cookies.contains("LtpaToken2"))
+            .map(this::convertCookieToLtpaToken)
+            .findFirst()
+            .orElseThrow(exceptionSupplier);
+    }
+
+    private String convertCookieToLtpaToken(String content) {
+        int end = content.indexOf(';');
+        return (end > 0) ? content.substring(0, end) : content;
     }
 
     /**
