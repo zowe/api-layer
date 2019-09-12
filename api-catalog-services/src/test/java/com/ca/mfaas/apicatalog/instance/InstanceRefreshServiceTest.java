@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -74,7 +75,7 @@ public class InstanceRefreshServiceTest {
 
         // start up a new instance of service 5 and add it to the service1 application
         HashMap<String, String> metadata = new HashMap<>();
-        metadata.put("mfaas.discovery.catalogUiTile.id", "api-five");
+        metadata.put(CATALOG_ID, "api-five");
         InstanceInfo newInstanceOfService5
             = containerServiceMockUtil.createInstance("service5", "service5:9999", InstanceInfo.InstanceStatus.UP,
             InstanceInfo.ActionType.ADDED, metadata);
@@ -116,7 +117,7 @@ public class InstanceRefreshServiceTest {
         discoveredState.setApplications(new ArrayList<>());
 
         InstanceInfo shutDownInstanceOfService3 = service3.getInstances().get(0);
-        shutDownInstanceOfService3.getMetadata().put("mfaas.discovery.catalogUiTile.id", "api-three");
+        shutDownInstanceOfService3.getMetadata().put(CATALOG_ID, "api-three");
         shutDownInstanceOfService3.setActionType(InstanceInfo.ActionType.DELETED);
         service3.getInstances().add(0, shutDownInstanceOfService3);
         discoveredState.getApplications().add(service3);
@@ -152,7 +153,7 @@ public class InstanceRefreshServiceTest {
         discoveredState.setApplications(new ArrayList<>());
 
         InstanceInfo modifiedInstanceOfService3 = service3.getInstances().get(0);
-        modifiedInstanceOfService3.getMetadata().put("mfaas.discovery.catalogUiTile.id", "api-three");
+        modifiedInstanceOfService3.getMetadata().put(CATALOG_ID, "api-three");
         modifiedInstanceOfService3.setActionType(InstanceInfo.ActionType.MODIFIED);
         service3.getInstances().add(0, modifiedInstanceOfService3);
         discoveredState.getApplications().add(service3);

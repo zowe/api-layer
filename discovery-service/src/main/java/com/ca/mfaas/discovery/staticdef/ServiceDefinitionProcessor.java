@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.config.ApiInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -29,6 +29,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+
+/**
+ * Processes static definition files and creates service instances
+ */
 @Slf4j
 @Component
 public class ServiceDefinitionProcessor {
@@ -40,11 +45,17 @@ public class ServiceDefinitionProcessor {
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
 
     @Data
-    class ProcessServicesDataResult {
+    static class ProcessServicesDataResult {
         private final List<String> errors;
         private final List<InstanceInfo> instances;
     }
 
+    /**
+     * Creates a list of instances from static definition files
+     *
+     * @param staticApiDefinitionsDirectories directories containing static definitions
+     * @return list of instances
+     */
     public List<InstanceInfo> findServices(String staticApiDefinitionsDirectories) {
         List<InstanceInfo> instances = new ArrayList<>();
 
@@ -251,8 +262,9 @@ public class ServiceDefinitionProcessor {
     private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) {
         Map<String, String> mt = new HashMap<>();
 
-        mt.put("mfaas.discovery.service.title", service.getTitle());
-        mt.put("mfaas.discovery.service.description", service.getDescription());
+        mt.put(VERSION, CURRENT_VERSION);
+        mt.put(SERVICE_TITLE, service.getTitle());
+        mt.put(SERVICE_DESCRIPTION, service.getDescription());
 
         if (service.getRoutes() != null) {
             for (Route rs : service.getRoutes()) {
@@ -260,25 +272,22 @@ public class ServiceDefinitionProcessor {
                 String key = gatewayUrl.replace("/", "-");
                 String serviceUrl = url.getPath()
                     + (rs.getServiceRelativeUrl() == null ? "" : rs.getServiceRelativeUrl());
-                mt.put(String.format("routed-services.%s.gateway-url", key), gatewayUrl);
-                mt.put(String.format("routed-services.%s.service-url", key), serviceUrl);
+                mt.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
+                mt.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
             }
         }
 
         if (tile != null) {
-            mt.put("mfaas.discovery.catalogUiTile.id", tile.getId());
-            mt.put("mfaas.discovery.catalogUiTile.version", DEFAULT_TILE_VERSION);
-            mt.put("mfaas.discovery.catalogUiTile.title", tile.getTitle());
-            mt.put("mfaas.discovery.catalogUiTile.description", tile.getDescription());
+            mt.put(CATALOG_ID, tile.getId());
+            mt.put(CATALOG_VERSION, DEFAULT_TILE_VERSION);
+            mt.put(CATALOG_TITLE, tile.getTitle());
+            mt.put(CATALOG_DESCRIPTION, tile.getDescription());
 
             if (service.getApiInfo() != null) {
                 for (ApiInfo apiInfo : service.getApiInfo()) {
                     mt.putAll(apiInfo.generateMetadata(service.getServiceId()));
                 }
             }
-
-        } else {
-            mt.put("mfaas.discovery.enableApiDoc", "false");
         }
 
         return mt;
