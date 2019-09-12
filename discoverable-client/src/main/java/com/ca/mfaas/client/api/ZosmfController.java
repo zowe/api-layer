@@ -11,6 +11,7 @@ package com.ca.mfaas.client.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -31,6 +32,9 @@ public class ZosmfController {
     private final RestTemplate restTemplate;
 
     @GetMapping(value = "/request")
+    @ApiOperation(value = "Lists catalog dashboard tiles",
+        notes = "Returns a list of tiles including status and tile description"
+    )
     public String request() {
         String uri = "https://usilca3x.lvn.broadcom.net:1443/zosmf/restjobs/jobs";
 
