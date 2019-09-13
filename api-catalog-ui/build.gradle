@@ -46,12 +46,9 @@ task runTests(type: NpmTask) {
 }
 
 
-task npmCi(type: NpmTask) {
-    dependsOn npmSetup
-    npmCommand = ["ci"]
+task pnpmInstall(type: Exec) {
     inputs.file("package.json")
-    inputs.file("package-lock.json")
-    outputs.dir("node_modules")
+    commandLine "pnpm", "--prefix", "${project.projectDir}/frontend/", "install"
 }
 
 
@@ -64,11 +61,27 @@ task bundle(type: NpmTask) {
 
     outputs.dir('frontend/build')
 
-    dependsOn npmCi
+    dependsOn pnpmInstall
     args = ['run', 'build']
+
 }
 
 clean.dependsOn cleanBundle
 build.dependsOn bundle
 javaScriptCoverage.dependsOn bundle
 runTests.dependsOn bundle
+
+
+//task bundle(type: Exec) {
+//    inputs.dir('frontend/src')
+//    inputs.dir('frontend/public')
+//    inputs.files('frontend/.env*')
+//    inputs.file('frontend/eslintrc.json')
+//    inputs.file('frontend/package.json')
+//
+//    outputs.dir('frontend/build')
+//
+//    dependsOn pnpmInstall
+//    commandLine "pnpm", "--prefix", "${project.projectDir}/frontend/", "run", "build"
+//
+//}
