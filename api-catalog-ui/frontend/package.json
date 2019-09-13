@@ -75,7 +75,7 @@
     },
     "devDependencies": {
         "babel-cli": "^6.26.0",
-        "babel-eslint": "10.0.1",
+        "babel-eslint": "10.0.2",
         "babel-jest": "^24.8.0",
         "babel-preset-flow": "6.23.0",
         "babel-preset-react-app": "3.1.2",
@@ -92,8 +92,7 @@
         "eslint-plugin-prettier": "2.7.0",
         "eslint-plugin-react": "7.11.1",
         "express": "4.16.4",
-        "galenframework-cli": "2.4.0",
-        "jest": "24.7.1",
+        "jest": "24.8.0",
         "jest-environment-enzyme": "^7.0.2",
         "jest-enzyme": "7.0.1",
         "jest-html-reporter": "^2.4.2",
@@ -103,6 +102,7 @@
         "prettier": "1.14.2",
         "puppeteer": "1.18.0",
         "react-testing-library": "5.3.0",
+        "rimraf": "^3.0.0",
         "source-map-explorer": "1.6.0",
         "start-server-and-test": "^1.7.11"
     },
@@ -116,6 +116,10 @@
             "!src/responsive-tests/**",
             "!src/e2e/*"
         ]
+    },
+    "engines": {
+        "node": "=8.11.1",
+        "pnpm": ">=3"
     },
     "browserslist": [
         ">0.2%",
