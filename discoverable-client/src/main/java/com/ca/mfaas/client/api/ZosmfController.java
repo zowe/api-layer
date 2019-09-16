@@ -38,7 +38,7 @@ public class ZosmfController {
     public String request() {
         String uri = "https://usilca3x.lvn.broadcom.net:1443/zosmf/restjobs/jobs";
 
-        String credentials = "apimtst:tstmipa1";
+        String credentials = "abdil01:jeton321";
         String base64Credentials = new String(Base64.encodeBase64(credentials.getBytes()));
 
         ObjectMapper mapper = new ObjectMapper();
