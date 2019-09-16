@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
@@ -244,39 +245,39 @@ public class LocalApiDocServiceTest {
 
     private Map<String, String> getStandardMetadata() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.apiInfo.1.apiId", API_ID);
-        metadata.put("apiml.apiInfo.1.gatewayUrl", GATEWAY_URL);
-        metadata.put("apiml.apiInfo.1.version", SERVICE_VERSION);
-        metadata.put("apiml.apiInfo.1.swaggerUrl", SWAGGER_URL);
-        metadata.put("routed-services.api-v1.gateway-url", "api");
-        metadata.put("routed-services.api-v1.service-url", "/");
-        metadata.put("mfaas.discovery.service.title", "Test service");
-        metadata.put("mfaas.discovery.service.description", "Test service description");
+        metadata.put(API_INFO + ".1." + API_INFO_API_ID, API_ID);
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, GATEWAY_URL);
+        metadata.put(API_INFO + ".1." + API_INFO_VERSION, SERVICE_VERSION);
+        metadata.put(API_INFO + ".1." + API_INFO_SWAGGER_URL, SWAGGER_URL);
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
+        metadata.put(SERVICE_TITLE, "Test service");
+        metadata.put(SERVICE_DESCRIPTION, "Test service description");
 
         return metadata;
     }
 
     private Map<String, String> getMetadataWithoutSwaggerUrl() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.apiInfo.1.apiId", API_ID);
-        metadata.put("apiml.apiInfo.1.gatewayUrl", GATEWAY_URL);
-        metadata.put("apiml.apiInfo.1.version", SERVICE_VERSION);
-        metadata.put("routed-services.api-v1.gateway-url", "api");
-        metadata.put("routed-services.api-v1.service-url", "/");
-        metadata.put("mfaas.discovery.service.title", "Test service");
-        metadata.put("mfaas.discovery.service.description", "Test service description");
+        metadata.put(API_INFO + ".1." + API_INFO_API_ID, API_ID);
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, GATEWAY_URL);
+        metadata.put(API_INFO + ".1." + API_INFO_VERSION, SERVICE_VERSION);
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
+        metadata.put(SERVICE_TITLE, "Test service");
+        metadata.put(SERVICE_DESCRIPTION, "Test service description");
 
         return metadata;
     }
 
     private Map<String, String> getMetadataWithoutApiInfo() {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("routed-services.api-v1.gateway-url", "api");
-        metadata.put("routed-services.api-v1.service-url", "/");
-        metadata.put("routed-services.apidoc.gateway-url", "api/v1/api-doc");
-        metadata.put("routed-services.apidoc.service-url", SERVICE_ID + "/api-doc");
-        metadata.put("mfaas.discovery.service.title", "Test service");
-        metadata.put("mfaas.discovery.service.description", "Test service description");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api");
+        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
+        metadata.put(ROUTES + ".apidoc." + ROUTES_GATEWAY_URL, "api/v1/api-doc");
+        metadata.put(ROUTES + ".apidoc." + ROUTES_SERVICE_URL, SERVICE_ID + "/api-doc");
+        metadata.put(SERVICE_TITLE, "Test service");
+        metadata.put(SERVICE_DESCRIPTION, "Test service description");
 
         return metadata;
     }

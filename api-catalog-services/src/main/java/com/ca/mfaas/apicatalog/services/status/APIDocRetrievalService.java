@@ -10,11 +10,11 @@
 package com.ca.mfaas.apicatalog.services.status;
 
 import com.ca.mfaas.apicatalog.instance.InstanceRetrievalService;
-import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.swagger.SubstituteSwaggerGenerator;
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedService;
@@ -55,7 +55,7 @@ public class APIDocRetrievalService {
      * <p>
      * 1. 'apiml.apiInfo.swaggerUrl' (preferred way)
      * 2. 'apiml.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
-     * 3. URL is constructed from 'routed-services.api-doc.service-url'. This method is deprecated and used for
+     * 3. URL is constructed from 'apiml.routes.api-doc.serviceUrl'. This method is deprecated and used for
      * backwards compatibility only
      *
      * @param serviceId  the unique service id
@@ -86,7 +86,7 @@ public class APIDocRetrievalService {
     /**
      * Get ApiDoc url
      *
-     * @param apiInfo      the apiinfo of service instance
+     * @param apiInfo      the apiInfo of service instance
      * @param instanceInfo the information about service instance
      * @param routes       the routes of service instance
      * @return the url of apidoc
@@ -108,7 +108,7 @@ public class APIDocRetrievalService {
      *
      * @param serviceId the unique service id
      * @param apiDocUrl the url of apidoc
-     * @return the information about APIDoc content as application/json
+     * @return the information about ApiDoc content as application/json
      * @throws ApiDocNotFoundException if the response is error
      */
     private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
@@ -132,7 +132,7 @@ public class APIDocRetrievalService {
      *
      * @param instanceInfo the information about service instance
      * @param routes       the routes of service instance
-     * @param apiInfo      the apiinfo of service instance
+     * @param apiInfo      the apiInfo of service instance
      * @return the information about APIDocInfo
      */
     private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
@@ -168,7 +168,7 @@ public class APIDocRetrievalService {
     }
 
     /**
-     * Creates a URL from the routing metadata 'routed-services.api-doc.service-url' when 'apiml.apiInfo.swaggerUrl' is
+     * Creates a URL from the routing metadata 'apiml.routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
      *
      * @param instanceInfo the information about service instance

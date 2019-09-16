@@ -13,15 +13,8 @@ package com.ca.mfaas.discovery.staticdef;
  * Exception thrown when a Service has wrong definition
  */
 public class ServiceDefinitionException extends Exception {
+
     public ServiceDefinitionException(String message) {
         super(message);
-    }
-
-    public ServiceDefinitionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ServiceDefinitionException(Throwable cause) {
-        super(cause);
     }
 }

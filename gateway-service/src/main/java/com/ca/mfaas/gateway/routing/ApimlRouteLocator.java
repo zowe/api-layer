@@ -9,10 +9,9 @@
  */
 package com.ca.mfaas.gateway.routing;
 
-import com.ca.mfaas.product.routing.RoutedService;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
-import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -29,13 +28,18 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final DiscoveryClient discovery;
     private final ZuulProperties properties;
     private final List<RoutedServicesUser> routedServicesUsers;
+    private final EurekaMetadataParser eurekaMetadataParser;
 
-    ApimlRouteLocator(String servletPath, DiscoveryClient discovery, ZuulProperties properties,
-                      ServiceRouteMapper serviceRouteMapper, List<RoutedServicesUser> routedServicesUsers) {
+    ApimlRouteLocator(String servletPath,
+                      DiscoveryClient discovery,
+                      ZuulProperties properties,
+                      ServiceRouteMapper serviceRouteMapper,
+                      List<RoutedServicesUser> routedServicesUsers) {
         super(servletPath, discovery, properties, serviceRouteMapper, null);
         this.discovery = discovery;
         this.properties = properties;
         this.routedServicesUsers = routedServicesUsers;
+        this.eurekaMetadataParser = new EurekaMetadataParser();
     }
 
     /**
@@ -67,13 +71,13 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
             for (String serviceId : services) {
                 // Ignore specifically ignored services and those that were manually
                 // configured
-                RoutedServices routedServices = new RoutedServices();
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
                 if (serviceInstances == null || serviceInstances.isEmpty()) {
                     log.error("No instance of the service {} found. Routing will not be available.", serviceId);
                     return null;
                 }
 
+                RoutedServices routedServices = new RoutedServices();
                 List<String> keys = createRouteKeys(serviceInstances, routedServices, serviceId);
                 if (keys.isEmpty()) {
                     keys.add("/" + mapRouteToService(serviceId) + "/**");
@@ -131,31 +135,19 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
      */
     @SuppressWarnings("squid:S3776") // Suppress complexity warning
     private List<String> createRouteKeys(List<ServiceInstance> serviceInstance,
-                                         RoutedServices routes, String serviceId) {
+                                         RoutedServices routes,
+                                         String serviceId) {
         List<String> keys = new ArrayList<>();
+        serviceInstance.stream()
+            .map(ServiceInstance::getMetadata)
+            .flatMap(
+                metadata -> eurekaMetadataParser.parseToListRoute(metadata).stream()
+            )
+            .forEach(routedService -> {
+                keys.add("/" + routedService.getGatewayUrl() + "/" + mapRouteToService(serviceId) + "/**");
+                routes.addRoutedService(routedService);
+            });
 
-        for (ServiceInstance instance : serviceInstance) {
-            Map<String, String> metadataMap = new TreeMap<>(instance.getMetadata());
-            Map<String, String> routeMap = new HashMap<>();
-
-            for (Map.Entry<String, String> metadata : metadataMap.entrySet()) {
-                String[] url = metadata.getKey().split("\\.");
-                if (url.length == 3 && url[0].equals(RoutedServices.ROUTED_SERVICES_PARAMETER)) {
-
-                    if (url[2].equals(RoutedServices.GATEWAY_URL_PARAMETER)) {
-                        String gatewayURL = UrlUtils.removeFirstAndLastSlash(metadata.getValue());
-                        routeMap.put(url[1], gatewayURL);
-                        keys.add("/" + gatewayURL + "/" + mapRouteToService(serviceId) + "/**");
-                    }
-
-                    if (url[2].equals(RoutedServices.SERVICE_URL_PARAMETER) && routeMap.containsKey(url[1])) {
-                        String serviceURL = UrlUtils.addFirstSlash(metadata.getValue());
-                        routes.addRoutedService(new RoutedService(url[1], routeMap.get(url[1]), serviceURL));
-                        routeMap.remove(url[1]);
-                    }
-                }
-            }
-        }
         return keys;
     }
 }

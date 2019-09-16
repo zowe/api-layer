@@ -22,6 +22,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.*;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.when;
@@ -29,15 +30,6 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings({"squid:S2925"}) // replace with proper wait test library
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class CachedProductFamilyTest {
-
-    private static final String CATALOG_UI_ID_KEY = "mfaas.discovery.catalogUiTile.id";
-    private static final String CATALOG_UI_TITLE_KEY = "mfaas.discovery.catalogUiTile.title";
-    private static final String CATALOG_UI_DESCRIPTION_KEY = "mfaas.discovery.catalogUiTile.description";
-    private static final String CATALOG_UI_VERSION_KEY = "mfaas.discovery.catalogUiTile.version";
-
-    private static final String CATALOG_UI_SERVICE_TITLE_KEY = "mfaas.discovery.service.title";
-    private static final String CATALOG_UI_SERVICE_DESCRIPTION_KEY = "mfaas.discovery.service.description";
-
     private final Integer cacheRefreshUpdateThresholdInMillis = 2000;
 
     private CachedProductFamilyService service;
@@ -52,14 +44,8 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainers() {
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
-
-        service.getContainer("demoapp", instance);
-
-        instance = getStandardInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
-        service.getContainer("demoapp2", instance);
+        service.getContainer("demoapp", createApp("service1", "demoapp"));
+        service.getContainer("demoapp2", createApp("service2", "demoapp2"));
 
         Collection<APIContainer> containers = service.getRecentlyUpdatedContainers();
         assertEquals(2, containers.size());
@@ -67,16 +53,11 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
-        HashMap<String, String> metadata = new HashMap<>();
-
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
-        service.getContainer("demoapp", instance);
+        service.getContainer("demoapp", createApp("service1", "demoapp"));
 
         Thread.sleep(4000);
 
-        instance = getStandardInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
-        service.getContainer("demoapp2", instance);
+        service.getContainer("demoapp2", createApp("service2", "demoapp2"));
 
         Collection<APIContainer> containers = service.getRecentlyUpdatedContainers();
         assertEquals(1, containers.size());
@@ -84,14 +65,8 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
-        HashMap<String, String> metadata = new HashMap<>();
-
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
-        service.getContainer("demoapp", instance);
-
-        instance = getStandardInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
-        service.getContainer("demoapp2", instance);
+        service.getContainer("demoapp", createApp("service1", "demoapp"));
+        service.getContainer("demoapp2", createApp("service2", "demoapp2"));
 
         Thread.sleep(3000);
 
@@ -101,13 +76,10 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfContainerServices() {
-        HashMap<String, String> metadata = new HashMap<>();
-
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance1 = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+        InstanceInfo instance1 = createApp("service1", "demoapp");
         service.getContainer("demoapp", instance1);
 
-        InstanceInfo instance2 = getStandardInstance("service2", InstanceInfo.InstanceStatus.UP, metadata);
+        InstanceInfo instance2 = createApp("service2", "demoapp2");
         service.addServiceToContainer("demoapp", instance2);
 
         APIService containerService = service.getContainerService("demoapp", instance1);
@@ -126,10 +98,7 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testGetMultipleContainersForASingleService() {
-        HashMap<String, String> metadata = new HashMap<>();
-
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+        InstanceInfo instance = createApp("service1", "demoapp");
         service.getContainer("demoapp1", instance);
         service.getContainer("demoapp2", instance);
 
@@ -141,10 +110,7 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testCallCreationOfContainerThatAlreadyExistsButNothingHasChangedSoNoUpdate() {
-        HashMap<String, String> metadata = new HashMap<>();
-
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+        InstanceInfo instance = createApp("service1", "demoapp");
         APIContainer originalContainer = service.getContainer("demoapp", instance);
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
 
@@ -157,72 +123,32 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testCallCreationOfContainerThatAlreadyExistsInstanceInfoHasChangedSoUpdateLastChangeTime() throws InterruptedException {
-        HashMap<String, String> metadata = new HashMap<>();
-
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description");
-        metadata.put(CATALOG_UI_VERSION_KEY, "1.0.0");
-        InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
-        APIContainer originalContainer = service.getContainer("demoapp", instance);
+        APIContainer originalContainer = service.getContainer("demoapp", createApp("service", "demoapp"));
         Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
 
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title 2");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description 2");
-        metadata.put(CATALOG_UI_VERSION_KEY, "1.0.1");
-        instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         Thread.sleep(100);
 
-        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance);
+        APIContainer updatedContainer = service.createContainerFromInstance("demoapp",
+            createApp("service",
+                "demoapp",
+                "Title 2",
+                "Description 2",
+                "1.0.1",
+                InstanceInfo.InstanceStatus.UP));
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         boolean equals = updatedTimestamp.equals(createTimestamp);
         assertFalse(equals);
 
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title 2");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description 2");
-        metadata.put(CATALOG_UI_VERSION_KEY, "2.0.0");
-        instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
         Thread.sleep(100);
 
-        service.updateContainerFromInstance("demoapp", instance);
-        Calendar retrievedTimestamp = updatedContainer.getLastUpdatedTimestamp();
-
-        equals = updatedTimestamp.equals(retrievedTimestamp);
-        assertFalse(equals);
-    }
-
-    @Test
-    public void testCallCreationOfContainerForNullVersion() throws InterruptedException {
-        HashMap<String, String> metadata = new HashMap<>();
-
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description");
-        metadata.put(CATALOG_UI_VERSION_KEY, "1.0.0");
-        InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
-        APIContainer originalContainer = service.getContainer("demoapp", instance);
-        Calendar createTimestamp = originalContainer.getLastUpdatedTimestamp();
-
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title 2");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description 2");
-        metadata.put(CATALOG_UI_VERSION_KEY, "1.0.1");
-        instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
-        Thread.sleep(100);
-
-        APIContainer updatedContainer = service.createContainerFromInstance("demoapp", instance);
-        Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
-
-        boolean equals = updatedTimestamp.equals(createTimestamp);
-        assertFalse(equals);
-
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title 2");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description 2");
-        metadata.put(CATALOG_UI_VERSION_KEY, "2.0.0");
-        instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
-        Thread.sleep(100);
-
-        service.updateContainerFromInstance("demoapp", instance);
+        service.updateContainerFromInstance("demoapp",
+            createApp("service",
+                "demoapp",
+                "Title 2",
+                "Description 2",
+                "2.0.0",
+                InstanceInfo.InstanceStatus.UP));
         Calendar retrievedTimestamp = updatedContainer.getLastUpdatedTimestamp();
 
         equals = updatedTimestamp.equals(retrievedTimestamp);
@@ -231,26 +157,20 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testUpdateOfContainerFromInstance() {
-        HashMap<String, String> metadata = new HashMap<>();
-
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance = getStandardInstance("service", InstanceInfo.InstanceStatus.UP, metadata);
-        service.createContainerFromInstance("demoapp", instance);
+        service.createContainerFromInstance("demoapp", createApp("service", "demoapp"));
     }
 
     @Test
     public void testCalculationOfContainerTotalsWithAllServicesUp() {
-        HashMap<String, String> metadata = new HashMap<>();
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance1 = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
-        InstanceInfo instance2 = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
+        InstanceInfo instance1 = createApp("service", "demoapp");
+        InstanceInfo instance2 = createApp("service", "demoapp");
         Application application = new Application();
         application.addInstance(instance1);
         application.addInstance(instance2);
 
-        when(cachedServicesService.getService("service1")).thenReturn(application);
+        when(cachedServicesService.getService("service")).thenReturn(application);
         service = new CachedProductFamilyService(
             null,
             cachedServicesService,
@@ -259,7 +179,7 @@ public class CachedProductFamilyTest {
         service.getContainer("demoapp", instance1);
         service.addServiceToContainer("demoapp", instance2);
 
-        List<APIContainer> containersForService = service.getContainersForService("service1");
+        List<APIContainer> containersForService = service.getContainersForService("service");
         assertEquals(1, service.getContainerCount());
 
         APIContainer container = containersForService.get(0);
@@ -271,12 +191,10 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testCalculationOfContainerTotalsWithAllServicesDown() {
-        HashMap<String, String> metadata = new HashMap<>();
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance1 = getStandardInstance("service1", InstanceInfo.InstanceStatus.DOWN, metadata);
-        InstanceInfo instance2 = getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN, metadata);
+        InstanceInfo instance1 = createApp("service1", "demoapp", InstanceInfo.InstanceStatus.DOWN);
+        InstanceInfo instance2 = createApp("service2", "demoapp", InstanceInfo.InstanceStatus.DOWN);
         Application application1 = new Application();
         application1.addInstance(instance1);
         Application application2 = new Application();
@@ -303,12 +221,10 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testCalculationOfContainerTotalsWithSomeServicesDown() {
-        HashMap<String, String> metadata = new HashMap<>();
         CachedServicesService cachedServicesService = Mockito.mock(CachedServicesService.class);
 
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        InstanceInfo instance1 = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
-        InstanceInfo instance2 = getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN, metadata);
+        InstanceInfo instance1 = createApp("service1", "demoapp", InstanceInfo.InstanceStatus.UP);
+        InstanceInfo instance2 = createApp("service2", "demoapp", InstanceInfo.InstanceStatus.DOWN);
         Application application1 = new Application();
         application1.addInstance(instance1);
         Application application2 = new Application();
@@ -336,12 +252,12 @@ public class CachedProductFamilyTest {
     @Test
     public void givenInstanceIsNotInTheCache_whenCallSaveContainerFromInstance_thenCreateNew() {
         HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description");
-        metadata.put(CATALOG_UI_VERSION_KEY, "1.0.0");
-        metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle");
-        metadata.put(CATALOG_UI_SERVICE_DESCRIPTION_KEY, "sDescription");
+        metadata.put(CATALOG_ID, "demoapp");
+        metadata.put(CATALOG_TITLE, "Title");
+        metadata.put(CATALOG_DESCRIPTION, "Description");
+        metadata.put(CATALOG_VERSION, "1.0.0");
+        metadata.put(SERVICE_TITLE, "sTitle");
+        metadata.put(SERVICE_DESCRIPTION, "sDescription");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
 
         APIContainer actualDemoAppContainer = service.saveContainerFromInstance("demoapp", instance);
@@ -349,18 +265,18 @@ public class CachedProductFamilyTest {
         List<APIContainer> lsContainer = service.getRecentlyUpdatedContainers();
         assertEquals(1, lsContainer.size());
 
-        assertEquals(metadata.get(CATALOG_UI_ID_KEY), actualDemoAppContainer.getId());
-        assertEquals(metadata.get(CATALOG_UI_TITLE_KEY), actualDemoAppContainer.getTitle());
-        assertEquals(metadata.get(CATALOG_UI_DESCRIPTION_KEY), actualDemoAppContainer.getDescription());
-        assertEquals(metadata.get(CATALOG_UI_VERSION_KEY), actualDemoAppContainer.getVersion());
+        assertEquals(metadata.get(CATALOG_ID), actualDemoAppContainer.getId());
+        assertEquals(metadata.get(CATALOG_TITLE), actualDemoAppContainer.getTitle());
+        assertEquals(metadata.get(CATALOG_DESCRIPTION), actualDemoAppContainer.getDescription());
+        assertEquals(metadata.get(CATALOG_VERSION), actualDemoAppContainer.getVersion());
 
         Set<APIService> apiServices = actualDemoAppContainer.getServices();
         assertEquals(1, apiServices.size());
 
         APIService actualService = apiServices.iterator().next();
         assertEquals(instance.getAppName().toLowerCase(), actualService.getServiceId());
-        assertEquals(metadata.get(CATALOG_UI_SERVICE_TITLE_KEY), actualService.getTitle());
-        assertEquals(metadata.get(CATALOG_UI_SERVICE_DESCRIPTION_KEY), actualService.getDescription());
+        assertEquals(metadata.get(SERVICE_TITLE), actualService.getTitle());
+        assertEquals(metadata.get(SERVICE_DESCRIPTION), actualService.getDescription());
         assertEquals(instance.isPortEnabled(InstanceInfo.PortType.SECURE), actualService.isSecured());
         assertEquals(instance.getHomePageUrl(), actualService.getHomePageUrl());
     }
@@ -368,23 +284,23 @@ public class CachedProductFamilyTest {
     @Test
     public void givenInstanceIsInTheCache_whenCallSaveContainerFromInstance_thenUpdate() throws InterruptedException {
         HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(CATALOG_UI_ID_KEY, "demoapp");
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description");
-        metadata.put(CATALOG_UI_VERSION_KEY, "1.0.0");
-        metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle");
-        metadata.put(CATALOG_UI_SERVICE_DESCRIPTION_KEY, "sDescription");
+        metadata.put(CATALOG_ID, "demoapp");
+        metadata.put(CATALOG_TITLE, "Title");
+        metadata.put(CATALOG_DESCRIPTION, "Description");
+        metadata.put(CATALOG_VERSION, "1.0.0");
+        metadata.put(SERVICE_TITLE, "sTitle");
+        metadata.put(SERVICE_DESCRIPTION, "sDescription");
         InstanceInfo instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         APIContainer actualDemoAppContainer = service.saveContainerFromInstance("demoapp", instance);
         Calendar createTimestamp = actualDemoAppContainer.getLastUpdatedTimestamp();
+
         Thread.sleep(100);
 
-
-        metadata.put(CATALOG_UI_TITLE_KEY, "Title2");
-        metadata.put(CATALOG_UI_DESCRIPTION_KEY, "Description2");
-        metadata.put(CATALOG_UI_VERSION_KEY, "2.0.0");
-        metadata.put(CATALOG_UI_SERVICE_TITLE_KEY, "sTitle2");
-        metadata.put(CATALOG_UI_SERVICE_DESCRIPTION_KEY, "sDescription2");
+        metadata.put(CATALOG_TITLE, "Title2");
+        metadata.put(CATALOG_DESCRIPTION, "Description2");
+        metadata.put(CATALOG_VERSION, "2.0.0");
+        metadata.put(SERVICE_TITLE, "sTitle2");
+        metadata.put(SERVICE_DESCRIPTION, "sDescription2");
         instance = getStandardInstance("service1", InstanceInfo.InstanceStatus.UP, metadata);
         APIContainer updatedContainer = service.saveContainerFromInstance("demoapp", instance);
         Calendar updatedTimestamp = updatedContainer.getLastUpdatedTimestamp();
@@ -395,18 +311,18 @@ public class CachedProductFamilyTest {
         List<APIContainer> lsContainer = service.getRecentlyUpdatedContainers();
         assertEquals(1, lsContainer.size());
 
-        assertEquals(metadata.get(CATALOG_UI_ID_KEY), actualDemoAppContainer.getId());
-        assertEquals(metadata.get(CATALOG_UI_TITLE_KEY), actualDemoAppContainer.getTitle());
-        assertEquals(metadata.get(CATALOG_UI_DESCRIPTION_KEY), actualDemoAppContainer.getDescription());
-        assertEquals(metadata.get(CATALOG_UI_VERSION_KEY), actualDemoAppContainer.getVersion());
+        assertEquals(metadata.get(CATALOG_ID), actualDemoAppContainer.getId());
+        assertEquals(metadata.get(CATALOG_TITLE), actualDemoAppContainer.getTitle());
+        assertEquals(metadata.get(CATALOG_DESCRIPTION), actualDemoAppContainer.getDescription());
+        assertEquals(metadata.get(CATALOG_VERSION), actualDemoAppContainer.getVersion());
 
         Set<APIService> apiServices = updatedContainer.getServices();
         assertEquals(1, apiServices.size());
 
         APIService actualService = apiServices.iterator().next();
         assertEquals(instance.getAppName().toLowerCase(), actualService.getServiceId());
-        assertEquals(metadata.get(CATALOG_UI_SERVICE_TITLE_KEY), actualService.getTitle());
-        assertEquals(metadata.get(CATALOG_UI_SERVICE_DESCRIPTION_KEY), actualService.getDescription());
+        assertEquals(metadata.get(SERVICE_TITLE), actualService.getTitle());
+        assertEquals(metadata.get(SERVICE_DESCRIPTION), actualService.getDescription());
         assertEquals(instance.isPortEnabled(InstanceInfo.PortType.SECURE), actualService.isSecured());
         assertEquals(instance.getHomePageUrl(), actualService.getHomePageUrl());
     }
@@ -414,12 +330,39 @@ public class CachedProductFamilyTest {
     private InstanceInfo getStandardInstance(String serviceId,
                                              InstanceInfo.InstanceStatus status,
                                              HashMap<String, String> metadata) {
-
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(serviceId)
             .setAppName(serviceId)
             .setStatus(status)
             .setMetadata(metadata)
             .build();
+    }
+
+    private InstanceInfo createApp(String serviceId, String catalogId) {
+        return createApp(serviceId,
+            catalogId,
+            "Title",
+            "Description",
+            "1.0.0",
+            InstanceInfo.InstanceStatus.UP);
+    }
+
+    private InstanceInfo createApp(String serviceId, String catalogId, InstanceInfo.InstanceStatus status) {
+        return createApp(serviceId, catalogId, "Title", "Description", "1.0.0", status);
+    }
+
+    private InstanceInfo createApp(String serviceId,
+                                   String catalogId,
+                                   String catalogTitle,
+                                   String catalogDescription,
+                                   String catalogVersion,
+                                   InstanceInfo.InstanceStatus status) {
+        HashMap<String, String> metadata = new HashMap<>();
+        metadata.put(CATALOG_ID, catalogId);
+        metadata.put(CATALOG_TITLE, catalogTitle);
+        metadata.put(CATALOG_DESCRIPTION, catalogDescription);
+        metadata.put(CATALOG_VERSION, catalogVersion);
+
+        return getStandardInstance(serviceId, status, metadata);
     }
 }

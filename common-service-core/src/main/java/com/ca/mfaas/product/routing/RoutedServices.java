@@ -15,10 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RoutedServices {
-    public static final String ROUTED_SERVICES_PARAMETER = "routed-services";
-    public static final String GATEWAY_URL_PARAMETER = "gateway-url";
-    public static final String SERVICE_URL_PARAMETER = "service-url";
-
     private final Map<String, RoutedService> routedService = new HashMap<>();
 
     /**
@@ -44,7 +40,7 @@ public class RoutedServices {
      * Get best matching service url
      *
      * @param serviceUrl service url
-     * @param type  service type
+     * @param type       service type
      * @return the route
      */
     public RoutedService getBestMatchingServiceUrl(String serviceUrl, ServiceType type) {

@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.apicatalog.swagger;
 
-import com.ca.mfaas.apicatalog.metadata.EurekaMetadataParser;
-import com.ca.mfaas.eurekaservice.model.ApiInfo;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
+import com.ca.mfaas.config.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.PortType;
 import org.junit.Test;
@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.junit.Assert.assertTrue;
 
 public class SubstituteSwaggerGeneratorTest {
@@ -29,13 +30,13 @@ public class SubstituteSwaggerGeneratorTest {
         String gatewayHost = "localhost:8080";
 
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.apiInfo.1.gatewayUrl", "api/v1");
-        metadata.put("apiml.apiInfo.1.documentationUrl", "https://doc.ca.com/api");
+        metadata.put(API_INFO + ".1." + API_INFO_GATEWAY_URL, "api/v1");
+        metadata.put(API_INFO + ".1." + API_INFO_DOCUMENTATION_URL, "https://doc.ca.com/api");
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
 
         InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName("serviceId").setHostName("localhost")
-                .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
+            .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
 
         String result = new SubstituteSwaggerGenerator().generateSubstituteSwaggerForService(service,
             info.get(0), gatewayScheme, gatewayHost);
