@@ -47,8 +47,12 @@ task runTests(type: NpmTask) {
 
 
 task pnpmInstall(type: Exec) {
+    def operativeSystem = System.properties['os.name']
     inputs.file("package.json")
-    commandLine "pnpm", "--prefix", "${project.projectDir}/frontend/", "install"
+    if (operativeSystem.contains("Windows"))
+        commandLine "pnpm.cmd", "--prefix", "${project.projectDir}/frontend/", "install"
+    else
+        commandLine "pnpm", "--prefix", "${project.projectDir}/frontend/", "install"
 }
 
 
@@ -71,17 +75,3 @@ build.dependsOn bundle
 javaScriptCoverage.dependsOn bundle
 runTests.dependsOn bundle
 
-
-//task bundle(type: Exec) {
-//    inputs.dir('frontend/src')
-//    inputs.dir('frontend/public')
-//    inputs.files('frontend/.env*')
-//    inputs.file('frontend/eslintrc.json')
-//    inputs.file('frontend/package.json')
-//
-//    outputs.dir('frontend/build')
-//
-//    dependsOn pnpmInstall
-//    commandLine "pnpm", "--prefix", "${project.projectDir}/frontend/", "run", "build"
-//
-//}
