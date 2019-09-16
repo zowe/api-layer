@@ -7,15 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.error;
+package com.ca.mfaas.message.template;
 
-/**
- * Exception thrown when a message is already defined before
- */
-public class DuplicateMessageException extends RuntimeException {
+import lombok.Data;
 
-    public DuplicateMessageException(String message) {
-        super(message);
-    }
+import java.util.List;
 
+@Data
+public class MessageTemplates {
+    private List<MessageTemplate> messages;
 }

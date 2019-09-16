@@ -9,7 +9,7 @@
  */
 package com.ca.apiml.security.common.error;
 
-import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
 
-    public ResourceAccessExceptionHandler(ErrorService errorService, ObjectMapper mapper) {
-        super(errorService, mapper);
+    public ResourceAccessExceptionHandler(MessageService messageService, ObjectMapper mapper) {
+        super(messageService, mapper);
     }
 
     /**

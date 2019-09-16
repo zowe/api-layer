@@ -11,8 +11,9 @@ package com.ca.mfaas.gateway.error.check;
 
 import com.ca.apiml.security.common.token.TokenExpireException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.Message;
+import com.ca.mfaas.message.core.MessageService;
 import com.netflix.zuul.exception.ZuulException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 @RequiredArgsConstructor
 public class SecurityTokenErrorCheck implements ErrorCheck {
-    private final ErrorService errorService;
+    private final MessageService messageService;
 
     /**
      * Validate whether the exception thrown is related to token and sets the proper response and status code
@@ -39,16 +40,16 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
      * @return Response entity with appropriate response and status code
      */
     @Override
-    public ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc) {
+    public ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException && (exc.getCause() instanceof AuthenticationException)) {
-            ApiMessage message = null;
+            Message message = null;
             Throwable cause = exc.getCause();
             if (cause instanceof TokenExpireException) {
-                message = errorService.createApiMessage("apiml.gateway.security.expiredToken");
+                message = messageService.createMessage("apiml.gateway.security.expiredToken");
             } else if (cause instanceof TokenNotValidException) {
-                message = errorService.createApiMessage("apiml.gateway.security.invalidToken");
+                message = messageService.createMessage("apiml.gateway.security.invalidToken");
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(message);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(message.mapToView());
         }
 
         return null;

@@ -7,15 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.error;
+package com.ca.mfaas.message.core;
 
-/**
- * Exception thrown when a message couldn't be loaded or has wrong definition
- */
-public class MessageLoadException extends RuntimeException {
+import lombok.Data;
 
-    public MessageLoadException(String message, Throwable cause) {
-        super(message, cause);
-    }
+import java.util.List;
 
+@Data
+public class Messages {
+    private List<Message> messages;
 }

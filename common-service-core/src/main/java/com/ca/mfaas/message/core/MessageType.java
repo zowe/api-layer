@@ -7,17 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.rest.response;
+package com.ca.mfaas.message.core;
 
 /**
  * Represents the severity of a problem. Higher severity has higher value.
  */
 public enum MessageType {
-    ERROR(40, "ERROR", 'E'),
-    WARNING(30, "WARNING", 'W'),
-    INFO(20, "INFO", 'I'),
+    TRACE(0, "TRACE", 'T'),
     DEBUG(10, "DEBUG", 'D'),
-    TRACE(0, "TRACE", 'T');
+    INFO(20, "INFO", 'I'),
+    WARNING(30, "WARNING", 'W'),
+    ERROR(40, "ERROR", 'E');
 
     private int levelInt;
     private String levelStr;

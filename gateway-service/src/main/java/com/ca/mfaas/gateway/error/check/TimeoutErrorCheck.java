@@ -9,8 +9,9 @@
  */
 package com.ca.mfaas.gateway.error.check;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.Message;
+import com.ca.mfaas.message.core.MessageService;
 import com.netflix.zuul.exception.ZuulException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -29,13 +30,13 @@ public class TimeoutErrorCheck implements ErrorCheck {
 
     private static final String ERROR_CAUSE_TIMEOUT = "TIMEOUT";
 
-    private final ErrorService errorService;
+    private final MessageService messageService;
 
-    public TimeoutErrorCheck(ErrorService errorService) {
-        this.errorService = errorService;
+    public TimeoutErrorCheck(MessageService messageService) {
+        this.messageService = messageService;
     }
 
-    public ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc) {
+    public ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException) {
             ZuulException zuulException = (ZuulException) exc;
             Throwable rootCause = ExceptionUtils.getRootCause(zuulException);
@@ -60,8 +61,8 @@ public class TimeoutErrorCheck implements ErrorCheck {
         return null;
     }
 
-    private ResponseEntity<ApiMessage> gatewayTimeoutResponse(String message) {
-        ApiMessage apiMessage = errorService.createApiMessage("apiml.common.serviceTimeout", message);
-        return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(apiMessage);
+    private ResponseEntity<ApiMessageView> gatewayTimeoutResponse(String messageText) {
+        Message message = messageService.createMessage("apiml.common.serviceTimeout", messageText);
+        return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(message.mapToView());
     }
 }
