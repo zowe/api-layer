@@ -147,7 +147,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         return Optional.ofNullable(cookies)
             .orElseThrow(exceptionSupplier)
             .stream()
-            .filter(cookie -> cookie != null && cookies.contains("LtpaToken2"))
+            .filter(cookie -> cookie != null && cookie.contains("LtpaToken2"))
             .map(this::convertCookieToLtpaToken)
             .findFirst()
             .orElseThrow(exceptionSupplier);
