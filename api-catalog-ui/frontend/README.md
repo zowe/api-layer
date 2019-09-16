@@ -25,7 +25,9 @@ For coverage use ``npm run coverage`` or gradle task "javaScriptCoverage"
 
 1. Clone the repo
 
-2. run `npm install` inside the repo folder to install all dependencies
+2. Install the package manager pnpm by running `npm add -g pnpm`
+
+3. run `pnpm install` inside the repo folder to install all dependencies
 
 3. run `npm run start` to run the live reload server (will automatically open new browser tab on <https://localhost:3000/> where the app runs)
 
