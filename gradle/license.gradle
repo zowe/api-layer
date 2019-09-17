@@ -1,0 +1,31 @@
+ext.projectsNeedLicense = [
+    'api-catalog-services',
+    'api-catalog-ui',
+    'apiml-common',
+    'apiml-security-common',
+    'common-service-core',
+    'discoverable-client',
+    'discovery-service',
+    'gateway-common',
+    'gateway-service',
+    'integration-enabler-java',
+    'integration-enabler-spring-v1',
+    'integration-enabler-spring-v2',
+    'integration-tests',
+    'security-module',
+    'security-service-client-spring',
+    'zowe-install'
+]
+
+configure(subprojects.findAll { it.name in projectsNeedLicense }) {
+    tasks.withType(Jar) {
+        metaInf {
+            from rootProject.file("LICENSE")
+        }
+
+        manifest {
+            attributes "Bundle-License": "https://www.eclipse.org/legal/epl-v20.html"
+        }
+    }
+
+}
