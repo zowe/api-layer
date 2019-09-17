@@ -49,7 +49,8 @@ public class ZosmfAuthenticationProviderTest {
     private static final String HOST = "localhost";
     private static final int PORT = 0;
     private static final String ZOSMF = "zosmf";
-    private static final String COOKIE = "LtpaToken2=test";
+    private static final String COOKIE1 = "JwtToken=test";
+    private static final String COOKIE2 = "LtpaToken2=test";
     private static final String DOMAIN = "realm";
     private static final String RESPONSE = "{\"zosmf_saf_realm\": \"" + DOMAIN + "\"}";
 
@@ -83,7 +84,8 @@ public class ZosmfAuthenticationProviderTest {
         when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, COOKIE);
+        headers.add(HttpHeaders.SET_COOKIE, COOKIE1);
+        headers.add(HttpHeaders.SET_COOKIE, COOKIE2);
         when(restTemplate.exchange(Mockito.anyString(),
             Mockito.eq(HttpMethod.GET),
             Mockito.any(),
@@ -157,7 +159,8 @@ public class ZosmfAuthenticationProviderTest {
         when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, COOKIE);
+        headers.add(HttpHeaders.SET_COOKIE, COOKIE1);
+        headers.add(HttpHeaders.SET_COOKIE, COOKIE2);
         when(restTemplate.exchange(Mockito.anyString(),
             Mockito.eq(HttpMethod.GET),
             Mockito.any(),
@@ -183,7 +186,8 @@ public class ZosmfAuthenticationProviderTest {
         when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.SET_COOKIE, COOKIE);
+        headers.add(HttpHeaders.SET_COOKIE, COOKIE1);
+        headers.add(HttpHeaders.SET_COOKIE, COOKIE2);
         when(restTemplate.exchange(Mockito.anyString(),
             Mockito.eq(HttpMethod.GET),
             Mockito.any(),
