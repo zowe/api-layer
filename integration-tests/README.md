@@ -3,7 +3,7 @@
 ### Introduction
 
 Integration tests are meant to test a functionality that requires multiple running services.
-We recommend you test the most test cases using unit tests in the module. Use integration tests
+We recommend you test most test cases using unit tests in the module. Use integration tests
 only when necessary. 
 
 Integration tests require running instances of all services.
@@ -50,7 +50,7 @@ Perform a Localhost Quick start when you need to run the tests on your local mac
     ```
 ### Manual testing of Discovery Service in HTTP mode
 
-The Discovery Service in HTTP mode in not integrated within the pipeline. You can perfom tests of the Discovery Service in HTTP mode manually.
+The Discovery Service in HTTP mode is not integrated within the pipeline. You can perfom tests of the Discovery Service in HTTP mode manually.
 
 **Follow these steps:**
 
