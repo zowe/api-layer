@@ -43,7 +43,7 @@ dependencies {
     compile libraries.spring_boot_starter_actuator
     compile libraries.spring_boot_configuration_processor
     compile libraries.spring_cloud_starter_eureka
-    compile libraries.spring_boot_starter_webflux
+    compile group: 'org.springframework', name: 'spring-webflux', version: '5.1.9.RELEASE'
     compile libraries.spring_retry
     compile libraries.swagger_core
     compile libraries.json_path
