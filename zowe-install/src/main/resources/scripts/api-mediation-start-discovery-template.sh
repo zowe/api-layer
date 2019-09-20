@@ -17,6 +17,8 @@ else
   echo "Done."
 fi
 
+LOG_LEVEL=$1
+
 DIR=`dirname $0`
 
 java -Xms32m -Xmx256m -Xquickstart \
@@ -24,7 +26,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
     -Dspring.profiles.active=https \
-    -Dspring.profiles.include= \
+    -Dspring.profiles.include="$LOG_LEVEL" \
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.discovery.password=password \
