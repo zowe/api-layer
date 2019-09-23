@@ -11,12 +11,12 @@ package com.ca.mfaas.message.core;
 
 import com.ca.mfaas.message.api.ApiMessage;
 import com.ca.mfaas.message.api.ApiMessageView;
-import com.ca.mfaas.message.log.LogMessage;
 import com.ca.mfaas.message.template.MessageTemplate;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.UUID;
 
 public final class Message {
 
@@ -68,7 +68,11 @@ public final class Message {
     }
 
     public String mapToReadableText() {
-        return messageTemplate.getNumber() + messageTemplate.getType().toChar() + ' ' + getConvertedText();
+        return String.format("%s%s %s {%s}",
+            messageTemplate.getNumber(),
+            messageTemplate.getType().toChar(),
+            getConvertedText(),
+            generateMessageInstanceId());
     }
 
     public ApiMessageView mapToView() {
@@ -83,7 +87,15 @@ public final class Message {
             getConvertedText());
     }
 
-    public LogMessage mapToLogMessage() {
-        return LogMessage.of(messageTemplate.getType(), mapToReadableText());
+    public String mapToLogMessage() {
+        return mapToReadableText();
+    }
+
+    private String generateMessageInstanceId() {
+        return UUID.randomUUID().toString();
+    }
+
+    public MessageType getMessageType() {
+        return messageTemplate.getType();
     }
 }

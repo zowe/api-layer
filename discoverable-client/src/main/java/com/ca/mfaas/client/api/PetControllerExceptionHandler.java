@@ -18,8 +18,6 @@ import com.ca.mfaas.message.core.MessageService;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -42,7 +40,6 @@ import java.util.stream.Collectors;
 @ControllerAdvice(assignableTypes = {PetController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class PetControllerExceptionHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(PetControllerExceptionHandler.class);
 
     private final MessageService messageService;
 
@@ -61,11 +58,7 @@ public class PetControllerExceptionHandler {
      */
     @ExceptionHandler(PetNotFoundException.class)
     public ResponseEntity<ApiMessageView> handlePetNotFound(PetNotFoundException exception) {
-       // LOGGER.debug("Pet with id:[{}] not found", exception.getId());
-        Message message = messageService.createMessage("com.ca.mfaas.sampleservice.petNotFound", exception.getId());
-        LOGGER.debug(message.mapToReadableText());
-       //temp
-        message.mapToLogMessage().log();
+        Message message = messageService.createMessage("com.ca.mfaas.api.sampleservice.petNotFound", exception.getId());
 
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
@@ -80,7 +73,7 @@ public class PetControllerExceptionHandler {
      */
     @ExceptionHandler(PetIdMismatchException.class)
     public ResponseEntity<ApiMessageView> handleIdMismatch(PetIdMismatchException exception) {
-        Message message = messageService.createMessage("com.ca.mfaas.sampleservice.petIdMismatchException", exception.getPathId(), exception.getBodyId());
+        Message message = messageService.createMessage("com.ca.mfaas.api.sampleservice.petIdMismatchException", exception.getPathId(), exception.getBodyId());
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -95,10 +88,7 @@ public class PetControllerExceptionHandler {
      */
     @ExceptionHandler(TypeMismatchException.class)
     public ResponseEntity<ApiMessageView> handleIdTypeMismatch(TypeMismatchException exception) {
-        String invalidIdValue = String.valueOf(exception.getValue());
-        LOGGER.debug("Invalid user input for pet id:[{}]", invalidIdValue);
-        Message message = messageService.createMessage("com.ca.mfaas.sampleservice.petIdTypeMismatch", exception.getValue());
-
+        Message message = messageService.createMessage("com.ca.mfaas.api.sampleservice.petIdTypeMismatch", exception.getValue());
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -125,7 +115,7 @@ public class PetControllerExceptionHandler {
         }
 
         List<ApiMessage> listApiMessage = messageService
-            .createMessage("com.ca.mfaas.sampleservice.petMethodArgumentNotValid", messages)
+            .createMessage("com.ca.mfaas.api.sampleservice.petMethodArgumentNotValid", messages)
             .stream()
             .map(Message::mapToApiMessage)
             .collect(Collectors.toList());
@@ -143,7 +133,7 @@ public class PetControllerExceptionHandler {
      */
     @ExceptionHandler(UnrecognizedPropertyException.class)
     public ResponseEntity<ApiMessageView> handleUnrecognizedProperty(UnrecognizedPropertyException exception) {
-        Message message = messageService.createMessage("com.ca.mfaas.sampleservice.petUnrecognizedProperty", exception.getPropertyName());
+        Message message = messageService.createMessage("com.ca.mfaas.api.sampleservice.petUnrecognizedProperty", exception.getPropertyName());
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -158,8 +148,7 @@ public class PetControllerExceptionHandler {
      */
     @ExceptionHandler(JsonParseException.class)
     public ResponseEntity<ApiMessageView> jsonParseException(JsonParseException exception) {
-        LOGGER.debug("Invalid JSON request: {}", exception.getMessage());
-        Message message = messageService.createMessage("com.ca.mfaas.sampleservice.jsonParseException", exception.getMessage());
+        Message message = messageService.createMessage("com.ca.mfaas.api.sampleservice.jsonParseException", exception.getMessage());
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -175,7 +164,7 @@ public class PetControllerExceptionHandler {
     @ExceptionHandler(InvalidFormatException.class)
     public ResponseEntity<ApiMessageView> handleInvalidFormatException(InvalidFormatException exception) {
         String fieldName = exception.getPath().get(0).getFieldName();
-        Message message = messageService.createMessage("com.ca.mfaas.sampleservice.petInvalidFormatException", fieldName);
+        Message message = messageService.createMessage("com.ca.mfaas.api.sampleservice.petInvalidFormatException", fieldName);
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)

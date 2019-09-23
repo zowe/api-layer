@@ -30,22 +30,9 @@ public class MessageTemplateStorage {
 
     private void addMessageTemplateToStorage(MessageTemplate message) {
         if (!messageTemplateMap.containsKey(message.getKey())) {
-            validMessageNumber(message.getNumber());
             messageTemplateMap.put(message.getKey(), message);
         } else {
             String exceptionMessage = String.format("Message with key '%s' already exists", message.getKey());
-            throw new DuplicateMessageException(exceptionMessage);
-        }
-    }
-
-    private void validMessageNumber(String messageNumber) {
-        boolean existedMesageNumber = messageTemplateMap
-            .values()
-            .stream()
-            .anyMatch(message -> message.getNumber().equals(messageNumber));
-
-        if (existedMesageNumber) {
-            String exceptionMessage = String.format("Message with key '%s' already exists", messageNumber);
             throw new DuplicateMessageException(exceptionMessage);
         }
     }

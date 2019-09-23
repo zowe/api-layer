@@ -1,7 +1,7 @@
 messages:
     # Security messages (100 - 199)
     # General messages (100 - 120)
-    - key: apiml.logger.petNotFound
-      number: ZWEADS100E
-      type: ERROR
-      text: "You are perfect mister %s"
+    - key: com.ca.mfaas.log.sampleservice.registeringWebSocket
+      number: CSR0001
+      type: DEBUG
+      text: "Registering WebSocket handler to %s"

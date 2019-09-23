@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.client.ws;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
@@ -18,14 +20,21 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @Component
 @SuppressWarnings("squid:S1075")
 public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigurer {
+
+    @InjectApimlLogger
+    private ApimlLogger logger = ApimlLogger.empty();
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         String webSocketPath = "/ws/uppercase";
-        log.info("Registering WebSocket handler to " + webSocketPath);
+
+        logger.log("com.ca.mfaas.log.sampleservice.registeringWebSocket", webSocketPath);
+
         registry.addHandler(new WebSocketServerHandler(), webSocketPath).setAllowedOrigins("*");
 
         webSocketPath = "/ws/header";
-        log.info("Registering WebSocket handler to " + webSocketPath);
+        logger.log("com.ca.mfaas.log.sampleservice.registeringWebSocket", webSocketPath);
+
         registry.addHandler(new HeaderSocketServerHandler(), webSocketPath);
     }
 }
