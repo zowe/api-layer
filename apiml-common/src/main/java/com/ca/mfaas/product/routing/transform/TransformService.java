@@ -10,15 +10,14 @@
 
 package com.ca.mfaas.product.routing.transform;
 
-import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
-import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 
@@ -26,15 +25,13 @@ import java.net.URI;
  * Class for producing service URL using Gateway hostname and service route
  */
 
+@Slf4j
 @RequiredArgsConstructor
 public class TransformService {
 
     private static final String SEPARATOR = "/";
 
     private final GatewayClient gatewayClient;
-
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Construct the URL using gateway hostname and route
@@ -52,8 +49,9 @@ public class TransformService {
                                RoutedServices routes) throws URLTransformationException {
 
         if (!gatewayClient.isInitialized()) {
-            apimlLog.log("apiml.common.gatewayNotFoundForTransformRequest");
-            throw new URLTransformationException("Gateway not found yet, transform service cannot perform the request");
+            String message = "Gateway not found yet, transform service cannot perform the request";
+            log.error(message);
+            throw new URLTransformationException(message);
         }
 
         URI serviceUri = URI.create(serviceUrl);
@@ -100,7 +98,7 @@ public class TransformService {
     private String getShortEndPoint(String routeServiceUrl, String endPoint) {
         String shortEndPoint = endPoint;
         if (!routeServiceUrl.equals(SEPARATOR)) {
-            shortEndPoint = shortEndPoint.replaceFirst(UrlUtils.removeLastSlash(routeServiceUrl), "");
+            shortEndPoint = shortEndPoint.replaceFirst(StringUtils.removeLastSlash(routeServiceUrl), "");
         }
         return shortEndPoint;
     }

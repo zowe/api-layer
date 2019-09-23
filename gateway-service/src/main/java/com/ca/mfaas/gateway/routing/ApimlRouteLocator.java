@@ -20,7 +20,6 @@ import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.util.PatternMatchUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -116,7 +115,7 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
             if (!path.startsWith("/")) {
                 path = "/" + path;
             }
-            if (StringUtils.hasText(this.properties.getPrefix())) {
+            if (org.springframework.util.StringUtils.hasText(this.properties.getPrefix())) {
                 path = this.properties.getPrefix() + path;
                 if (!path.startsWith("/")) {
                     path = "/" + path;
