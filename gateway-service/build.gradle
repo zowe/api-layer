@@ -60,6 +60,14 @@ dependencies {
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
 
+bootRun {
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+
+    systemProperties = System.properties
+}
+
 
 bootRun {
     if (project.hasProperty('args')) {
