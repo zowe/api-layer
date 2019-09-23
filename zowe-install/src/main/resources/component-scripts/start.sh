@@ -21,6 +21,8 @@
 # - KEYSTORE - The keystore to use for SSL certificates
 # - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
 # - KEY_ALIAS - The alias of the key within the keystore
+# - ZOSMF_PORT - The SSL port z/OSMF is listening on.
+# - ZOSMF_IP_ADDRESS - The IP Address z/OSMF can be reached
 
 DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart \
@@ -35,7 +37,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dapiml.discovery.allPeersUrls=https://${ZOWE_EXPLORER_HOST}:${DISCOVERY_PORT}/eureka/ \
     -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
     -Dapiml.service.port=${DISCOVERY_PORT} \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
+    -Dapiml.service.ipAddress=${ZOWE_IP_ADRESS} \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${STATIC_DEF_CONFIG_DIR} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
@@ -45,7 +47,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
     -Dserver.ssl.keyPassword=password \
-    -Dserver.ssl.trustStore=${TRUSTSTORE} \
+    -Dserver.ssl.trustStore=${ROOT_DIR}"/components/api-mediation/keystore/localhost/localhost.truststore.p12" \
     -Dserver.ssl.trustStoreType=PKCS12 \
     -Dserver.ssl.trustStorePassword=password \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
@@ -59,7 +61,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Denvironment.hostname=${ZOWE_EXPLORER_HOST} \
     -Denvironment.port=${CATALOG_PORT} \
     -Denvironment.discoveryLocations=https://${ZOWE_EXPLORER_HOST}:${DISCOVERY_PORT}/eureka/ \
-    -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
+    -Denvironment.ipAddress=${ZOWE_IP_ADRESS} \
     -Denvironment.preferIpAddress=true -Denvironment.gatewayHostname=${ZOWE_EXPLORER_HOST} \
     -Denvironment.eurekaUserId=eureka \
     -Denvironment.eurekaPassword=password \
@@ -73,7 +75,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
     -Dserver.ssl.keyPassword=password \
-    -Dserver.ssl.trustStore=${TRUSTSTORE} \
+    -Dserver.ssl.trustStore=${ROOT_DIR}"/components/api-mediation/keystore/localhost/localhost.truststore.p12" \
     -Dserver.ssl.trustStoreType=PKCS12 \
     -Dserver.ssl.trustStorePassword=password \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
@@ -89,7 +91,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.port=${GATEWAY_PORT} \
     -Dapiml.service.discoveryServiceUrls=https://${ZOWE_EXPLORER_HOST}:${DISCOVERY_PORT}/eureka/ \
     -Dapiml.service.preferIpAddress=true \
-    -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
+    -Denvironment.ipAddress=${ZOWE_IP_ADRESS} \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
@@ -100,7 +102,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
     -Dserver.ssl.keyPassword=password \
-    -Dserver.ssl.trustStore=${TRUSTSTORE} \
+    -Dserver.ssl.trustStore=${ROOT_DIR}"/components/api-mediation/keystore/localhost/localhost.truststore.p12" \
     -Dserver.ssl.trustStoreType=PKCS12 \
     -Dserver.ssl.trustStorePassword=password \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
