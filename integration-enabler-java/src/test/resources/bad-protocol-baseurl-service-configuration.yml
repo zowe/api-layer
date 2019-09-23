@@ -21,8 +21,9 @@ apiInfo:
     - apiId: org.zowe.hellospring
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hellospring/api-doc
-catalogUiTile:
-    id: helloworld-spring
-    title: HelloWorld Spring REST API
-    description: Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem
-    version: 1.0.0
+catalog:
+    tile:
+        id: helloworld-spring
+        title: HelloWorld Spring REST API
+        description: Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem
+        version: 1.0.0

@@ -16,9 +16,17 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CatalogUiTile {
-    private String id;
-    private String title;
-    private String description;
-    private String version;
+public class Catalog {
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Tile {
+        private String id;
+        private String title;
+        private String description;
+        private String version;
+    }
+
+    private Tile tile;
 }
