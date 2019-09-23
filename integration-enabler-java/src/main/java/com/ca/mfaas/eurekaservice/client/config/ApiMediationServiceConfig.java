@@ -28,13 +28,12 @@ public class ApiMediationServiceConfig {
     private String homePageRelativeUrl;
     private String statusPageRelativeUrl;
     private String healthCheckRelativeUrl;
-    private String contextPath;
     private String defaultZone;
     private Boolean securePortEnabled;
     @Singular
     private List<Route> routes;
     private List<ApiInfo> apiInfo;
-    private CatalogUiTile catalogUiTile;
+    private Catalog catalog;
     private Ssl ssl;
     private Eureka eureka;
 }
