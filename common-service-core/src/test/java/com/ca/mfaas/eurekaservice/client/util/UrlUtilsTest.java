@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.staticdef;
+package com.ca.mfaas.eurekaservice.client.util;
 
 import org.junit.Test;
 

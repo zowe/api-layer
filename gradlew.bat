@@ -10,7 +10,6 @@ if "%OS%"=="Windows_NT" setlocal
 
 set DIRNAME=%~dp0
 if "%DIRNAME%" == "" set DIRNAME=.
-call %DIRNAME%\gradle\bootstrap\bootstrap_gradlew.bat
 set APP_BASE_NAME=%~n0
 set APP_HOME=%DIRNAME%
 

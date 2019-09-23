@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.config;
 
+import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,7 +32,6 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 @AllArgsConstructor
 @Data
 public class ApiInfo {
-    private static final String METADATA_FORMAT = "%s.%s.%s";
 
     @JsonProperty(required = true)
     private String apiId;
@@ -49,30 +49,30 @@ public class ApiInfo {
     //TODO: move to EurekaMetadataParser
     public Map<String, String> generateMetadata(String serviceId) {
         Map<String, String> metadata = new HashMap<>();
-        String encodedGatewayUrl = getEncodedGatewayUrl(gatewayUrl);
+        String encodedGatewayUrl = UrlUtils.getEncodedUrl(gatewayUrl);
 
         if (gatewayUrl != null) {
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_GATEWAY_URL), gatewayUrl);
+            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_GATEWAY_URL), gatewayUrl);
         }
 
         if (version != null) {
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_VERSION), version);
+            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_VERSION), version);
         }
 
         if (swaggerUrl != null) {
-            validateUrl(swaggerUrl,
+            UrlUtils.validateUrl(swaggerUrl,
                 () -> String.format("The Swagger URL \"%s\" for service %s is not valid", swaggerUrl, serviceId)
             );
 
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_SWAGGER_URL), swaggerUrl);
+            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_SWAGGER_URL), swaggerUrl);
         }
 
         if (documentationUrl != null) {
-            validateUrl(documentationUrl,
+            UrlUtils.validateUrl(documentationUrl,
                 () -> String.format("The documentation URL \"%s\" for service %s is not valid", documentationUrl, serviceId)
             );
 
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), documentationUrl);
+            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), documentationUrl);
         }
 
         return metadata;

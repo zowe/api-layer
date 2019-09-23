@@ -10,8 +10,7 @@
 package com.ca.mfaas.discovery.staticdef;
 
 import com.ca.mfaas.config.ApiInfo;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
+import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -39,9 +38,6 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 @Slf4j
 @Component
 public class ServiceDefinitionProcessor {
-
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     private static final String STATIC_INSTANCE_ID_PREFIX = "STATIC-";
 
@@ -74,7 +70,7 @@ public class ServiceDefinitionProcessor {
                         log.debug("Found directory {}", directory.getPath());
                         instances.addAll(findServicesInDirectory(directory));
                     } else {
-                        apimlLog.log("apiml.discovery.staticDefinitionsDirectoryNotValid", directory.getPath());
+                        log.error("Directory {} is not a directory or does not exist", directory.getPath());
                     }
                 });
         } else {
@@ -91,7 +87,7 @@ public class ServiceDefinitionProcessor {
         Map<String, String> ymlSources = new HashMap<>();
 
         if (ymlFiles == null) {
-            apimlLog.log("apiml.discovery.errorReadingStaticDefinitionFolder", directory.getAbsolutePath());
+            log.error("I/O problem occurred during reading directory: {}", directory.getAbsolutePath());
             ymlFiles = new File[0];
         } else if (ymlFiles.length == 0) {
             log.info("No static service definition found in directory: {}", directory.getAbsolutePath());
@@ -102,12 +98,12 @@ public class ServiceDefinitionProcessor {
             try {
                 ymlSources.put(file.getAbsolutePath(), new String(Files.readAllBytes(Paths.get(file.getAbsolutePath()))));
             } catch (IOException e) {
-                apimlLog.log("apiml.discovery.errorParsingStaticDefinitionFile", file.getAbsolutePath());
+                log.error("Error loading file {}", file.getAbsolutePath(), e);
             }
         }
         ProcessServicesDataResult result = processServicesData(ymlSources);
-        if (!result.getErrors().isEmpty()) {
-            apimlLog.log("apiml.discovery.errorParsingStaticDefinitionData", result.getErrors());
+        for (String error : result.getErrors()) {
+            log.warn(error);
         }
         return result.getInstances();
     }
@@ -163,7 +159,7 @@ public class ServiceDefinitionProcessor {
                 if (service.getCatalogUiTileId() != null) {
                     tile = tiles.get(service.getCatalogUiTileId());
                     if (tile == null) {
-                        errors.add(String.format("Error processing file %s - The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", ymlFileName, service.getCatalogUiTileId(), serviceId));
+                        errors.add(String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), serviceId));
                     } else {
                         tile.setId(service.getCatalogUiTileId());
                     }
@@ -173,7 +169,7 @@ public class ServiceDefinitionProcessor {
                     buildInstanceInfo(instances, errors, service, tile, instanceBaseUrl);
                 }
             } catch (ServiceDefinitionException e) {
-                errors.add(String.format("Error processing file %s - %s", ymlFileName, e.getMessage()) );
+                errors.add(e.getMessage());
             }
         }
 
