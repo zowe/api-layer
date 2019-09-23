@@ -7,12 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.utils;
+package com.ca.mfaas.eurekaservice.client.util;
 
-public class UrlUtils {
+public class StringUtils {
+    private StringUtils() { }
 
-    private UrlUtils() {
-        throw new IllegalStateException("Filter utility class");
+    public static boolean isNullOrEmpty(String string) {
+        boolean result = false;
+        if (string == null || string.trim().isEmpty()) {
+            result = true;
+        }
+        return result;
     }
 
     public static String removeFirstAndLastSlash(String uri) {
@@ -56,5 +61,4 @@ public class UrlUtils {
         }
         return normalizedUri;
     }
-
 }

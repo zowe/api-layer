@@ -12,7 +12,6 @@ package com.ca.mfaas.eurekaservice.client.util;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
-import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -123,7 +122,7 @@ public class EurekaMetadataParser {
                                       String subServiceId,
                                       String routeURL) {
         if (routeKeyURL.equals(ROUTES_GATEWAY_URL)) {
-            String gatewayURL = UrlUtils.removeFirstAndLastSlash(routeURL);
+            String gatewayURL = StringUtils.removeFirstAndLastSlash(routeURL);
 
             if (routeMap.containsKey(subServiceId)) {
                 String serviceUrl = routeMap.get(subServiceId);
@@ -135,7 +134,7 @@ public class EurekaMetadataParser {
         }
 
         if (routeKeyURL.equals(ROUTES_SERVICE_URL)) {
-            String serviceURL = UrlUtils.addFirstSlash(routeURL);
+            String serviceURL = StringUtils.addFirstSlash(routeURL);
 
             if (routeMap.containsKey(subServiceId)) {
                 String gatewayUrl = routeMap.get(subServiceId);

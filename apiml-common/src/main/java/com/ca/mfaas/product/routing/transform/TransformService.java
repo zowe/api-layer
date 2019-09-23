@@ -10,12 +10,12 @@
 
 package com.ca.mfaas.product.routing.transform;
 
+import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
-import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -98,7 +98,7 @@ public class TransformService {
     private String getShortEndPoint(String routeServiceUrl, String endPoint) {
         String shortEndPoint = endPoint;
         if (!routeServiceUrl.equals(SEPARATOR)) {
-            shortEndPoint = shortEndPoint.replaceFirst(UrlUtils.removeLastSlash(routeServiceUrl), "");
+            shortEndPoint = shortEndPoint.replaceFirst(StringUtils.removeLastSlash(routeServiceUrl), "");
         }
         return shortEndPoint;
     }
