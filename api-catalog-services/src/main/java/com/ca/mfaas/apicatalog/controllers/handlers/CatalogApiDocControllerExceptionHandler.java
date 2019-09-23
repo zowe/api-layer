@@ -12,8 +12,9 @@ package com.ca.mfaas.apicatalog.controllers.handlers;
 import com.ca.mfaas.apicatalog.controllers.api.CatalogApiDocController;
 import com.ca.mfaas.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.Message;
+import com.ca.mfaas.message.core.MessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,15 +29,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice(assignableTypes = {CatalogApiDocController.class})
 public class CatalogApiDocControllerExceptionHandler {
 
-    private final ErrorService errorService;
+    private final MessageService messageService;
 
     /**
      * Constructor for {@link CatalogApiDocControllerExceptionHandler}.
-     * @param errorService service for creation {@link ApiMessage} by key and list of parameters.
+     * @param messageService service for creation {@link Message} by key and list of parameters.
      */
     @Autowired
-    public CatalogApiDocControllerExceptionHandler(ErrorService errorService) {
-        this.errorService = errorService;
+    public CatalogApiDocControllerExceptionHandler(MessageService messageService) {
+        this.messageService = messageService;
     }
 
     /**
@@ -45,12 +46,12 @@ public class CatalogApiDocControllerExceptionHandler {
      * @return 500 and the message 'TBD'
      */
     @ExceptionHandler(ApiDocNotFoundException.class)
-    public ResponseEntity<ApiMessage> handleApiDocNotFoundException(ApiDocNotFoundException exception) {
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.caapicatalog.apiDocNotFound", exception.getMessage());
+    public ResponseEntity<ApiMessageView> handleApiDocNotFoundException(ApiDocNotFoundException exception) {
+        Message message = messageService.createMessage("com.ca.mfaas.caapicatalog.apiDocNotFound", exception.getMessage());
 
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(message);
+            .body(message.mapToView());
     }
 
     /**
@@ -59,12 +60,12 @@ public class CatalogApiDocControllerExceptionHandler {
      * @return 404 and the message 'TBD'
      */
     @ExceptionHandler(ServiceNotFoundException.class)
-    public ResponseEntity<ApiMessage> handleServiceNotFoundException(ServiceNotFoundException exception) {
+    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ServiceNotFoundException exception) {
 
-        ApiMessage message = errorService.createApiMessage("com.ca.mfaas.caapicatalog.serviceNotFound", exception.getMessage());
+        Message message = messageService.createMessage("com.ca.mfaas.caapicatalog.serviceNotFound", exception.getMessage());
 
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(message);
+            .body(message.mapToView());
     }
 }

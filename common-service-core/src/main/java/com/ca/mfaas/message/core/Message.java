@@ -11,6 +11,7 @@ package com.ca.mfaas.message.core;
 
 import com.ca.mfaas.message.api.ApiMessage;
 import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.log.LogMessage;
 import com.ca.mfaas.message.template.MessageTemplate;
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -67,16 +68,22 @@ public final class Message {
     }
 
     public String mapToReadableText() {
-        //check is not null
         return messageTemplate.getNumber() + messageTemplate.getType().toChar() + ' ' + getConvertedText();
     }
 
     public ApiMessageView mapToView() {
-        ApiMessage apiMessage = new ApiMessage(
+        return new ApiMessageView(Collections.singletonList(mapToApiMessage()));
+    }
+
+    public ApiMessage mapToApiMessage() {
+        return new ApiMessage(
             requestedKey,
             messageTemplate.getType(),
             messageTemplate.getNumber(),
             getConvertedText());
-        return new ApiMessageView(Collections.singletonList(apiMessage));
+    }
+
+    public LogMessage mapToLogMessage() {
+        return LogMessage.of(messageTemplate.getType(), mapToReadableText());
     }
 }

@@ -11,8 +11,8 @@ package com.ca.mfaas.apicatalog.controllers.api;
 
 import com.ca.mfaas.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,13 +61,13 @@ public class ApiCatalogControllerContainerRetrievalTest {
         }
 
         @Bean
-        public ErrorService errorService() {
-            return new ErrorServiceImpl("/messages.yml");
+        public MessageService messageService() {
+            return new YamlMessageService("/messages.yml");
         }
 
         @Bean
         public ApiCatalogControllerExceptionHandler apiCatalogControllerExceptionHandler() {
-            return new ApiCatalogControllerExceptionHandler(errorService());
+            return new ApiCatalogControllerExceptionHandler(messageService());
         }
     }
 }

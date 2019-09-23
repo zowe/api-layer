@@ -9,15 +9,18 @@
  */
 package com.ca.mfaas.client.configuration;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ApplicationConfiguration {
     @Bean
-    public ErrorService errorService() {
-        return new ErrorServiceImpl("/messages.yml");
+    public MessageService messageService() {
+        MessageService messageService = new YamlMessageService();
+        messageService.loadMessages("/api-messages.yml");
+        messageService.loadMessages("/log-messages.yml");
+        return messageService;
     }
 }

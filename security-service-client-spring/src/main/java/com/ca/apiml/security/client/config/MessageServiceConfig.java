@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 public class MessageServiceConfig {
 
     @Bean
-    public MessageService errorService() {
+    public MessageService messageService() {
         return new YamlMessageService("/security-service-messages.yml");
     }
 

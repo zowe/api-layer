@@ -10,7 +10,6 @@
 package com.ca.mfaas.message.api;
 
 import com.ca.mfaas.message.core.MessageType;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

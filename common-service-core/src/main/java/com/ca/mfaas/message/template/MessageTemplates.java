@@ -9,11 +9,15 @@
  */
 package com.ca.mfaas.message.template;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class MessageTemplates {
     private List<MessageTemplate> messages;
 }

@@ -39,7 +39,6 @@ public class MessageTemplateStorage {
     }
 
     private void validMessageNumber(String messageNumber) {
-        //TODO: check any match
         boolean existedMesageNumber = messageTemplateMap
             .values()
             .stream()
