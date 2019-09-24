@@ -9,8 +9,10 @@
  */
 package com.ca.mfaas.eurekaservice.client.util;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class StringUtils {
-    private StringUtils() { }
 
     public static boolean isNullOrEmpty(String string) {
         boolean result = false;

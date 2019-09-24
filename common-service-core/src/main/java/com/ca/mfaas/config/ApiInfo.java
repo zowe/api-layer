@@ -79,7 +79,7 @@ public class ApiInfo {
     }
 
     private String createMetadataKey(String encodedGatewayUrl, String url) {
-        return String.format(METADATA_FORMAT, API_INFO, encodedGatewayUrl, url);
+        return String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, url);
     }
 
     private String getEncodedGatewayUrl(String gatewayUrl) {

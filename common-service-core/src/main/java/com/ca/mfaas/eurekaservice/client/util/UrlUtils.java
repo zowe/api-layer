@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.eurekaservice.client.util;
 
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang.RandomStringUtils;
 
 import java.net.MalformedURLException;
@@ -17,20 +18,16 @@ import java.security.InvalidParameterException;
 import java.util.function.Supplier;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.API_INFO;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.METADATA_FORMAT;
 
+@UtilityClass
 public class UrlUtils {
-
-    private UrlUtils() {
-    }
-
 
     public static String trimSlashes(String string) {
         return string.replaceAll("^/|/$", "");
     }
 
     public static String createMetadataKey(String encodedUrl, String url) {
-        return String.format(METADATA_FORMAT, API_INFO, encodedUrl, url);
+        return String.format("%s.%s.%s", API_INFO, encodedUrl, url);
     }
 
     public static String getEncodedUrl(String url) {
