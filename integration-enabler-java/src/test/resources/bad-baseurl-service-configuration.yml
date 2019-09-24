@@ -1,9 +1,9 @@
 serviceId: service
 title: HelloWorld Spring REST API
-eureka:
-    hostname: localhost
-    ipAddress: 127.0.0.1
-    port: 10021
+#eureka:
+#    hostname: localhost
+#    ipAddress: 127.0.0.1
+#    port: 10021
 description: POC for exposing a Spring REST API
 baseUrl: localhost:10021/hellospring
 homePageRelativeUrl: /
