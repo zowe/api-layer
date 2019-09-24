@@ -5,7 +5,7 @@ serviceId: hellojersey
 #    port: 10016
 title: Hello Jersey REST API
 description: Example for exposing a Jersey REST API
-defaultZone: https://localhost:10011/eureka/
+#defaultZone: https://localhost:10011/eureka/
 baseUrl: https://localhost:10016/hellojersey
 homePageRelativeUrl:
 statusPageRelativeUrl: /application/info
