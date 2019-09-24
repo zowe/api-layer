@@ -112,7 +112,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         result.setInstanceEnabledOnit(true);
         result.setSecureVirtualHostName(config.getServiceId());
         result.setVirtualHostName(config.getServiceId());
-        result.setIpAddress(config.getEureka().getIpAddress());
+        //result.setIpAddress(config.getEureka().getIpAddress());
         result.setMetadataMap(createMetadata(config));
         result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
 
