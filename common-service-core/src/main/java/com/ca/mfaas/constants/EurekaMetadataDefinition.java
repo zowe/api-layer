@@ -17,8 +17,6 @@ public final class EurekaMetadataDefinition {
 
     public static final String CURRENT_VERSION = "2.0.0";
 
-    public static final String METADATA_FORMAT = "%s.%s.%s";
-
     //v2
     public static final String VERSION = "version";
     public static final String ROUTES = "apiml.routes";
