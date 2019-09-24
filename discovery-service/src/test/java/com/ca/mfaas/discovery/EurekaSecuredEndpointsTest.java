@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.discovery;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +43,6 @@ public class EurekaSecuredEndpointsTest {
     private MockMvc mvc;
 
     @Test
-    @Ignore
     public void shouldAllowCallForEurekaUser() throws Exception {
         String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserName + ":" + eurekaUserPassword).getBytes());
         mvc.perform(get(EUREKA_ENDPOINT)
@@ -55,7 +53,6 @@ public class EurekaSecuredEndpointsTest {
     }
 
     @Test
-    @Ignore
     public void shouldForbidCallForNotEurekaUser() throws Exception {
         mvc.perform(get(EUREKA_ENDPOINT)
             .contentType(MediaType.APPLICATION_JSON)

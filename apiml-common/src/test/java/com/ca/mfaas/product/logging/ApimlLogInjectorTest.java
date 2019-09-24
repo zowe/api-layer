@@ -1,0 +1,66 @@
+package com.ca.mfaas.product.logging;
+
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.message.yaml.YamlMessageService;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+@RunWith(SpringRunner.class)
+@Import(ApimlLogInjectorTest.TestConfig.class)
+public class ApimlLogInjectorTest {
+
+    @Autowired
+    private TestComponent testComponent;
+
+    @Test
+    public void testInject() {
+        assertNotNull(testComponent.apimlLogger);
+        assertNull(testComponent.apimlLogger2);
+    }
+
+
+    static class TestComponent {
+
+        @InjectApimlLogger
+        private ApimlLogger apimlLogger;
+
+
+        private ApimlLogger apimlLogger2;
+
+    }
+
+
+    @SpringBootConfiguration
+    public static class TestConfig {
+
+        @Autowired
+        private ApplicationContext applicationContext;
+
+        @Bean
+        public ApimlLogInjector apimlLogInjector() {
+            return new ApimlLogInjector(applicationContext);
+        }
+
+        @Bean
+        public TestComponent testComponent() {
+            return new ApimlLogInjectorTest.TestComponent();
+        }
+
+        @Bean
+        public MessageService messageService() {
+            return new YamlMessageService();
+        }
+
+    }
+}

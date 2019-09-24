@@ -41,7 +41,7 @@ public final class ApimlLogger {
     }
 
     private void log(Message message) {
-        switch (message.getMessageType()) {
+        switch (message.getMessageTemplate().getType()) {
             case TRACE: logger.trace(message.mapToLogMessage()); break;
             case DEBUG: logger.debug(message.mapToLogMessage()); break;
             case INFO: logger.info(message.mapToLogMessage()); break;

@@ -46,7 +46,7 @@ public abstract class AbstractMessageService implements MessageService {
 
         try {
             return Message.of(key, messageTemplate, parameters);
-        } catch (IllegalFormatConversionException exception) {
+        } catch (IllegalFormatConversionException | MissingFormatArgumentException exception) {
             log.debug("Internal error: Invalid message format was used", exception);
             messageTemplate = validateMessageTemplate(Message.INVALID_MESSAGE_TEXT_FORMAT);
             return Message.of(key, messageTemplate, parameters);

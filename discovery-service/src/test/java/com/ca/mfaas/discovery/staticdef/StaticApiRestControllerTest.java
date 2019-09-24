@@ -42,7 +42,6 @@ public class StaticApiRestControllerTest {
     private StaticServicesRegistrationService registrationService;
 
     @Test
-    @Ignore
     public void listDefinitions() throws Exception {
         String serviceName = "service";
         String basicToken = "Basic " + Base64.getEncoder().encodeToString(CREDENTIALS.getBytes());
@@ -63,7 +62,6 @@ public class StaticApiRestControllerTest {
     }
 
     @Test
-    @Ignore
     public void reloadDefinitions() throws Exception {
         String serviceName = "service";
         String basicToken = "Basic " + Base64.getEncoder().encodeToString(CREDENTIALS.getBytes());

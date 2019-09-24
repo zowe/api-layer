@@ -95,7 +95,7 @@ public final class Message {
         return UUID.randomUUID().toString();
     }
 
-    public MessageType getMessageType() {
-        return messageTemplate.getType();
+    public MessageTemplate getMessageTemplate() {
+        return messageTemplate;
     }
 }
