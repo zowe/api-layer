@@ -17,6 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Abstract class which implements the {@link MessageService} interface.
+ * It creates messages from the file, validate and add them to the {@link MessageTemplateStorage}.
+ */
 @Slf4j
 public abstract class AbstractMessageService implements MessageService {
 
@@ -70,7 +74,6 @@ public abstract class AbstractMessageService implements MessageService {
 
     /**
      * Validate and add a {@link MessageTemplates} to the {@link MessageTemplateStorage}.
-     *
      * @param messageTemplates the list of message templates
      */
     protected final void addMessageTemplates(MessageTemplates messageTemplates) {

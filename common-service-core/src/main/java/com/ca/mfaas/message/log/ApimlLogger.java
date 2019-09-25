@@ -28,16 +28,20 @@ public final class ApimlLogger {
     }
 
     /**
-     * Method which allows to create an ApimlLogger object if the class uses the InjectApimlLogger annotation.
+     * Method which allows to create an ApimlLogger object.
      * @param clazz
      * @param messageService
-     * @return
+     * @return {@link ApimlLogger}
      */
     public static ApimlLogger of(Class<?> clazz,
                           MessageService messageService) {
         return new ApimlLogger(clazz, messageService);
     }
 
+    /**
+     * Method which returns ApimlLogger with null {@link MessageService}.
+     * @return {@link ApimlLogger}
+     */
     public static ApimlLogger empty() {
         return new ApimlLogger(ApimlLogger.class, null);
     }
@@ -46,7 +50,6 @@ public final class ApimlLogger {
      * Method which allows to create a specific message with specific parameters and log it in its level type.
      * @param key of the message
      * @param parameters for message
-     * @return
      */
     public void log(String key, Object... parameters) {
         if (messageService != null) {
