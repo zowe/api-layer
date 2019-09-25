@@ -10,17 +10,14 @@
 
 package com.ca.mfaas.message.core;
 
-import com.ca.mfaas.message.dummy.DummyMessageService;
+import com.ca.mfaas.dummy.DummyMessageService;
 import com.ca.mfaas.message.template.MessageTemplate;
 import com.ca.mfaas.message.template.MessageTemplates;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.IllegalFormatConversionException;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -33,46 +30,62 @@ public class AbstractMessageServiceTest {
 
     @Test
     public void shouldCreateMessage() {
-        Message message = abstractMessageService.createMessage("messageKey1", "p1");
-        assertEquals("Test message with parameter p1", message.getConvertedText());
+        Message message = abstractMessageService.createMessage("apiml.common.serviceTimeout", "3000");
+        assertEquals("Message texts are different",
+            "No response received within the allowed time: 3000", message.getConvertedText());
     }
 
     @Test
-    public void shouldReturnInvalidMessageIfKeyInvalid() {
+    public void shouldReturnInvalidMessage_IfKeyInvalid() {
         Message message = abstractMessageService.createMessage("invalidKey", "parameter");
         String expectedMessage = "Internal error: Invalid message key 'invalidKey' provided. No default message found. Please contact CA support of further assistance.";
-        assertEquals(expectedMessage, message.getConvertedText());
+        assertEquals("Message texts are different", expectedMessage, message.getConvertedText());
     }
 
     @Test
-    public void shouldThrowExceptionIfTheFormatIsIllegal() {
-        exception.expect(IllegalFormatConversionException.class);
-        abstractMessageService.createMessage("com.ca.mfaas.common.invalidMessageTextFormat", new Object[]{ "3000" });
+    public void shouldReturnInvalidMessageTextFormat_IfTheFormatIsIllegal() {
+        Message message  = abstractMessageService.createMessage("apiml.common.serviceTimeout.illegalFormat", new Object[]{ "3000" });
+        String expectedMessageText = "Internal error: Invalid message text format. Please contact support for further assistance.";
+        assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
+
+        message  = abstractMessageService.createMessage("apiml.common.serviceTimeout.missingFormat", new Object[]{ "3000" });
+        assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
     }
 
     @Test
-    public void shouldCreateMessagesWhenMultipleParametersArePassed() {
+    public void shouldReturnInvalidMessageTextFormat_IfTheParamIsMissing() {
+        Message message  = abstractMessageService.createMessage("apiml.common.serviceTimeout.missingFormat", new Object[]{ "3000" });
+        String expectedMessageText = "Internal error: Invalid message text format. Please contact support for further assistance.";
+        assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
+    }
+
+    @Test
+    public void shouldCreateMessages_IfMultipleParametersArePassed() {
         List<Object[]> parameters = new ArrayList<Object[]>();
-        parameters.add(new Object[]{"p1"});
-        parameters.add(new Object[]{"p2"});
-        List<Message> messages = abstractMessageService.createMessage("messageKey1", parameters);
-        assertEquals("Test message with parameter p1", messages.get(0).getConvertedText());
-        assertEquals("Test message with parameter p2", messages.get(1).getConvertedText());
+        parameters.add(new Object[]{ "2000" });
+        parameters.add(new Object[]{ "3000" });
+        List<Message> messages = abstractMessageService.createMessage("apiml.common.serviceTimeout", parameters);
+        assertEquals("Message texts are different", "No response received within the allowed time: 2000", messages.get(0).getConvertedText());
+        assertEquals("Message texts are different", "No response received within the allowed time: 3000", messages.get(1).getConvertedText());
     }
 
     @Test
-    public void shouldThrowExceptionIfThereAreDuplicatedMessages() {
+    public void shouldThrowException_IfThereAreDuplicatedMessageNumbers() {
         MessageTemplate message = new MessageTemplate();
-        message.setKey("messageKey1");
-        message.setNumber("0001");
-        message.setText("Test message 1");
+        message.setKey("apiml.common.serviceTimeout");
+        message.setNumber("MFS0104");
+
+        MessageTemplate message2 = new MessageTemplate();
+        message2.setKey("apiml.common.serviceTimeout.illegalFormat");
+        message2.setNumber("MFS0104");
+
         MessageTemplates messages = new MessageTemplates();
         messages.setMessages(
-            Arrays.asList(message)
+            Arrays.asList(message, message2)
         );
 
         exception.expect(DuplicateMessageException.class);
-        exception.expectMessage("Message with key 'messageKey1' already exists");
+        exception.expectMessage("Message template with number [MFS0104] already exists");
 
         abstractMessageService.addMessageTemplates(messages);
     }

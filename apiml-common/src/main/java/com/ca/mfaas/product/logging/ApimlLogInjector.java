@@ -13,8 +13,6 @@ import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -22,18 +20,17 @@ import org.springframework.util.ReflectionUtils;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class ApimlLogInjector implements BeanPostProcessor {
 
     private final ApplicationContext appContext;
 
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    public Object postProcessAfterInitialization(Object bean, String beanName) {
         return bean;
     }
 
     @Override
-    public Object postProcessBeforeInitialization(final Object bean, String name) throws BeansException {
+    public Object postProcessBeforeInitialization(final Object bean, String name) {
         ReflectionUtils.doWithFields(bean.getClass(), field -> {
             // make the field accessible if defined private
             ReflectionUtils.makeAccessible(field);

@@ -40,6 +40,7 @@ public final class ApimlLogger {
         }
     }
 
+    @SuppressWarnings("squid:S2629")
     private void log(Message message) {
         switch (message.getMessageTemplate().getType()) {
             case TRACE: logger.trace(message.mapToLogMessage()); break;

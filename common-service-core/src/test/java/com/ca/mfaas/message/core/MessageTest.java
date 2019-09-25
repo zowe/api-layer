@@ -28,36 +28,24 @@ public class MessageTest {
 
     @Before
     public void init() {
-        MessageTemplate messageTemplate = new MessageTemplate();
-        messageTemplate.setKey("apiml.common.serviceTimeout");
-        messageTemplate.setNumber("MFS0104");
-        messageTemplate.setType(MessageType.ERROR);
-        messageTemplate.setText("No response received within the allowed time: %s");
-
-        message = Message.of("apiml.common.serviceTimeout", messageTemplate, new Object[]{ "3000" });
+        message = Message.of("apiml.common.serviceTimeout",
+            createMessageTemplate("No response received within the allowed time: %s"),
+            new Object[]{ "3000" });
     }
 
     @Test(expected = MissingFormatArgumentException.class)
     public void testCheckConvertValidation_whenThereAreMoreParamThanRequested() {
-        MessageTemplate messageTemplate = new MessageTemplate();
-        messageTemplate.setKey("apiml.common.serviceTimeout");
-        messageTemplate.setNumber("MFS0104");
-        messageTemplate.setType(MessageType.ERROR);
-        messageTemplate.setText("No response received within the allowed time: %s %s");
-
-        Message.of("apiml.common.serviceTimeout", messageTemplate, new Object[]{ "3000" });
+        Message.of("apiml.common.serviceTimeout",
+            createMessageTemplate("No response received within the allowed time: %s %s"),
+            new Object[]{ "3000" });
     }
 
 
     @Test(expected = IllegalFormatConversionException.class)
     public void testCheckConvertValidation_whenThereIsWrongFormatThanRequested() {
-        MessageTemplate messageTemplate = new MessageTemplate();
-        messageTemplate.setKey("apiml.common.serviceTimeout");
-        messageTemplate.setNumber("MFS0104");
-        messageTemplate.setType(MessageType.ERROR);
-        messageTemplate.setText("No response received within the allowed time: %d");
-
-        Message.of("apiml.common.serviceTimeout", messageTemplate, new Object[]{ "3000" });
+        Message.of("apiml.common.serviceTimeout",
+            createMessageTemplate("No response received within the allowed time: %d"),
+            new Object[]{ "3000" });
     }
 
 
@@ -68,6 +56,16 @@ public class MessageTest {
         assertEquals("Converted text is different", expectedConvertedText, actualConvertedText);
     }
 
+    @Test
+    public void testGetConvertedText_whenTextContainsHTMLEntities() {
+        message = Message.of("apiml.common.serviceTimeout",
+            createMessageTemplate("No response  <b>received</b> within the allowed time: %s"),
+            new Object[]{ "3000" });
+
+        String actualConvertedText = message.getConvertedText();
+        String expectedConvertedText = "No response  &lt;b&gt;received&lt;/b&gt; within the allowed time: 3000";
+        assertEquals("Converted text is different", expectedConvertedText, actualConvertedText);
+    }
 
     @Test
     public void testMapToReadableText() {
@@ -107,6 +105,17 @@ public class MessageTest {
         String actualLogMessage = message.mapToLogMessage();
         String expectedLogMessage = "No response received within the allowed time: 3000";
         assertTrue("Log Message is different", actualLogMessage.contains(expectedLogMessage));
+    }
+
+
+    private MessageTemplate createMessageTemplate(String messageText) {
+        MessageTemplate messageTemplate = new MessageTemplate();
+        messageTemplate.setKey("apiml.common.serviceTimeout");
+        messageTemplate.setNumber("MFS0104");
+        messageTemplate.setType(MessageType.ERROR);
+        messageTemplate.setText(messageText);
+
+        return messageTemplate;
     }
 
 }

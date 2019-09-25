@@ -43,14 +43,14 @@ public final class Message {
         Objects.requireNonNull(requestedKey, "requestedKey");
         Objects.requireNonNull(messageTemplate, "messageTemplate");
 
-        checkConvertValidation(messageTemplate, messageParameters);
+        validateMessageTextFormat(messageTemplate.getText(), messageParameters);
         messageParameters = validateParameters(messageTemplate.getKey(), requestedKey, messageParameters);
 
         return new Message(requestedKey, messageTemplate, messageParameters);
     }
 
-    private static void checkConvertValidation(MessageTemplate messageTemplate, Object[] messageParameters) {
-        String.format(messageTemplate.getText(), messageParameters);
+    private static String validateMessageTextFormat(String messageText, Object[] messageParameters) {
+        return String.format(messageText, messageParameters);
     }
 
     private static Object[] validateParameters(String messageKey, String requestedKey, Object... parameters) {
@@ -62,7 +62,7 @@ public final class Message {
     }
 
     public String getConvertedText() {
-        String convertedText = String.format(messageTemplate.getText(), messageParameters);
+        String convertedText = validateMessageTextFormat(messageTemplate.getText(), messageParameters);
         convertedText = StringEscapeUtils.escapeHtml(convertedText);
         return convertedText;
     }
