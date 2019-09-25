@@ -25,15 +25,15 @@ public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigure
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        String webSocketPath = "/ws/uppercase";
+        String webSocketEndpoint = "/ws/uppercase";
 
-        logger.log("com.ca.mfaas.log.sampleservice.registeringWebSocket", webSocketPath);
+        logger.log("com.ca.mfaas.log.sampleservice.registeringWebSocket", webSocketEndpoint);
 
-        registry.addHandler(new WebSocketServerHandler(), webSocketPath).setAllowedOrigins("*");
+        registry.addHandler(new WebSocketServerHandler(), webSocketEndpoint).setAllowedOrigins("*");
 
-        webSocketPath = "/ws/header";
-        logger.log("com.ca.mfaas.log.sampleservice.registeringWebSocket", webSocketPath);
+        webSocketEndpoint = "/ws/header";
+        logger.log("com.ca.mfaas.log.sampleservice.registeringWebSocket", webSocketEndpoint);
 
-        registry.addHandler(new HeaderSocketServerHandler(), webSocketPath);
+        registry.addHandler(new HeaderSocketServerHandler(), webSocketEndpoint);
     }
 }

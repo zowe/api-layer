@@ -12,7 +12,6 @@ package com.ca.mfaas.gateway.error.check;
 import com.ca.apiml.security.common.token.TokenExpireException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
 import com.ca.mfaas.message.api.ApiMessageView;
-import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
 import com.netflix.zuul.exception.ZuulException;
 import lombok.RequiredArgsConstructor;
@@ -42,14 +41,14 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
     @Override
     public ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException && (exc.getCause() instanceof AuthenticationException)) {
-            Message message = null;
+            ApiMessageView messageView = null;
             Throwable cause = exc.getCause();
             if (cause instanceof TokenExpireException) {
-                message = messageService.createMessage("apiml.gateway.security.expiredToken");
+                messageView = messageService.createMessage("apiml.gateway.security.expiredToken").mapToView();
             } else if (cause instanceof TokenNotValidException) {
-                message = messageService.createMessage("apiml.gateway.security.invalidToken");
+                messageView = messageService.createMessage("apiml.gateway.security.invalidToken").mapToView();
             }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(message.mapToView());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(messageView);
         }
 
         return null;
