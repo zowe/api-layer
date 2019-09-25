@@ -18,6 +18,9 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Message creator immutable class
+ */
 public final class Message {
 
     public static final String INVALID_KEY_MESSAGE = "com.ca.mfaas.common.invalidMessageKey";
@@ -62,7 +65,7 @@ public final class Message {
      *
      * @param messageText the message text.
      * @param messageParameters the object containing the message parameters.
-     * @return String
+     * @return a formatted String
      */
     private static String validateMessageTextFormat(String messageText, Object[] messageParameters) {
         return String.format(messageText, messageParameters);
@@ -95,8 +98,7 @@ public final class Message {
     }
 
     /**
-     * Format the text using the format: {messageNumber}{messageType}{getConvertedText}{messageInstanceId}
-     * @return a String
+     * @return a message in the format that can be printed to console as a single line or displayed to the user
      */
     public String mapToReadableText() {
         return String.format("%s%s %s {%s}",
@@ -135,13 +137,15 @@ public final class Message {
     }
 
     /**
-     * Generate a random unique ID for the log message
-     * @return a String
+     * @return a random unique ID for the log message
      */
     private String generateMessageInstanceId() {
         return UUID.randomUUID().toString();
     }
 
+    /**
+     * @return a message template
+     */
     public MessageTemplate getMessageTemplate() {
         return messageTemplate;
     }

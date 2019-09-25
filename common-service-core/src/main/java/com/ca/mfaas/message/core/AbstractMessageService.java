@@ -73,7 +73,7 @@ public abstract class AbstractMessageService implements MessageService {
      *
      * @param messageTemplates the list of message templates
      */
-    public final void addMessageTemplates(MessageTemplates messageTemplates) {
+    protected final void addMessageTemplates(MessageTemplates messageTemplates) {
         validateMessageTemplates(messageTemplates);
         messageTemplateStorage.addMessageTemplates(messageTemplates);
     }

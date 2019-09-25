@@ -13,7 +13,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * General configuration of configuration
+ * General configuration of logging
  */
 @Configuration
 @ComponentScan({"com.ca.mfaas.product.logging"})

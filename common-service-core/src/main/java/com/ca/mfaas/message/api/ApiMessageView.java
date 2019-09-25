@@ -15,11 +15,29 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * This class is intended for REST API responses that contain error,
+ * warning, or informational messages in the common MFaaS format.
+ *
+ * It is preferred to return successful responses without messages if possible
+ * and use only plain responses without wrapping for them.
+ *
+ * Its implementation {@link ApiMessage} should be used
+ * in the case when a problem (an error) happens and then the response contains only the error(s).
+ *
+ * When a response needs to contain both data and messages (e.g. warnings)
+ * then it is adviced for the response class to implement {@link ApiMessage} too.
+ * But this should be an exception and we should try to make the REST API easy to use without
+ * the need for the API user to process informational and warning messages.
+ */
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @AllArgsConstructor
 public class ApiMessageView {
 
+    /**
+     * @return a list of messages that contain error, warning, and informational content.
+     */
     private List<ApiMessage> messages;
 
 }

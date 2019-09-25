@@ -16,14 +16,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-
+/**
+ * Message template storage class
+ */
 public class MessageTemplateStorage {
     private final Map<String, MessageTemplate> messageTemplateMap = new HashMap<>();
 
+
+    /**
+     * Retrieve message template from the storage by message key
+     *
+     * @param key Message Key
+     * @return message template
+     */
     public Optional<MessageTemplate> getMessageTemplate(String key) {
         return Optional.ofNullable(messageTemplateMap.get(key));
     }
 
+
+    /**
+     * Method for adding message templates to storage
+     *
+     * @param messages Message templates
+     */
     public void addMessageTemplates(MessageTemplates messages) {
         messages.getMessages().forEach(this::addMessageTemplateToStorage);
     }
