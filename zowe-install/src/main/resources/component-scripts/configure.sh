@@ -12,16 +12,6 @@
 
 . ${ROOT_DIR}/scripts/utils/configureJava.sh
 
-API_MEDIATION_DIR=${ROOT_DIR}"/components/api-mediation"
-
-# Set a+rx for API Mediation JARs
-chmod a+rx ${API_MEDIATION_DIR}"/*.jar" 
-
-# Make the apiml-auth plugin readable by everyone
-chmod a+rx ${API_MEDIATION_DIR}"/apiml-auth"
-chmod a+rx ${API_MEDIATION_DIR}"/apiml-auth/lib"
-chmod -R a+r ${API_MEDIATION_DIR}"/apiml-auth"
-
 # Add static definition for zosmf
 cat <<EOF >$TEMP_DIR/zosmf.ebcidic.yml
 # Static definition for z/OSMF
