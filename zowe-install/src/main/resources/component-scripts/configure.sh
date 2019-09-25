@@ -23,7 +23,7 @@ chmod a+rx ${API_MEDIATION_DIR}"/apiml-auth/lib"
 chmod -R a+r ${API_MEDIATION_DIR}"/apiml-auth"
 
 # Add static definition for zosmf
-cat <<EOF >cat <<EOF >$TEMP_DIR/zosmf.ebcidic.yml
+cat <<EOF >$TEMP_DIR/zosmf.ebcidic.yml
 # Static definition for z/OSMF
 #
 # Once configured you can access z/OSMF via the API gateway:
