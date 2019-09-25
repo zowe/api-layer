@@ -17,7 +17,7 @@ cat <<EOF >${STATIC_DEF_CONFIG_DIR}/zosmf.ebcidic.yml
 # Static definition for z/OSMF
 #
 # Once configured you can access z/OSMF via the API gateway:
-# http --verify=no GET https://$ZOWE_ZOSMF_HOST:$ZOWE_APIM_GATEWAY_PORT/api/v1/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
+# http --verify=no GET https://${ZOWE_EXPLORER_HOST}:${GATEWAY_PORT}/api/v1/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
 #	
 services:
     - serviceId: zosmf
@@ -25,7 +25,7 @@ services:
       description: IBM z/OS Management Facility REST API service
       catalogUiTileId: zosmf
       instanceBaseUrls:
-        - https://$ZOWE_ZOSMF_HOST:$ZOWE_ZOSMF_PORT/zosmf/
+        - https://${ZOSMF_IP_ADDRESS}:${ZOSMF_PORT}/zosmf/
       homePageRelativeUrl:  # Home page is at the same URL
       routedServices:
         - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
@@ -33,7 +33,6 @@ services:
       apiInfo:
         - apiId: com.ibm.zosmf
           gatewayUrl: api/v1
-          version: $ZOSMF_VERSION
           documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
 catalogUiTiles:
     zosmf:
