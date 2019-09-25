@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.dummy;
+package com.ca.mfaas.message.dummy;
 
 import com.ca.mfaas.message.core.AbstractMessageService;
 import com.ca.mfaas.message.template.MessageTemplate;

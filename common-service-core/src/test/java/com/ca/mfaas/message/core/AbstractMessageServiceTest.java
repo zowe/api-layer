@@ -10,7 +10,7 @@
 
 package com.ca.mfaas.message.core;
 
-import com.ca.mfaas.dummy.DummyMessageService;
+import com.ca.mfaas.message.dummy.DummyMessageService;
 import com.ca.mfaas.message.template.MessageTemplate;
 import com.ca.mfaas.message.template.MessageTemplates;
 import org.junit.Rule;

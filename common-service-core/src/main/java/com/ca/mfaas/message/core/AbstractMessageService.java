@@ -68,11 +68,22 @@ public abstract class AbstractMessageService implements MessageService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Validate and add a {@link MessageTemplates} to the {@link MessageTemplateStorage}.
+     *
+     * @param messageTemplates the list of message templates
+     */
     public final void addMessageTemplates(MessageTemplates messageTemplates) {
         validateMessageTemplates(messageTemplates);
         messageTemplateStorage.addMessageTemplates(messageTemplates);
     }
 
+    /**
+     * Validate {@link MessageTemplates} by checking that there are not occurrences of {@link MessageTemplate} with the same key.
+     * If there are, an exception is thrown.
+     * @param messageTemplates the list of message templates
+     * @throws DuplicateMessageException
+     */
     private void validateMessageTemplates(MessageTemplates messageTemplates) {
         String existedMesageTemplates = messageTemplates.getMessages()
             .stream()
@@ -94,6 +105,12 @@ public abstract class AbstractMessageService implements MessageService {
         }
     }
 
+    /**
+     * Validate {@link MessageTemplate} by checking if the message with the a specific key exists in the {@link MessageTemplateStorage}.
+     * If it does not, the method returns an invalid key message.
+     * @param key the message key
+     * @return {@link MessageTemplate}
+     */
     private MessageTemplate validateMessageTemplate(String key) {
         return messageTemplateStorage.getMessageTemplate(key)
             .orElseGet(() -> {
@@ -103,6 +120,11 @@ public abstract class AbstractMessageService implements MessageService {
             });
     }
 
+    /**
+     * Return the invalid key message {@link MessageTemplate}.
+     *
+     * @return {@link MessageTemplate}
+     */
     private MessageTemplate getInvalidMessageTemplate() {
         String text = "Internal error: Invalid message key '%s' provided. No default message found. " +
             "Please contact CA support of further assistance.";

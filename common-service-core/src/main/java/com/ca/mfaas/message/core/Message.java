@@ -36,6 +36,14 @@ public final class Message {
         this.messageParameters = messageParameters;
     }
 
+    /**
+     * Return a {@link Message} object for the specified key after text and parameters validation.
+     *
+     * @param requestedKey the message key.
+     * @param messageTemplate the messageTemplate.
+     * @param messageParameters the object containing the message parameters.
+     * @return {@link Message}
+     */
     public static Message of(String requestedKey,
                              MessageTemplate messageTemplate,
                              Object[] messageParameters) {
@@ -49,10 +57,25 @@ public final class Message {
         return new Message(requestedKey, messageTemplate, messageParameters);
     }
 
+    /**
+     * Validate the message text and parameters returning them as formatted String.
+     *
+     * @param messageText the message text.
+     * @param messageParameters the object containing the message parameters.
+     * @return String
+     */
     private static String validateMessageTextFormat(String messageText, Object[] messageParameters) {
         return String.format(messageText, messageParameters);
     }
 
+    /**
+     * Check if the key is equal to the invalid key message. If it is, the parameter is set to the requested key,
+     * which will be displayed in the invalid key message text, otherwise the passed parameters are returned.
+     * @param messageKey the message key.
+     * @param requestedKey the message key.
+     * @param parameters the object containing the message parameters.
+     * @return an Object
+     */
     private static Object[] validateParameters(String messageKey, String requestedKey, Object... parameters) {
         if (messageKey.equals(Message.INVALID_KEY_MESSAGE)) {
             return new Object[]{ requestedKey };
@@ -61,12 +84,20 @@ public final class Message {
         }
     }
 
+    /**
+     * Converts the text after processing with {@link MessageTemplate} and Object[] message parameters by {@link Message} class.
+     * @return escaped characters in a String using HTML entities
+     */
     public String getConvertedText() {
         String convertedText = validateMessageTextFormat(messageTemplate.getText(), messageParameters);
         convertedText = StringEscapeUtils.escapeHtml(convertedText);
         return convertedText;
     }
 
+    /**
+     * Format the text using the format: {messageNumber}{messageType}{getConvertedText}{messageInstanceId}
+     * @return a String
+     */
     public String mapToReadableText() {
         return String.format("%s%s %s {%s}",
             messageTemplate.getNumber(),
@@ -75,10 +106,18 @@ public final class Message {
             generateMessageInstanceId());
     }
 
+    /**
+     * Returns UI model as a list of API Message. It can be used for REST APIs error messages
+     * @return {@link ApiMessageView}
+     */
     public ApiMessageView mapToView() {
         return new ApiMessageView(Collections.singletonList(mapToApiMessage()));
     }
 
+    /**
+     * Returns UI model as a single {@link ApiMessage}.
+     * @return {@link ApiMessage}
+     */
     public ApiMessage mapToApiMessage() {
         return new ApiMessage(
             requestedKey,
@@ -87,10 +126,18 @@ public final class Message {
             getConvertedText());
     }
 
+    /**
+     * Returns log message as a text.
+     * @return a String
+     */
     public String mapToLogMessage() {
         return mapToReadableText();
     }
 
+    /**
+     * Generate a random unique ID for the log message
+     * @return a String
+     */
     private String generateMessageInstanceId() {
         return UUID.randomUUID().toString();
     }
