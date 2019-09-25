@@ -14,6 +14,9 @@ import com.ca.mfaas.message.core.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Class which allows to control log messages defined in the MessageTemplateStorage.
+ */
 public final class ApimlLogger {
 
     private final MessageService messageService;
@@ -24,6 +27,12 @@ public final class ApimlLogger {
         this.logger = LoggerFactory.getLogger(clazz);
     }
 
+    /**
+     * Method which allows to create an ApimlLogger object if the class uses the InjectApimlLogger annotation.
+     * @param clazz
+     * @param messageService
+     * @return
+     */
     public static ApimlLogger of(Class<?> clazz,
                           MessageService messageService) {
         return new ApimlLogger(clazz, messageService);
@@ -33,6 +42,12 @@ public final class ApimlLogger {
         return new ApimlLogger(ApimlLogger.class, null);
     }
 
+    /**
+     * Method which allows to create a specific message with specific parameters and log it in its level type.
+     * @param key of the message
+     * @param parameters for message
+     * @return
+     */
     public void log(String key, Object... parameters) {
         if (messageService != null) {
             Message message = messageService.createMessage(key, parameters);
