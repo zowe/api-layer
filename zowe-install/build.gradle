@@ -70,7 +70,7 @@ packageApiMediationZowe.doFirst {
         add(file('../apiml-auth/pluginDefinition.json'));
         add(file('../apiml-auth/lib/apimlAuth.js'));
         add(file('../apiml-auth/lib/tokenInjector.js'));
-        add(file('src/main/resources/component-scripts/config.sh'));
+        add(file('src/main/resources/component-scripts/configure.sh'));
         add(file('src/main/resources/component-scripts/start.sh'));
         add(file('src/main/resources/component-scripts/validate.sh'));
     }};
