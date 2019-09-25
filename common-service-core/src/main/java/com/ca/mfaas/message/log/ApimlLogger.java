@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class which allows to control log messages defined in the MessageTemplateStorage.
+ * Class which allows to control log messages through {@link MessageService}.
  */
 public final class ApimlLogger {
 

@@ -17,6 +17,9 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * After enabling apiml logging {@link EnableApimlLogger} it can be used as an injector.
+ */
 @Retention(RUNTIME)
 @Target(FIELD)
 @Documented
