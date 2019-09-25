@@ -13,7 +13,7 @@
 . ${ROOT_DIR}/scripts/utils/configureJava.sh
 
 # Add static definition for zosmf
-cat <<EOF >$TEMP_DIR/zosmf.ebcidic.yml
+cat <<EOF >${STATIC_DEF_CONFIG_DIR}/zosmf.ebcidic.yml
 # Static definition for z/OSMF
 #
 # Once configured you can access z/OSMF via the API gateway:
