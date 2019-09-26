@@ -15,7 +15,6 @@ import com.ca.mfaas.message.template.MessageTemplate;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.Collections;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
