@@ -39,7 +39,7 @@ public class ApimlLogInjectorTest {
     }
 
 
-    static class TestComponent {
+    private static class TestComponent {
 
         @InjectApimlLogger
         private ApimlLogger apimlLogger;

@@ -35,7 +35,7 @@ public class MessageTest {
     public void init() {
         message = Message.of("apiml.common.serviceTimeout",
             createMessageTemplate("No response received within the allowed time: %s"),
-            new Object[]{ "3000" });
+            new Object[]{"3000"});
     }
 
     @Test
@@ -66,7 +66,7 @@ public class MessageTest {
     public void testCheckConvertValidation_whenThereAreMoreParamThanRequested() {
         Message.of("apiml.common.serviceTimeout",
             createMessageTemplate("No response received within the allowed time: %s %s"),
-            new Object[]{ "3000" });
+            new Object[]{"3000"});
     }
 
 
@@ -74,7 +74,7 @@ public class MessageTest {
     public void testCheckConvertValidation_whenThereIsWrongFormatThanRequested() {
         Message.of("apiml.common.serviceTimeout",
             createMessageTemplate("No response received within the allowed time: %d"),
-            new Object[]{ "3000" });
+            new Object[]{"3000"});
     }
 
 
@@ -89,7 +89,7 @@ public class MessageTest {
     public void testGetConvertedText_whenTextContainsHTMLEntities() {
         message = Message.of("apiml.common.serviceTimeout",
             createMessageTemplate("No response  <b>received</b> within the allowed time: %s"),
-            new Object[]{ "3000" });
+            new Object[]{"3000"});
 
         String actualConvertedText = message.getConvertedText();
         String expectedConvertedText = "No response  &lt;b&gt;received&lt;/b&gt; within the allowed time: 3000";

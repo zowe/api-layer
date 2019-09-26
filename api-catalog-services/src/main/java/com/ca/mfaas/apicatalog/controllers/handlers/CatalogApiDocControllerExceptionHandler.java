@@ -15,8 +15,8 @@ import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -27,21 +27,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  */
 @Slf4j
 @ControllerAdvice(assignableTypes = {CatalogApiDocController.class})
+@RequiredArgsConstructor
 public class CatalogApiDocControllerExceptionHandler {
-
     private final MessageService messageService;
 
     /**
-     * Constructor for {@link CatalogApiDocControllerExceptionHandler}.
-     * @param messageService service for creation {@link Message} by key and list of parameters.
-     */
-    @Autowired
-    public CatalogApiDocControllerExceptionHandler(MessageService messageService) {
-        this.messageService = messageService;
-    }
-
-    /**
      * Could not retrieve the API Documentation
+     *
      * @param exception InvalidFormatException
      * @return 500 and the message 'TBD'
      */
@@ -56,6 +48,7 @@ public class CatalogApiDocControllerExceptionHandler {
 
     /**
      * Could not retrieve the API Documentation as the Gateway was not available
+     *
      * @param exception InvalidFormatException
      * @return 404 and the message 'TBD'
      */

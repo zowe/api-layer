@@ -12,6 +12,7 @@ package com.ca.mfaas.message.core;
 import com.ca.mfaas.message.api.ApiMessage;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.template.MessageTemplate;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.Collections;
@@ -20,8 +21,8 @@ import java.util.UUID;
 /**
  * Message creator immutable class
  */
+@RequiredArgsConstructor
 public final class Message {
-
     public static final String INVALID_KEY_MESSAGE = "com.ca.mfaas.common.invalidMessageKey";
     public static final String INVALID_MESSAGE_TEXT_FORMAT = "com.ca.mfaas.common.invalidMessageTextFormat";
 
@@ -29,20 +30,11 @@ public final class Message {
     private final MessageTemplate messageTemplate;
     private final Object[] messageParameters;
 
-
-    private Message(String requestedKey,
-                    MessageTemplate messageTemplate,
-                    Object[] messageParameters) {
-        this.requestedKey = requestedKey;
-        this.messageTemplate = messageTemplate;
-        this.messageParameters = messageParameters;
-    }
-
     /**
      * Return a {@link Message} object for the specified key after text and parameters validation.
      *
-     * @param requestedKey the message key.
-     * @param messageTemplate the messageTemplate.
+     * @param requestedKey      the message key.
+     * @param messageTemplate   the messageTemplate.
      * @param messageParameters the object containing the message parameters.
      * @return {@link Message}
      */
@@ -65,19 +57,19 @@ public final class Message {
      * Checks that the specified object reference is not null and
      * throws a {@link IllegalArgumentException} if it is.
      *
-     * @param param the object reference to check for nullity
+     * @param param   the object reference to check for nullity
      * @param message detail message to be used in the event
      */
     private static void requireNotNull(Object param, String message) {
         if (param == null) {
-            throw new  IllegalArgumentException(message);
+            throw new IllegalArgumentException(message);
         }
     }
 
     /**
      * Validate the message text and parameters returning them as formatted String.
      *
-     * @param messageText the message text.
+     * @param messageText       the message text.
      * @param messageParameters the object containing the message parameters.
      * @return a formatted String
      */
@@ -88,14 +80,15 @@ public final class Message {
     /**
      * Check if the key is equal to the invalid key message. If it is, the parameter is set to the requested key,
      * which will be displayed in the invalid key message text, otherwise the passed parameters are returned.
-     * @param messageKey the message key.
+     *
+     * @param messageKey   the message key.
      * @param requestedKey the message key.
-     * @param parameters the object containing the message parameters.
+     * @param parameters   the object containing the message parameters.
      * @return an Object
      */
     private static Object[] validateParameters(String messageKey, String requestedKey, Object... parameters) {
         if (messageKey.equals(Message.INVALID_KEY_MESSAGE)) {
-            return new Object[]{ requestedKey };
+            return new Object[]{requestedKey};
         } else {
             return parameters;
         }
@@ -103,6 +96,7 @@ public final class Message {
 
     /**
      * Converts the text after processing with {@link MessageTemplate} and Object[] message parameters by {@link Message} class.
+     *
      * @return escaped characters in a String using HTML entities
      */
     public String getConvertedText() {
@@ -124,6 +118,7 @@ public final class Message {
 
     /**
      * Returns UI model as a list of API Message. It can be used for REST APIs error messages
+     *
      * @return {@link ApiMessageView}
      */
     public ApiMessageView mapToView() {
@@ -132,6 +127,7 @@ public final class Message {
 
     /**
      * Returns UI model as a single {@link ApiMessage}.
+     *
      * @return {@link ApiMessage}
      */
     public ApiMessage mapToApiMessage() {
@@ -144,6 +140,7 @@ public final class Message {
 
     /**
      * Returns log message as a text.
+     *
      * @return a String
      */
     public String mapToLogMessage() {

@@ -13,6 +13,7 @@ import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageLoadException;
 import com.ca.mfaas.message.core.MessageService;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 
@@ -22,7 +23,7 @@ public class YamlMessageServiceTest {
     @Test
     public void testLoadMessages() {
         MessageService messageService = new YamlMessageService("/test-messages.yml");
-        Message message = messageService.createMessage("apiml.common.serviceTimeout", new Object[]{ "3000" });
+        Message message = messageService.createMessage("apiml.common.serviceTimeout", "3000");
         assertEquals("Keys are different", "apiml.common.serviceTimeout", message.getMessageTemplate().getKey());
 
         message = messageService.createMessage("com.ca.mfaas.test.noArguments");

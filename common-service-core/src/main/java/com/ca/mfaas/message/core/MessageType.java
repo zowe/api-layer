@@ -9,9 +9,12 @@
  */
 package com.ca.mfaas.message.core;
 
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents the severity of a problem. Higher severity has higher value.
  */
+@RequiredArgsConstructor
 public enum MessageType {
     TRACE(0, "TRACE", 'T'),
     DEBUG(10, "DEBUG", 'D'),
@@ -19,15 +22,9 @@ public enum MessageType {
     WARNING(30, "WARNING", 'W'),
     ERROR(40, "ERROR", 'E');
 
-    private int levelInt;
-    private String levelStr;
-    private char levelChar;
-
-    MessageType(int i, String s, char c) {
-        levelInt = i;
-        levelStr = s;
-        levelChar = c;
-    }
+    private final int levelInt;
+    private final String levelStr;
+    private final char levelChar;
 
     public int toInt() {
         return levelInt;

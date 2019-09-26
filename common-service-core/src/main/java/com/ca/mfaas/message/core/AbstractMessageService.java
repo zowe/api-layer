@@ -74,6 +74,7 @@ public abstract class AbstractMessageService implements MessageService {
 
     /**
      * Validate and add a {@link MessageTemplates} to the {@link MessageTemplateStorage}.
+     *
      * @param messageTemplates the list of message templates
      */
     protected final void addMessageTemplates(MessageTemplates messageTemplates) {
@@ -84,11 +85,12 @@ public abstract class AbstractMessageService implements MessageService {
     /**
      * Validate {@link MessageTemplates} by checking that there are not occurrences of {@link MessageTemplate} with the same key.
      * If there are, an exception is thrown.
+     *
      * @param messageTemplates the list of message templates
-     * @throws DuplicateMessageException
+     * @throws DuplicateMessageException when a message key already exists
      */
     private void validateMessageTemplates(MessageTemplates messageTemplates) {
-        String existedMesageTemplates = messageTemplates.getMessages()
+        String existedMessageTemplates = messageTemplates.getMessages()
             .stream()
             .collect(
                 Collectors.groupingBy(
@@ -102,8 +104,8 @@ public abstract class AbstractMessageService implements MessageService {
             .map(Map.Entry::getKey)
             .collect(Collectors.joining(","));
 
-        if (!existedMesageTemplates.equals("")) {
-            String exceptionMessage = String.format("Message template with number [%s] already exists", existedMesageTemplates);
+        if (!existedMessageTemplates.equals("")) {
+            String exceptionMessage = String.format("Message template with number [%s] already exists", existedMessageTemplates);
             throw new DuplicateMessageException(exceptionMessage);
         }
     }
@@ -111,6 +113,7 @@ public abstract class AbstractMessageService implements MessageService {
     /**
      * Validate {@link MessageTemplate} by checking if the message with the a specific key exists in the {@link MessageTemplateStorage}.
      * If it does not, the method returns an invalid key message.
+     *
      * @param key the message key
      * @return {@link MessageTemplate}
      */

@@ -14,8 +14,8 @@ import com.ca.mfaas.apicatalog.exceptions.ContainerStatusRetrievalException;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,21 +26,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
  */
 @Slf4j
 @ControllerAdvice(assignableTypes = {ApiCatalogController.class})
+@RequiredArgsConstructor
 public class ApiCatalogControllerExceptionHandler {
-
     private final MessageService messageService;
 
     /**
-     * Constructor for {@link ApiCatalogControllerExceptionHandler}.
-     * @param messageService service for creation {@link Message} by key and list of parameters.
-     */
-    @Autowired
-    public ApiCatalogControllerExceptionHandler(MessageService messageService) {
-        this.messageService = messageService;
-    }
-
-    /**
      * Could not retrieve container details
+     *
      * @param exception ContainerStatusRetrievalException
      * @return 500 and the message 'Could not retrieve container statuses, {optional text}'
      */

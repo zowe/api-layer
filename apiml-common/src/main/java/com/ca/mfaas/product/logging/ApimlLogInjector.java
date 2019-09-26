@@ -18,6 +18,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
+import javax.annotation.Nonnull;
+
 /**
  * This class plays as a injector for {@link ApimlLogger} in spring environment.
  * It detects if class have field with {@link InjectApimlLogger} annotation,
@@ -30,12 +32,12 @@ public class ApimlLogInjector implements BeanPostProcessor {
     private final ApplicationContext appContext;
 
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) {
+    public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) {
         return bean;
     }
 
     @Override
-    public Object postProcessBeforeInitialization(final Object bean, String name) {
+    public Object postProcessBeforeInitialization(final Object bean, @Nonnull String name) {
         ReflectionUtils.doWithFields(bean.getClass(), field -> {
             // make the field accessible if defined private
             ReflectionUtils.makeAccessible(field);

@@ -33,12 +33,13 @@ public final class ApimlLogger {
 
     /**
      * Method which allows to create an ApimlLogger object.
-     * @param clazz
-     * @param messageService
+     *
+     * @param clazz          the class for which is logger used
+     * @param messageService used to produce the message
      * @return {@link ApimlLogger}
      */
     public static ApimlLogger of(Class<?> clazz,
-                          MessageService messageService) {
+                                 MessageService messageService) {
         return new ApimlLogger(clazz, messageService);
     }
 
@@ -46,6 +47,7 @@ public final class ApimlLogger {
     /**
      * Method which returns ApimlLogger with null {@link MessageService}.
      * It is used for unit test environment.
+     *
      * @return {@link ApimlLogger}
      */
     public static ApimlLogger empty() {
@@ -54,7 +56,8 @@ public final class ApimlLogger {
 
     /**
      * Method which allows to create a specific message with specific parameters and log it in its level type.
-     * @param key of the message
+     *
+     * @param key        of the message
      * @param parameters for message
      */
     public void log(String key, Object... parameters) {
@@ -67,11 +70,25 @@ public final class ApimlLogger {
     @SuppressWarnings("squid:S2629")
     private void log(Message message) {
         switch (message.getMessageTemplate().getType()) {
-            case TRACE: logger.trace(message.mapToLogMessage()); break;
-            case DEBUG: logger.debug(message.mapToLogMessage()); break;
-            case INFO: logger.info(message.mapToLogMessage()); break;
-            case WARNING: logger.warn(message.mapToLogMessage()); break;
-            case ERROR: logger.error(message.mapToLogMessage()); break;
+            case TRACE:
+                logger.trace(message.mapToLogMessage());
+                break;
+            case DEBUG:
+                logger.debug(message.mapToLogMessage());
+                break;
+            case INFO:
+                logger.info(message.mapToLogMessage());
+                break;
+            case WARNING:
+                logger.warn(message.mapToLogMessage());
+                break;
+            case ERROR:
+                logger.error(message.mapToLogMessage());
+                break;
+            default:
+                logger.warn("The following message contains invalid message type.");
+                logger.info(message.mapToLogMessage());
+                break;
         }
     }
 }

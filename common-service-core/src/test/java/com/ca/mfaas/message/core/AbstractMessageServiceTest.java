@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 public class AbstractMessageServiceTest {
 
-    AbstractMessageService abstractMessageService = new DummyMessageService("path");
+    private final AbstractMessageService abstractMessageService = new DummyMessageService("path");
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -44,26 +44,26 @@ public class AbstractMessageServiceTest {
 
     @Test
     public void shouldReturnInvalidMessageTextFormat_IfTheFormatIsIllegal() {
-        Message message  = abstractMessageService.createMessage("apiml.common.serviceTimeout.illegalFormat", new Object[]{ "3000" });
+        Message message = abstractMessageService.createMessage("apiml.common.serviceTimeout.illegalFormat", "3000");
         String expectedMessageText = "Internal error: Invalid message text format. Please contact support for further assistance.";
         assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
 
-        message  = abstractMessageService.createMessage("apiml.common.serviceTimeout.missingFormat", new Object[]{ "3000" });
+        message = abstractMessageService.createMessage("apiml.common.serviceTimeout.missingFormat", "3000");
         assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
     }
 
     @Test
     public void shouldReturnInvalidMessageTextFormat_IfTheParamIsMissing() {
-        Message message  = abstractMessageService.createMessage("apiml.common.serviceTimeout.missingFormat", new Object[]{ "3000" });
+        Message message = abstractMessageService.createMessage("apiml.common.serviceTimeout.missingFormat", "3000");
         String expectedMessageText = "Internal error: Invalid message text format. Please contact support for further assistance.";
         assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
     }
 
     @Test
     public void shouldCreateMessages_IfMultipleParametersArePassed() {
-        List<Object[]> parameters = new ArrayList<Object[]>();
-        parameters.add(new Object[]{ "2000" });
-        parameters.add(new Object[]{ "3000" });
+        List<Object[]> parameters = new ArrayList<>();
+        parameters.add(new Object[]{"2000"});
+        parameters.add(new Object[]{"3000"});
         List<Message> messages = abstractMessageService.createMessage("apiml.common.serviceTimeout", parameters);
         assertEquals("Message texts are different", "No response received within the allowed time: 2000", messages.get(0).getConvertedText());
         assertEquals("Message texts are different", "No response received within the allowed time: 3000", messages.get(1).getConvertedText());

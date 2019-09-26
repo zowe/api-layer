@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * User facing messages that can be provided with API responses.
- *
+ * <p>
  * We should include as much useful data as possible and keep in mind different users of the message structure.
  * However remember that one kind of user may be a person with malicious intent so not leak data that should be kept
  * private or implementation details.
@@ -58,7 +58,7 @@ public class ApiMessage<T> {
      * Typical mainframe message number (not including the message level one-letter code) that can be found in CA
      * documentation. The message number is usually in this format "pppnnnn" where ppp is a product code and nnnn
      * is a four-digit number.
-     *
+     * <p>
      * Example: "PFI0031"
      */
     public String getMessageNumber() {
@@ -109,7 +109,7 @@ public class ApiMessage<T> {
      * Optional unique ID of the message instance. Useful for finding of the message in the logs.
      * The same ID should be printed in the log.
      * This field is optional.
-     *
+     * <p>
      * Example: "123e4567-e89b-12d3-a456-426655440000"
      */
     public String getMessageInstanceId() {
@@ -119,7 +119,7 @@ public class ApiMessage<T> {
     /**
      * For support and developers - component that generated the error (can be fully qualified Java package or class name).
      * This field is optional.
-     *
+     * <p>
      * Example: com.ca.product.package
      */
     public String getMessageComponent() {
@@ -129,7 +129,7 @@ public class ApiMessage<T> {
     /**
      * For support and developers - source service that generated the error (can MFaaS service name or host:port).
      * This field is optional.
-     *
+     * <p>
      * Example: mfaas-discovery-service, ca31:12345
      */
     public String getMessageSource() {
