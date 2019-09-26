@@ -13,7 +13,9 @@ import com.ca.mfaas.message.api.ApiMessage;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.template.MessageTemplate;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.Collections;
 import java.util.IllegalFormatConversionException;
@@ -24,6 +26,9 @@ import static org.junit.Assert.assertTrue;
 
 public class MessageTest {
 
+    @Rule
+    public final ExpectedException exception = ExpectedException.none();
+
     private Message message;
 
     @Before
@@ -31,6 +36,30 @@ public class MessageTest {
         message = Message.of("apiml.common.serviceTimeout",
             createMessageTemplate("No response received within the allowed time: %s"),
             new Object[]{ "3000" });
+    }
+
+    @Test
+    public void testRequestedKeyParam_whenItIsNull() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("requestedKey can't be null");
+
+        Message.of(null, null, null);
+    }
+
+    @Test
+    public void testMessageTemplateParam_whenItIsNull() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("messageTemplate can't be null");
+
+        Message.of("key", null, null);
+    }
+
+    @Test
+    public void testMessageParameters_whenItIsNull() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("messageParameters can't be null");
+
+        Message.of("key", new MessageTemplate(), null);
     }
 
     @Test(expected = MissingFormatArgumentException.class)

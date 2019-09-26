@@ -18,6 +18,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
+/**
+ * This class plays as a injector for {@link ApimlLogger} in spring environment.
+ * It detects if class have field with {@link InjectApimlLogger} annotation,
+ * it finds {@link MessageService} from Spring context then initialize {@link ApimlLogger}
+ */
 @Component
 @RequiredArgsConstructor
 public class ApimlLogInjector implements BeanPostProcessor {

@@ -50,14 +50,29 @@ public final class Message {
     public static Message of(String requestedKey,
                              MessageTemplate messageTemplate,
                              Object[] messageParameters) {
-        //validation
-        Objects.requireNonNull(requestedKey, "requestedKey");
-        Objects.requireNonNull(messageTemplate, "messageTemplate");
+
+        requireNotNull(requestedKey, "requestedKey can't be null");
+        requireNotNull(messageTemplate, "messageTemplate can't be null");
+        requireNotNull(messageParameters, "messageParameters can't be null");
 
         validateMessageTextFormat(messageTemplate.getText(), messageParameters);
         messageParameters = validateParameters(messageTemplate.getKey(), requestedKey, messageParameters);
 
         return new Message(requestedKey, messageTemplate, messageParameters);
+    }
+
+
+    /**
+     * Checks that the specified object reference is not null and
+     * throws a {@link IllegalArgumentException} if it is.
+     *
+     * @param param the object reference to check for nullity
+     * @param message detail message to be used in the event
+     */
+    private static void requireNotNull(Object param, String message) {
+        if (param == null) {
+            throw new  IllegalArgumentException(message);
+        }
     }
 
     /**

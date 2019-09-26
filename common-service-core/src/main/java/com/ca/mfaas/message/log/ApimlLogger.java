@@ -16,6 +16,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Class which allows to control log messages through {@link MessageService}.
+ * <b>Example:</b>
+ * {@code
+ * ApimlLogger logger = ApimlLogger.of(SampleClass.cass, messageService)
+ * }
  */
 public final class ApimlLogger {
 
@@ -38,8 +42,10 @@ public final class ApimlLogger {
         return new ApimlLogger(clazz, messageService);
     }
 
+
     /**
      * Method which returns ApimlLogger with null {@link MessageService}.
+     * It is used for unit test environment.
      * @return {@link ApimlLogger}
      */
     public static ApimlLogger empty() {
