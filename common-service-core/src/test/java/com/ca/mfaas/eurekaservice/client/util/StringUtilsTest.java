@@ -14,25 +14,37 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class StringUtilsTest {
-    @Test
-    public void emptyStrungTest() {
-        String string = "";
 
-        assertTrue(StringUtils.isNullOrEmpty(string));
+    @Test
+    public void removeFirstAndLastOccurrenceTest() {
+        assertNull(StringUtils.removeFirstAndLastOccurrence(null, "any-string"));
+
+        String whiteSpace = "       ";
+        assertTrue(StringUtils.removeFirstAndLastOccurrence(whiteSpace, "any-string").isEmpty());
+
+        String hasSlashes = "  /blah/   ";
+        assertTrue(StringUtils.removeFirstAndLastOccurrence(hasSlashes, "/").equals("blah"));
     }
 
     @Test
-    public void nullStringTest() {
-        String string = null;
+    public void removeLastOccurrenceTest() {
+        assertNull(StringUtils.removeLastOccurrence(null, "any-string"));
 
-        assertTrue(StringUtils.isNullOrEmpty(string));
+        String whiteSpace = "       ";
+        assertTrue(StringUtils.removeLastOccurrence(whiteSpace, "any-string").isEmpty());
+
+        String hasSlashes = "  /blah/   ";
+        assertTrue(StringUtils.removeLastOccurrence(hasSlashes, "/").equals("/blah"));
     }
 
     @Test
-    public void notEmptyStringTest() {
-        String string = "i am string";
+    public void prependSubstringTest() {
+        assertNull(StringUtils.removeFirstAndLastOccurrence(null, "any-string"));
 
-        assertFalse(StringUtils.isNullOrEmpty(string));
+        String whiteSpace = "       ";
+        assertTrue(StringUtils.removeFirstAndLastOccurrence(whiteSpace, "any-string").isEmpty());
+
+        String hasSlashes = "  /blah/   ";
+        assertTrue(StringUtils.removeFirstAndLastOccurrence(hasSlashes, "/").equals("blah"));
     }
-
 }

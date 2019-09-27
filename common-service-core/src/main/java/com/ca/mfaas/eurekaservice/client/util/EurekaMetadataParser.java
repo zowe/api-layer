@@ -122,7 +122,7 @@ public class EurekaMetadataParser {
                                       String subServiceId,
                                       String routeURL) {
         if (routeKeyURL.equals(ROUTES_GATEWAY_URL)) {
-            String gatewayURL = StringUtils.removeFirstAndLastSlash(routeURL);
+            String gatewayURL = UrlUtils.removeFirstAndLastSlash(routeURL);
 
             if (routeMap.containsKey(subServiceId)) {
                 String serviceUrl = routeMap.get(subServiceId);
@@ -134,7 +134,7 @@ public class EurekaMetadataParser {
         }
 
         if (routeKeyURL.equals(ROUTES_SERVICE_URL)) {
-            String serviceURL = StringUtils.addFirstSlash(routeURL);
+            String serviceURL = UrlUtils.addFirstSlash(routeURL);
 
             if (routeMap.containsKey(subServiceId)) {
                 String gatewayUrl = routeMap.get(subServiceId);
