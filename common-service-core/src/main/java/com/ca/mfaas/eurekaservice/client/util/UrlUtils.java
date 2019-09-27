@@ -12,22 +12,17 @@ package com.ca.mfaas.eurekaservice.client.util;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang.RandomStringUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.security.InvalidParameterException;
+import java.util.Enumeration;
 import java.util.function.Supplier;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.API_INFO;
 
 @UtilityClass
 public class UrlUtils {
 
     public static String trimSlashes(String string) {
         return string.replaceAll("^/|/$", "");
-    }
-
-    public static String createMetadataKey(String encodedUrl, String url) {
-        return String.format("%s.%s.%s", API_INFO, encodedUrl, url);
     }
 
     public static String getEncodedUrl(String url) {
@@ -46,4 +41,84 @@ public class UrlUtils {
         }
     }
 
+    public static String removeFirstAndLastSlash(String uri) {
+        return StringUtils.removeFirstAndLastOccurrence(uri, "/");
+    }
+
+    public static String addFirstSlash(String uri) {
+        return StringUtils.prependSubstring(uri, "/");
+    }
+
+    public static String removeLastSlash(String uri) {
+        return StringUtils.removeLastOccurrence(uri, "/");
+    }
+
+
+    public String getBaseUrl() {
+        String bU = null;
+        String ownHost1 = getOwnHostFromInetAddress();
+        if (ownHost1 != null) {
+            bU = ownHost1;
+        }
+        String ownHost2 = getOwnHostFromDatagram();
+        if (ownHost1 != null) {
+            bU = ownHost1;
+        }
+        String ownHost3 = getOwnHostFromNetworkInterface();
+        if (ownHost1 != null) {
+            bU = ownHost1;
+        }
+        return bU;
+    }
+
+    private static  String getOwnHostFromNetworkInterface() {
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            Enumeration<NetworkInterface> allInterfaces =  NetworkInterface.getNetworkInterfaces();
+            if (allInterfaces != null) {
+                while (allInterfaces.hasMoreElements()) {
+                    NetworkInterface ni = allInterfaces.nextElement();
+                    if (ni.isPointToPoint()) {
+                        sb.append(ni.toString());
+                    }
+                }
+
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+        return sb.toString();
+    }
+
+    private static String getOwnHostFromDatagram() {
+        StringBuilder sb = new StringBuilder();
+
+        try (
+            final DatagramSocket socket = new DatagramSocket()) {
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+            sb.append(socket.getLocalAddress().getHostAddress());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+        return sb.toString();
+    }
+
+    private static String getOwnHostFromInetAddress() {
+        StringBuilder sb = new StringBuilder();
+        try {
+            InetAddress inetAddr = InetAddress.getLocalHost();
+            sb.append(inetAddr.getHostAddress());
+            //sb.append("          ip   is: ").append(inetAddr.getHostAddress());
+            //sb.append(InetAddress.getLocalHost());
+            //baseUrl = inetAddr.getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
 }

@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.product.routing;
 
-import com.ca.mfaas.eurekaservice.client.util.StringUtils;
+import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +56,7 @@ public class RoutedServices {
             RoutedService value = serviceEntry.getValue();
             int size = value.getServiceUrl().length();
             //Remove last slash for service url
-            String routeServiceUrl = StringUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
+            String routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
             if (size > maxSize &&
                 serviceUrl.toLowerCase().startsWith(routeServiceUrl)) {
                 result = value;

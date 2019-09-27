@@ -11,7 +11,6 @@ package com.ca.mfaas.eurekaservice.client.impl;
 
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.*;
-import com.ca.mfaas.eurekaservice.client.util.StringUtils;
 import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
@@ -116,7 +115,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         result.setMetadataMap(createMetadata(config));
         result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
 
-        if (!StringUtils.isNullOrEmpty(config.getHomePageRelativeUrl())) {
+        if ((config.getHomePageRelativeUrl() != null) && !config.getHomePageRelativeUrl().isEmpty()) {
             result.setHomePageUrl(config.getBaseUrl() + config.getHomePageRelativeUrl());
         }
 
