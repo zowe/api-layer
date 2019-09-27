@@ -54,8 +54,8 @@ public class ApiMessage<T> {
     }
 
     /**
-     * Typical mainframe message number (not including the message level one-letter code) that can be found in CA
-     * documentation. The message number is usually in this format "pppnnnn" where ppp is a product code and nnnn
+     * Typical mainframe message number (not including the message level one-letter code) that can be found in documentation.
+     * The message number is usually in this format "pppnnnn" where ppp is a product code and nnnn
      * is a four-digit number.
      * <p>
      * Example: "PFI0031"
@@ -116,7 +116,7 @@ public class ApiMessage<T> {
     }
 
     /**
-     * ----- component that generated the error (can be fully qualified Java package or class name).
+     * Qualified Java package or class name that generated the error.
      * This field is optional.
      * <p>
      * Example: com.ca.product.package

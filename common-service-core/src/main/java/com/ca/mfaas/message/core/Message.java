@@ -15,6 +15,8 @@ import com.ca.mfaas.message.template.MessageTemplate;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.Collections;
+import java.util.IllegalFormatConversionException;
+import java.util.MissingFormatArgumentException;
 import java.util.UUID;
 
 /**
@@ -78,6 +80,8 @@ public final class Message {
      *
      * @param messageText       the message text.
      * @param messageParameters the object containing the message parameters.
+     * @throws MissingFormatArgumentException when the amount of parameters is less than required.
+     * @throws IllegalFormatConversionException when format is not valid.
      * @return a formatted String
      */
     private static String validateMessageTextFormat(String messageText, Object[] messageParameters) {
@@ -85,13 +89,12 @@ public final class Message {
     }
 
     /**
-     * Check if the key is equal to the invalid key message. If it is, the parameter is set to the requested key,
-     * which will be displayed in the invalid key message text, otherwise the passed parameters are returned.
+     * Checks whether messageKey matches Message.INVALID_KEY_MESSAGE
      *
      * @param messageKey   the message key.
      * @param requestedKey the message key.
      * @param parameters   the object containing the message parameters.
-     * @return an Object
+     * @return the requested key as an array if it  matches Message.INVALID_KEY_MESSAGE. Otherwise, it returns parameters
      */
     private static Object[] validateParameters(String messageKey, String requestedKey, Object... parameters) {
         if (messageKey.equals(Message.INVALID_KEY_MESSAGE)) {
@@ -102,9 +105,9 @@ public final class Message {
     }
 
     /**
-     * Converts the text after processing with {@link MessageTemplate} and Object[] message parameters by {@link Message} class.
+     * Converts the text with {@link MessageTemplate} and Object[] message parameters.
      *
-     * @return escaped characters in a String using HTML entities
+     * @return escaped characters in the converted text using HTML entities
      */
     public String getConvertedText() {
         String convertedText = validateMessageTextFormat(messageTemplate.getText(), messageParameters);

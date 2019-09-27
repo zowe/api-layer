@@ -45,7 +45,7 @@ public class PetControllerExceptionHandler {
 
     /**
      * Constructor for {@link PetControllerExceptionHandler}.
-     * @param messageService service for creation {@link Message} by key and list of parameters.
+     * @param messageService message service
      */
     @Autowired
     public PetControllerExceptionHandler(MessageService messageService) {

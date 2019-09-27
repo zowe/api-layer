@@ -21,8 +21,6 @@ import java.util.List;
  * <p>
  * It is preferred to return successful responses without messages if possible.
  * <p>
- * Its implementation {@link ApiMessage} should be used
- * in the case when a problem (an error) happens and then the response contains only the error(s).
  */
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)

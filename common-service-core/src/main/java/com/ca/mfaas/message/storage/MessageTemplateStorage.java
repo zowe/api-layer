@@ -25,7 +25,7 @@ public class MessageTemplateStorage {
 
 
     /**
-     * Retrieve message template from the storage by message key
+     * Retrieves message template from the storage using 'key' parameter
      *
      * @param key Message Key
      * @return message template

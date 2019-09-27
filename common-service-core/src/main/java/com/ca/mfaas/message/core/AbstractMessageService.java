@@ -28,7 +28,7 @@ public abstract class AbstractMessageService implements MessageService {
 
 
     /**
-     * Constructor that creates common messages and messages from file.
+     * Constructor loads messages from a file.
      *
      * @param messagesFilePath path to the file with messages.
      */
@@ -83,8 +83,8 @@ public abstract class AbstractMessageService implements MessageService {
     }
 
     /**
-     * Validate {@link MessageTemplates} by checking that there are not occurrences of {@link MessageTemplate} with the same key.
-     * If there are, an exception is thrown.
+     * Validate {@link MessageTemplates} by checking {@link MessageTemplate} occurrences with the same key.
+     * If {@link MessageTemplate} occur, an exception is thrown
      *
      * @param messageTemplates the list of message templates
      * @throws DuplicateMessageException when a message key already exists
