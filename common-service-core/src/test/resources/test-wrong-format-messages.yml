@@ -2,4 +2,4 @@ messages:
     - key: com.ca.mfaas.test.noArguments
       number: CSC0001
       level: ERROR
-      text: "No arguments message"
+      text: "No argument message"

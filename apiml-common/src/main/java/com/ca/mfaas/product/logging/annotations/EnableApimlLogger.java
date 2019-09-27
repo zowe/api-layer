@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
 import java.lang.annotation.*;
 
 /**
- * Enables to use of APIML Spring logging components.
+ * Enables the API ML Spring logging components.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

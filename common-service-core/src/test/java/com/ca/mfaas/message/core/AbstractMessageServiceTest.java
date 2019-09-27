@@ -38,7 +38,7 @@ public class AbstractMessageServiceTest {
     @Test
     public void shouldReturnInvalidMessage_IfKeyInvalid() {
         Message message = abstractMessageService.createMessage("invalidKey", "parameter");
-        String expectedMessage = "Internal error: Invalid message key 'invalidKey' provided. No default message found. Please contact CA support of further assistance.";
+        String expectedMessage = "Internal error: Invalid message key 'invalidKey' provided. No default message found. Please contact support of further assistance.";
         assertEquals("Message texts are different", expectedMessage, message.getConvertedText());
     }
 

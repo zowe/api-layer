@@ -18,7 +18,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * After enabling apiml logging {@link EnableApimlLogger} it can be used as an injector.
+ * When you enable APIML logging with {@link EnableApimlLogger}, you can use EnableApimlLogger as an injector.
  * It injects {@link com.ca.mfaas.message.log.ApimlLogger} instance automatically with
  * {@link com.ca.mfaas.product.logging.ApimlLogInjector} in Spring environment
  */

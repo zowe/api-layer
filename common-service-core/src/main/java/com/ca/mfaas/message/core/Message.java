@@ -12,7 +12,6 @@ package com.ca.mfaas.message.core;
 import com.ca.mfaas.message.api.ApiMessage;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.template.MessageTemplate;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.Collections;
@@ -21,7 +20,6 @@ import java.util.UUID;
 /**
  * Message creator immutable class
  */
-@RequiredArgsConstructor
 public final class Message {
     public static final String INVALID_KEY_MESSAGE = "com.ca.mfaas.common.invalidMessageKey";
     public static final String INVALID_MESSAGE_TEXT_FORMAT = "com.ca.mfaas.common.invalidMessageTextFormat";
@@ -30,8 +28,17 @@ public final class Message {
     private final MessageTemplate messageTemplate;
     private final Object[] messageParameters;
 
+
+    private Message(String requestedKey,
+                    MessageTemplate messageTemplate,
+                    Object[] messageParameters) {
+        this.requestedKey = requestedKey;
+        this.messageTemplate = messageTemplate;
+        this.messageParameters = messageParameters;
+    }
+
     /**
-     * Return a {@link Message} object for the specified key after text and parameters validation.
+     * Returns a {@link Message} object for the specified key after text and parameters validation.
      *
      * @param requestedKey      the message key.
      * @param messageTemplate   the messageTemplate.
@@ -54,7 +61,7 @@ public final class Message {
 
 
     /**
-     * Checks that the specified object reference is not null and
+     * Check whether the specified object reference is not null and
      * throws a {@link IllegalArgumentException} if it is.
      *
      * @param param   the object reference to check for nullity

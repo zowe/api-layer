@@ -21,8 +21,8 @@ import org.springframework.util.ReflectionUtils;
 import javax.annotation.Nonnull;
 
 /**
- * This class plays as a injector for {@link ApimlLogger} in spring environment.
- * It detects if class have field with {@link InjectApimlLogger} annotation,
+ * This class serves as an injector for {@link ApimlLogger} in the Spring environment.
+ * Detects if the class has a field with the {@link InjectApimlLogger} annotation,
  * it finds {@link MessageService} from Spring context then initialize {@link ApimlLogger}
  */
 @Component

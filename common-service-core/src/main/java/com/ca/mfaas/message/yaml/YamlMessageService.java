@@ -45,8 +45,8 @@ public class YamlMessageService extends AbstractMessageService {
      * Load messages to the context from the provided message file path
      *
      * @param messagesFilePath path of the message file
-     * @throws MessageLoadException      when a message couldn't loaded or has wrong definition
-     * @throws DuplicateMessageException when a message is already defined before
+     * @throws MessageLoadException      when a message couldn't load or has a wrong definition
+     * @throws DuplicateMessageException when a message is already defined
      */
     @Override
     public void loadMessages(String messagesFilePath) {

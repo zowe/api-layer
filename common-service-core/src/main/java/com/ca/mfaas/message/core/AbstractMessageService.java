@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 /**
  * Abstract class which implements the {@link MessageService} interface.
- * It creates messages from the file, validate and add them to the {@link MessageTemplateStorage}.
+ * It creates messages from the file, validates and adds them to the {@link MessageTemplateStorage}.
  */
 @Slf4j
 public abstract class AbstractMessageService implements MessageService {
@@ -30,7 +30,7 @@ public abstract class AbstractMessageService implements MessageService {
     /**
      * Constructor that creates common messages and messages from file.
      *
-     * @param messagesFilePath path to file with messages.
+     * @param messagesFilePath path to the file with messages.
      */
     public AbstractMessageService(String messagesFilePath) {
         messageTemplateStorage = new MessageTemplateStorage();
@@ -38,7 +38,7 @@ public abstract class AbstractMessageService implements MessageService {
     }
 
     /**
-     * Creates {@link Message} with key and list of parameters.
+     * Creates {@link Message} with the key and list of parameters.
      *
      * @param key        of message in messages.yml file
      * @param parameters for message
@@ -127,13 +127,13 @@ public abstract class AbstractMessageService implements MessageService {
     }
 
     /**
-     * Return the invalid key message {@link MessageTemplate}.
+     * Returns the invalid key message {@link MessageTemplate}.
      *
      * @return {@link MessageTemplate}
      */
     private MessageTemplate getInvalidMessageTemplate() {
         String text = "Internal error: Invalid message key '%s' provided. No default message found. " +
-            "Please contact CA support of further assistance.";
+            "Please contact support of further assistance.";
         return new MessageTemplate(Message.INVALID_KEY_MESSAGE, "MFS0001", MessageType.ERROR, text);
     }
 }

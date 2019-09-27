@@ -20,8 +20,7 @@ import java.util.List;
  * User facing messages that can be provided with API responses.
  * <p>
  * We should include as much useful data as possible and keep in mind different users of the message structure.
- * However remember that one kind of user may be a person with malicious intent so not leak data that should be kept
- * private or implementation details.
+ * Note that some users might have malicious intents therefore do not disclose your private data.
  */
 @Setter
 @EqualsAndHashCode
@@ -106,7 +105,7 @@ public class ApiMessage<T> {
     }
 
     /**
-     * Optional unique ID of the message instance. Useful for finding of the message in the logs.
+     * Optional unique ID of the message instance. Used for finding of the message in the logs.
      * The same ID should be printed in the log.
      * This field is optional.
      * <p>
@@ -117,7 +116,7 @@ public class ApiMessage<T> {
     }
 
     /**
-     * For support and developers - component that generated the error (can be fully qualified Java package or class name).
+     * ----- component that generated the error (can be fully qualified Java package or class name).
      * This field is optional.
      * <p>
      * Example: com.ca.product.package
@@ -127,7 +126,7 @@ public class ApiMessage<T> {
     }
 
     /**
-     * For support and developers - source service that generated the error (can MFaaS service name or host:port).
+     * Source service that generated the error (can MFaaS service name or host:port).
      * This field is optional.
      * <p>
      * Example: mfaas-discovery-service, ca31:12345

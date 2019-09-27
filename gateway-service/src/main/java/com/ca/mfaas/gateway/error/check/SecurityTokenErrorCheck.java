@@ -32,7 +32,7 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
     private final MessageService messageService;
 
     /**
-     * Validate whether the exception thrown is related to token and sets the proper response and status code
+     * Validate whether the exception is related to token and sets the proper response and status code
      *
      * @param request Http request
      * @param exc Exception thrown
