@@ -14,14 +14,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang.RandomStringUtils;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
@@ -52,11 +46,11 @@ public class ApiInfo {
         String encodedGatewayUrl = UrlUtils.getEncodedUrl(gatewayUrl);
 
         if (gatewayUrl != null) {
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_GATEWAY_URL), gatewayUrl);
+            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_GATEWAY_URL), gatewayUrl);
         }
 
         if (version != null) {
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_VERSION), version);
+            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_VERSION), version);
         }
 
         if (swaggerUrl != null) {
@@ -64,7 +58,7 @@ public class ApiInfo {
                 () -> String.format("The Swagger URL \"%s\" for service %s is not valid", swaggerUrl, serviceId)
             );
 
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_SWAGGER_URL), swaggerUrl);
+            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_SWAGGER_URL), swaggerUrl);
         }
 
         if (documentationUrl != null) {
@@ -72,29 +66,9 @@ public class ApiInfo {
                 () -> String.format("The documentation URL \"%s\" for service %s is not valid", documentationUrl, serviceId)
             );
 
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), documentationUrl);
+            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), documentationUrl);
         }
 
         return metadata;
-    }
-
-    private String createMetadataKey(String encodedGatewayUrl, String url) {
-        return String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, url);
-    }
-
-    private String getEncodedGatewayUrl(String gatewayUrl) {
-        if (gatewayUrl != null) {
-            return gatewayUrl.replaceAll("\\W", "-");
-        } else {
-            return RandomStringUtils.randomAlphanumeric(10);
-        }
-    }
-
-    private void validateUrl(String url, Supplier<String> exceptionSupplier) {
-        try {
-            new URL(url);
-        } catch (MalformedURLException e) {
-            throw new InvalidParameterException(exceptionSupplier.get() + ": " + e.getMessage());
-        }
     }
 }
