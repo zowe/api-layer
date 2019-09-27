@@ -52,11 +52,11 @@ public class ApiInfo {
         String encodedGatewayUrl = UrlUtils.getEncodedUrl(gatewayUrl);
 
         if (gatewayUrl != null) {
-            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_GATEWAY_URL), gatewayUrl);
+            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_GATEWAY_URL), gatewayUrl);
         }
 
         if (version != null) {
-            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_VERSION), version);
+            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_VERSION), version);
         }
 
         if (swaggerUrl != null) {
@@ -64,7 +64,7 @@ public class ApiInfo {
                 () -> String.format("The Swagger URL \"%s\" for service %s is not valid", swaggerUrl, serviceId)
             );
 
-            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_SWAGGER_URL), swaggerUrl);
+            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_SWAGGER_URL), swaggerUrl);
         }
 
         if (documentationUrl != null) {
@@ -72,7 +72,7 @@ public class ApiInfo {
                 () -> String.format("The documentation URL \"%s\" for service %s is not valid", documentationUrl, serviceId)
             );
 
-            metadata.put(UrlUtils.createMetadataKey(encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), documentationUrl);
+            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), documentationUrl);
         }
 
         return metadata;
