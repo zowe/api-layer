@@ -11,6 +11,8 @@ package com.ca.mfaas.eurekaservice.client.util;
 
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 public class UrlUtilsTest {
@@ -23,5 +25,17 @@ public class UrlUtilsTest {
         assertEquals("", UrlUtils.trimSlashes(""));
         assertEquals("/", UrlUtils.trimSlashes("///"));
         assertEquals("", UrlUtils.trimSlashes("//"));
+    }
+
+
+    @Test
+    public void getEndPointsTest() {
+        List<String> urls = UrlUtils.getHostBaseUrls();
+        int size = (urls == null) ? 0 : urls.size();
+        System.out.println("urls size: " + size);
+        //if (size > 0) {
+        for (int n = 0; n < size; n++) {
+            System.out.println("     url[" + n + "]=" + urls.get(n));
+        }
     }
 }

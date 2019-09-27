@@ -11,15 +11,20 @@ package com.ca.mfaas.eurekaservice.client.util;
 
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.management.*;
+import java.lang.management.ManagementFactory;
 import java.net.*;
 import java.security.InvalidParameterException;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.function.Supplier;
 
 
 @UtilityClass
 public class UrlUtils {
+    private static final Logger logger = LoggerFactory.getLogger(UrlUtils.class);
 
     public static String trimSlashes(String string) {
         return string.replaceAll("^/|/$", "");
@@ -53,72 +58,108 @@ public class UrlUtils {
         return StringUtils.removeLastOccurrence(uri, "/");
     }
 
-
-    public String getBaseUrl() {
-        String bU = null;
-        String ownHost1 = getOwnHostFromInetAddress();
-        if (ownHost1 != null) {
-            bU = ownHost1;
-        }
-        String ownHost2 = getOwnHostFromDatagram();
-        if (ownHost1 != null) {
-            bU = ownHost1;
-        }
-        String ownHost3 = getOwnHostFromNetworkInterface();
-        if (ownHost1 != null) {
-            bU = ownHost1;
-        }
-        return bU;
-    }
-
-    private static  String getOwnHostFromNetworkInterface() {
-        StringBuilder sb = new StringBuilder();
-
+    private static  String getOwnIpFromNetworkInterface() {
+        String ip = null;
         try {
             Enumeration<NetworkInterface> allInterfaces =  NetworkInterface.getNetworkInterfaces();
             if (allInterfaces != null) {
                 while (allInterfaces.hasMoreElements()) {
                     NetworkInterface ni = allInterfaces.nextElement();
                     if (ni.isPointToPoint()) {
-                        sb.append(ni.toString());
+                        ip = ni.toString();
                     }
                 }
 
             }
         } catch (SocketException e) {
-            e.printStackTrace();
+            logger.error("", e);
         }
 
-        return sb.toString();
+        return ip;
     }
 
-    private static String getOwnHostFromDatagram() {
-        StringBuilder sb = new StringBuilder();
+    private static String getOwnIpFromDatagram() {
+        String ip = null;
 
         try (
-            final DatagramSocket socket = new DatagramSocket()) {
+            DatagramSocket socket = new DatagramSocket()) {
             socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
-            sb.append(socket.getLocalAddress().getHostAddress());
+            ip = socket.getLocalAddress().getHostAddress();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.error("", e);
         } catch (SocketException e) {
-            e.printStackTrace();
+            logger.error("", e);
         }
 
-        return sb.toString();
+        return ip;
     }
 
-    private static String getOwnHostFromInetAddress() {
-        StringBuilder sb = new StringBuilder();
+    private static String getOwnIpFromInetAddress() {
+        String ip = null;
         try {
             InetAddress inetAddr = InetAddress.getLocalHost();
-            sb.append(inetAddr.getHostAddress());
-            //sb.append("          ip   is: ").append(inetAddr.getHostAddress());
-            //sb.append(InetAddress.getLocalHost());
-            //baseUrl = inetAddr.getHostAddress();
+            ip = inetAddr.getHostAddress();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.error("", e);
         }
-        return sb.toString();
+        return ip;
+    }
+
+    public static List<String> getHostBaseUrls() {
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        Set<ObjectName> objs = getHttpConnectorsNames(mbs, "HTTP/1.1", "Http11"); // TODO: What about Http2. Put string arguments in List or use variable arguments
+
+        ArrayList<String> endPoints = new ArrayList<>();
+        if (objs != null){
+            InetAddress[] addresses = new InetAddress[0];
+            try {
+                InetAddress inetAddress = InetAddress.getLocalHost();
+                addresses = InetAddress.getAllByName(inetAddress.getHostName());
+            } catch (UnknownHostException e) {
+                logger.error("", e);
+            }
+
+            for (ObjectName obj : objs ) {
+                String scheme = "";
+                try {
+                    scheme = mbs.getAttribute(obj, "scheme").toString();
+                } catch (AttributeNotFoundException e) {
+                    logger.error("", e);
+                } catch (InstanceNotFoundException e) {
+                    logger.error("", e);
+                } catch (ReflectionException e) {
+                    logger.error("", e);
+                } catch (MBeanException e) {
+                    logger.error("", e);
+                }
+
+                String port = obj.getKeyProperty("port");
+                for (InetAddress addr : addresses) {
+                    if ((addr instanceof Inet6Address) || addr.isAnyLocalAddress() || addr.isLoopbackAddress() ||
+                        addr.isMulticastAddress()) {
+                        continue;
+                    }
+                    String host = addr.getHostAddress();
+                    String ep = scheme + "://" + host + ":" + port;
+                    endPoints.add(ep);
+                }
+            }
+        }
+
+        return endPoints;
+    }
+
+    private static Set<ObjectName> getHttpConnectorsNames(MBeanServer mbs, String protocol1, String protocol2) {
+        QueryExp subQuery1 = Query.match(Query.attr("protocol"), Query.value(protocol1));
+        QueryExp subQuery2 = Query.anySubString(Query.attr("protocol"), Query.value(protocol2));
+        QueryExp query = Query.or(subQuery1, subQuery2);
+
+        Set<ObjectName> objs = null;
+        try {
+            objs = mbs.queryNames(new ObjectName("*:type=Connector,*"), query);
+        } catch (MalformedObjectNameException e) {
+            logger.error("", e);
+        }
+        return objs;
     }
 }
