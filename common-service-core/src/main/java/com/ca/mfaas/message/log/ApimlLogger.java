@@ -11,6 +11,7 @@ package com.ca.mfaas.message.log;
 
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.core.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,31 +64,38 @@ public final class ApimlLogger {
     public void log(String key, Object... parameters) {
         if (messageService != null) {
             Message message = messageService.createMessage(key, parameters);
-            log(message);
+            log(message.getMessageTemplate().getType(), message.mapToLogMessage());
         }
     }
 
+    /**
+     * Method which allows to log text in its level type.
+     *
+     * @param messageType  type of the message
+     * @param text text for message
+     * @param arguments arguments for message text
+     */
     @SuppressWarnings("squid:S2629")
-    private void log(Message message) {
-        switch (message.getMessageTemplate().getType()) {
+    public void log(MessageType messageType, String text, Object... arguments) {
+        switch (messageType) {
             case TRACE:
-                logger.trace(message.mapToLogMessage());
+                logger.trace(text, arguments);
                 break;
             case DEBUG:
-                logger.debug(message.mapToLogMessage());
+                logger.debug(text, arguments);
                 break;
             case INFO:
-                logger.info(message.mapToLogMessage());
+                logger.info(text, arguments);
                 break;
             case WARNING:
-                logger.warn(message.mapToLogMessage());
+                logger.warn(text, arguments);
                 break;
             case ERROR:
-                logger.error(message.mapToLogMessage());
+                logger.error(text, arguments);
                 break;
             default:
                 logger.warn("The following message contains invalid message type.");
-                logger.info(message.mapToLogMessage());
+                logger.info(text, arguments);
                 break;
         }
     }

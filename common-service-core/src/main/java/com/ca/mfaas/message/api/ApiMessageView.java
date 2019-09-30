@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * The class is intended for REST API responses that contain error,
- * warning, or informational messages in the common MFaaS format.
+ * warning, or informational messages in the common APIML format.
  * <p>
  * It is preferred to return successful responses without messages if possible.
  * <p>

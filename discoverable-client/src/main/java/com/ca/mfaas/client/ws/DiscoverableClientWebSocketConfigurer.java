@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.client.ws;
 
+import com.ca.mfaas.message.core.MessageType;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigure
         registry.addHandler(new WebSocketServerHandler(), webSocketEndpoint).setAllowedOrigins("*");
 
         webSocketEndpoint = "/ws/header";
-        logger.log("com.ca.mfaas.log.sampleservice.registeringWebSocket", webSocketEndpoint);
+        logger.log(MessageType.DEBUG, "Registering WebSocket handler to {}", webSocketEndpoint);
 
         registry.addHandler(new HeaderSocketServerHandler(), webSocketEndpoint);
     }
