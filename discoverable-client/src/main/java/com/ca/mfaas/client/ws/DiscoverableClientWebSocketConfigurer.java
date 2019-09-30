@@ -12,17 +12,15 @@ package com.ca.mfaas.client.ws;
 import com.ca.mfaas.message.core.MessageType;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-@Slf4j
 @Component
 public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigurer {
 
     @InjectApimlLogger
-    private ApimlLogger logger = ApimlLogger.empty();
+    private final ApimlLogger logger = ApimlLogger.empty();
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {

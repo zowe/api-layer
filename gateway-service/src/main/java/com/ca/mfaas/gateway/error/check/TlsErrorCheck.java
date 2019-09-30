@@ -14,6 +14,7 @@ import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.MessageService;
 import com.netflix.zuul.exception.ZuulException;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -27,12 +28,9 @@ import javax.servlet.http.HttpServletRequest;
  * Checks whether the error was caused by timeout (service not responding).
  */
 @Slf4j
+@RequiredArgsConstructor
 public class TlsErrorCheck implements ErrorCheck {
     private final MessageService messageService;
-
-    public TlsErrorCheck(MessageService messageService) {
-        this.messageService = messageService;
-    }
 
     public ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException) {

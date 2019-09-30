@@ -14,6 +14,7 @@ import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
 import com.netflix.zuul.exception.ZuulException;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +26,12 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Checks whether the error was caused by timeout (service not responding).
  */
+@RequiredArgsConstructor
 public class TimeoutErrorCheck implements ErrorCheck {
     public static final String DEFAULT_MESSAGE = "The service did not respond in time";
-
     private static final String ERROR_CAUSE_TIMEOUT = "TIMEOUT";
 
     private final MessageService messageService;
-
-    public TimeoutErrorCheck(MessageService messageService) {
-        this.messageService = messageService;
-    }
 
     public ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException) {
