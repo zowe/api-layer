@@ -74,9 +74,14 @@ public final class ApimlLogger {
      * @param messageType  type of the message
      * @param text text for message
      * @param arguments arguments for message text
+     * @throws IllegalArgumentException when parameters are null
      */
     @SuppressWarnings("squid:S2629")
     public void log(MessageType messageType, String text, Object... arguments) {
+        if (messageType == null || text == null || arguments == null) {
+            throw new IllegalArgumentException("Parameters can't be null");
+        }
+
         switch (messageType) {
             case TRACE:
                 logger.trace(text, arguments);
