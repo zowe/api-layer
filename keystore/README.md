@@ -49,7 +49,7 @@ Use the following script in the root of the `api-layer` repository:
     scripts/apiml_cm.sh --action new-service --service-alias <alias> --service-ext <ext> \
     --service-keystore <keystore_path> --service-truststore <truststore_path> \
     --service-dname <dname> --service-password <password> --service-validity <days> \
-    --local-ca-filename $ZOWE_ROOT_DIR/api-mediation/keystore/local_ca/localca \
+    --local-ca-filename $ZOWE_ROOT_DIR/components/api-mediation/keystore/local_ca/localca \
     --local-ca-password <localca_password>
 
 The `service-alias` is an unique string to identify the key entry. All keystore entries (key and trusted certificate entries) are accessed via unique aliases. Since the keystore will have only one certificate, you can omit this parameter and use the default value `localhost`.
@@ -73,7 +73,7 @@ The `service-validity` is the number of days after that the certificate will exp
 
 The `service-password` is the keystore password. The purpose of the password is the integrity check. The access protection for the keystore and keystore need to be achieved by making them accessible only by the ZOVESVR user ID and the system administrator.
 
-The `local-ca-filename` is the path to the keystore that is used to sign your new certificate with the local CA private key. If you an in the `$ZOWE_RUNTIME/api-mediation-directory`, you can omit this parameter. It should point to the `$ZOWE_ROOT_DIR/api-mediation/keystore/local_ca/localca`.
+The `local-ca-filename` is the path to the keystore that is used to sign your new certificate with the local CA private key. If you an in the `$ZOWE_RUNTIME/components/api-mediation-directory`, you can omit this parameter. It should point to the `$ZOWE_ROOT_DIR/components/api-mediation/keystore/local_ca/localca`.
 
 The `local-ca-password` is the local CA keystore password. You can omit it unless you has used a different password during `setup` action.
 
