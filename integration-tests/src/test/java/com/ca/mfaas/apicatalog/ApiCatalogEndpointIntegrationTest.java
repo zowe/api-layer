@@ -132,9 +132,12 @@ public class ApiCatalogEndpointIntegrationTest {
         assertNotNull(apiCatalogSwagger, paths.get("/greeting"));
 
         assertFalse(apiCatalogSwagger, definitions.isEmpty());
+
         assertNotNull(apiCatalogSwagger, definitions.get("ApiMessage"));
+        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessageView"));
         assertNotNull(apiCatalogSwagger, definitions.get("Greeting"));
-        assertNotNull(apiCatalogSwagger, definitions.get("Message"));
+        assertNotNull(apiCatalogSwagger, definitions.get("Pet"));
+        assertNotNull(apiCatalogSwagger, definitions.get("RedirectLocation"));
     }
 
     @Test

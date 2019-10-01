@@ -12,14 +12,13 @@ package com.ca.mfaas.gateway.error.check;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.error.ErrorUtils;
 import com.ca.mfaas.gateway.error.InternalServerErrorController;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -35,11 +34,11 @@ public class TimeoutErrorCheckTest {
     @BeforeClass
     public static void setup() {
         MonitoringHelper.initMocks();
-        ErrorService errorService = new ErrorServiceImpl();
-        errorController = new InternalServerErrorController(errorService);
+        MessageService messageService = new YamlMessageService();
+        errorController = new InternalServerErrorController(messageService);
     }
 
-    private void assertCorrectMessage(ResponseEntity<ApiMessage> response, String expectedMessage) {
+    private void assertCorrectMessage(ResponseEntity<ApiMessageView> response, String expectedMessage) {
         assertEquals(HttpStatus.GATEWAY_TIMEOUT.value(), response.getStatusCodeValue());
         assertEquals("apiml.common.serviceTimeout", response.getBody().getMessages().get(0).getMessageKey());
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains(expectedMessage));
@@ -51,7 +50,7 @@ public class TimeoutErrorCheckTest {
 
         ZuulException exc = new ZuulException(new Exception(TEST_MESSAGE), HttpStatus.GATEWAY_TIMEOUT.value(), null);
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
-        ResponseEntity<ApiMessage> response = errorController.error(request);
+        ResponseEntity<ApiMessageView> response = errorController.error(request);
 
         assertCorrectMessage(response, TEST_MESSAGE);
     }
@@ -63,7 +62,7 @@ public class TimeoutErrorCheckTest {
         ZuulException exc = new ZuulException("", HttpStatus.GATEWAY_TIMEOUT.value(), "TEST");
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
 
-        ResponseEntity<ApiMessage> response = errorController.error(request);
+        ResponseEntity<ApiMessageView> response = errorController.error(request);
 
         assertCorrectMessage(response, TimeoutErrorCheck.DEFAULT_MESSAGE);
     }
@@ -76,7 +75,7 @@ public class TimeoutErrorCheckTest {
                 HttpStatus.INTERNAL_SERVER_ERROR.value(), "TEST");
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
 
-        ResponseEntity<ApiMessage> response = errorController.error(request);
+        ResponseEntity<ApiMessageView> response = errorController.error(request);
 
         assertCorrectMessage(response, TEST_MESSAGE);
     }

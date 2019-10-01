@@ -12,11 +12,11 @@ package com.ca.mfaas.gateway.error.check;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.error.ErrorUtils;
 import com.ca.mfaas.gateway.error.InternalServerErrorController;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 
@@ -35,8 +35,8 @@ public class TlsErrorCheckTest {
     @BeforeClass
     public static void setup() {
         MonitoringHelper.initMocks();
-        ErrorService errorService = new ErrorServiceImpl();
-        errorController = new InternalServerErrorController(errorService);
+        MessageService messageService = new YamlMessageService();
+        errorController = new InternalServerErrorController(messageService);
     }
 
     @Test
@@ -47,7 +47,7 @@ public class TlsErrorCheckTest {
                 HttpStatus.INTERNAL_SERVER_ERROR.value(), "TEST");
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
 
-        ResponseEntity<ApiMessage> response = errorController.error(request);
+        ResponseEntity<ApiMessageView> response = errorController.error(request);
 
         assertEquals(HttpStatus.BAD_GATEWAY.value(), response.getStatusCodeValue());
         assertEquals("apiml.common.tlsError", response.getBody().getMessages().get(0).getMessageKey());

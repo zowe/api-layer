@@ -12,8 +12,8 @@ package com.ca.apiml.security.common.error;
 import com.ca.apiml.security.common.token.TokenExpireException;
 import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,8 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class AuthExceptionHandler extends AbstractExceptionHandler {
 
-    public AuthExceptionHandler(ErrorService errorService, ObjectMapper objectMapper) {
-        super(errorService, objectMapper);
+    public AuthExceptionHandler(MessageService messageService, ObjectMapper objectMapper) {
+        super(messageService, objectMapper);
     }
 
     /**
@@ -87,7 +87,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
 
     private void handleAuthMethodNotSupported(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
-        final ApiMessage message = errorService.createApiMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), ex.getMessage(), request.getRequestURI());
+        final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), ex.getMessage(), request.getRequestURI()).mapToView();
         final HttpStatus status = HttpStatus.METHOD_NOT_ALLOWED;
         writeErrorResponse(message, status, response);
     }
@@ -111,7 +111,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleAuthenticationException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.error(ERROR_MESSAGE_500, ex.getMessage());
         log.debug("", ex);
-        final ApiMessage message = errorService.createApiMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), ex.getMessage(), request.getRequestURI());
+        final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), ex.getMessage(), request.getRequestURI()).mapToView();
         final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         writeErrorResponse(message, status, response);
     }

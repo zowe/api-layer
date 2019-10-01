@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.apicatalog.config;
 
-import com.ca.mfaas.error.ErrorService;
+import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.routing.transform.TransformService;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +26,9 @@ public class BeanConfig {
 
     @Bean
     @Primary
-    public ErrorService errorServiceCatalog(ErrorService errorService) {
-        errorService.loadMessages("/messages.yml");
-        return errorService;
+    public MessageService messageServiceCatalog(MessageService messageService) {
+        messageService.loadMessages("/messages.yml");
+        return messageService;
     }
 
     @Bean

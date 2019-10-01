@@ -9,23 +9,30 @@
  */
 package com.ca.mfaas.client.ws;
 
-import lombok.extern.slf4j.Slf4j;
+import com.ca.mfaas.message.core.MessageType;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-@Slf4j
 @Component
-@SuppressWarnings("squid:S1075")
 public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigurer {
+
+    @InjectApimlLogger
+    private final ApimlLogger logger = ApimlLogger.empty();
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        String webSocketPath = "/ws/uppercase";
-        log.info("Registering WebSocket handler to " + webSocketPath);
-        registry.addHandler(new WebSocketServerHandler(), webSocketPath).setAllowedOrigins("*");
+        String webSocketEndpoint = "/ws/uppercase";
 
-        webSocketPath = "/ws/header";
-        log.info("Registering WebSocket handler to " + webSocketPath);
-        registry.addHandler(new HeaderSocketServerHandler(), webSocketPath);
+        logger.log("com.ca.mfaas.sampleservice.log.registeringWebSocket", webSocketEndpoint);
+
+        registry.addHandler(new WebSocketServerHandler(), webSocketEndpoint).setAllowedOrigins("*");
+
+        webSocketEndpoint = "/ws/header";
+        logger.log(MessageType.DEBUG, "Registering WebSocket handler to {}", webSocketEndpoint);
+
+        registry.addHandler(new HeaderSocketServerHandler(), webSocketEndpoint);
     }
 }

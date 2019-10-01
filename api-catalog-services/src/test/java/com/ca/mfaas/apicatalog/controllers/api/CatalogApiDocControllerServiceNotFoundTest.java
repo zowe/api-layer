@@ -12,8 +12,8 @@ package com.ca.mfaas.apicatalog.controllers.api;
 import com.ca.mfaas.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
 import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import com.ca.mfaas.apicatalog.services.status.model.ServiceNotFoundException;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,13 +64,13 @@ public class CatalogApiDocControllerServiceNotFoundTest {
         }
 
         @Bean
-        public ErrorService errorService() {
-            return new ErrorServiceImpl("/messages.yml");
+        public MessageService messageService() {
+            return new YamlMessageService("/messages.yml");
         }
 
         @Bean
         public CatalogApiDocControllerExceptionHandler catalogApiDocControllerExceptionHandler() {
-            return new CatalogApiDocControllerExceptionHandler(errorService());
+            return new CatalogApiDocControllerExceptionHandler(messageService());
         }
     }
 }

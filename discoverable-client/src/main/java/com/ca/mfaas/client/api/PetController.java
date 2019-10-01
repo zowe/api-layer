@@ -15,7 +15,7 @@ import com.ca.mfaas.client.model.Pet;
 import com.ca.mfaas.client.model.state.Existing;
 import com.ca.mfaas.client.model.state.New;
 import com.ca.mfaas.client.service.PetService;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -93,8 +93,8 @@ public class PetController {
         })
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "New created pet", response = Pet.class),
-        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessage.class),
-        @ApiResponse(code = 400, message = "Request object is not valid", response = ApiMessage.class)
+        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
+        @ApiResponse(code = 400, message = "Request object is not valid", response = ApiMessageView.class)
     })
     public Pet addPet(@ApiParam(value = "Pet object that needs to be added", required = true)
                       @Validated(value = {New.class})
@@ -120,8 +120,8 @@ public class PetController {
         })
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "OK", response = Pet.class),
-        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessage.class),
-        @ApiResponse(code = 404, message = "The pet with id is not found.", response = ApiMessage.class)
+        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
+        @ApiResponse(code = 404, message = "The pet with id is not found.", response = ApiMessageView.class)
     })
     public Pet getPetById(@ApiParam(value = "Pet id to return", required = true)
                           @PathVariable("id") Long id) {
@@ -153,8 +153,8 @@ public class PetController {
         })
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Pet updated", response = Pet.class),
-        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessage.class),
-        @ApiResponse(code = 404, message = "Pet not found", response = ApiMessage.class)
+        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
+        @ApiResponse(code = 404, message = "Pet not found", response = ApiMessageView.class)
     })
     public Pet updatePetById(@ApiParam(value = "Pet id to update", required = true)
                              @PathVariable("id") Long id,
@@ -189,9 +189,9 @@ public class PetController {
         })
     @ApiResponses(value = {
         @ApiResponse(code = 204, message = "Pet updated", response = Pet.class),
-        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessage.class),
-        @ApiResponse(code = 403, message = "Forbidden", response = ApiMessage.class),
-        @ApiResponse(code = 404, message = "Pet not found", response = ApiMessage.class)
+        @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
+        @ApiResponse(code = 403, message = "Forbidden", response = ApiMessageView.class),
+        @ApiResponse(code = 404, message = "Pet not found", response = ApiMessageView.class)
     })
     public void deletePetById(@ApiParam(value = "Pet id to delete", required = true)
                               @PathVariable("id") Long id) {

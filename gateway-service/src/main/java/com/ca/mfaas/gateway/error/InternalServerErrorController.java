@@ -9,12 +9,13 @@
  */
 package com.ca.mfaas.gateway.error;
 
-import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.gateway.error.check.ErrorCheck;
 import com.ca.mfaas.gateway.error.check.SecurityTokenErrorCheck;
 import com.ca.mfaas.gateway.error.check.TimeoutErrorCheck;
 import com.ca.mfaas.gateway.error.check.TlsErrorCheck;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.Message;
+import com.ca.mfaas.message.core.MessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,15 +42,15 @@ import java.util.List;
 public class InternalServerErrorController implements ErrorController {
     private static final String ERROR_ENDPOINT = "/internal_error";
 
-    private final ErrorService errorService;
+    private final MessageService messageService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
 
     @Autowired
-    public InternalServerErrorController(ErrorService errorService) {
-        this.errorService = errorService;
-        errorChecks.add(new TlsErrorCheck(errorService));
-        errorChecks.add(new TimeoutErrorCheck(errorService));
-        errorChecks.add(new SecurityTokenErrorCheck(errorService));
+    public InternalServerErrorController(MessageService messageService) {
+        this.messageService = messageService;
+        errorChecks.add(new TlsErrorCheck(messageService));
+        errorChecks.add(new TimeoutErrorCheck(messageService));
+        errorChecks.add(new SecurityTokenErrorCheck(messageService));
     }
 
     @Override
@@ -66,10 +67,10 @@ public class InternalServerErrorController implements ErrorController {
      */
     @RequestMapping(value = ERROR_ENDPOINT, produces = "application/json")
     @ResponseBody
-    public ResponseEntity<ApiMessage> error(HttpServletRequest request) {
+    public ResponseEntity<ApiMessageView> error(HttpServletRequest request) {
         final Throwable exc = (Throwable) request.getAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION);
 
-        ResponseEntity<ApiMessage> entity = checkForSpecificErrors(request, exc);
+        ResponseEntity<ApiMessageView> entity = checkForSpecificErrors(request, exc);
         if (entity != null) {
             return entity;
         }
@@ -77,18 +78,18 @@ public class InternalServerErrorController implements ErrorController {
         return logAndCreateResponseForInternalError(request, exc);
     }
 
-    private ResponseEntity<ApiMessage> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
+    private ResponseEntity<ApiMessageView> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
         final String errorMessage = ErrorUtils.getErrorMessage(request);
-        ApiMessage message = errorService.createApiMessage("apiml.common.internalRequestError", ErrorUtils.getGatewayUri(request),
+        Message message = messageService.createMessage("apiml.common.internalRequestError", ErrorUtils.getGatewayUri(request),
             ExceptionUtils.getMessage(exc), ExceptionUtils.getRootCauseMessage(exc));
         log.error("Unresolved request error: {}", errorMessage, exc);
-        return ResponseEntity.status(status).body(message);
+        return ResponseEntity.status(status).body(message.mapToView());
     }
 
-    private ResponseEntity<ApiMessage> checkForSpecificErrors(HttpServletRequest request, Throwable exc) {
+    private ResponseEntity<ApiMessageView> checkForSpecificErrors(HttpServletRequest request, Throwable exc) {
         for (ErrorCheck check : errorChecks) {
-            ResponseEntity<ApiMessage> entity = check.checkError(request, exc);
+            ResponseEntity<ApiMessageView> entity = check.checkError(request, exc);
             if (entity != null) {
                 return entity;
             }

@@ -2,7 +2,7 @@ messages:
     - key: com.ca.mfaas.test.noArguments
       number: CSC0001
       type: ERROR
-      text: "No arguments message"
+      text: "No argument message"
 
     - key: com.ca.mfaas.test.invalidParameterFormat
       number: TST0001

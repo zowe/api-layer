@@ -13,9 +13,9 @@ import com.ca.apiml.security.common.error.AuthExceptionHandler;
 import com.ca.apiml.security.common.error.ErrorType;
 import com.ca.apiml.security.common.token.TokenExpireException;
 import com.ca.mfaas.constants.ApimlConstants;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.core.Message;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,14 +39,15 @@ import static org.mockito.Mockito.verify;
 public class BasicUnauthorizedHandlerTest {
 
     @Autowired
-    private ErrorService errorService;
+    private MessageService messageService;
 
     @Mock
     private ObjectMapper objectMapper;
 
     @Test
     public void testCommence() throws IOException, ServletException {
-        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler = new BasicAuthUnauthorizedHandler(new AuthExceptionHandler(errorService, objectMapper));
+        BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler = new BasicAuthUnauthorizedHandler(
+            new AuthExceptionHandler(messageService, objectMapper));
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
@@ -58,15 +59,17 @@ public class BasicUnauthorizedHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(ApimlConstants.BASIC_AUTHENTICATION_PREFIX, httpServletResponse.getHeader(HttpHeaders.WWW_AUTHENTICATE));
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(
+            ErrorType.TOKEN_EXPIRED.getErrorMessageKey(),
+            httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Configuration
     static class ContextConfiguration {
         @Bean
-        public ErrorService errorService() {
-            return new ErrorServiceImpl("/security-service-messages.yml");
+        public MessageService messageService() {
+            return new YamlMessageService("/security-service-messages.yml");
         }
     }
 }

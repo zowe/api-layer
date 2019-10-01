@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discovery.config;
 
-import com.ca.apiml.security.client.config.ErrorServiceConfig;
+import com.ca.apiml.security.client.config.MessageServiceConfig;
 import com.ca.apiml.security.common.config.HandlerInitializer;
 import com.ca.apiml.security.common.content.BasicContentFilter;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @ComponentScan({
     "com.ca.apiml.security.common",
 })
-@Import(ErrorServiceConfig.class)
+@Import(MessageServiceConfig.class)
 @Slf4j
 @EnableWebSecurity
 @RequiredArgsConstructor

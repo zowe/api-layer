@@ -40,7 +40,6 @@ public class GreetingController {
             try {
                 Thread.sleep(delayMs);
             } catch (InterruptedException e) {
-                log.warn("Delay interrupted", e);
                 Thread.currentThread().interrupt();
             }
         }
