@@ -28,7 +28,7 @@ function usage {
     echo ""
     echo "  <level> level to be setup:"
     echo "     - ERROR - setups APIML error level"
-    echo "     - WARN - setups APIML want level"
+    echo "     - WARN - setups APIML warn level"
     echo "     - INFO - setups APIML info level"
     echo "     - DEBUG - setups APIML debug level"
     echo "     - TRACE - setups APIML trace level"
