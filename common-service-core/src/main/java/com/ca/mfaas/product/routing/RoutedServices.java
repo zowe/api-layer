@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.product.routing;
 
-import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.utils.UrlUtils;
 
 import java.util.HashMap;
 import java.util.Map;

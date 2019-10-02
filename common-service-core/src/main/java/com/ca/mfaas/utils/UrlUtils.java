@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice.client.util;
+package com.ca.mfaas.utils;
 
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang.RandomStringUtils;

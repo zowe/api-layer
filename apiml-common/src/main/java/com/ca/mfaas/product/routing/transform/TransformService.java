@@ -10,7 +10,7 @@
 
 package com.ca.mfaas.product.routing.transform;
 
-import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.utils.UrlUtils;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedService;

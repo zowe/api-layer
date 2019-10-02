@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.eurekaservice.client.util;
 
+import com.ca.mfaas.utils.UrlUtils;
 import org.junit.Test;
 
 import java.util.List;

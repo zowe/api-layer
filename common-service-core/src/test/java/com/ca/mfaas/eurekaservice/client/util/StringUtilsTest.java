@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.eurekaservice.client.util;
 
+import com.ca.mfaas.utils.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
