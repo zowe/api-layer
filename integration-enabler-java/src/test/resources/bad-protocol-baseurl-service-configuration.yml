@@ -1,10 +1,6 @@
 serviceId: service
 title: HelloWorld Spring REST API
 description: POC for exposing a Spring REST API
-#eureka:
-#    hostname: localhost
-#    ipAddress: 127.0.0.1
-#    port: 10021
 baseUrl: ftp://user:password@host/path
 homePageRelativeUrl: /
 statusPageRelativeUrl: /application/info

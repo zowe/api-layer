@@ -1,8 +1,4 @@
 serviceId: hellojersey
-#eureka:
-#    hostname: localhost
-#    ipAddress: 127.0.0.1
-#    port: 10016
 title: Hello Jersey REST API
 description: Example for exposing a Jersey REST API
 defaultZone: https://localhost:10011/eureka/
