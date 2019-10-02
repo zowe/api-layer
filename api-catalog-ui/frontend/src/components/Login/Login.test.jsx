@@ -75,7 +75,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.invalidUsername',
         });
-        expect(messageText).toEqual('Username or password is invalid (SEC0005)');
+        expect(messageText).toEqual('Unexpected error, please try again later (SEC0005)');
     });
 
     it('should display a no credentials message', () => {
@@ -84,9 +84,9 @@ describe('>>> Login page component tests', () => {
         const messageText = instance.handleError({
             messageType: 'ERROR',
             messageNumber: 'UI0001',
-            message: 'Please provide a valid username and password',
+            message: 'Unexpected error, please try again later (UI0001)',
         });
-        expect(messageText).toEqual('Please provide a valid username and password');
+        expect(messageText).toEqual('Unexpected error, please try again later (UI0001)');
     });
 
     it('should display authetication required', () => {
@@ -99,7 +99,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.authenticationRequired',
         });
-        expect(messageText).toEqual('Authentication is required (SEC0001)');
+        expect(messageText).toEqual('Unexpected error, please try again later (SEC0001)');
     });
 
     it('should display session has expired', () => {
@@ -112,7 +112,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.sessionExpired',
         });
-        expect(messageText).toEqual('Session has expired, please login again (SEC0004)');
+        expect(messageText).toEqual('Unexpected error, please try again later (SEC0004)');
     });
 
     it('should display server generated failure message', () => {

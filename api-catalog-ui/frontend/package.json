@@ -45,7 +45,7 @@
         "build": "react-scripts build",
         "analyze": "source-map-explorer build/static/js/main.*",
         "postbuild": "rimraf build/**/*.map",
-        "test": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter",
+        "test": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter --bail",
         "test:unit": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/*",
         "test:int": "react-scripts test --env=jsdom integration-tests/*",
         "test:e2e": "react-scripts test --env=jsdom e2e/*",
