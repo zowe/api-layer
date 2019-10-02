@@ -12,6 +12,7 @@ package com.ca.mfaas.eurekaservice.client.util;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.utils.UrlUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;

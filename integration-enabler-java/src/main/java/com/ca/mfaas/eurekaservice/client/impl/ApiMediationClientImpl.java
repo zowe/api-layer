@@ -11,7 +11,7 @@ package com.ca.mfaas.eurekaservice.client.impl;
 
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.*;
-import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.utils.UrlUtils;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;

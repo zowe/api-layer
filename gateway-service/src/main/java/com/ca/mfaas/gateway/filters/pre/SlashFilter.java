@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
-import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.utils.UrlUtils;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
