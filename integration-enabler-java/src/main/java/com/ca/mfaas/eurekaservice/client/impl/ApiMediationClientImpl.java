@@ -11,6 +11,7 @@ package com.ca.mfaas.eurekaservice.client.impl;
 
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.*;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.utils.UrlUtils;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
@@ -169,7 +170,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         // fill api-doc info
         for (ApiInfo apiInfo : config.getApiInfo()) {
-            metadata.putAll(apiInfo.generateMetadata(config.getServiceId()));
+            metadata.putAll(EurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
         }
 
         return metadata;
