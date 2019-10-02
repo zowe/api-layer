@@ -148,4 +148,41 @@ public class EurekaMetadataParser {
 
         return null;
     }
+
+    /**
+     * Generate Eureka metadata for ApiInfo configuration
+     *
+     * @param serviceId the identifier of a service which ApiInfo configuration belongs
+     * @return the generated Eureka metadata
+     */
+    public static Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) {
+        Map<String, String> metadata = new HashMap<>();
+        String encodedGatewayUrl = UrlUtils.getEncodedUrl(apiInfo.getGatewayUrl());
+
+        if (apiInfo.getGatewayUrl() != null) {
+            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_GATEWAY_URL), apiInfo.getGatewayUrl());
+        }
+
+        if (apiInfo.getVersion() != null) {
+            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_VERSION), apiInfo.getVersion());
+        }
+
+        if (apiInfo.getSwaggerUrl() != null) {
+            UrlUtils.validateUrl(apiInfo.getSwaggerUrl(),
+                () -> String.format("The Swagger URL \"%s\" for service %s is not valid", apiInfo.getSwaggerUrl(), serviceId)
+            );
+
+            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_SWAGGER_URL), apiInfo.getSwaggerUrl());
+        }
+
+        if (apiInfo.getDocumentationUrl() != null) {
+            UrlUtils.validateUrl(apiInfo.getDocumentationUrl(),
+                () -> String.format("The documentation URL \"%s\" for service %s is not valid", apiInfo.getDocumentationUrl(), serviceId)
+            );
+
+            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
+        }
+
+        return metadata;
+    }
 }
