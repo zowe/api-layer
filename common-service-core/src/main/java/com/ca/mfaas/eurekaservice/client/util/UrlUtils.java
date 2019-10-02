@@ -110,7 +110,7 @@ public class UrlUtils {
         Set<ObjectName> objs = getHttpConnectorsNames(mbs, "HTTP/1.1", "Http11"); // TODO: What about Http2. Put string arguments in List or use variable arguments
 
         ArrayList<String> endPoints = new ArrayList<>();
-        if (objs != null){
+        if (objs != null) {
             InetAddress[] addresses = new InetAddress[0];
             try {
                 InetAddress inetAddress = InetAddress.getLocalHost();
