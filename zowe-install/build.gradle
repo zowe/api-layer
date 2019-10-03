@@ -21,7 +21,7 @@ dependencies {
 }
 
 task packageApiMediationZowe(type: Zip) {
-    archiveName = artifactName + ".zip"
+    archiveName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
 
      into('/') {
