@@ -246,6 +246,20 @@ pipeline {
                         }
                     }
                 }
+
+                stage('Publish snapshot version to Artifactory for PullRequest') {
+                    when {
+                        expression {
+                            return BRANCH_NAME.contains("PR-");
+                        }
+                    }
+                    steps {
+                        withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                            sh "./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -PpullRequest=$env.BRANCH_NAME"
+                        }
+                    }
+                }
+
             }
         }
 

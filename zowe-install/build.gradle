@@ -1,5 +1,6 @@
 ext {
     artifactName = 'api-mediation-zowe-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
 }
 
 configurations {
@@ -108,7 +109,7 @@ artifacts {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact("$buildDir/distributions/$artifactName" + ".zip")
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
         }
     }
 }
