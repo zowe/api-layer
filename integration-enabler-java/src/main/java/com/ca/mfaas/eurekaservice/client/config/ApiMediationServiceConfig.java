@@ -35,5 +35,4 @@ public class ApiMediationServiceConfig {
     private List<ApiInfo> apiInfo;
     private Catalog catalog;
     private Ssl ssl;
-    //private Eureka eureka;
 }
