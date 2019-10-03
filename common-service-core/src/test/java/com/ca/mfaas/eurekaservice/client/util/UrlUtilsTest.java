@@ -34,7 +34,6 @@ public class UrlUtilsTest {
         List<String> urls = UrlUtils.getHostBaseUrls();
         int size = (urls == null) ? 0 : urls.size();
         System.out.println("urls size: " + size);
-        //if (size > 0) {
         for (int n = 0; n < size; n++) {
             System.out.println("     url[" + n + "]=" + urls.get(n));
         }
