@@ -1,0 +1,7 @@
+messages:
+    # Security messages (100 - 199)
+    # General messages (100 - 120)
+    - key: apiml.discovery.http
+      number: ZWEAD100
+      type: WARNING
+      text: "Discovery service is configured to use insecure HTTP protocol"

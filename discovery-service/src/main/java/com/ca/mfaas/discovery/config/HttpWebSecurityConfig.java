@@ -12,8 +12,9 @@ package com.ca.mfaas.discovery.config;
 import com.ca.apiml.security.client.config.MessageServiceConfig;
 import com.ca.apiml.security.common.config.HandlerInitializer;
 import com.ca.apiml.security.common.content.BasicContentFilter;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.ComponentScan;
@@ -37,12 +38,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
     "com.ca.apiml.security.common",
 })
 @Import(MessageServiceConfig.class)
-@Slf4j
 @EnableWebSecurity
 @RequiredArgsConstructor
 @Profile("!https")
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
+
+    @InjectApimlLogger
+    ApimlLogger log = ApimlLogger.empty();
 
     @Value("${apiml.discovery.userid:eureka}")
     private String eurekaUserid;
@@ -70,7 +73,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        log.warn("Discovery service is configured to use insecure HTTP protocol");
+        log.log("apiml.discovery.http");
         baseConfigure(http)
             .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
             .httpBasic().realmName(DISCOVERY_REALM)
