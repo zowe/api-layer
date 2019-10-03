@@ -107,7 +107,7 @@ public class UrlUtils {
 
     public static List<String> getHostBaseUrls() {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        Set<ObjectName> objs = getHttpConnectorsNames(mbs, "HTTP/1.1", "Http11"); // TODO: What about Http2. Put string arguments in List or use variable arguments
+        Set<ObjectName> objs = getHttpConnectorsNames(mbs, "HTTP/1.1", "Http11");
 
         ArrayList<String> endPoints = new ArrayList<>();
         if (objs != null) {

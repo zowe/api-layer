@@ -156,16 +156,16 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         if (config.getCatalog() != null) {
             Catalog.Tile tile = config.getCatalog().getTile();
             if (tile != null) {
-                metadata.put(CATALOG_ID, tile.getId()); //"mfaas.discovery.catalog.id"
-                metadata.put(CATALOG_VERSION, tile.getVersion()); // "mfaas.discovery.catalog.version"
-                metadata.put(CATALOG_TITLE, tile.getTitle()); // "mfaas.discovery.catalog.title"
-                metadata.put(CATALOG_DESCRIPTION, tile.getDescription()); //"mfaas.discovery.catalog.description"
+                metadata.put(CATALOG_ID, tile.getId());
+                metadata.put(CATALOG_VERSION, tile.getVersion());
+                metadata.put(CATALOG_TITLE, tile.getTitle());
+                metadata.put(CATALOG_DESCRIPTION, tile.getDescription());
             }
         }
 
         // fill service metadata
-        metadata.put(SERVICE_TITLE, config.getTitle()); // "mfaas.discovery.service.title"
-        metadata.put(SERVICE_DESCRIPTION, config.getDescription()); //"mfaas.discovery.service.description"
+        metadata.put(SERVICE_TITLE, config.getTitle());
+        metadata.put(SERVICE_DESCRIPTION, config.getDescription());
 
         // fill api-doc info
         for (ApiInfo apiInfo : config.getApiInfo()) {
