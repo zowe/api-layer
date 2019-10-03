@@ -10,6 +10,8 @@
 package com.ca.mfaas.discovery.staticdef;
 
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -37,6 +39,9 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 @Slf4j
 @Component
 public class ServiceDefinitionProcessor {
+
+    @InjectApimlLogger
+    ApimlLogger apimlLog = ApimlLogger.empty();
 
     private static final String STATIC_INSTANCE_ID_PREFIX = "STATIC-";
 
@@ -69,7 +74,7 @@ public class ServiceDefinitionProcessor {
                         log.debug("Found directory {}", directory.getPath());
                         instances.addAll(findServicesInDirectory(directory));
                     } else {
-                        log.error("Directory {} is not a directory or does not exist", directory.getPath());
+                        apimlLog.log("apiml.discovery.staticDefinitions.directoryNotValid", directory.getPath());
                     }
                 });
         } else {
@@ -80,13 +85,13 @@ public class ServiceDefinitionProcessor {
     }
 
     private List<InstanceInfo> findServicesInDirectory(File directory) {
-        log.info("Scanning directory with static services definition: " + directory);
+        log.debug("Scanning directory with static services definition: " + directory);
 
         File[] ymlFiles = directory.listFiles((dir, name) -> name.endsWith(".yml"));
         Map<String, String> ymlSources = new HashMap<>();
 
         if (ymlFiles == null) {
-            log.error("I/O problem occurred during reading directory: {}", directory.getAbsolutePath());
+            log.debug("I/O problem occurred during reading directory: {}", directory.getAbsolutePath());
             ymlFiles = new File[0];
         } else if (ymlFiles.length == 0) {
             log.info("No static service definition found in directory: {}", directory.getAbsolutePath());
@@ -97,13 +102,11 @@ public class ServiceDefinitionProcessor {
             try {
                 ymlSources.put(file.getAbsolutePath(), new String(Files.readAllBytes(Paths.get(file.getAbsolutePath()))));
             } catch (IOException e) {
-                log.error("Error loading file {}", file.getAbsolutePath(), e);
+                apimlLog.log("apiml.discovery.staticDefinitions.errorParsingStaticDefinitionFile", file.getAbsolutePath());
             }
         }
         ProcessServicesDataResult result = processServicesData(ymlSources);
-        for (String error : result.getErrors()) {
-            log.warn(error);
-        }
+        apimlLog.log("apiml.discovery.staticDefinitions.errorParsingStaticDefinitionData", result.getErrors());
         return result.getInstances();
     }
 

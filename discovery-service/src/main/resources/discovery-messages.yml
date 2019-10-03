@@ -5,3 +5,18 @@ messages:
       number: ZWEAD100
       type: WARNING
       text: "Discovery service is configured to use insecure HTTP protocol"
+
+    - key: apiml.discovery.staticDefinitions.directoryNotValid
+      number: ZWEAD101
+      type: WARNING
+      text: "Static Api definition directory '%s' is not a directory or does not exist"
+
+    - key: apiml.discovery.staticDefinitions.errorParsingStaticDefinitionFile
+      number: ZWEAD102
+      type: ERROR
+      text: "Error loading static Api definition file '%s'"
+
+    - key: apiml.discovery.staticDefinitions.errorParsingStaticDefinitionData
+      number: ZWEAD103
+      type: WARNING
+      text: "Error processing static Api definition data: '%s'"
