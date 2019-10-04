@@ -45,7 +45,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
     @InjectApimlLogger
-    ApimlLogger log = ApimlLogger.empty();
+    private ApimlLogger log = ApimlLogger.empty();
 
     @Value("${apiml.discovery.userid:eureka}")
     private String eurekaUserid;
@@ -73,7 +73,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        log.log("apiml.discovery.http");
+        log.log("com.ca.mfaas.discovery.http");
         baseConfigure(http)
             .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
             .httpBasic().realmName(DISCOVERY_REALM)

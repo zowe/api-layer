@@ -1,22 +1,37 @@
 messages:
     # Security messages (100 - 199)
     # General messages (100 - 120)
-    - key: apiml.discovery.http
+    - key: com.ca.mfaas.discovery.http
       number: ZWEAD100
       type: WARNING
       text: "Discovery service is configured to use insecure HTTP protocol"
 
-    - key: apiml.discovery.staticDefinitions.directoryNotValid
+    - key: com.ca.mfaas.discovery.staticDefinitions.directoryNotValid
       number: ZWEAD101
       type: WARNING
       text: "Static Api definition directory '%s' is not a directory or does not exist"
 
-    - key: apiml.discovery.staticDefinitions.errorParsingStaticDefinitionFile
+    - key: com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionFile
       number: ZWEAD102
       type: ERROR
       text: "Error loading static Api definition file '%s'"
 
-    - key: apiml.discovery.staticDefinitions.errorParsingStaticDefinitionData
+    - key: com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionData
       number: ZWEAD103
       type: WARNING
       text: "Error processing static Api definition data: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.BuildInfoPropertiesNotFound
+      number: ZWEAD104
+      type: ERROR
+      text: "Could not read properties from: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.BuildInfoPropertiesIOError
+      number: ZWEAD105
+      type: ERROR
+      text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.HTTPSConfigError
+      number: ZWEAD106
+      type: ERROR
+      text: "Error in HTTPS configuration: '%s'"

@@ -14,9 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 
 @Slf4j
 public class BuildInfo {
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     public void logBuildInfo() {
         BuildInfoDetails buildInfo = getBuildInfoDetails();
@@ -37,13 +42,13 @@ public class BuildInfo {
         // Create the input streams
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(path)) {
             if (input == null) {
-                log.error("Could not read properties from: {}", path);
+                apimlLog.log("com.ca.mfaas.product.service.BuildInfoPropertiesNotFound", path);
                 return props;
             }
 
             props.load(input);
         } catch (IOException ioe) {
-            log.error("Error reading properties from: {} Details: {}", path, ioe.toString());
+            apimlLog.log("com.ca.mfaas.product.service.BuildInfoPropertiesIOError", path, ioe.toString());
         }
 
         return props;

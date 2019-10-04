@@ -41,7 +41,7 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 public class ServiceDefinitionProcessor {
 
     @InjectApimlLogger
-    ApimlLogger apimlLog = ApimlLogger.empty();
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     private static final String STATIC_INSTANCE_ID_PREFIX = "STATIC-";
 
@@ -74,7 +74,7 @@ public class ServiceDefinitionProcessor {
                         log.debug("Found directory {}", directory.getPath());
                         instances.addAll(findServicesInDirectory(directory));
                     } else {
-                        apimlLog.log("apiml.discovery.staticDefinitions.directoryNotValid", directory.getPath());
+                        apimlLog.log("com.ca.mfaas.discovery.staticDefinitions.directoryNotValid", directory.getPath());
                     }
                 });
         } else {
@@ -102,11 +102,11 @@ public class ServiceDefinitionProcessor {
             try {
                 ymlSources.put(file.getAbsolutePath(), new String(Files.readAllBytes(Paths.get(file.getAbsolutePath()))));
             } catch (IOException e) {
-                apimlLog.log("apiml.discovery.staticDefinitions.errorParsingStaticDefinitionFile", file.getAbsolutePath());
+                apimlLog.log("com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionFile", file.getAbsolutePath());
             }
         }
         ProcessServicesDataResult result = processServicesData(ymlSources);
-        apimlLog.log("apiml.discovery.staticDefinitions.errorParsingStaticDefinitionData", result.getErrors());
+        apimlLog.log("com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionData", result.getErrors());
         return result.getInstances();
     }
 

@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Value;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -74,6 +76,9 @@ public class HttpConfig {
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
 
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
+
     @PostConstruct
     public void init() {
         try {
@@ -93,7 +98,7 @@ public class HttpConfig {
             factory.setSystemSslProperties();
         }
         catch (Exception e) {
-            log.error("Error in HTTPS configuration: {}", e.getMessage(), e);
+            apimlLog.log("com.ca.mfaas.product.web.HTTPSConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
     }
