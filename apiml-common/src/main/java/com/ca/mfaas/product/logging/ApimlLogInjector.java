@@ -53,8 +53,9 @@ public class ApimlLogInjector implements BeanPostProcessor {
         Class clazz = bean.getClass();
 
         String fullName = clazz.getName();
-        if (fullName.contains("$")) {
-            String className = fullName.substring(0, fullName.indexOf("$"));
+        int index = fullName.indexOf('$');
+        if (index > -1) {
+            String className = fullName.substring(0, index);
             try {
                 clazz =  Class.forName(className);
             } catch (ClassNotFoundException e) {

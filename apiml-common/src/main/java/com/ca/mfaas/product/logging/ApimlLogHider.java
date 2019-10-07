@@ -20,11 +20,17 @@ import org.slf4j.Marker;
 public class ApimlLogHider extends TurboFilter {
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
-        if (format != null && format.contains("Tomcat initialized")) {
-            return FilterReply.DENY;
+        if (format != null) {
+            if (format.contains("Tomcat initialized")
+                || format.contains("lease doesn't exist")
+                || format.contains("Not Found (Renew)")) {
+                return FilterReply.DENY;
+            }
         }
+
+        //temp: should be investigated
         if (format != null && format.contains("route 53")) {
-            return FilterReply.DENY;
+          //  return FilterReply.DENY;
         }
 
 
