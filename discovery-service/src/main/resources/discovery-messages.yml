@@ -19,7 +19,7 @@ messages:
     - key: com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionData
       number: ZWEAD103
       type: WARNING
-      text: "Error processing static Api definition data: '%s'"
+      text: "Unable to process static Api definition data: '%s'"
 
     - key: com.ca.mfaas.discovery.common.BuildInfoPropertiesNotFound
       number: ZWEAD104

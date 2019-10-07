@@ -14,6 +14,8 @@ import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.core.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 /**
  * Class which allows to control log messages through {@link MessageService}.
@@ -26,6 +28,7 @@ public final class ApimlLogger {
 
     private final MessageService messageService;
     private final Logger logger;
+    private static Marker marker = MarkerFactory.getMarker("APIML-LOGGER");
 
     public ApimlLogger(Class<?> clazz, MessageService messageService) {
         this.messageService = messageService;
@@ -84,23 +87,23 @@ public final class ApimlLogger {
 
         switch (messageType) {
             case TRACE:
-                logger.trace(text, arguments);
+                logger.trace(marker, text, arguments);
                 break;
             case DEBUG:
-                logger.debug(text, arguments);
+                logger.debug(marker, text, arguments);
                 break;
             case INFO:
-                logger.info(text, arguments);
+                logger.info(marker, text, arguments);
                 break;
             case WARNING:
-                logger.warn(text, arguments);
+                logger.warn(marker, text, arguments);
                 break;
             case ERROR:
-                logger.error(text, arguments);
+                logger.error(marker, text, arguments);
                 break;
             default:
-                logger.warn("The following message contains invalid message type.");
-                logger.info(text, arguments);
+                logger.warn(marker, "The following message contains invalid message type.");
+                logger.info(marker, text, arguments);
                 break;
         }
     }

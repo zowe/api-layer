@@ -85,7 +85,7 @@ public class ServiceDefinitionProcessor {
     }
 
     private List<InstanceInfo> findServicesInDirectory(File directory) {
-        log.debug("Scanning directory with static services definition: " + directory);
+        log.info("Scanning directory with static services definition: " + directory);
 
         File[] ymlFiles = directory.listFiles((dir, name) -> name.endsWith(".yml"));
         Map<String, String> ymlSources = new HashMap<>();

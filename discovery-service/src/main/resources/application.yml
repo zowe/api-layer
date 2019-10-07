@@ -1,7 +1,7 @@
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: WARN
+        com.ca.mfaas: INFO
         org.springframework: WARN
         org.apache.catalina: WARN
         com.netflix: WARN
