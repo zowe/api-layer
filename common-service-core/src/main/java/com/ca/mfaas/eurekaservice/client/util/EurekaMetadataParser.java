@@ -13,6 +13,8 @@ import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.utils.UrlUtils;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -29,6 +31,10 @@ public class EurekaMetadataParser {
      * @param eurekaMetadata the eureka metadata
      * @return ApiInfo list
      */
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
+
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
         Map<String, ApiInfo> apiInfo = new HashMap<>();
 
@@ -57,7 +63,7 @@ public class EurekaMetadataParser {
                             api.setDocumentationUrl(metadata.getValue());
                             break;
                         default:
-                            log.warn("Invalid parameter in metadata: {}", metadata);
+                            apimlLog.log("com.ca.mfaas.discovery.common.ApiInfoParsingError", metadata);
                             break;
                     }
                 }

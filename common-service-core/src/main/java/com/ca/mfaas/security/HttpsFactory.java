@@ -11,6 +11,8 @@ package com.ca.mfaas.security;
 
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +50,9 @@ public class HttpsFactory {
     private HttpsConfig config;
     private SSLContext secureSslContext;
 
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
+
     public HttpsFactory(HttpsConfig httpsConfig) {
         this.config = httpsConfig;
         this.secureSslContext = null;
@@ -71,7 +76,7 @@ public class HttpsFactory {
         if (config.isVerifySslCertificatesOfServices()) {
             return createSecureSslSocketFactory();
         } else {
-            log.warn("The service is not verifying the TLS/SSL certificates of the services");
+            apimlLog.log("com.ca.mfaas.discovery.common.security.IgnoringSsl");
             return createIgnoringSslSocketFactory();
         }
     }
@@ -176,7 +181,7 @@ public class HttpsFactory {
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                     | UnrecoverableKeyException | KeyManagementException e) {
-                log.error("Error initializing HTTP client: {}", e.getMessage(), e);
+                apimlLog.log("com.ca.mfaas.discovery.common.security.HttpClientInitiallizationError", e.getMessage());
                 throw new HttpsConfigError("Error initializing HTTP client: " + e.getMessage(), e,
                         ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -240,7 +245,7 @@ public class HttpsFactory {
         builder.withMaxConnectionsPerHost(10);
 
         if (eurekaServerUrl.startsWith("http://")) {
-            log.warn("Unsecure HTTP is used to connect to Discovery Service");
+            apimlLog.log("com.ca.mfaas.discovery.common.security.UnsecureHttpWarning");
         } else {
             // Setup HTTPS for Eureka replication client:
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");

@@ -10,6 +10,7 @@
 package com.ca.mfaas.product.web;
 
 import com.ca.mfaas.security.HttpsConfig;
+import com.ca.mfaas.security.HttpsConfigError;
 import com.ca.mfaas.security.HttpsFactory;
 import com.ca.mfaas.security.SecurityUtils;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
@@ -97,8 +98,11 @@ public class HttpConfig {
 
             factory.setSystemSslProperties();
         }
+        catch (HttpsConfigError e) {
+            System.exit(1); // NOSONAR
+        }
         catch (Exception e) {
-            apimlLog.log("com.ca.mfaas.product.web.HTTPSConfigError", e.getMessage());
+            apimlLog.log("com.ca.mfaas.product.web.UknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
     }

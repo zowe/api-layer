@@ -31,7 +31,47 @@ messages:
       type: ERROR
       text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
 
-    - key: com.ca.mfaas.discovery.common.HTTPSConfigError
+    - key: com.ca.mfaas.discovery.common.UknownHttpsConfigError
       number: ZWEAD106
       type: ERROR
-      text: "Error in HTTPS configuration: '%s'"
+      text: "Uknown error in HTTPS configuration: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.ApiInfoParsingError
+      number: ZWEAD107
+      type: WARNING
+      text: "Invalid parameter in metadata: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.security.IgnoringSsl
+      number: ZWEAD108
+      type: WARNING
+      text: "The service is not verifying the TLS/SSL certificates of the services"
+
+    - key: com.ca.mfaas.discovery.common.security.HttpClientInitiallizationError
+      number: ZWEAD109
+      type: ERROR
+      text: "Error initializing HTTP client: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.security.UnsecureHttpWarning
+      number: ZWEAD110
+      type: WARNING
+      text: "Unsecure HTTP is used to connect to Discovery Service"
+
+    - key: com.ca.mfaas.discovery.common.security.ErrorReadingSecretKey
+      number: ZWEAD111
+      type: ERROR
+      text: "Error reading secret key: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.security.ErrorLoadingSecretKey
+      number: ZWEAD112
+      type: ERROR
+      text: "Error loading secret key: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.security.ErrorLoadingPublicKey
+      number: ZWEAD113
+      type: ERROR
+      text: "Error loading public key: '%s'"
+
+    - key: com.ca.mfaas.discovery.common.ZosmfNotFound
+      number: ZWEAD114
+      type: ERROR
+      text: "z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name."
