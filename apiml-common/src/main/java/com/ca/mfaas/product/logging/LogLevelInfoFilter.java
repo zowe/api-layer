@@ -18,8 +18,6 @@ import org.slf4j.Marker;
 
 import java.util.Optional;
 
-//TODO unit tests
-
 /**
  * This filter's purpose is to hide or show the info level messages
  * There are info level messages that are meant for debug mode only (originally @Slf4j)
@@ -49,7 +47,7 @@ public class LogLevelInfoFilter extends TurboFilter {
 
         if(isFilterActive && isLevelOfOrLower(level, Level.INFO) && isInternalLogger(logger)) {
             if (marker != null && marker.getName().equals(APIML_MARKER)) {
-                return FilterReply.ACCEPT;
+                return FilterReply.NEUTRAL;
             } else {
                 return FilterReply.DENY;
             }
@@ -62,6 +60,7 @@ public class LogLevelInfoFilter extends TurboFilter {
     }
 
     private boolean isInternalLogger(Logger logger) {
-        return logger.getName().startsWith("com.ca.mfaas");
+        String loggerName = logger.getName();
+        return (loggerName.startsWith("com.ca.mfaas") || loggerName.startsWith("com.ca.apiml"));
     }
 }
