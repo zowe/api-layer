@@ -42,13 +42,13 @@ public class BuildInfo {
         // Create the input streams
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(path)) {
             if (input == null) {
-                apimlLog.log("com.ca.mfaas.product.service.BuildInfoPropertiesNotFound", path);
+                apimlLog.log("com.ca.mfaas.product.common.BuildInfoPropertiesNotFound", path);
                 return props;
             }
 
             props.load(input);
         } catch (IOException ioe) {
-            apimlLog.log("com.ca.mfaas.product.service.BuildInfoPropertiesIOError", path, ioe.toString());
+            apimlLog.log("com.ca.mfaas.product.common.BuildInfoPropertiesIOError", path, ioe.toString());
         }
 
         return props;

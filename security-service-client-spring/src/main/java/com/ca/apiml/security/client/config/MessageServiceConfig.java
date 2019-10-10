@@ -11,6 +11,7 @@ package com.ca.apiml.security.client.config;
 
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.yaml.YamlMessageService;
+import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,7 +20,9 @@ public class MessageServiceConfig {
 
     @Bean
     public MessageService messageService() {
-        return new YamlMessageService("/security-service-messages.yml");
+        YamlMessageService messageService = YamlMessageServiceInstance.getInstance();
+        messageService.loadMessages("/security-service-messages.yml");
+        return messageService;
     }
 
 }

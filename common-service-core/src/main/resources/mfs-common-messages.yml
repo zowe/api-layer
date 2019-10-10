@@ -44,3 +44,38 @@ messages:
       number: AML0106
       type: ERROR
       text: "The request to the URI '%s' has failed: %s caused by: %s"
+
+    - key: com.ca.mfaas.core.common.ApiInfoParsingError
+      number: ZWEAD107
+      type: WARNING
+      text: "Invalid parameter in metadata: '%s'"
+
+    - key: com.ca.mfaas.core.common.security.IgnoringSsl
+      number: ZWEAD108
+      type: WARNING
+      text: "The service is not verifying the TLS/SSL certificates of the services"
+
+    - key: com.ca.mfaas.core.common.security.HttpClientInitiallizationError
+      number: ZWEAD109
+      type: ERROR
+      text: "Error initializing HTTP client: '%s'"
+
+    - key: com.ca.mfaas.core.common.security.UnsecureHttpWarning
+      number: ZWEAD110
+      type: WARNING
+      text: "Unsecure HTTP is used to connect to Discovery Service"
+
+    - key: com.ca.mfaas.core.common.security.ErrorReadingSecretKey
+      number: ZWEAD111
+      type: ERROR
+      text: "Error reading secret key: '%s'"
+
+    - key: com.ca.mfaas.core.common.security.ErrorLoadingSecretKey
+      number: ZWEAD112
+      type: ERROR
+      text: "Error loading secret key: '%s'"
+
+    - key: com.ca.mfaas.core.common.security.ErrorLoadingPublicKey
+      number: ZWEAD113
+      type: ERROR
+      text: "Error loading public key: '%s'"

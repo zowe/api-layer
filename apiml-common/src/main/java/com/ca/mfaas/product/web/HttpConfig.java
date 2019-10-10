@@ -102,7 +102,7 @@ public class HttpConfig {
             System.exit(1); // NOSONAR
         }
         catch (Exception e) {
-            apimlLog.log("com.ca.mfaas.product.web.UknownHttpsConfigError", e.getMessage());
+            apimlLog.log("com.ca.mfaas.product.common.UknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
     }
