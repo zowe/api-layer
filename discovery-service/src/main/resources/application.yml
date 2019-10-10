@@ -55,6 +55,8 @@ server:
         enabled: false
 
 eureka:
+    server:
+        peer-node-read-timeout-ms: 1000
     instance:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
