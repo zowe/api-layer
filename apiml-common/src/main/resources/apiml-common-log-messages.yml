@@ -14,3 +14,7 @@ messages:
       type: ERROR
       text: "Uknown error in HTTPS configuration: '%s'"
 
+    - key: apiml.product.serviceStarted
+      number: ZWEAM001
+      type: INFO
+      text: "%s has been started in %s seconds"
