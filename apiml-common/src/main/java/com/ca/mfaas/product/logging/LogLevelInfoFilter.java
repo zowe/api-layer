@@ -24,7 +24,7 @@ import java.util.Optional;
  * There are info level messages that are meant to be displayed (like service startup messages)
  *
  * Because ApimlLogger is using Slg4j in the background, there is conflict of interest.
- * Solution is that ApimlLogger is enhancing it's logs with Marker instances and this filter is providing
+ * Solution is that ApimlLogger is enhancing its logs with Marker instances and this filter is providing
  * adequate filtering.
  *
  * The filter is normally enabled (filtering), or disabled when the service is started with debug profile included
@@ -45,12 +45,12 @@ public class LogLevelInfoFilter extends TurboFilter {
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
 
-        if (isFilterActive && isLevelOfOrLower(level, Level.INFO) && isInternalLogger(logger)) {
-            if (marker != null && marker.getName().equals(APIML_MARKER)) {
-                return FilterReply.NEUTRAL;
-            } else {
-                return FilterReply.DENY;
-            }
+        if (isFilterActive
+            && isLevelOfOrLower(level, Level.INFO)
+            && isInternalLogger(logger)
+            && ( marker == null || !marker.getName().equals(APIML_MARKER))
+        ) {
+            return FilterReply.DENY;
         }
         return FilterReply.NEUTRAL;
     }

@@ -3,7 +3,7 @@ messages:
     - key: apiml.discovery.http
       number: ZWEAD100
       type: WARNING
-      text: "Discovery service is configured to use insecure HTTP protocol"
+      text: "Discovery service is configured to use insecure an HTTP protocol"
 
     - key: apiml.discovery.staticDefinitionsDirectoryNotValid
       number: ZWEAD101
@@ -13,7 +13,7 @@ messages:
     - key: apiml.discovery.errorParsingStaticDefinitionFile
       number: ZWEAD102
       type: ERROR
-      text: "Error loading static Api definition file '%s'"
+      text: "Error loading the static Api definition file '%s'"
 
     - key: apiml.discovery.errorParsingStaticDefinitionData
       number: ZWEAD103
