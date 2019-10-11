@@ -55,8 +55,8 @@ public final class Message {
         requireNotNull(messageTemplate, "messageTemplate can't be null");
         requireNotNull(messageParameters, "messageParameters can't be null");
 
-        validateMessageTextFormat(messageTemplate.getText(), messageParameters);
         messageParameters = validateParameters(messageTemplate.getKey(), requestedKey, messageParameters);
+        validateMessageTextFormat(messageTemplate.getText(), messageParameters);
 
         return new Message(requestedKey, messageTemplate, messageParameters);
     }

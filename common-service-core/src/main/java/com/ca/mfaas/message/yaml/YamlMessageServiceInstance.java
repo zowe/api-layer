@@ -18,7 +18,7 @@ public class YamlMessageServiceInstance {
 
     public static YamlMessageService getInstance() {
         if (yamlMessageService == null) {
-            yamlMessageService =  new YamlMessageService();
+            yamlMessageService = new YamlMessageService();
         }
 
         return yamlMessageService;

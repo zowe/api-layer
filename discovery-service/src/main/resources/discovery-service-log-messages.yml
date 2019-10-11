@@ -21,3 +21,25 @@ messages:
       type: WARNING
       text: "Unable to process static Api definition data: '%s'"
 
+    # APIML_COMMON MESSAGES
+    - key: com.ca.mfaas.product.common.BuildInfoPropertiesNotFound
+      number: ZWEAD104
+      type: ERROR
+      text: "Could not read properties from: '%s'"
+
+    - key: com.ca.mfaas.product.common.BuildInfoPropertiesIOError
+      number: ZWEAD105
+      type: ERROR
+      text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
+
+    - key: com.ca.mfaas.product.common.UknownHttpsConfigError
+      number: ZWEAD106
+      type: ERROR
+      text: "Uknown error in HTTPS configuration: '%s'"
+
+    # SECURITY_COMMON MESSAGES
+    - key: com.ca.mfaas.security.common.ZosmfNotFound
+      number: ZWEAD114
+      type: ERROR
+      text: "z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name."
+
