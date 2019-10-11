@@ -89,6 +89,7 @@ pipeline {
 
     parameters {
         string(name: 'CHANGE_CLASS', defaultValue: '', description: 'Override change class - for testing (empty, doc, full, api-catalog)', )
+        booleanParam(name: 'PUBLISH_PR_ARTIFACTS', defaultValue: 'false', description: 'If true it will publish the pull requests artifacts', )
     }
 
     stages {
@@ -250,7 +251,7 @@ pipeline {
                 stage('Publish snapshot version to Artifactory for PullRequest') {
                     when {
                         expression {
-                            return BRANCH_NAME.contains("PR-");
+                            return BRANCH_NAME.contains("PR-") && PUBLISH_PR_ARTIFACTS;
                         }
                     }
                     steps {
