@@ -37,7 +37,8 @@ public class LogLevelInfoFilterTest {
 
     @Test
     public void createActiveFilterInNormalMode() {
-        FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null, null);
+        FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null,
+                null);
         assertEquals("Filter does not filter INFO level messages", FilterReply.DENY, reply);
     }
 
@@ -59,10 +60,10 @@ public class LogLevelInfoFilterTest {
         filteringMap.put(Level.WARN, false);
         filteringMap.put(Level.ERROR, false);
 
-        filteringMap.forEach( (level, shouldFilter) -> {
+        filteringMap.forEach((level, shouldFilter) -> {
             FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) log, level, "", null, null);
-            assertEquals("Logging level "+level.toString()+" not filtered correctly",
-                shouldFilter?FilterReply.DENY:FilterReply.NEUTRAL, reply);
+            assertEquals("Logging level " + level.toString() + " not filtered correctly",
+                    shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply);
         });
     }
 
@@ -76,10 +77,11 @@ public class LogLevelInfoFilterTest {
         filteringMap.put(Level.WARN, false);
         filteringMap.put(Level.ERROR, false);
 
-        filteringMap.forEach( (level, shouldFilter) -> {
-            FilterReply reply = filterInstance.decide(marker, (ch.qos.logback.classic.Logger) log, level, "", null, null);
-            assertEquals("Logging level with apiml marker "+level.toString()+" not filtered correctly",
-                shouldFilter?FilterReply.DENY:FilterReply.NEUTRAL, reply);
+        filteringMap.forEach((level, shouldFilter) -> {
+            FilterReply reply = filterInstance.decide(marker, (ch.qos.logback.classic.Logger) log, level, "", null,
+                    null);
+            assertEquals("Logging level with apiml marker " + level.toString() + " not filtered correctly",
+                    shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply);
         });
     }
 
@@ -92,11 +94,12 @@ public class LogLevelInfoFilterTest {
         loggerMap.put("bucharest.com.ca.mfaas", false);
         loggerMap.put("COM.CA.MFAAS.CRAZYPEOPLE", false);
 
-        loggerMap.forEach( (loggerName, shouldFilter) -> {
+        loggerMap.forEach((loggerName, shouldFilter) -> {
             org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(loggerName);
-            FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) logger, Level.DEBUG, "", null, null);
-            assertEquals("Logger of name "+logger.getName()+" is not filtered correctly",
-                shouldFilter?FilterReply.DENY:FilterReply.NEUTRAL, reply);
+            FilterReply reply = filterInstance.decide(null, (ch.qos.logback.classic.Logger) logger, Level.DEBUG, "",
+                    null, null);
+            assertEquals("Logger of name " + logger.getName() + " is not filtered correctly",
+                    shouldFilter ? FilterReply.DENY : FilterReply.NEUTRAL, reply);
         });
 
     }

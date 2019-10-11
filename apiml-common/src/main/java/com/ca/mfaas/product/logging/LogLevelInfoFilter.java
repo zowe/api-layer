@@ -37,7 +37,7 @@ public class LogLevelInfoFilter extends TurboFilter {
 
     public LogLevelInfoFilter() {
         Optional<String> profiles = Optional.ofNullable(System.getProperties().getProperty("spring.profiles.include"));
-        if(profiles.isPresent() && profiles.get().toLowerCase().contains("debug")) {
+        if (profiles.isPresent() && profiles.get().toLowerCase().contains("debug")) {
             isFilterActive = false;
         }
     }
@@ -45,7 +45,7 @@ public class LogLevelInfoFilter extends TurboFilter {
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
 
-        if(isFilterActive && isLevelOfOrLower(level, Level.INFO) && isInternalLogger(logger)) {
+        if (isFilterActive && isLevelOfOrLower(level, Level.INFO) && isInternalLogger(logger)) {
             if (marker != null && marker.getName().equals(APIML_MARKER)) {
                 return FilterReply.NEUTRAL;
             } else {
