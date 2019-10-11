@@ -9,12 +9,12 @@
  */
 package com.ca.apiml.security.common.config;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 
 
 /**
@@ -75,7 +75,7 @@ public class AuthConfigurationProperties {
      */
     public String validatedZosmfServiceId() {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-            apimlLog.log("com.ca.mfaas.security.common.ZosmfNotFound");
+            apimlLog.log("apiml.security.ZosmfNotFound");
             throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
         }
 

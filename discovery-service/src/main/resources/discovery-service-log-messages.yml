@@ -1,45 +1,22 @@
 messages:
-    # Security messages (100 - 199)
-    # General messages (100 - 120)
-    - key: com.ca.mfaas.discovery.http
+
+    - key: apiml.discovery.http
       number: ZWEAD100
       type: WARNING
       text: "Discovery service is configured to use insecure HTTP protocol"
 
-    - key: com.ca.mfaas.discovery.staticDefinitions.directoryNotValid
+    - key: apiml.discovery.staticDefinitionsDirectoryNotValid
       number: ZWEAD101
       type: WARNING
       text: "Static Api definition directory '%s' is not a directory or does not exist"
 
-    - key: com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionFile
+    - key: apiml.discovery.errorParsingStaticDefinitionFile
       number: ZWEAD102
       type: ERROR
       text: "Error loading static Api definition file '%s'"
 
-    - key: com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionData
+    - key: apiml.discovery.errorParsingStaticDefinitionData
       number: ZWEAD103
       type: WARNING
       text: "Unable to process static Api definition data: '%s'"
-
-    # APIML_COMMON MESSAGES
-    - key: com.ca.mfaas.product.common.BuildInfoPropertiesNotFound
-      number: ZWEAD104
-      type: ERROR
-      text: "Could not read properties from: '%s'"
-
-    - key: com.ca.mfaas.product.common.BuildInfoPropertiesIOError
-      number: ZWEAD105
-      type: ERROR
-      text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
-
-    - key: com.ca.mfaas.product.common.UknownHttpsConfigError
-      number: ZWEAD106
-      type: ERROR
-      text: "Uknown error in HTTPS configuration: '%s'"
-
-    # SECURITY_COMMON MESSAGES
-    - key: com.ca.mfaas.security.common.ZosmfNotFound
-      number: ZWEAD114
-      type: ERROR
-      text: "z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name."
 

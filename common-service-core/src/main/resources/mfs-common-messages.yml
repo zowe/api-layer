@@ -45,37 +45,37 @@ messages:
       type: ERROR
       text: "The request to the URI '%s' has failed: %s caused by: %s"
 
-    - key: com.ca.mfaas.core.common.ApiInfoParsingError
-      number: ZWEAD107
+    - key: apiml.core.ApiInfoParsingError
+      number: ZWEAM107
       type: WARNING
       text: "Invalid parameter in metadata: '%s'"
 
-    - key: com.ca.mfaas.core.common.security.IgnoringSsl
-      number: ZWEAD108
+    - key: apiml.core.IgnoringSsl
+      number: ZWEAM108
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
 
-    - key: com.ca.mfaas.core.common.security.HttpClientInitiallizationError
-      number: ZWEAD109
+    - key: apiml.core.HttpClientInitiallizationError
+      number: ZWEAM109
       type: ERROR
       text: "Error initializing HTTP client: '%s'"
 
-    - key: com.ca.mfaas.core.common.security.UnsecureHttpWarning
-      number: ZWEAD110
+    - key: apiml.core.UnsecureHttpWarning
+      number: ZWEAM110
       type: WARNING
       text: "Unsecure HTTP is used to connect to Discovery Service"
 
-    - key: com.ca.mfaas.core.common.security.ErrorReadingSecretKey
-      number: ZWEAD111
+    - key: apiml.core.ErrorReadingSecretKey
+      number: ZWEAM111
       type: ERROR
       text: "Error reading secret key: '%s'"
 
-    - key: com.ca.mfaas.core.common.security.ErrorLoadingSecretKey
-      number: ZWEAD112
+    - key: apiml.core.ErrorLoadingSecretKey
+      number: ZWEAM112
       type: ERROR
       text: "Error loading secret key: '%s'"
 
-    - key: com.ca.mfaas.core.common.security.ErrorLoadingPublicKey
-      number: ZWEAD113
+    - key: apiml.core.ErrorLoadingPublicKey
+      number: ZWEAM113
       type: ERROR
       text: "Error loading public key: '%s'"

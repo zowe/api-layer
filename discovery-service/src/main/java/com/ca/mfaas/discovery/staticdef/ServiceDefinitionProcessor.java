@@ -74,7 +74,7 @@ public class ServiceDefinitionProcessor {
                         log.debug("Found directory {}", directory.getPath());
                         instances.addAll(findServicesInDirectory(directory));
                     } else {
-                        apimlLog.log("com.ca.mfaas.discovery.staticDefinitions.directoryNotValid", directory.getPath());
+                        apimlLog.log("apiml.discovery.staticDefinitionsDirectoryNotValid", directory.getPath());
                     }
                 });
         } else {
@@ -102,11 +102,11 @@ public class ServiceDefinitionProcessor {
             try {
                 ymlSources.put(file.getAbsolutePath(), new String(Files.readAllBytes(Paths.get(file.getAbsolutePath()))));
             } catch (IOException e) {
-                apimlLog.log("com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionFile", file.getAbsolutePath());
+                apimlLog.log("apiml.discovery.errorParsingStaticDefinitionFile", file.getAbsolutePath());
             }
         }
         ProcessServicesDataResult result = processServicesData(ymlSources);
-        apimlLog.log("com.ca.mfaas.discovery.staticDefinitions.errorParsingStaticDefinitionData", result.getErrors());
+        apimlLog.log("apiml.discovery.errorParsingStaticDefinitionData", result.getErrors());
         return result.getInstances();
     }
 

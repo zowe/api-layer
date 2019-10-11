@@ -73,7 +73,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        apimlLog.log("com.ca.mfaas.discovery.http");
+        apimlLog.log("apiml.discovery.http");
         baseConfigure(http)
             .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
             .httpBasic().realmName(DISCOVERY_REALM)

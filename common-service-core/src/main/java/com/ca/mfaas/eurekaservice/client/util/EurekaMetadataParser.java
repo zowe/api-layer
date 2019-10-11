@@ -10,10 +10,10 @@
 package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.utils.UrlUtils;
-import com.ca.mfaas.message.log.ApimlLogger;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,7 +59,7 @@ public class EurekaMetadataParser {
                             api.setDocumentationUrl(metadata.getValue());
                             break;
                         default:
-                            apimlLog.log("com.ca.mfaas.core.common.ApiInfoParsingError", metadata);
+                            apimlLog.log("apiml.core.ApiInfoParsingError", metadata);
                             break;
                     }
                 }

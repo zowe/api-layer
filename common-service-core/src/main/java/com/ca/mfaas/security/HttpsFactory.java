@@ -8,10 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 package com.ca.mfaas.security;
+
+import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-import com.ca.mfaas.message.log.ApimlLogger;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Objects;
 
@@ -74,7 +71,7 @@ public class HttpsFactory {
         if (config.isVerifySslCertificatesOfServices()) {
             return createSecureSslSocketFactory();
         } else {
-            apimlLog.log("com.ca.mfaas.core.common.security.IgnoringSsl");
+            apimlLog.log("apiml.core.IgnoringSsl");
             return createIgnoringSslSocketFactory();
         }
     }
@@ -179,7 +176,7 @@ public class HttpsFactory {
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                     | UnrecoverableKeyException | KeyManagementException e) {
-                apimlLog.log("com.ca.mfaas.core.common.security.HttpClientInitiallizationError", e.getMessage());
+                apimlLog.log("apiml.core.HttpClientInitiallizationError", e.getMessage());
                 throw new HttpsConfigError("Error initializing HTTP client: " + e.getMessage(), e,
                         ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -243,7 +240,7 @@ public class HttpsFactory {
         builder.withMaxConnectionsPerHost(10);
 
         if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("com.ca.mfaas.core.common.security.UnsecureHttpWarning");
+            apimlLog.log("apiml.core.UnsecureHttpWarning");
         } else {
             // Setup HTTPS for Eureka replication client:
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");

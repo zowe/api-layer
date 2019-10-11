@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.security;
 
+import com.ca.mfaas.message.log.ApimlLogger;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import com.ca.mfaas.message.log.ApimlLogger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,7 +51,7 @@ public class SecurityUtils {
                 }
                 return Base64.getEncoder().encodeToString(key.getEncoded());
             } catch (UnrecoverableKeyException e) {
-                apimlLog.log("com.ca.mfaas.core.common.security.ErrorReadingSecretKey", e.getMessage());
+                apimlLog.log("apiml.core.ErrorReadingSecretKey", e.getMessage());
                 throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -79,7 +79,7 @@ public class SecurityUtils {
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                 | UnrecoverableKeyException e) {
-                apimlLog.log("com.ca.mfaas.core.common.security.ErrorLoadingSecretKey", e.getMessage());
+                apimlLog.log("apiml.core.ErrorLoadingSecretKey", e.getMessage());
                 throw new HttpsConfigError(e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -129,7 +129,7 @@ public class SecurityUtils {
                     return cert.getPublicKey();
                 }
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
-                apimlLog.log("com.ca.mfaas.core.common.security.ErrorLoadingPublicKey", e.getMessage());
+                apimlLog.log("apiml.core.ErrorLoadingPublicKey", e.getMessage());
                 throw new HttpsConfigError(e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -162,7 +162,7 @@ public class SecurityUtils {
                 }
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException | UnrecoverableKeyException e) {
-                apimlLog.log("com.ca.mfaas.core.common.security.ErrorLoadingSecretKey", e.getMessage());
+                apimlLog.log("apiml.core.ErrorLoadingSecretKey", e.getMessage());
                 throw new HttpsConfigError("Error loading secret key: " + e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }

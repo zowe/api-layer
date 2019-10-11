@@ -9,13 +9,13 @@
  */
 package com.ca.mfaas.product.service;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 
 @Slf4j
 public class BuildInfo {
@@ -42,13 +42,13 @@ public class BuildInfo {
         // Create the input streams
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(path)) {
             if (input == null) {
-                apimlLog.log("com.ca.mfaas.product.common.BuildInfoPropertiesNotFound", path);
+                apimlLog.log("apiml.product.BuildInfoPropertiesNotFound", path);
                 return props;
             }
 
             props.load(input);
         } catch (IOException ioe) {
-            apimlLog.log("com.ca.mfaas.product.common.BuildInfoPropertiesIOError", path, ioe.toString());
+            apimlLog.log("apiml.product.BuildInfoPropertiesIOError", path, ioe.toString());
         }
 
         return props;

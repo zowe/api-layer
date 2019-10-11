@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.product.web;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsConfigError;
 import com.ca.mfaas.security.HttpsFactory;
@@ -19,8 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Value;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -102,7 +102,7 @@ public class HttpConfig {
             System.exit(1); // NOSONAR
         }
         catch (Exception e) {
-            apimlLog.log("com.ca.mfaas.product.common.UknownHttpsConfigError", e.getMessage());
+            apimlLog.log("apiml.product.UknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
     }
