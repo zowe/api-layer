@@ -1,16 +1,16 @@
 messages:
     - key: com.ca.mfaas.product.common.BuildInfoPropertiesNotFound
-      number: ZWEAC104
+      number: ZWEAM104
       type: ERROR
       text: "Could not read properties from: '%s'"
 
     - key: com.ca.mfaas.product.common.BuildInfoPropertiesIOError
-      number: ZWEAC105
+      number: ZWEAM105
       type: ERROR
       text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
 
     - key: com.ca.mfaas.product.common.UknownHttpsConfigError
-      number: ZWEAC106
+      number: ZWEAM106
       type: ERROR
       text: "Uknown error in HTTPS configuration: '%s'"
 

@@ -1,5 +1,5 @@
 messages:
     - key: com.ca.mfaas.security.common.ZosmfNotFound
-      number: ZWEAZ114
+      number: ZWEAM114
       type: ERROR
       text: "z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name."
