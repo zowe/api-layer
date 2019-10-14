@@ -27,7 +27,7 @@ public class ServiceStartupEventHandler {
     @SuppressWarnings("squid:S1172")
     public void onServiceStartup(String serviceName, int delayFactor) {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        apimlLog.log("apiml.product.serviceStarted",serviceName, uptime / 1000.0);
+        apimlLog.log("apiml.common.serviceStarted",serviceName, uptime / 1000.0);
 
         new java.util.Timer().schedule(new java.util.TimerTask() {
             @Override

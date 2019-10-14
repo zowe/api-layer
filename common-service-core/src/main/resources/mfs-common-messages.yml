@@ -1,31 +1,16 @@
 messages:
 # General messages
-    - key: com.ca.mfaas.common.invalidMessageKey
+    - key: apiml.common.invalidMessageKey
       number: MFS0001
       type: ERROR
       text: "Internal error: Invalid message key '%s' is provided. Please contact support for further assistance."
 
-    - key: com.ca.mfaas.common.invalidMessageTextFormat
+    - key: apiml.common.invalidMessageTextFormat
       number: MFS0002
       type: ERROR
       text: "Internal error: Invalid message text format. Please contact support for further assistance."
 
-    - key: com.ca.mfaas.common.httpMethodIsNotSupported
-      number: MFS0100
-      type: ERROR
-      text: "This HTTP method is not supported."
-
-    - key: com.ca.mfaas.common.invalidEndpointName
-      number: MFS0101
-      type: ERROR
-      text: "Invalid endpoint"
-
-    - key: com.ca.mfaas.common.mediaTypeNotSupported
-      number: MFS0102
-      type: ERROR
-      text: "Unsupported Media Type"
-
-    - key: com.ca.mfaas.common.endPointNotFound
+    - key: apiml.common.endPointNotFound
       number: MFS0103
       type: ERROR
       text: "The endpoint you were looking for '%s' could not be located"
@@ -45,67 +30,67 @@ messages:
       type: ERROR
       text: "The request to the URI '%s' has failed: %s caused by: %s"
 
-    - key: apiml.core.apiInfoParsingError
+    - key: apiml.common.apiInfoParsingError
       number: ZWEAM107
       type: WARNING
       text: "Invalid parameter in metadata: '%s'"
 
-    - key: apiml.core.ignoringSsl
+    - key: apiml.common.ignoringSsl
       number: ZWEAM108
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
 
-    - key: apiml.core.httpClientInitializationError
+    - key: apiml.common.httpClientInitializationError
       number: ZWEAM109
       type: ERROR
       text: "Error initializing HTTP client: '%s'"
 
-    - key: apiml.core.unsecureHttpWarning
+    - key: apiml.common.unsecureHttpWarning
       number: ZWEAM110
       type: WARNING
       text: "Unsecure HTTP is used to connect to Discovery Service"
 
-    - key: apiml.core.errorReadingSecretKey
+    - key: apiml.common.errorReadingSecretKey
       number: ZWEAM111
       type: ERROR
       text: "Error reading secret key: '%s'"
 
-    - key: apiml.core.errorLoadingSecretKey
+    - key: apiml.common.errorLoadingSecretKey
       number: ZWEAM112
       type: ERROR
       text: "Error loading secret key: '%s'"
 
-    - key: apiml.core.errorLoadingPublicKey
+    - key: apiml.common.errorLoadingPublicKey
       number: ZWEAM113
       type: ERROR
       text: "Error loading public key: '%s'"
 
-    - key: apiml.core.errorInitSsl
+    - key: apiml.common.errorInitSsl
       number: ZWEAM114
       type: ERROR
       text: "Error initializing SSL/TLS context: '%s'"
 
-    - key: apiml.core.truststorePasswordNotDefined
+    - key: apiml.common.truststorePasswordNotDefined
       number: ZWEAM115
       type: ERROR
       text: "Truststore Password configuration parameter is not defined"
 
-    - key: apiml.core.truststoreNotDefined
+    - key: apiml.common.truststoreNotDefined
       number: ZWEAM116
       type: ERROR
       text: "Truststore configuration parameter is not defined but it is required"
 
-    - key: apiml.core.keystoreNotDefined
+    - key: apiml.common.keystoreNotDefined
       number: ZWEAM117
       type: ERROR
       text: "Keystore not found, server.ssl.keyStore configuration parameter is not defined"
 
-    - key: apiml.core.keystorePasswordNotDefined
+    - key: apiml.common.keystorePasswordNotDefined
       number: ZWEAM118
       type: ERROR
       text: "Keystore password not found, server.ssl.keyStorePassword configuration parameter is not defined"
 
-    - key: apiml.core.invalidKeyAlias
+    - key: apiml.common.invalidKeyAlias
       number: ZWEAM119
       type: ERROR
       text: "Invalid key alias '%s'"
