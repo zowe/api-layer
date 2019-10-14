@@ -15,6 +15,7 @@ import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
 import com.ca.mfaas.utils.http.HttpClientUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.web.socket.CloseStatus;
@@ -108,6 +109,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
+    @Ignore
     @Category(WebsocketTest.class)
     public void shouldRouteHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();

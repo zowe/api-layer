@@ -1,6 +1,6 @@
 ext {
-    springBootVersion = '2.1.0.RELEASE'
-    springCloudVersion = '2.1.3.RELEASE'
+    springBootVersion = '2.0.4.RELEASE'
+    springCloudVersion = '2.0.1.RELEASE'
     springSecurityVersion = '5.1.0.RELEASE'
 
     lombokVersion = '1.16.20'
