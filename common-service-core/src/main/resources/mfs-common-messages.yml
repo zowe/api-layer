@@ -95,3 +95,7 @@ messages:
       type: ERROR
       text: "Invalid key alias '%s'"
 
+    - key: apiml.common.serviceStarted
+      number: ZWEAM001
+      type: INFO
+      text: "%s has been started in %s seconds"
