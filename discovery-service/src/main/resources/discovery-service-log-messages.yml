@@ -1,9 +1,5 @@
 messages:
 
-    - key: apiml.discovery.http
-      number: ZWEAD100
-      type: WARNING
-      text: "Discovery service is configured to use insecure an HTTP protocol"
 
     - key: apiml.discovery.staticDefinitionsDirectoryNotValid
       number: ZWEAD101

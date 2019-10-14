@@ -12,8 +12,6 @@ package com.ca.mfaas.discovery.config;
 import com.ca.apiml.security.client.config.MessageServiceConfig;
 import com.ca.apiml.security.common.config.HandlerInitializer;
 import com.ca.apiml.security.common.content.BasicContentFilter;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,9 +42,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
-
     @Value("${apiml.discovery.userid:eureka}")
     private String eurekaUserid;
 
@@ -73,7 +68,6 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        apimlLog.log("apiml.discovery.http");
         baseConfigure(http)
             .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
             .httpBasic().realmName(DISCOVERY_REALM)

@@ -48,7 +48,7 @@ messages:
     - key: apiml.common.unsecureHttpWarning
       number: ZWEAM110
       type: WARNING
-      text: "Unsecure HTTP is used to connect to Discovery Service"
+      text: "Service is configured to use insecure HTTP protocol. For production use, please switch to HTTPS instead."
 
     - key: apiml.common.errorReadingSecretKey
       number: ZWEAM111
