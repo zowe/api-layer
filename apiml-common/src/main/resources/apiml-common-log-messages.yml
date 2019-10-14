@@ -1,15 +1,15 @@
 messages:
-    - key: apiml.product.BuildInfoPropertiesNotFound
+    - key: apiml.product.buildInfoPropertiesNotFound
       number: ZWEAM104
       type: ERROR
       text: "Could not read properties from: '%s'"
 
-    - key: apiml.product.BuildInfoPropertiesIOError
+    - key: apiml.product.buildInfoPropertiesIOError
       number: ZWEAM105
       type: ERROR
       text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
 
-    - key: apiml.product.UnknownHttpsConfigError
+    - key: apiml.product.unknownHttpsConfigError
       number: ZWEAM106
       type: ERROR
       text: "Unknown error in HTTPS configuration: '%s'"

@@ -75,7 +75,7 @@ public class AuthConfigurationProperties {
      */
     public String validatedZosmfServiceId() {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-            apimlLog.log("apiml.security.ZosmfNotFound");
+            apimlLog.log("apiml.security.zosmfNotFound");
             throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
         }
 

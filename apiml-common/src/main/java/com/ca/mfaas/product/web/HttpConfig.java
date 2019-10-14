@@ -102,7 +102,7 @@ public class HttpConfig {
             System.exit(1); // NOSONAR
         }
         catch (Exception e) {
-            apimlLog.log("apiml.product.UnknownHttpsConfigError", e.getMessage());
+            apimlLog.log("apiml.product.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
     }

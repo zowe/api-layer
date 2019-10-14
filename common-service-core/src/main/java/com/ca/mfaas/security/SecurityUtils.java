@@ -51,7 +51,7 @@ public class SecurityUtils {
                 }
                 return Base64.getEncoder().encodeToString(key.getEncoded());
             } catch (UnrecoverableKeyException e) {
-                apimlLog.log("apiml.core.ErrorReadingSecretKey", e.getMessage());
+                apimlLog.log("apiml.core.errorReadingSecretKey", e.getMessage());
                 throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -79,7 +79,7 @@ public class SecurityUtils {
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                 | UnrecoverableKeyException e) {
-                apimlLog.log("apiml.core.ErrorLoadingSecretKey", e.getMessage());
+                apimlLog.log("apiml.core.errorLoadingSecretKey", e.getMessage());
                 throw new HttpsConfigError(e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -129,7 +129,7 @@ public class SecurityUtils {
                     return cert.getPublicKey();
                 }
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
-                apimlLog.log("apiml.core.ErrorLoadingPublicKey", e.getMessage());
+                apimlLog.log("apiml.core.errorLoadingPublicKey", e.getMessage());
                 throw new HttpsConfigError(e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -162,7 +162,7 @@ public class SecurityUtils {
                 }
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException | UnrecoverableKeyException e) {
-                apimlLog.log("apiml.core.ErrorLoadingSecretKey", e.getMessage());
+                apimlLog.log("apiml.core.errorLoadingSecretKey", e.getMessage());
                 throw new HttpsConfigError("Error loading secret key: " + e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }

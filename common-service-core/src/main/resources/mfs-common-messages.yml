@@ -45,67 +45,67 @@ messages:
       type: ERROR
       text: "The request to the URI '%s' has failed: %s caused by: %s"
 
-    - key: apiml.core.ApiInfoParsingError
+    - key: apiml.core.apiInfoParsingError
       number: ZWEAM107
       type: WARNING
       text: "Invalid parameter in metadata: '%s'"
 
-    - key: apiml.core.IgnoringSsl
+    - key: apiml.core.ignoringSsl
       number: ZWEAM108
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
 
-    - key: apiml.core.HttpClientInitializationError
+    - key: apiml.core.httpClientInitializationError
       number: ZWEAM109
       type: ERROR
       text: "Error initializing HTTP client: '%s'"
 
-    - key: apiml.core.UnsecureHttpWarning
+    - key: apiml.core.unsecureHttpWarning
       number: ZWEAM110
       type: WARNING
       text: "Unsecure HTTP is used to connect to Discovery Service"
 
-    - key: apiml.core.ErrorReadingSecretKey
+    - key: apiml.core.errorReadingSecretKey
       number: ZWEAM111
       type: ERROR
       text: "Error reading secret key: '%s'"
 
-    - key: apiml.core.ErrorLoadingSecretKey
+    - key: apiml.core.errorLoadingSecretKey
       number: ZWEAM112
       type: ERROR
       text: "Error loading secret key: '%s'"
 
-    - key: apiml.core.ErrorLoadingPublicKey
+    - key: apiml.core.errorLoadingPublicKey
       number: ZWEAM113
       type: ERROR
       text: "Error loading public key: '%s'"
 
-    - key: apiml.core.ErrorInitSsl
+    - key: apiml.core.errorInitSsl
       number: ZWEAM114
       type: ERROR
       text: "Error initializing SSL/TLS context: '%s'"
 
-    - key: apiml.core.TruststorePasswordNotDefined
+    - key: apiml.core.truststorePasswordNotDefined
       number: ZWEAM115
       type: ERROR
       text: "Truststore Password configuration parameter is not defined"
 
-    - key: apiml.core.TruststoreNotDefined
+    - key: apiml.core.truststoreNotDefined
       number: ZWEAM116
       type: ERROR
       text: "Truststore configuration parameter is not defined but it is required"
 
-    - key: apiml.core.KeystoreNotDefined
+    - key: apiml.core.keystoreNotDefined
       number: ZWEAM117
       type: ERROR
       text: "Keystore not found, server.ssl.keyStore configuration parameter is not defined"
 
-    - key: apiml.core.KeystorePasswordNotDefined
+    - key: apiml.core.keystorePasswordNotDefined
       number: ZWEAM118
       type: ERROR
       text: "Keystore password not found, server.ssl.keyStorePassword configuration parameter is not defined"
 
-    - key: apiml.core.InvalidKeyAlias
+    - key: apiml.core.invalidKeyAlias
       number: ZWEAM119
       type: ERROR
       text: "Invalid key alias '%s'"

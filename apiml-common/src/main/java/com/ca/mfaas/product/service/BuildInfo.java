@@ -42,13 +42,13 @@ public class BuildInfo {
         // Create the input streams
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(path)) {
             if (input == null) {
-                apimlLog.log("apiml.product.BuildInfoPropertiesNotFound", path);
+                apimlLog.log("apiml.product.buildInfoPropertiesNotFound", path);
                 return props;
             }
 
             props.load(input);
         } catch (IOException ioe) {
-            apimlLog.log("apiml.product.BuildInfoPropertiesIOError", path, ioe.toString());
+            apimlLog.log("apiml.product.buildInfoPropertiesIOError", path, ioe.toString());
         }
 
         return props;
