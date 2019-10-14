@@ -109,7 +109,6 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Ignore
     @Category(WebsocketTest.class)
     public void shouldRouteHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();
