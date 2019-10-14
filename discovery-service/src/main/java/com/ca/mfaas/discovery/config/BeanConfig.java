@@ -12,7 +12,6 @@ package com.ca.mfaas.discovery.config;
 
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,7 +20,6 @@ import org.springframework.context.annotation.Primary;
  * General beans setup and creation class for Discovery service
  */
 @Configuration
-@Slf4j
 public class BeanConfig {
 
     @Bean

@@ -11,7 +11,6 @@ package com.ca.mfaas.apicatalog.controllers.api;
 
 import com.ca.mfaas.apicatalog.services.status.APIServiceStatusService;
 import io.swagger.annotations.*;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,6 @@ import reactor.core.publisher.Mono;
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
-@Slf4j
 @RestController
 @RequestMapping("/apidoc")
 @Api(tags = {"API Documentation"},

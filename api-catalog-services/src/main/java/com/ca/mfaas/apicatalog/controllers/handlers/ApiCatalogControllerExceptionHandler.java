@@ -15,7 +15,6 @@ import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 /**
  * This class creates responses for exceptional behavior of the ApiCatalogController
  */
-@Slf4j
 @ControllerAdvice(assignableTypes = {ApiCatalogController.class})
 @RequiredArgsConstructor
 public class ApiCatalogControllerExceptionHandler {

@@ -14,12 +14,10 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 
-@Slf4j
 public class ServiceStartupEventHandler {
     public static final int DEFAULT_DELAY_FACTOR = 5;
     private static final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class, YamlMessageServiceInstance.getInstance());

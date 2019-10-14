@@ -18,7 +18,6 @@ import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -32,7 +31,6 @@ import java.util.Optional;
  * Core class of security client
  * provides facility for performing login and validating JWT token
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GatewaySecurityService {
