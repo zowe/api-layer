@@ -9,10 +9,10 @@ messages:
       type: ERROR
       text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
 
-    - key: apiml.product.UknownHttpsConfigError
+    - key: apiml.product.UnknownHttpsConfigError
       number: ZWEAM106
       type: ERROR
-      text: "Uknown error in HTTPS configuration: '%s'"
+      text: "Unknown error in HTTPS configuration: '%s'"
 
     - key: apiml.product.serviceStarted
       number: ZWEAM001

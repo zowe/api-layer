@@ -84,6 +84,7 @@ public class HttpsFactory {
         try {
             return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).setProtocol(config.getProtocol()).build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+            apimlLog.log("apiml.core.ErrorInitSsl", e.getMessage());
             throw new HttpsConfigError("Error initializing SSL/TLS context: " + e.getMessage(), e,
                     ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
         }
@@ -96,6 +97,7 @@ public class HttpsFactory {
 
             if (!config.getTrustStore().startsWith(SecurityUtils.SAFKEYRING)) {
                 if (config.getTrustStorePassword() == null) {
+                    apimlLog.log("apiml.core.TruststorePasswordNotDefined");
                     throw new HttpsConfigError("server.ssl.trustStorePassword configuration parameter is not defined",
                             ErrorCode.TRUSTSTORE_PASSWORD_NOT_DEFINED, config);
                 }
@@ -111,6 +113,7 @@ public class HttpsFactory {
             }
         } else {
             if (config.isTrustStoreRequired()) {
+                apimlLog.log("apiml.core.TruststoreNotDefined");
                 throw new HttpsConfigError(
                         "server.ssl.trustStore configuration parameter is not defined but trust store is required",
                         ErrorCode.TRUSTSTORE_NOT_DEFINED, config);
@@ -142,10 +145,12 @@ public class HttpsFactory {
     private void loadKeystoreMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         if (config.getKeyStore() == null) {
+            apimlLog.log("apiml.core.KeystoreNotDefined");
             throw new HttpsConfigError("server.ssl.keyStore configuration parameter is not defined",
                     ErrorCode.KEYSTORE_NOT_DEFINED, config);
         }
         if (config.getKeyStorePassword() == null) {
+            apimlLog.log("apiml.core.KeystorePasswordNotDefined");
             throw new HttpsConfigError("server.ssl.keyStorePassword configuration parameter is not defined",
                     ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
         }
@@ -176,7 +181,7 @@ public class HttpsFactory {
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                     | UnrecoverableKeyException | KeyManagementException e) {
-                apimlLog.log("apiml.core.HttpClientInitiallizationError", e.getMessage());
+                apimlLog.log("apiml.core.HttpClientInitializationError", e.getMessage());
                 throw new HttpsConfigError("Error initializing HTTP client: " + e.getMessage(), e,
                         ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -189,6 +194,7 @@ public class HttpsFactory {
         if (config.getKeyAlias() != null) {
             KeyStore ks = SecurityUtils.loadKeyStore(config);
             if (!ks.containsAlias(config.getKeyAlias())) {
+                apimlLog.log("apiml.core.InvalidKeyAlias", config.getKeyAlias());
                 throw new HttpsConfigError(String.format("Invalid key alias '%s'", config.getKeyAlias()), ErrorCode.WRONG_KEY_ALIAS, config);
             }
         }

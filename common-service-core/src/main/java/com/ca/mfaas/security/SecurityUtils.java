@@ -231,7 +231,7 @@ public class SecurityUtils {
             kpg.initialize(keySize);
             kp = kpg.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
-            log.debug("An error occurred while generating keypair");
+            log.debug("An error occurred while generating keypair: {}", e.getMessage());
         }
         return kp;
     }

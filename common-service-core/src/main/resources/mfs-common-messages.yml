@@ -55,7 +55,7 @@ messages:
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
 
-    - key: apiml.core.HttpClientInitiallizationError
+    - key: apiml.core.HttpClientInitializationError
       number: ZWEAM109
       type: ERROR
       text: "Error initializing HTTP client: '%s'"
@@ -79,3 +79,34 @@ messages:
       number: ZWEAM113
       type: ERROR
       text: "Error loading public key: '%s'"
+
+    - key: apiml.core.ErrorInitSsl
+      number: ZWEAM114
+      type: ERROR
+      text: "Error initializing SSL/TLS context: '%s'"
+
+    - key: apiml.core.TruststorePasswordNotDefined
+      number: ZWEAM115
+      type: ERROR
+      text: "Truststore Password configuration parameter is not defined"
+
+    - key: apiml.core.TruststoreNotDefined
+      number: ZWEAM116
+      type: ERROR
+      text: "Truststore configuration parameter is not defined but it is required"
+
+    - key: apiml.core.KeystoreNotDefined
+      number: ZWEAM117
+      type: ERROR
+      text: "Keystore not found, server.ssl.keyStore configuration parameter is not defined"
+
+    - key: apiml.core.KeystorePasswordNotDefined
+      number: ZWEAM118
+      type: ERROR
+      text: "Keystore password not found, server.ssl.keyStorePassword configuration parameter is not defined"
+
+    - key: apiml.core.InvalidKeyAlias
+      number: ZWEAM119
+      type: ERROR
+      text: "Invalid key alias '%s'"
+
