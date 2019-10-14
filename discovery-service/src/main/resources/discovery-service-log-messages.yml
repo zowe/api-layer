@@ -1,18 +1,36 @@
 messages:
 
+    # Info messages
+    # 000-100
+
+    # General messages
+    # 100-200
+
+    # HTTP,Protocol messages
+    # 400-500
+
+    # TLS,Certificate messages
+    # 500-600
+
+    # Various messages
+    # 600-700
+
+    # Service specific messages
+    # 700-1000
 
     - key: apiml.discovery.staticDefinitionsDirectoryNotValid
-      number: ZWEAD101
+      number: ZWEAD700
       type: WARNING
       text: "Static Api definition directory '%s' is not a directory or does not exist"
 
     - key: apiml.discovery.errorParsingStaticDefinitionFile
-      number: ZWEAD102
+      number: ZWEAD701
       type: ERROR
       text: "Error loading the static Api definition file '%s'"
 
     - key: apiml.discovery.errorParsingStaticDefinitionData
-      number: ZWEAD103
+      number: ZWEAD702
       type: WARNING
       text: "Unable to process static Api definition data: '%s'"
 
+    # Legacy messages

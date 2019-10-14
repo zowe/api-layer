@@ -1,16 +1,39 @@
 messages:
+
+    # Info messages
+    # 000-100
+
+    # General messages
+    # 100-200
+
     - key: apiml.common.buildInfoPropertiesNotFound
-      number: ZWEAM104
+      number: ZWEAM100
       type: ERROR
       text: "Could not read properties from: '%s'"
 
     - key: apiml.common.buildInfoPropertiesIOError
-      number: ZWEAM105
+      number: ZWEAM101
       type: ERROR
       text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
 
+    # HTTP,Protocol messages
+    # 400-500
+
     - key: apiml.common.unknownHttpsConfigError
-      number: ZWEAM106
+      number: ZWEAM401
       type: ERROR
       text: "Unknown error in HTTPS configuration: '%s'"
+
+    # TLS,Certificate messages
+    # 500-600
+
+    # Various messages
+    # 600-700
+
+    # Service specific messages
+    # 700-1000
+
+    # Legacy messages
+
+
 
