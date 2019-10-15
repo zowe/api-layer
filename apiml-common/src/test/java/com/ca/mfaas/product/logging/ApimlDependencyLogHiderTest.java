@@ -27,7 +27,7 @@ public class ApimlDependencyLogHiderTest {
     }
 
 
-    @Testx
+    @Test
     public void testDecide_whenLoggerLevelWhenIgnoredMessagesArePresent() {
         logger.setLevel(Level.INFO);
 

@@ -28,8 +28,7 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "Not Found (Renew)",
         "route 53",
         "dirty timestamp",
-        "Using the existing instanceInfo instead of the new instanceInfo as the registrant"
-        );
+        "Using the existing instanceInfo instead of the new instanceInfo as the registrant");
 
 
     @Override
@@ -49,6 +48,6 @@ public class ApimlDependencyLogHider extends TurboFilter {
 
     private boolean isIgnoredMessage(String format) {
         return IGNORED_MESSAGE_KEYWORDS.stream()
-            .anyMatch(keyword -> format.contains(keyword));
+            .anyMatch(format::contains);
     }
 }
