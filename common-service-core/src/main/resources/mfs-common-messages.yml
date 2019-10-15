@@ -1,7 +1,7 @@
 messages:
 
     # Info messages
-    # 000-100
+    # 000-099
 
     - key: apiml.common.serviceStarted
       number: ZWEAM000
@@ -9,10 +9,10 @@ messages:
       text: "%s has been started in %s seconds"
 
     # General messages
-    # 100-200
+    # 100-199
 
     # HTTP, Protocol messages
-    # 400-500
+    # 400-499
 
     - key: apiml.common.httpClientInitializationError
       number: ZWEAM400
@@ -20,7 +20,7 @@ messages:
       text: "Error initializing HTTP client: '%s'"
 
     # TLS, Certificate messages
-    # 500-600
+    # 500-599
 
     - key: apiml.common.ignoringSsl
       number: ZWEAM500
@@ -78,7 +78,7 @@ messages:
       text: "Invalid key alias '%s'"
 
     # Various messages
-    # 600-700
+    # 600-699
 
     - key: apiml.common.apiInfoParsingError
       number: ZWEAM600
@@ -86,7 +86,7 @@ messages:
       text: "Invalid parameter in metadata: '%s'"
 
     # Service specific messages
-    # 700-1000
+    # 700-999
 
     # Legacy messages
 
