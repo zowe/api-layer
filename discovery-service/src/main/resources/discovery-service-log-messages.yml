@@ -26,7 +26,7 @@ messages:
     - key: apiml.discovery.errorParsingStaticDefinitionFile
       number: ZWEAD701
       type: ERROR
-      text: "Error loading the static Api definition file '%s'"
+      text: "Error loading static Api definition file '%s'"
 
     - key: apiml.discovery.errorParsingStaticDefinitionData
       number: ZWEAD702
