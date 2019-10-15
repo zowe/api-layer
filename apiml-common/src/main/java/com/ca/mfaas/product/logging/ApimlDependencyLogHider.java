@@ -28,7 +28,8 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "route 53",
         "eureka.server.peer-node-read-timeout-ms",
         "Found more than one MBeanServer instance",
-        "dirty timestamp", "Using the existing instanceInfo instead of the new instanceInfo as the registrant");
+        "dirty timestamp", "Using the existing instanceInfo instead of the new instanceInfo as the registrant",
+        "Network level connection to peer");
 
 
     @Override
