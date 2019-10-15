@@ -31,11 +31,20 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "dirty timestamp", "Using the existing instanceInfo instead of the new instanceInfo as the registrant",
         "Network level connection to peer");
 
+    private boolean isFilterActive = true;
+
+    public ApimlDependencyLogHider() {
+        String profiles = System.getProperties().getProperty("spring.profiles.include");
+        if (profiles != null && profiles.toLowerCase().contains("debug")) {
+            isFilterActive = false;
+        }
+    }
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
 
-        if (!isLowThanInfoLevel(logger.getEffectiveLevel())
+        if (isFilterActive
+            && !isLowThanInfoLevel(logger.getEffectiveLevel())
             && (format != null && isIgnoredMessage(format))) {
             return FilterReply.DENY;
         }

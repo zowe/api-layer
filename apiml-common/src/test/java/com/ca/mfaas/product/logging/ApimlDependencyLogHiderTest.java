@@ -12,6 +12,7 @@ package com.ca.mfaas.product.logging;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.spi.FilterReply;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +23,25 @@ import static org.junit.Assert.*;
 
 public class ApimlDependencyLogHiderTest {
 
-    private final ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
     private final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("com.ca.logger");
+    private ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();;
+
+    @Before
+    public void setUp() {
+        System.getProperties().setProperty("spring.profiles.include", "");
+    }
+
+    @Test
+    public void testDecide_whenApplicationRunningInDebugMode() {
+        System.getProperties().setProperty("spring.profiles.include", "debug");
+        ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
+
+        FilterReply actualFilterReply = apimlDependencyLogHider.decide(null, logger, null,
+            "Message text", null, null);
+
+        assertEquals("Log levels are not same", FilterReply.NEUTRAL, actualFilterReply);
+    }
+
 
     @Test
     public void testDecide_whenLoggerLevelIsLowThanInfo() {
