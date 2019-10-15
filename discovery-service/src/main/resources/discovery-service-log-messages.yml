@@ -33,4 +33,9 @@ messages:
       type: WARNING
       text: "Unable to process static Api definition data: '%s'"
 
+    - key: apiml.discovery.errorReadingStaticDefinitionFolder
+      number: ZWEAD703
+      type: ERROR
+      text: "I/O problem occurred during reading static Api definition directory: '%s'"
+
     # Legacy messages

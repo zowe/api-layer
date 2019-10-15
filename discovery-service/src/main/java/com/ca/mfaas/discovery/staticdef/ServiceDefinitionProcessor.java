@@ -91,7 +91,7 @@ public class ServiceDefinitionProcessor {
         Map<String, String> ymlSources = new HashMap<>();
 
         if (ymlFiles == null) {
-            log.debug("I/O problem occurred during reading directory: {}", directory.getAbsolutePath());
+            apimlLog.log("apiml.discovery.errorReadingStaticDefinitionFolder", directory.getAbsolutePath());
             ymlFiles = new File[0];
         } else if (ymlFiles.length == 0) {
             log.info("No static service definition found in directory: {}", directory.getAbsolutePath());
