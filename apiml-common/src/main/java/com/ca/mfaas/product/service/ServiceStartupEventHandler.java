@@ -20,7 +20,7 @@ import java.lang.management.ManagementFactory;
 
 public class ServiceStartupEventHandler {
     public static final int DEFAULT_DELAY_FACTOR = 5;
-    private static final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class, YamlMessageServiceInstance.getInstance());
+    private final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class, YamlMessageServiceInstance.getInstance());
 
     @SuppressWarnings("squid:S1172")
     public void onServiceStartup(String serviceName, int delayFactor) {

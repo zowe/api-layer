@@ -28,7 +28,7 @@ public final class ApimlLogger {
 
     private final MessageService messageService;
     private final Logger logger;
-    private static Marker marker = MarkerFactory.getMarker("APIML-LOGGER");
+    private static final Marker marker = MarkerFactory.getMarker("APIML-LOGGER");
 
     public ApimlLogger(Class<?> clazz, MessageService messageService) {
         this.messageService = messageService;

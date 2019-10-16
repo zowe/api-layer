@@ -6,16 +6,6 @@ messages:
     # General messages
     # 100-199
 
-    - key: apiml.common.buildInfoPropertiesNotFound
-      number: ZWEAM100
-      type: ERROR
-      text: "Could not read properties from: '%s'"
-
-    - key: apiml.common.buildInfoPropertiesIOError
-      number: ZWEAM101
-      type: ERROR
-      text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
-
     # HTTP,Protocol messages
     # 400-499
 

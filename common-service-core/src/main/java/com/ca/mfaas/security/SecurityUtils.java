@@ -10,6 +10,7 @@
 package com.ca.mfaas.security;
 
 import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +31,7 @@ import java.util.Enumeration;
 @UtilityClass
 public class SecurityUtils {
 
-    private ApimlLogger apimlLog = ApimlLogger.empty();
+    private ApimlLogger apimlLog = ApimlLogger.of(SecurityUtils.class, YamlMessageServiceInstance.getInstance());
 
     public static final String SAFKEYRING = "safkeyring";
 

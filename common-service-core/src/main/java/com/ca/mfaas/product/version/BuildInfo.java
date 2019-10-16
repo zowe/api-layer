@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.service;
+package com.ca.mfaas.product.version;
 
 import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
+import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -20,8 +20,7 @@ import java.util.Properties;
 @Slf4j
 public class BuildInfo {
 
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
+    private ApimlLogger apimlLog = ApimlLogger.of(this.getClass(), YamlMessageServiceInstance.getInstance());
 
     public void logBuildInfo() {
         BuildInfoDetails buildInfo = getBuildInfoDetails();

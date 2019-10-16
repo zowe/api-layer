@@ -16,8 +16,6 @@ import ch.qos.logback.classic.turbo.TurboFilter;
 import ch.qos.logback.core.spi.FilterReply;
 import org.slf4j.Marker;
 
-import java.util.Optional;
-
 /**
  * This filter's purpose is to hide or show the info level messages (and below log levels like debug etc.)
  * There are info level messages that are meant for debug mode only (originally @Slf4j)
@@ -36,10 +34,8 @@ public class LogLevelInfoFilter extends TurboFilter {
     private boolean isFilterActive = true;
 
     public LogLevelInfoFilter() {
-        Optional<String> profiles = Optional.ofNullable(System.getProperties().getProperty("spring.profiles.include"));
-        if (profiles.isPresent() && profiles.get().toLowerCase().contains("debug")) {
-            isFilterActive = false;
-        }
+        String profiles = System.getProperties().getProperty("spring.profiles.include");
+        isFilterActive = profiles == null || !profiles.toLowerCase().contains("debug");
     }
 
     @Override

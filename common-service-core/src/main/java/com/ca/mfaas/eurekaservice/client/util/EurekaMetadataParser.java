@@ -11,9 +11,11 @@ package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.utils.UrlUtils;
+import com.ca.mfaas.security.SecurityUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,14 +24,14 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 public class EurekaMetadataParser {
 
+    private ApimlLogger apimlLog = ApimlLogger.of(SecurityUtils.class, YamlMessageServiceInstance.getInstance());
+
     /**
      * Parse eureka metadata and construct ApiInfo with the values found
      *
      * @param eurekaMetadata the eureka metadata
      * @return ApiInfo list
      */
-
-    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     public List<ApiInfo> parseApiInfo(Map<String, String> eurekaMetadata) {
         Map<String, ApiInfo> apiInfo = new HashMap<>();
