@@ -31,13 +31,11 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "dirty timestamp", "Using the existing instanceInfo instead of the new instanceInfo as the registrant",
         "Network level connection to peer");
 
-    private boolean isFilterActive = true;
+    private boolean isFilterActive;
 
     public ApimlDependencyLogHider() {
         String profiles = System.getProperties().getProperty("spring.profiles.include");
-        if (profiles != null && profiles.toLowerCase().contains("debug")) {
-            isFilterActive = false;
-        }
+        isFilterActive = profiles == null || !profiles.toLowerCase().contains("debug");
     }
 
     @Override
