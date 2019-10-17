@@ -1,5 +1,6 @@
 ext {
     artifactName = 'api-mediation-zowe-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
 }
 
 configurations {
@@ -20,7 +21,7 @@ dependencies {
 }
 
 task packageApiMediationZowe(type: Zip) {
-    archiveName = artifactName + ".zip"
+    archiveName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
 
      into('/') {
@@ -108,7 +109,7 @@ artifacts {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact("$buildDir/distributions/$artifactName" + ".zip")
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
         }
     }
 }
