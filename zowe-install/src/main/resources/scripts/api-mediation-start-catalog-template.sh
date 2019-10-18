@@ -16,8 +16,6 @@ else
   echo "Done."
 fi
 
-PARAMS="$@"
-
 # API Mediation Layer Debug Mode
 # To activate DEBUG mode, set LOG_LEVEL=DEBUG
 LOG_LEVEL=
