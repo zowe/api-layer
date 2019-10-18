@@ -19,12 +19,12 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ApimlDependencyLogHiderTest {
 
     private final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("com.ca.logger");
-    private ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();;
+    private ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
 
     @Before
     public void setUp() {
