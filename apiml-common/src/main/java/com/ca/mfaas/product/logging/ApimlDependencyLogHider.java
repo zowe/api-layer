@@ -29,7 +29,8 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "eureka.server.peer-node-read-timeout-ms",
         "Found more than one MBeanServer instance",
         "dirty timestamp", "Using the existing instanceInfo instead of the new instanceInfo as the registrant",
-        "Network level connection to peer");
+        "Network level connection to peer",
+        "Tomcat started on port(s)");
 
     private boolean isFilterActive;
 
