@@ -11,7 +11,6 @@ package com.ca.mfaas.client.api;
 
 import com.ca.mfaas.client.model.RedirectLocation;
 import io.swagger.annotations.*;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +27,6 @@ import static org.springframework.http.HttpHeaders.LOCATION;
  * It accepts POST request which should contain a url in request body. The controller then sets the url to Location
  * Response Header and returns status code 307
  */
-@Slf4j
 @RestController
 @Api(tags = {"Other Operations"}, description = "General Operations")
 public class PageRedirectionController {

@@ -7,21 +7,28 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.client.config;
+
+package com.ca.mfaas.discovery.config;
 
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
+/**
+ * General beans setup and creation class for Discovery service
+ */
 @Configuration
-public class MessageServiceConfig {
+public class BeanConfig {
 
     @Bean
-    public MessageService messageService() {
+    @Primary
+    public MessageService messageServiceDiscovery() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
-        messageService.loadMessages("/security-service-messages.yml");
+        messageService.loadMessages("/apiml-common-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
+        messageService.loadMessages("/discovery-service-log-messages.yml");
         return messageService;
     }
-
 }

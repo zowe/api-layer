@@ -18,7 +18,6 @@ import com.ca.apiml.security.common.config.HandlerInitializer;
 import com.ca.apiml.security.common.content.BasicContentFilter;
 import com.ca.apiml.security.common.content.CookieContentFilter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -43,7 +42,6 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableApimlAuth
-@Slf4j
 @Profile("https")
 public class HttpsWebSecurityConfig {
 

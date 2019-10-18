@@ -13,7 +13,6 @@ import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.common.error.ResourceAccessExceptionHandler;
 import com.ca.mfaas.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -39,7 +38,6 @@ import java.util.Optional;
 /**
  * Filter to process authentication requests with the username and password in JSON format.
  */
-@Slf4j
 public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;

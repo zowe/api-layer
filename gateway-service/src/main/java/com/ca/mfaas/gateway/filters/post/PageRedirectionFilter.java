@@ -19,7 +19,6 @@ import com.ca.mfaas.product.routing.transform.URLTransformationException;
 import com.netflix.util.Pair;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
@@ -37,7 +36,6 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * <li>The url can be matched to gateway url</li>
  * </ul>
  */
-@Slf4j
 public class PageRedirectionFilter extends ZuulFilter implements RoutedServicesUser {
 
     private final DiscoveryClient discovery;

@@ -15,7 +15,6 @@ import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.MessageService;
 import com.netflix.zuul.exception.ZuulException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Checks whether the error was caused by an invalid token
  */
-@Slf4j
 @RequiredArgsConstructor
 public class SecurityTokenErrorCheck implements ErrorCheck {
     private final MessageService messageService;

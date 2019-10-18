@@ -13,7 +13,6 @@ import com.ca.mfaas.apicatalog.instance.InstanceInitializeService;
 import com.ca.mfaas.product.gateway.GatewayLookupCompleteEvent;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Component;
  * This class fires on GatewayLookupCompleteEvent event
  * Initializes Catalog instances from Eureka
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE)

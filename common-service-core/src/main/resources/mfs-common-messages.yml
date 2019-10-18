@@ -1,31 +1,116 @@
 messages:
-# General messages
-    - key: com.ca.mfaas.common.invalidMessageKey
+
+    # Info messages
+    # 000-099
+
+    - key: apiml.common.serviceStarted
+      number: ZWEAM000
+      type: INFO
+      text: "%s has been started in %s seconds"
+
+    # General messages
+    # 100-199
+
+    - key: apiml.common.buildInfoPropertiesNotFound
+      number: ZWEAM100
+      type: ERROR
+      text: "Could not read properties from: '%s'"
+
+    - key: apiml.common.buildInfoPropertiesIOError
+      number: ZWEAM101
+      type: ERROR
+      text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
+
+    # HTTP, Protocol messages
+    # 400-499
+
+    - key: apiml.common.httpClientInitializationError
+      number: ZWEAM400
+      type: ERROR
+      text: "Error initializing HTTP client: '%s'"
+
+    # TLS, Certificate messages
+    # 500-599
+
+    - key: apiml.common.ignoringSsl
+      number: ZWEAM500
+      type: WARNING
+      text: "The service is not verifying the TLS/SSL certificates of the services"
+
+    - key: apiml.common.unsecureHttpWarning
+      number: ZWEAM501
+      type: WARNING
+      text: "Service is configured to use insecure HTTP protocol. For production use, please switch to HTTPS instead."
+
+    - key: apiml.common.errorReadingSecretKey
+      number: ZWEAM502
+      type: ERROR
+      text: "Error reading secret key: '%s'"
+
+    - key: apiml.common.errorLoadingSecretKey
+      number: ZWEAM503
+      type: ERROR
+      text: "Error loading secret key: '%s'"
+
+    - key: apiml.common.errorLoadingPublicKey
+      number: ZWEAM504
+      type: ERROR
+      text: "Error loading public key: '%s'"
+
+    - key: apiml.common.errorInitSsl
+      number: ZWEAM505
+      type: ERROR
+      text: "Error initializing SSL/TLS context: '%s'"
+
+    - key: apiml.common.truststorePasswordNotDefined
+      number: ZWEAM506
+      type: ERROR
+      text: "Truststore Password configuration parameter is not defined"
+
+    - key: apiml.common.truststoreNotDefined
+      number: ZWEAM507
+      type: ERROR
+      text: "Truststore configuration parameter is not defined but it is required"
+
+    - key: apiml.common.keystoreNotDefined
+      number: ZWEAM508
+      type: ERROR
+      text: "Keystore not found, server.ssl.keyStore configuration parameter is not defined"
+
+    - key: apiml.common.keystorePasswordNotDefined
+      number: ZWEAM509
+      type: ERROR
+      text: "Keystore password not found, server.ssl.keyStorePassword configuration parameter is not defined"
+
+    - key: apiml.common.invalidKeyAlias
+      number: ZWEAM510
+      type: ERROR
+      text: "Invalid key alias '%s'"
+
+    # Various messages
+    # 600-699
+
+    - key: apiml.common.apiInfoParsingError
+      number: ZWEAM600
+      type: WARNING
+      text: "Invalid parameter in metadata: '%s'"
+
+    # Service specific messages
+    # 700-999
+
+    # Legacy messages
+
+    - key: apiml.common.invalidMessageKey
       number: MFS0001
       type: ERROR
       text: "Internal error: Invalid message key '%s' is provided. Please contact support for further assistance."
 
-    - key: com.ca.mfaas.common.invalidMessageTextFormat
+    - key: apiml.common.invalidMessageTextFormat
       number: MFS0002
       type: ERROR
       text: "Internal error: Invalid message text format. Please contact support for further assistance."
 
-    - key: com.ca.mfaas.common.httpMethodIsNotSupported
-      number: MFS0100
-      type: ERROR
-      text: "This HTTP method is not supported."
-
-    - key: com.ca.mfaas.common.invalidEndpointName
-      number: MFS0101
-      type: ERROR
-      text: "Invalid endpoint"
-
-    - key: com.ca.mfaas.common.mediaTypeNotSupported
-      number: MFS0102
-      type: ERROR
-      text: "Unsupported Media Type"
-
-    - key: com.ca.mfaas.common.endPointNotFound
+    - key: apiml.common.endPointNotFound
       number: MFS0103
       type: ERROR
       text: "The endpoint you were looking for '%s' could not be located"

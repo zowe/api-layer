@@ -1,0 +1,29 @@
+messages:
+
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+
+    # HTTP,Protocol messages
+    # 400-499
+
+    - key: apiml.common.unknownHttpsConfigError
+      number: ZWEAM401
+      type: ERROR
+      text: "Unknown error in HTTPS configuration: '%s'"
+
+    # TLS,Certificate messages
+    # 500-599
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+
+    # Legacy messages
+
+
+

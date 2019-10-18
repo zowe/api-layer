@@ -42,7 +42,7 @@ public class DummyMessageService extends AbstractMessageService {
         message3.setText("No response received within the allowed time: %s %s");
 
         MessageTemplate message4 = new MessageTemplate();
-        message4.setKey("com.ca.mfaas.common.invalidMessageTextFormat");
+        message4.setKey("apiml.common.invalidMessageTextFormat");
         message4.setNumber("MFS0002");
         message4.setText("Internal error: Invalid message text format. Please contact support for further assistance.");
 

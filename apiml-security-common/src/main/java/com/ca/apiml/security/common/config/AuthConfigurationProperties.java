@@ -9,8 +9,9 @@
  */
 package com.ca.apiml.security.common.config;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
@@ -19,11 +20,13 @@ import org.springframework.stereotype.Component;
 /**
  * Configuration class for authentication-related security properties
  */
-@Slf4j
 @Data
 @Component
 @ConfigurationProperties(prefix = "apiml.security.auth", ignoreUnknownFields = false)
 public class AuthConfigurationProperties {
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     // General properties
     private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
@@ -72,7 +75,7 @@ public class AuthConfigurationProperties {
      */
     public String validatedZosmfServiceId() {
         if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-            log.error("z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name.");
+            apimlLog.log("apiml.security.zosmfNotFound");
             throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
         }
 

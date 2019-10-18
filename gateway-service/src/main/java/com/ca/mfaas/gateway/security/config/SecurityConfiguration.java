@@ -19,7 +19,6 @@ import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -35,7 +34,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * 1. Adds Login and Query endpoints
  * 2. Allows basic and token (cookie) authentication
  */
-@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor

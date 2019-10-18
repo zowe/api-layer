@@ -11,8 +11,8 @@ package com.ca.mfaas.gateway.controllers;
 
 import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.security.login.LoginProvider;
-import com.ca.mfaas.product.service.BuildInfo;
-import com.ca.mfaas.product.service.BuildInfoDetails;
+import com.ca.mfaas.product.version.BuildInfo;
+import com.ca.mfaas.product.version.BuildInfoDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;

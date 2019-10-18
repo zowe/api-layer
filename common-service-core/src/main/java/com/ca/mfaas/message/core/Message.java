@@ -23,8 +23,8 @@ import java.util.UUID;
  * Message creator immutable class
  */
 public final class Message {
-    public static final String INVALID_KEY_MESSAGE = "com.ca.mfaas.common.invalidMessageKey";
-    public static final String INVALID_MESSAGE_TEXT_FORMAT = "com.ca.mfaas.common.invalidMessageTextFormat";
+    public static final String INVALID_KEY_MESSAGE = "apiml.common.invalidMessageKey";
+    public static final String INVALID_MESSAGE_TEXT_FORMAT = "apiml.common.invalidMessageTextFormat";
 
     private final String requestedKey;
     private final MessageTemplate messageTemplate;
@@ -55,8 +55,8 @@ public final class Message {
         requireNotNull(messageTemplate, "messageTemplate can't be null");
         requireNotNull(messageParameters, "messageParameters can't be null");
 
-        validateMessageTextFormat(messageTemplate.getText(), messageParameters);
         messageParameters = validateParameters(messageTemplate.getKey(), requestedKey, messageParameters);
+        validateMessageTextFormat(messageTemplate.getText(), messageParameters);
 
         return new Message(requestedKey, messageTemplate, messageParameters);
     }

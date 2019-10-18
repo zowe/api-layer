@@ -11,7 +11,6 @@ package com.ca.apiml.security.common.handler;
 
 import com.ca.apiml.security.common.error.AuthExceptionHandler;
 import com.ca.mfaas.constants.ApimlConstants;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
@@ -23,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Handles unauthorized access
  */
-@Slf4j
 @Component("basicAuth")
 public class BasicAuthUnauthorizedHandler extends UnauthorizedHandler {
 
