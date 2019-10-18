@@ -12,7 +12,6 @@ package com.ca.mfaas.gateway.security.query;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component;
 /**
  * Authentication provider that verifies the JWT token
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class TokenAuthenticationProvider implements AuthenticationProvider {

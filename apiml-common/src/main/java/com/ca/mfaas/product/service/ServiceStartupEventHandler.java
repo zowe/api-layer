@@ -12,18 +12,20 @@ package com.ca.mfaas.product.service;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import lombok.extern.slf4j.Slf4j;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 
-@Slf4j
 public class ServiceStartupEventHandler {
     public static final int DEFAULT_DELAY_FACTOR = 5;
+    private final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class, YamlMessageServiceInstance.getInstance());
 
+    @SuppressWarnings("squid:S1172")
     public void onServiceStartup(String serviceName, int delayFactor) {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        log.info("{} has been started in {} seconds", serviceName, uptime / 1000.0);
+        apimlLog.log("apiml.common.serviceStarted",serviceName, uptime / 1000.0);
 
         new java.util.Timer().schedule(new java.util.TimerTask() {
             @Override

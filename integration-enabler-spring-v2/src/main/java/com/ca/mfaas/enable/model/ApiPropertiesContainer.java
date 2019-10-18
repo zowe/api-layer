@@ -10,7 +10,6 @@
 package com.ca.mfaas.enable.model;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -26,7 +25,6 @@ import java.util.Map;
 @ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
 @ConfigurationProperties("eureka.instance.metadata-map.mfaas.api-info")
 @Data
-@Slf4j
 public class ApiPropertiesContainer {
 
     private Map<String, ApiProperties> apiVersionProperties = new HashMap<>();

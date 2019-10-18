@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.service;
+package com.ca.mfaas.product.version;
 
 import java.text.DateFormat;
 import java.text.ParseException;

@@ -49,7 +49,7 @@ public class NotFoundErrorController implements ErrorController {
     @GetMapping(value = NOT_FOUND_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessageView> notFound400HttpResponse(HttpServletRequest request) {
-        Message message = messageService.createMessage("com.ca.mfaas.common.endPointNotFound",
+        Message message = messageService.createMessage("apiml.common.endPointNotFound",
             ErrorUtils.getGatewayUri(request));
         return ResponseEntity.status(ErrorUtils.getErrorStatus(request)).body(message.mapToView());
     }

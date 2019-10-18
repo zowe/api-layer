@@ -9,15 +9,12 @@
  */
 package com.ca.mfaas.product.logging;
 
-import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -53,22 +50,14 @@ public class ApimlLogInjectorTest {
     @SpringBootConfiguration
     public static class TestConfig {
 
-        @Autowired
-        private ApplicationContext applicationContext;
-
         @Bean
         public ApimlLogInjector apimlLogInjector() {
-            return new ApimlLogInjector(applicationContext);
+            return new ApimlLogInjector();
         }
 
         @Bean
         public TestComponent testComponent() {
             return new ApimlLogInjectorTest.TestComponent();
-        }
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService();
         }
 
     }

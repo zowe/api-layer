@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.message.storage;
 
-import com.ca.mfaas.message.core.DuplicateMessageException;
 import com.ca.mfaas.message.template.MessageTemplate;
 import com.ca.mfaas.message.template.MessageTemplates;
 
@@ -45,11 +44,6 @@ public class MessageTemplateStorage {
     }
 
     private void addMessageTemplateToStorage(MessageTemplate message) {
-        if (!messageTemplateMap.containsKey(message.getKey())) {
-            messageTemplateMap.put(message.getKey(), message);
-        } else {
-            String exceptionMessage = String.format("Message with key '%s' already exists", message.getKey());
-            throw new DuplicateMessageException(exceptionMessage);
-        }
+        messageTemplateMap.put(message.getKey(), message);
     }
 }

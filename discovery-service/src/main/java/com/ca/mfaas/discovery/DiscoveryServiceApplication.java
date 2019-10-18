@@ -9,9 +9,10 @@
  */
 package com.ca.mfaas.discovery;
 
+import com.ca.mfaas.product.logging.annotations.EnableApimlLogger;
 import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
-import com.ca.mfaas.product.service.BuildInfo;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
+import com.ca.mfaas.product.version.BuildInfo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -29,6 +30,7 @@ import javax.annotation.Nonnull;
     "com.ca.mfaas.product.security",
     "com.ca.mfaas.product.web"
 })
+@EnableApimlLogger
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {

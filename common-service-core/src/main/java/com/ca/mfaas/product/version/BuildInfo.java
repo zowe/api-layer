@@ -7,8 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.service;
+package com.ca.mfaas.product.version;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -17,6 +19,8 @@ import java.util.Properties;
 
 @Slf4j
 public class BuildInfo {
+
+    private ApimlLogger apimlLog = ApimlLogger.of(this.getClass(), YamlMessageServiceInstance.getInstance());
 
     public void logBuildInfo() {
         BuildInfoDetails buildInfo = getBuildInfoDetails();
@@ -37,13 +41,13 @@ public class BuildInfo {
         // Create the input streams
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(path)) {
             if (input == null) {
-                log.error("Could not read properties from: {}", path);
+                apimlLog.log("apiml.common.buildInfoPropertiesNotFound", path);
                 return props;
             }
 
             props.load(input);
         } catch (IOException ioe) {
-            log.error("Error reading properties from: {} Details: {}", path, ioe.toString());
+            apimlLog.log("apiml.common.buildInfoPropertiesIOError", path, ioe.toString());
         }
 
         return props;

@@ -9,7 +9,10 @@
  */
 package com.ca.mfaas.product.web;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.security.HttpsConfig;
+import com.ca.mfaas.security.HttpsConfigError;
 import com.ca.mfaas.security.HttpsFactory;
 import com.ca.mfaas.security.SecurityUtils;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
@@ -74,6 +77,9 @@ public class HttpConfig {
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
 
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
+
     @PostConstruct
     public void init() {
         try {
@@ -92,8 +98,11 @@ public class HttpConfig {
 
             factory.setSystemSslProperties();
         }
+        catch (HttpsConfigError e) {
+            System.exit(1); // NOSONAR
+        }
         catch (Exception e) {
-            log.error("Error in HTTPS configuration: {}", e.getMessage(), e);
+            apimlLog.log("apiml.common.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
     }
