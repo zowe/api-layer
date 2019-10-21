@@ -4,7 +4,7 @@
 
 describe('>>> Login bad test', () => {
     it('succesfully loads login page', () => {
-        cy.visit('/');
+        cy.visit(`${Cypress.env('catalogHomePage')}/`);
     });
 
     it('should not display header', () => {
@@ -14,20 +14,15 @@ describe('>>> Login bad test', () => {
     it('should fail with wrong credentials', () => {
         const user = { username: 'bad', password: 'bad' };
 
-        cy.get('button[type="submit"')
-            .as('submitButton')
-            .should('be.disabled');
-
         cy.get('#username').type(user.username);
         cy.get('#password').type(user.password);
-
-        cy.get('@submitButton').should('not.be.disabled');
+        cy.get('button[type="submit"').as('submitButton');
         cy.get('@submitButton').click();
 
         cy.url().should('contain', '/login');
 
         cy.get('.error-message-content')
             .should('exist')
-            .should('contain', 'Username or password is invalid.');
+            .should('contain', 'Invalid username or password ZWEAS120E');
     });
 });
