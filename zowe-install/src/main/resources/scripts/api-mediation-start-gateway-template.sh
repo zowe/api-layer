@@ -17,7 +17,7 @@ else
 fi
 
 # API Mediation Layer Debug Mode
-# To activate DEBUG mode, set LOG_LEVEL=DEBUG
+# To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
 LOG_LEVEL=
 
 DIR=`dirname $0`
