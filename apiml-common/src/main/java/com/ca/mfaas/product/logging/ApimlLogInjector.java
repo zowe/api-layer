@@ -39,10 +39,28 @@ public class ApimlLogInjector implements BeanPostProcessor {
             // make the field accessible if defined private
             ReflectionUtils.makeAccessible(field);
             if (field.getAnnotation(InjectApimlLogger.class) != null) {
-                ApimlLogger log = ApimlLogger.of(bean.getClass(), YamlMessageServiceInstance.getInstance());
+                Class clazz = getClass(bean);
+                ApimlLogger log = ApimlLogger.of(clazz, YamlMessageServiceInstance.getInstance());
                 field.set(bean, log);
             }
         });
         return bean;
+    }
+
+    private Class getClass(Object bean) {
+        Class clazz = bean.getClass();
+
+        String fullName = clazz.getName();
+        int index = fullName.indexOf('$');
+        if (index > -1) {
+            String className = fullName.substring(0, index);
+            try {
+                clazz =  Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                clazz = ApimlLogInjector.class;
+            }
+        }
+
+        return clazz;
     }
 }

@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
 public class MessageServiceConfiguration {
 
     @Bean
-    public MessageService messageServiceGateway() {
+    public MessageService messageService() {
         return new YamlMessageService("/gateway-messages.yml");
     }
 }

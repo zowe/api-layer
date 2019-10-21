@@ -3,7 +3,9 @@
     <property resource="application.yml" />
 
     <turboFilter class="com.ca.mfaas.product.logging.UseridFilter"/>
+    <turboFilter class="com.ca.mfaas.product.logging.ApimlDependencyLogHider"/>
     <turboFilter class="com.ca.mfaas.product.logging.LogLevelInfoFilter"/>
+
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
