@@ -16,6 +16,10 @@ else
   echo "Done."
 fi
 
+# API Mediation Layer Debug Mode
+# To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
+LOG_LEVEL=
+
 DIR=`dirname $0`
 
 java -Xms16m -Xmx512m -Dibm.serversocket.recover=true -Dfile.encoding=UTF-8 \
@@ -26,7 +30,7 @@ java -Xms16m -Xmx512m -Dibm.serversocket.recover=true -Dfile.encoding=UTF-8 \
     -Denvironment.eurekaPassword=password \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
-    -Dspring.profiles.include= \
+    -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=$DIR/../keystore/localhost/localhost.keystore.p12 \
