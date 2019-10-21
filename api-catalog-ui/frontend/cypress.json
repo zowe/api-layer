@@ -1,5 +1,10 @@
 {
-    "baseUrl": "http://localhost:3000",
-    "viewportWidth": 1400,
-    "viewportHeight": 980
+    "env":{
+        "catalogHomePage": "https://localhost:3000/",
+        "viewportWidth": 1400,
+        "viewportHeight": 980,
+        "username": "user",
+        "password": "user",
+        "baseUrl": "https://localhost:10010/ui/v1/apicatalog"
+    }
 }
