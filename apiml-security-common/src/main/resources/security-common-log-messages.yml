@@ -6,6 +6,11 @@ messages:
     # General messages
     # 100-199
 
+    - key: apiml.security.errorWrittingResponse
+      number: ZWEAM100
+      type: ERROR
+      text: "Couldn't write response: %s"
+
     # HTTP,Protocol messages
     # 400-499
 

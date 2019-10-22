@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 
 import java.net.URI;
 
@@ -32,6 +34,9 @@ public class GatewayInstanceInitializer {
     private final InstanceLookupExecutor instanceLookupExecutor;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final GatewayClient gatewayClient;
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     private GatewayConfigProperties process(InstanceInfo instanceInfo) {
         try {
@@ -76,7 +81,7 @@ public class GatewayInstanceInitializer {
             },
             (exception, isStopped) -> {
                 if (Boolean.TRUE.equals(isStopped)) {
-                    log.warn("GatewayInstanceInitializer has been stopped", exception);
+                    apimlLog.log("apiml.common.gatewayInstanceInitializerStopped",exception.getMessage());
                 }
             }
         );

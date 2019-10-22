@@ -17,6 +17,8 @@ import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.RequiredArgsConstructor;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
@@ -32,6 +34,9 @@ public class TransformService {
     private static final String SEPARATOR = "/";
 
     private final GatewayClient gatewayClient;
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Construct the URL using gateway hostname and route
@@ -49,9 +54,8 @@ public class TransformService {
                                RoutedServices routes) throws URLTransformationException {
 
         if (!gatewayClient.isInitialized()) {
-            String message = "Gateway not found yet, transform service cannot perform the request";
-            log.error(message);
-            throw new URLTransformationException(message);
+            apimlLog.log("apiml.common.gatewayNotFoundForTransformRequest");
+            throw new URLTransformationException("Gateway not found yet, transform service cannot perform the request");
         }
 
         URI serviceUri = URI.create(serviceUrl);

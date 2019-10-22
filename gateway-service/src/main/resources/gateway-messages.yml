@@ -1,6 +1,22 @@
 messages:
-    # Security messages (100 - 199)
-    # General messages (100 - 120)
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+
+    # HTTP,Protocol messages
+    # 400-499
+
+    # TLS,Certificate messages
+    # 500-599
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+
     - key: apiml.security.generic
       number: ZWEAG100E
       type: ERROR
@@ -52,3 +68,8 @@ messages:
       number: ZWEAG131E
       type: ERROR
       text: "No authorization token provided for URL '%s'"
+
+    - key: apiml.gateway.instanceNotFound
+      number: ZWEAG100
+      type: ERROR
+      text: "No instance of the service {} found. Routing will not be available."
