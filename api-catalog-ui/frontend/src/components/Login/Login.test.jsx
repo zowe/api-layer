@@ -70,36 +70,25 @@ describe('>>> Login page component tests', () => {
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
-            messageNumber: 'SEC0005',
+            messageNumber: 'ZWEAS120E',
             messageContent:
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.invalidUsername',
         });
-        expect(messageText).toEqual('Username or password is invalid (SEC0005)');
+        expect(messageText).toEqual('Invalid username or password ZWEAS120E');
     });
 
-    it('should display a no credentials message', () => {
+    it('should display authetication service not available message', () => {
         const wrapper = enzyme.shallow(<Login />);
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
-            messageNumber: 'UI0001',
-            message: 'Please provide a valid username and password',
-        });
-        expect(messageText).toEqual('Please provide a valid username and password');
-    });
-
-    it('should display authetication required', () => {
-        const wrapper = enzyme.shallow(<Login />);
-        const instance = wrapper.instance();
-        const messageText = instance.handleError({
-            messageType: 'ERROR',
-            messageNumber: 'SEC0001',
+            messageNumber: 'ZWEAS104E',
             messageContent:
-                "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
+                "Authentication service is not available by URL",
             messageKey: 'com.ca.mfaas.security.authenticationRequired',
         });
-        expect(messageText).toEqual('Authentication is required (SEC0001)');
+        expect(messageText).toEqual('Authentication service not available, please try again later ZWEAS104E');
     });
 
     it('should display session has expired', () => {
@@ -107,25 +96,25 @@ describe('>>> Login page component tests', () => {
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
-            messageNumber: 'SEC0004',
+            messageNumber: 'ZWEAS102E',
             messageContent:
-                "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
-            messageKey: 'com.ca.mfaas.security.sessionExpired',
+                "Token is expired for URL",
+            messageKey: 'apiml.security.expiredToken',
         });
-        expect(messageText).toEqual('Session has expired, please login again (SEC0004)');
+        expect(messageText).toEqual('Session has expired, please login again ZWEAS102E');
     });
 
-    it('should display server generated failure message', () => {
+    it('should display request timeout message', () => {
         const wrapper = enzyme.shallow(<Login />);
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
-            messageNumber: 'SEC00099',
+            messageNumber: 'MFS0104',
             messageContent:
-                "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
-            messageKey: 'com.ca.mfaas.security.otherError',
+                "No response received within the allowed time",
+            messageKey: 'apiml.common.serviceTimeout',
         });
-        expect(messageText).toContain(`SEC00099`);
+        expect(messageText).toEqual(`Request timeout, please try again later MFS0104`);
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
