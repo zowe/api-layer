@@ -10,6 +10,8 @@
 
 package com.ca.mfaas.gateway.security.service;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsConfigError;
 import com.ca.mfaas.security.SecurityUtils;
@@ -46,6 +48,9 @@ public class JwtSecurityInitializer {
     private Key jwtSecret;
     private PublicKey jwtPublicKey;
 
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
+
     @PostConstruct
     public void init() {
         signatureAlgorithm = SignatureAlgorithm.RS256;
@@ -55,11 +60,11 @@ public class JwtSecurityInitializer {
             jwtSecret = SecurityUtils.loadKey(config);
             jwtPublicKey = SecurityUtils.loadPublicKey(config);
         } catch (HttpsConfigError er) {
-            log.error(er.getMessage() + " [Code: " + er.getCode() + "]");
+            apimlLog.log("apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
         }
         if (jwtSecret == null || jwtPublicKey == null) {
             String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
-            log.error(errorMessage);
+            apimlLog.log("apiml.gateway.jwtAliasNotFound", keyAlias, keyStore);
             throw new HttpsConfigError(errorMessage, HttpsConfigError.ErrorCode.WRONG_KEY_ALIAS, config);
         }
     }

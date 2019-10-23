@@ -98,3 +98,13 @@ messages:
       number: ZWEAG103
       type: ERROR
       text: "Error opening connection to WebSocket service at %s: %s"
+
+    - key: apiml.gateway.jwtInitConfigError
+      number: ZWEAG104
+      type: ERROR
+      text: "Configuration error '%s' when trying to read jwt secret: %s"
+
+    - key: apiml.gateway.jwtAliasNotFound
+      number: ZWEAG105
+      type: ERROR
+      text: "Not found '%s' key alias in the keystore '%s'."
