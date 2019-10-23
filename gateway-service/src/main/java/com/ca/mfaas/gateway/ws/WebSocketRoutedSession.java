@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.gateway.ws;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -37,6 +39,9 @@ public class WebSocketRoutedSession {
     private final WebSocketSession webSocketClientSession;
     private final WebSocketSession webSocketServerSession;
     private final SslContextFactory jettySslContextFactory;
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory jettySslContextFactory) {
         log.debug("Creating WebSocketRoutedSession jettySslContextFactory={}", jettySslContextFactory);
@@ -87,7 +92,7 @@ public class WebSocketRoutedSession {
     private WebSocketProxyError webSocketProxyException(String targetUrl, Exception cause, WebSocketSession webSocketServerSession, boolean logError) {
         String message = String.format("Error opening session to WebSocket service at %s: %s", targetUrl, cause.getMessage());
         if (logError) {
-            log.error(message);
+            apimlLog.log("apiml.gateway.websocketSessionError", targetUrl, cause.getMessage());
         }
         return new WebSocketProxyError(message, cause, webSocketServerSession);
     }

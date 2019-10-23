@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.gateway.ws;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
@@ -47,6 +49,9 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     private final DiscoveryClient discovery;
     private final SslContextFactory jettySslContextFactory;
     private static final String SEPARATOR = "/";
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Autowired
     public WebSocketProxyServerHandler(DiscoveryClient discovery, SslContextFactory jettySslContextFactory) {
@@ -120,7 +125,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             WebSocketRoutedSession session = new WebSocketRoutedSession(webSocketSession, targetUrl, jettySslContextFactory);
             routedSessions.put(webSocketSession.getId(), session);
         } catch (WebSocketProxyError e) {
-            log.error("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage(), e);
+            apimlLog.log("apiml.gateway.websocketConnectionError",targetUrl,e.getMessage());
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
         }
     }

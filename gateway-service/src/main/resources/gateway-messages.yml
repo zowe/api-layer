@@ -83,3 +83,18 @@ messages:
       number: ZWEAG100
       type: ERROR
       text: "No instance of the service {} found. Routing will not be available."
+
+    - key: apiml.gateway.unresolvedRequest
+      number: ZWEAG101
+      type: ERROR
+      text: "Unresolved request error: %s"
+
+    - key: apiml.gateway.websocketSessionError
+      number: ZWEAG102
+      type: ERROR
+      text: "Error opening session to WebSocket service at %s: %s"
+
+    - key: apiml.gateway.websocketConnectionError
+      number: ZWEAG103
+      type: ERROR
+      text: "Error opening connection to WebSocket service at %s: %s"
