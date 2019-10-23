@@ -40,7 +40,7 @@ messages:
     - key: apiml.security.serviceUnavailable
       number: ZWEAG104E
       type: ERROR
-      text: "Authentication service is not available at URL '%s'"
+      text: "Authentication service is not available at URL '%s'. Error returned: '%s'"
 
     - key: apiml.security.authRequired
       number: ZWEAG105E
@@ -56,6 +56,21 @@ messages:
       number: ZWEAG107E
       type: WARNING
       text: "Incorrect value: apiml.security.auth.provider = '%s'. Authentication provider is not set correctly. Default 'zosmf' authentication provider is used."
+
+    - key: apiml.security.zosmfInstanceNotFound
+      number: ZWEAG108E
+      type: ERROR
+      text: "z/OSMF instance '%s' not found or incorrectly configured."
+
+    - key: apiml.security.zosmfDomainIsEmpty
+      number: ZWEAG109E
+      type: ERROR
+      text: "z/OSMF response does not contain field '%s'."
+
+    - key: apiml.security.errorParsingZosmfResponse
+      number: ZWEAG110E
+      type: ERROR
+      text: "Error parsing z/OSMF response. Error returned: '%s"
 
     # Login messages (120 - 130)
     - key: apiml.security.login.invalidCredentials
