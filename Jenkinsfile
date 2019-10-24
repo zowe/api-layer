@@ -171,7 +171,7 @@ pipeline {
                 stage('Build and unit test with coverage') {
                     steps {
                         timeout(time: 20, unit: 'MINUTES') {
-                            sh './gradlew build coverage'
+                            sh './gradlew build coverage --scan'
                         }
                     }
                 }
