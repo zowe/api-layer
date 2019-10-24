@@ -87,3 +87,6 @@ api-catalog-ui/frontend/debug.log
 debug.log
 api-layer.tar.gz
 package-lock.json
+
+# Docgen
+!docs/docgen/Docgen-1.0.jar

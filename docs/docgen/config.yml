@@ -1,0 +1,5 @@
+messageFiles:
+  - title: "Discovery service messages"
+    file: ../../discovery-service/src/main/resources/discovery-service-log-messages.yml
+
+outputFile: ErrorMessagesDocumentation.md
