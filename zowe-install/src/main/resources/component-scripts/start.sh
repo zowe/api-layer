@@ -21,8 +21,6 @@
 # - KEYSTORE - The keystore to use for SSL certificates
 # - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
 # - KEY_ALIAS - The alias of the key within the keystore
-# - ZOSMF_PORT - The SSL port z/OSMF is listening on.
-# - ZOSMF_IP_ADDRESS - The IP Address z/OSMF can be reached
 
 DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart \
