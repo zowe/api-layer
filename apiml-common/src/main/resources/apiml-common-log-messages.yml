@@ -7,12 +7,12 @@ messages:
     # 100-199
 
     - key: apiml.common.gatewayNotFoundForTransformRequest
-      number: ZWEAM100
+      number: ZWEAM102
       type: ERROR
       text: "Gateway not found yet, transform service cannot perform the request"
 
     - key: apiml.common.gatewayInstanceInitializerStopped
-      number: ZWEAM101
+      number: ZWEAM104
       type: WARNING
       text: "GatewayInstanceInitializer has been stopped due to exception: %s"
 

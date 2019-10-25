@@ -15,11 +15,15 @@ messages:
       number: ZWEAM100
       type: ERROR
       text: "Could not read properties from: '%s'"
+      reason: "The Build Info properties file was empty or null."
+      action: ""
 
     - key: apiml.common.buildInfoPropertiesIOError
       number: ZWEAM101
       type: ERROR
       text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
+      reason: ""
+      action: ""
 
     # HTTP, Protocol messages
     # 400-499
@@ -28,6 +32,8 @@ messages:
       number: ZWEAM400
       type: ERROR
       text: "Error initializing HTTP client: '%s'"
+      reason: ""
+      action: ""
 
     # TLS, Certificate messages
     # 500-599
@@ -36,56 +42,78 @@ messages:
       number: ZWEAM500
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
+      reason: ""
+      action: ""
 
     - key: apiml.common.unsecureHttpWarning
       number: ZWEAM501
       type: WARNING
       text: "Service is configured to use insecure HTTP protocol. For production use, please switch to HTTPS instead."
+      reason: ""
+      action: ""
 
     - key: apiml.common.errorReadingSecretKey
       number: ZWEAM502
       type: ERROR
       text: "Error reading secret key: '%s'"
+      reason: ""
+      action: ""
 
     - key: apiml.common.errorLoadingSecretKey
       number: ZWEAM503
       type: ERROR
       text: "Error loading secret key: '%s'"
+      reason: ""
+      action: ""
 
     - key: apiml.common.errorLoadingPublicKey
       number: ZWEAM504
       type: ERROR
       text: "Error loading public key: '%s'"
+      reason: ""
+      action: ""
 
     - key: apiml.common.errorInitSsl
       number: ZWEAM505
       type: ERROR
       text: "Error initializing SSL/TLS context: '%s'"
+      reason: ""
+      action: ""
 
     - key: apiml.common.truststorePasswordNotDefined
       number: ZWEAM506
       type: ERROR
       text: "Truststore Password configuration parameter is not defined"
+      reason: ""
+      action: ""
 
     - key: apiml.common.truststoreNotDefined
       number: ZWEAM507
       type: ERROR
       text: "Truststore configuration parameter is not defined but it is required"
+      reason: ""
+      action: ""
 
     - key: apiml.common.keystoreNotDefined
       number: ZWEAM508
       type: ERROR
       text: "Keystore not found, server.ssl.keyStore configuration parameter is not defined"
+      reason: ""
+      action: ""
 
     - key: apiml.common.keystorePasswordNotDefined
       number: ZWEAM509
       type: ERROR
       text: "Keystore password not found, server.ssl.keyStorePassword configuration parameter is not defined"
+      reason: ""
+      action: ""
 
     - key: apiml.common.invalidKeyAlias
       number: ZWEAM510
       type: ERROR
       text: "Invalid key alias '%s'"
+      reason: ""
+      action: ""
 
     # Various messages
     # 600-699
@@ -94,6 +122,8 @@ messages:
       number: ZWEAM600
       type: WARNING
       text: "Invalid parameter in metadata: '%s'"
+      reason: ""
+      action: ""
 
     # Service specific messages
     # 700-999

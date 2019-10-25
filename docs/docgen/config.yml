@@ -1,5 +1,7 @@
 messageFiles:
   - title: "Discovery service messages"
     file: ../../discovery-service/src/main/resources/discovery-service-log-messages.yml
+  - title: "Security common messages"
+    file: ../../apiml-security-common/src/main/resources/security-common-log-messages.yml
 
 outputFile: ErrorMessagesDocumentation.md

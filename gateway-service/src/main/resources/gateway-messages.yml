@@ -17,6 +17,38 @@ messages:
     # Service specific messages
     # 700-999
 
+    - key: apiml.gateway.instanceNotFound
+      number: ZWEAG700
+      type: ERROR
+      text: "No instance of the service {} found. Routing will not be available."
+
+    - key: apiml.gateway.unresolvedRequest
+      number: ZWEAG701
+      type: ERROR
+      text: "Unresolved request error: %s"
+
+    - key: apiml.gateway.websocketSessionError
+      number: ZWEAG702
+      type: ERROR
+      text: "Error opening session to WebSocket service at %s: %s"
+
+    - key: apiml.gateway.websocketConnectionError
+      number: ZWEAG703
+      type: ERROR
+      text: "Error opening connection to WebSocket service at %s: %s"
+
+    - key: apiml.gateway.jwtInitConfigError
+      number: ZWEAG704
+      type: ERROR
+      text: "Configuration error '%s' when trying to read jwt secret: %s"
+
+    - key: apiml.gateway.jwtAliasNotFound
+      number: ZWEAG705
+      type: ERROR
+      text: "Not found '%s' key alias in the keystore '%s'."
+
+    # Legacy messages
+
     - key: apiml.security.generic
       number: ZWEAG100E
       type: ERROR
@@ -94,32 +126,4 @@ messages:
       type: ERROR
       text: "No authorization token provided for URL '%s'"
 
-    - key: apiml.gateway.instanceNotFound
-      number: ZWEAG100
-      type: ERROR
-      text: "No instance of the service {} found. Routing will not be available."
 
-    - key: apiml.gateway.unresolvedRequest
-      number: ZWEAG101
-      type: ERROR
-      text: "Unresolved request error: %s"
-
-    - key: apiml.gateway.websocketSessionError
-      number: ZWEAG102
-      type: ERROR
-      text: "Error opening session to WebSocket service at %s: %s"
-
-    - key: apiml.gateway.websocketConnectionError
-      number: ZWEAG103
-      type: ERROR
-      text: "Error opening connection to WebSocket service at %s: %s"
-
-    - key: apiml.gateway.jwtInitConfigError
-      number: ZWEAG104
-      type: ERROR
-      text: "Configuration error '%s' when trying to read jwt secret: %s"
-
-    - key: apiml.gateway.jwtAliasNotFound
-      number: ZWEAG105
-      type: ERROR
-      text: "Not found '%s' key alias in the keystore '%s'."
