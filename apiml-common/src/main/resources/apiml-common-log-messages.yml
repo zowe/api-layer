@@ -10,6 +10,8 @@ messages:
       number: ZWEAM102
       type: ERROR
       text: "Gateway not found yet, transform service cannot perform the request"
+      reason: ""
+      action: ""
 
     - key: apiml.common.gatewayInstanceInitializerStopped
       number: ZWEAM104
@@ -23,6 +25,8 @@ messages:
       number: ZWEAM401
       type: ERROR
       text: "Unknown error in HTTPS configuration: '%s'"
+      reason: "An Unknown error occurred while setting up an HTTP client during service initialization followed by a system exit."
+      action: "Start the service again in debug mode to get a more descriptive message. This error indicates it is not a configuration issue."
 
     # TLS,Certificate messages
     # 500-599

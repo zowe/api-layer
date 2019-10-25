@@ -16,24 +16,29 @@ messages:
       type: ERROR
       text: "Could not read properties from: '%s'"
       reason: "The Build Info properties file was empty or null."
-      action: ""
+      action: "The jar file is not packaged correctly. Please submit an issue."
 
     - key: apiml.common.buildInfoPropertiesIOError
       number: ZWEAM101
       type: ERROR
       text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
-      reason: ""
-      action: ""
+      reason: "I/O error reading `META-INF/build-info.properties` or `META-INF/git.properties`"
+      action: "The jar file is not packaged correctly. Please submit an issue."
 
     # HTTP, Protocol messages
     # 400-499
 
-    - key: apiml.common.httpClientInitializationError
+    - key: apiml.common.sslContextInitializationError
       number: ZWEAM400
       type: ERROR
-      text: "Error initializing HTTP client: '%s'"
-      reason: ""
-      action: ""
+      text: "Error initializing SSL Context: '%s'"
+      reason: "An error occurred while initializing the SSL Context."
+      action: "Please refer to the specific message to identify the exact problem.\n
+      possible causes can include:\n
+      - Incorrect security algorithm\n
+      - Keystore invalid or corrupted\n
+      - Certificate invalid or corrupted"
+
 
     # TLS, Certificate messages
     # 500-599
@@ -42,15 +47,15 @@ messages:
       number: ZWEAM500
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
-      reason: ""
-      action: ""
+      reason: "This is a warning that the SSL Context will be created without verifying certificates."
+      action: "If this was not an intentional use, stop the service and set the verifySslCertificatesOfServices parameter to true. Then restart the service. Please do not use this option in production environment."
 
     - key: apiml.common.unsecureHttpWarning
       number: ZWEAM501
       type: WARNING
-      text: "Service is configured to use insecure HTTP protocol. For production use, please switch to HTTPS instead."
-      reason: ""
-      action: ""
+      text: "Service is connecting to Discovery service using insecure HTTP protocol."
+      reason: "Service is connecting to Discovery service using insecure HTTP protocol."
+      action: "For production use, please start Discovery service in HTTPS mode and configure the services accordingly."
 
     - key: apiml.common.errorReadingSecretKey
       number: ZWEAM502

@@ -181,8 +181,8 @@ public class HttpsFactory {
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                     | UnrecoverableKeyException | KeyManagementException e) {
-                apimlLog.log("apiml.common.httpClientInitializationError", e.getMessage());
-                throw new HttpsConfigError("Error initializing HTTP client: " + e.getMessage(), e,
+                apimlLog.log("apiml.common.sslContextInitializationError", e.getMessage());
+                throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
                         ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
         } else {
