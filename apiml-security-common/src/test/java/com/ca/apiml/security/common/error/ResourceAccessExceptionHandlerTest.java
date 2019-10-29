@@ -9,9 +9,9 @@
  */
 package com.ca.apiml.security.common.error;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.core.Message;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.doThrow;
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceAccessExceptionHandlerTest {
 
-    private final ErrorService errorService = new ErrorServiceImpl("/security-service-messages.yml");
+    private final MessageService messageService = new YamlMessageService("/security-service-messages.yml");
 
     private ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private MockHttpServletRequest httpServletRequest;
@@ -42,7 +42,7 @@ public class ResourceAccessExceptionHandlerTest {
 
     @Before
     public void setUp() {
-        resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(errorService, objectMapper);
+        resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
 
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
@@ -57,9 +57,9 @@ public class ResourceAccessExceptionHandlerTest {
 
     @Test(expected = ServletException.class)
     public void shouldThrowServletExceptionOnIOException() throws Exception {
-        ApiMessage message = errorService.createApiMessage(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        doThrow(new IOException("Error in writing response")).when(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        doThrow(new IOException("Error in writing response")).when(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
 
-        resourceAccessExceptionHandler.writeErrorResponse(message, HttpStatus.NOT_FOUND, httpServletResponse);
+        resourceAccessExceptionHandler.writeErrorResponse(message.mapToView(), HttpStatus.NOT_FOUND, httpServletResponse);
     }
 }

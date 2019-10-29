@@ -3,10 +3,13 @@
     <property resource="application.yml" />
 
     <turboFilter class="com.ca.mfaas.product.logging.UseridFilter"/>
+    <turboFilter class="com.ca.mfaas.product.logging.ApimlDependencyLogHider"/>
+    <turboFilter class="com.ca.mfaas.product.logging.LogLevelInfoFilter"/>
+
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr(&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt;){magenta} %X{userid:-} %clr(%-5level) %clr(\(%logger{15},%file:%line\)){cyan} %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr(&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt;){magenta} %X{userid:-} %clr(%-5level) %clr(\(%logger{15}\)){cyan} %msg%n</pattern>
         </encoder>
     </appender>
 

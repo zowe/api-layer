@@ -16,7 +16,6 @@ import com.ca.mfaas.utils.http.HttpRequestUtils;
 import com.ca.mfaas.utils.http.HttpSecurityUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -34,7 +33,6 @@ import java.util.LinkedHashMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
-@Slf4j
 public class ApiCatalogEndpointIntegrationTest {
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/api/v1/apicatalog/containers";
     private static final String INVALID_CONTAINER_ENDPOINT = "/api/v1/apicatalog/containerz";
@@ -132,9 +130,12 @@ public class ApiCatalogEndpointIntegrationTest {
         assertNotNull(apiCatalogSwagger, paths.get("/greeting"));
 
         assertFalse(apiCatalogSwagger, definitions.isEmpty());
+
         assertNotNull(apiCatalogSwagger, definitions.get("ApiMessage"));
+        assertNotNull(apiCatalogSwagger, definitions.get("ApiMessageView"));
         assertNotNull(apiCatalogSwagger, definitions.get("Greeting"));
-        assertNotNull(apiCatalogSwagger, definitions.get("Message"));
+        assertNotNull(apiCatalogSwagger, definitions.get("Pet"));
+        assertNotNull(apiCatalogSwagger, definitions.get("RedirectLocation"));
     }
 
     @Test

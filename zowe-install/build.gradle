@@ -1,5 +1,6 @@
 ext {
     artifactName = 'api-mediation-zowe-package'
+    pullNo = project.hasProperty("pullRequest")? "-" + project.getProperty("pullRequest") : ""
 }
 
 configurations {
@@ -20,7 +21,7 @@ dependencies {
 }
 
 task packageApiMediationZowe(type: Zip) {
-    archiveName = artifactName + ".zip"
+    archiveName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
 
      into('/') {
@@ -29,6 +30,16 @@ task packageApiMediationZowe(type: Zip) {
         from configurations.gatewayServiceJar
         from configurations.enablerSpringBootJar
         from configurations.discoverableClientJar
+    }
+
+    into('assets/') {
+        from "src/main/resources/assets/api-catalog.png"
+    }
+
+    into('bin/') {
+        from "$buildDir/convert/configure.sh"
+        from "$buildDir/convert/start.sh"
+        from "$buildDir/convert/validate.sh"
     }
 
     into('scripts/') {
@@ -59,6 +70,9 @@ packageApiMediationZowe.doFirst {
         add(file('../apiml-auth/pluginDefinition.json'));
         add(file('../apiml-auth/lib/apimlAuth.js'));
         add(file('../apiml-auth/lib/tokenInjector.js'));
+        add(file('src/main/resources/component-scripts/configure.sh'));
+        add(file('src/main/resources/component-scripts/start.sh'));
+        add(file('src/main/resources/component-scripts/validate.sh'));
     }};
     for (File scriptFile : scriptFiles){
         def inputStream = new InputStreamReader(new FileInputStream(scriptFile), "ISO-8859-1");
@@ -95,7 +109,7 @@ artifacts {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact("$buildDir/distributions/$artifactName" + ".zip")
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
         }
     }
 }

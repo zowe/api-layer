@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.apicatalog.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +18,6 @@ import org.springframework.context.annotation.Configuration;
  * Configuration of Tomcat for the API Gateway.
  */
 @Configuration
-@Slf4j
 public class TomcatConfiguration {
 
     @Bean

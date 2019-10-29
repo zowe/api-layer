@@ -9,8 +9,8 @@
  */
 package com.ca.apiml.security.common.error;
 
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public abstract class AbstractExceptionHandler {
     protected static final String ERROR_MESSAGE_500 = "500 Status Code: {}";
     private static final String CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE;
 
-    protected final ErrorService errorService;
+    protected final MessageService messageService;
     protected final ObjectMapper mapper;
 
     /**
@@ -48,7 +48,7 @@ public abstract class AbstractExceptionHandler {
 
     /**
      * Write message (by message key) to http response
-     * Error service resolves the message, see {@link ErrorService}
+     * Error service resolves the message, see {@link MessageService}
      *
      * @param messageKey Message key
      * @param status     Http response status
@@ -57,7 +57,7 @@ public abstract class AbstractExceptionHandler {
      * @throws ServletException throws when a message cannot be written to response
      */
     protected void writeErrorResponse(String messageKey, HttpStatus status, HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        final ApiMessage message = errorService.createApiMessage(messageKey, request.getRequestURI());
+        final ApiMessageView message = messageService.createMessage(messageKey, request.getRequestURI()).mapToView();
         writeErrorResponse(message, status, response);
     }
 
@@ -69,7 +69,7 @@ public abstract class AbstractExceptionHandler {
      * @param response Http response
      * @throws ServletException thrown when message cannot be written to response
      */
-    protected void writeErrorResponse(ApiMessage message, HttpStatus status, HttpServletResponse response) throws ServletException {
+    protected void writeErrorResponse(ApiMessageView message, HttpStatus status, HttpServletResponse response) throws ServletException {
         response.setStatus(status.value());
         response.setContentType(CONTENT_TYPE);
         try {

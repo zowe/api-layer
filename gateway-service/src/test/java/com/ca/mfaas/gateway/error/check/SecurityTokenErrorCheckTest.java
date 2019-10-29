@@ -12,13 +12,12 @@ package com.ca.mfaas.gateway.error.check;
 
 import com.ca.apiml.security.common.token.TokenExpireException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
 import com.ca.mfaas.gateway.error.ErrorUtils;
-import com.ca.mfaas.rest.response.ApiMessage;
-import com.ca.mfaas.rest.response.Message;
-import com.ca.mfaas.rest.response.MessageType;
-import com.ca.mfaas.rest.response.impl.BasicMessage;
+import com.ca.mfaas.message.api.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.core.MessageType;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.Before;
@@ -34,6 +33,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.test.context.junit4.SpringRunner;
 
+
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -47,7 +47,7 @@ public class SecurityTokenErrorCheckTest {
     private static SecurityTokenErrorCheck securityTokenErrorCheck;
 
     @Autowired
-    private ErrorService errorService;
+    private MessageService messageService;
 
     @BeforeClass
     public static void initMocks() {
@@ -56,7 +56,7 @@ public class SecurityTokenErrorCheckTest {
 
     @Before
     public void setup() {
-        securityTokenErrorCheck = new SecurityTokenErrorCheck(errorService);
+        securityTokenErrorCheck = new SecurityTokenErrorCheck(messageService);
     }
 
 
@@ -70,12 +70,12 @@ public class SecurityTokenErrorCheckTest {
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
-        ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
+        ResponseEntity<ApiMessageView> actualResponse = securityTokenErrorCheck.checkError(request, exc);
 
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
-        List<Message> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
+        List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
+        assertThat(actualMessageList, hasItem(new ApiMessage<>("apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
     }
 
     @Test
@@ -88,21 +88,21 @@ public class SecurityTokenErrorCheckTest {
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
-        ResponseEntity<ApiMessage> actualResponse = securityTokenErrorCheck.checkError(request, exc);
+        ResponseEntity<ApiMessageView> actualResponse = securityTokenErrorCheck.checkError(request, exc);
 
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
-        List<Message> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new BasicMessage("apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
+        List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
+        assertThat(actualMessageList, hasItem(new ApiMessage<>("apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
     }
 
     @Configuration
     static class ContextConfiguration {
 
         @Bean
-        public ErrorService errorService() {
-            return new ErrorServiceImpl("/gateway-messages.yml");
+        public MessageService messageService() {
+            return new YamlMessageService("/gateway-messages.yml");
         }
     }
 }

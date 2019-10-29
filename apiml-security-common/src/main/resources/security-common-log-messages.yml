@@ -1,0 +1,26 @@
+messages:
+
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+
+    # HTTP,Protocol messages
+    # 400-499
+
+    # TLS,Certificate messages
+    # 500-599
+
+    # Various messages
+    # 600-699
+
+    - key: apiml.security.zosmfNotFound
+      number: ZWEAM601
+      type: ERROR
+      text: "z/OSMF service name not found. Set property apiml.security.auth.zosmfServiceId to your service name."
+
+    # Service specific messages
+    # 700-999
+
+    # Legacy messages

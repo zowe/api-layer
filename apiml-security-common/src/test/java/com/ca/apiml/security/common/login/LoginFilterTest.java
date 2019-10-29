@@ -13,10 +13,10 @@ import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.common.error.ErrorType;
 import com.ca.apiml.security.common.error.ResourceAccessExceptionHandler;
 import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
+import com.ca.mfaas.message.core.Message;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
-import com.ca.mfaas.rest.response.ApiMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -167,8 +167,8 @@ public class LoginFilterTest {
 
     private void testFailWithResourceAccessError(RuntimeException exception, ErrorType errorType) throws IOException, ServletException {
         ObjectMapper objectMapper = mock(ObjectMapper.class);
-        ErrorService errorService = new ErrorServiceImpl("/security-service-messages.yml");
-        ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(errorService, objectMapper);
+        MessageService messageService = new YamlMessageService("/security-service-messages.yml");
+        ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
         loginFilter = new LoginFilter("TEST_ENDPOINT", authenticationSuccessHandler,
             authenticationFailureHandler, objectMapper, authenticationManager, resourceAccessExceptionHandler);
 
@@ -182,7 +182,7 @@ public class LoginFilterTest {
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
-        ApiMessage message = errorService.createApiMessage(errorType.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(errorType.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 }

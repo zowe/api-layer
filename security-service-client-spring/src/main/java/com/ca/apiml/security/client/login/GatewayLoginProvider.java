@@ -12,7 +12,6 @@ package com.ca.apiml.security.client.login;
 import com.ca.apiml.security.client.service.GatewaySecurityService;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +23,6 @@ import java.util.Optional;
 /**
  * Authentication provider that authenticates UsernamePasswordAuthenticationToken against Gateway
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class GatewayLoginProvider implements AuthenticationProvider {

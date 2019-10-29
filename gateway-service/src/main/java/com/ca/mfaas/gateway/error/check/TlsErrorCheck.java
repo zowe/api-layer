@@ -9,11 +9,12 @@
  */
 package com.ca.mfaas.gateway.error.check;
 
-import com.ca.mfaas.error.ErrorService;
 import com.ca.mfaas.gateway.error.ErrorUtils;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.api.ApiMessageView;
+import com.ca.mfaas.message.core.MessageService;
 import com.netflix.zuul.exception.ZuulException;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -27,14 +28,11 @@ import javax.servlet.http.HttpServletRequest;
  * Checks whether the error was caused by timeout (service not responding).
  */
 @Slf4j
+@RequiredArgsConstructor
 public class TlsErrorCheck implements ErrorCheck {
-    private final ErrorService errorService;
+    private final MessageService messageService;
 
-    public TlsErrorCheck(ErrorService errorService) {
-        this.errorService = errorService;
-    }
-
-    public ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc) {
+    public ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException) {
             int exceptionIndex = ExceptionUtils.indexOfType(exc, SSLException.class);
             if (exceptionIndex != -1) {
@@ -47,9 +45,9 @@ public class TlsErrorCheck implements ErrorCheck {
         return null;
     }
 
-    private ResponseEntity<ApiMessage> tlsErrorResponse(HttpServletRequest request, String message) {
-        ApiMessage apiMessage = errorService.createApiMessage("apiml.common.tlsError", ErrorUtils.getGatewayUri(request),
-                message);
+    private ResponseEntity<ApiMessageView> tlsErrorResponse(HttpServletRequest request, String message) {
+        ApiMessageView apiMessage = messageService.createMessage("apiml.common.tlsError", ErrorUtils.getGatewayUri(request),
+                message).mapToView();
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(apiMessage);
     }
 }

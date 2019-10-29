@@ -22,7 +22,6 @@ import com.ca.mfaas.product.routing.RoutedServices;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -35,7 +34,6 @@ import java.util.List;
 /**
  * Retrieves the API documentation for a registered service
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class APIDocRetrievalService {

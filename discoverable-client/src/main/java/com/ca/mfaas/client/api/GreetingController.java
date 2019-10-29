@@ -12,7 +12,6 @@ package com.ca.mfaas.client.api;
 import com.ca.mfaas.client.model.Greeting;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +21,6 @@ import java.util.Date;
 /**
  * Version 1 of the controller that returns greetings.
  */
-@Slf4j
 @RestController
 @Api(tags = {"Other Operations"}, description = "General Operations")
 public class GreetingController {
@@ -40,7 +38,6 @@ public class GreetingController {
             try {
                 Thread.sleep(delayMs);
             } catch (InterruptedException e) {
-                log.warn("Delay interrupted", e);
                 Thread.currentThread().interrupt();
             }
         }

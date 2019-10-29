@@ -13,7 +13,6 @@ import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -32,7 +31,6 @@ import java.io.IOException;
 /**
  * Filter for /query endpoint requests with JWT token.
  */
-@Slf4j
 public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;

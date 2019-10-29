@@ -9,13 +9,12 @@
  */
 package com.ca.mfaas.gateway.error.check;
 
-import com.ca.mfaas.rest.response.ApiMessage;
-
+import com.ca.mfaas.message.api.ApiMessageView;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletRequest;
 
 @FunctionalInterface
 public interface ErrorCheck {
-    ResponseEntity<ApiMessage> checkError(HttpServletRequest request, Throwable exc);
+    ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc);
 }

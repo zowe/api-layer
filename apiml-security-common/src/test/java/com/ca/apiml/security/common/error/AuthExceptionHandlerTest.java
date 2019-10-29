@@ -11,9 +11,9 @@ package com.ca.apiml.security.common.error;
 
 import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.error.ErrorService;
-import com.ca.mfaas.error.impl.ErrorServiceImpl;
-import com.ca.mfaas.rest.response.ApiMessage;
+import com.ca.mfaas.message.core.Message;
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +42,7 @@ import static org.mockito.Mockito.verify;
 public class AuthExceptionHandlerTest {
 
     @Autowired
-    private ErrorService errorService;
+    private MessageService messageService;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -54,7 +54,7 @@ public class AuthExceptionHandlerTest {
 
     @Before
     public void setup() {
-        authExceptionHandler = new AuthExceptionHandler(errorService, objectMapper);
+        authExceptionHandler = new AuthExceptionHandler(messageService, objectMapper);
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
 
@@ -71,8 +71,8 @@ public class AuthExceptionHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Test
@@ -85,8 +85,8 @@ public class AuthExceptionHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Test
@@ -99,8 +99,8 @@ public class AuthExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Test
@@ -111,8 +111,8 @@ public class AuthExceptionHandlerTest {
         assertEquals(HttpStatus.METHOD_NOT_ALLOWED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Test
@@ -125,8 +125,8 @@ public class AuthExceptionHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Test
@@ -139,8 +139,8 @@ public class AuthExceptionHandlerTest {
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Test
@@ -151,8 +151,8 @@ public class AuthExceptionHandlerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
 
-        ApiMessage message = errorService.createApiMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), serviceException.getMessage(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message);
+        Message message = messageService.createMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), serviceException.getMessage(), httpServletRequest.getRequestURI());
+        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
     @Test(expected = ServletException.class)
@@ -167,8 +167,8 @@ public class AuthExceptionHandlerTest {
     @Configuration
     static class ContextConfiguration {
         @Bean
-        public ErrorService errorService() {
-            return new ErrorServiceImpl("/security-service-messages.yml");
+        public MessageService messageService() {
+            return new YamlMessageService("/security-service-messages.yml");
         }
     }
 }

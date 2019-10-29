@@ -16,13 +16,17 @@ else
   echo "Done."
 fi
 
+# API Mediation Layer Debug Mode
+# To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
+LOG_LEVEL=
+
 DIR=`dirname $0`
 
 java -Xms32m -Xmx256m -Xquickstart \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
-    -Dspring.profiles.include= \
+    -Dspring.profiles.include=$LOG_LEVEL \
     -Dapiml.service.hostname=**HOSTNAME** \
     -Dapiml.service.port=**GATEWAY_PORT** \
     -Dapiml.service.discoveryServiceUrls=https://**HOSTNAME**:**DISCOVERY_PORT**/eureka/ \
