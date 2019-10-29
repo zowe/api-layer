@@ -21,7 +21,7 @@ messages:
     - key: apiml.common.buildInfoPropertiesIOError
       number: ZWEAM101
       type: ERROR
-      text: "ΙΟ Error reading properties from: '%s' Details: '%s'"
+      text: "I/O Error reading properties from: '%s' Details: '%s'"
       reason: "I/O error reading `META-INF/build-info.properties` or `META-INF/git.properties`"
       action: "The jar file is not packaged correctly. Please submit an issue."
 
@@ -61,64 +61,77 @@ messages:
       number: ZWEAM502
       type: ERROR
       text: "Error reading secret key: '%s'"
-      reason: ""
-      action: ""
+      reason: "No key with private key entry could be used in the keystore."
+      action: "Ensure that the configured key is present, has the right format and is not corrupt."
 
     - key: apiml.common.errorLoadingSecretKey
       number: ZWEAM503
       type: ERROR
-      text: "Error loading secret key: '%s'"
-      reason: ""
-      action: ""
+      text: "Error reading secret key: '%s'"
+      reason: "Error reading secret key."
+      action: "Please refer to the specific message to identify the exact problem.\n
+      possible causes can include:\n
+      - Incorrect security algorithm\n
+      - Keystore invalid or corrupted\n
+      - Certificate invalid or corrupted"
 
     - key: apiml.common.errorLoadingPublicKey
       number: ZWEAM504
       type: ERROR
-      text: "Error loading public key: '%s'"
-      reason: ""
-      action: ""
+      text: "Error reading public key: '%s'"
+      reason: "Error reading secret key."
+      action: "Please refer to the specific message to identify the exact problem.\n
+      possible causes can include:\n
+      - Incorrect security algorithm\n
+      - Keystore invalid or corrupted\n
+      - Certificate invalid or corrupted"
 
     - key: apiml.common.errorInitSsl
       number: ZWEAM505
       type: ERROR
       text: "Error initializing SSL/TLS context: '%s'"
-      reason: ""
-      action: ""
+      reason: "Error initializing SSL/TLS context."
+      action: "Please refer to the specific message to identify the exact problem.\n
+      possible causes can include:\n
+      - Incorrect security algorithm\n
+      - Keystore invalid or corrupted\n
+      - Certificate invalid or corrupted"
+
 
     - key: apiml.common.truststorePasswordNotDefined
       number: ZWEAM506
       type: ERROR
       text: "Truststore Password configuration parameter is not defined"
-      reason: ""
-      action: ""
+      reason: "Your truststore password was not set in the configuration."
+      action: "Ensure that the parameter server.ssl.trustStorePassword contains the correct password for your truststore."
 
     - key: apiml.common.truststoreNotDefined
       number: ZWEAM507
       type: ERROR
       text: "Truststore configuration parameter is not defined but it is required"
-      reason: ""
-      action: ""
+      reason: "The truststore usage is mandatory, but the truststore location is not provided."
+      action: "If you need a truststore, edit the server.ssl.truststore, server.ssl.truststorePassword and server.ssl.truststoreType parameters with valid data. If you do not require a truststore, change the trustStoreRequired boolean parameter to false."
 
     - key: apiml.common.keystoreNotDefined
       number: ZWEAM508
       type: ERROR
       text: "Keystore not found, server.ssl.keyStore configuration parameter is not defined"
-      reason: ""
-      action: ""
+      reason: "Your keystore path was not set in the configuration."
+      action: "Ensure that the correct path to your keystore is contained in the parameter server.ssl.keyStore in the properties or yaml file of your service."
 
     - key: apiml.common.keystorePasswordNotDefined
       number: ZWEAM509
       type: ERROR
       text: "Keystore password not found, server.ssl.keyStorePassword configuration parameter is not defined"
-      reason: ""
-      action: ""
+      reason: "Your keystore password was not set in the configuration."
+      action: "Ensure that the correct password to your keystore in the parameter server.ssl.keyStorePassword is contained in the properties or yaml file of your service."
 
     - key: apiml.common.invalidKeyAlias
       number: ZWEAM510
       type: ERROR
       text: "Invalid key alias '%s'"
-      reason: ""
-      action: ""
+      reason: "The key alias was not found."
+      action: "Ensure that the key alias provided for the key exists in the provided keystore."
 
     # Various messages
     # 600-699
@@ -127,8 +140,8 @@ messages:
       number: ZWEAM600
       type: WARNING
       text: "Invalid parameter in metadata: '%s'"
-      reason: ""
-      action: ""
+      reason: "An invalid apiInfo parameter was found while parsing the service metadata."
+      action: "Remove or fix the referenced metadata parameter."
 
     # Service specific messages
     # 700-999
