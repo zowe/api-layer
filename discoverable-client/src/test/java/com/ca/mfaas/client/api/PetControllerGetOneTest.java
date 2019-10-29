@@ -24,9 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,7 +60,7 @@ public class PetControllerGetOneTest {
 
         this.mockMvc.perform(get("/api/v1/pets/" + id))
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0001')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0001E')].messageContent", hasItem(message)));
     }
 
     @Test
@@ -72,7 +70,7 @@ public class PetControllerGetOneTest {
 
         this.mockMvc.perform(get("/api/v1/pets/" + id))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0003')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0003E')].messageContent", hasItem(message)));
         verify(petService, never()).getById(any());
     }
 

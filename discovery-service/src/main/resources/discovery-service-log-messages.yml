@@ -23,7 +23,7 @@ messages:
       type: WARNING
       text: "Static API definition directory '%s' is not a directory or does not exist"
       reason: "One of the specified static API definition directories does not exist or is not a directory."
-      action: "Review the static API definition directories and their setup. The static definition directories is specified as a launch parameter to a discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
+      action: "Review the static API definition directories and their setup. The static definition directories are specified as a launch parameter to a discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
 
     - key: apiml.discovery.errorParsingStaticDefinitionFile
       number: ZWEAD701
@@ -53,8 +53,8 @@ messages:
     - key: apiml.discovery.errorReadingStaticDefinitionFolder
       number: ZWEAD703
       type: ERROR
-      text: "I/O problem occurred during reading static API definition directory: '%s'"
-      reason: "The property files of type .yml were not found."
-      action: "Review the paths for validity of your .yml files."
+      text: "Problem occurred during reading static API definition directory: '%s'"
+      reason: "The specified static API definition folder was either empty or the definition does not denote a directory or I/O error occurred while attempting to read it."
+      action: "Review the static API definition directory definition and it's contents on the storage. The static definition directories are specified as a launch parameter to a discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
 
     # Legacy messages

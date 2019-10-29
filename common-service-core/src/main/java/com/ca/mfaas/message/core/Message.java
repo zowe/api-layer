@@ -144,7 +144,7 @@ public final class Message {
         return new ApiMessage(
             requestedKey,
             messageTemplate.getType(),
-            messageTemplate.getNumber(),
+            messageTemplate.getNumber() + messageTemplate.getType().toChar(),
             getConvertedText());
     }
 
