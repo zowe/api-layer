@@ -20,7 +20,9 @@ messages:
     - key: apiml.gateway.instanceNotFound
       number: ZWEAG700
       type: ERROR
-      text: "No instance of the service {} found. Routing will not be available."
+      text: "No instance of the service '%s' found. Routing will not be available."
+      reason: "Gateway could not find the instance of the service from the Discovery Service."
+      action: "Please check if the service was successfully registered to the Discovery Service and wait for the refresh of routes definitions done by Spring Cloud."
 
     - key: apiml.gateway.unresolvedRequest
       number: ZWEAG701
@@ -31,6 +33,8 @@ messages:
       number: ZWEAG702
       type: ERROR
       text: "Error opening session to WebSocket service at %s: %s"
+      reason: "A problem occurred while trying to create a WebSocket client session."
+      action: ""
 
     - key: apiml.gateway.websocketConnectionError
       number: ZWEAG703
@@ -41,11 +45,15 @@ messages:
       number: ZWEAG704
       type: ERROR
       text: "Configuration error '%s' when trying to read jwt secret: %s"
+      reason: "A problem occurred while trying to read the jwt secret key from the keystore."
+      action: "Please review the mandatory fields used in the configuration such as the keystore location path, the keystore and key password, and the keystore type."
 
     - key: apiml.gateway.jwtAliasNotFound
       number: ZWEAG705
       type: ERROR
       text: "Not found '%s' key alias in the keystore '%s'."
+      reason: "The key alias was not found in the keystore because there was a problem while trying to load either the jwt secret key or the jwt public key from the configuration."
+      action: "Ensure that the key alias is specified and correct."
 
     # Legacy messages
 

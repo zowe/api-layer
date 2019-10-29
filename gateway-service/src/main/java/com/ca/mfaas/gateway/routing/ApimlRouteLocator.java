@@ -76,7 +76,7 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
                 // configured
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
                 if (serviceInstances == null || serviceInstances.isEmpty()) {
-                    apimlLog.log("apiml.gateway.instanceNotFound");
+                    apimlLog.log("apiml.gateway.instanceNotFound", serviceId);
                     return null;
                 }
 

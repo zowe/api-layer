@@ -88,7 +88,7 @@ public class InternalServerErrorController implements ErrorController {
         final String errorMessage = ErrorUtils.getErrorMessage(request);
         Message message = messageService.createMessage("apiml.common.internalRequestError", ErrorUtils.getGatewayUri(request),
             ExceptionUtils.getMessage(exc), ExceptionUtils.getRootCauseMessage(exc));
-        apimlLog.log("Unresolved request error: {}", errorMessage);
+        apimlLog.log("apiml.gateway.unresolvedRequest", errorMessage);
         return ResponseEntity.status(status).body(message.mapToView());
     }
 
