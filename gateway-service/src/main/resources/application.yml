@@ -197,7 +197,7 @@ logging:
         ROOT: INFO
         com.ca.mfaas: DEBUG
         org.springframework: INFO
-        org.apache.catalina: INFO
+        org.apache: INFO
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN

@@ -23,16 +23,18 @@ import java.util.List;
 public class ApimlDependencyLogHider extends TurboFilter {
 
     private static final List<String> IGNORED_MESSAGE_KEYWORDS = Arrays.asList(
-        "Tomcat initialized",
-        "Tomcat started on port(s)",
+        "Tomcat initialized", "Tomcat started on port(s)",
         "lease doesn't exist", "Not Found (Renew)",
         "route 53",
+        "dirty timestamp", "Using the existing instanceInfo instead of the new instanceInfo as the registrant",
         "eureka.server.peer-node-read-timeout-ms",
         "Found more than one MBeanServer instance",
-        "dirty timestamp", "Using the existing instanceInfo instead of the new instanceInfo as the registrant",
         "Network level connection to peer",
+        "DS: Registry: expired lease for",
 
-        "No routes found from RouteLocator");
+        "No routes found from RouteLocator",
+        "Exception Processing ErrorPage",
+        "Error while sending response to client");
 
     private boolean isFilterActive;
 
