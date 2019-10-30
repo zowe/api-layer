@@ -99,26 +99,36 @@ messages:
       number: ZWEAG106
       type: WARNING
       text: "Login endpoint is running in the dummy mode. Use credentials user/user to login. Do not use this option in the production environment."
+      reason: "The authentication is running in a dummy mode."
+      action: "If you want to use the z/OSMF authentication provider, configure a valid z/OSMF instance and modify the Gateway configuration to use the z/OSMF authentication provider by changing the properties under apiml.security.auth."
 
     - key: apiml.security.invalidAuthenticationProvider
       number: ZWEAG107
       type: WARNING
       text: "Incorrect value: apiml.security.auth.provider = '%s'. Authentication provider is not set correctly. Default 'zosmf' authentication provider is used."
+      reason: "Incorrect value of the apiml.security.auth.provider parameter set in the configuration."
+      action: "Ensure that the value of apiml.security.auth.provider is set either to 'dummy' if you want to use the dummy mode, or to 'zosmf' if you want to use the z/OSMF authentication provider."
 
     - key: apiml.security.zosmfInstanceNotFound
       number: ZWEAG108
       type: ERROR
       text: "z/OSMF instance '%s' not found or incorrectly configured."
+      reason: "Gateway could not find z/OSMF instance from the Discovery Service. "
+      action: "Ensure that z/OSMF instance is configured correctly and that is successfully registered to the Discovery Service."
 
     - key: apiml.security.zosmfDomainIsEmpty
       number: ZWEAG109
       type: ERROR
       text: "z/OSMF response does not contain field '%s'."
+      reason: "The z/OSMF domain cannot be read."
+      action: "Review the z/OSMF domain value contained in the response received from the 'zosmf/info' REST endpoint."
 
     - key: apiml.security.errorParsingZosmfResponse
       number: ZWEAG110
       type: ERROR
       text: "Error parsing z/OSMF response. Error returned: '%s"
+      reason: "Error parsing z/OSMF JSON response."
+      action: "Please check the JSON response received from the 'zosmf/info' REST endpoint."
 
     # Login messages (120 - 130)
     - key: apiml.security.login.invalidCredentials

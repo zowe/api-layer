@@ -20,7 +20,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.stereotype.Component;
 
 /**
- * Initialize authentication and authorization provider set by apiml.security.auth.authProvider parameter
+ * Initialize authentication and authorization provider set by apiml.security.auth.provider parameter
  */
 @Component
 public class AuthProviderInitializer {
@@ -64,7 +64,7 @@ public class AuthProviderInitializer {
     }
 
     /**
-     * Get login provider according apiml.security.auth.authProvider parameter
+     * Get login provider according apiml.security.auth.provider parameter
      *
      * @return login provider
      */
