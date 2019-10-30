@@ -48,12 +48,12 @@ messages:
       reason: "A problem occurred while trying to read the jwt secret key from the keystore."
       action: "Please review the mandatory fields used in the configuration such as the keystore location path, the keystore and key password, and the keystore type."
 
-    - key: apiml.gateway.jwtAliasNotFound
+    - key: apiml.gateway.jwtKeyMissing
       number: ZWEAG705
       type: ERROR
-      text: "Not found '%s' key alias in the keystore '%s'."
-      reason: "The key alias was not found in the keystore because there was a problem while trying to load either the jwt secret key or the jwt public key from the configuration."
-      action: "Ensure that the key alias is specified and correct."
+      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'."
+      reason: "Failed to load public or private key from keystore during JWT Token initialization."
+      action: "Ensure that the key alias is specified and correct. Verify keys are present in the keystore."
 
     # Legacy messages
 

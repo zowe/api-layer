@@ -7,6 +7,8 @@ messages:
       number: ZWEAM000
       type: INFO
       text: "%s has been started in %s seconds"
+      reason: "The service has been started"
+      action: ""
 
     # General messages
     # 100-199
@@ -151,29 +153,41 @@ messages:
     - key: apiml.common.invalidMessageKey
       number: MFS0001
       type: ERROR
-      text: "Internal error: Invalid message key '%s' is provided. Please contact support for further assistance."
+      text: "Internal error: Invalid message key '%s' is provided. Please create an issue with this message."
+      reason: "Message service has been asked to create message with invalid key."
+      action: "Please create an issue with this message."
 
     - key: apiml.common.invalidMessageTextFormat
       number: MFS0002
       type: ERROR
-      text: "Internal error: Invalid message text format. Please contact support for further assistance."
+      text: "Internal error: Invalid message text format. Please create an issue with this message."
+      reason: "Message service has been asked to create message with invalid text format."
+      action: "Please create an issue with this message."
 
     - key: apiml.common.endPointNotFound
       number: MFS0103
       type: ERROR
       text: "The endpoint you were looking for '%s' could not be located"
+      reason: "The endpoint you were looking for was not found."
+      action: "Please verify that the URL of the endpoint you are trying to reach is correct."
 
     - key: apiml.common.serviceTimeout
       number: MFS0104
       type: ERROR
       text: "No response received within the allowed time: %s"
+      reason: "No response received within the allowed time."
+      action: "Please verify that the URL you are trying to reach is correct and all services are running."
 
     - key: apiml.common.tlsError
       number: AML0105
       type: ERROR
-      text: "The certificate of the service accessed by HTTPS using URI '%s' is not trusted by the API Gateway: %s"
+      text: "The certificate of the service accessed using URL '%s' is not trusted by the API Gateway: %s"
+      reason: "Gateway does not trust the requested service and refuses to communicate with it. The service's certificate is missing from API Mediation Layer's truststore."
+      action: "Please contact your administrator to verify API mediation layer truststore configuration."
 
     - key: apiml.common.internalRequestError
       number: AML0106
       type: ERROR
-      text: "The request to the URI '%s' has failed: %s caused by: %s"
+      text: "The request to the URL '%s' has failed: %s caused by: %s"
+      reason: "Request failed because of internal error."
+      action: "Please refer to the specific message. Please create an issue with this message."

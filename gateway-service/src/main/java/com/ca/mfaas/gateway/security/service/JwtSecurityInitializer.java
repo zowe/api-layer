@@ -64,7 +64,7 @@ public class JwtSecurityInitializer {
         }
         if (jwtSecret == null || jwtPublicKey == null) {
             String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
-            apimlLog.log("apiml.gateway.jwtAliasNotFound", keyAlias, keyStore);
+            apimlLog.log("apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
             throw new HttpsConfigError(errorMessage, HttpsConfigError.ErrorCode.WRONG_KEY_ALIAS, config);
         }
     }

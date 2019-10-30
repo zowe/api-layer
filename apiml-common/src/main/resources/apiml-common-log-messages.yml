@@ -10,13 +10,15 @@ messages:
       number: ZWEAM102
       type: ERROR
       text: "Gateway not found yet, transform service cannot perform the request"
-      reason: ""
-      action: ""
+      reason: "Transform service has been requested to transform an url, but Gateway instance has not been discovered yet."
+      action: "Please wait with performing requests for the API Mediation layer to fully initialize after startup. Check if your Discovery service is running and if all services (especially Gateway) are discovered correctly."
 
     - key: apiml.common.gatewayInstanceInitializerStopped
       number: ZWEAM104
       type: WARNING
       text: "GatewayInstanceInitializer has been stopped due to exception: %s"
+      reason: "Unexpected exception while retrieving Gateway service instance from Discovery service."
+      action: "Please check if both the service and Gateway can register with Discovery. If the services are not registering, investigate the reason why. If no cause can be determined, create an issue."
 
     # HTTP,Protocol messages
     # 400-499
