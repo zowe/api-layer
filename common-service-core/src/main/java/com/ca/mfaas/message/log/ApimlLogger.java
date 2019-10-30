@@ -67,8 +67,17 @@ public final class ApimlLogger {
     public void log(String key, Object... parameters) {
         if (messageService != null) {
             Message message = messageService.createMessage(key, parameters);
-            log(message.getMessageTemplate().getType(), message.mapToLogMessage());
+            log(message);
         }
+    }
+
+    /**
+     * Method which allows to log text in its level type, without passing message parameters.
+     *
+     * @param message the message
+     */
+    public void log(Message message) {
+        log(message.getMessageTemplate().getType(), message.mapToLogMessage());
     }
 
     /**

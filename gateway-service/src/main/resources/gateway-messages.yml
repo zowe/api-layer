@@ -24,11 +24,6 @@ messages:
       reason: "Gateway could not find the instance of the service from the Discovery Service."
       action: "Please check if the service was successfully registered to the Discovery Service and wait for the refresh of routes definitions done by Spring Cloud."
 
-    - key: apiml.gateway.unresolvedRequest
-      number: ZWEAG701
-      type: ERROR
-      text: "Unresolved request error: %s"
-
     - key: apiml.gateway.websocketSessionError
       number: ZWEAG702
       type: ERROR
@@ -75,11 +70,15 @@ messages:
       number: ZWEAG102
       type: ERROR
       text: "Token is not valid"
+      reason: "The JWT token is not valid"
+      action: "Please provide valid token."
 
     - key: apiml.gateway.security.expiredToken
       number: ZWEAG103
       type: ERROR
       text: "Token is expired"
+      reason: "The JWT token is expired"
+      action: "Obtain new token by performing authentication request."
 
     - key: apiml.security.serviceUnavailable
       number: ZWEAG104

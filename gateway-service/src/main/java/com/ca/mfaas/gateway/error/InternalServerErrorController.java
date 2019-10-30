@@ -17,7 +17,6 @@ import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,12 +46,13 @@ public class InternalServerErrorController implements ErrorController {
     private final MessageService messageService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
 
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
+    private ApimlLogger apimlLog;
 
     @Autowired
     public InternalServerErrorController(MessageService messageService) {
         this.messageService = messageService;
+        this.apimlLog = ApimlLogger.of(InternalServerErrorController.class, messageService);
+
         errorChecks.add(new TlsErrorCheck(messageService));
         errorChecks.add(new TimeoutErrorCheck(messageService));
         errorChecks.add(new SecurityTokenErrorCheck(messageService));
@@ -85,10 +85,12 @@ public class InternalServerErrorController implements ErrorController {
 
     private ResponseEntity<ApiMessageView> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
-        final String errorMessage = ErrorUtils.getErrorMessage(request);
-        Message message = messageService.createMessage("apiml.common.internalRequestError", ErrorUtils.getGatewayUri(request),
-            ExceptionUtils.getMessage(exc), ExceptionUtils.getRootCauseMessage(exc));
-        apimlLog.log("apiml.gateway.unresolvedRequest", errorMessage);
+        Message message = messageService.createMessage("apiml.common.internalRequestError",
+            ErrorUtils.getGatewayUri(request),
+            ExceptionUtils.getMessage(exc),
+            ExceptionUtils.getRootCauseMessage(exc));
+
+        apimlLog.log(message);
         return ResponseEntity.status(status).body(message.mapToView());
     }
 
