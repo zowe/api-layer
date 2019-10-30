@@ -34,7 +34,8 @@ public class ApimlDependencyLogHider extends TurboFilter {
 
         "No routes found from RouteLocator",
         "Exception Processing ErrorPage",
-        "Error while sending response to client");
+        "Error while sending response to client",
+        "Request execution error");
 
     private boolean isFilterActive;
 
