@@ -17,9 +17,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class AbstractMessageServiceTest {
 
@@ -67,6 +69,19 @@ public class AbstractMessageServiceTest {
         List<Message> messages = abstractMessageService.createMessage("apiml.common.serviceTimeout", parameters);
         assertEquals("Message texts are different", "No response received within the allowed time: 2000", messages.get(0).getConvertedText());
         assertEquals("Message texts are different", "No response received within the allowed time: 3000", messages.get(1).getConvertedText());
+    }
+
+    @Test
+    public void shouldNotCreateMessages_IfEmptyParametersArePassed() {
+        List<Object[]> parameters = new ArrayList<>();
+        List<Message> messages = abstractMessageService.createMessage("apiml.common.serviceTimeout", parameters);
+        assertEquals("Generated different number of messages than expected", 0, messages.size());
+    }
+
+    @Test
+    public void shouldNotCreateMessages_IfEmptyParameterListIsPassed() {
+        Message messages = abstractMessageService.createMessage("apiml.common.stringParamMessage", new ArrayList<String>());
+        assertEquals("Generated different number of messages than expected", "This message has one param: []", messages.getConvertedText());
     }
 
     @Test

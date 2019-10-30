@@ -99,7 +99,7 @@ messages:
       type: WARNING
       text: "Login endpoint is running in the dummy mode. Use credentials user/user to login. Do not use this option in the production environment."
       reason: "The authentication is running in a dummy mode."
-      action: "If you want to use the z/OSMF authentication provider, configure a valid z/OSMF instance and modify the Gateway configuration to use the z/OSMF authentication provider by changing the properties under apiml.security.auth."
+      action: "Do not use this option in the production environment."
 
     - key: apiml.security.invalidAuthenticationProvider
       number: ZWEAG107
@@ -112,7 +112,7 @@ messages:
       number: ZWEAG108
       type: ERROR
       text: "z/OSMF instance '%s' not found or incorrectly configured."
-      reason: "Gateway could not find z/OSMF instance from the Discovery Service. "
+      reason: "Gateway could not find z/OSMF instance from the Discovery Service."
       action: "Ensure that z/OSMF instance is configured correctly and that is successfully registered to the Discovery Service."
 
     - key: apiml.security.zosmfDomainIsEmpty

@@ -14,7 +14,10 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.hamcrest.Matchers.is;
@@ -436,7 +439,7 @@ public class ServiceDefinitionProcessorTest {
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
 
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonMap("test", routedServiceYaml));
-        assertEquals("The API Catalog UI tile ID adajand is invalid. The service casamplerestapiservice will not have API Catalog UI tile", result.getErrors().get(0));
+        assertEquals("Error processing file test - The API Catalog UI tile ID adajand is invalid. The service casamplerestapiservice will not have API Catalog UI tile", result.getErrors().get(0));
     }
 
     @Test
