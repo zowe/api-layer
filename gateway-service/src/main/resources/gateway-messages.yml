@@ -61,11 +61,15 @@ messages:
       number: ZWEAG100
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
+      reason: "A generic failure occurred when authenticating."
+      action: "Please refer to specific message for advice."
 
     - key: apiml.security.invalidMethod
       number: ZWEAG101
       type: ERROR
       text: "Authentication method '%s' is not supported for URL '%s'"
+      reason: "The HTTP request method is not supported for URL."
+      action: "Please use the correct HTTP request method."
 
     - key: apiml.gateway.security.invalidToken
       number: ZWEAG102
@@ -81,11 +85,15 @@ messages:
       number: ZWEAG104
       type: ERROR
       text: "Authentication service is not available at URL '%s'. Error returned: '%s'"
+      reason: "Authentication service is not available."
+      action: "Make sure that authentication service is running and is accessible by URL provided in the message."
 
     - key: apiml.security.authRequired
       number: ZWEAG105
       type: ERROR
       text: "Authentication is required for URL '%s'"
+      reason: "Authentication is required."
+      action: "Please provide valid authentication."
 
     - key: apiml.security.loginEndpointInDummyMode
       number: ZWEAG106
@@ -117,21 +125,29 @@ messages:
       number: ZWEAG120
       type: ERROR
       text: "Invalid username or password for URL '%s'"
+      reason: "Username or password are invalid."
+      action: "Please provide valid username and password."
 
     - key: apiml.security.login.invalidInput
       number: ZWEAG121
       type: ERROR
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
+      reason: "Authorization header is missing, or request body is missing or invalid."
+      action: "Please provide valid authentication."
 
     # Query messages (130 - 140)
     - key: apiml.security.query.invalidToken
       number: ZWEAG130
       type: ERROR
       text: "Token is not valid for URL '%s'"
+      reason: "Token is not valid."
+      action: "Please provide valid token."
 
     - key: apiml.security.query.tokenNotProvided
       number: ZWEAG131
       type: ERROR
       text: "No authorization token provided for URL '%s'"
+      reason: "No authorization token provided."
+      action: "Please provide valid authorization token."
 
 
