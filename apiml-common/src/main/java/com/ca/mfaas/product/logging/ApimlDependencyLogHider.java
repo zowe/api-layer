@@ -35,7 +35,9 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "No routes found from RouteLocator",
         "Exception Processing ErrorPage",
         "Error while sending response to client",
-        "Request execution error");
+        "Request execution error",
+        "The Hystrix timeout",
+        "Error during filtering");
 
     private boolean isFilterActive;
 
