@@ -79,23 +79,31 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
             if (routedServices != null) {
                 RoutedService service = routedServices.findServiceByGatewayUrl("ws/" + majorVersion);
+                if (service == null) {
+                    closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
+                        String.format("Requested ws/%s url is not known by the gateway", majorVersion));
+                    return;
+                }
 
                 ServiceInstance serviceInstance = findServiceInstance(serviceId);
                 if (serviceInstance != null) {
                     openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
+                } else {
+                    closeWebSocket(webSocketSession, CloseStatus.SERVICE_RESTARTED,
+                        String.format("Requested service %s does not have available instance", serviceId));
                 }
-                else {
-                    webSocketSession.close(CloseStatus.SERVICE_RESTARTED.withReason(
-                        String.format("Requested service %s does not have available instance", serviceId)));
-                }
+            } else {
+                closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
+                    String.format("Requested service %s is not known by the gateway", serviceId));
             }
-            else {
-                webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(
-                    String.format("Requested service %s is not known by the gateway", serviceId)));
-            }
+        } else {
+            closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE, "Invalid URL format");
         }
-        else {
-            webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason("Invalid URL format"));
+    }
+
+    private void closeWebSocket(WebSocketSession webSocketSession, CloseStatus closeStatus, String reason) throws IOException {
+        if (webSocketSession.isOpen()) {
+            webSocketSession.close(closeStatus.withReason(reason));
         }
     }
 
@@ -139,7 +147,12 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         log.debug("afterConnectionClosed(session={},status={})", session, status);
         try {
             session.close(status);
-            getRoutedSession(session).close(status);
+
+            WebSocketRoutedSession webSocketRoutedSession = getRoutedSession(session);
+            if (webSocketRoutedSession != null) {
+                webSocketRoutedSession.close(status);
+            }
+
             routedSessions.remove(session.getId());
         }
         catch (NullPointerException | IOException e) {

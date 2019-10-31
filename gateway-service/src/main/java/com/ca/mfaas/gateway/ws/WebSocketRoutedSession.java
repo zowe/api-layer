@@ -103,6 +103,8 @@ public class WebSocketRoutedSession {
     }
 
     public void close(CloseStatus status) throws IOException {
-        webSocketClientSession.close(status);
+        if (webSocketClientSession.isOpen()) {
+            webSocketClientSession.close(status);
+        }
     }
 }
