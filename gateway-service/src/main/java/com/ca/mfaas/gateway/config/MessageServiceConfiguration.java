@@ -7,20 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-
 package com.ca.mfaas.gateway.config;
 
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
+/**
+ * Error service configuration
+ */
 @Configuration
-public class BeanConfig {
+public class MessageServiceConfiguration {
+
     @Bean
-    @Primary
-    public MessageService messageServiceDiscovery() {
+    public MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/gateway-messages.yml");
         return messageService;
