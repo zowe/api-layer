@@ -12,6 +12,7 @@ package com.ca.mfaas.message.core;
 import com.ca.mfaas.message.api.ApiMessage;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.template.MessageTemplate;
+import com.ca.mfaas.util.ObjectUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.Collections;
@@ -51,28 +52,14 @@ public final class Message {
                              MessageTemplate messageTemplate,
                              Object[] messageParameters) {
 
-        requireNotNull(requestedKey, "requestedKey can't be null");
-        requireNotNull(messageTemplate, "messageTemplate can't be null");
-        requireNotNull(messageParameters, "messageParameters can't be null");
+        ObjectUtil.requireNotNull(requestedKey, "requestedKey can't be null");
+        ObjectUtil.requireNotNull(messageTemplate, "messageTemplate can't be null");
+        ObjectUtil.requireNotNull(messageParameters, "messageParameters can't be null");
 
         messageParameters = validateParameters(messageTemplate.getKey(), requestedKey, messageParameters);
         validateMessageTextFormat(messageTemplate.getText(), messageParameters);
 
         return new Message(requestedKey, messageTemplate, messageParameters);
-    }
-
-
-    /**
-     * Check whether the specified object reference is not null and
-     * throws a {@link IllegalArgumentException} if it is.
-     *
-     * @param param   the object reference to check for nullity
-     * @param message detail message to be used in the event
-     */
-    private static void requireNotNull(Object param, String message) {
-        if (param == null) {
-            throw new IllegalArgumentException(message);
-        }
     }
 
     /**

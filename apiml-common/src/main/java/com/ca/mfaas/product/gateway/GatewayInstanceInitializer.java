@@ -81,7 +81,7 @@ public class GatewayInstanceInitializer {
             },
             (exception, isStopped) -> {
                 if (Boolean.TRUE.equals(isStopped)) {
-                    apimlLog.log("apiml.common.gatewayInstanceInitializerStopped",exception.getMessage());
+                    apimlLog.log("apiml.common.gatewayInstanceInitializerStopped", exception.getMessage());
                 }
             }
         );
