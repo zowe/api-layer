@@ -24,18 +24,6 @@ messages:
       reason: "Gateway could not find the instance of the service from the Discovery Service."
       action: "Please check if the service was successfully registered to the Discovery Service and wait for the refresh of routes definitions done by Spring Cloud."
 
-    - key: apiml.gateway.websocketSessionError
-      number: ZWEAG702
-      type: ERROR
-      text: "Error opening session to WebSocket service at %s: %s"
-      reason: "A problem occurred while trying to create a WebSocket client session."
-      action: ""
-
-    - key: apiml.gateway.websocketConnectionError
-      number: ZWEAG703
-      type: ERROR
-      text: "Error opening connection to WebSocket service at %s: %s"
-
     - key: apiml.gateway.jwtInitConfigError
       number: ZWEAG704
       type: ERROR
