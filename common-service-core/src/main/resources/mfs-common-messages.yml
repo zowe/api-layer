@@ -52,7 +52,7 @@ messages:
       reason: "This is a warning that the SSL Context will be created without verifying certificates."
       action: "If this was not an intentional use, stop the service and set the verifySslCertificatesOfServices parameter to true. Then restart the service. Please do not use this option in production environment."
 
-    - key: apiml.common.unsecureHttpWarning
+    - key: apiml.common.insecureHttpWarning
       number: ZWEAM501
       type: WARNING
       text: "Service is connecting to Discovery service using insecure HTTP protocol."

@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.gateway.ws;
 
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.CloseStatus;
@@ -19,8 +19,6 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,9 +37,6 @@ public class WebSocketRoutedSession {
     private final WebSocketSession webSocketClientSession;
     private final WebSocketSession webSocketServerSession;
     private final SslContextFactory jettySslContextFactory;
-
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory jettySslContextFactory) {
         log.debug("Creating WebSocketRoutedSession jettySslContextFactory={}", jettySslContextFactory);
@@ -92,7 +87,7 @@ public class WebSocketRoutedSession {
     private WebSocketProxyError webSocketProxyException(String targetUrl, Exception cause, WebSocketSession webSocketServerSession, boolean logError) {
         String message = String.format("Error opening session to WebSocket service at %s: %s", targetUrl, cause.getMessage());
         if (logError) {
-            apimlLog.log("apiml.gateway.websocketSessionError", targetUrl, cause.getMessage());
+            log.debug(message);
         }
         return new WebSocketProxyError(message, cause, webSocketServerSession);
     }

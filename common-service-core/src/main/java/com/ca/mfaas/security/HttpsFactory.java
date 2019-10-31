@@ -246,7 +246,7 @@ public class HttpsFactory {
         builder.withMaxConnectionsPerHost(10);
 
         if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("apiml.common.unsecureHttpWarning");
+            apimlLog.log("apiml.common.insecureHttpWarning");
         } else {
             // Setup HTTPS for Eureka replication client:
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");

@@ -47,7 +47,7 @@ messages:
       - The URL %s does not contain a port number. The instance of %s will not be created.\n
       - The specified URL is missing a port number. Make sure to specify a valid URL.\n
       - The URL %s is malformed. The instance of %s will not be created: The Specified URL is malformed. Make sure to specify a valid URL.\n
-      - The hostname of URL %s is unknown. The instance of %s will not be created: Thes specified hostname of the URL is invalid. Make sure to specify valid hostname.\n
+      - The hostname of URL %s is unknown. The instance of %s will not be created: The specified hostname of the URL is invalid. Make sure to specify valid hostname.\n
       - Invalid protocol. The specified protocol of the URL is invalid. Make sure to specify valid protocol."
 
     - key: apiml.discovery.errorReadingStaticDefinitionFolder
