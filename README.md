@@ -17,6 +17,8 @@ Following platform is required to run the API Mediation Layer:
 
 Following tools are required to build and develop API Mediation Layer:
 
+Nodejs and npm are required to be installed globally to be able to build the API Catalog ui
+
 ## Quick start
 
 Build all modules:
