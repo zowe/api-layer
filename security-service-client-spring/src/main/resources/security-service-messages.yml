@@ -5,71 +5,71 @@ messages:
       number: ZWEAS100
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
-      reason: "A generic failure occurred when authenticating."
-      action: "Please refer to specific message for advice."
+      reason: "A generic failure occurred while authenticating."
+      action: "Please refer to the specific message to troubleshoot."
 
     - key: apiml.security.invalidMethod
       number: ZWEAS101
       type: ERROR
       text: "Authentication method '%s' is not supported for URL '%s'"
-      reason: "The HTTP request method is not supported for URL."
-      action: "Please use the correct HTTP request method."
+      reason: "The HTTP request method is not supported for the URL."
+      action: "Use the correct HTTP request method."
 
     - key: apiml.security.expiredToken
       number: ZWEAS102
       type: ERROR
       text: "Token is expired for URL '%s'"
-      reason: "Token validity is expired."
-      action: "Obtain new token by performing authentication request."
+      reason: "The validity of the token is expired."
+      action: "Obtain new token by performing an authentication request."
 
     - key: apiml.security.gatewayNotAvailable
       number: ZWEAS103
       type: ERROR
       text: "API Gateway Service is not available by URL '%s' (API Gateway is required because it provides the authentication functionality)"
-      reason: "Security client knows no Gateway instance available to perform authentication with. API Gateway is required because it provides the authentication functionality."
-      action: "Check if both the service and Gateway are correctly registered in Discovery service. Allow some time after the services are discovered for the information to propagate to individual services."
+      reason: "The security client cannot find a Gateway instance to perform authentication. The API Gateway is required because it provides the authentication functionality."
+      action: "Check if both the service and Gateway are correctly registered in the Discovery service. Allow some time after the services are discovered for the information to propagate to individual services."
 
     - key: apiml.security.serviceUnavailable
       number: ZWEAS104
       type: ERROR
       text: "Authentication service is not available by URL '%s'"
       reason: "Authentication service is not available."
-      action: "Make sure that authentication service is running and is accessible by URL provided in the message."
+      action: "Make sure that authentication service is running and is accessible by the URL provided in the message."
 
     - key: apiml.security.authRequired
       number: ZWEAS105
       type: ERROR
       text: "Authentication is required for URL '%s'"
       reason: "Authentication is required."
-      action: "Please provide valid authentication."
+      action: "Provide valid authentication."
 
     # Login messages (120 - 130)
     - key: apiml.security.login.invalidCredentials
       number: ZWEAS120
       type: ERROR
       text: "Invalid username or password for URL '%s'"
-      reason: "Username or password are invalid."
-      action: "Please provide valid username and password."
+      reason: "The username or password are invalid."
+      action: "Provide a valid username and password."
 
     - key: apiml.security.login.invalidInput
       number: ZWEAS121
       type: ERROR
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
-      reason: "Authorization header is missing, or request body is missing or invalid."
-      action: "Please provide valid authentication."
+      reason: "The authorization header is missing, or the request body is missing or invalid."
+      action: "Provide valid authentication."
 
     # Query messages (130 - 140)
     - key: apiml.security.query.invalidToken
       number: ZWEAS130
       type: ERROR
       text: "Token is not valid for URL '%s'"
-      reason: "Token is not valid."
-      action: "Please provide valid token."
+      reason: "The token is not valid."
+      action: "Plrovide a valid token."
 
     - key: apiml.security.query.tokenNotProvided
       number: ZWEAS131
       type: ERROR
       text: "No authorization token provided for URL '%s'"
-      reason: "No authorization token provided."
-      action: "Please provide valid authorization token."
+      reason: "No authorization token is provided."
+      action: "Provide a valid authorization token."
 

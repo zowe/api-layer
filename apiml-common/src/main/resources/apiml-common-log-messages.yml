@@ -10,15 +10,15 @@ messages:
       number: ZWEAM102
       type: ERROR
       text: "Gateway not found yet, transform service cannot perform the request"
-      reason: "Transform service has been requested to transform an url, but Gateway instance has not been discovered yet."
-      action: "Please wait with performing requests for the API Mediation layer to fully initialize after startup. Check if your Discovery service is running and if all services (especially Gateway) are discovered correctly."
+      reason: "The Transform service has been requested to transform a url, but the Gateway instance has not been discovered yet."
+      action: "Do not begin performing requests until the API Mediation Layer fully initializes after startup. Check that your Discovery service is running and that all services (especially the Gateway) are discovered correctly."
 
     - key: apiml.common.gatewayInstanceInitializerStopped
       number: ZWEAM104
       type: WARNING
       text: "GatewayInstanceInitializer has been stopped due to exception: %s"
-      reason: "Unexpected exception while retrieving Gateway service instance from Discovery service."
-      action: "Please check if both the service and Gateway can register with Discovery. If the services are not registering, investigate the reason why. If no cause can be determined, create an issue."
+      reason: "An unexpected exception occurred while retrieving the Gateway service instance from the Discovery service."
+      action: "Check that both the service and the Gateway can register with Discovery. If the services are not registering, investigate the reason why. If no cause can be determined, create an issue."
 
     # HTTP,Protocol messages
     # 400-499
@@ -27,7 +27,7 @@ messages:
       number: ZWEAM401
       type: ERROR
       text: "Unknown error in HTTPS configuration: '%s'"
-      reason: "An Unknown error occurred while setting up an HTTP client during service initialization followed by a system exit."
+      reason: "An Unknown error occurred while setting up an HTTP client during service initialization, followed by a system exit."
       action: "Start the service again in debug mode to get a more descriptive message. This error indicates it is not a configuration issue."
 
     # TLS,Certificate messages
