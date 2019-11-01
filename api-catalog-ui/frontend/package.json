@@ -50,8 +50,6 @@
         "test:int": "react-scripts test --env=jsdom integration-tests/*",
         "test:e2e": "react-scripts test --env=jsdom e2e/*",
         "test:e2e:ci": "cross-env REACT_APP_CATALOG_URL_TEST=${API_CATALOG_BASE_URL} REACT_APP_CATALOG_USERNAME=${MF_USERID} REACT_APP_CATALOG_PASSWORD=${MF_PASSWORD} CI=true react-scripts test --env=jsdom src/e2e/*.test.jsx --reporters=default --reporters=jest-junit",
-        "galen": "galen",
-        "test:galen": "galen test src\\responsive-tests\\tests/ --htmlreport report",
         "coverage": "npm test -- --coverage --watchAll=false",
         "cy:open": "cypress open",
         "cy:e2e": "cypress run --spec cypress/integration/e2e/**/*.test.js --env baseURL=https://ca3x.ca.com:10010/,username=${MF_USERID},password=${MF_PASSWORD}",
@@ -76,7 +74,7 @@
     "devDependencies": {
         "babel-cli": "^6.26.0",
         "babel-eslint": "10.0.3",
-        "babel-jest": "^24.8.0",
+        "babel-jest": "^24.9.0",
         "babel-preset-flow": "6.23.0",
         "babel-preset-react-app": "3.1.2",
         "body-parser": "1.18.3",
@@ -92,7 +90,6 @@
         "eslint-plugin-prettier": "2.7.0",
         "eslint-plugin-react": "7.11.1",
         "express": "4.16.4",
-        "galenframework-cli": "2.4.0",
         "jest": "24.9.0",
         "jest-environment-enzyme": "^7.0.2",
         "jest-enzyme": "7.0.1",
@@ -103,6 +100,7 @@
         "prettier": "1.14.2",
         "puppeteer": "1.18.0",
         "react-testing-library": "5.3.0",
+        "rimraf": "^3.0.0",
         "source-map-explorer": "1.6.0",
         "start-server-and-test": "^1.7.11"
     },
@@ -116,6 +114,10 @@
             "!src/responsive-tests/**",
             "!src/e2e/*"
         ]
+    },
+    "engines": {
+        "node": "=8.11.1",
+        "pnpm": ">=3"
     },
     "browserslist": [
         ">0.2%",
