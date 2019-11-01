@@ -16,7 +16,6 @@ import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsConfigError;
 import com.ca.mfaas.security.SecurityUtils;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,6 @@ import java.security.Key;
 import java.security.PublicKey;
 
 
-@Slf4j
 @Service
 public class JwtSecurityInitializer {
 

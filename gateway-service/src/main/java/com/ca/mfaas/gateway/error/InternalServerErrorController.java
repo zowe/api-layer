@@ -17,7 +17,6 @@ import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.log.ApimlLogger;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -36,7 +35,6 @@ import java.util.List;
 /**
  * Handles errors in REST API processing.
  */
-@Slf4j
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary

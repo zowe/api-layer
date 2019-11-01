@@ -6,7 +6,11 @@ https://github.com/jandadav/yaml-to-md
 
 #### Usage:
 
-java -jar Docgen-1.0.jar <PATH_TO_CONFIG_YAML>
+- Download and build the project from the github repository. 
+- Place the compiled jar file into this directory.
+- You can then build the documentation using the following command:
+`java -jar Docgen-1.0.jar <PATH_TO_CONFIG_YAML>`
+- The configuration file that is being used to generate API Mediation layer documentation is `config.yml` within this directory.
 
 #### Example yaml config file:
 
@@ -21,7 +25,3 @@ messageFiles:
 
 outputFile: sampleOutput.md
 ```
-
-#### Example message file:
-
-https://github.com/jandadav/yaml-to-md/blob/master/config/testMessages.yml

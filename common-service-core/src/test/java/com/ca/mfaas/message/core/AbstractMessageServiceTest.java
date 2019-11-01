@@ -81,7 +81,7 @@ public class AbstractMessageServiceTest {
     @Test
     public void shouldNotCreateMessages_IfEmptyParameterListIsPassed() {
         Message messages = abstractMessageService.createMessage("apiml.common.stringParamMessage", new ArrayList<String>());
-        assertEquals("Generated different number of messages than expected", "This message has one param: []", messages.getConvertedText());
+        assertEquals("Unexpected message format for empty parameters list", "This message has one param: []", messages.getConvertedText());
     }
 
     @Test

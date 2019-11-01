@@ -10,16 +10,15 @@
 
 package com.ca.mfaas.product.routing.transform;
 
+import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.RequiredArgsConstructor;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
-import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 
@@ -27,7 +26,6 @@ import java.net.URI;
  * Class for producing service URL using Gateway hostname and service route
  */
 
-@Slf4j
 @RequiredArgsConstructor
 public class TransformService {
 
