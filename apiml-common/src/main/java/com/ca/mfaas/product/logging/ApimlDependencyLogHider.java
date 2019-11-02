@@ -14,10 +14,12 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.turbo.TurboFilter;
 import ch.qos.logback.core.spi.FilterReply;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Marker;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ApimlDependencyLogHider extends TurboFilter {
@@ -37,7 +39,7 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "Error while sending response to client",
         "Request execution error",
         "The Hystrix timeout",
-        "Error during filtering");
+        ".*Error during filtering.*Token is not valid.*");
 
     private boolean isFilterActive;
 
@@ -48,22 +50,30 @@ public class ApimlDependencyLogHider extends TurboFilter {
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
-
-        if (isFilterActive
-            && !isLowThanInfoLevel(logger.getEffectiveLevel())
-            && (format != null && isIgnoredMessage(format))) {
-            return FilterReply.DENY;
+        if (!isFilterActive || format == null || isLowThanInfoLevel(logger.getEffectiveLevel())) {
+            return FilterReply.NEUTRAL;
         }
 
-        return FilterReply.NEUTRAL;
+        if (t != null) {
+            format += Arrays.asList(ExceptionUtils.getStackFrames(t)).stream().collect(Collectors.joining());
+        }
+
+        return getFilterReply(format);
     }
 
     private boolean isLowThanInfoLevel(Level level) {
         return level.levelInt < Level.INFO.levelInt;
     }
 
-    private boolean isIgnoredMessage(String format) {
-        return IGNORED_MESSAGE_KEYWORDS.stream()
-            .anyMatch(format::contains);
+    private FilterReply getFilterReply(String format) {
+        boolean ignored =  IGNORED_MESSAGE_KEYWORDS.stream()
+            .anyMatch(keyword -> {
+                if (keyword.contains(".*")) {
+                    return format.matches(keyword);
+                } else {
+                    return format.contains(keyword);
+                }
+            });
+        return ignored ? FilterReply.DENY : FilterReply.NEUTRAL;
     }
 }
