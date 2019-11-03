@@ -17,13 +17,13 @@ repositories {
 
 dependencies {
     compile libraries.http_client
+    compile group: 'com.netflix.eureka', name: 'eureka-client', version: '1.9.2' //need to replace with libraries.*
     compile libraries.jackson_dataformat_yaml
     compile libraries.jackson_databind
     compile libraries.json_path
     compile libraries.spring_boot_starter_websocket
     compile libraries.json
     compile libraries.jjwt
-    compile(project(':security-service-client-spring'))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest

@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.util.http;
 
-import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.util.config.ConfigReader;
 import com.ca.mfaas.util.config.Credentials;
+import lombok.experimental.UtilityClass;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -22,14 +22,14 @@ import org.apache.http.entity.StringEntity;
 import java.io.IOException;
 import java.net.URI;
 
+@UtilityClass
 public class HttpSecurityUtils {
 
     public static String getCookieForGateway() throws IOException {
-        AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
         Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
         String user = credentials.getUser();
         String password = credentials.getPassword();
-        URI uri = HttpRequestUtils.getUriFromGateway(authConfigurationProperties.getGatewayLoginEndpoint());
+        URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/gateway/auth/login"); //can be centralized in config java file
 
         return getCookie(uri, user, password);
     }
