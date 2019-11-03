@@ -67,9 +67,20 @@ public class ApiMediationLayerStartupChecker {
                 return false;
             }
             final String jsonResponse = EntityUtils.toString(response.getEntity());
+            log.debug("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
+
             DocumentContext documentContext = JsonPath.parse(jsonResponse);
-            return documentContext.read("$.status").equals("UP") && allInstancesUp(documentContext)
-                && testApplicationUp(documentContext);
+
+            boolean isGatewayUp = documentContext.read("$.status").equals("UP");
+            log.debug("Gateway is {}", isGatewayUp ? "UP" : "DOWN");
+
+            boolean isAllInstancesUp = allInstancesUp(documentContext);
+            log.debug("All instances is {}", isAllInstancesUp ? "UP" : "DOWN");
+
+            boolean isTestApplicationUp = testApplicationUp(documentContext);
+            log.debug("Discoverableclient is {}", isTestApplicationUp ? "UP" : "DOWN");
+
+            return isGatewayUp && isAllInstancesUp && isTestApplicationUp;
         } catch (IOException | PathNotFoundException e) {
             log.warn("Check failed: {}", e.getMessage());
         }
