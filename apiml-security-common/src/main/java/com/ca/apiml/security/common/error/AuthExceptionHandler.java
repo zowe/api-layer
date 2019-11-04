@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class AuthExceptionHandler extends AbstractExceptionHandler {
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public AuthExceptionHandler(MessageService messageService, ObjectMapper objectMapper) {
         super(messageService, objectMapper);
     }

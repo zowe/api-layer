@@ -62,7 +62,7 @@ public class PetControllerGetOneTest {
 
         this.mockMvc.perform(get("/api/v1/pets/" + id))
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0001')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0001E')].messageContent", hasItem(message)));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class PetControllerGetOneTest {
 
         this.mockMvc.perform(get("/api/v1/pets/" + id))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0003')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0003E')].messageContent", hasItem(message)));
         verify(petService, never()).getById(any());
     }
 

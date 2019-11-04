@@ -11,7 +11,7 @@ node {
 
     // If true, it will download node using above parameters.
     // If false, it will try to use globally installed node.
-    download = true
+    download = false
 
     // Set the work directory for unpacking node
     workDir = file("${project.projectDir}/tools/nodejs")
@@ -45,6 +45,18 @@ task runTests(type: NpmTask) {
     args = ['run', 'test']
 }
 
+
+task pnpmInstall(type: Exec) {
+    def operativeSystem = System.properties['os.name']
+    inputs.file("package.json")
+    outputs.dir('frontend/node_modules')
+    if (operativeSystem.contains("Windows"))
+        commandLine "pnpm.cmd", "--prefix", "${project.projectDir}/frontend/", "install"
+    else
+        commandLine "pnpm", "--prefix", "${project.projectDir}/frontend/", "install"
+}
+
+
 task bundle(type: NpmTask) {
     inputs.dir('frontend/src')
     inputs.dir('frontend/public')
@@ -54,11 +66,13 @@ task bundle(type: NpmTask) {
 
     outputs.dir('frontend/build')
 
-    dependsOn npmInstall
+    dependsOn pnpmInstall
     args = ['run', 'build']
+
 }
 
 clean.dependsOn cleanBundle
 build.dependsOn bundle
 javaScriptCoverage.dependsOn bundle
 runTests.dependsOn bundle
+

@@ -31,7 +31,7 @@ import org.slf4j.Marker;
 public class LogLevelInfoFilter extends TurboFilter {
 
     private static final String APIML_MARKER = "APIML-LOGGER";
-    private boolean isFilterActive = true;
+    private boolean isFilterActive;
 
     public LogLevelInfoFilter() {
         String profiles = System.getProperties().getProperty("spring.profiles.include");

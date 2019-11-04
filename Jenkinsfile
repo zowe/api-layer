@@ -267,13 +267,6 @@ pipeline {
             }
         }
 
-        stage ('Javascript Test and Coverage') {
-            when { expression { changeClass in ['full', 'api-catalog'] } }
-            steps {
-                sh './gradlew :api-catalog-ui:startMockedBackend &'
-                sh './gradlew :api-catalog-ui:javaScriptCoverage'
-            }
-        }
 
         stage ('Codecov') {
             when { expression { changeClass in ['full', 'api-catalog'] } }

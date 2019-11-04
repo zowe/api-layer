@@ -10,6 +10,8 @@
 package com.ca.mfaas.gateway.ws;
 
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.CloseStatus;
@@ -17,8 +19,6 @@ import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 
 import java.io.IOException;
 import java.net.URI;
@@ -87,7 +87,7 @@ public class WebSocketRoutedSession {
     private WebSocketProxyError webSocketProxyException(String targetUrl, Exception cause, WebSocketSession webSocketServerSession, boolean logError) {
         String message = String.format("Error opening session to WebSocket service at %s: %s", targetUrl, cause.getMessage());
         if (logError) {
-            log.error(message);
+            log.debug(message);
         }
         return new WebSocketProxyError(message, cause, webSocketServerSession);
     }
@@ -98,6 +98,8 @@ public class WebSocketRoutedSession {
     }
 
     public void close(CloseStatus status) throws IOException {
-        webSocketClientSession.close(status);
+        if (webSocketClientSession.isOpen()) {
+            webSocketClientSession.close(status);
+        }
     }
 }

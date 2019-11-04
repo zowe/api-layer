@@ -43,7 +43,7 @@ public class CatalogApiDocControllerServiceNotFoundTest {
     public void getApiDocForServiceDown() throws Exception {
         this.mockMvc.perform(get("/apidoc/service1/v1"))
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'APIC0004')].messageContent",
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'APIC0004E')].messageContent",
                 hasItem("Service not located, API Documentation not retrieved, The service is running.")));
     }
 

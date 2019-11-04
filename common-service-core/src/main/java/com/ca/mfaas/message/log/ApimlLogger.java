@@ -12,6 +12,7 @@ package com.ca.mfaas.message.log;
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.core.MessageType;
+import com.ca.mfaas.util.ObjectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -65,10 +66,25 @@ public final class ApimlLogger {
      * @param parameters for message
      */
     public void log(String key, Object... parameters) {
+        ObjectUtil.requireNotNull(key, "key can't be null");
+        ObjectUtil.requireNotNull(parameters, "parameters can't be null");
+
         if (messageService != null) {
             Message message = messageService.createMessage(key, parameters);
-            log(message.getMessageTemplate().getType(), message.mapToLogMessage());
+            log(message);
         }
+    }
+
+    /**
+     * Method which allows to log text in its level type, without passing message parameters.
+     *
+     * @param message the message
+     */
+    public void log(Message message) {
+        ObjectUtil.requireNotNull(message, "message can't be null");
+        ObjectUtil.requireNotNull(message.getMessageTemplate(), "message template can't be null");
+
+        log(message.getMessageTemplate().getType(), message.mapToLogMessage());
     }
 
     /**
@@ -81,9 +97,9 @@ public final class ApimlLogger {
      */
     @SuppressWarnings("squid:S2629")
     public void log(MessageType messageType, String text, Object... arguments) {
-        if (messageType == null || text == null || arguments == null) {
-            throw new IllegalArgumentException("Parameters can't be null");
-        }
+        ObjectUtil.requireNotNull(messageType, "messageType can't be null");
+        ObjectUtil.requireNotNull(text, "text can't be null");
+        ObjectUtil.requireNotNull(arguments, "arguments can't be null");
 
         switch (messageType) {
             case TRACE:
