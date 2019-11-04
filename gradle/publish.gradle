@@ -34,7 +34,7 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
                 username project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
                 password project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
             }
-            if (rootProject.version.endsWith("-SNAPSHOT")) {
+            if (rootProject.version.endsWith("-SNAPSHOT")||rootProject.version.contains("PR")) {
                 setUrl(artifactoryPublishingMavenSnapshotRepo)
             } else {
                 setUrl(artifactoryPublishingMavenRepo)
