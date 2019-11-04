@@ -13,9 +13,10 @@ import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -41,9 +42,11 @@ import java.util.function.Supplier;
 /**
  * Authentication provider that verifies credentials against z/OSMF service
  */
-@Slf4j
 @Component
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
+
     private static final String ZOSMF_END_POINT = "zosmf/info";
     private static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
     private static final String ZOSMF_DOMAIN = "zosmf_saf_realm";
@@ -105,10 +108,10 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
             return tokenAuthentication;
         } catch (ResourceAccessException e) {
-            log.error("Could not get an access to z/OSMF service. Uri '{}' returned: {}", uri, e.getMessage());
+            apimlLog.log("apiml.security.serviceUnavailable", uri, e.getMessage());
             throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         } catch (RestClientException e) {
-            log.error("A failure occurred when authenticating. Uri '{}' returned: {}", uri, e.getMessage());
+            apimlLog.log("apiml.security.generic", e.getMessage(), uri);
             throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
         }
     }
@@ -121,7 +124,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
      */
     private String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
-            log.error("z/OSMF instance '{}' not found or incorrectly configured.", zosmf);
+            apimlLog.log("apiml.security.zosmfInstanceNotFound", zosmf);
             return new ServiceNotAccessibleException("z/OSMF instance not found or incorrectly configured.");
         };
 
@@ -173,11 +176,11 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                 .filter(zn -> zn.has(ZOSMF_DOMAIN))
                 .map(zn -> zn.get(ZOSMF_DOMAIN).asText())
                 .orElseThrow(() -> {
-                    log.error("z/OSMF response does not contain field '{}'.", ZOSMF_DOMAIN);
+                    apimlLog.log("apiml.security.zosmfDomainIsEmpty", ZOSMF_DOMAIN);
                     return new AuthenticationServiceException("z/OSMF domain cannot be read.");
                 });
         } catch (IOException e) {
-            log.error("Error parsing z/OSMF response.");
+            apimlLog.log("apiml.security.errorParsingZosmfResponse", e.getMessage());
             throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
         }
     }

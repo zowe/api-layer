@@ -106,7 +106,9 @@ public class ServiceDefinitionProcessor {
             }
         }
         ProcessServicesDataResult result = processServicesData(ymlSources);
-        apimlLog.log("apiml.discovery.errorParsingStaticDefinitionData", result.getErrors());
+        if (!result.getErrors().isEmpty()) {
+            apimlLog.log("apiml.discovery.errorParsingStaticDefinitionData", result.getErrors());
+        }
         return result.getInstances();
     }
 
@@ -161,7 +163,7 @@ public class ServiceDefinitionProcessor {
                 if (service.getCatalogUiTileId() != null) {
                     tile = tiles.get(service.getCatalogUiTileId());
                     if (tile == null) {
-                        errors.add(String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), serviceId));
+                        errors.add(String.format("Error processing file %s - The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", ymlFileName, service.getCatalogUiTileId(), serviceId));
                     } else {
                         tile.setId(service.getCatalogUiTileId());
                     }
@@ -171,7 +173,7 @@ public class ServiceDefinitionProcessor {
                     buildInstanceInfo(instances, errors, service, tile, instanceBaseUrl);
                 }
             } catch (ServiceDefinitionException e) {
-                errors.add(e.getMessage());
+                errors.add(String.format("Error processing file %s - %s", ymlFileName, e.getMessage()) );
             }
         }
 

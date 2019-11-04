@@ -21,21 +21,43 @@ messages:
     - key: apiml.discovery.staticDefinitionsDirectoryNotValid
       number: ZWEAD700
       type: WARNING
-      text: "Static Api definition directory '%s' is not a directory or does not exist"
+      text: "Static API definition directory '%s' is not a directory or does not exist"
+      reason: "One of the specified static API definition directories does not exist or is not a directory."
+      action: "Review the static API definition directories and their setup. The static definition directories are specified as a launch parameter to a Discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
 
     - key: apiml.discovery.errorParsingStaticDefinitionFile
       number: ZWEAD701
       type: ERROR
-      text: "Error loading static Api definition file '%s'"
+      text: "Error loading static API definition file '%s'"
+      reason: "A problem occurred while reading (IO operation) of a specific static API definition file."
+      action: "Ensure that the file data is not corrupted or incorrectly encoded."
 
     - key: apiml.discovery.errorParsingStaticDefinitionData
       number: ZWEAD702
       type: WARNING
-      text: "Unable to process static Api definition data: '%s'"
+      text: "Unable to process static API definition data: '%s'"
+      reason: "A problem occurred while parsing a static API definition file."
+      action: "Review the mentioned static API definition file for errors.\n
+      Refer to the specific log message to see what is the exact cause of the problem:\n\n
+      - ServiceId is not defined in the file '%s'. The instance will not be created. Make sure to specify the ServiceId.\n
+      - The `instanceBaseUrls` parameter of %s is not defined. The instance will not be created. Make sure to specify the `InstanceBaseUrl` property.\n
+      - The API Catalog UI tile ID %s is invalid. The service %s will not have an API Catalog UI tile. Specify the correct catalog title ID.\n
+      - One of the instanceBaseUrl of %s is not defined. The instance will not be created. Make sure to specify the InstanceBaseUrl property.\n
+      - The URL %s does not contain a hostname. The instance of %s will not be created. The specified URL is malformed. Make sure to specify valid URL.\n
+      - The URL %s does not contain a port number. The instance of %s will not be created.\n
+      - The specified URL is missing a port number. Make sure to specify a valid URL.\n
+      - The URL %s is malformed. The instance of %s will not be created: The Specified URL is malformed. Make sure to specify a valid URL.\n
+      - The hostname of URL %s is unknown. The instance of %s will not be created: The specified hostname of the URL is invalid. Make sure to specify valid hostname.\n
+      - Invalid protocol. The specified protocol of the URL is invalid. Make sure to specify valid protocol."
 
     - key: apiml.discovery.errorReadingStaticDefinitionFolder
       number: ZWEAD703
       type: ERROR
-      text: "I/O problem occurred during reading static Api definition directory: '%s'"
+      text: "A problem occurred during reading the static API definition directory: '%s'"
+      reason: "There are three possible causes of this error:\n
+      - The specified static API definition folder is empty\n
+      - The definition does not denote a directory\n
+      - An I/O error occurred while attempting to read the static API definition directory."
+      action: "Review the static API definition directory definition and its contents on the storage. The static definition directories are specified as a parameter to launch a Discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
 
     # Legacy messages

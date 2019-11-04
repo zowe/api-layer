@@ -46,8 +46,13 @@ public class DummyMessageService extends AbstractMessageService {
         message4.setNumber("MFS0002");
         message4.setText("Internal error: Invalid message text format. Please contact support for further assistance.");
 
+        MessageTemplate message5 = new MessageTemplate();
+        message5.setKey("apiml.common.stringParamMessage");
+        message5.setNumber("MFS0005");
+        message5.setText("This message has one param: %s");
+
         messageTemplates.setMessages(
-            Arrays.asList(message, message2, message3, message4)
+            Arrays.asList(message, message2, message3, message4, message5)
         );
 
         super.addMessageTemplates(messageTemplates);

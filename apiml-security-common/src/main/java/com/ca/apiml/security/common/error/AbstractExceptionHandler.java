@@ -13,10 +13,10 @@ import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +26,7 @@ import java.io.IOException;
  * Base class for exception handlers
  * Aggregates boilerplate and constants, which are reused by concrete classes
  */
-@Slf4j
+
 @RequiredArgsConstructor
 public abstract class AbstractExceptionHandler {
     protected static final String ERROR_MESSAGE_400 = "400 Status Code: {}";
@@ -35,6 +35,9 @@ public abstract class AbstractExceptionHandler {
 
     protected final MessageService messageService;
     protected final ObjectMapper mapper;
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Entry method that takes care of an exception passed to it
@@ -75,9 +78,8 @@ public abstract class AbstractExceptionHandler {
         try {
             mapper.writeValue(response.getWriter(), message);
         } catch (IOException e) {
-            String errorMessage = "Couldn't write response";
-            log.error(errorMessage, e);
-            throw new ServletException(errorMessage, e);
+            apimlLog.log("apiml.security.errorWrittingResponse", e.getMessage());
+            throw new ServletException("Error writting response", e);
         }
     }
 }

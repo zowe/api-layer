@@ -13,17 +13,20 @@ import com.ca.mfaas.gateway.security.login.LoginProvider;
 import com.ca.mfaas.gateway.security.login.dummy.DummyAuthenticationProvider;
 import com.ca.mfaas.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import com.ca.mfaas.gateway.security.query.TokenAuthenticationProvider;
-import lombok.extern.slf4j.Slf4j;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.stereotype.Component;
 
 /**
- * Initialize authentication and authorization provider set by apiml.security.auth.authProvider parameter
+ * Initialize authentication and authorization provider set by apiml.security.auth.provider parameter
  */
 @Component
-@Slf4j
 public class AuthProviderInitializer {
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     private final String authProvider;
 
@@ -54,15 +57,14 @@ public class AuthProviderInitializer {
         if (provider.equals(LoginProvider.ZOSMF)) {
             auth.authenticationProvider(zosmfAuthenticationProvider);
         } else if (provider.equals(LoginProvider.DUMMY)) {
-            log.warn("Login endpoint is running in the dummy mode. Use credentials user/user to login.");
-            log.warn("Do not use this option in the production environment.");
+            apimlLog.log("apiml.security.loginEndpointInDummyMode");
             auth.authenticationProvider(dummyAuthenticationProvider);
         }
         auth.authenticationProvider(tokenAuthenticationProvider);
     }
 
     /**
-     * Get login provider according apiml.security.auth.authProvider parameter
+     * Get login provider according apiml.security.auth.provider parameter
      *
      * @return login provider
      */
@@ -71,8 +73,7 @@ public class AuthProviderInitializer {
         try {
             provider = LoginProvider.getLoginProvider(authProvider);
         } catch (IllegalArgumentException ex) {
-            log.warn("Authentication provider is not set correctly. Default 'zosmf' authentication provider is used.");
-            log.warn("Incorrect value: apiml.security.auth.provider = {}", authProvider);
+            apimlLog.log("apiml.security.invalidAuthenticationProvider", authProvider);
         }
         return provider;
     }
