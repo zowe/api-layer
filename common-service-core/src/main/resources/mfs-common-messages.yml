@@ -38,8 +38,8 @@ messages:
       action: "Refer to the specific message to identify the exact problem.\n
       possible causes can include:\n
       - Incorrect security algorithm\n
-      - Keystore invalid or corrupted\n
-      - Certificate invalid or corrupted"
+      - The keystore invalid or corrupted\n
+      - The certificate invalid or corrupted"
 
 
     # TLS, Certificate messages
@@ -71,7 +71,7 @@ messages:
       type: ERROR
       text: "Error reading secret key: '%s'"
       reason: "Error reading secret key."
-      action: "Rrefer to the specific message to identify the exact problem.\n
+      action: "Refer to the specific message to identify the exact problem.\n
       Possible causes include:\n
       - An incorrect security algorithm\n
       - The keystore is invalid or corrupted\n

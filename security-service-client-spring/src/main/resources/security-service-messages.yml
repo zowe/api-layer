@@ -6,14 +6,14 @@ messages:
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
       reason: "A generic failure occurred while authenticating."
-      action: "Please refer to the specific message to troubleshoot."
+      action: "Refer to the specific message to troubleshoot."
 
     - key: apiml.security.invalidMethod
       number: ZWEAS101
       type: ERROR
       text: "Authentication method '%s' is not supported for URL '%s'"
       reason: "The HTTP request method is not supported for the URL."
-      action: "Use the correct HTTP request method."
+      action: "Use the correct HTTP request method that is supported for the URL."
 
     - key: apiml.security.expiredToken
       number: ZWEAS102
@@ -27,7 +27,7 @@ messages:
       type: ERROR
       text: "API Gateway Service is not available by URL '%s' (API Gateway is required because it provides the authentication functionality)"
       reason: "The security client cannot find a Gateway instance to perform authentication. The API Gateway is required because it provides the authentication functionality."
-      action: "Check if both the service and Gateway are correctly registered in the Discovery service. Allow some time after the services are discovered for the information to propagate to individual services."
+      action: "Check that both the service and Gateway are correctly registered in the Discovery service. Allow some time after the services are discovered for the information to propagate to individual services."
 
     - key: apiml.security.serviceUnavailable
       number: ZWEAS104
@@ -64,7 +64,7 @@ messages:
       type: ERROR
       text: "Token is not valid for URL '%s'"
       reason: "The token is not valid."
-      action: "Plrovide a valid token."
+      action: "Provide a valid token."
 
     - key: apiml.security.query.tokenNotProvided
       number: ZWEAS131
