@@ -16,7 +16,7 @@ import com.ca.mfaas.gateway.error.check.TlsErrorCheck;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
-import lombok.extern.slf4j.Slf4j;
+import com.ca.mfaas.message.log.ApimlLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -35,7 +35,6 @@ import java.util.List;
 /**
  * Handles errors in REST API processing.
  */
-@Slf4j
 @Controller
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Primary
@@ -45,9 +44,13 @@ public class InternalServerErrorController implements ErrorController {
     private final MessageService messageService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
 
+    private ApimlLogger apimlLog;
+
     @Autowired
     public InternalServerErrorController(MessageService messageService) {
         this.messageService = messageService;
+        this.apimlLog = ApimlLogger.of(InternalServerErrorController.class, messageService);
+
         errorChecks.add(new TlsErrorCheck(messageService));
         errorChecks.add(new TimeoutErrorCheck(messageService));
         errorChecks.add(new SecurityTokenErrorCheck(messageService));
@@ -80,10 +83,12 @@ public class InternalServerErrorController implements ErrorController {
 
     private ResponseEntity<ApiMessageView> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
-        final String errorMessage = ErrorUtils.getErrorMessage(request);
-        Message message = messageService.createMessage("apiml.common.internalRequestError", ErrorUtils.getGatewayUri(request),
-            ExceptionUtils.getMessage(exc), ExceptionUtils.getRootCauseMessage(exc));
-        log.error("Unresolved request error: {}", errorMessage, exc);
+        Message message = messageService.createMessage("apiml.common.internalRequestError",
+            ErrorUtils.getGatewayUri(request),
+            ExceptionUtils.getMessage(exc),
+            ExceptionUtils.getRootCauseMessage(exc));
+
+        apimlLog.log(message);
         return ResponseEntity.status(status).body(message.mapToView());
     }
 

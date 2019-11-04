@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public ResourceAccessExceptionHandler(MessageService messageService, ObjectMapper mapper) {
         super(messageService, mapper);
     }

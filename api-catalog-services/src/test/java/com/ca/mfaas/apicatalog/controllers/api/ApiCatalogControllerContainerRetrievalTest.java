@@ -40,7 +40,7 @@ public class ApiCatalogControllerContainerRetrievalTest {
     public void getContainers() throws Exception {
         this.mockMvc.perform(get("/containers"))
             .andExpect(status().is5xxServerError())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'APIC0006')].messageContent",
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'APIC0006E')].messageContent",
                 hasItem("Could not retrieve container statuses, java.lang.NullPointerException")));
     }
 

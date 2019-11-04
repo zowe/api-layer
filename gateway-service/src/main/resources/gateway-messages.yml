@@ -1,54 +1,150 @@
 messages:
-    # Security messages (100 - 199)
-    # General messages (100 - 120)
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+
+    # HTTP,Protocol messages
+    # 400-499
+
+    # TLS,Certificate messages
+    # 500-599
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+
+    - key: apiml.gateway.instanceNotFound
+      number: ZWEAG700
+      type: ERROR
+      text: "No instance of the service '%s' found. Routing will not be available."
+      reason: "The Gateway could not find an instance of the service from the Discovery Service."
+      action: "Check that the service was successfully registered to the Discovery Service and wait for Spring Cloud to refresh the routes definitions"
+
+    - key: apiml.gateway.jwtInitConfigError
+      number: ZWEAG704
+      type: ERROR
+      text: "Configuration error '%s' when trying to read jwt secret: %s"
+      reason: "A problem occurred while trying to read the jwt secret key from the keystore."
+      action: "Review the mandatory fields used in the configuration such as the keystore location path, the keystore and key password, and the keystore type."
+
+    - key: apiml.gateway.jwtKeyMissing
+      number: ZWEAG705
+      type: ERROR
+      text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'."
+      reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
+      action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
+
+    # Legacy messages
+
     - key: apiml.security.generic
-      number: ZWEAG100E
+      number: ZWEAG100
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
+      reason: "A generic failure occurred during authentication."
+      action: "Refer to specific authentication exception details for troubleshooting."
 
     - key: apiml.security.invalidMethod
-      number: ZWEAG101E
+      number: ZWEAG101
       type: ERROR
       text: "Authentication method '%s' is not supported for URL '%s'"
+      reason: "The HTTP request method is not supported by the URL."
+      action: "Use the correct HTTP request method supported by the URL."
 
     - key: apiml.gateway.security.invalidToken
-      number: ZWEAG102E
+      number: ZWEAG102
       type: ERROR
       text: "Token is not valid"
+      reason: "The JWT token is not valid"
+      action: "Provide a valid token."
 
     - key: apiml.gateway.security.expiredToken
-      number: ZWEAG103E
+      number: ZWEAG103
       type: ERROR
       text: "Token is expired"
+      reason: "The JWT token has expired"
+      action: "Obtain new token by performing an authentication request."
 
     - key: apiml.security.serviceUnavailable
-      number: ZWEAG104E
+      number: ZWEAG104
       type: ERROR
-      text: "Authentication service is not available at URL '%s'"
+      text: "Authentication service is not available at URL '%s'. Error returned: '%s'"
+      reason: "The authentication service is not available."
+      action: "Make sure that the authentication service is running and is accessible by the URL provided in the message."
 
     - key: apiml.security.authRequired
-      number: ZWEAG105E
+      number: ZWEAG105
       type: ERROR
       text: "Authentication is required for URL '%s'"
+      reason: "Authentication is required."
+      action: "Provide valid authentication."
+
+    - key: apiml.security.loginEndpointInDummyMode
+      number: ZWEAG106
+      type: WARNING
+      text: "Login endpoint is running in the dummy mode. Use credentials user/user to login. Do not use this option in the production environment."
+      reason: "The authentication is running in dummy mode."
+      action: "Do not use this option in the production environment."
+
+    - key: apiml.security.invalidAuthenticationProvider
+      number: ZWEAG107
+      type: WARNING
+      text: "Incorrect value: apiml.security.auth.provider = '%s'. Authentication provider is not set correctly. Default 'zosmf' authentication provider is used."
+      reason: "An incorrect value of the apiml.security.auth.provider parameter is set in the configuration."
+      action: "Ensure that the value of apiml.security.auth.provider is set either to 'dummy' if you want to use dummy mode, or to 'zosmf' if you want to use the z/OSMF authentication provider."
+
+    - key: apiml.security.zosmfInstanceNotFound
+      number: ZWEAG108
+      type: ERROR
+      text: "z/OSMF instance '%s' not found or incorrectly configured."
+      reason: "The Gateway could not find the z/OSMF instance from the Discovery Service."
+      action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service."
+
+    - key: apiml.security.zosmfDomainIsEmpty
+      number: ZWEAG109
+      type: ERROR
+      text: "z/OSMF response does not contain field '%s'."
+      reason: "The z/OSMF domain cannot be read."
+      action: "Review the z/OSMF domain value contained in the response received from the 'zosmf/info' REST endpoint."
+
+    - key: apiml.security.errorParsingZosmfResponse
+      number: ZWEAG110
+      type: ERROR
+      text: "Error parsing z/OSMF response. Error returned: '%s"
+      reason: "An error occurred while parsing the z/OSMF JSON response."
+      action: "Check the JSON response received from the 'zosmf/info' REST endpoint."
 
     # Login messages (120 - 130)
     - key: apiml.security.login.invalidCredentials
-      number: ZWEAG120E
+      number: ZWEAG120
       type: ERROR
       text: "Invalid username or password for URL '%s'"
+      reason: "The username or password are invalid."
+      action: "Provide a valid username and password."
 
     - key: apiml.security.login.invalidInput
-      number: ZWEAG121E
+      number: ZWEAG121
       type: ERROR
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
+      reason: "The authorization header is missing, or the request body is missing or invalid."
+      action: "Provide valid authentication."
 
     # Query messages (130 - 140)
     - key: apiml.security.query.invalidToken
-      number: ZWEAG130E
+      number: ZWEAG130
       type: ERROR
       text: "Token is not valid for URL '%s'"
+      reason: "The token is not valid."
+      action: "Provide a valid token."
 
     - key: apiml.security.query.tokenNotProvided
-      number: ZWEAG131E
+      number: ZWEAG131
       type: ERROR
       text: "No authorization token provided for URL '%s'"
+      reason: "No authorization token is provided."
+      action: "Provide a valid authorization token."
+
+

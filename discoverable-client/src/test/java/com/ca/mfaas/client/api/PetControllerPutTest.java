@@ -81,7 +81,7 @@ public class PetControllerPutTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(payload))
             .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0001')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0001E')].messageContent", hasItem(message)));
     }
 
     @Test
@@ -99,7 +99,7 @@ public class PetControllerPutTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(payload))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0004')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0004E')].messageContent", hasItem(message)));
 
         verify(petService, never()).update(any());
     }
@@ -122,7 +122,7 @@ public class PetControllerPutTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(json.toString()))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0005')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0005E')].messageContent", hasItem(message)));
     }
 
     @Test
@@ -139,7 +139,7 @@ public class PetControllerPutTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(payload))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0003')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0003E')].messageContent", hasItem(message)));
     }
 
     @Test
@@ -156,7 +156,7 @@ public class PetControllerPutTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(payload))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0002')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0002E')].messageContent", hasItem(message)));
     }
 
     @Test
@@ -177,7 +177,7 @@ public class PetControllerPutTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(json.toString()))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0007')].messageContent", hasItem(message)));
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'CSR0007E')].messageContent", hasItem(message)));
     }
 
 }

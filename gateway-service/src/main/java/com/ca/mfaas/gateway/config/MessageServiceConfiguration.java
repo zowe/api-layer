@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.error;
+package com.ca.mfaas.gateway.config;
 
 import com.ca.mfaas.message.core.MessageService;
-import com.ca.mfaas.message.yaml.YamlMessageService;
+import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,6 +22,8 @@ public class MessageServiceConfiguration {
 
     @Bean
     public MessageService messageService() {
-        return new YamlMessageService("/gateway-messages.yml");
+        MessageService messageService = YamlMessageServiceInstance.getInstance();
+        messageService.loadMessages("/gateway-messages.yml");
+        return messageService;
     }
 }
