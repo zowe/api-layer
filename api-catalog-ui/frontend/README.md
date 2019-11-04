@@ -25,7 +25,7 @@ For coverage use ``npm run coverage`` or gradle task "javaScriptCoverage"
 
 1. Clone the repo
 
-2. Install the package manager pnpm by running `npm add -g pnpm`
+2. Install the package manager `pnpm` by running `npm add -g pnpm`
 
 3. run `pnpm install` inside the repo folder to install all dependencies
 

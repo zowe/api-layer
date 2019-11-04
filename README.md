@@ -25,6 +25,10 @@ Build all modules:
 
     ./gradlew build
 
+You need to install the package manager `pnpm` globally:
+    
+    npm add -g pnpm
+    
 You need to install `concurrently` globally:
 
     npm install -g concurrently
