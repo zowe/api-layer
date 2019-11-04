@@ -55,7 +55,7 @@ public class ApimlDependencyLogHiderTest {
 
 
     @Test
-    public void testDecide_whenLoggerLevelWhenIgnoredMessagesArePresent() {
+    public void testDecide_whenIgnoredMessagesArePresent() {
         logger.setLevel(Level.INFO);
 
         Map<String, Boolean> logMessages = new HashMap<>();
@@ -71,4 +71,19 @@ public class ApimlDependencyLogHiderTest {
             assertEquals("Log levels are not same", expectedFilterReply, actualFilterReply);
         });
     }
+
+    @Test
+    public void testDecide_whenIgnoredMessagesArePresentWithException() {
+        logger.setLevel(Level.ERROR);
+
+        String format = "Error during filtering";
+        RuntimeException filterException = new RuntimeException("Token is not valid");
+
+        FilterReply actualFilterReply = apimlDependencyLogHider.decide(null, logger, null,
+            format, null, filterException);
+
+        FilterReply expectedFilterReply =  FilterReply.DENY;
+        assertEquals("Log levels are not same", expectedFilterReply, actualFilterReply);
+    }
+
 }
