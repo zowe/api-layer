@@ -21,21 +21,21 @@ Nodejs and npm are required to be installed globally to be able to build the API
 
 ## Quick start
 
-Build all modules:
-
-    ./gradlew build
-
-You need to install the package manager `pnpm` globally:
+1. Install the package manager `pnpm` globally in order to build the project:
     
-    npm add -g pnpm
+        npm add -g pnpm
     
-You need to install `concurrently` globally:
+2. Install `concurrently` globally:
+   
+       npm install -g concurrently
+       
+3. Build all modules:
 
-    npm install -g concurrently
+       ./gradlew build
 
-Run all service on local machine:
+4. Run all service on local machine:
 
-    npm run api-layer
+       npm run api-layer
 
 ## Authentication service
 
