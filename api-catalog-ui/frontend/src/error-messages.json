@@ -5,7 +5,7 @@
             "messageText": "Session has expired, please login again "
         },
         {
-            "messageKey": "ZWEAS120E",
+            "messageKey": "ZWEAS120",
             "messageText": "Invalid username or password "
         },
         {
@@ -13,7 +13,7 @@
             "messageText": "Request timeout, please try again later "
         },
         {
-            "messageKey": "ZWEAS104E",
+            "messageKey": "ZWEAS104",
             "messageText": "Authentication service not available, please try again later "
         }
     ]
