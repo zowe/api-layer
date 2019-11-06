@@ -96,12 +96,12 @@ describe('>>> Login page component tests', () => {
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
-            messageNumber: 'ZWEAS102E',
+            messageNumber: 'ZWEAC102E',
             messageContent:
                 "Token is expired for URL",
             messageKey: 'apiml.security.expiredToken',
         });
-        expect(messageText).toEqual('Session has expired, please login again ZWEAS102E');
+        expect(messageText).toEqual('Session has expired, please login again ZWEAC102E');
     });
 
     it('should display request timeout message', () => {
@@ -109,12 +109,12 @@ describe('>>> Login page component tests', () => {
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
-            messageNumber: 'MFS0104',
+            messageNumber: 'MFS0104E',
             messageContent:
                 "No response received within the allowed time",
             messageKey: 'apiml.common.serviceTimeout',
         });
-        expect(messageText).toEqual(`Request timeout, please try again later MFS0104`);
+        expect(messageText).toEqual(`Request timeout, please try again later MFS0104E`);
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
