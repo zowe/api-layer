@@ -85,3 +85,21 @@ messages:
       number: APIC0007
       type: ERROR
       text: "Could not retrieve container status updates, %s"
+
+
+    # Service specific messages
+    # 700-999
+
+    - key: apiml.apicatalog.initializeAborted
+      number: ZWEAC700
+      type: ERROR
+      text: "An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service: %s"
+      reason: "Unexpected error occurred during API Catalog initialization. API Catalog was trying to locate instance of itself in Discovery service."
+      action: "Review the specific message for more information. Verify if Discovery service and service registration works as expected."
+
+    - key: apiml.apicatalog.initializeFailed
+      number: ZWEAC701
+      type: ERROR
+      text: "Failed to initialize API Catalog with discovered services"
+      reason: "API Catalog could not initialize running services after several retries."
+      action: "Ensure services are started and discovered properly."
