@@ -18,5 +18,8 @@ messageFiles:
   - title: "Gateway service messages"
     file: ../../gateway-service/src/main/resources/gateway-messages.yml
 
+  - title: "API Catalog messages"
+    file: ../../api-catalog-services/src/main/resources/messages.yml
+
 
 outputFile: ErrorMessagesDocumentation.md
