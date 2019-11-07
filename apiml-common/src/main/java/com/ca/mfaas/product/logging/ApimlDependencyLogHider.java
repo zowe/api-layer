@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 public class ApimlDependencyLogHider extends TurboFilter {
 
     private static final List<String> IGNORED_MESSAGE_KEYWORDS = Arrays.asList(

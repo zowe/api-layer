@@ -76,17 +76,17 @@ public class RestResponseHandler {
             case METHOD_NOT_ALLOWED:
                 throw new AuthMethodNotSupportedException(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getDefaultMessage());
             default:
-                addLogMessage(exception, genericLogErrorMessage, logParameters);
+                addDebugMessage(exception, genericLogErrorMessage, logParameters);
                 throw new AuthenticationServiceException(ErrorType.AUTH_GENERAL.getDefaultMessage(), exception);
         }
     }
 
-    private void addLogMessage(Exception exception, String genericLogErrorMessage, Object... logParameters) {
+    private void addDebugMessage(Exception exception, String genericLogErrorMessage, Object... logParameters) {
         if (genericLogErrorMessage != null) {
             if (logParameters.length > 0) {
-                log.error(genericLogErrorMessage, logParameters);
+                log.debug(genericLogErrorMessage, logParameters);
             } else {
-                log.error(genericLogErrorMessage, exception);
+                log.debug(genericLogErrorMessage, exception);
             }
         }
     }
