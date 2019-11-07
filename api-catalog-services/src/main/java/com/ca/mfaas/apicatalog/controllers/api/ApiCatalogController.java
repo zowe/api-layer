@@ -13,6 +13,8 @@ import com.ca.mfaas.apicatalog.exceptions.ContainerStatusRetrievalException;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedApiDocService;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +45,9 @@ public class ApiCatalogController {
 
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedApiDocService cachedApiDocService;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Create the controller and autowire in the repository services
@@ -79,7 +84,7 @@ public class ApiCatalogController {
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
         } catch (Exception e) {
-            log.error("Could not retrieve containers status: " + e.getMessage(), e);
+            apimlLog.log("apiml.catalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
         }
     }
@@ -112,7 +117,7 @@ public class ApiCatalogController {
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
         } catch (Exception e) {
-            log.error("Could not retrieve container: " + e.getMessage(), e);
+            apimlLog.log("apiml.catalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
         }
     }
@@ -127,7 +132,7 @@ public class ApiCatalogController {
                     apiService.setApiDoc(apiDoc);
                 }
             } catch (Exception e) {
-                log.warn("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
+                log.debug("An error occurred when trying to fetch ApiDoc for service: " + apiService.getServiceId() +
                     ", processing can continue but this service will not be able to display any Api Documentation.\n" +
                     "Error Message: " + e.getMessage());
             }

@@ -15,6 +15,8 @@ import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.netflix.appinfo.InstanceInfo;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,9 @@ public class InstanceRefreshService {
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Periodically refresh the container/service caches
@@ -77,10 +82,10 @@ public class InstanceRefreshService {
                 log.debug("Catalog status updates will occur for containers: " + containersUpdated.toString());
             }
         } catch (InterruptedException e) {
-            log.error("Failed to update cache with discovered services: " + e.getMessage(), e);
+            log.debug("Failed to update cache with discovered services: '%s'", e.getMessage(), e);
             Thread.currentThread().interrupt();
         } catch (ExecutionException | TimeoutException e) {
-            log.error("Failed to update cache with discovered services: " + e.getMessage(), e);
+            apimlLog.log("apiml.catalog.cacheUpdateError", e.getMessage());
         }
     }
 
@@ -120,7 +125,7 @@ public class InstanceRefreshService {
                 // check if this instance should be processed/updated
                 processServiceInstance(containersUpdated, cachedServices, deltaFromDiscovery, instance);
             } catch (Exception e) {
-                log.error("could not update cache for service: " + instance + ", processing will continue.", e);
+                log.debug("could not update cache for service: " + instance + ", processing will continue.", e);
             }
         });
         return containersUpdated;
@@ -150,7 +155,7 @@ public class InstanceRefreshService {
 
         // there's no chance which this case is not called. It's just double check
         if (application == null || application.getInstances().isEmpty()) {
-            log.debug("Instance {} couldn't get it from cache and delta", instance.getAppName());
+            log.debug("Instance {} couldn't get details from cache and delta", instance.getAppName());
             return;
         }
 
@@ -178,7 +183,7 @@ public class InstanceRefreshService {
 
     private void updateService(String serviceId, Application application) {
         if (application == null) {
-            log.error("Could not find Application object for serviceId: " + serviceId + " cache not updated with " +
+            log.debug("Could not find Application object for serviceId: " + serviceId + " cache not updated with " +
                 "current values.");
         } else {
             cachedServicesService.updateService(serviceId, application);
@@ -195,7 +200,7 @@ public class InstanceRefreshService {
     private void updateContainer(Set<String> containersUpdated, InstanceInfo instanceInfo) {
         String productFamilyId = instanceInfo.getMetadata().get(CATALOG_ID);
         if (productFamilyId == null) {
-            log.warn("Cannot create a tile without a parent id, the metadata for service '{}' must contain an entry for '{}'",
+            log.debug("Cannot create a tile without a parent id, the metadata for service '{}' must contain an entry for '{}'",
                 instanceInfo.getAppName(), CATALOG_ID);
         } else {
             APIContainer container = cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);

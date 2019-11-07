@@ -1,5 +1,56 @@
 messages:
-# Controller specific messages
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+    - key: apiml.catalog.serviceRetrievalRequestFailed
+      number: ZWEAC100
+      type: WARNING
+      text: "Could not retrieve all service info from discovery -- %s -- %s -- %s"
+      reason: "The response from http request to discovery service about the registered instances returned an error or empty body"
+      action: "First make sure the Discovery service is up and running. If the http response error code refers to security issue, check that both discovery service and catalog are running with https scheme and all security configurations are done properly"
+
+    - key: apiml.catalog.serviceRetrievalParsingFailed
+      number: ZWEAC101
+      type: ERROR
+      text: "Could not parse service info from discovery -- %s"
+      reason: "The response from http request to discovery service about the registered instances could not be parsed to extract applications"
+      action: ""
+
+    - key: apiml.catalog.containerCouldNotBeRetrieved
+      number: ZWEAC102
+      type: ERROR
+      text: "Could not retrieve containers. Status: %s"
+      reason: ""
+      action: ""
+
+
+    # HTTP, Protocol messages
+    # 400-499\
+    # TLS, Certificate messages
+    # 500-599
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+    - key: apiml.catalog.cacheUpdateError
+      number: ZWEAC700
+      type: ERROR
+      text: "Failed to update cache with discovered services: '%s'"
+      reason: "An error occurred while checking the asynchronous comparison between cached and online containers"
+      action: "The jar file is not packaged correctly. Please submit an issue."
+
+    - key: apiml.catalog.catalogInstanceCouldNotBeRetrieved
+      number: ZWEAC701
+      type: WARNING
+      text: "API Catalog Instance not retrieved from Discovery service"
+      reason: "An error occurred while checking the asynchronous comparison between cached and online containers"
+      action: "The jar file is not packaged correctly. Please submit an issue."
+
+    # Legacy messages
     - key: com.ca.mfaas.caapicatalog.gatewayNotFound
       number: APIC0001
       type: ERROR

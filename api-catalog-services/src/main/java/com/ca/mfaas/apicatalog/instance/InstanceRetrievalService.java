@@ -10,7 +10,9 @@
 package com.ca.mfaas.apicatalog.instance;
 
 import com.ca.mfaas.apicatalog.discovery.DiscoveryConfigProperties;
+import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.instance.InstanceInitializationException;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.registry.ApplicationWrapper;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -46,6 +48,9 @@ public class InstanceRetrievalService {
     private static final String APPS_ENDPOINT = "apps/";
     private static final String DELTA_ENDPOINT = "delta";
     private static final String UNKNOWN = "unknown";
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Autowired
     public InstanceRetrievalService(DiscoveryConfigProperties discoveryConfigProperties,
@@ -111,8 +116,7 @@ public class InstanceRetrievalService {
     private Applications extractApplications(Pair<String, Pair<String, String>> requestInfo, ResponseEntity<String> response) {
         Applications applications = null;
         if (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null) {
-            log.warn("Could not retrieve all service info from discovery --" + response.getStatusCode()
-                + " -- " + response.getStatusCode().getReasonPhrase() + " -- URL: " + requestInfo.getLeft());
+            apimlLog.log("apiml.catalog.serviceRetrievalRequestFailed", response.getStatusCode(), response.getStatusCode().getReasonPhrase(), requestInfo.getLeft());
         } else {
             ObjectMapper mapper = new EurekaJsonJacksonCodec().getObjectMapper(Applications.class);
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -120,7 +124,7 @@ public class InstanceRetrievalService {
             try {
                 applications = mapper.readValue(response.getBody(), Applications.class);
             } catch (IOException e) {
-                log.error("Could not parse service info from discovery --" + e.getMessage(), e);
+                apimlLog.log("apiml.catalog.serviceRetrievalParsingFailed", e.getMessage());
             }
         }
         return applications;
@@ -140,7 +144,7 @@ public class InstanceRetrievalService {
             entity,
             String.class);
         if (!response.getStatusCode().is2xxSuccessful()) {
-            log.error("Could not locate instance for request: " + requestInfo.getLeft()
+            log.debug("Could not locate instance for request: " + requestInfo.getLeft()
                 + ", " + response.getStatusCode() + " = " + response.getStatusCode().getReasonPhrase());
         }
         return response;
@@ -155,7 +159,7 @@ public class InstanceRetrievalService {
     private InstanceInfo extractSingleInstanceFromApplication(String serviceId, String url, ResponseEntity<String> response) {
         ApplicationWrapper application = null;
         if (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null) {
-            log.warn("Could not retrieve service: " + serviceId + " instance info from discovery --" + response.getStatusCode()
+            log.debug("Could not retrieve service: " + serviceId + " instance info from discovery --" + response.getStatusCode()
                 + " -- " + response.getStatusCode().getReasonPhrase() + " -- URL: " + url);
             return null;
         } else {
@@ -164,7 +168,7 @@ public class InstanceRetrievalService {
             try {
                 application = mapper.readValue(response.getBody(), ApplicationWrapper.class);
             } catch (IOException e) {
-                log.error("Could not extract service: " + serviceId + " info from discovery --" + e.getMessage(), e);
+                log.debug("Could not extract service: " + serviceId + " info from discovery --" + e.getMessage(), e);
             }
         }
 

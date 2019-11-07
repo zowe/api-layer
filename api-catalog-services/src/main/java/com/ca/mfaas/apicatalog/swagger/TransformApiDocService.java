@@ -11,9 +11,11 @@ package com.ca.mfaas.apicatalog.swagger;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,6 +50,9 @@ public class TransformApiDocService {
 
     private final GatewayClient gatewayClient;
 
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     /**
      * Does transformation API documentation
      *
@@ -63,7 +68,7 @@ public class TransformApiDocService {
         try {
             swagger = Json.mapper().readValue(apiDocInfo.getApiDocContent(), Swagger.class);
         } catch (IOException e) {
-            log.error("Could not convert response body to a Swagger object.", e);
+            log.debug("Could not convert response body to a Swagger object.", e);
             throw new UnexpectedTypeException("Response is not a Swagger type object.");
         }
 
@@ -76,7 +81,7 @@ public class TransformApiDocService {
         try {
             return Json.mapper().writeValueAsString(swagger);
         } catch (JsonProcessingException e) {
-            log.error("Could not convert Swagger to JSON", e);
+            log.debug("Could not convert Swagger to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
         }
     }
@@ -128,7 +133,7 @@ public class TransformApiDocService {
                 }
 
                 if (route == null) {
-                    log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
+                    log.debug("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
                 } else {
                     prefixes.add(route.getGatewayUrl());
                 }
