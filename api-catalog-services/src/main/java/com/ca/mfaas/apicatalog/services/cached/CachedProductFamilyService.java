@@ -9,12 +9,14 @@
  */
 package com.ca.mfaas.apicatalog.services.cached;
 
-import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.model.APIService;
 import com.ca.mfaas.apicatalog.model.SemanticVersion;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
+import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayClient;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.ca.mfaas.product.routing.transform.TransformService;
@@ -31,10 +33,19 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_DESCRIPTION;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_TITLE;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_VERSION;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -50,6 +61,8 @@ public class CachedProductFamilyService {
     private final Integer cacheRefreshUpdateThresholdInMillis;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final TransformService transformService;
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Autowired
     public CachedProductFamilyService(GatewayClient gatewayClient,
@@ -208,7 +221,7 @@ public class CachedProductFamilyService {
                     instanceHomePage,
                     routes);
             } catch (URLTransformationException e) {
-                log.warn("The home page URI was not transformed. {}", e.getMessage());
+                apimlLog.log("apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
             }
         }
 

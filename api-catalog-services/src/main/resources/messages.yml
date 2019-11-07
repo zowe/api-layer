@@ -103,3 +103,21 @@ messages:
       text: "Failed to initialize API Catalog with discovered services"
       reason: "API Catalog could not initialize running services after several retries."
       action: "Ensure services are started and discovered properly."
+
+    - key: apiml.apicatalog.apidocRetrievalProblem
+      number: ZWEAC702
+      type: ERROR
+      text: "ApiDoc retrieval problem for service %s. %s"
+      reason: "ApiDoc for service could not be retrieved from cache."
+      action: "Verify whether the service provides valid ApiDoc."
+
+    - key: apiml.apicatalog.homePageTransformFailed
+      number: ZWEAC703
+      type: WARNING
+      text: "The home page url for service %s was not transformed. %s"
+      reason: "The home page url for service was not transformed. Original url will be used."
+      action: "Refer to the specific message printed. Possible causes include:\n
+      - Gateway not found yet, transform service cannot perform the request. Wait for Gateway to be discovered.\n
+      - The URI ... is not valid. Ensure the service is providing valid url.\n
+      - Not able to select route for url ... of the service ... Original url used. If this is problem, check service's routing metadata.\n
+      - The path ... of the service URL ... is not valid. Ensure the service is providing correct path.\n"
