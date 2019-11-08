@@ -1,12 +1,17 @@
 import userConstants from '../constants/user.constants';
 
-function authenticationReducer(state = {}, action) {
+const sessionDefaultState = {
+    sessionOn: false,
+}
+
+function authenticationReducer(state=sessionDefaultState, action) {
     switch (action.type) {
         case userConstants.USERS_LOGIN_REQUEST:
             return {
                 user: action.user,
             };
         case userConstants.USERS_LOGIN_SUCCESS:
+            sessionDefaultState.sessionOn = true;
             return {
                 error: null,
                 user: action.user,
@@ -19,6 +24,10 @@ function authenticationReducer(state = {}, action) {
         case userConstants.AUTHENTICATION_FAILURE:
             return {
                 error: action.error,
+                sessionOn: sessionDefaultState.sessionOn,
+                onCompleteHandling: function () {
+                    sessionDefaultState.sessionOn = false
+                }
             };
         case userConstants.USERS_LOGOUT_REQUEST:
             return {

@@ -5,6 +5,10 @@
             "messageText": "Session has expired, please login again "
         },
         {
+            "messageKey": "ZWEAC100E",
+            "messageText": "A generic failure occurred while authenticating "
+        },
+        {
             "messageKey": "ZWEAS120E",
             "messageText": "Invalid username or password "
         },
