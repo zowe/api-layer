@@ -147,7 +147,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         for (Route route : config.getRoutes()) {
             String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
             String serviceUrl = route.getServiceUrl();
-            String key = gatewayUrl.replace("/", "-");
+            String key = new StringBuilder().append(".").append(gatewayUrl.replace("/", "-")).append(".").toString();
             metadata.put(ROUTES + key + ROUTES_GATEWAY_URL, gatewayUrl);
             metadata.put(ROUTES + key + ROUTES_SERVICE_URL, serviceUrl);
         }
