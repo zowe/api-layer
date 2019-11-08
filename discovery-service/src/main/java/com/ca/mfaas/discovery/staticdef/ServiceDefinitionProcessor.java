@@ -274,7 +274,7 @@ public class ServiceDefinitionProcessor {
         if (service.getRoutes() != null) {
             for (Route rs : service.getRoutes()) {
                 String gatewayUrl = UrlUtils.trimSlashes(rs.getGatewayUrl());
-                String key = new StringBuilder().append(".").append(gatewayUrl.replace("/", "-")).append(".").toString();
+                String key = gatewayUrl.replace("/", "-");
                 String serviceUrl = url.getPath()
                     + (rs.getServiceRelativeUrl() == null ? "" : rs.getServiceRelativeUrl());
                 mt.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
