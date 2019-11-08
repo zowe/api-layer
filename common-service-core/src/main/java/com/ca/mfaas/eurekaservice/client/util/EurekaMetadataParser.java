@@ -14,7 +14,6 @@ import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
-import lombok.extern.slf4j.Slf4j;
 import com.ca.mfaas.utils.UrlUtils;
 
 import java.util.*;
