@@ -108,6 +108,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
         result.setAppname(config.getServiceId());
         result.setHostName(hostname);
+        result.setIpAddress(config.getServiceIpAddress());
         result.setAppGroupName(null);
         result.setInstanceEnabledOnit(true);
         result.setSecureVirtualHostName(config.getServiceId());
@@ -147,9 +148,9 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         for (Route route : config.getRoutes()) {
             String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
             String serviceUrl = route.getServiceUrl();
-            String key = new StringBuilder().append(".").append(gatewayUrl.replace("/", "-")).append(".").toString();
+            String key = gatewayUrl.replace("/", "-");
             metadata.put(ROUTES + key + ROUTES_GATEWAY_URL, gatewayUrl);
-            metadata.put(ROUTES + key + ROUTES_SERVICE_URL, serviceUrl);
+            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
         }
 
         // fill tile metadata
