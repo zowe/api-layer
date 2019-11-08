@@ -11,7 +11,7 @@ package com.ca.mfaas.discovery.staticdef;
 
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
-import com.ca.mfaas.product.utils.UrlUtils;
+import com.ca.mfaas.utils.UrlUtils;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.fasterxml.jackson.databind.ObjectMapper;
