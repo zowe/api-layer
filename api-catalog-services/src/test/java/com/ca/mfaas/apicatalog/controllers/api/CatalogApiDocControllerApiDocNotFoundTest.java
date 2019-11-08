@@ -43,7 +43,7 @@ public class CatalogApiDocControllerApiDocNotFoundTest {
     public void getApiDocAnfFailThenThrowApiDocNotFoundException() throws Exception {
         this.mockMvc.perform(get("/apidoc/service2/v1"))
             .andExpect(status().isInternalServerError())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'APIC0005E')].messageContent",
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC103E')].messageContent",
                 hasItem("API Documentation not retrieved, Really bad stuff happened")));
     }
 

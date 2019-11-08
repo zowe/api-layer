@@ -85,7 +85,7 @@ public class InstanceRefreshService {
             log.debug("Failed to update cache with discovered services: '%s'", e.getMessage(), e);
             Thread.currentThread().interrupt();
         } catch (ExecutionException | TimeoutException e) {
-            apimlLog.log("apiml.catalog.cacheUpdateError", e.getMessage());
+            apimlLog.log("apiml.apicatalog.cacheUpdateError", e.getMessage());
         }
     }
 

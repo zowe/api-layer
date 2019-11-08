@@ -36,7 +36,7 @@ public class ApiCatalogControllerExceptionHandler {
      */
     @ExceptionHandler(ContainerStatusRetrievalException.class)
     public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ContainerStatusRetrievalException exception) {
-        Message message = messageService.createMessage("com.ca.mfaas.caapicatalog.containerStatusRetrievalException", exception.getMessage());
+        Message message = messageService.createMessage("apiml.apicatalog.containerStatusRetrievalException", exception.getMessage());
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(message.mapToView());

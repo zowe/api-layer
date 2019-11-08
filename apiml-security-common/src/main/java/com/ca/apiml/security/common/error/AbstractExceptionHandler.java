@@ -60,7 +60,7 @@ public abstract class AbstractExceptionHandler {
      * @throws ServletException throws when a message cannot be written to response
      */
     protected void writeErrorResponse(String messageKey, HttpStatus status, HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        final ApiMessageView message = messageService.createMessage(messageKey, request.getRequestURI()).mapToView();
+        final ApiMessageView message = messageService.createMessage(messageKey, request.getRequestURI(), status.getReasonPhrase()).mapToView();
         writeErrorResponse(message, status, response);
     }
 
