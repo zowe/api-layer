@@ -1,0 +1,9 @@
+resourcePackages:
+    - com.ca.hwsjersey.resource
+prettyPrint: true
+cacheTTL: 0
+openAPI:
+    info:
+        version: '1.0.0'
+        title: Hello World Jersey
+        description: 'REST API for a Jersey Application'

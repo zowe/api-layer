@@ -10,9 +10,6 @@
 package com.ca.hwsjersey.resource;
 
 import com.ca.mfaas.eurekaservice.model.Health;
-import com.ca.mfaas.eurekaservice.model.InstanceInfo;
-import io.swagger.annotations.ApiOperation;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -26,9 +23,6 @@ public class DiscoveryController {
     @GET
     @Path("/info")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Send the application info",
-        notes = "Send a application info to the caller",
-        response = InstanceInfo.class)
     public Object getDiscoveryInfo() {
         return new HashMap<String, String>();
     }
@@ -36,9 +30,6 @@ public class DiscoveryController {
     @GET
     @Path("/health")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Send the health status",
-        notes = "Send a status greeting to the caller",
-        response = Health.class)
     public Object getHealth() {
         return new Health("UP");
     }
