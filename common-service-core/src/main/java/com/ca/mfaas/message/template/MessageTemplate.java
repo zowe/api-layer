@@ -23,5 +23,13 @@ public class MessageTemplate {
     private String number;
     private MessageType type;
     private String text;
+    private String reason;
+    private String action;
 
+    public MessageTemplate(String key, String number, MessageType type, String text) {
+        this.key = key;
+        this.number = number;
+        this.type = type;
+        this.text = text;
+    }
 }

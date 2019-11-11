@@ -10,7 +10,7 @@
 package com.ca.mfaas.client.configuration;
 
 import com.ca.mfaas.message.core.MessageService;
-import com.ca.mfaas.message.yaml.YamlMessageService;
+import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 public class ApplicationConfiguration {
     @Bean
     public MessageService messageService() {
-        MessageService messageService = new YamlMessageService();
+        MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/api-messages.yml");
         messageService.loadMessages("/log-messages.yml");
         return messageService;

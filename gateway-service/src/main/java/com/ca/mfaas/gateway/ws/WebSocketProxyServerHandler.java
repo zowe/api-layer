@@ -13,7 +13,6 @@ import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
 import lombok.extern.slf4j.Slf4j;
-
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
@@ -25,7 +24,6 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import javax.inject.Singleton;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -81,23 +79,31 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
             if (routedServices != null) {
                 RoutedService service = routedServices.findServiceByGatewayUrl("ws/" + majorVersion);
+                if (service == null) {
+                    closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
+                        String.format("Requested ws/%s url is not known by the gateway", majorVersion));
+                    return;
+                }
 
                 ServiceInstance serviceInstance = findServiceInstance(serviceId);
                 if (serviceInstance != null) {
                     openWebSocketConnection(service, serviceInstance, serviceInstance, path, webSocketSession);
+                } else {
+                    closeWebSocket(webSocketSession, CloseStatus.SERVICE_RESTARTED,
+                        String.format("Requested service %s does not have available instance", serviceId));
                 }
-                else {
-                    webSocketSession.close(CloseStatus.SERVICE_RESTARTED.withReason(
-                        String.format("Requested service %s does not have available instance", serviceId)));
-                }
+            } else {
+                closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE,
+                    String.format("Requested service %s is not known by the gateway", serviceId));
             }
-            else {
-                webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(
-                    String.format("Requested service %s is not known by the gateway", serviceId)));
-            }
+        } else {
+            closeWebSocket(webSocketSession, CloseStatus.NOT_ACCEPTABLE, "Invalid URL format");
         }
-        else {
-            webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason("Invalid URL format"));
+    }
+
+    private void closeWebSocket(WebSocketSession webSocketSession, CloseStatus closeStatus, String reason) throws IOException {
+        if (webSocketSession.isOpen()) {
+            webSocketSession.close(closeStatus.withReason(reason));
         }
     }
 
@@ -120,7 +126,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
             WebSocketRoutedSession session = new WebSocketRoutedSession(webSocketSession, targetUrl, jettySslContextFactory);
             routedSessions.put(webSocketSession.getId(), session);
         } catch (WebSocketProxyError e) {
-            log.error("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage(), e);
+            log.debug("Error opening WebSocket connection to {}: {}", targetUrl, e.getMessage());
             webSocketSession.close(CloseStatus.NOT_ACCEPTABLE.withReason(e.getMessage()));
         }
     }
@@ -141,7 +147,12 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         log.debug("afterConnectionClosed(session={},status={})", session, status);
         try {
             session.close(status);
-            getRoutedSession(session).close(status);
+
+            WebSocketRoutedSession webSocketRoutedSession = getRoutedSession(session);
+            if (webSocketRoutedSession != null) {
+                webSocketRoutedSession.close(status);
+            }
+
             routedSessions.remove(session.getId());
         }
         catch (NullPointerException | IOException e) {

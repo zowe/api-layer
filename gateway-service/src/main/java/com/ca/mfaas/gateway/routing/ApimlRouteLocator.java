@@ -12,7 +12,8 @@ package com.ca.mfaas.gateway.routing;
 import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
-import lombok.extern.slf4j.Slf4j;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -22,7 +23,6 @@ import org.springframework.util.PatternMatchUtils;
 
 import java.util.*;
 
-@Slf4j
 class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final DiscoveryClient discovery;
     private final ZuulProperties properties;
@@ -40,6 +40,9 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
         this.routedServicesUsers = routedServicesUsers;
         this.eurekaMetadataParser = new EurekaMetadataParser();
     }
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Suppressing warnings instead of resolving them to match the original class
@@ -72,7 +75,7 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
                 // configured
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
                 if (serviceInstances == null || serviceInstances.isEmpty()) {
-                    log.error("No instance of the service {} found. Routing will not be available.", serviceId);
+                    apimlLog.log("apiml.gateway.instanceNotFound", serviceId);
                     return null;
                 }
 
