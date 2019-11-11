@@ -13,15 +13,14 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.turbo.TurboFilter;
 import ch.qos.logback.core.spi.FilterReply;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Marker;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-@Slf4j
 public class ApimlDependencyLogHider extends TurboFilter {
 
     private static final List<String> IGNORED_MESSAGE_KEYWORDS = Arrays.asList(
@@ -57,7 +56,7 @@ public class ApimlDependencyLogHider extends TurboFilter {
         }
 
         if (t != null) {
-            format += Arrays.asList(ExceptionUtils.getStackFrames(t)).stream().collect(Collectors.joining());
+            format += Stream.of(ExceptionUtils.getStackFrames(t)).collect(Collectors.joining());
         }
 
         return getFilterReply(format);
