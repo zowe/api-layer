@@ -61,6 +61,9 @@ public class ApimlDependencyLogHiderTest {
         Map<String, Boolean> logMessages = new HashMap<>();
         logMessages.put("Tomcat initialized with port(s): 10011 (https)", true);
         logMessages.put("The replica size seems to be empty. Check the route 53 DNS Registry", true);
+        logMessages.put("Peer wants us to take the instance information from it, since the timestamp differs," +
+            "Id : {} My Timestamp : {}, Peer's timestamp: {}", true);
+        logMessages.put("The replication of task {} failed with response code {}", true);
         logMessages.put("Test message", false);
 
         logMessages.forEach((logMessage, shouldBeIgnored) -> {
