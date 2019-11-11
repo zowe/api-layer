@@ -25,6 +25,7 @@ public class ApiMediationServiceConfig {
     private String title;
     private String description;
     private String baseUrl;
+    private String serviceIpAddress;
     private String homePageRelativeUrl;
     private String statusPageRelativeUrl;
     private String healthCheckRelativeUrl;

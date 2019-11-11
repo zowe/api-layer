@@ -1,13 +1,34 @@
 serviceId: hellojersey
 title: Hello Jersey REST API
 description: Example for exposing a Jersey REST API
-defaultZone: https://localhost:10011/eureka/
 baseUrl: https://localhost:10016/hellojersey
+serviceIpAddress: 127.0.0.1
+
 homePageRelativeUrl:
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
+
 discoveryServiceUrls:
     - https://localhost:10011/eureka
+
+routes:
+    - gatewayUrl: api/v1
+      serviceUrl: /hellojersey/api/v1
+    - gatewayUrl: ui/v1
+      serviceUrl: /
+
+apiInfo:
+    - apiId: org.zowe.hellojersey
+      gatewayUrl: api/v1
+      swaggerUrl: https://localhost:10016/hellojersey/swagger.json
+
+catalog:
+    tile:
+        id: cademoapps
+        title: Sample API Mediation Layer Applications
+        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+        version: 1.0.0
+
 ssl:
     verifySslCertificatesOfServices: true
     protocol: TLSv1.2
@@ -19,19 +40,3 @@ ssl:
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
     trustStoreType: PKCS12
-routes:
-    - gatewayUrl: api/v1
-      serviceUrl: /hellojersey/api/v1
-    - gatewayUrl: ui/v1
-      serviceUrl: /
-apiInfo:
-    - apiId: org.zowe.hellojersey
-      gatewayUrl: api/v1
-      swaggerUrl: https://localhost:10016/hellojersey/swagger.json
-catalog:
-    tile:
-        id: cademoapps
-        title: Sample API Mediation Layer Applications
-        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
-        version: 1.0.0
-
