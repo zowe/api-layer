@@ -33,6 +33,8 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "Found more than one MBeanServer instance",
         "Network level connection to peer",
         "DS: Registry: expired lease for",
+        "The replication of task {} failed with response code {}",
+        "Peer wants us to take the instance information from it, since the timestamp differs",
 
         "No routes found from RouteLocator",
         "Exception Processing ErrorPage",
