@@ -149,7 +149,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
             String serviceUrl = route.getServiceUrl();
             String key = gatewayUrl.replace("/", "-");
-            metadata.put(ROUTES + key + ROUTES_GATEWAY_URL, gatewayUrl);
+            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
             metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
         }
 
