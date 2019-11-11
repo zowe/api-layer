@@ -10,13 +10,15 @@
 package com.ca.hwsjersey.resource;
 
 import com.ca.mfaas.eurekaservice.model.Health;
+import io.swagger.v3.oas.annotations.Hidden;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 
-
+@Hidden
 @Path("/api/v1/application")
 public class DiscoveryController {
 
