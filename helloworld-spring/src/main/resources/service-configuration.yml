@@ -2,11 +2,35 @@ serviceId: hellospring
 title: Hello Spring REST API
 description: Example for exposing a Spring REST API
 baseUrl: http://localhost:10021/hellospring
+serviceIpAddress: 127.0.0.1
+
 homePageRelativeUrl:
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
+
 discoveryServiceUrls:
     - https://localhost:10011/eureka
+
+routes:
+    - gatewayUrl: api
+      serviceUrl: /hellospring
+    - gatewayUrl: api/v1
+      serviceUrl: /hellospring/api/v1
+    - gatewayUrl: api/v1/api-doc
+      serviceUrl: /hellospring/api-doc
+
+apiInfo:
+    - apiId: org.zowe.hellospring
+      gatewayUrl: api/v1
+      swaggerUrl: http://localhost:10021/hellospring/api-doc
+
+catalog:
+    tile:
+        id: cademoapps
+        title: Sample API Mediation Layer Applications
+        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+        version: 1.0.0
+
 ssl:
     verifySslCertificatesOfServices: true
     protocol: TLSv1.2
@@ -18,20 +42,3 @@ ssl:
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
     trustStoreType: PKCS12
-routes:
-    - gatewayUrl: api
-      serviceUrl: /hellospring
-    - gatewayUrl: api/v1
-      serviceUrl: /hellospring/api/v1
-    - gatewayUrl: api/v1/api-doc
-      serviceUrl: /hellospring/api-doc
-apiInfo:
-    - apiId: org.zowe.hellospring
-      gatewayUrl: api/v1
-      swaggerUrl: http://localhost:10021/hellospring/api-doc
-catalog:
-    tile:
-        id: cademoapps
-        title: Sample API Mediation Layer Applications
-        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
-        version: 1.0.0

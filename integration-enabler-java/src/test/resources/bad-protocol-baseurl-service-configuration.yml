@@ -2,21 +2,27 @@ serviceId: service
 title: HelloWorld Spring REST API
 description: POC for exposing a Spring REST API
 baseUrl: ftp://user:password@host/path
+serviceIpAddress: 127.0.0.1
+
 homePageRelativeUrl: /
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
+
 discoveryServiceUrls:
     - http://eureka:password@localhost:10011/eureka
     - http://eureka:password@localhost:10011/eureka
+
 routes:
     - gatewayUrl: api/v1
       serviceUrl: /hellospring/api/v1
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellospring/api-doc
+
 apiInfo:
     - apiId: org.zowe.hellospring
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hellospring/api-doc
+
 catalog:
     tile:
         id: helloworld-spring
