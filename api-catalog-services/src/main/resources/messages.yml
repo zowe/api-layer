@@ -8,36 +8,36 @@ messages:
       number: ZWEAC100
       type: WARNING
       text: "Could not retrieve all service info from discovery -- %s -- %s -- %s"
-      reason: "The response from discovery service about the registered instances returned an error or empty body"
-      action: "Make sure the Discovery service is up and running. If the http response error code refers to security issue, check that both discovery service and catalog are running with https scheme and all security configurations are done properly"
+      reason: "The response from The Discovery Service about the registered instances returned an error or empty body."
+      action: "Make sure the Discovery service is up and running. If the http response error code refers to security issue, check that both Discovery Service and Catalog are running with https scheme and that security is configured properly."
 
     - key: apiml.apicatalog.serviceRetrievalParsingFailed
       number: ZWEAC101
       type: ERROR
       text: "Could not parse service info from discovery -- %s"
-      reason: "The response from discovery service about the registered instances could not be parsed to extract applications"
-      action: "Run debug mode and look at discovery service potential issues while creating a response. If discovery service does not indicate any error create an issue."
+      reason: "The response from the Discovery Service about the registered instances could not be parsed to extract applications."
+      action: "Run debug mode and look at the d=Discovery Service potential issues while creating a response. If the Discovery Service does not indicate any error, create an issue."
 
     - key: apiml.apicatalog.containerCouldNotBeRetrieved
       number: ZWEAC102
       type: ERROR
       text: "Could not retrieve containers. Status: %s"
-      reason: "One or more containers could not be retrieved"
-      action: "Check the status of the message for more info and the health of discovery service."
+      reason: "One or more containers could not be retrieved."
+      action: "Check the status of the message for more information and the health of the Discovery Service."
 
     - key: apiml.apicatalog.apiDocNotFound
       number: ZWEAC103
       type: ERROR
       text: "API Documentation not retrieved, %s"
-      reason: "API documentation was not found"
+      reason: "API documentation was not found."
       action: "Make sure the service documentation is configured correctly."
 
     - key: apiml.apicatalog.containerStatusRetrievalException
       number: ZWEAC104
       type: ERROR
       text: "Could not retrieve container statuses, %s"
-      reason: "One or more containers statuses could not be retrieved"
-      action: "Check the status of the message for more info and the health of discovery service."
+      reason: "One or more containers statuses could not be retrieved."
+      action: "Check the status of the message for more information and the health of Discovery Service."
 
     # HTTP, Protocol messages
     # 400-499\
@@ -53,28 +53,28 @@ messages:
       number: ZWEAC700
       type: ERROR
       text: "Failed to update cache with discovered services: '%s'"
-      reason: "Cache could not be updated"
-      action: "Check the status of discovery service."
+      reason: "Cache could not be updated."
+      action: "Check the status of the Discovery Service."
 
     - key: apiml.apicatalog.catalogInstanceCouldNotBeRetrieved
       number: ZWEAC701
       type: WARNING
       text: "API Catalog Instance not retrieved from Discovery service"
-      reason: "An error occurred while fetching containers information"
+      reason: "An error occurred while fetching containers information."
       action: "The jar file is not packaged correctly. Please submit an issue."
 
     - key: apiml.apicatalog.initializeAborted
       number: ZWEAC702
       type: ERROR
-      text: "An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service: %s"
-      reason: "Unexpected error occurred during API Catalog initialization. API Catalog was trying to locate instance of itself in Discovery service."
-      action: "Review the specific message for more information. Verify if Discovery service and service registration works as expected."
+      text: "An unexpected exception occurred when trying to retrieve an API Catalog instance from the Discovery Service: %s"
+      reason: "An unexpected error occurred during API Catalog initialization. The API Catalog was trying to locate an instance of itself in the Discovery Service."
+      action: "Review the specific message for more information. Verify if the Discovery Service and service registration work as expected."
 
     - key: apiml.apicatalog.initializeFailed
       number: ZWEAC703
       type: ERROR
       text: "Failed to initialize API Catalog with discovered services"
-      reason: "API Catalog could not initialize running services after several retries."
+      reason: "The API Catalog could not initialize running services after several retries."
       action: "Ensure services are started and discovered properly."
 
     - key: apiml.apicatalog.apidocRetrievalProblem
@@ -82,22 +82,22 @@ messages:
       type: ERROR
       text: "ApiDoc retrieval problem for service %s. %s"
       reason: "ApiDoc for service could not be retrieved from cache."
-      action: "Verify whether the service provides valid ApiDoc."
+      action: "Verify whether the service provides a valid ApiDoc."
 
     - key: apiml.apicatalog.homePageTransformFailed
       number: ZWEAC705
       type: WARNING
       text: "The home page url for service %s was not transformed. %s"
-      reason: "The home page url for service was not transformed. Original url will be used."
+      reason: "The home page url for service was not transformed. The original url will be used."
       action: "Refer to the specific message printed. Possible causes include:\n
       - Gateway not found yet, transform service cannot perform the request. Wait for Gateway to be discovered.\n
-      - The URI ... is not valid. Ensure the service is providing valid url.\n
-      - Not able to select route for url ... of the service ... Original url used. If this is problem, check service's routing metadata.\n
-      - The path ... of the service URL ... is not valid. Ensure the service is providing correct path.\n"
+      - The URI ... is not valid. Ensure the service is providing a valid url.\n
+      - Not able to select route for url ... of the service ... Original url used. If this is a problem, check the routing metadata of the service.\n
+      - The path ... of the service URL ... is not valid. Ensure the service is providing the correct path.\n"
 
     - key: apiml.apicatalog.serviceNotFound
       number: ZWEAC706
       type: ERROR
       text: "Service not located, %s"
-      reason: "A service could not be found"
-      action: "Check if the service is up and registered. If not registered please review the onboarding guide and make sure you followed all steps."
+      reason: "The service could not be found."
+      action: "Check if the service is up and registered. If it is not registered, Review the onboarding guide to ensure you followed all of the steps."
