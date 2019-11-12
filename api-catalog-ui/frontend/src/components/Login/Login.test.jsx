@@ -96,12 +96,25 @@ describe('>>> Login page component tests', () => {
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
-            messageNumber: 'ZWEAC102E',
+            messageNumber: 'ZWEAS102E',
             messageContent:
                 "Token is expired for URL",
             messageKey: 'apiml.security.expiredToken',
         });
-        expect(messageText).toEqual('Session has expired, please login again ZWEAC102E');
+        expect(messageText).toEqual('Session has expired, please login again ZWEAS102E');
+    });
+
+    it('should display generic failure message', () => {
+        const wrapper = enzyme.shallow(<Login />);
+        const instance = wrapper.instance();
+        const messageText = instance.handleError({
+            messageType: 'ERROR',
+            messageNumber: 'ZWEAS100E',
+            messageContent:
+                "Authentication exception for URL",
+            messageKey: 'apiml.security.expiredToken',
+        });
+        expect(messageText).toEqual('A generic failure occurred while authenticating ZWEAS100E');
     });
 
     it('should display request timeout message', () => {
