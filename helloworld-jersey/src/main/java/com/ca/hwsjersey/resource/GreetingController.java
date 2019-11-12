@@ -40,9 +40,13 @@ public class GreetingController {
         tags = {"Greeting"},
         description = "Send a greeting to the named person",
         responses = {
-            @ApiResponse(description = "the greeting", content = @Content(
-                schema = @Schema(implementation = Greeting.class)
-            )),
+            @ApiResponse(
+                description = "successful operation",
+                responseCode = "200",
+                content = @Content(
+                    schema = @Schema(implementation = Greeting.class)
+                )
+            ),
             @ApiResponse(responseCode = "404", description = "URI not found")
         })
     public Response greeting(
@@ -61,9 +65,13 @@ public class GreetingController {
         tags = {"Greeting"},
         description = "Send a default greeting to the caller",
         responses = {
-            @ApiResponse(description = "the greeting", content = @Content(
-                schema = @Schema(implementation = Greeting.class)
-            )),
+            @ApiResponse(
+                description = "successful operation",
+                responseCode = "200",
+                content = @Content(
+                    schema = @Schema(implementation = Greeting.class)
+                )
+            ),
             @ApiResponse(responseCode = "404", description = "URI not found")
         })
     public Response defaultGreeting() {
