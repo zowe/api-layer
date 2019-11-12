@@ -78,33 +78,6 @@ public class UrlUtils {
         return ip;
     }
 
-    private static String getOwnIpFromDatagram() {
-        String ip = null;
-
-        try (
-            DatagramSocket socket = new DatagramSocket()) {
-            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
-            ip = socket.getLocalAddress().getHostAddress();
-        } catch (UnknownHostException e) {
-            logger.error("", e);
-        } catch (SocketException e) {
-            logger.error("", e);
-        }
-
-        return ip;
-    }
-
-    private static String getOwnIpFromInetAddress() {
-        String ip = null;
-        try {
-            InetAddress inetAddr = InetAddress.getLocalHost();
-            ip = inetAddr.getHostAddress();
-        } catch (UnknownHostException e) {
-            logger.error("", e);
-        }
-        return ip;
-    }
-
     public static List<String> getHostBaseUrls() {
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
         Set<ObjectName> objs = getHttpConnectorsNames(mbs, "HTTP/1.1", "Http11");
