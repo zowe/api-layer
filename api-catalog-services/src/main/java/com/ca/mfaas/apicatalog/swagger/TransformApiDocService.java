@@ -11,11 +11,9 @@ package com.ca.mfaas.apicatalog.swagger;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.config.ApiInfo;
-import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,7 +29,11 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Transforms API documentation to documentation relative to Gateway, not the service instance
@@ -49,9 +51,6 @@ public class TransformApiDocService {
     private static final String SEPARATOR = "/";
 
     private final GatewayClient gatewayClient;
-
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Does transformation API documentation
