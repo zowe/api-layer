@@ -71,7 +71,7 @@ export default class SwaggerUI extends Component {
             <div style={{ width: '100%', background: '#ffffff' }}>
                 {error && (
                     <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
-                        <h4 style={{ color: '#de1b1b' }}>API documentation could not be retrieved</h4>
+                        <h4 style={{ color: '#de1b1b' }}>API documentation could not be retrieved. There may be something wrong in your Swagger definition. Please review the values of 'schemes', 'host' and 'basePath'.</h4>
                     </div>
                 )}
                 {!error && <div id="swaggerContainer" data-testid="swagger" />}

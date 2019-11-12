@@ -25,7 +25,6 @@ const appRouter = app => {
     });
 
     app.post('/api/v1/apicatalog/auth/login', async (req, res) => {
-        res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
 
         const credentials = req.body;
 
