@@ -41,7 +41,7 @@ export default class Login extends React.Component {
             if (filter.length !== 0)
                 messageText = filter[0].messageText + `${error.messageNumber}`;
         }
-        else if (error.status === 401 && authentication.sessionOn){
+        else if (error.status === 401 && authentication.sessionOn) {
             messageText = `${errorMessages.messages[0].messageText} (${errorMessages.messages[0].messageKey})`
             authentication.onCompleteHandling();
         }

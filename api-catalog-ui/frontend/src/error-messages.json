@@ -1,11 +1,11 @@
 {
     "messages" : [
         {
-            "messageKey": "ZWEAC102E",
+            "messageKey": "ZWEAS102E",
             "messageText": "Session has expired, please login again "
         },
         {
-            "messageKey": "ZWEAC100E",
+            "messageKey": "ZWEAS100E",
             "messageText": "A generic failure occurred while authenticating "
         },
         {
