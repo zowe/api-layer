@@ -37,7 +37,7 @@ public class UrlUtils {
     }
 
     /**
-     * Substitute letter W with '-' in the input string and return the result
+     * Substitute '\\' with '-' in the input string and return the result
      *
      * @param url
      * @return

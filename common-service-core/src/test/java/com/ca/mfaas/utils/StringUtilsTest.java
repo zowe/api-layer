@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.utils;
 
-import com.ca.mfaas.utils.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -24,7 +23,7 @@ public class StringUtilsTest {
         assertTrue(StringUtils.removeFirstAndLastOccurrence(whiteSpace, "any-string").isEmpty());
 
         String hasSlashes = "  /blah/   ";
-        assertTrue(StringUtils.removeFirstAndLastOccurrence(hasSlashes, "/").equals("blah"));
+        assertEquals(StringUtils.removeFirstAndLastOccurrence(hasSlashes, "/"), "blah");
     }
 
     @Test
@@ -35,7 +34,7 @@ public class StringUtilsTest {
         assertTrue(StringUtils.removeLastOccurrence(whiteSpace, "any-string").isEmpty());
 
         String hasSlashes = "  /blah/   ";
-        assertTrue(StringUtils.removeLastOccurrence(hasSlashes, "/").equals("/blah"));
+        assertEquals(StringUtils.removeLastOccurrence(hasSlashes, "/"), "/blah");
     }
 
     @Test
@@ -46,6 +45,6 @@ public class StringUtilsTest {
         assertTrue(StringUtils.removeFirstAndLastOccurrence(whiteSpace, "any-string").isEmpty());
 
         String hasSlashes = "  /blah/   ";
-        assertTrue(StringUtils.removeFirstAndLastOccurrence(hasSlashes, "/").equals("blah"));
+        assertEquals(StringUtils.removeFirstAndLastOccurrence(hasSlashes, "/"), "blah");
     }
 }
