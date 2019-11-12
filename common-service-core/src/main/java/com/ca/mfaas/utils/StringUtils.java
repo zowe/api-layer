@@ -14,39 +14,64 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class StringUtils {
 
-    public static String removeFirstAndLastOccurrence(String uri, String str) {
-        if (uri == null) {
+    /**
+     * Remove from parameter 'input' the first and the last occurrence of parameter 'str'
+     * @param input
+     * @param str
+     * @return
+     */
+    public static String removeFirstAndLastOccurrence(String input, String str) {
+        if (input == null) {
             return null;
         }
 
-        uri = uri.trim();
-        if (uri.isEmpty()) {
+        input = input.trim();
+        if (input.isEmpty()) {
             return "";
         }
 
-        int start = 0, stop = uri.length();
+        int start = 0, stop = input.length();
 
-        if (uri.startsWith(str)) {
+        if (input.startsWith(str)) {
             start = 1;
         }
 
-        if (uri.endsWith(str)) {
-            stop = uri.length() - 1;
+        if (input.endsWith(str)) {
+            stop = input.length() - 1;
         }
 
-        uri = uri.substring(start, stop);
+        input = input.substring(start, stop);
 
-        return uri;
+        return input;
     }
 
+    /**
+     * Prepend parameter 'subStr' to parameter 'input'
+     *
+     * @param uri
+     * @param subStr
+     * @return
+     */
     public static String prependSubstring(String uri, String subStr) {
         return prependSubstring(uri, subStr, true);
     }
 
+    /**
+     * If 'input' is not already prefixed with 'subStr', prepend parameter 'subStr' to parameter 'input'
+     *
+     * @param uri
+     * @param subStr
+     * @param checkAlreadyPrepended
+     * @return
+     */
     public static String prependSubstring(String uri, String subStr, boolean checkAlreadyPrepended) {
         return prependSubstring(uri, subStr, checkAlreadyPrepended, true);
     }
 
+    /**
+     * If 'input' is not already prefixed with 'subStr', prepend parameter 'subStr' to parameter 'input'.
+     * If 'input' has leading or trailing whitespaces, trim them first if 'shouldTrimWhitespaceFirst' is true
+     */
     public static String prependSubstring(String uri, String subStr, boolean checkAlreadyPrepended, boolean shouldTrimWhitespaceFirst) {
         if (uri == null) {
             return null;
@@ -63,20 +88,27 @@ public class StringUtils {
         return uri;
     }
 
-    public static String removeLastOccurrence(String uri, String subStr) {
-        if (uri == null) {
+    /**
+     * If 'input' ends with 'subStr', remove this occurrence of 'subStr' only
+     *
+     * @param input
+     * @param subStr
+     * @return
+     */
+    public static String removeLastOccurrence(String input, String subStr) {
+        if (input == null) {
             return null;
         }
 
-        uri = uri.trim();
-        if (uri.isEmpty()) {
+        input = input.trim();
+        if (input.isEmpty()) {
             return "";
         }
 
-        if (uri.endsWith(subStr)) {
-            uri = uri.substring(0, uri.length() - 1);
+        if (input.endsWith(subStr)) {
+            input = input.substring(0, input.length() - 1);
         }
 
-        return uri;
+        return input;
     }
 }
