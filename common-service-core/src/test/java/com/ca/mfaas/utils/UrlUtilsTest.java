@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.utils;
 
-import com.ca.mfaas.utils.UrlUtils;
 import org.junit.Test;
 
 import java.util.List;
@@ -37,5 +36,37 @@ public class UrlUtilsTest {
         for (int n = 0; n < size; n++) {
             System.out.println("     url[" + n + "]=" + urls.get(n));
         }
+    }
+
+
+    @Test
+    public void getEncodedUrlTest () {
+        assertEquals(UrlUtils.getEncodedUrl("api/v1"), "api-v1");
+        assertEquals(UrlUtils.getEncodedUrl("/api/v1"), "-api-v1");
+        assertEquals(UrlUtils.getEncodedUrl("/api/v1/"), "-api-v1-");
+        assertNotEquals(UrlUtils.getEncodedUrl(null), "api-v1");
+        assertNotEquals(UrlUtils.getEncodedUrl(null), "null");
+        assertNotEquals(UrlUtils.getEncodedUrl(null), null);
+
+    }
+
+    @Test
+    public void validateUrl () {
+
+    }
+
+    @Test
+    public void removeFirstAndLastSlash () {
+
+    }
+
+    @Test
+    public void addFirstSlash () {
+
+    }
+
+    @Test
+    public void removeLastSlash () {
+
     }
 }
