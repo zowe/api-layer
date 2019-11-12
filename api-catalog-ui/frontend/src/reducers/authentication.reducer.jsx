@@ -30,10 +30,6 @@ function authenticationReducer(state=sessionDefaultState, action) {
                 }
             };
         case userConstants.USERS_LOGOUT_REQUEST:
-            return {
-                error: null,
-                showHeader: false,
-            };
         case userConstants.USERS_LOGOUT_SUCCESS:
             return {
                 error: null,
