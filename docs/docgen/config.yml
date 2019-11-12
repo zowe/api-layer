@@ -7,7 +7,7 @@ messageFiles:
     file: ../../common-service-core/src/main/resources/core-log-messages.yml
 
   - title: "Security common messages"
-    file: ../../apiml-security-common/src/main/resources/security-commonlog-messages.yml
+    file: ../../apiml-security-common/src/main/resources/security-common-log-messages.yml
 
   - title: "Security client messages"
     file: ../../security-service-client-spring/src/main/resources/security-client-log-messages.yml
