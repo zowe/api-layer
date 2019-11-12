@@ -46,6 +46,7 @@ public class InstanceInitializeService {
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
+    private final InstanceRefreshService instanceRefreshService;
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
@@ -73,6 +74,7 @@ public class InstanceInitializeService {
             } else {
                 log.info("API Catalog instance found, retrieving all services.");
                 getAllInstances(apiCatalogInstance);
+                instanceRefreshService.start();
             }
         } catch (InstanceInitializationException | GatewayNotAvailableException e) {
             throw new RetryException(e.getMessage());

@@ -12,11 +12,10 @@ package com.ca.mfaas.apicatalog.instance;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
-import com.ca.mfaas.product.constants.CoreService;
-import com.ca.mfaas.product.gateway.GatewayClient;
-import com.netflix.appinfo.InstanceInfo;
 import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
 
@@ -44,9 +50,18 @@ public class InstanceRefreshService {
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
+    private boolean isStarted = false;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
+
+    /**
+     * Starts refreshing the API Catalog cache
+     */
+    public void start() {
+        this.isStarted = true;
+        log.info("InstanceRefreshService started");
+    }
 
     /**
      * Periodically refresh the container/service caches
@@ -56,8 +71,8 @@ public class InstanceRefreshService {
         initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
         fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
-        if (!gatewayClient.isInitialized() || !isApiCatalogInCache()) {
-            log.debug("Gateway not found yet, skipping the InstanceRefreshService refresh");
+        if (!isStarted) {
+            log.debug("InstanceRefreshService is stopped. Skip refresh.");
             return;
         }
 
@@ -82,7 +97,7 @@ public class InstanceRefreshService {
                 log.debug("Catalog status updates will occur for containers: " + containersUpdated.toString());
             }
         } catch (InterruptedException e) {
-            log.debug("Failed to update cache with discovered services: '%s'", e.getMessage(), e);
+            log.debug("Failed to update cache with discovered services: {}", e.getMessage());
             Thread.currentThread().interrupt();
         } catch (ExecutionException | TimeoutException e) {
             apimlLog.log("apiml.apicatalog.cacheUpdateError", e.getMessage());
@@ -237,11 +252,6 @@ public class InstanceRefreshService {
 
         log.debug("The total number of changed instances fetched by the delta processor : {}", deltaCount);
         return updatedInstances;
-    }
-
-    private boolean isApiCatalogInCache() {
-        Application service = this.cachedServicesService.getService(CoreService.API_CATALOG.getServiceId());
-        return service != null;
     }
 
 }
