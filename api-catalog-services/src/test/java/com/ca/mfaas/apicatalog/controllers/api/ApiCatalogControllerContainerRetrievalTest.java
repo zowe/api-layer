@@ -62,7 +62,7 @@ public class ApiCatalogControllerContainerRetrievalTest {
 
         @Bean
         public MessageService messageService() {
-            return new YamlMessageService("/messages.yml");
+            return new YamlMessageService("/apicatalog-log-messages.yml");
         }
 
         @Bean

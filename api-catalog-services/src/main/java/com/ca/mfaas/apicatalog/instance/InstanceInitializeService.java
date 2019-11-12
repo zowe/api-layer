@@ -47,6 +47,7 @@ public class InstanceInitializeService {
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
     private final InstanceRefreshService instanceRefreshService;
+
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 

@@ -22,7 +22,7 @@ import java.io.InputStream;
  */
 public class YamlMessageService extends AbstractMessageService {
 
-    private static final String COMMON_MESSAGES = "/mfs-common-messages.yml";
+    private static final String COMMON_MESSAGES = "/core-log-messages.yml";
 
     /**
      * Constructor that creates only common messages.

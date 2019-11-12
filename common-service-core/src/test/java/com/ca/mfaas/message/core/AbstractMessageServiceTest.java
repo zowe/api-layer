@@ -88,11 +88,11 @@ public class AbstractMessageServiceTest {
     public void shouldThrowException_IfThereAreDuplicatedMessageNumbers() {
         MessageTemplate message = new MessageTemplate();
         message.setKey("apiml.common.serviceTimeout");
-        message.setNumber("MFS0104");
+        message.setNumber("ZWEAM700");
 
         MessageTemplate message2 = new MessageTemplate();
         message2.setKey("apiml.common.serviceTimeout.illegalFormat");
-        message2.setNumber("MFS0104");
+        message2.setNumber("ZWEAM700");
 
         MessageTemplates messages = new MessageTemplates();
         messages.setMessages(
@@ -100,7 +100,7 @@ public class AbstractMessageServiceTest {
         );
 
         exception.expect(DuplicateMessageException.class);
-        exception.expectMessage("Message template with number [MFS0104] already exists");
+        exception.expectMessage("Message template with number [ZWEAM700] already exists");
 
         abstractMessageService.addMessageTemplates(messages);
     }

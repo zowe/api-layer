@@ -13,7 +13,7 @@ const scalingDuration = process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION;
 // terminate the epic if you get any of the following Ajax error codes
 const terminatingStatusCodes = [500, 401, 403];
 // override the termination if any of these APIM message codes are in the response
-const excludedMessageCodes = ['MFS0103'];
+const excludedMessageCodes = ['ZWEAM104'];
 
 function checkOrigin() {
     // only allow the gateway url to authenticate the user

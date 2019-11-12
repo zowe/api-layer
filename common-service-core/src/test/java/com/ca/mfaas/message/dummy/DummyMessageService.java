@@ -28,22 +28,22 @@ public class DummyMessageService extends AbstractMessageService {
 
         MessageTemplate message = new MessageTemplate();
         message.setKey("apiml.common.serviceTimeout");
-        message.setNumber("MFS0104");
+        message.setNumber("ZWEAM700");
         message.setText("No response received within the allowed time: %s");
 
         MessageTemplate message2 = new MessageTemplate();
         message2.setKey("apiml.common.serviceTimeout.illegalFormat");
-        message2.setNumber("MFS0104F");
+        message2.setNumber("ZWEAM700F");
         message2.setText("No response received within the allowed time: %d");
 
         MessageTemplate message3 = new MessageTemplate();
         message3.setKey("apiml.common.serviceTimeout.missingFormat");
-        message3.setNumber("MFS0104M");
+        message3.setNumber("ZWEAM700M");
         message3.setText("No response received within the allowed time: %s %s");
 
         MessageTemplate message4 = new MessageTemplate();
         message4.setKey("apiml.common.invalidMessageTextFormat");
-        message4.setNumber("MFS0002");
+        message4.setNumber("ZWEAM103");
         message4.setText("Internal error: Invalid message text format. Please contact support for further assistance.");
 
         MessageTemplate message5 = new MessageTemplate();

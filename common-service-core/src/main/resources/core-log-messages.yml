@@ -27,6 +27,27 @@ messages:
       reason: "I/O error reading `META-INF/build-info.properties` or `META-INF/git.properties`"
       action: "The jar file is not packaged correctly. Please submit an issue."
 
+    - key: apiml.common.invalidMessageKey
+      number: ZWEAM102
+      type: ERROR
+      text: "Internal error: Invalid message key '%s' is provided. Please create an issue with this message."
+      reason: "Message service is requested to create message with an invalid key."
+      action: "Create an issue with this message."
+
+    - key: apiml.common.invalidMessageTextFormat
+      number: ZWEAM103
+      type: ERROR
+      text: "Internal error: Invalid message text format. Please create an issue with this message."
+      reason: "Message service is requested to create a message with an invalid text format."
+      action: "Create an issue with this message."
+
+    - key: apiml.common.endPointNotFound
+      number: ZWEAM104
+      type: ERROR
+      text: "The endpoint you were looking for '%s' could not be located"
+      reason: "The endpoint you were looking for was not found."
+      action: "Verify that the URL of the endpoint you are trying to reach is correct."
+
     # HTTP, Protocol messages
     # 400-499
 
@@ -99,7 +120,6 @@ messages:
       - The keystore is invalid or corrupted\n
       - The certificate is invalid or corrupted"
 
-
     - key: apiml.common.truststorePasswordNotDefined
       number: ZWEAM506
       type: ERROR
@@ -135,6 +155,13 @@ messages:
       reason: "The key alias was not found."
       action: "Ensure that the key alias provided for the key exists in the provided keystore."
 
+    - key: apiml.common.tlsError
+      number: ZWEAM511
+      type: ERROR
+      text: "The certificate of the service accessed using URL '%s' is not trusted by the API Gateway: %s"
+      reason: "Thr Gateway does not trust the requested service and refuses to communicate with it. The service's certificate is missing from API Mediation Layer's truststore."
+      action: "Contact your administrator to verify API Mediation Layer truststore configuration."
+
     # Various messages
     # 600-699
 
@@ -148,46 +175,18 @@ messages:
     # Service specific messages
     # 700-999
 
-    # Legacy messages
-
-    - key: apiml.common.invalidMessageKey
-      number: MFS0001
-      type: ERROR
-      text: "Internal error: Invalid message key '%s' is provided. Please create an issue with this message."
-      reason: "Message service is requested to create message with an invalid key."
-      action: "Create an issue with this message."
-
-    - key: apiml.common.invalidMessageTextFormat
-      number: MFS0002
-      type: ERROR
-      text: "Internal error: Invalid message text format. Please create an issue with this message."
-      reason: "Message service is requested to create a message with an invalid text format."
-      action: "Create an issue with this message."
-
-    - key: apiml.common.endPointNotFound
-      number: MFS0103
-      type: ERROR
-      text: "The endpoint you were looking for '%s' could not be located"
-      reason: "The endpoint you were looking for was not found."
-      action: "Verify that the URL of the endpoint you are trying to reach is correct."
-
     - key: apiml.common.serviceTimeout
-      number: MFS0104
+      number: ZWEAM700
       type: ERROR
       text: "No response received within the allowed time: %s"
       reason: "No response was received within the allowed time."
       action: "Verify that the URL you are trying to reach is correct and all services are running."
 
-    - key: apiml.common.tlsError
-      number: AML0105
-      type: ERROR
-      text: "The certificate of the service accessed using URL '%s' is not trusted by the API Gateway: %s"
-      reason: "Thr Gateway does not trust the requested service and refuses to communicate with it. The service's certificate is missing from API Mediation Layer's truststore."
-      action: "Contact your administrator to verify API Mediation Layer truststore configuration."
-
     - key: apiml.common.internalRequestError
-      number: AML0106
+      number: ZWEAM701
       type: ERROR
       text: "The request to the URL '%s' has failed: %s caused by: %s"
       reason: "Request failed because of internal error."
       action: "Refer to specific exception details for troubleshooting. Create an issue with this message."
+
+    # Legacy messages

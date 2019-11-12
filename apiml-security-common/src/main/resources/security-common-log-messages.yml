@@ -7,7 +7,7 @@ messages:
     # 100-199
 
     - key: apiml.security.errorWrittingResponse
-      number: ZWEAM103
+      number: ZWEAT103
       type: ERROR
       text: "Couldn't write response: %s"
       reason: "Message could not be written to the response"
@@ -23,7 +23,7 @@ messages:
     # 600-699
 
     - key: apiml.security.zosmfNotFound
-      number: ZWEAM601
+      number: ZWEAT601
       type: ERROR
       text: "z/OSMF service name not found. Set parameter apiml.security.auth.zosmfServiceId to your service ID."
       reason: "The parameter zosmfserviceId was not configured correctly and could not be validated."

@@ -28,8 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {CatalogApiDocController.class}, secure = false)
@@ -65,7 +64,7 @@ public class CatalogApiDocControllerApiDocNotFoundTest {
 
         @Bean
         public MessageService messageService() {
-            return new YamlMessageService("/messages.yml");
+            return new YamlMessageService("/apicatalog-log-messages.yml");
         }
 
         @Bean
