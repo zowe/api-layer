@@ -12,7 +12,7 @@ package com.ca.mfaas.message.log;
 import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.core.MessageType;
-import com.ca.mfaas.util.ObjectUtil;
+import com.ca.mfaas.utils.ObjectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;

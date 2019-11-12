@@ -7,8 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.util;
+package com.ca.mfaas.utils;
 
+import com.ca.mfaas.utils.ObjectUtil;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
