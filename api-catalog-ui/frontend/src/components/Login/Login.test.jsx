@@ -122,12 +122,12 @@ describe('>>> Login page component tests', () => {
         const instance = wrapper.instance();
         const messageText = instance.handleError({
             messageType: 'ERROR',
-            messageNumber: 'MFS0104E',
+            messageNumber: 'ZWEAM700E',
             messageContent:
                 "No response received within the allowed time",
             messageKey: 'apiml.common.serviceTimeout',
         });
-        expect(messageText).toEqual(`Request timeout, please try again later MFS0104E`);
+        expect(messageText).toEqual(`Request timeout, please try again later ZWEAM700E`);
     });
 
     it('should disable button and show spinner when request is being resolved', () => {
