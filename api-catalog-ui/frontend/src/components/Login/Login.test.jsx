@@ -112,7 +112,7 @@ describe('>>> Login page component tests', () => {
             messageNumber: 'ZWEAS100E',
             messageContent:
                 "Authentication exception for URL",
-            messageKey: 'apiml.security.expiredToken',
+            messageKey: 'apiml.security.generic',
         });
         expect(messageText).toEqual('A generic failure occurred while authenticating ZWEAS100E');
     });
