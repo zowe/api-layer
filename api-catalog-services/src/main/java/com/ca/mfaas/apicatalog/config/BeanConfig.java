@@ -25,7 +25,7 @@ public class BeanConfig {
     @Bean
     @Primary
     public MessageService messageServiceCatalog(MessageService messageService) {
-        messageService.loadMessages("/security-common-log-messages.yml");
+        messageService.loadMessages("/apicatalog-log-messages.yml");
         return messageService;
     }
 
