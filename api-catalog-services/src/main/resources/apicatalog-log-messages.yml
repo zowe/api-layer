@@ -16,7 +16,7 @@ messages:
       type: ERROR
       text: "Could not parse service info from discovery -- %s"
       reason: "The response from the Discovery Service about the registered instances could not be parsed to extract applications."
-      action: "Run debug mode and look at the d=Discovery Service potential issues while creating a response. If the Discovery Service does not indicate any error, create an issue."
+      action: "Run debug mode and look at the Discovery Service potential issues while creating a response. If the Discovery Service does not indicate any error, create an issue."
 
     - key: apiml.apicatalog.containerCouldNotBeRetrieved
       number: ZWEAC102
@@ -100,4 +100,4 @@ messages:
       type: ERROR
       text: "Service not located, %s"
       reason: "The service could not be found."
-      action: "Check if the service is up and registered. If it is not registered, Review the onboarding guide to ensure you followed all of the steps."
+      action: "Check if the service is up and registered. If it is not registered, review the onboarding guide to ensure you followed all of the steps."
