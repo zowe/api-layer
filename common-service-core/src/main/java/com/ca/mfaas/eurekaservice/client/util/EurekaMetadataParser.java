@@ -16,6 +16,7 @@ import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.utils.UrlUtils;
 
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -158,7 +159,7 @@ public class EurekaMetadataParser {
      * @param serviceId the identifier of a service which ApiInfo configuration belongs
      * @return the generated Eureka metadata
      */
-    public static Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) {
+    public static Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) throws MalformedURLException {
         Map<String, String> metadata = new HashMap<>();
         String encodedGatewayUrl = UrlUtils.getEncodedUrl(apiInfo.getGatewayUrl());
 

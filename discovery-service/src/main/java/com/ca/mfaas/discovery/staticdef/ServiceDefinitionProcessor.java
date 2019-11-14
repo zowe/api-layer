@@ -217,6 +217,9 @@ public class ServiceDefinitionProcessor {
         } catch (UnknownHostException e) {
             throw new ServiceDefinitionException(String.format("The hostname of URL %s is unknown. The instance of %s will not be created: %s",
                 instanceBaseUrl, serviceId, e.getMessage()));
+        } catch (MetadataValidationException mve) {
+            throw new ServiceDefinitionException(String.format("Metadata creation failed. The instance of %s will not be created: %s",
+                serviceId, mve));
         }
     }
 
@@ -225,7 +228,7 @@ public class ServiceDefinitionProcessor {
                                        String instanceId, String instanceBaseUrl,
                                        URL url,
                                        String ipAddress,
-                                       CatalogUiTile tile) {
+                                       CatalogUiTile tile) throws MetadataValidationException {
         String serviceId = service.getServiceId();
 
         builder.setAppName(serviceId).setInstanceId(instanceId).setHostName(url.getHost()).setIPAddr(ipAddress)
@@ -268,7 +271,7 @@ public class ServiceDefinitionProcessor {
         }
     }
 
-    private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) {
+    private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) throws MetadataValidationException {
         Map<String, String> mt = new HashMap<>();
 
         mt.put(VERSION, CURRENT_VERSION);
@@ -294,7 +297,11 @@ public class ServiceDefinitionProcessor {
 
             if (service.getApiInfo() != null) {
                 for (ApiInfo apiInfo : service.getApiInfo()) {
-                    mt.putAll(EurekaMetadataParser.generateMetadata(service.getServiceId(), apiInfo));
+                    try {
+                        mt.putAll(EurekaMetadataParser.generateMetadata(service.getServiceId(), apiInfo));
+                    } catch (MalformedURLException mue) {
+                        throw  new MetadataValidationException("Creating service metadata failed for apiInfo: " + apiInfo.getApiId(), mue);
+                    }
                 }
             }
         }
