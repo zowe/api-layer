@@ -9,8 +9,8 @@ messages:
     - key: apiml.security.errorWrittingResponse
       number: ZWEAT103
       type: ERROR
-      text: "Couldn't write response: %s"
-      reason: "Message could not be written to the response"
+      text: "Could not write response: %s"
+      reason: "A message could not be written to the response"
       action: "Please submit an issue with this message."
 
     # HTTP,Protocol messages

@@ -9,7 +9,7 @@ messages:
       type: WARNING
       text: "Could not retrieve all service info from discovery -- %s -- %s -- %s"
       reason: "The response from The Discovery Service about the registered instances returned an error or empty body."
-      action: "Make sure the Discovery service is up and running. If the http response error code refers to security issue, check that both Discovery Service and Catalog are running with https scheme and that security is configured properly."
+      action: "Make sure the Discovery service is up and running. If the http response error code refers to a security issue, check that both the Discovery Service and Catalog are running with the https scheme and that security is configured properly."
 
     - key: apiml.apicatalog.serviceRetrievalParsingFailed
       number: ZWEAC101
@@ -82,17 +82,17 @@ messages:
       type: ERROR
       text: "ApiDoc retrieval problem for service %s. %s"
       reason: "ApiDoc for service could not be retrieved from cache."
-      action: "Verify whether the service provides a valid ApiDoc."
+      action: "Verify that the service provides a valid ApiDoc."
 
     - key: apiml.apicatalog.homePageTransformFailed
       number: ZWEAC705
       type: WARNING
       text: "The home page url for service %s was not transformed. %s"
       reason: "The home page url for service was not transformed. The original url will be used."
-      action: "Refer to the specific message printed. Possible causes include:\n
-      - Gateway not found yet, transform service cannot perform the request. Wait for Gateway to be discovered.\n
+      action: "Refer to the specific printed message. Possible causes include:\n
+      - The Gateway was not found. Transform service cannot perform the request. Wait for the Gateway to be discovered.\n
       - The URI ... is not valid. Ensure the service is providing a valid url.\n
-      - Not able to select route for url ... of the service ... Original url used. If this is a problem, check the routing metadata of the service.\n
+      - Not able to select a route for url ... of the service ... Original url is used. If this is a problem, check the routing metadata of the service.\n
       - The path ... of the service URL ... is not valid. Ensure the service is providing the correct path.\n"
 
     - key: apiml.apicatalog.serviceNotFound
@@ -100,4 +100,4 @@ messages:
       type: ERROR
       text: "Service not located, %s"
       reason: "The service could not be found."
-      action: "Check if the service is up and registered. If it is not registered, review the onboarding guide to ensure you followed all of the steps."
+      action: "Check if the service is up and registered. If it is not registered, review the onboarding guide to ensure that all steps were completed."

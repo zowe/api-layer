@@ -44,8 +44,8 @@ messages:
     - key: apiml.common.endPointNotFound
       number: ZWEAM104
       type: ERROR
-      text: "The endpoint you were looking for '%s' could not be located"
-      reason: "The endpoint you were looking for was not found."
+      text: "The endpoint you are looking for '%s' could not be located"
+      reason: "The endpoint you are looking for could not be located."
       action: "Verify that the URL of the endpoint you are trying to reach is correct."
 
     # HTTP, Protocol messages
@@ -57,10 +57,10 @@ messages:
       text: "Error initializing SSL Context: '%s'"
       reason: "An error occurred while initializing the SSL Context."
       action: "Refer to the specific message to identify the exact problem.\n
-      possible causes can include:\n
+      Possible causes include:\n
       - Incorrect security algorithm\n
-      - The keystore invalid or corrupted\n
-      - The certificate invalid or corrupted"
+      - The keystore is invalid or corrupted\n
+      - The certificate is invalid or corrupted"
 
 
     # TLS, Certificate messages
@@ -71,21 +71,21 @@ messages:
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
       reason: "This is a warning that the SSL Context will be created without verifying certificates."
-      action: "Stop the service and set the verifySslCertificatesOfServices parameter to `true`. Then restart the service. Do not use this option in production environment."
+      action: "Stop the service and set the verifySslCertificatesOfServices parameter to `true`. Then restart the service. Do not use this option in a production environment."
 
     - key: apiml.common.insecureHttpWarning
       number: ZWEAM501
       type: WARNING
       text: "Service is connecting to Discovery service using insecure HTTP protocol."
-      reason: "The service is connecting to Discovery service using the non-secure HTTP protocol."
-      action: "For production use, start the Discovery service in HTTPS mode and configure the services accordingly."
+      reason: "The service is connecting to the Discovery Service using the non-secure HTTP protocol."
+      action: "For production use, start the Discovery Service in HTTPS mode and configure the services accordingly."
 
     - key: apiml.common.errorReadingSecretKey
       number: ZWEAM502
       type: ERROR
       text: "Error reading secret key: '%s'"
       reason: "A key with the specified alias cannot be loaded from the keystore."
-      action: "Ensure that the configured key is present, is in the correct format, and is not corrupt."
+      action: "Ensure that the configured key is present, in the correct format, and not corrupt."
 
     - key: apiml.common.errorLoadingSecretKey
       number: ZWEAM503
@@ -159,7 +159,7 @@ messages:
       number: ZWEAM511
       type: ERROR
       text: "The certificate of the service accessed using URL '%s' is not trusted by the API Gateway: %s"
-      reason: "Thr Gateway does not trust the requested service and refuses to communicate with it. The service's certificate is missing from API Mediation Layer's truststore."
+      reason: "Thr Gateway does not trust the requested service and refuses to communicate with it. The certificate of the service is missing from the truststore of the API Mediation Layer."
       action: "Contact your administrator to verify API Mediation Layer truststore configuration."
 
     # Various messages
