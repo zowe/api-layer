@@ -12,6 +12,8 @@ package com.ca.mfaas.eurekaservice.client.impl;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
+import com.ca.mfaas.exception.MetadataValidationException;
+import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.utils.UrlUtils;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
@@ -43,11 +45,14 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     private EurekaClient eurekaClient;
 
     @Override
-    public synchronized void register(ApiMediationServiceConfig config) {
-        ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
+    public synchronized void register(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
-        eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
-        log.debug("eurekaClient.getApplicationInfoManager().getInfo().getHostName(): {}", eurekaClient.getApplicationInfoManager().getInfo().getHostName());
+        try {
+            ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
+            eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
+        } catch (RuntimeException rte) {
+            throw new ServiceDefinitionException("Registration was not successful due to unexpected RuntimeException: ", rte);
+        }
     }
 
     @Override
@@ -83,13 +88,13 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         return new DiscoveryClient(applicationInfoManager, clientConfig, args);
     }
 
-    private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) {
+    private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         EurekaInstanceConfig eurekaInstanceConfig = createEurekaInstanceConfig(config);
         InstanceInfo instanceInformation = new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get();
         return new ApplicationInfoManager(eurekaInstanceConfig, instanceInformation);
     }
 
-    private EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) {
+    private EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
         String hostname;
@@ -102,7 +107,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             port = baseUrl.getPort();
         } catch (MalformedURLException e) {
             String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
-            throw new InvalidParameterException(message);
+            throw new ServiceDefinitionException(message, e);
         }
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
@@ -113,7 +118,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         result.setInstanceEnabledOnit(true);
         result.setSecureVirtualHostName(config.getServiceId());
         result.setVirtualHostName(config.getServiceId());
-        result.setMetadataMap(createMetadata(config));
         result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
 
         if ((config.getHomePageRelativeUrl() != null) && !config.getHomePageRelativeUrl().isEmpty()) {
@@ -137,11 +141,17 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 throw new InvalidParameterException("Invalid protocol for baseUrl property");
         }
 
+        try {
+            result.setMetadataMap(createMetadata(config));
+        } catch (MetadataValidationException e) {
+            throw new ServiceDefinitionException("Service configuration failed: ", e);
+        }
+
         return result;
     }
 
 
-    private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
+    private Map<String, String> createMetadata(ApiMediationServiceConfig config) throws MetadataValidationException {
         Map<String, String> metadata = new HashMap<>();
 
         // fill routing metadata
@@ -170,7 +180,11 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         // fill api-doc info
         for (ApiInfo apiInfo : config.getApiInfo()) {
-            metadata.putAll(EurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
+            try {
+                metadata.putAll(EurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
+            } catch (MalformedURLException e) {
+                throw new MetadataValidationException("Metadata creation failed for apiInfo: " + apiInfo.getApiId(), e);
+            }
         }
 
         return metadata;

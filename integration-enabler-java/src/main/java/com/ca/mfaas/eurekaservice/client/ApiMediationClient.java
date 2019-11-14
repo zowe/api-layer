@@ -10,8 +10,9 @@
 package com.ca.mfaas.eurekaservice.client;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
+import com.ca.mfaas.exception.ServiceDefinitionException;
 
 public interface ApiMediationClient {
-    void register(ApiMediationServiceConfig config);
+    void register(ApiMediationServiceConfig config) throws ServiceDefinitionException;
     void unregister();
 }
