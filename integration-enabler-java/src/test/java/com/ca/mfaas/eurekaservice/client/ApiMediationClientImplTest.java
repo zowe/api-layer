@@ -13,6 +13,7 @@ import com.ca.mfaas.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.exception.ServiceDefinitionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,7 +27,7 @@ public class ApiMediationClientImplTest {
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
-    public void startEurekaClient() {
+    public void startEurekaClient() throws ServiceDefinitionException {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
         Ssl ssl = new Ssl(false, "TLSv1.2", "localhost", "password",
@@ -58,19 +59,19 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badBaseUrlFormat() {
+    public void badBaseUrlFormat() throws ServiceDefinitionException {
         String file = "/bad-baseurl-service-configuration.yml";
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = new ApiMediationServiceConfigReader(file).readConfiguration();
-        exceptionRule.expect(RuntimeException.class);
-        exceptionRule.expectMessage("baseUrl: [localhost:10021/hellospring] is not valid URL");
+        exceptionRule.expect(ServiceDefinitionException.class);
+        //exceptionRule.expectMessage("baseUrl: [localhost:10021/hellospring] is not valid URL");
 
         client.register(config);
         client.unregister();
     }
 
     @Test
-    public void httpsBaseUrlFormat() {
+    public void httpsBaseUrlFormat() throws ServiceDefinitionException {
         String file = "/https-service-configuration.yml";
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = new ApiMediationServiceConfigReader(file).readConfiguration();
@@ -80,12 +81,12 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badProtocolForBaseUrl() {
+    public void badProtocolForBaseUrl() throws ServiceDefinitionException  {
         String file = "/bad-protocol-baseurl-service-configuration.yml";
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = new ApiMediationServiceConfigReader(file).readConfiguration();
-        exceptionRule.expect(RuntimeException.class);
-        exceptionRule.expectMessage("Invalid protocol for baseUrl property");
+        exceptionRule.expect( ServiceDefinitionException.class);
+        //exceptionRule.expectMessage("Invalid protocol for baseUrl property");
 
         client.register(config);
         client.unregister();
