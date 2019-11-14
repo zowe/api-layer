@@ -16,7 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.security.InvalidParameterException;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -119,23 +119,26 @@ public class EurekaMetadataParserTest {
         String metadataPrefix = API_INFO + ".api-v1.";
 
         ApiInfo apiInfo = new ApiInfo("org.zowe", gatewayUrl, version, swaggerUrl, documentationUrl);
-        Map<String, String> metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        try {
+            Map<String, String> metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+            String metaVersion = metadata.get(metadataPrefix + API_INFO_VERSION);
+            assertNotNull(metaVersion);
+            assertEquals(version, metaVersion);
 
-        String metaVersion = metadata.get(metadataPrefix + API_INFO_VERSION);
-        assertNotNull(metaVersion);
-        assertEquals(version, metaVersion);
+            String metaGatewayUrl = metadata.get(metadataPrefix + API_INFO_GATEWAY_URL);
+            assertNotNull(metaGatewayUrl);
+            assertEquals(gatewayUrl, metaGatewayUrl);
 
-        String metaGatewayUrl = metadata.get(metadataPrefix + API_INFO_GATEWAY_URL);
-        assertNotNull(metaGatewayUrl);
-        assertEquals(gatewayUrl, metaGatewayUrl);
+            String metaSwaggerUrl = metadata.get(metadataPrefix + API_INFO_SWAGGER_URL);
+            assertNotNull(metaSwaggerUrl);
+            assertEquals(swaggerUrl, metaSwaggerUrl);
 
-        String metaSwaggerUrl = metadata.get(metadataPrefix + API_INFO_SWAGGER_URL);
-        assertNotNull(metaSwaggerUrl);
-        assertEquals(swaggerUrl, metaSwaggerUrl);
-
-        String metaDocumentationUrl = metadata.get(metadataPrefix + API_INFO_DOCUMENTATION_URL);
-        assertNotNull(metaDocumentationUrl);
-        assertEquals(documentationUrl, metaDocumentationUrl);
+            String metaDocumentationUrl = metadata.get(metadataPrefix + API_INFO_DOCUMENTATION_URL);
+            assertNotNull(metaDocumentationUrl);
+            assertEquals(documentationUrl, metaDocumentationUrl);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -144,10 +147,15 @@ public class EurekaMetadataParserTest {
         String version = "1.0.0";
 
         ApiInfo apiInfo = new ApiInfo(null, null, version, null, null);
-        Map<String, String> metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        Map<String, String> metadata = null;
+        try {
+            metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
-        assertEquals(1, metadata.size());
-        assertTrue(metadata.toString().contains(version));
+            assertEquals(1, metadata.size());
+            assertTrue(metadata.toString().contains(version));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -155,18 +163,22 @@ public class EurekaMetadataParserTest {
         String serviceId = "test service";
 
         ApiInfo apiInfo = new ApiInfo();
-        Map<String, String> metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
-
-        assertEquals(0, metadata.size());
+        Map<String, String> metadata = null;
+        try {
+            metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+            assertEquals(0, metadata.size());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void generateMetadataWithIncorrectSwaggerUrl() {
+    public void generateMetadataWithIncorrectSwaggerUrl() throws MalformedURLException {
         String serviceId = "test service";
         String gatewayUrl = "api/v1";
         String swaggerUrl = "www.badAddress";
 
-        exceptionRule.expect(InvalidParameterException.class);
+        exceptionRule.expect(MalformedURLException.class);
         exceptionRule.expectMessage("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid: no protocol: " + swaggerUrl);
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null);
@@ -175,12 +187,12 @@ public class EurekaMetadataParserTest {
 
 
     @Test
-    public void generateMetadataWithIncorrectDocumentationUrl() {
+    public void generateMetadataWithIncorrectDocumentationUrl() throws MalformedURLException {
         String serviceId = "test service";
         String gatewayUrl = "api/v1";
         String documentationUrl = "www.badAddress";
 
-        exceptionRule.expect(InvalidParameterException.class);
+        exceptionRule.expect(MalformedURLException.class);
         exceptionRule.expectMessage("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid: no protocol: " + documentationUrl);
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, documentationUrl);

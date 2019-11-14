@@ -7,14 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.staticdef;
 
-/**
- * Exception thrown when a Service has wrong definition
- */
-public class ServiceDefinitionException extends Exception {
+package com.ca.mfaas.exception;
 
-    public ServiceDefinitionException(String message) {
-        super(message);
+public class MetadataValidationException extends Exception {
+    public MetadataValidationException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
