@@ -77,6 +77,10 @@ public class StringUtils {
             return null;
         }
 
+        if (subStr == null) {
+            return null;
+        }
+
         if (shouldTrimWhitespaceFirst) {
             uri = uri.trim();
         }

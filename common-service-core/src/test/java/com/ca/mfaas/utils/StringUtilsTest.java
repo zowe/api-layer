@@ -39,12 +39,21 @@ public class StringUtilsTest {
 
     @Test
     public void prependSubstringTest() {
-        assertNull(StringUtils.removeFirstAndLastOccurrence(null, "any-string"));
+        assertNull(StringUtils.prependSubstring(null, "any-string"));
+
+        assertNull(StringUtils.prependSubstring("", null));
 
         String whiteSpace = "       ";
-        assertTrue(StringUtils.removeFirstAndLastOccurrence(whiteSpace, "any-string").isEmpty());
+        assertEquals(StringUtils.prependSubstring(whiteSpace, "any-string"), "any-string");
+        assertEquals(StringUtils.prependSubstring("any-string", "any-string"), "any-string");
+        assertEquals(StringUtils.prependSubstring("any-string", "any-string", false), "any-stringany-string");
+        assertEquals(StringUtils.prependSubstring(whiteSpace, "any-string", true, false), "any-string" + whiteSpace);
+        assertEquals(StringUtils.prependSubstring(whiteSpace, "any-string", false, false), "any-string" + whiteSpace);
 
         String hasSlashes = "  /blah/   ";
-        assertEquals(StringUtils.removeFirstAndLastOccurrence(hasSlashes, "/"), "blah");
+        assertEquals(StringUtils.prependSubstring(hasSlashes, "/", true, true), "/blah/");
+        assertEquals(StringUtils.prependSubstring(hasSlashes, "/", false, true), "//blah/");
+        assertEquals(StringUtils.prependSubstring(hasSlashes, "/", false, false), "/  /blah/   ");
+        assertEquals(StringUtils.prependSubstring(hasSlashes, "/", true, false), "/  /blah/   ");
     }
 }
