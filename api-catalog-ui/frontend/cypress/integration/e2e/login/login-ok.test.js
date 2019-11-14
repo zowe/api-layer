@@ -17,7 +17,7 @@ describe('>>> Login ok page test', () => {
 
         cy.get('button[type="submit"')
             .as('submitButton')
-            .should('be.disabled');
+            .should('exist');
 
         cy.get('#username').type(username);
         cy.get('#password').type(password);

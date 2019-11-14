@@ -35,7 +35,9 @@ describe('>>> Detail page test', () => {
 
         login();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}#/tile/apimediationlayer/apicatalog`);
+        cy.contains('API Mediation Layer API').click();
+
+        cy.visit(`${Cypress.env('catalogHomePage')}#/tile/apimediationlayer/gateway`);
 
         const baseUrl = Cypress.env('baseUrl');
 
