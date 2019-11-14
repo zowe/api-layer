@@ -153,7 +153,7 @@ messages:
       number: ZWEAM511
       type: ERROR
       text: "The certificate of the service accessed using URL '%s' is not trusted by the API Gateway: %s"
-      reason: "Thr Gateway does not trust the requested service and refuses to communicate with it. The certificate of the service is missing from the truststore of the API Mediation Layer."
+      reason: "The Gateway does not trust the requested service and refuses to communicate with it. The certificate of the service is missing from the truststore of the API Mediation Layer."
       action: "Contact your administrator to verify API Mediation Layer truststore configuration."
 
     # Various messages

@@ -17,7 +17,7 @@ messages:
       number: ZWEAO102
       type: ERROR
       text: "Gateway not found yet, transform service cannot perform the request"
-      reason: "The Transform service was requested to transform a url, but the Gateway instance was discovered."
+      reason: "The Transform service was requested to transform a url, but the Gateway instance was not discovered."
       action: "Do not begin performing requests until the API Mediation Layer fully initializes after startup. Check that your Discovery service is running and that all services (especially the Gateway) are discovered correctly."
 
     - key: apiml.common.gatewayInstanceInitializerStopped
