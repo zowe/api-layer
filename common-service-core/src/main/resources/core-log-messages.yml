@@ -3,12 +3,6 @@ messages:
     # Info messages
     # 000-099
 
-    - key: apiml.common.serviceStarted
-      number: ZWEAM000
-      type: INFO
-      text: "%s has been started in %s seconds"
-      reason: "The service has been started"
-      action: "No action is needed"
 
     # General messages
     # 100-199
