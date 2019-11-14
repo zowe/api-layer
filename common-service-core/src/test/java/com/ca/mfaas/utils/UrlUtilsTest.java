@@ -9,13 +9,19 @@
  */
 package com.ca.mfaas.utils;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import java.util.List;
-
+import java.net.MalformedURLException;
 import static org.junit.Assert.*;
 
 public class UrlUtilsTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     @Test
     public void testTrimSlashes() {
         assertEquals("abc", UrlUtils.trimSlashes("abc"));
@@ -26,18 +32,6 @@ public class UrlUtilsTest {
         assertEquals("/", UrlUtils.trimSlashes("///"));
         assertEquals("", UrlUtils.trimSlashes("//"));
     }
-
-
-    @Test
-    public void getEndPointsTest() {
-        List<String> urls = UrlUtils.getHostBaseUrls();
-        int size = (urls == null) ? 0 : urls.size();
-        System.out.println("urls size: " + size);
-        for (int n = 0; n < size; n++) {
-            System.out.println("     url[" + n + "]=" + urls.get(n));
-        }
-    }
-
 
     @Test
     public void getEncodedUrlTest () {
@@ -51,22 +45,48 @@ public class UrlUtilsTest {
     }
 
     @Test
-    public void validateUrl () {
+    public void validateUrlTest_ValidUrl() throws MalformedURLException {
+        UrlUtils.validateUrl("https://www.google.com");
+    }
 
+    @Test
+    public void validateUrlTest_BadProtocol() throws MalformedURLException {
+        thrown.expect(MalformedURLException.class);
+        thrown.expectMessage(CoreMatchers.containsString("Invalid URL"));
+
+        UrlUtils.validateUrl("httpD://blah.com/pa=pa=path");
     }
 
     @Test
     public void removeFirstAndLastSlash () {
+        assertNull(UrlUtils.removeFirstAndLastSlash(null));
 
+        String whiteSpace = "       ";
+        assertTrue(UrlUtils.removeFirstAndLastSlash(whiteSpace).isEmpty());
+
+        String hasSlashes = "  /blah/   ";
+        assertEquals(UrlUtils.removeFirstAndLastSlash(hasSlashes), "blah");
     }
 
     @Test
     public void addFirstSlash () {
+        assertNull(UrlUtils.addFirstSlash(null));
 
+        String whiteSpace = "       ";
+        assertEquals(UrlUtils.addFirstSlash(whiteSpace), "/");
+
+        String hasSlashes = "  /blah/   ";
+        assertEquals(UrlUtils.addFirstSlash(hasSlashes), "/blah/");
     }
 
     @Test
     public void removeLastSlash () {
+        assertNull(UrlUtils.removeLastSlash(null));
 
+        String whiteSpace = "       ";
+        assertTrue(UrlUtils.removeLastSlash(whiteSpace).isEmpty());
+
+        String hasSlashes = "  /blah/   ";
+        assertEquals(UrlUtils.removeLastSlash(hasSlashes), "/blah");
     }
 }
