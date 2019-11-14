@@ -20,7 +20,7 @@ public class MessageServiceConfig {
     @Bean
     public MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
-        messageService.loadMessages("/security-service-messages.yml");
+        messageService.loadMessages("/security-client-log-messages.yml");
         return messageService;
     }
 

@@ -18,7 +18,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import java.util.Collections;
 import java.util.IllegalFormatConversionException;
 import java.util.MissingFormatArgumentException;
-import java.util.UUID;
 
 /**
  * Message creator immutable class
@@ -106,11 +105,10 @@ public final class Message {
      * @return a message in the format that can be printed to console as a single line or displayed to the user
      */
     public String mapToReadableText() {
-        return String.format("%s%s %s {%s}",
+        return String.format("%s%s %s",
             messageTemplate.getNumber(),
             messageTemplate.getType().toChar(),
-            getConvertedText(),
-            generateMessageInstanceId());
+            getConvertedText());
     }
 
     /**
@@ -142,13 +140,6 @@ public final class Message {
      */
     public String mapToLogMessage() {
         return mapToReadableText();
-    }
-
-    /**
-     * @return a random unique ID for the log message
-     */
-    private String generateMessageInstanceId() {
-        return UUID.randomUUID().toString();
     }
 
     /**

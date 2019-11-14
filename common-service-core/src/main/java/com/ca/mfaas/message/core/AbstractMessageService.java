@@ -134,6 +134,6 @@ public abstract class AbstractMessageService implements MessageService {
     private MessageTemplate getInvalidMessageTemplate() {
         String text = "Internal error: Invalid message key '%s' provided. No default message found. " +
             "Please contact support of further assistance.";
-        return new MessageTemplate(Message.INVALID_KEY_MESSAGE, "MFS0001", MessageType.ERROR, text);
+        return new MessageTemplate(Message.INVALID_KEY_MESSAGE, "ZWEAM102", MessageType.ERROR, text);
     }
 }

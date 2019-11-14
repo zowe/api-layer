@@ -110,7 +110,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
 
     //500
     private void handleAuthenticationException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.error(ERROR_MESSAGE_500, ex.getMessage());
+        log.debug(ERROR_MESSAGE_500, ex.getMessage());
         log.debug("", ex);
         final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), ex.getMessage(), request.getRequestURI()).mapToView();
         final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;

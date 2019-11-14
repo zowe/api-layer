@@ -13,7 +13,8 @@ import com.ca.mfaas.apicatalog.services.cached.model.ApiDocCacheKey;
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.services.status.APIDocRetrievalService;
 import com.ca.mfaas.apicatalog.swagger.TransformApiDocService;
-import lombok.extern.slf4j.Slf4j;
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +24,14 @@ import java.util.Map;
 /**
  * Caching service for API Doc Info
  */
-@Slf4j
+
 @Service
 public class CachedApiDocService {
     private static final Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
     private final APIDocRetrievalService apiDocRetrievalService;
     private final TransformApiDocService transformApiDocService;
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Autowired
     public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService, TransformApiDocService transformApiDocService) {
@@ -54,7 +57,7 @@ public class CachedApiDocService {
         } catch (Exception e) {
             //if there's not apiDoc in cache
             if (apiDoc == null) {
-                log.warn("ApiDoc retrieving problem for {}. {}", serviceId, e.getMessage());
+                apimlLog.log("apiml.apicatalog.apidocRetrievalProblem", serviceId, e.getMessage());
             }
         }
         return apiDoc;

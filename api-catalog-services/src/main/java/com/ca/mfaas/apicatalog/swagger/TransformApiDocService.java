@@ -29,7 +29,11 @@ import org.springframework.stereotype.Service;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Transforms API documentation to documentation relative to Gateway, not the service instance
@@ -63,7 +67,7 @@ public class TransformApiDocService {
         try {
             swagger = Json.mapper().readValue(apiDocInfo.getApiDocContent(), Swagger.class);
         } catch (IOException e) {
-            log.error("Could not convert response body to a Swagger object.", e);
+            log.debug("Could not convert response body to a Swagger object.", e);
             throw new UnexpectedTypeException("Response is not a Swagger type object.");
         }
 
@@ -76,7 +80,7 @@ public class TransformApiDocService {
         try {
             return Json.mapper().writeValueAsString(swagger);
         } catch (JsonProcessingException e) {
-            log.error("Could not convert Swagger to JSON", e);
+            log.debug("Could not convert Swagger to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
         }
     }
@@ -128,7 +132,7 @@ public class TransformApiDocService {
                 }
 
                 if (route == null) {
-                    log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
+                    log.debug("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
                 } else {
                     prefixes.add(route.getGatewayUrl());
                 }
