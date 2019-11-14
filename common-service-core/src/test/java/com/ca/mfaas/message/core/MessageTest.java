@@ -111,7 +111,7 @@ public class MessageTest {
 
         String expectedReadableText = "No response received within the allowed time: 3000";
         ApiMessageView expectedApiMessageView = new ApiMessageView(Collections.singletonList(
-            new ApiMessage("apiml.common.serviceTimeout", MessageType.ERROR, "MFS0104E", expectedReadableText)
+            new ApiMessage("apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText)
         ));
 
         assertEquals("ApiMessageView is different", expectedApiMessageView, actualApiMessageView);
@@ -123,7 +123,7 @@ public class MessageTest {
         ApiMessage actualApiMessage = message.mapToApiMessage();
 
         String expectedReadableText = "No response received within the allowed time: 3000";
-        ApiMessage expectedApiMessage = new ApiMessage("apiml.common.serviceTimeout", MessageType.ERROR, "MFS0104E", expectedReadableText);
+        ApiMessage expectedApiMessage = new ApiMessage("apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText);
 
         assertEquals("ApiMessage is different", expectedApiMessage, actualApiMessage);
     }
@@ -140,7 +140,7 @@ public class MessageTest {
     private MessageTemplate createMessageTemplate(String messageText) {
         MessageTemplate messageTemplate = new MessageTemplate();
         messageTemplate.setKey("apiml.common.serviceTimeout");
-        messageTemplate.setNumber("MFS0104");
+        messageTemplate.setNumber("ZWEAM700");
         messageTemplate.setType(MessageType.ERROR);
         messageTemplate.setText(messageText);
 

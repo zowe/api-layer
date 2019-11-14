@@ -12,9 +12,11 @@ package com.ca.mfaas.apicatalog.instance;
 import com.ca.mfaas.apicatalog.model.APIContainer;
 import com.ca.mfaas.apicatalog.services.cached.CachedProductFamilyService;
 import com.ca.mfaas.apicatalog.services.cached.CachedServicesService;
+import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
 import com.ca.mfaas.product.instance.InstanceInitializationException;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
@@ -44,6 +46,10 @@ public class InstanceInitializeService {
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
+    private final InstanceRefreshService instanceRefreshService;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Initialise the API Catalog with all current running instances
@@ -64,24 +70,25 @@ public class InstanceInitializeService {
             InstanceInfo apiCatalogInstance = instanceRetrievalService.getInstanceInfo(serviceId);
             if (apiCatalogInstance == null) {
                 String msg = "API Catalog Instance not retrieved from Discovery service";
-                log.warn(msg);
+                log.debug(msg);
                 throw new RetryException(msg);
             } else {
                 log.info("API Catalog instance found, retrieving all services.");
                 getAllInstances(apiCatalogInstance);
+                instanceRefreshService.start();
             }
         } catch (InstanceInitializationException | GatewayNotAvailableException e) {
             throw new RetryException(e.getMessage());
         } catch (Exception e) {
             String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service";
-            log.warn(msg, e);
+            apimlLog.log("apiml.apicatalog.initializeAborted", e.getMessage());
             throw new CannotRegisterServiceException(msg, e);
         }
     }
 
     @Recover
     public void recover(RetryException e) {
-        log.warn("Failed to initialise API Catalog with services running in the Gateway.");
+        apimlLog.log("apiml.apicatalog.initializeFailed");
     }
 
     /**

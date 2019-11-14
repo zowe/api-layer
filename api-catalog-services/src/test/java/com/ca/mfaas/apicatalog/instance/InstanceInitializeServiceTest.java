@@ -33,10 +33,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceInitializeServiceTest {
@@ -49,6 +54,10 @@ public class InstanceInitializeServiceTest {
 
     @Mock
     private CachedProductFamilyService cachedProductFamilyService;
+
+    @SuppressWarnings("unused")
+    @Mock
+    private InstanceRefreshService instanceRefreshService;
 
     @InjectMocks
     private InstanceInitializeService instanceInitializeService;

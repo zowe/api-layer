@@ -1,22 +1,25 @@
 messageFiles:
 
   - title: "API mediation common messages"
-    file: ../../apiml-common/src/main/resources/apiml-common-log-messages.yml
+    file: ../../apiml-common/src/main/resources/common-log-messages.yml
 
   - title: "Common service core messages"
-    file: ../../common-service-core/src/main/resources/mfs-common-messages.yml
+    file: ../../common-service-core/src/main/resources/core-log-messages.yml
 
   - title: "Security common messages"
     file: ../../apiml-security-common/src/main/resources/security-common-log-messages.yml
 
   - title: "Security client messages"
-    file: ../../security-service-client-spring/src/main/resources/security-service-messages.yml
+    file: ../../security-service-client-spring/src/main/resources/security-client-log-messages.yml
 
   - title: "Discovery service messages"
-    file: ../../discovery-service/src/main/resources/discovery-service-log-messages.yml
+    file: ../../discovery-service/src/main/resources/discovery-log-messages.yml
 
   - title: "Gateway service messages"
-    file: ../../gateway-service/src/main/resources/gateway-messages.yml
+    file: ../../gateway-service/src/main/resources/gateway-log-messages.yml
+
+  - title: "API Catalog messages"
+    file: ../../api-catalog-services/src/main/resources/apicatalog-log-messages.yml
 
 
 outputFile: ErrorMessagesDocumentation.md

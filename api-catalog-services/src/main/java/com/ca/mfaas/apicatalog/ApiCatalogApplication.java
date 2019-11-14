@@ -10,6 +10,7 @@
 package com.ca.mfaas.apicatalog;
 
 import com.ca.mfaas.enable.EnableApiDiscovery;
+import com.ca.mfaas.product.logging.annotations.EnableApimlLogger;
 import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.version.BuildInfo;
 import org.springframework.boot.SpringApplication;
@@ -36,6 +37,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @EnableScheduling
 @EnableRetry
 @EnableAsync
+@EnableApimlLogger
 public class ApiCatalogApplication {
 
     public static void main(String[] args) {

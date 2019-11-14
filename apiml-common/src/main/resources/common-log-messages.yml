@@ -3,28 +3,35 @@ messages:
     # Info messages
     # 000-099
 
+    - key: apiml.common.serviceStarted
+      number: ZWEAM000
+      type: INFO
+      text: "%s has been started in %s seconds"
+      reason: "The service has been started"
+      action: "No action is needed"
+
     # General messages
     # 100-199
 
     - key: apiml.common.gatewayNotFoundForTransformRequest
-      number: ZWEAM102
+      number: ZWEAO102
       type: ERROR
       text: "Gateway not found yet, transform service cannot perform the request"
-      reason: "The Transform service has been requested to transform a url, but the Gateway instance has not been discovered yet."
+      reason: "The Transform service was requested to transform a url, but the Gateway instance was not discovered."
       action: "Do not begin performing requests until the API Mediation Layer fully initializes after startup. Check that your Discovery service is running and that all services (especially the Gateway) are discovered correctly."
 
     - key: apiml.common.gatewayInstanceInitializerStopped
-      number: ZWEAM104
+      number: ZWEAO104
       type: WARNING
       text: "GatewayInstanceInitializer has been stopped due to exception: %s"
-      reason: "An unexpected exception occurred while retrieving the Gateway service instance from the Discovery service."
+      reason: "An unexpected exception occurred while retrieving the Gateway service instance from the Discovery Service."
       action: "Check that both the service and the Gateway can register with Discovery. If the services are not registering, investigate the reason why. If no cause can be determined, create an issue."
 
     # HTTP,Protocol messages
     # 400-499
 
     - key: apiml.common.unknownHttpsConfigError
-      number: ZWEAM401
+      number: ZWEAO401
       type: ERROR
       text: "Unknown error in HTTPS configuration: '%s'"
       reason: "An Unknown error occurred while setting up an HTTP client during service initialization, followed by a system exit."

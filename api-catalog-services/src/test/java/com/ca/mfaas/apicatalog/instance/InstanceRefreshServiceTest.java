@@ -33,7 +33,12 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class InstanceRefreshServiceTest {
@@ -58,7 +63,7 @@ public class InstanceRefreshServiceTest {
 
     @Before
     public void setup() {
-        when(gatewayClient.isInitialized()).thenReturn(true);
+        instanceRefreshService.start();
         addApiCatalogToCache();
     }
 
