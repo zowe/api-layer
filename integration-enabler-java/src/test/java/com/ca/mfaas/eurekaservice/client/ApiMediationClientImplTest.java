@@ -52,6 +52,7 @@ public class ApiMediationClientImplTest {
             .statusPageRelativeUrl("")
             .discoveryServiceUrl("https://localhost:10011/eureka")
             .ssl(ssl)
+            .serviceIpAddress("127.0.0.1")
             .build();
 
         client.register(config);
