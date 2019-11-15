@@ -114,7 +114,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         result.setAppname(config.getServiceId());
         result.setHostName(hostname);
         result.setIpAddress(config.getServiceIpAddress());
-        result.setAppGroupName(null);
         result.setInstanceEnabledOnit(true);
         result.setSecureVirtualHostName(config.getServiceId());
         result.setVirtualHostName(config.getServiceId());
