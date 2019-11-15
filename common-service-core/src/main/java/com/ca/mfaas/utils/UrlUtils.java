@@ -11,8 +11,6 @@ package com.ca.mfaas.utils;
 
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang.RandomStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.*;
 import java.util.function.Supplier;
@@ -20,7 +18,6 @@ import java.util.function.Supplier;
 
 @UtilityClass
 public class UrlUtils {
-    private static final Logger logger = LoggerFactory.getLogger(UrlUtils.class);
 
     private static Supplier<String> messageSupplier = new Supplier() {
         public String get() { return "Invalid URL"; }
