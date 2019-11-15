@@ -120,7 +120,7 @@ public class EurekaMetadataParserTest {
 
         ApiInfo apiInfo = new ApiInfo("org.zowe", gatewayUrl, version, swaggerUrl, documentationUrl);
         try {
-            Map<String, String> metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+            Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
             String metaVersion = metadata.get(metadataPrefix + API_INFO_VERSION);
             assertNotNull(metaVersion);
             assertEquals(version, metaVersion);
@@ -149,7 +149,7 @@ public class EurekaMetadataParserTest {
         ApiInfo apiInfo = new ApiInfo(null, null, version, null, null);
         Map<String, String> metadata = null;
         try {
-            metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+            metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
             assertEquals(1, metadata.size());
             assertTrue(metadata.toString().contains(version));
@@ -182,7 +182,7 @@ public class EurekaMetadataParserTest {
         exceptionRule.expectMessage("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid: no protocol: " + swaggerUrl);
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null);
-        eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
     }
 
 
@@ -196,7 +196,7 @@ public class EurekaMetadataParserTest {
         exceptionRule.expectMessage("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid: no protocol: " + documentationUrl);
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, documentationUrl);
-        eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
     }
 
 }
