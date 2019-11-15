@@ -42,3 +42,5 @@ ssl:
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
     trustStoreType: PKCS12
+
+
