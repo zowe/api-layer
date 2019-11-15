@@ -28,8 +28,6 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,7 +38,6 @@ import java.util.Map;
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 public class ApiMediationClientImpl implements ApiMediationClient {
-    private static final Logger log = LoggerFactory.getLogger(ApiMediationClientImpl.class);
 
     private EurekaClient eurekaClient;
 
