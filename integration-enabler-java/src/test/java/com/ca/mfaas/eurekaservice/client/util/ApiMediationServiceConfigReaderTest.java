@@ -15,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -41,12 +40,10 @@ public class ApiMediationServiceConfigReaderTest {
     @Test
     public void readNotExistingConfiguration() {
         String file = "no-existing-file";
-/*
         exceptionRule.expect(ApiMediationServiceConfigReaderException.class);
         exceptionRule.expectMessage(String.format("File [%s] doesn't exist", file));
-*/
 
-        assertNull(new ApiMediationServiceConfigReader().readConfigurationFile(file));
+        new ApiMediationServiceConfigReader().readConfigurationFile(file);
 
     }
 

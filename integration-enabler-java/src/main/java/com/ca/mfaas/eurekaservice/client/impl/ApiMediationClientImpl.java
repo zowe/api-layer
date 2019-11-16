@@ -109,6 +109,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
         result.setAppname(config.getServiceId());
+        result.setAppGroupName(config.getServiceId());
         result.setHostName(hostname);
         result.setIpAddress(config.getServiceIpAddress());
         result.setInstanceEnabledOnit(true);
