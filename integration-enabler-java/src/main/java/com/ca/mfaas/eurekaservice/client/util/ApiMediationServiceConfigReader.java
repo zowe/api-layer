@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 public class ApiMediationServiceConfigReader {
     private static final Logger logger = LoggerFactory.getLogger(ApiMediationServiceConfigReader.class);
 
+    public static final String DEFAULT_CONFIGURATION_FILE_NAME = "/service-configuration.yml";
+
     public ApiMediationServiceConfigReader() {
     }
 
@@ -45,11 +47,7 @@ public class ApiMediationServiceConfigReader {
         Map<String, Object> defaultConfigPropertiesMap = mapper.convertValue(defaultConfiguration, Map.class);
         Map<String, Object> additionalConfigPropertiesMap = mapper.convertValue(additionalConfiguration, Map.class);
 
-        if (additionalConfigPropertiesMap != null) {
-            defaultConfigPropertiesMap.putAll(additionalConfigPropertiesMap);
-        }
-
-        //replaceValuesFromSystemProperties(defaultConfigPropertiesMap);
+        defaultConfigPropertiesMap.putAll(additionalConfigPropertiesMap);
 
         return mapper.convertValue(defaultConfigPropertiesMap, ApiMediationServiceConfig.class);
     }
@@ -101,42 +99,34 @@ public class ApiMediationServiceConfigReader {
     }
 
     private File locateConfigFile(String fileName) {
+        Path path = Paths.get(fileName);
         /*
          *  First if the file path is not absolute, try to locate the config as a resource using class loaders
          */
-        URL fileUrl = getClass().getResource(fileName);
-        if (fileUrl == null) {
-            logger.warn(String.format("File resource [%s] can't be found by this class classloader. We'll try with SystemClassLoader...", fileName));
-
-            fileUrl = ClassLoader.getSystemResource(fileName);
-            if (fileUrl == null) {
-                logger.warn(String.format("File resource [%s] can't be found by SystemClassLoader.", fileName));
-            }
-        }
-
         File file = null;
-        if (fileUrl != null) {
-            file = new File(fileUrl.getFile());
-        } else {
-            Path path = Paths.get(fileName);
-            File aFile = path.toFile();
-            if (aFile.canRead()) {
-                file = aFile;
-            } else {
-                if (!path.isAbsolute()) {
-                    // Relative path can exist on multiple root file systems. Try all of them.
-                    for (File root : File.listRoots()) {
-                        Path resolvedPath = root.toPath().resolve(path);
-                        aFile = resolvedPath.toFile();
-                        if (aFile.canRead()) {
-                            file = aFile;
-                            break;
-                        }
-                    }
+        URL fileUrl = null;
+        if (!path.isAbsolute()) {
+            fileUrl = getClass().getResource(fileName);
+            if (fileUrl == null) {
+                logger.warn(String.format("File resource [%s] can't be found by this class classloader. We'll try with SystemClassLoader...", fileName));
+
+                fileUrl = ClassLoader.getSystemResource(fileName);
+                if (fileUrl == null) {
+                    logger.warn(String.format("File resource [%s] can't be found by SystemClassLoader.", fileName));
                 }
             }
+
+            if (fileUrl != null) {
+                file = new File(fileUrl.getFile());
+            }
         }
 
+        /*
+            If file was not found as resource, try to locate it converting the path to an absolute one
+        */
+        if (file == null) {
+            file = path.toAbsolutePath().toFile();
+        }
         return file;
     }
 
