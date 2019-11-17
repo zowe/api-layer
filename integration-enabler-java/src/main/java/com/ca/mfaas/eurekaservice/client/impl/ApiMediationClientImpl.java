@@ -37,10 +37,18 @@ import java.util.Map;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
+/**
+ *
+ */
 public class ApiMediationClientImpl implements ApiMediationClient {
 
     private EurekaClient eurekaClient;
 
+    /**
+     * This method intentionally catches RuntimeException, so callers would not fail 4
+     * @param config
+     * @throws ServiceDefinitionException
+     */
     @Override
     public synchronized void register(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
