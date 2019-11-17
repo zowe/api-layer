@@ -12,7 +12,9 @@ package com.ca.mfaas.eurekaservice.client.config;
 import com.ca.mfaas.config.ApiInfo;
 import lombok.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -36,4 +38,22 @@ public class ApiMediationServiceConfig {
     private List<ApiInfo> apiInfo;
     private Catalog catalog;
     private Ssl ssl;
+
+    // TODO: Find elegant way to generate the map with keys in property format, e.g. "this.is.a.property"
+    // TODO: Use lombok if possible or use introspection
+    public Map<String, Object> asMap() {
+        Map<String, Object> aMap = new HashMap<>();
+        aMap.put("serviceId", serviceId);
+        aMap.put("title",title );
+        aMap.put("description", description);
+        aMap.put("baseUrl", baseUrl);
+        aMap.put("homePageRelativeUrl", homePageRelativeUrl);
+        aMap.put("statusPageRelativeUrl", statusPageRelativeUrl);
+        aMap.put("healthCheckRelativeUrl", healthCheckRelativeUrl);
+        aMap.put("contextPath", contextPath);
+        aMap.put("defaultZone", defaultZone);
+        aMap.put("securePortEnabled", securePortEnabled);
+        // TODO: Add the rest of the properties: Ssl....
+        return aMap;
+    }
 }

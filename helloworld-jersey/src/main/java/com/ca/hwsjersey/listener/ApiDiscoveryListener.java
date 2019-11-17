@@ -27,11 +27,15 @@ public class ApiDiscoveryListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         apiMediationClient = new ApiMediationClientImpl();
         String configurationFile = "/service-configuration.yml";
-        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader(configurationFile).readConfiguration();
-        try {
-            apiMediationClient.register(config);
-        } catch (ServiceDefinitionException e) {
-            log.error("Service registration failed. Check log for previous errors: ", e);
+        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(configurationFile);
+        if (config != null) {
+            try {
+                apiMediationClient.register(config);
+            } catch (ServiceDefinitionException e) {
+                log.error("Service registration failed. Check log for previous errors: ", e);
+            }
+        } else {
+            log.error("Can't register the service because configuration configuration object is 'null'. Check log for previous errors: ");
         }
     }
 
