@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -26,7 +27,7 @@ public class ApiMediationServiceConfigReaderTest {
     public void readConfiguration() {
         String file = "/service-configuration.yml";
 
-        ApiMediationServiceConfig result = new ApiMediationServiceConfigReader(file).readConfiguration();
+        ApiMediationServiceConfig result = new ApiMediationServiceConfigReader().readConfigurationFile(file);
 
         assertTrue(result.getDiscoveryServiceUrls().contains("http://eureka:password@localhost:10011/eureka"));
         assertEquals("service", result.getServiceId());
@@ -40,10 +41,12 @@ public class ApiMediationServiceConfigReaderTest {
     @Test
     public void readNotExistingConfiguration() {
         String file = "no-existing-file";
+/*
         exceptionRule.expect(ApiMediationServiceConfigReaderException.class);
-        exceptionRule.expectMessage(String.format("File [%s] is not exist", file));
+        exceptionRule.expectMessage(String.format("File [%s] doesn't exist", file));
+*/
 
-        new ApiMediationServiceConfigReader(file).readConfiguration();
+        assertNull(new ApiMediationServiceConfigReader().readConfigurationFile(file));
 
     }
 
@@ -51,8 +54,8 @@ public class ApiMediationServiceConfigReaderTest {
     public void readConfigurationWithWrongFormat() {
         String file = "/bad-format-of-service-configuration.yml";
         exceptionRule.expect(ApiMediationServiceConfigReaderException.class);
-        exceptionRule.expectMessage(String.format("File [%s] can't be parsed as ApiMediationServiceConfig", file));
+        exceptionRule.expectMessage(String.format("File [%s] can't be parsed as ApiMediationServiceConfig", file.substring(1)));
 
-        new ApiMediationServiceConfigReader(file).readConfiguration();
+        new ApiMediationServiceConfigReader().readConfigurationFile(file);
     }
 }

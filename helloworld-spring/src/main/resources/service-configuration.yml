@@ -1,6 +1,7 @@
 serviceId: hellospring
 title: Hello Spring REST API
 description: Example for exposing a Spring REST API
+
 baseUrl: http://localhost:10021/hellospring
 serviceIpAddress: 127.0.0.1
 

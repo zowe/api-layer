@@ -28,7 +28,7 @@ public class ApiDiscoveryListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         apiMediationClient = new ApiMediationClientImpl();
         String configurationFile = "/service-configuration.yml";
-        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader(configurationFile).readConfiguration();
+        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(configurationFile);
         try {
             apiMediationClient.register(config);
         } catch (ServiceDefinitionException e) {

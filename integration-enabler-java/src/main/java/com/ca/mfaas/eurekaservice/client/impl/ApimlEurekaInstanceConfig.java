@@ -37,6 +37,13 @@ public class ApimlEurekaInstanceConfig implements EurekaInstanceConfig {
     private String homePageUrlPath;
     private String hostName;
     private String instanceId;
+    /**
+     * According to Netflix: "This information is for academic
+     * purposes only as the communication from other instances primarily happen
+     * using the information supplied in {@link #getHostName(boolean)}.
+     *
+     * We keep the field here, because the method {@link EurekaInstanceConfig#getIpAddress()} is part of EurekaInstanceConfig interface.
+     */
     private String ipAddress;
     private String secureHealthCheckUrl;
     private String secureVirtualHostName;
