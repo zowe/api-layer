@@ -28,8 +28,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *  This class provides facility for loading API ML enabled service configuration.
- *  It is possible to provide one or two file names, where the first
+ *  This class provides facility for loading API ML service on-boarding configuration.
+ *  <p/>
+ *  It allows to provide one or two file names, where the first file is usually internal to the service
+ *  deployment artifact or at minimum must be accessible on the service classpath. It contains basic API ML configuration
+ *  based on values known at development time. Typically it is provided by the service developer and is located in the
+ *  /resources folder of java project source tree. In the deployment artifact it usually can be found under /WEB-ING/classes.
+ *  <p/>
+ *  The second configuration file is used to externalize the configuration. It can be placed anywhere, provided that the
+ *  service has access to that location. It is populated with values dependent on the deployment system environment.
+ *  <p/>
+ *  At service boot time, both configurations are merged, where the externalized configuration (if provided) has higher
+ *  priority.
+ *  <p/>
+ *  The values of both configuration files can be overwritten by Java system properties.
  *
  */
 @Slf4j
