@@ -46,8 +46,6 @@ dependencies {
     compile libraries.tomcat_embed_core
     compile libraries.spring_cloud_starter_eureka
     compile libraries.spring_cloud_starter_ribbon
-    compile libraries.swagger_core
-    compile libraries.swagger_models
     compile libraries.jetty_websocket_client
     compile libraries.jjwt
 

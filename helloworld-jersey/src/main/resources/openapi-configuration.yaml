@@ -8,4 +8,4 @@ openAPI:
         title: Hello World Jersey
         description: 'REST API for a Jersey Application'
     servers:
-        -   url: http://localhost:10016/hellojersey
+        - url: http://localhost:10016/hellojersey
