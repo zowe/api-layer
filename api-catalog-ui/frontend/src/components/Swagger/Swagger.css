@@ -3,9 +3,6 @@
     box-sizing: border-box
 }
 
-.swagger-ui .scheme-container {
-    display: none;
-}
 
 #swaggerContainer {
     background-color: #fff;
@@ -486,9 +483,9 @@
     color: #fff !important
 }
 
-.swagger-ui .scheme-container {
-    display: none;
-}
+/*.swagger-ui .scheme-container {*/
+/*    display: none;*/
+/*}*/
 
 .swagger-ui .scheme-container .schemes {
     display: -webkit-box;
@@ -1379,17 +1376,27 @@
     color: #3b4151
 }
 
-.swagger-ui .info .title small {
-    font-size: 16px;
-    font-weight: normal;
+.swagger-ui .info pre {
+    font-size: 14px;
 }
 
 .swagger-ui .info .title small pre {
     margin: 0;
+    padding: 0;
     font-family: Titillium Web, sans-serif;
-    color: black;
+    color: #fff;
 }
-
+.swagger-ui .info .title small {
+    font-size: 10px;
+    position: relative;
+    top: -5px;
+    display: inline-block;
+    margin: 0 0 0 5px;
+    padding: 2px 4px;
+    vertical-align: super;
+    border-radius: 57px;
+    background: #7d8492;
+}
 .swagger-ui .info .title small pre:before {
     content: "API Version:";
 }
@@ -1735,4 +1742,9 @@ body {
 /* Hide Swagger JSON document */
 div.info > hgroup.main > a {
     display: none;
+}
+
+.pre {
+    overflow: auto;
+    /* background-color: red; */
 }
