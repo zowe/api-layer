@@ -3,6 +3,11 @@
     box-sizing: border-box
 }
 
+/*comment this to see the authorization button */
+
+.swagger-ui .scheme-container {
+    display: none;
+}
 
 #swaggerContainer {
     background-color: #fff;
@@ -482,10 +487,6 @@
 .swagger-ui .opblock-body pre span {
     color: #fff !important
 }
-
-/*.swagger-ui .scheme-container {*/
-/*    display: none;*/
-/*}*/
 
 .swagger-ui .scheme-container .schemes {
     display: -webkit-box;
@@ -1742,9 +1743,4 @@ body {
 /* Hide Swagger JSON document */
 div.info > hgroup.main > a {
     display: none;
-}
-
-.pre {
-    overflow: auto;
-    /* background-color: red; */
 }
