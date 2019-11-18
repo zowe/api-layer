@@ -1,0 +1,10 @@
+dependencies {
+    implementation(project(':integration-enabler-java'))
+
+    implementation libraries.spring_boot_starter
+
+    annotationProcessor libraries.spring_boot_configuration_processor
+    annotationProcessor libraries.lombok
+
+    testImplementation libraries.junit
+}

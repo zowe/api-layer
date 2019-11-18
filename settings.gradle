@@ -17,4 +17,5 @@ include 'integration-enabler-java'
 include 'api-catalog-services'
 include 'api-catalog-ui'
 include 'security-service-client-spring'
+include 'integration-enabler-spring'
 

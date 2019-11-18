@@ -12,13 +12,21 @@ package com.ca.mfaas.eurekaservice.client.util;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.MyDataCenterInstanceConfig;
+import com.netflix.config.DynamicPropertyFactory;
+import com.netflix.discovery.DefaultEurekaClientConfig;
+import com.netflix.discovery.EurekaClient;
 import lombok.extern.slf4j.Slf4j;
+import sun.net.spi.nameservice.dns.DNSNameService;
 
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -85,6 +93,36 @@ public class ApiMediationServiceConfigReader {
             if (param.startsWith("apiml.")) {
                 System.setProperty(param, value);
             }
+        }
+
+        try {
+            InetAddress[] ipAddress = new DNSNameService().lookupAllHostAddr("hostName");
+            //ipAddress.
+
+            InetAddress address = InetAddress.getByName("www.example.com");
+            System.out.println(address.getHostAddress());
+
+            for(InetAddress addr : InetAddress.getAllByName("stackoverflow.com")) {
+                System.out.println(addr.getHostAddress());
+            }
+
+
+            /*DynamicPropertyFactory configInstance = com.netflix.config.DynamicPropertyFactory.getInstance();
+            ApplicationInfoManager applicationInfoManager = initializeApplicationInfoManager(new CustomInstanceConfig ());
+            EurekaClient eurekaClient = initializeEurekaClient(applicationInfoManager, new DefaultEurekaClientConfig());
+
+            class CustomInstanceConfig extends MyDataCenterInstanceConfig {
+                *//** * prefer ip instant of hostname * @param refresh * @return *//*
+                @Override public String getHostName(boolean refresh) {
+                    try {
+                        return InetAddress.getLocalHost().getHostAddress();
+                    } catch (UnknownHostException e) {
+                        return super.getHostName(refresh);
+                    }
+                }
+            }*/
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -294,11 +332,17 @@ public class ApiMediationServiceConfigReader {
          *  If null, ApiMediationServiceConfigReader will use "/service-configuration.yml" as default.
          */
         String basicConfigurationFileName = context.getInitParameter(APIML_DEFAULT_CONFIG);
+        if (basicConfigurationFileName == null) {
+            basicConfigurationFileName = System.getProperty(APIML_DEFAULT_CONFIG);
+        }
 
         /*
          * (Optional) Get externalized configuration file name from ServletContext init parameter.
          */
         String externalConfigurationFileName = context.getInitParameter(APIML_ADDITIONAL_CONFIG);
+        if (externalConfigurationFileName == null) {
+            externalConfigurationFileName = System.getProperty(APIML_ADDITIONAL_CONFIG);
+        }
 
         /*
          * Instantiate configuration reader and call loadConfiguration method with both config file names initialized above.
