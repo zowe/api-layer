@@ -29,6 +29,8 @@ describe('>>> Detail page test', () => {
 
         cy.get('.api-description-container').should('exist');
 
+        cy.contains('The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.');
+
     });
 
     it('Should display the Gateway information in the detail page', () => {
