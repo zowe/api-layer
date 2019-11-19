@@ -10,12 +10,13 @@
 package com.ca.mfaas.utils;
 
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 
 import java.net.*;
 import java.util.function.Supplier;
 
-
+@Slf4j
 @UtilityClass
 public class UrlUtils {
 
@@ -101,4 +102,36 @@ public class UrlUtils {
         return StringUtils.removeLastOccurrence(uri, "/");
     }
 
+    /**
+     * Finds all hostname IP addresses and returns the first one.
+     * @param hostName
+     * @return
+     */
+    public static String getHostFirstIPAddress(String hostName) {
+        String ipAddr = null;
+        try {
+            InetAddress address = InetAddress.getByName(hostName);
+            if (address != null ) {
+                ipAddr = address.getHostAddress();
+            }
+        } catch (UnknownHostException e) {
+            log.warn("InetAddress couldn't get byName: " + hostName, e);
+        }
+
+        return ipAddr;
+
+/*
+            List<String> ipAddresses = DnsResolver.resolveARecord(hostName);
+            if (ipAddresses != null) {
+                for (String ip : ipAddresses) {
+                    if (ip.equals(ipAddr)) {
+                        log.debug("stackoverflow.com ipaddr resolved by DnsResolver.resolveARecord: " + ipAddr);
+                        return ipAddr;
+                    }
+                }
+            }
+*/
+
+//        return null;
+    }
 }
