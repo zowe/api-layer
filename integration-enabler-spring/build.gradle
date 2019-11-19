@@ -1,7 +1,21 @@
+buildscript {
+    ext {
+        springBootVersion = "1.5.9.RELEASE"
+    }
+
+    repositories mavenRepositories
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
 dependencies {
+    implementation(project(':common-service-core'))
     implementation(project(':integration-enabler-java'))
 
-    implementation libraries.spring_boot_starter
+    implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter:${springBootVersion}"
+    //implementation libraries.spring_boot_starter
 
     annotationProcessor libraries.spring_boot_configuration_processor
     annotationProcessor libraries.lombok

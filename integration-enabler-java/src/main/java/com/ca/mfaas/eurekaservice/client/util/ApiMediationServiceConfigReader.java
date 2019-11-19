@@ -10,23 +10,18 @@
 package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
+import com.ca.mfaas.utils.UrlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.MyDataCenterInstanceConfig;
-import com.netflix.config.DynamicPropertyFactory;
-import com.netflix.discovery.DefaultEurekaClientConfig;
-import com.netflix.discovery.EurekaClient;
 import lombok.extern.slf4j.Slf4j;
-import sun.net.spi.nameservice.dns.DNSNameService;
 
+import javax.naming.*;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -67,6 +62,12 @@ public class ApiMediationServiceConfigReader {
         return mergeConfigurations(defaultConfiguration, readConfigurationFile(additionalConfigFile)/*, int mergeFlags*/);
     }
 
+    /**
+     * Merges two APiMediationServiceConfig objects where the second one has higher priority, i.e replacess values into the first one.
+     * @param defaultConfiguration
+     * @param additionalConfiguration
+     * @return
+     */
     private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig  additionalConfiguration /*, int mergeFlags*/) {
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -94,60 +95,8 @@ public class ApiMediationServiceConfigReader {
                 System.setProperty(param, value);
             }
         }
-
-        try {
-            InetAddress[] ipAddress = new DNSNameService().lookupAllHostAddr("hostName");
-            //ipAddress.
-
-            InetAddress address = InetAddress.getByName("www.example.com");
-            System.out.println(address.getHostAddress());
-
-            for(InetAddress addr : InetAddress.getAllByName("stackoverflow.com")) {
-                System.out.println(addr.getHostAddress());
-            }
-
-
-            /*DynamicPropertyFactory configInstance = com.netflix.config.DynamicPropertyFactory.getInstance();
-            ApplicationInfoManager applicationInfoManager = initializeApplicationInfoManager(new CustomInstanceConfig ());
-            EurekaClient eurekaClient = initializeEurekaClient(applicationInfoManager, new DefaultEurekaClientConfig());
-
-            class CustomInstanceConfig extends MyDataCenterInstanceConfig {
-                *//** * prefer ip instant of hostname * @param refresh * @return *//*
-                @Override public String getHostName(boolean refresh) {
-                    try {
-                        return InetAddress.getLocalHost().getHostAddress();
-                    } catch (UnknownHostException e) {
-                        return super.getHostName(refresh);
-                    }
-                }
-            }*/
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
-
-    /**
-     * Utility static method for filtering API ML related Java System properties
-     *
-     * @return Map<String, String> of Java System properties with key prefixed with "apiml."
-     */
-    public static Map<String, String> getApiMlSystemProperties() {
-        Map<String, String>  propertiesMap = new HashMap();
-
-        Properties systemProperties = System.getProperties();
-        Set<String> systemPropsMapKeys = systemProperties.stringPropertyNames();
-        for (Iterator<String> it = systemPropsMapKeys.iterator(); it.hasNext(); ) {
-            String key = it.next();
-            if (key.startsWith("apiml.")) {
-                Object propVal = systemProperties.get(key);
-                String sysValue = (propVal != null) ? propVal.toString() : null;
-                    propertiesMap.put(key, sysValue);
-            }
-        }
-
-        return propertiesMap;
-    }
 
     /**
      * Loads API ML service on-boarding configuration from single YAML file.
@@ -172,20 +121,28 @@ public class ApiMediationServiceConfigReader {
      * @return
      */
     public ApiMediationServiceConfig loadConfiguration(String internalConfigurationFileName, String externalizedConfigurationFileName) {
-        ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
 
         if (internalConfigurationFileName == null) {
             internalConfigurationFileName = DEFAULT_CONFIGURATION_FILE_NAME;
         }
-        ApiMediationServiceConfig serviceConfig = configReader.readConfigurationFile(internalConfigurationFileName);
+
+        ApiMediationServiceConfig serviceConfig = readConfigurationFile(internalConfigurationFileName);
 
         if (externalizedConfigurationFileName != null) {
-            serviceConfig = configReader.mergeConfigurations(serviceConfig, externalizedConfigurationFileName/*, ApiMediationServiceConfigReader.MERGE_FLAG_THROW_IF_MISSING*/);
+            serviceConfig = mergeConfigurations(serviceConfig, externalizedConfigurationFileName);
         }
+
+        // Set instance ipAddress if required by Eureka and not set in the configuration files
+        setInstanceIpAddress(serviceConfig);
 
         return serviceConfig;
     }
 
+    /**
+     * First locates the file and if successfull, reads its contents into a {@link ApiMediationServiceConfig}
+     * @param fileName
+     * @return
+     */
     public ApiMediationServiceConfig readConfigurationFile(String fileName) {
 
         File file = locateConfigFile(fileName);
@@ -243,8 +200,8 @@ public class ApiMediationServiceConfigReader {
         if (file != null) {
             try {
                 String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-                StringBuilder configFileDataBuilder = resolveExpressions(data, ApiMediationServiceConfigReader.getApiMlSystemProperties());
-                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());//.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                StringBuilder configFileDataBuilder = resolveExpressions(data, ApiMediationServiceConfigReader.getApiMlServiceContext());
+                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                 configuration = mapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
             } catch (FileNotFoundException | NoSuchFileException e) {
                 throw new ApiMediationServiceConfigReaderException(String.format("File [%s] doesn't exist", file.getName()));
@@ -256,6 +213,69 @@ public class ApiMediationServiceConfigReader {
         return configuration;
     }
 
+    /**
+     * Utility method for setting Java System properties form ServletContext parameters who's keys are prefixed with "apiml."
+     *
+     * @param servletContext
+     */
+    public static void setApiMlServiceContext(ServletContext servletContext) {
+        try {
+            Context initialContext = new InitialContext();
+            Context envContext = (Context)initialContext.lookup("java:comp/env");
+            Enumeration<String> paramNames = servletContext.getInitParameterNames();
+            while (paramNames.hasMoreElements()) {
+                String param = paramNames.nextElement();
+                String value = servletContext.getInitParameter(param);
+                if (param.startsWith("apiml.")) {
+                    envContext.addToEnvironment(param, value);
+                }
+            }
+        } catch (NamingException e) {
+            log.error("Couldn't create initialContext", e);
+        }
+    }
+
+    /**
+     * Returns a map with parameters previously set in the JNDI java:comp/env context environment.
+     * Olny parameters with keys starting with "apiml." are filtered in.
+     * @return
+     */
+    private static Map<String, String> getApiMlServiceContext() {
+        Hashtable<String, String> params = null;
+        try {
+            Context initialContext = new InitialContext();
+            Context apimlContext = (Context)initialContext.lookup("java:comp/env");
+
+            params = (Hashtable)apimlContext.getEnvironment();
+        } catch (NamingException e) {
+            log.error("Exeption caught while getting java:comp/env JND environment parameters", e);
+        }
+
+        if (params != null) {
+            Map<String, String> propertiesMap = new HashMap();
+            Set<String> keys = params.keySet();
+            for (String key : keys) {
+                if (key.startsWith("apiml.")) {
+                    String value = params.get(key);
+                    propertiesMap.put(key, value);
+                }
+            }
+            return propertiesMap;
+        }
+        return null;
+    }
+
+    public static String getApiMlServiceContextParameter(String paramName) {
+        return  getApiMlServiceContext().get(paramName);
+    }
+
+    /**
+     * Substitutes properties values if corresponding properties keys are found in the expression.
+     *
+     * @param expression
+     * @param properties
+     * @return
+     */
     private static StringBuilder resolveExpressions(String expression, Map<String, String> properties) {
         StringBuilder result = new StringBuilder(expression.length());
         int i = 0;
@@ -325,7 +345,7 @@ public class ApiMediationServiceConfigReader {
          * Set Java system properties from ServletContext parameters starting with "apiml." prefix.
          * If rewriting is not used, it is not necessary to call {@link ApiMediationServiceConfigReader#setSystemProperties}
          */
-        ApiMediationServiceConfigReader.setAPIMLSystemProperties(context);
+        ApiMediationServiceConfigReader.setApiMlServiceContext(context);
 
         /*
          *  Get default configuration file name from ServletContext init parameter.
@@ -352,4 +372,19 @@ public class ApiMediationServiceConfigReader {
         return apimlConfig;
     }
 
+    public static void setInstanceIpAddress(ApiMediationServiceConfig apimlConfig) {
+        //String preferIpAddress = getApiMlServiceContextParameter("apiml.config.eureka.instance.preferIpAddress");
+        if ((apimlConfig.getServiceIpAddress() == null) /*|| Boolean.TRUE.equals(Boolean.valueOf(preferIpAddress))*/) {
+            URL baseUrl = null;
+            try {
+                baseUrl = new URL(apimlConfig.getBaseUrl());
+            } catch (MalformedURLException e) {
+                log.error("" + e);
+            }
+            String hostname = baseUrl.getHost();
+
+            String ipAddress = UrlUtils.getHostFirstIPAddress(hostname);
+            apimlConfig.setServiceIpAddress(ipAddress);
+        }
+    }
 }
