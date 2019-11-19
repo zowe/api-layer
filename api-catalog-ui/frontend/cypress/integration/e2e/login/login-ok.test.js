@@ -11,7 +11,7 @@ describe('>>> Login ok page test', () => {
         cy.get('.header').should('not.exist');
     });
 
-    it('should log in user', () => {
+    it('should log in user and check session cookie', () => {
         const username = Cypress.env('username');
         const password = Cypress.env('password');
 
@@ -27,10 +27,14 @@ describe('>>> Login ok page test', () => {
 
         cy.url().should('contain', '/dashboard');
         cy.get('.header').should('exist');
+
+        cy.getCookie('apimlAuthenticationToken').should('exist');
     });
 
-    it('should logout', () => {
+    it('should logout and delete session cookie', () => {
         cy.get('button[data-testid="logout"]').click();
         cy.contains('API Catalog');
+
+        cy.getCookie('apimlAuthenticationToken').should('not.exist');
     });
 });
