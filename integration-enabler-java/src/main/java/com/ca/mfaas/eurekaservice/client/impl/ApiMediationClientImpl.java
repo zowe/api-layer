@@ -38,7 +38,8 @@ import java.util.Map;
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 /**
- *
+ *  Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
+ *  API Mediation Layer Discovery servce.
  */
 public class ApiMediationClientImpl implements ApiMediationClient {
 
