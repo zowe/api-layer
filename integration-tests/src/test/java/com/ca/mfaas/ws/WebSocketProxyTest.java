@@ -9,10 +9,10 @@
  */
 package com.ca.mfaas.ws;
 
-import com.ca.mfaas.utils.categories.WebsocketTest;
-import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
-import com.ca.mfaas.utils.http.HttpClientUtils;
+import com.ca.mfaas.util.categories.WebsocketTest;
+import com.ca.mfaas.util.config.ConfigReader;
+import com.ca.mfaas.util.config.GatewayServiceConfiguration;
+import com.ca.mfaas.util.http.HttpClientUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.Before;
 import org.junit.Test;

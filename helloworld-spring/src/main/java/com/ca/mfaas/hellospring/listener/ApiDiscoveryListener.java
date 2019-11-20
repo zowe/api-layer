@@ -28,8 +28,8 @@ public class ApiDiscoveryListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         apiMediationClient = new ApiMediationClientImpl();
         String configurationFile = "/service-configuration.yml";
-        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(configurationFile);
         try {
+            ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(configurationFile);
             apiMediationClient.register(config);
         } catch (ServiceDefinitionException e) {
             log.error("Service registration failed. Check log for previous errors: ", e);

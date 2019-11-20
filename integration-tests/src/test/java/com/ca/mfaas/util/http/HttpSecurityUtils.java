@@ -7,11 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils.http;
+package com.ca.mfaas.util.http;
 
 import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.Credentials;
+import com.ca.mfaas.util.config.ConfigReader;
+import com.ca.mfaas.util.config.Credentials;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;

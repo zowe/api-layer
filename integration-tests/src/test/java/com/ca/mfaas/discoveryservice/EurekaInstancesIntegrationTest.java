@@ -10,9 +10,9 @@
 package com.ca.mfaas.discoveryservice;
 
 import com.ca.mfaas.gatewayservice.SecurityUtils;
-import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.DiscoveryServiceConfiguration;
-import com.ca.mfaas.utils.config.TlsConfiguration;
+import com.ca.mfaas.util.config.ConfigReader;
+import com.ca.mfaas.util.config.DiscoveryServiceConfiguration;
+import com.ca.mfaas.util.config.TlsConfiguration;
 import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;

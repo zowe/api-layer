@@ -7,17 +7,24 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils.config;
+package com.ca.mfaas.util.config;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ZosmfServiceConfiguration {
-    private String scheme;
-    private String host;
-    private int port;
+public class TlsConfiguration {
+    private String keyAlias;
+    private String keyPassword;
+    private String keyStoreType;
+    private String keyStore;
+    private String keyStorePassword;
+    private String trustStoreType;
+    private String trustStore;
+    private String trustStorePassword;
 }

@@ -10,8 +10,8 @@
 
 package com.ca.mfaas.discoverableclient;
 
-import com.ca.mfaas.utils.categories.AdditionalLocalTest;
-import com.ca.mfaas.utils.http.HttpRequestUtils;
+import com.ca.mfaas.util.categories.AdditionalLocalTest;
+import com.ca.mfaas.util.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.BeforeClass;

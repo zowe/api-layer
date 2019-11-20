@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.utils.categories.MainframeDependentTests;
-import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
+import com.ca.mfaas.util.categories.MainframeDependentTests;
+import com.ca.mfaas.util.config.ConfigReader;
+import com.ca.mfaas.util.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;

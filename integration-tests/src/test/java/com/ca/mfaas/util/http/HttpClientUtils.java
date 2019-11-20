@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils.http;
+package com.ca.mfaas.util.http;
 
-import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
+import com.ca.mfaas.util.config.ConfigReader;
+import com.ca.mfaas.util.config.GatewayServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;

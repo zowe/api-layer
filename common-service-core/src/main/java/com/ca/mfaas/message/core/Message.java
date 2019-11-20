@@ -12,7 +12,7 @@ package com.ca.mfaas.message.core;
 import com.ca.mfaas.message.api.ApiMessage;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.template.MessageTemplate;
-import com.ca.mfaas.utils.ObjectUtil;
+import com.ca.mfaas.util.ObjectUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.Collections;

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils;
+package com.ca.mfaas.util;
 
 import lombok.experimental.UtilityClass;
 

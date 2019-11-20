@@ -13,10 +13,10 @@ import com.ca.apiml.enable.config.ApiMediationServiceConfigBean;
 import com.ca.apiml.enable.config.SslConfigBean;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.config.Eureka;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 
+import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.log.ApimlLogger;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,10 +60,12 @@ public class RegisterToApiLayer {
     private void register(ApiMediationServiceConfig config, Ssl ssl) {
         ApiMediationClient apiMediationClient = new ApiMediationClientImpl();
         config.setSsl(ssl);
-        config.setEureka(new Eureka(null, null, ipAddress));
-        logger.log("apiml.enabler.register.successful",
-            config.getBaseUrl(), config.getEureka().getIpAddress(), config.getDiscoveryServiceUrls());
+        logger.log("apiml.enabler.register.successful", config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
         log.debug("Registering to API Mediation Layer with settings: {}", config.toString());
-        apiMediationClient.register(config);
+        try {
+            apiMediationClient.register(config);
+        } catch (ServiceDefinitionException e) {
+            log.error("Service {} registration failed with exception: ", config.getServiceId(), e);
+        }
     }
 }

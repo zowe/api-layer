@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils.categories;
+package com.ca.mfaas.util.categories;
 
 /**
  * A category market for tests for additional local services and special cases

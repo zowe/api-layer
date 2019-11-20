@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils.config;
+package com.ca.mfaas.util.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,12 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DiscoveryServiceConfiguration {
-    private String scheme;
+public class Credentials {
     private String user;
     private String password;
-    private String host;
-    private int port;
-    private int instances;
 }
-

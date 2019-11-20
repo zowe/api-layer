@@ -10,7 +10,7 @@
 package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.utils.UrlUtils;
+import com.ca.mfaas.util.UrlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -150,6 +150,15 @@ public class ApiMediationServiceConfigReader {
         return (file != null) ? readConfigurationFile(file) : null;
     }
 
+    /**
+     * Tries to locate or in other words to verify that a file with name 'fileName' exists.
+     * First tries to find the file as a resource somewhere on the application or System classpath.
+     * Then tries to locate it using 'fileName' as as relative path
+     * The final attempt is to locate the file using the 'fileName' an absolute path.  resolved from .
+     *
+     * @param fileName
+     * @return
+     */
     private File locateConfigFile(String fileName) {
         URL fileUrl = getClass().getResource(fileName);
         if (fileUrl == null) {
@@ -373,8 +382,7 @@ public class ApiMediationServiceConfigReader {
     }
 
     public static void setInstanceIpAddress(ApiMediationServiceConfig apimlConfig) {
-        //String preferIpAddress = getApiMlServiceContextParameter("apiml.config.eureka.instance.preferIpAddress");
-        if ((apimlConfig.getServiceIpAddress() == null) /*|| Boolean.TRUE.equals(Boolean.valueOf(preferIpAddress))*/) {
+        if ((apimlConfig.getServiceIpAddress() == null) {
             URL baseUrl = null;
             try {
                 baseUrl = new URL(apimlConfig.getBaseUrl());
