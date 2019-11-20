@@ -11,10 +11,12 @@ package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.eurekaservice.client.config.Route;
+import com.ca.mfaas.exception.ServiceDefinitionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -23,7 +25,7 @@ public class ApiMediationServiceConfigReaderTest {
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
-    public void readConfiguration() {
+    public void readConfiguration() throws ServiceDefinitionException {
         String file = "/service-configuration.yml";
 
         ApiMediationServiceConfig result = new ApiMediationServiceConfigReader().readConfigurationFile(file);
@@ -38,20 +40,18 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void readNotExistingConfiguration() {
+    public void readNotExistingConfiguration() throws ServiceDefinitionException {
         String file = "no-existing-file";
-        exceptionRule.expect(ApiMediationServiceConfigReaderException.class);
-        exceptionRule.expectMessage(String.format("File [%s] doesn't exist", file));
+        //exceptionRule.expect(ServiceDefinitionException.class);
 
-        new ApiMediationServiceConfigReader().readConfigurationFile(file);
-
+        assertNull(new ApiMediationServiceConfigReader().readConfigurationFile(file));
     }
 
     @Test
-    public void readConfigurationWithWrongFormat() {
+    public void readConfigurationWithWrongFormat() throws ServiceDefinitionException {
         String file = "/bad-format-of-service-configuration.yml";
-        exceptionRule.expect(ApiMediationServiceConfigReaderException.class);
-        exceptionRule.expectMessage(String.format("File [%s] can't be parsed as ApiMediationServiceConfig", file.substring(1)));
+        exceptionRule.expect(ServiceDefinitionException.class);
+        //exceptionRule.expectMessage(String.format("File [%s] can't be parsed as ApiMediationServiceConfig", file.substring(1)));
 
         new ApiMediationServiceConfigReader().readConfigurationFile(file);
     }

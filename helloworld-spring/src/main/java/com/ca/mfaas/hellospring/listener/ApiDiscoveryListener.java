@@ -26,11 +26,13 @@ public class ApiDiscoveryListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        apiMediationClient = new ApiMediationClientImpl();
-        String configurationFile = "/service-configuration.yml";
+
         try {
-            ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(configurationFile);
-            apiMediationClient.register(config);
+            ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().loadConfiguration(sce.getServletContext());
+            if (config != null) {
+                apiMediationClient = new ApiMediationClientImpl();
+                apiMediationClient.register(config);
+            }
         } catch (ServiceDefinitionException e) {
             log.error("Service registration failed. Check log for previous errors: ", e);
         }
@@ -38,6 +40,10 @@ public class ApiDiscoveryListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        apiMediationClient.unregister();
+
+        if (apiMediationClient != null) {
+            apiMediationClient.unregister();
+        }
+        apiMediationClient = null;
     }
 }

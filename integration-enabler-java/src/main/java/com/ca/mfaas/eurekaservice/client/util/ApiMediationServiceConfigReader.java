@@ -10,6 +10,7 @@
 package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
+import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.util.UrlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -58,7 +59,9 @@ public class ApiMediationServiceConfigReader {
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]*)\\}");
 
 
-    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, String additionalConfigFile/*, int mergeFlags*/) {
+    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, String additionalConfigFile/*, int mergeFlags*/)
+        throws ServiceDefinitionException {
+
         return mergeConfigurations(defaultConfiguration, readConfigurationFile(additionalConfigFile)/*, int mergeFlags*/);
     }
 
@@ -68,35 +71,25 @@ public class ApiMediationServiceConfigReader {
      * @param additionalConfiguration
      * @return
      */
-    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig  additionalConfiguration /*, int mergeFlags*/) {
+    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig  additionalConfiguration /*, int mergeFlags*/)
+            throws ServiceDefinitionException {
 
+        ApiMediationServiceConfig apimlServcieConfig = null;
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        Map<String, Object> defaultConfigPropertiesMap = mapper.convertValue(defaultConfiguration, Map.class);
-        Map<String, Object> additionalConfigPropertiesMap = mapper.convertValue(additionalConfiguration, Map.class);
-
-        if (additionalConfigPropertiesMap != null) {
-            defaultConfigPropertiesMap.putAll(additionalConfigPropertiesMap);
-        }
-
-        return mapper.convertValue(defaultConfigPropertiesMap, ApiMediationServiceConfig.class);
-    }
-
-    /**
-     * Utility static method for setting Java System properties form ServletContext parameters who's keys are prefixed with "apiml."
-     *
-     * @param context
-     */
-    public static void setAPIMLSystemProperties(ServletContext context) {
-        Enumeration<String> paramNames = context.getInitParameterNames();
-        while (paramNames.hasMoreElements()) {
-            String param = paramNames.nextElement();
-            String value = context.getInitParameter(param);
-            if (param.startsWith("apiml.")) {
-                System.setProperty(param, value);
+        try {
+            Map<String, Object> defaultConfigPropertiesMap = mapper.convertValue(defaultConfiguration, Map.class);
+            Map<String, Object> additionalConfigPropertiesMap = mapper.convertValue(additionalConfiguration, Map.class);
+            if ((defaultConfigPropertiesMap != null) && (additionalConfigPropertiesMap != null)) {
+                defaultConfigPropertiesMap.putAll(additionalConfigPropertiesMap);
             }
-        }
-    }
 
+            mapper.convertValue(defaultConfigPropertiesMap, ApiMediationServiceConfig.class);
+        } catch (RuntimeException rte) {
+            throw new ServiceDefinitionException("Merging service basic and externalized configurations failed. See for previous exceptions: ", rte);
+        }
+
+        return apimlServcieConfig;
+    }
 
     /**
      * Loads API ML service on-boarding configuration from single YAML file.
@@ -106,7 +99,9 @@ public class ApiMediationServiceConfigReader {
      * @param internalConfigurationFileName
      * @return
      */
-    public ApiMediationServiceConfig loadConfiguration(String internalConfigurationFileName) {
+    public ApiMediationServiceConfig loadConfiguration(String internalConfigurationFileName)
+        throws ServiceDefinitionException {
+
         return loadConfiguration(internalConfigurationFileName, null);
     }
 
@@ -120,7 +115,8 @@ public class ApiMediationServiceConfigReader {
      * @param externalizedConfigurationFileName
      * @return
      */
-    public ApiMediationServiceConfig loadConfiguration(String internalConfigurationFileName, String externalizedConfigurationFileName) {
+    public ApiMediationServiceConfig loadConfiguration(String internalConfigurationFileName, String externalizedConfigurationFileName)
+            throws ServiceDefinitionException {
 
         if (internalConfigurationFileName == null) {
             internalConfigurationFileName = DEFAULT_CONFIGURATION_FILE_NAME;
@@ -133,7 +129,7 @@ public class ApiMediationServiceConfigReader {
         }
 
         // Set instance ipAddress if required by Eureka and not set in the configuration files
-        setInstanceIpAddress(serviceConfig);
+        setInstanceIpAddress(serviceConfig, getInstanceIpAddressFromHostname(serviceConfig.getBaseUrl()), true);
 
         return serviceConfig;
     }
@@ -143,7 +139,8 @@ public class ApiMediationServiceConfigReader {
      * @param fileName
      * @return
      */
-    public ApiMediationServiceConfig readConfigurationFile(String fileName) {
+    public ApiMediationServiceConfig readConfigurationFile(String fileName)
+            throws ServiceDefinitionException {
 
         File file = locateConfigFile(fileName);
 
@@ -156,41 +153,59 @@ public class ApiMediationServiceConfigReader {
      * Then tries to locate it using 'fileName' as as relative path
      * The final attempt is to locate the file using the 'fileName' an absolute path.  resolved from .
      *
+     * This method never throw exceptions.
+     * Returns null If fileName is null or file is not found neither as Java (system) resource, nor as file on the file system.
+     *
      * @param fileName
      * @return
      */
     private File locateConfigFile(String fileName) {
-        URL fileUrl = getClass().getResource(fileName);
-        if (fileUrl == null) {
-            log.debug(String.format("File resource [%s] can't be found by this class classloader. We'll try with SystemClassLoader...", fileName));
-
-            fileUrl = ClassLoader.getSystemResource(fileName);
+        if (fileName == null) {
+            return null;
+        }
+        // Try to find the file as a resource - application local or System resource
+        URL fileUrl = null;
+        try {
+            fileUrl = getClass().getResource(fileName);
             if (fileUrl == null) {
-                log.debug(String.format("File resource [%s] can't be found by SystemClassLoader.", fileName));
+                log.debug(String.format("File resource [%s] can't be found by this class classloader. We'll try with SystemClassLoader...", fileName));
+
+                fileUrl = ClassLoader.getSystemResource(fileName);
+                if (fileUrl == null) {
+                    log.debug(String.format("File resource [%s] can't be found by SystemClassLoader.", fileName));
+                }
             }
+        } catch (Throwable t) {
+            // Silently swallow the exceptions and try to find the file on the File Sytem
+            log.debug(String.format("File [%s] can't be found as Java resource. Exception was caught with the following message: [%s]", fileName) + t.getMessage());
         }
 
         File file = null;
-        if (fileUrl != null) {
-            file = new File(fileUrl.getFile());
-        } else {
-            Path path = Paths.get(fileName);
-            File aFile = path.toFile();
-            if (aFile.canRead()) {
-                file = aFile;
+        try {
+            if (fileUrl != null) {
+                file = new File(fileUrl.getFile());
             } else {
-                if (!path.isAbsolute()) {
-                    // Relative path can exist on multiple root file systems. Try all of them.
-                    for (File root : File.listRoots()) {
-                        Path resolvedPath = root.toPath().resolve(path);
-                        aFile = resolvedPath.toFile();
-                        if (aFile.canRead()) {
-                            file = aFile;
-                            break;
+                Path path = Paths.get(fileName);
+                File aFile = path.toFile();
+                if (aFile.canRead()) {
+                    file = aFile;
+                } else {
+                    if (!path.isAbsolute()) {
+                        // Relative path can exist on multiple root file systems. Try all of them.
+                        for (File root : File.listRoots()) {
+                            Path resolvedPath = root.toPath().resolve(path);
+                            aFile = resolvedPath.toFile();
+                            if (aFile.canRead()) {
+                                file = aFile;
+                                break;
+                            }
                         }
                     }
                 }
             }
+        } catch (Throwable t) {
+            // Silently swallow the exceptions and try to find the file on the File Sytem
+            log.debug(String.format("File [%s] can't be found as file system resource. Exception was caught with the following message: [%s]", fileName) + t.getMessage());
         }
 
         return file;
@@ -203,7 +218,7 @@ public class ApiMediationServiceConfigReader {
      * @param file
      * @return
      */
-    public ApiMediationServiceConfig readConfigurationFile(File file) {
+    public ApiMediationServiceConfig readConfigurationFile(File file) throws ServiceDefinitionException {
         ApiMediationServiceConfig configuration = null;
 
         if (file != null) {
@@ -213,9 +228,9 @@ public class ApiMediationServiceConfigReader {
                 ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                 configuration = mapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
             } catch (FileNotFoundException | NoSuchFileException e) {
-                throw new ApiMediationServiceConfigReaderException(String.format("File [%s] doesn't exist", file.getName()));
+                throw new ServiceDefinitionException(String.format("File [%s] doesn't exist", file.getName()), e);
             } catch (IOException e) {
-                throw new ApiMediationServiceConfigReaderException(String.format("File [%s] can't be parsed as ApiMediationServiceConfig", file.getName()));
+                throw new ServiceDefinitionException(String.format("File [%s] can't be parsed as ApiMediationServiceConfig", file.getName()));
             }
         }
 
@@ -227,7 +242,7 @@ public class ApiMediationServiceConfigReader {
      *
      * @param servletContext
      */
-    public static void setApiMlServiceContext(ServletContext servletContext) {
+    public static Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
         try {
             Context initialContext = new InitialContext();
             Context envContext = (Context)initialContext.lookup("java:comp/env");
@@ -239,9 +254,12 @@ public class ApiMediationServiceConfigReader {
                     envContext.addToEnvironment(param, value);
                 }
             }
+            envContext.getEnvironment();
         } catch (NamingException e) {
             log.error("Couldn't create initialContext", e);
         }
+
+        return null;
     }
 
     /**
@@ -348,7 +366,7 @@ public class ApiMediationServiceConfigReader {
      *
      * @param context
      */
-    public ApiMediationServiceConfig initializeAPIMLConfiguration(ServletContext context) {
+    public ApiMediationServiceConfig loadConfiguration(ServletContext context) throws ServiceDefinitionException {
 
         /*
          * Set Java system properties from ServletContext parameters starting with "apiml." prefix.
@@ -381,18 +399,27 @@ public class ApiMediationServiceConfigReader {
         return apimlConfig;
     }
 
-    public static void setInstanceIpAddress(ApiMediationServiceConfig apimlConfig) {
-        if ((apimlConfig.getServiceIpAddress() == null) {
-            URL baseUrl = null;
-            try {
-                baseUrl = new URL(apimlConfig.getBaseUrl());
-            } catch (MalformedURLException e) {
-                log.error("" + e);
-            }
-            String hostname = baseUrl.getHost();
+    public static String getInstanceIpAddressFromHostname(String baseAddr) {
+        String hostname =  null;
+        try {
+            URL baseUrl = new URL(baseAddr);
+            hostname = baseUrl.getHost();
+        } catch (MalformedURLException e) {
+            log.error("" + e);
+        }
 
-            String ipAddress = UrlUtils.getHostFirstIPAddress(hostname);
+        if (hostname != null) {
+            return UrlUtils.getHostFirstIPAddress(hostname);
+        }
+
+        return "";
+    }
+
+    private ApiMediationServiceConfig setInstanceIpAddress(ApiMediationServiceConfig apimlConfig, String ipAddress, boolean shouldReplace) {
+        if (shouldReplace || (apimlConfig.getServiceIpAddress() == null)) {
             apimlConfig.setServiceIpAddress(ipAddress);
         }
+
+        return apimlConfig;
     }
 }
