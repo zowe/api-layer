@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.utils;
+package com.ca.mfaas.util;
 
 import org.junit.Rule;
 import org.junit.Test;

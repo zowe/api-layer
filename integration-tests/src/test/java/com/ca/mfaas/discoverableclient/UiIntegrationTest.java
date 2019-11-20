@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.discoverableclient;
 
-import com.ca.mfaas.utils.http.HttpClientUtils;
-import com.ca.mfaas.utils.http.HttpRequestUtils;
+import com.ca.mfaas.util.http.HttpClientUtils;
+import com.ca.mfaas.util.http.HttpRequestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;

@@ -15,7 +15,8 @@ dependencies {
 
     implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot-starter:${springBootVersion}"
-    //implementation libraries.spring_boot_starter
+    compileOnly libraries.lombok
+
 
     annotationProcessor libraries.spring_boot_configuration_processor
     annotationProcessor libraries.lombok

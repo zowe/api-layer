@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.utils.categories.SlowTests;
-import com.ca.mfaas.utils.http.HttpClientUtils;
+import com.ca.mfaas.util.categories.SlowTests;
+import com.ca.mfaas.util.http.HttpClientUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static com.ca.mfaas.utils.http.HttpRequestUtils.getUriFromGateway;
+import static com.ca.mfaas.util.http.HttpRequestUtils.getUriFromGateway;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;

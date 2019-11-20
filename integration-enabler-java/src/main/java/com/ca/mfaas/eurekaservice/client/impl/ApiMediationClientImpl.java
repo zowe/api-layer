@@ -14,7 +14,7 @@ import com.ca.mfaas.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.exception.MetadataValidationException;
 import com.ca.mfaas.exception.ServiceDefinitionException;
-import com.ca.mfaas.utils.UrlUtils;
+import com.ca.mfaas.util.UrlUtils;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
@@ -194,5 +194,14 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         }
 
         return metadata;
+    }
+
+    /**
+     * The inner EurekaClient instance.
+     * Can be used by the caller to work with Eureka registry instances, regions, applications ,etc..
+     * @return
+     */
+    public EurekaClient getEurekaClient() {
+        return eurekaClient;
     }
 }
