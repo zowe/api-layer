@@ -36,7 +36,7 @@ public class UrlUtils {
     }
 
     /**
-     * Substitute '\\' with '-' in the input string and return the result
+     * Substitute '\\W' with '-' in the input string and return the result
      *
      * @param url
      * @return
@@ -119,19 +119,5 @@ public class UrlUtils {
         }
 
         return ipAddr;
-
-/*
-            List<String> ipAddresses = DnsResolver.resolveARecord(hostName);
-            if (ipAddresses != null) {
-                for (String ip : ipAddresses) {
-                    if (ip.equals(ipAddr)) {
-                        log.debug("stackoverflow.com ipaddr resolved by DnsResolver.resolveARecord: " + ipAddr);
-                        return ipAddr;
-                    }
-                }
-            }
-*/
-
-//        return null;
     }
 }
