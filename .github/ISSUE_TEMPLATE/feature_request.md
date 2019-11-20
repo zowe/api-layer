@@ -3,7 +3,7 @@ name: Feature request
 about: Suggest an idea for this project
 title: ''
 labels: enhancement
-assignees: petr-galik, plavjanik
+assignees: petr-galik
 
 ---
 
