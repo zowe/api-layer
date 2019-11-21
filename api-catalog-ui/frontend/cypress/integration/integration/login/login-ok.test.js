@@ -4,7 +4,8 @@
 
 describe('>>> Login ok page test', () => {
     it('succesfully loads login page', () => {
-        cy.visit('/');
+        // cy.visit('/');
+        cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
     });
 
     it('should not display header', () => {
@@ -14,12 +15,13 @@ describe('>>> Login ok page test', () => {
     it('should log in user', () => {
         const user = { username: 'user', password: 'user' };
 
-        cy.get('button[type="submit"')
-            .as('submitButton')
-            .should('be.disabled');
 
         cy.get('#username').type(user.username);
         cy.get('#password').type(user.password);
+
+        cy.get('button[type="submit"')
+            .as('submitButton')
+            .should('exist');
 
         cy.get('@submitButton').should('not.be.disabled');
         cy.get('@submitButton').click();

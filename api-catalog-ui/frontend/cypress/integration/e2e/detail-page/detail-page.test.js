@@ -88,8 +88,6 @@ describe('>>> Detail page test', () => {
 
         cy.contains('Service Homepage').should('exist');
 
-        cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a').should('have.attr', 'href').and('include', '/ui/v1/gateway');
-
         cy.get('pre.version').should('contain', '1.1.2');
 
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');
