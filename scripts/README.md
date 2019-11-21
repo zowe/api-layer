@@ -8,7 +8,7 @@ The `scripts` directory contains useful scripts that can be used by developer or
 
 `post_actions.py` - Changes the label in Zowe pull request
 
-`apiml_cm.sh` - APIML Certificate Management
+`apiml_cm.sh` - APdsadasdIML Certificate Management
 
 
 Testing
