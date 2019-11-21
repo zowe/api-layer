@@ -38,7 +38,7 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
         try {
             swagger = Json.mapper().readValue(apiDocInfo.getApiDocContent(), Swagger.class);
         } catch (IOException e) {
-            log.error("Could not convert response body to a Swagger object.", e);
+            log.debug("Could not convert response body to a Swagger object.", e);
             throw new UnexpectedTypeException("Response is not a Swagger type object.");
         }
 
@@ -51,7 +51,7 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
         try {
             return Json.mapper().writeValueAsString(swagger);
         } catch (JsonProcessingException e) {
-            log.error("Could not convert Swagger to JSON", e);
+            log.debug("Could not convert Swagger to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
         }
     }

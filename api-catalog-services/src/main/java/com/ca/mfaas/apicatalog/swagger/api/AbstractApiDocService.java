@@ -46,7 +46,7 @@ public abstract class AbstractApiDocService<T, N> {
         }
 
         if (route == null) {
-            log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
+            log.debug("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
         } else {
             apiDocPath.addPrefix(route.getGatewayUrl());
         }

@@ -42,7 +42,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         try {
             openAPI = Json.mapper().readValue(apiDocInfo.getApiDocContent(), OpenAPI.class);
         } catch (IOException e) {
-            log.error("Could not convert response body to an OpenAPI object. {}",serviceId, e);
+            log.debug("Could not convert response body to an OpenAPI object. {}",serviceId, e);
             throw new UnexpectedTypeException("Response is not an OpenAPI type object.");
         }
 
@@ -55,7 +55,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         try {
             return Json.mapper().writeValueAsString(openAPI);
         } catch (JsonProcessingException e) {
-            log.error("Could not convert Swagger to JSON", e);
+            log.debug("Could not convert Swagger to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
         }
     }
@@ -136,7 +136,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
                 URI uri = new URI(server.getUrl());
                 basePath = uri.getPath();
             } catch (Exception e) {
-                log.error("serverUrl is not parsable");
+                log.debug("serverUrl is not parsable");
             }
         }
         return basePath;
