@@ -18,14 +18,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Ssl {
     private boolean enabled;
+
     private boolean verifySslCertificatesOfServices;
+
     private String protocol;
+
+    private String ciphers;
+
     private String keyAlias;
+
     private String keyPassword;
+
     private String keyStore;
+
     private String keyStorePassword;
+
     private String keyStoreType;
+
     private String trustStore;
+
     private String trustStorePassword;
+
     private String trustStoreType;
 }
