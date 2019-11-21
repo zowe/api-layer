@@ -11,35 +11,30 @@ package com.ca.mfaas.apicatalog.swagger.api;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.swagger.ApiDocTransformationException;
-import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.routing.RoutedService;
-import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.util.Json;
+import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
-@RequiredArgsConstructor
+
 @Slf4j
-public class ApiDocV3Service {
+public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
-    private final GatewayClient gatewayClient;
-
-    private static final String HIDDEN_TAG = "apimlHidden";
-    private static final String SEPARATOR = "/";
+    public ApiDocV3Service(GatewayClient gatewayClient) {
+        super(gatewayClient);
+    }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
         OpenAPI openAPI;
@@ -54,7 +49,9 @@ public class ApiDocV3Service {
         boolean hidden = isHidden(openAPI.getTags());
 
         updatePaths(openAPI, serviceId, apiDocInfo, hidden);
-        updateServer(openAPI, serviceId, hidden);
+        updateServerAndLink(openAPI, serviceId, hidden);
+        updateExternalDoc(openAPI, apiDocInfo);
+
         try {
             return Json.mapper().writeValueAsString(openAPI);
         } catch (JsonProcessingException e) {
@@ -63,7 +60,7 @@ public class ApiDocV3Service {
         }
     }
 
-    private void updateServer(OpenAPI openAPI, String serviceId, boolean hidden) {
+    private void updateServerAndLink(OpenAPI openAPI, String serviceId, boolean hidden) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties);
 
@@ -77,51 +74,31 @@ public class ApiDocV3Service {
         }
     }
 
-    private void updatePaths(OpenAPI openAPI, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
-        Map<String, PathItem> updatedShortPaths = new HashMap<>();
-        Map<String, PathItem> updatedLongPaths = new HashMap<>();
-        Set<String> prefixes = new HashSet<>();
+    /**
+     * Updates Servers and Paths in OpenAPI
+     *
+     * @param openAPI    the API doc
+     * @param serviceId  the unique service id
+     * @param apiDocInfo the service information
+     * @param hidden     do not set Paths for automatically generated API doc
+     */
+    protected void updatePaths(OpenAPI openAPI, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
+        ApiDocPath<PathItem> apiDocPath = new ApiDocPath<>();
+        String basePath = getBasePath(openAPI.getServers());
 
         if (openAPI.getPaths() != null && !openAPI.getPaths().isEmpty()) {
-            openAPI.getPaths().forEach((originalEndpoint, path) -> {
-                log.trace("Swagger Service Id: " + serviceId);
-                log.trace("Original Endpoint: " + originalEndpoint);
-                log.trace("Base Path: " + openAPI.getServers());
-
-                RoutedService route = getRoutedServiceByApiInfo(apiDocInfo);
-                if (route != null) {
-                    boolean isMatch = isBasePathMatchesWithRouting(openAPI.getServers(), route);
-                    if (!isMatch) {
-                        route = null;
-                    }
-                }
-                String basePath = getBasePath(route);
-                // Retrieve route which matches endpoint
-                String endPoint = getEndPoint(basePath, originalEndpoint);
-                if (route == null) {
-                    route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, ServiceType.API);
-                }
-                if (route == null) {
-                    log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
-                } else {
-                    prefixes.add(route.getGatewayUrl());
-                }
-
-                Pair<String, String> endPointPairs = getEndPointPairs(endPoint, serviceId, route);
-                log.trace("Final Endpoint: " + endPointPairs.getRight());
-
-                updatedShortPaths.put(endPointPairs.getLeft(), path);
-                updatedLongPaths.put(endPointPairs.getRight(), path);
-            });
+            openAPI.getPaths()
+                .forEach((originalEndpoint, path)
+                    -> preparePath(path, apiDocPath, apiDocInfo, basePath, originalEndpoint, serviceId));
         }
 
         Map<String, PathItem> updatedPaths;
-        if (prefixes.size() == 1) {
-            setServerUrl(openAPI,SEPARATOR + prefixes.iterator().next() + SEPARATOR + serviceId);
-            updatedPaths = updatedShortPaths;
+        if (apiDocPath.getPrefixes().size() == 1) {
+            updateServerUrl(openAPI,apiDocPath.getPrefixes().iterator().next() + OpenApiUtil.SEPARATOR + serviceId);
+            updatedPaths = apiDocPath.getShortPaths();
         } else {
-            setServerUrl(openAPI,"");
-            updatedPaths = updatedLongPaths;
+            updateServerUrl(openAPI,"");
+            updatedPaths = apiDocPath.getLongPaths();
         }
 
         if (!hidden) {
@@ -131,76 +108,48 @@ public class ApiDocV3Service {
         }
     }
 
-    private String getBasePath(RoutedService route) {
-        if (route == null) {
-            return "";
+    /**
+     * Updates External documentation in OpenAPI
+     *
+     * @param openAPI    the API doc
+     * @param apiDocInfo the service information
+     */
+    protected void updateExternalDoc(OpenAPI openAPI, ApiDocInfo apiDocInfo) {
+        if (apiDocInfo.getApiInfo() == null)
+            return;
+
+        String externalDocUrl = apiDocInfo.getApiInfo().getDocumentationUrl();
+
+        if (externalDocUrl != null) {
+            ExternalDocumentation externalDoc = new ExternalDocumentation();
+            externalDoc.setDescription(EXTERNAL_DOCUMENTATION);
+            externalDoc.setUrl(externalDocUrl);
+            openAPI.setExternalDocs(externalDoc);
         }
-        return route.getServiceUrl();
     }
 
-    private void setServerUrl(OpenAPI openAPI, String basePath) {
-        openAPI.addServersItem(new Server().url(basePath));
+    private String getBasePath(List<Server> servers) {
+        String basePath = "";
+        if (servers != null && !servers.isEmpty()) {
+            Server server = servers.get(0);
+            try {
+                URI uri = new URI(server.getUrl());
+                basePath = uri.getPath();
+            } catch (Exception e) {
+                log.error("serverUrl is not parsable");
+            }
+        }
+        return basePath;
     }
 
-    private boolean isBasePathMatchesWithRouting(List<Server> servers,
-                                          RoutedService routedService) {
-        if (servers.isEmpty()) {
-            return false;
+    private void updateServerUrl(OpenAPI openAPI, String basePath) {
+        if (openAPI.getServers() != null && !openAPI.getServers().isEmpty()) {
+            //should we support several servers?
+            Server server = openAPI.getServers().get(0);
+            server.setUrl(basePath);
         } else {
-            return servers.stream()
-                .map(Server::getUrl)
-                .map(this::getBasePath)
-                .anyMatch(path -> path != null && path.startsWith(routedService.getServiceUrl()));
+            openAPI.addServersItem(new Server().url(basePath));
         }
-    }
-
-    private String getBasePath(String serverUrl) {
-        try {
-            URI uri = new URI(serverUrl);
-
-            return uri.getPath();
-        } catch (Exception e) {
-            log.error("serverUrl is not parsable");
-        }
-
-        return null;
-    }
-
-    private String getEndPoint(String swaggerBasePath, String originalEndpoint) {
-        String endPoint = originalEndpoint;
-        if (!swaggerBasePath.equals(SEPARATOR)) {
-            endPoint = swaggerBasePath + endPoint;
-        }
-        return endPoint;
-    }
-
-    private RoutedService getRoutedServiceByApiInfo(ApiDocInfo apiDocInfo) {
-        ApiInfo apiInfo = apiDocInfo.getApiInfo();
-        if (apiInfo == null) {
-            return null;
-        } else {
-            String gatewayUrl = apiInfo.getGatewayUrl();
-            return apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
-        }
-    }
-
-    private Pair<String, String> getEndPointPairs(String endPoint, String serviceId, RoutedService route) {
-        if (route == null) {
-            return Pair.of(endPoint, endPoint);
-        } else {
-            String updatedShortEndPoint = getShortEndPoint(route.getServiceUrl(), endPoint);
-            String updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
-
-            return Pair.of(updatedShortEndPoint, updatedLongEndPoint);
-        }
-    }
-
-    private String getShortEndPoint(String routeServiceUrl, String endPoint) {
-        String shortEndPoint = endPoint;
-        if (!routeServiceUrl.equals(SEPARATOR)) {
-            shortEndPoint = shortEndPoint.replaceFirst(routeServiceUrl, "");
-        }
-        return shortEndPoint;
     }
 
     private boolean isHidden(List<Tag> tags) {

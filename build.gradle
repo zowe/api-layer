@@ -73,7 +73,7 @@ subprojects {
     license {
         header rootProject.file('.licence/EPL-2.0-licence-header.txt')
         ext.year = Calendar.getInstance().get(Calendar.YEAR)
-        excludes(["**/*.yml", "**/*.json", "**/static", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks"])
+        excludes(["**/*.yml", "**/*.yaml", "**/*.json", "**/static", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks"])
         mapping {
             java = 'SLASHSTAR_STYLE'
         }

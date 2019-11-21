@@ -104,7 +104,7 @@
     },
     "servers": [
         {
-            "url": "api/v1/gateway/auth"
+            "url": "/api/v1/gateway/auth"
         }
     ],
     "components": {

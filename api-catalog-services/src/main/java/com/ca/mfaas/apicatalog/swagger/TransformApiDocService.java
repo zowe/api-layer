@@ -39,8 +39,8 @@ public class TransformApiDocService {
      * @param serviceId  the unique service id
      * @param apiDocInfo the API doc and additional information about transformation
      * @return the transformed API documentation relative to Gateway
-     * @throws ApiDocTransformationException if could not convert Swagger to JSON
-     * @throws UnexpectedTypeException       if response is not a Swagger type object
+     * @throws ApiDocTransformationException if could not convert Swagger/OpenAPI to JSON
+     * @throws UnexpectedTypeException       if response is not a Swagger/OpenAPI type object
      */
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
         //maybe null check of apidocinfo

@@ -46,7 +46,7 @@ dependencies {
     compile libraries.spring_boot_starter_webflux
     compile libraries.spring_retry
     compile libraries.swagger_core
-    compile 'io.swagger.core.v3:swagger-core:2.0.0'
+    compile libraries.swagger3_core
     compile libraries.json_path
     compile libraries.apache_commons_lang3
     compile libraries.spring_boot_starter_thymeleaf

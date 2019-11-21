@@ -20,7 +20,7 @@ public class OpenApiUtil {
     private static final String CATALOG_VERSION = "/api/v1";
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc";
     private static final String HARDCODED_VERSION = "/v1";
-    private static final String SEPARATOR = "/";
+    public static final String SEPARATOR = "/";
 
     public static String getOpenApiLink(String serviceId, GatewayConfigProperties gatewayConfigProperties) {
         String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +

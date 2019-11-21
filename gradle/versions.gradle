@@ -43,6 +43,7 @@ ext {
     jsonUnitVersion = '1.25.0'
     springFoxVersion = '2.9.2'
     swaggerCoreVersion = "1.5.21"
+    swagger3CoreVersion = "2.0.0"
     swaggerJerseyJaxrsVersion = '1.5.10'
     jacksonDataformatYamlVersion = '2.9.7'
     jerseyVersion = '2.26'
@@ -85,6 +86,7 @@ ext {
         springFox                          : "io.springfox:springfox-swagger2:${springFoxVersion}",
         springFoxWeb                       : "io.springfox:springfox-spring-web:${springFoxVersion}",
         swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
+        swagger3_core                      : "io.swagger.core.v3:swagger-core:${swagger3CoreVersion}",
         swagger_jersey2_jaxrs              : "io.swagger:swagger-jersey2-jaxrs:${swaggerJerseyJaxrsVersion}",
         http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
         http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",

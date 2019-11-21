@@ -11,39 +11,26 @@ package com.ca.mfaas.apicatalog.swagger.api;
 
 import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.swagger.ApiDocTransformationException;
-import com.ca.mfaas.config.ApiInfo;
-import com.ca.mfaas.product.constants.CoreService;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.ca.mfaas.product.routing.RoutedService;
-import com.ca.mfaas.product.routing.ServiceType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.models.ExternalDocs;
 import io.swagger.models.Path;
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import io.swagger.util.Json;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.util.*;
 
-@RequiredArgsConstructor
 @Slf4j
-public class ApiDocV2Service {
+public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
 
-    private final GatewayClient gatewayClient;
-
-    private static final String SWAGGER_LOCATION_LINK = "[Swagger/OpenAPI JSON Document]";
-    private static final String EXTERNAL_DOCUMENTATION = "External documentation";
-    private static final String HIDDEN_TAG = "apimlHidden";
-    private static final String CATALOG_VERSION = "/api/v1";
-    private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc";
-    private static final String HARDCODED_VERSION = "/v1";
-    private static final String SEPARATOR = "/";
+    public ApiDocV2Service(GatewayClient gatewayClient) {
+        super(gatewayClient);
+    }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
         Swagger swagger;
@@ -78,9 +65,7 @@ public class ApiDocV2Service {
      */
     private void updateSchemeHostAndLink(Swagger swagger, String serviceId, boolean hidden) {
         GatewayConfigProperties gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String link = gatewayConfigProperties.getScheme() + "://" + gatewayConfigProperties.getHostname() + CATALOG_VERSION + SEPARATOR + CoreService.API_CATALOG.getServiceId() +
-            CATALOG_APIDOC_ENDPOINT + SEPARATOR + serviceId + HARDCODED_VERSION;
-        String swaggerLink = "\n\n" + SWAGGER_LOCATION_LINK + "(" + link + ")";
+        String swaggerLink = OpenApiUtil.getOpenApiLink(serviceId, gatewayConfigProperties);
 
         swagger.setSchemes(Collections.singletonList(Scheme.forValue(gatewayConfigProperties.getScheme())));
         swagger.setHost(gatewayConfigProperties.getHostname());
@@ -97,45 +82,23 @@ public class ApiDocV2Service {
      * @param apiDocInfo the service information
      * @param hidden     do not set Paths for automatically generated API doc
      */
-    private void updatePaths(Swagger swagger, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
-        Map<String, Path> updatedShortPaths = new HashMap<>();
-        Map<String, Path> updatedLongPaths = new HashMap<>();
-        Set<String> prefixes = new HashSet<>();
+    protected void updatePaths(Swagger swagger, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
+        ApiDocPath<Path> apiDocPath = new ApiDocPath<>();
+        String basePath = swagger.getBasePath();
 
         if (swagger.getPaths() != null && !swagger.getPaths().isEmpty()) {
-            swagger.getPaths().forEach((originalEndpoint, path) -> {
-                log.trace("Swagger Service Id: " + serviceId);
-                log.trace("Original Endpoint: " + originalEndpoint);
-                log.trace("Base Path: " + swagger.getBasePath());
-
-                // Retrieve route which matches endpoint
-                String endPoint = getEndPoint(swagger.getBasePath(), originalEndpoint);
-                RoutedService route = getRoutedServiceByApiInfo(apiDocInfo, endPoint);
-                if (route == null) {
-                    route = apiDocInfo.getRoutes().getBestMatchingServiceUrl(endPoint, ServiceType.API);
-                }
-
-                if (route == null) {
-                    log.warn("Could not transform endpoint '{}' for service '{}'. Please check the service configuration.", endPoint, serviceId);
-                } else {
-                    prefixes.add(route.getGatewayUrl());
-                }
-
-                Pair<String, String> endPointPairs = getEndPointPairs(endPoint, serviceId, route);
-                log.trace("Final Endpoint: " + endPointPairs.getRight());
-
-                updatedShortPaths.put(endPointPairs.getLeft(), path);
-                updatedLongPaths.put(endPointPairs.getRight(), path);
-            });
+            swagger.getPaths()
+                .forEach((originalEndpoint, path)
+                    -> preparePath(path, apiDocPath, apiDocInfo, basePath, originalEndpoint, serviceId));
         }
 
         Map<String, Path> updatedPaths;
-        if (prefixes.size() == 1) {
-            swagger.setBasePath(SEPARATOR + prefixes.iterator().next() + SEPARATOR + serviceId);
-            updatedPaths = updatedShortPaths;
+        if (apiDocPath.getPrefixes().size() == 1) {
+            swagger.setBasePath(OpenApiUtil.SEPARATOR + apiDocPath.getPrefixes().iterator().next() + OpenApiUtil.SEPARATOR + serviceId);
+            updatedPaths = apiDocPath.getShortPaths();
         } else {
             swagger.setBasePath("");
-            updatedPaths = updatedLongPaths;
+            updatedPaths = apiDocPath.getLongPaths();
         }
 
         if (!hidden) {
@@ -144,83 +107,12 @@ public class ApiDocV2Service {
     }
 
     /**
-     * Get EndpointPairs
-     *
-     * @param endPoint  the endpoint of method
-     * @param serviceId the unique service id
-     * @param route     the route
-     * @return the endpoint pairs
-     */
-    private Pair<String, String> getEndPointPairs(String endPoint, String serviceId, RoutedService route) {
-        if (route == null) {
-            return Pair.of(endPoint, endPoint);
-        } else {
-            String updatedShortEndPoint = getShortEndPoint(route.getServiceUrl(), endPoint);
-            String updatedLongEndPoint = SEPARATOR + route.getGatewayUrl() + SEPARATOR + serviceId + updatedShortEndPoint;
-
-            return Pair.of(updatedShortEndPoint, updatedLongEndPoint);
-        }
-    }
-
-    /**
-     * Get RoutedService by APIInfo
-     *
-     * @param apiDocInfo the API doc and additional information about transformation
-     * @param endPoint   the endpoint of method
-     * @return the RoutedService
-     */
-    private RoutedService getRoutedServiceByApiInfo(ApiDocInfo apiDocInfo, String endPoint) {
-        ApiInfo apiInfo = apiDocInfo.getApiInfo();
-        if (apiInfo == null) {
-            return null;
-        } else {
-            String gatewayUrl = apiInfo.getGatewayUrl();
-            RoutedService route = apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
-            if (endPoint.toLowerCase().startsWith(route.getServiceUrl())) {
-                return route;
-            } else {
-                return null;
-            }
-        }
-    }
-
-    /**
-     * Get short endpoint
-     *
-     * @param routeServiceUrl service url of route
-     * @param endPoint        the endpoint of method
-     * @return short endpoint
-     */
-    private String getShortEndPoint(String routeServiceUrl, String endPoint) {
-        String shortEndPoint = endPoint;
-        if (!routeServiceUrl.equals(SEPARATOR)) {
-            shortEndPoint = shortEndPoint.replaceFirst(routeServiceUrl, "");
-        }
-        return shortEndPoint;
-    }
-
-    /**
-     * Get endpoint
-     *
-     * @param swaggerBasePath  swagger base path
-     * @param originalEndpoint the endpoint of method
-     * @return endpoint
-     */
-    private String getEndPoint(String swaggerBasePath, String originalEndpoint) {
-        String endPoint = originalEndpoint;
-        if (!swaggerBasePath.equals(SEPARATOR)) {
-            endPoint = swaggerBasePath + endPoint;
-        }
-        return endPoint;
-    }
-
-    /**
      * Updates External documentation in Swagger
      *
      * @param swagger    the API doc
      * @param apiDocInfo the service information
      */
-    private void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
+    protected void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
         if (apiDocInfo.getApiInfo() == null)
             return;
 
