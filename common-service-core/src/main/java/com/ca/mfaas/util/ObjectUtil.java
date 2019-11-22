@@ -10,7 +10,9 @@
 package com.ca.mfaas.util;
 
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @UtilityClass
 public class ObjectUtil {
 
@@ -27,5 +29,17 @@ public class ObjectUtil {
         }
     }
 
+    public static Class getThisClass() {
+        Thread theThread = Thread.currentThread();
+        StackTraceElement[]  stackTrace = theThread.getStackTrace();
+        String theClassName = stackTrace[2].getClassName();
+        try {
+            Class theClass = Class.forName(theClassName);
+            return theClass;
+        } catch (ClassNotFoundException cnfe) {
+            log.error(String.format("Calss {} was not found: ", theClassName) + cnfe);
+        }
+        return null;
+    }
 
 }

@@ -11,8 +11,14 @@ package com.ca.mfaas.util;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @UtilityClass
 public class StringUtils {
+
+    private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]*)\\}");
 
     /**
      * Remove from parameter 'input' the first and the last occurrence of parameter 'str'
@@ -115,4 +121,36 @@ public class StringUtils {
 
         return input;
     }
+
+    /**
+     * Substitutes properties values if corresponding properties keys are found in the expression.
+     *
+     * @param expression
+     * @param properties
+     * @return
+     */
+    public static StringBuilder resolveExpressions(String expression, Map<String, String> properties) {
+        StringBuilder result = new StringBuilder(expression.length());
+        int i = 0;
+        Matcher matcher = EXPRESSION_PATTERN.matcher(expression);
+        while (matcher.find()) {
+            // Strip leading "${" and trailing "}" off.
+            result.append(expression.substring(i, matcher.start()));
+            String property = matcher.group();
+            property = property.substring(2, property.length() - 1);
+            if (properties.containsKey(property)) {
+                //look up property and replace
+                property = properties.get(property);
+            } else {
+                //property not found, don't replace
+                property = matcher.group();
+            }
+            result.append(property);
+            i = matcher.end();
+        }
+        result.append(expression.substring(i));
+        return result;
+    }
+
+
 }
