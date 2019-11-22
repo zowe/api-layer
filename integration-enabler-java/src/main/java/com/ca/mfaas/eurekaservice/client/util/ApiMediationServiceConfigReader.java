@@ -176,7 +176,7 @@ public class ApiMediationServiceConfigReader {
             try {
                 String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
                 StringBuilder configFileDataBuilder = StringUtils.resolveExpressions(data, threadConfigurationContext.get());
-                ObjectMapper mapper = new ObjectMapper();
+                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                 configuration = mapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
             } catch (FileNotFoundException | NoSuchFileException e) {
                 throw new ServiceDefinitionException(String.format("File [%s] doesn't exist", file.getName()), e);
