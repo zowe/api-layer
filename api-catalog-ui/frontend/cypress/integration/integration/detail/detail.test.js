@@ -38,7 +38,7 @@ describe('>>> Detail page test', () => {
         cy.get('#swaggerContainer');
     });
 
-    it('should show the right infoin swagger container', () => {
+    it('should show the right info in Swagger container', () => {
         cy.get('#swaggerContainer').within($swagger => {
             cy.get('h2.title')
                 .should('contain', 'API Catalog')

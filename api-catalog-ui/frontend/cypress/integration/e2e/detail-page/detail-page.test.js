@@ -56,7 +56,9 @@ describe('>>> Detail page test', () => {
 
         cy.contains('Service Homepage').should('exist');
 
-        cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a').should('have.attr', 'href').and('include', '/ui/v1/apicatalog');
+        cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a')
+            .should('have.attr', 'href')
+            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/ui/v1/apicatalog`);
 
         cy.get('pre.version').should('contain', '1.0.0');
 
@@ -93,5 +95,9 @@ describe('>>> Detail page test', () => {
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');
 
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
+
+        cy.get('#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p')
+            .should('exist')
+            .should('contain', 'REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.');
     });
 });
