@@ -11,6 +11,8 @@ package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.exception.ServiceDefinitionException;
+import com.ca.mfaas.util.FileUtils;
+import com.ca.mfaas.util.StringUtils;
 import com.ca.mfaas.util.UrlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -20,22 +22,20 @@ import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  *  This class provides facility for loading API ML service on-boarding configuration.
  *  <p/>
- *  It allows to provide one or two file names, where the first file is usually internal to the service
- *  deployment artifact or at minimum must be accessible on the service classpath. It contains basic API ML configuration
- *  based on values known at development time. Typically it is provided by the service developer and is located in the
- *  /resources folder of java project source tree. In the deployment artifact it usually can be found under /WEB-ING/classes.
+ *  It allows to provide one or two file names.
+ *  <p/>
+ *  The first file is usually internal to the service deployment artifact or at minimum must be accessible on
+ *  the service classpath. It contains basic API ML configuration based on values known at development time.
+ *  Typically it is provided by the service developer and is located in the /resources folder of java project source tree.
+ *  In the deployment artifact it usually can be found under /WEB-INF/classes.
  *  <p/>
  *  The second configuration file is used to externalize the configuration. It can be placed anywhere, provided that the
  *  service has access to that location. It is populated with values dependent on the deployment system environment.
@@ -43,18 +43,19 @@ import java.util.regex.Pattern;
  *  At service boot time, both configurations are merged, where the externalized configuration (if provided) has higher
  *  priority.
  *  <p/>
- *  The values of both configuration files can be overwritten by Java system properties.
+ *  The values of both configuration files can be overwritten by ServletContext parameters. Set a parameter value in
+ *  the YAML file to ${apiml.your.very.own.key} and provide the same key with the actual value in a
+ *  <Parameter name="apiml.your.very.own.key" value="the-actual-property-value" />
  *
  */
 @Slf4j
 public class ApiMediationServiceConfigReader {
 
     public static final String APIML_DEFAULT_CONFIG = "apiml.config.location";
+
     public static final String APIML_ADDITIONAL_CONFIG = "apiml.config.additional-location";
 
     private static final String DEFAULT_CONFIGURATION_FILE_NAME = "/service-configuration.yml";
-
-    private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]*)\\}");
 
     /**
      * Instance member of ThreadLocal holding a Map<String, String> of configuration properties.
@@ -84,9 +85,15 @@ public class ApiMediationServiceConfigReader {
             Map<String, Object> additionalConfigPropertiesMap = mapper.convertValue(additionalConfiguration, Map.class);
             if ((defaultConfigPropertiesMap != null) && (additionalConfigPropertiesMap != null)) {
                 defaultConfigPropertiesMap.putAll(additionalConfigPropertiesMap);
+            } else {
+                if (additionalConfigPropertiesMap != null) {
+                    defaultConfigPropertiesMap = additionalConfigPropertiesMap;
+                }
             }
 
-            mapper.convertValue(defaultConfigPropertiesMap, ApiMediationServiceConfig.class);
+            if (additionalConfigPropertiesMap != null)  {
+                apimlServcieConfig = mapper.convertValue(defaultConfigPropertiesMap, ApiMediationServiceConfig.class);
+            }
         } catch (RuntimeException rte) {
             throw new ServiceDefinitionException("Merging service basic and externalized configurations failed. See for previous exceptions: ", rte);
         }
@@ -128,11 +135,16 @@ public class ApiMediationServiceConfigReader {
         ApiMediationServiceConfig serviceConfig = readConfigurationFile(internalConfigurationFileName);
 
         if (externalizedConfigurationFileName != null) {
-            serviceConfig = mergeConfigurations(serviceConfig, externalizedConfigurationFileName);
+            ApiMediationServiceConfig mergedConfig = mergeConfigurations(serviceConfig, externalizedConfigurationFileName);
+            if (mergedConfig != null) {
+                serviceConfig = mergedConfig;
+            }
         }
 
         // Set instance ipAddress if required by Eureka and not set in the configuration files
-        serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(serviceConfig.getBaseUrl()));
+        if (serviceConfig != null) {
+            serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(serviceConfig.getBaseUrl()));
+        }
 
         return serviceConfig;
     }
@@ -145,73 +157,9 @@ public class ApiMediationServiceConfigReader {
     public ApiMediationServiceConfig readConfigurationFile(String fileName)
             throws ServiceDefinitionException {
 
-        File file = locateConfigFile(fileName);
+        File file = FileUtils.locateFile(fileName);
 
         return (file != null) ? readConfigurationFile(file) : null;
-    }
-
-    /**
-     * Tries to locate or in other words to verify that a file with name 'fileName' exists.
-     * First tries to find the file as a resource somewhere on the application or System classpath.
-     * Then tries to locate it using 'fileName' as as relative path
-     * The final attempt is to locate the file using the 'fileName' an absolute path.  resolved from .
-     *
-     * This method never throw exceptions.
-     * Returns null If fileName is null or file is not found neither as Java (system) resource, nor as file on the file system.
-     *
-     * @param fileName
-     * @return
-     */
-    private File locateConfigFile(String fileName) {
-        if (fileName == null) {
-            return null;
-        }
-        // Try to find the file as a resource - application local or System resource
-        URL fileUrl = null;
-        try {
-            fileUrl = getClass().getResource(fileName);
-            if (fileUrl == null) {
-                log.debug(String.format("File resource [%s] can't be found by this class classloader. We'll try with SystemClassLoader...", fileName));
-
-                fileUrl = ClassLoader.getSystemResource(fileName);
-                if (fileUrl == null) {
-                    log.debug(String.format("File resource [%s] can't be found by SystemClassLoader.", fileName));
-                }
-            }
-        } catch (Throwable t) {
-            // Silently swallow the exceptions and try to find the file on the File Sytem
-            log.debug(String.format("File [%s] can't be found as Java resource. Exception was caught with the following message: [%s]", fileName) + t.getMessage());
-        }
-
-        File file = null;
-        try {
-            if (fileUrl != null) {
-                file = new File(fileUrl.getFile());
-            } else {
-                Path path = Paths.get(fileName);
-                File aFile = path.toFile();
-                if (aFile.canRead()) {
-                    file = aFile;
-                } else {
-                    if (!path.isAbsolute()) {
-                        // Relative path can exist on multiple root file systems. Try all of them.
-                        for (File root : File.listRoots()) {
-                            Path resolvedPath = root.toPath().resolve(path);
-                            aFile = resolvedPath.toFile();
-                            if (aFile.canRead()) {
-                                file = aFile;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Throwable t) {
-            // Silently swallow the exceptions and try to find the file on the File Sytem
-            log.debug(String.format("File [%s] can't be found as file system resource. Exception was caught with the following message: [%s]", fileName) + t.getMessage());
-        }
-
-        return file;
     }
 
     /**
@@ -227,8 +175,8 @@ public class ApiMediationServiceConfigReader {
         if (file != null) {
             try {
                 String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-                StringBuilder configFileDataBuilder = resolveExpressions(data, threadConfigurationContext.get());
-                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                StringBuilder configFileDataBuilder = StringUtils.resolveExpressions(data, threadConfigurationContext.get());
+                ObjectMapper mapper = new ObjectMapper();
                 configuration = mapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
             } catch (FileNotFoundException | NoSuchFileException e) {
                 throw new ServiceDefinitionException(String.format("File [%s] doesn't exist", file.getName()), e);
@@ -268,36 +216,6 @@ public class ApiMediationServiceConfigReader {
         return threadContextMap;
     }
 
-
-    /**
-     * Substitutes properties values if corresponding properties keys are found in the expression.
-     *
-     * @param expression
-     * @param properties
-     * @return
-     */
-    private static StringBuilder resolveExpressions(String expression, Map<String, String> properties) {
-        StringBuilder result = new StringBuilder(expression.length());
-        int i = 0;
-        Matcher matcher = EXPRESSION_PATTERN.matcher(expression);
-        while (matcher.find()) {
-            // Strip leading "${" and trailing "}" off.
-            result.append(expression.substring(i, matcher.start()));
-            String property = matcher.group();
-            property = property.substring(2, property.length() - 1);
-            if (properties.containsKey(property)) {
-                //look up property and replace
-                property = properties.get(property);
-            } else {
-                //property not found, don't replace
-                property = matcher.group();
-            }
-            result.append(property);
-            i = matcher.end();
-        }
-        result.append(expression.substring(i));
-        return result;
-    }
 
     /**
      * The initialize method, uses servlet context parameters to build service configuration for on-boarding with API ML discovery service.
