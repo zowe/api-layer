@@ -103,21 +103,43 @@ public class UrlUtils {
     }
 
     /**
-     * Finds all hostname IP addresses and returns the first one.
-     * @param hostName
+     * Finds IP address hostname provided by fqdn string.
+     * @param fqdn
      * @return
      */
-    public static String getHostFirstIPAddress(String hostName) {
+    public static String getHostIPAddress(String fqdn) {
         String ipAddr = null;
         try {
-            InetAddress address = InetAddress.getByName(hostName);
+            InetAddress address = InetAddress.getByName(fqdn);
             if (address != null ) {
                 ipAddr = address.getHostAddress();
             }
         } catch (UnknownHostException e) {
-            log.warn("InetAddress couldn't get byName: " + hostName, e);
+            log.warn("InetAddress couldn't get byName: " + fqdn, e);
         }
 
         return ipAddr;
     }
+
+    /**
+     *
+     * @param urlString
+     * @return IP address of the host domain name provided by FQDN
+     */
+    public static String getIpAddressFromUrl(String urlString) {
+        URL baseUrl = null;
+        try {
+            baseUrl = new URL(urlString);
+        } catch (MalformedURLException e) {
+            log.error(String.format("{} is not a valid URL: ", urlString) + e);
+        }
+
+        if (baseUrl != null) {
+            String hostname = baseUrl.getHost();
+            return UrlUtils.getHostIPAddress(hostname);
+        }
+
+        return "";
+    }
+
 }

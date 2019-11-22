@@ -16,12 +16,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.naming.*;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -57,6 +55,11 @@ public class ApiMediationServiceConfigReader {
     private static final String DEFAULT_CONFIGURATION_FILE_NAME = "/service-configuration.yml";
 
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]*)\\}");
+
+    /**
+     * Instance member of ThreadLocal holding a Map<String, String> of configuration properties.
+     */
+    private ThreadLocal<Map<String, String>> threadConfigurationContext = ThreadLocal.withInitial(() -> new HashMap<String, String>());
 
 
     private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, String additionalConfigFile/*, int mergeFlags*/)
@@ -129,7 +132,7 @@ public class ApiMediationServiceConfigReader {
         }
 
         // Set instance ipAddress if required by Eureka and not set in the configuration files
-        setInstanceIpAddress(serviceConfig, getInstanceIpAddressFromHostname(serviceConfig.getBaseUrl()), true);
+        serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(serviceConfig.getBaseUrl()));
 
         return serviceConfig;
     }
@@ -224,7 +227,7 @@ public class ApiMediationServiceConfigReader {
         if (file != null) {
             try {
                 String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-                StringBuilder configFileDataBuilder = resolveExpressions(data, ApiMediationServiceConfigReader.getApiMlServiceContext());
+                StringBuilder configFileDataBuilder = resolveExpressions(data, threadConfigurationContext.get());
                 ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                 configuration = mapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
             } catch (FileNotFoundException | NoSuchFileException e) {
@@ -238,63 +241,33 @@ public class ApiMediationServiceConfigReader {
     }
 
     /**
-     * Utility method for setting Java System properties form ServletContext parameters who's keys are prefixed with "apiml."
+     * Utility method for setting this thread configuration context with ServletContext parameters who's keys are prefixed with "apiml."
      *
      * @param servletContext
      */
-    public static Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
-        try {
-            Context initialContext = new InitialContext();
-            Context envContext = (Context)initialContext.lookup("java:comp/env");
-            Enumeration<String> paramNames = servletContext.getInitParameterNames();
-            while (paramNames.hasMoreElements()) {
-                String param = paramNames.nextElement();
-                String value = servletContext.getInitParameter(param);
-                if (param.startsWith("apiml.")) {
-                    envContext.addToEnvironment(param, value);
-                }
+    public Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
+        Map<String, String> threadContextMap = threadConfigurationContext.get();
+
+        /*
+           Because this class is intended to be used mainly in web containers it is expected that
+           the thread instances belong to a thread pool.
+           We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
+        */
+        if (!threadContextMap.isEmpty()) {
+            threadContextMap.clear();
+        }
+
+        Enumeration<String> paramNames = servletContext.getInitParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String param = paramNames.nextElement();
+            String value = servletContext.getInitParameter(param);
+            if (param.startsWith("apiml.")) {
+                threadContextMap.put(param, value);
             }
-            envContext.getEnvironment();
-        } catch (NamingException e) {
-            log.error("Couldn't create initialContext", e);
         }
-
-        return null;
+        return threadContextMap;
     }
 
-    /**
-     * Returns a map with parameters previously set in the JNDI java:comp/env context environment.
-     * Olny parameters with keys starting with "apiml." are filtered in.
-     * @return
-     */
-    private static Map<String, String> getApiMlServiceContext() {
-        Hashtable<String, String> params = null;
-        try {
-            Context initialContext = new InitialContext();
-            Context apimlContext = (Context)initialContext.lookup("java:comp/env");
-
-            params = (Hashtable)apimlContext.getEnvironment();
-        } catch (NamingException e) {
-            log.error("Exeption caught while getting java:comp/env JND environment parameters", e);
-        }
-
-        if (params != null) {
-            Map<String, String> propertiesMap = new HashMap();
-            Set<String> keys = params.keySet();
-            for (String key : keys) {
-                if (key.startsWith("apiml.")) {
-                    String value = params.get(key);
-                    propertiesMap.put(key, value);
-                }
-            }
-            return propertiesMap;
-        }
-        return null;
-    }
-
-    public static String getApiMlServiceContextParameter(String paramName) {
-        return  getApiMlServiceContext().get(paramName);
-    }
 
     /**
      * Substitutes properties values if corresponding properties keys are found in the expression.
@@ -372,7 +345,7 @@ public class ApiMediationServiceConfigReader {
          * Set Java system properties from ServletContext parameters starting with "apiml." prefix.
          * If rewriting is not used, it is not necessary to call {@link ApiMediationServiceConfigReader#setSystemProperties}
          */
-        ApiMediationServiceConfigReader.setApiMlServiceContext(context);
+        setApiMlServiceContext(context);
 
         /*
          *  Get default configuration file name from ServletContext init parameter.
@@ -395,30 +368,6 @@ public class ApiMediationServiceConfigReader {
          * Instantiate configuration reader and call loadConfiguration method with both config file names initialized above.
          */
         ApiMediationServiceConfig apimlConfig = loadConfiguration(basicConfigurationFileName, externalConfigurationFileName);
-
-        return apimlConfig;
-    }
-
-    public static String getInstanceIpAddressFromHostname(String baseAddr) {
-        String hostname =  null;
-        try {
-            URL baseUrl = new URL(baseAddr);
-            hostname = baseUrl.getHost();
-        } catch (MalformedURLException e) {
-            log.error("" + e);
-        }
-
-        if (hostname != null) {
-            return UrlUtils.getHostFirstIPAddress(hostname);
-        }
-
-        return "";
-    }
-
-    private ApiMediationServiceConfig setInstanceIpAddress(ApiMediationServiceConfig apimlConfig, String ipAddress, boolean shouldReplace) {
-        if (shouldReplace || (apimlConfig.getServiceIpAddress() == null)) {
-            apimlConfig.setServiceIpAddress(ipAddress);
-        }
 
         return apimlConfig;
     }
