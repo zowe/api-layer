@@ -1,6 +1,0 @@
-messages:
-
-    - key: apiml.enabler.register.successful
-      number: ZWEA001
-      type: INFO
-      text: "Registering to API Mediation Layer: baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s"
