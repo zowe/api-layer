@@ -62,10 +62,11 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void badBaseUrlFormat() throws ServiceDefinitionException {
+        exceptionRule.expect(ServiceDefinitionException.class);
+
         String file = "/bad-baseurl-service-configuration.yml";
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(file);
-        exceptionRule.expect(ServiceDefinitionException.class);
         //exceptionRule.expectMessage("baseUrl: [localhost:10021/hellospring] is not valid URL");
 
         client.register(config);
@@ -74,6 +75,8 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void httpsBaseUrlFormat() throws ServiceDefinitionException {
+        //exceptionRule.expect( ServiceDefinitionException.class);
+
         String file = "/https-service-configuration.yml";
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(file);
@@ -84,10 +87,11 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void badProtocolForBaseUrl() throws ServiceDefinitionException  {
+        exceptionRule.expect( ServiceDefinitionException.class);
+
         String file = "/bad-protocol-baseurl-service-configuration.yml";
         ApiMediationClient client = new ApiMediationClientImpl();
         ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(file);
-        exceptionRule.expect( ServiceDefinitionException.class);
         //exceptionRule.expectMessage("Invalid protocol for baseUrl property");
 
         client.register(config);
