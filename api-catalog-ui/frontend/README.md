@@ -115,8 +115,8 @@ All commands related to cypress start with cy.
 As of now the available ones are:
 
 `cy:open` - opens the interactive window with no environment variables set
-`cy:e2e` - runs all test inside the e2e folder testing the instance in the baseURL env variable while using credential passed as parameters (This command should be used in the pipeline)
-`cy:e2e:open` - opens the interactive window with the baseURL parameter set but with no credentials (This command should be used to run e2e tests locally)
-`cy:integration` - runs all test inside the /integration/integration folder; integration tests should run locally against mocked backend
+`cy:e2e:ci` - runs all test inside the e2e folder testing the instance in the baseURL env variable while using credential passed as parameters (This command should be used in the pipeline)
+`cy:e2e:localhost` - runs all test inside the e2e folder testing the localhost instance
+`cy:e2e:mocked-backend` - runs all test inside the /integration/integration folder; integration tests should run locally against mocked backend
 
 
