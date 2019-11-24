@@ -194,9 +194,26 @@ public class ApiMediationServiceConfig {
 
     private Boolean securePortEnabled;
 
+    /**
+     *  Rest service routes provide mapping from API ML GW URI address to service URI address.
+     *  See {@link Route} for details
+     */
     @Singular
     private List<Route> routes;
+
+    /**
+     *  A list of {@link ApiInfo} instances. Mainly used to provide information about the service API documentation.
+     */
     private List<ApiInfo> apiInfo;
+
+    /**
+     * {@link Catalog} instances contain API ML catalog UI description. API ML catalog displays services information in tiles.
+     *
+     */
     private Catalog catalog;
+
+    /**
+     *  {@link Ssl} provides configuration parameters for SSL / TLS security of teh service.
+     */
     private Ssl ssl;
 }
