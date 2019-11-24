@@ -18,9 +18,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+
 
 public class ApiMediationClientImplTest {
     @Rule
@@ -65,10 +64,12 @@ public class ApiMediationClientImplTest {
         exceptionRule.expect(ServiceDefinitionException.class);
 
         String file = "/bad-baseurl-service-configuration.yml";
-        ApiMediationClient client = new ApiMediationClientImpl();
-        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(file);
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+        String configData = apiMediationServiceConfigReader.readConfigurationFile(file);
         //exceptionRule.expectMessage("baseUrl: [localhost:10021/hellospring] is not valid URL");
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfigurtion(configData);
 
+        ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
         client.unregister();
     }
@@ -78,9 +79,13 @@ public class ApiMediationClientImplTest {
         //exceptionRule.expect( ServiceDefinitionException.class);
 
         String file = "/https-service-configuration.yml";
-        ApiMediationClient client = new ApiMediationClientImpl();
-        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(file);
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+        String configData = apiMediationServiceConfigReader.readConfigurationFile(file);
+        //exceptionRule.expectMessage("baseUrl: [localhost:10021/hellospring] is not valid URL");
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfigurtion(configData);
+        //ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(file);
 
+        ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
         client.unregister();
     }
@@ -90,12 +95,16 @@ public class ApiMediationClientImplTest {
         exceptionRule.expect( ServiceDefinitionException.class);
 
         String file = "/bad-protocol-baseurl-service-configuration.yml";
-        ApiMediationClient client = new ApiMediationClientImpl();
-        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(file);
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+        String configData = apiMediationServiceConfigReader.readConfigurationFile(file);
+        //exceptionRule.expectMessage("baseUrl: [localhost:10021/hellospring] is not valid URL");
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfigurtion(configData);
+
+        //ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().readConfigurationFile(file);
         //exceptionRule.expectMessage("Invalid protocol for baseUrl property");
 
+        ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
         client.unregister();
     }
-
 }

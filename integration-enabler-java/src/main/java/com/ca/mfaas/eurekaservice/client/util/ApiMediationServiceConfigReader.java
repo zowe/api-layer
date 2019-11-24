@@ -14,18 +14,22 @@ import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.util.FileUtils;
 import com.ca.mfaas.util.StringUtils;
 import com.ca.mfaas.util.UrlUtils;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletContext;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_ABSENT;
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 /**
  *  This class provides facility for loading API ML service on-boarding configuration.
@@ -58,16 +62,25 @@ public class ApiMediationServiceConfigReader {
     private static final String DEFAULT_CONFIGURATION_FILE_NAME = "/service-configuration.yml";
 
     /**
+     * Instance object mapper. Initialized in constructor.
+     */
+    private ObjectMapper objectMapper = null;
+
+    /**
      * Instance member of ThreadLocal holding a Map<String, String> of configuration properties.
      */
     private ThreadLocal<Map<String, String>> threadConfigurationContext = ThreadLocal.withInitial(() -> new HashMap<String, String>());
 
 
-    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, String additionalConfigFile/*, int mergeFlags*/)
-        throws ServiceDefinitionException {
-
-        return mergeConfigurations(defaultConfiguration, readConfigurationFile(additionalConfigFile)/*, int mergeFlags*/);
+    /**
+     * Default constructor.
+     */
+    public ApiMediationServiceConfigReader() {
+        objectMapper = new ObjectMapper(new YAMLFactory());
+        objectMapper.setDefaultMergeable(true);
+        objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(NON_NULL, NON_ABSENT));
     }
+
 
     /**
      * Merges two APiMediationServiceConfig objects where the second one has higher priority, i.e replacess values into the first one.
@@ -75,30 +88,61 @@ public class ApiMediationServiceConfigReader {
      * @param additionalConfiguration
      * @return
      */
-    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig  additionalConfiguration /*, int mergeFlags*/)
+    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig additionalConfiguration)
             throws ServiceDefinitionException {
 
         ApiMediationServiceConfig apimlServcieConfig = null;
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         try {
-            Map<String, Object> defaultConfigPropertiesMap = mapper.convertValue(defaultConfiguration, Map.class);
-            Map<String, Object> additionalConfigPropertiesMap = mapper.convertValue(additionalConfiguration, Map.class);
+            Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(defaultConfiguration, Map.class);
+            Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(additionalConfiguration, Map.class);
             if ((defaultConfigPropertiesMap != null) && (additionalConfigPropertiesMap != null)) {
-                defaultConfigPropertiesMap.putAll(additionalConfigPropertiesMap);
+                defaultConfigPropertiesMap = ApiMediationServiceConfigReader.mergeMaps(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
             } else {
                 if (additionalConfigPropertiesMap != null) {
                     defaultConfigPropertiesMap = additionalConfigPropertiesMap;
                 }
             }
 
-            if (additionalConfigPropertiesMap != null)  {
-                apimlServcieConfig = mapper.convertValue(defaultConfigPropertiesMap, ApiMediationServiceConfig.class);
+            if (defaultConfigPropertiesMap != null)  {
+                apimlServcieConfig = objectMapper.convertValue(defaultConfigPropertiesMap, ApiMediationServiceConfig.class);
             }
         } catch (RuntimeException rte) {
             throw new ServiceDefinitionException("Merging service basic and externalized configurations failed. See for previous exceptions: ", rte);
         }
 
         return apimlServcieConfig;
+    }
+
+    /**
+     * @Experimental
+     *
+     * @param map1
+     * @param map2
+     * @return
+     */
+    public static Map <String, Object> mergeMaps(Map<String, Object> map1, Map<String, Object> map2) {
+
+        Map<String, Object> resultMap = Stream.concat(map1.entrySet().stream(), map2.entrySet().stream())
+            .collect(Collectors.toMap(
+                 entry -> entry.getKey() // The key
+               , entry -> entry.getValue() // The value
+                // The "merger"
+               , (entry1, entry2) -> { return mergeMapEntries(entry1, entry2); }
+                )
+            );
+
+        return resultMap;
+    }
+
+    /**
+     * @Experimental
+     *
+     * @param entry1
+     * @param entry2
+     * @return
+     */
+    public static Object mergeMapEntries(Object entry1, Object entry2) {
+        return entry2;
     }
 
     /**
@@ -121,21 +165,24 @@ public class ApiMediationServiceConfigReader {
      * The externalized file has precedence over the basic one, i.e the properties values of the basic YAML file can be rewritten
      * by the values of the same properties defined in the externalized configuration file.
      *
-     * @param internalConfigurationFileName
-     * @param externalizedConfigurationFileName
+     * @param internalConfigFileName
+     * @param externalizedConfigFileName
      * @return
      */
-    public ApiMediationServiceConfig loadConfiguration(String internalConfigurationFileName, String externalizedConfigurationFileName)
+    public ApiMediationServiceConfig loadConfiguration(String internalConfigFileName, String externalizedConfigFileName)
             throws ServiceDefinitionException {
 
-        if (internalConfigurationFileName == null) {
-            internalConfigurationFileName = DEFAULT_CONFIGURATION_FILE_NAME;
+        if (internalConfigFileName == null) {
+            internalConfigFileName = DEFAULT_CONFIGURATION_FILE_NAME;
         }
 
-        ApiMediationServiceConfig serviceConfig = readConfigurationFile(internalConfigurationFileName);
+        String configData = readConfigurationFile(internalConfigFileName);
+        ApiMediationServiceConfig serviceConfig = buildConfigurtion(configData);
 
-        if (externalizedConfigurationFileName != null) {
-            ApiMediationServiceConfig mergedConfig = mergeConfigurations(serviceConfig, externalizedConfigurationFileName);
+        if (externalizedConfigFileName != null) {
+            File externalizedConfigFile = FileUtils.locateFile(externalizedConfigFileName);
+            ApiMediationServiceConfig externalizedConfig = readConfigurationFile(externalizedConfigFile);
+            ApiMediationServiceConfig mergedConfig = mergeConfigurations(serviceConfig, externalizedConfig);
             if (mergedConfig != null) {
                 serviceConfig = mergedConfig;
             }
@@ -143,23 +190,47 @@ public class ApiMediationServiceConfigReader {
 
         // Set instance ipAddress if required by Eureka and not set in the configuration files
         if (serviceConfig != null) {
-            serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(serviceConfig.getBaseUrl()));
+            if (serviceConfig.getServiceIpAddress() == null) {
+                serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(serviceConfig.getBaseUrl()));
+            }
         }
 
         return serviceConfig;
     }
 
     /**
-     * First locates the file and if successfull, reads its contents into a {@link ApiMediationServiceConfig}
+     * Reads configuration form a single YAML file.
+     * Properties values rewriting takes place using Java System properties with keys prefixed with "apiml."
+     *
      * @param fileName
      * @return
      */
-    public ApiMediationServiceConfig readConfigurationFile(String fileName)
-            throws ServiceDefinitionException {
+    public String readConfigurationFile(String fileName) throws ServiceDefinitionException {
+        String configData = null;
 
         File file = FileUtils.locateFile(fileName);
+        if (file != null) {
+            try {
+                String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
+                configData = StringUtils.resolveExpressions(data, threadConfigurationContext.get()).toString();
+            } catch (IOException e) {
+                throw new ServiceDefinitionException(String.format("Configuration file [%s] can't be read.", file.getName()), e);
+            }
+        }
 
-        return (file != null) ? readConfigurationFile(file) : null;
+        return configData;
+    }
+
+    public ApiMediationServiceConfig buildConfigurtion(String configData) throws ServiceDefinitionException {
+        ApiMediationServiceConfig configuration = null;
+            StringBuilder configFileDataBuilder = StringUtils.resolveExpressions(configData, threadConfigurationContext.get());
+        try {
+            configuration = objectMapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
+        } catch (IOException e) {
+            throw new ServiceDefinitionException("Configuration data can't be parsed as ApiMediationServiceConfig.", e);
+        }
+
+        return configuration;
     }
 
     /**
@@ -176,8 +247,7 @@ public class ApiMediationServiceConfigReader {
             try {
                 String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
                 StringBuilder configFileDataBuilder = StringUtils.resolveExpressions(data, threadConfigurationContext.get());
-                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-                configuration = mapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
+                configuration = objectMapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
             } catch (FileNotFoundException | NoSuchFileException e) {
                 throw new ServiceDefinitionException(String.format("File [%s] doesn't exist", file.getName()), e);
             } catch (IOException e) {
