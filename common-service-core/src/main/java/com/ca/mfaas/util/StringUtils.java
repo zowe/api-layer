@@ -130,8 +130,8 @@ public class StringUtils {
      * @return
      */
     public static String resolveExpressions(String expression, Map<String, String> properties) {
-        if (expression == null) {
-            return "";
+        if ((expression == null) || (properties == null)) {
+            return expression;
         }
         StringBuilder result = new StringBuilder(expression.length());
         int i = 0;

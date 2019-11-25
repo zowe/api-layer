@@ -82,7 +82,8 @@ public class ApiMediationServiceConfigReader {
 
 
     /**
-     * Merges two APiMediationServiceConfig objects where the second one has higher priority, i.e replacess values into the first one.
+     * Merges two APiMediationServiceConfig objects, where the second one has higher priority, i.e replaces values into the first one.
+     *
      * @param defaultConfiguration
      * @param additionalConfiguration
      * @return
@@ -90,26 +91,55 @@ public class ApiMediationServiceConfigReader {
     private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig additionalConfiguration)
             throws ServiceDefinitionException {
 
+        Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(defaultConfiguration, Map.class);
+        Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(additionalConfiguration, Map.class);
+
+        return mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+    }
+
+    private ApiMediationServiceConfig mergeConfigurations(Map<String, Object> defaultConfigurationMap, Map<String, Object> additionalConfigurationMap)
+        throws ServiceDefinitionException {
+
         ApiMediationServiceConfig apimlServcieConfig = null;
         try {
-            Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(defaultConfiguration, Map.class);
-            Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(additionalConfiguration, Map.class);
-            if ((defaultConfigPropertiesMap != null) && (additionalConfigPropertiesMap != null)) {
-                defaultConfigPropertiesMap = mergeMaps(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+            if ((defaultConfigurationMap != null) && (additionalConfigurationMap != null)) {
+                defaultConfigurationMap = deepMerge(defaultConfigurationMap, additionalConfigurationMap);
             } else {
-                if (additionalConfigPropertiesMap != null) {
-                    defaultConfigPropertiesMap = additionalConfigPropertiesMap;
+                if (additionalConfigurationMap != null) {
+                    defaultConfigurationMap = additionalConfigurationMap;
                 }
             }
 
-            if (defaultConfigPropertiesMap != null)  {
-                apimlServcieConfig = objectMapper.convertValue(defaultConfigPropertiesMap, ApiMediationServiceConfig.class);
+            if (defaultConfigurationMap != null)  {
+                apimlServcieConfig = objectMapper.convertValue(defaultConfigurationMap, ApiMediationServiceConfig.class);
             }
         } catch (RuntimeException rte) {
             throw new ServiceDefinitionException("Merging service basic and externalized configurations failed. See for previous exceptions: ", rte);
         }
 
         return apimlServcieConfig;
+    }
+
+    // This is fancier than Map.putAll(Map)
+    public static Map deepMerge(Map original, Map newMap) {
+        for (Object key : newMap.keySet()) {
+            if (newMap.get(key) instanceof Map && original.get(key) instanceof Map) {
+                Map originalChild = (Map) original.get(key);
+                Map newChild = (Map) newMap.get(key);
+                original.put(key, deepMerge(originalChild, newChild));
+            } else if (newMap.get(key) instanceof List && original.get(key) instanceof List) {
+                List originalChild = (List) original.get(key);
+                List newChild = (List) newMap.get(key);
+                for (Object each : newChild) {
+                    if (!originalChild.contains(each)) {
+                        originalChild.add(each);
+                    }
+                }
+            } else {
+                original.put(key, newMap.get(key));
+            }
+        }
+        return original;
     }
 
     /**
@@ -141,7 +171,15 @@ public class ApiMediationServiceConfigReader {
      * @return
      */
     public static Object mergeMapEntries(Object entry1, Object entry2) {
-        return entry2;
+        if (entry2 == null) {
+            return  entry1;
+        }
+
+        if (entry2 instanceof Map) {
+            return entry1;
+        } else {
+            return entry2;
+        }
     }
 
     /**

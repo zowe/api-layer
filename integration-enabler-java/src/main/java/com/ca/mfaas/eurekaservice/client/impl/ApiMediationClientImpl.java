@@ -66,6 +66,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         if (eurekaClient != null) {
             eurekaClient.shutdown();
         }
+        eurekaClient = null;
     }
 
     private EurekaClient initializeEurekaClient(
@@ -82,7 +83,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             .trustStore(sslConfig.getTrustStore())
             .trustStoreType(sslConfig.getTrustStoreType())
             .trustStorePassword(sslConfig.getTrustStorePassword())
-            .verifySslCertificatesOfServices(sslConfig.isVerifySslCertificatesOfServices())
+            .verifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()))
             .build();
         HttpsFactory factory = new HttpsFactory(httpsConfig);
         EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(
@@ -189,7 +190,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             try {
                 metadata.putAll(EurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
             } catch (MalformedURLException e) {
-                throw new MetadataValidationException("Metadata creation failed for apiInfo: " + apiInfo.getApiId(), e);
+                throw new MetadataValidationException("Metadata creation failed for apiInfo: " + apiInfo.getApiId() + " due to: ", e);
             }
         }
 
