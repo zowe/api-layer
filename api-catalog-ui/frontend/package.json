@@ -34,10 +34,10 @@
         "redux-persist": "5.10.0",
         "redux-persist-transform-filter": "0.0.18",
         "redux-thunk": "2.3.0",
+        "rimraf": "^3.0.0",
         "rxjs": "6.3.3",
         "swagger-ui": "^3.23.1",
-        "uuid": "3.3.2",
-        "rimraf": "^3.0.0"
+        "uuid": "3.3.2"
     },
     "scripts": {
         "start": "cross-env HTTPS=true react-scripts start",
@@ -49,13 +49,11 @@
         "test": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/* --reporters=default --reporters=jest-html-reporter",
         "test:unit": "react-scripts test --env=jsdom components/* reducers/* epics/* selectors/* ErrorBoundary/*",
         "test:int": "react-scripts test --env=jsdom integration-tests/*",
-        "test:e2e": "react-scripts test --env=jsdom e2e/*",
-        "test:e2e:ci": "cross-env REACT_APP_CATALOG_URL_TEST=${API_CATALOG_BASE_URL} REACT_APP_CATALOG_USERNAME=${MF_USERID} REACT_APP_CATALOG_PASSWORD=${MF_PASSWORD} CI=true react-scripts test --env=jsdom src/e2e/*.test.jsx --reporters=default --reporters=jest-junit",
         "coverage": "npm test -- --coverage --watchAll=false",
         "cy:open": "cypress open",
-        "cy:e2e:ci": "cypress run --spec cypress/integration/e2e/**/*.test.js --env baseURL=${API_CATALOG_BASE_URL},username=${MF_USERID},password=${MF_PASSWORD}",
-        "cy:e2e:localhost": "cypress run --spec cypress/integration/e2e/**/*.test.js",
-        "cy:e2e:mocked-backend": "cypress run --spec cypress/integration/mocked-e2e/**/*.test.js --env username=user,password=user"
+        "cy:e2e:ci": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --env baseURL=${API_CATALOG_BASE_URL},username=${MF_USERID},password=${MF_PASSWORD}",
+        "cy:e2e:localhost": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\"",
+        "cy:e2e:mocked-backend": "cypress run --spec \"cypress/integration/mocked-e2e/**/*.test.js\" --env username=user,password=user"
     },
     "jest-junit": {
         "suiteName": "E2E API Catalog UI Tests",
@@ -99,7 +97,6 @@
         "jest-mock": "23.2.0",
         "nodemon": "1.18.6",
         "prettier": "1.14.2",
-        "puppeteer": "1.18.0",
         "react-testing-library": "5.3.0",
         "rimraf": "^3.0.0",
         "source-map-explorer": "1.6.0",
@@ -113,7 +110,7 @@
             "!src/index.js",
             "!src/**/*Container.jsx",
             "!src/responsive-tests/**",
-            "!src/e2e/*"
+            "!cypress/*"
         ]
     },
     "engines": {
