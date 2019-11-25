@@ -55,7 +55,7 @@
         "cy:open": "cypress open",
         "cy:e2e:ci": "cypress run --spec cypress/integration/e2e/**/*.test.js --env baseURL=${API_CATALOG_BASE_URL},username=${MF_USERID},password=${MF_PASSWORD}",
         "cy:e2e:localhost": "cypress run --spec cypress/integration/e2e/**/*.test.js",
-        "cy:e2e:mocked-backend": "cypress run --spec cypress/integration/integration/**/*.test.js --env username=user,password=user"
+        "cy:e2e:mocked-backend": "cypress run --spec cypress/integration/mocked-e2e/**/*.test.js --env username=user,password=user"
     },
     "jest-junit": {
         "suiteName": "E2E API Catalog UI Tests",

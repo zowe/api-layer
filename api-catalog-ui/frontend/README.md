@@ -107,8 +107,8 @@ You can install a tool called _serve_ (`npm install -g serve`) and then run `ser
 
 The tests are located in api-catalog-ui/frontend/cypress/integration. Inside this folder you can find two other folders:
 
-integration - integration tests that are supposed Dictionary to run locally against mocked backend
-e2e - e2e tests that can be run locally but they should mostly run as a part of our pipeline
+`/mocked-e2e` - e2e tests that are supposed to run locally against mocked backend
+`/e2e` - e2e tests that can be run locally but they should mostly run as a part of our pipeline
 Both can be run in interactive mode (more on that bellow).
 
 All commands related to cypress start with cy.
