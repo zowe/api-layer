@@ -17,6 +17,10 @@ import lombok.Data;
 
 import java.util.Map;
 
+/**
+ * An inplementation class of {@link EurekaInstanceConfig} interface.
+ * Has members corresponding with the properties required by Eureka for registering a REST service.
+ */
 @Data
 public class ApimlEurekaInstanceConfig implements EurekaInstanceConfig {
     private boolean securePortEnabled;
@@ -37,6 +41,7 @@ public class ApimlEurekaInstanceConfig implements EurekaInstanceConfig {
     private String homePageUrlPath;
     private String hostName;
     private String instanceId;
+
     /**
      * According to Netflix: "This information is for academic
      * purposes only as the communication from other instances primarily happen

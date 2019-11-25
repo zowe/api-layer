@@ -64,7 +64,7 @@ public class ApiMediationServiceConfigReader {
     /**
      * Instance object mapper. Initialized in constructor.
      */
-    private ObjectMapper objectMapper = null;
+    private ObjectMapper objectMapper;
 
     /**
      * Instance member of ThreadLocal holding a Map<String, String> of configuration properties.
@@ -96,7 +96,7 @@ public class ApiMediationServiceConfigReader {
             Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(defaultConfiguration, Map.class);
             Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(additionalConfiguration, Map.class);
             if ((defaultConfigPropertiesMap != null) && (additionalConfigPropertiesMap != null)) {
-                defaultConfigPropertiesMap = ApiMediationServiceConfigReader.mergeMaps(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+                defaultConfigPropertiesMap = mergeMaps(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
             } else {
                 if (additionalConfigPropertiesMap != null) {
                     defaultConfigPropertiesMap = additionalConfigPropertiesMap;
@@ -177,11 +177,16 @@ public class ApiMediationServiceConfigReader {
         }
 
         String configData = readConfigurationFile(internalConfigFileName);
-        ApiMediationServiceConfig serviceConfig = buildConfigurtion(configData);
+        configData = StringUtils.resolveExpressions(configData, threadConfigurationContext.get());
+
+        ApiMediationServiceConfig serviceConfig = buildConfiguration(configData);
 
         if (externalizedConfigFileName != null) {
-            File externalizedConfigFile = FileUtils.locateFile(externalizedConfigFileName);
-            ApiMediationServiceConfig externalizedConfig = readConfigurationFile(externalizedConfigFile);
+            String externalizedConfigData = readConfigurationFile(externalizedConfigFileName);
+            externalizedConfigData = StringUtils.resolveExpressions(externalizedConfigData, threadConfigurationContext.get());
+
+            ApiMediationServiceConfig externalizedConfig = buildConfiguration(externalizedConfigData);
+
             ApiMediationServiceConfig mergedConfig = mergeConfigurations(serviceConfig, externalizedConfig);
             if (mergedConfig != null) {
                 serviceConfig = mergedConfig;
@@ -211,8 +216,7 @@ public class ApiMediationServiceConfigReader {
         File file = FileUtils.locateFile(fileName);
         if (file != null) {
             try {
-                String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-                configData = StringUtils.resolveExpressions(data, threadConfigurationContext.get()).toString();
+                configData = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
             } catch (IOException e) {
                 throw new ServiceDefinitionException(String.format("Configuration file [%s] can't be read.", file.getName()), e);
             }
@@ -221,38 +225,20 @@ public class ApiMediationServiceConfigReader {
         return configData;
     }
 
-    public ApiMediationServiceConfig buildConfigurtion(String configData) throws ServiceDefinitionException {
+    /**
+     * Creates a {@link ApiMediationServiceConfig} from provided config data string.
+     * By default a YAML format string is expected.
+     *
+     * @param configData
+     * @return
+     * @throws ServiceDefinitionException
+     */
+    public ApiMediationServiceConfig buildConfiguration(String configData) throws ServiceDefinitionException {
         ApiMediationServiceConfig configuration = null;
-            StringBuilder configFileDataBuilder = StringUtils.resolveExpressions(configData, threadConfigurationContext.get());
         try {
-            configuration = objectMapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
+            configuration = objectMapper.readValue(configData, ApiMediationServiceConfig.class);
         } catch (IOException e) {
             throw new ServiceDefinitionException("Configuration data can't be parsed as ApiMediationServiceConfig.", e);
-        }
-
-        return configuration;
-    }
-
-    /**
-     * Reads configuration form a single YAML file.
-     * Properties values rewriting takes place using Java System properties with keys prefixed with "apiml."
-     *
-     * @param file
-     * @return
-     */
-    public ApiMediationServiceConfig readConfigurationFile(File file) throws ServiceDefinitionException {
-        ApiMediationServiceConfig configuration = null;
-
-        if (file != null) {
-            try {
-                String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-                StringBuilder configFileDataBuilder = StringUtils.resolveExpressions(data, threadConfigurationContext.get());
-                configuration = objectMapper.readValue(configFileDataBuilder.toString(), ApiMediationServiceConfig.class);
-            } catch (FileNotFoundException | NoSuchFileException e) {
-                throw new ServiceDefinitionException(String.format("File [%s] doesn't exist", file.getName()), e);
-            } catch (IOException e) {
-                throw new ServiceDefinitionException(String.format("File [%s] can't be parsed as ApiMediationServiceConfig", file.getName()));
-            }
         }
 
         return configuration;
