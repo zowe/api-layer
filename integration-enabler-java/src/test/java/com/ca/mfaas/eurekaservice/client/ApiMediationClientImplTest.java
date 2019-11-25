@@ -63,11 +63,13 @@ public class ApiMediationClientImplTest {
     public void badBaseUrlFormat() throws ServiceDefinitionException {
         exceptionRule.expect(ServiceDefinitionException.class);
 
+        // Use the ApiMediationServiceConfigReader to load service configuration
         String file = "/bad-baseurl-service-configuration.yml";
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
         String configData = apiMediationServiceConfigReader.readConfigurationFile(file);
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(configData);
 
+        // Try register the services - expecting to throw ServiceDefinitionException
         ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
         client.unregister();

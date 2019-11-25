@@ -106,10 +106,6 @@ public class FileUtils {
                             }
                         }
                     }
-
-                    /*if ((aFile != null) && aFile.canRead()) {
-                        file = aFile;
-                    }*/
                 }
             }
         } catch (Throwable t) {

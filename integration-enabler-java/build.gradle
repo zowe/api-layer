@@ -8,6 +8,9 @@ dependencies {
 
 
     testCompile libraries.junit
+    testCompile libraries.mockito_core
+    testCompile libraries.spring4Mvc
+    testCompile libraries.spring4Test
     testCompile libraries.logback_classic
     testCompile libraries.lombok
 }
