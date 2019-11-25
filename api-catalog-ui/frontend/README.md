@@ -53,9 +53,9 @@ When virtually rendering components you should use `.mount`.
 
 ### e2e tests
 
-For e2e tests we use [puppeteer](https://github.com/GoogleChrome/puppeteer), [Enzyme](https://github.com/airbnb/enzyme) and [jest](https://jestjs.io/).
+For e2e tests we use [Cypress](https://github.com/cypress-io/cypress), [Enzyme](https://github.com/airbnb/enzyme) and [jest](https://jestjs.io/).
 
-We are using [puppeteer](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md) to controll headless chrome and jest for assertions.
+We are using [cypress](https://github.com/cypress-io/cypress) to control headless chrome and jest for assertions.
 
 to run e2e tests follow these steps:
 
@@ -63,15 +63,11 @@ to run e2e tests follow these steps:
 
 2. Point e2e to the instance to the instance you want to test
 
-3. Run the tests with `npm run test:e2e`
+3. Run the tests with `npm run cy:e2e:ci`
 
 **Note:** coverage is not collected from e2e tests
 
 **Note:** you should run the real catalog services as a backend for e2e testing
-
-### Automated testing of responsive design
-
-Check [galen-tests](./src/responsive-tests/galen-tests.MD) to know how to run responsive tests.
 
 ### Code coverage
 

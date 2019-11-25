@@ -4,7 +4,6 @@
 
 describe('>>> Detail page test', () => {
     it('successfully visits detail page of API Catalog', () => {
-        // cy.visit('/#/tile/apicatalog/apicatalog');
         cy.visit(`${Cypress.env('catalogHomePage')}/#/tile/apicatalog/apicatalog`);
         cy.url().should('contain', 'apicatalog/apicatalog');
     });

@@ -4,7 +4,6 @@
 
 describe('>>> Login ok page test', () => {
     it('succesfully loads login page', () => {
-        // cy.visit('/');
         cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
     });
 
