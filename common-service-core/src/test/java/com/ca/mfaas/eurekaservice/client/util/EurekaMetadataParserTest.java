@@ -165,7 +165,7 @@ public class EurekaMetadataParserTest {
         ApiInfo apiInfo = new ApiInfo();
         Map<String, String> metadata = null;
         try {
-            metadata = eurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+            metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
             assertEquals(0, metadata.size());
         } catch (MalformedURLException e) {
             e.printStackTrace();
