@@ -1,0 +1,23 @@
+<Context>
+    <!-- Example parameters Environment and Context -->
+    <Environment name="maxExemptions" value="10" type="java.lang.Integer" override="false" />
+    <Parameter name="companyName" value="My Company, Incorporated" override="false" />
+    
+    <Parameter name="apiml.config.location" value="/service-config.yml"/>
+    <Parameter name="apiml.config.additional-location" value="c:\zowe\config\local\apiml-plugin-poc_plain-java-enabler.yml" />    
+    
+    <Parameter name="apiml.serviceId" value="discoplug" />
+    <Parameter name="apiml.serviceIpAddress" value="127.0.0.1" />
+    <Parameter name="apiml.discoveryService.hostname" value="localhost" />
+    <Parameter name="apiml.discoveryService.port" value="10011" />
+    
+    
+    <Parameter name="apiml.ssl.enabled" value="true" />
+    <Parameter name="apiml.ssl.verifySslCertificatesOfServices" value="true" />
+    <Parameter name="apiml.ssl.keyPassword" value="password" />
+    <Parameter name="apiml.ssl.keystore.password" value="password" />
+    <Parameter name="apiml.ssl.truststore.password" value="password" />
+    <Parameter name="apiml.ssl.keystore" value="../keystore/localhost/localhost.truststore.p12" />
+    <Parameter name="apiml.ssl.truststore" value="../keystore/localhost/localhost.truststore.p12" />
+    
+</Context>
