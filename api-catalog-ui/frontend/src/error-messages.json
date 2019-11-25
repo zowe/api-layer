@@ -2,23 +2,23 @@
     "messages" : [
         {
             "messageKey": "ZWEAS102E",
-            "messageText": "Session has expired, please login again "
+            "messageText": "Session has expired, please login again"
         },
         {
             "messageKey": "ZWEAS100E",
-            "messageText": "A generic failure occurred while authenticating "
+            "messageText": "A generic failure occurred while authenticating"
         },
         {
             "messageKey": "ZWEAS120E",
-            "messageText": "Invalid username or password "
+            "messageText": "Invalid username or password"
         },
         {
             "messageKey": "ZWEAM700E",
-            "messageText": "Request timeout, please try again later "
+            "messageText": "Request timeout, please try again later"
         },
         {
             "messageKey": "ZWEAS104E",
-            "messageText": "Authentication service not available, please try again later "
+            "messageText": "Authentication service not available, please try again later"
         }
     ]
 

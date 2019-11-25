@@ -25,6 +25,6 @@ describe('>>> Login bad test', () => {
 
         cy.get('.error-message-content')
             .should('exist')
-            .should('contain', 'Invalid username or password ZWEAS120E');
+            .should('contain', '(ZWEAS120E) Invalid username or password');
     });
 });
