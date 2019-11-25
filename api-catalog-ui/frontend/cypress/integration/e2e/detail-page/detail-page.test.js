@@ -100,4 +100,25 @@ describe('>>> Detail page test', () => {
             .should('exist')
             .should('contain', 'REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.');
     });
+
+    it('Should go to the detail page, go back to the dashboard page and check if the search bar works', () => {
+
+        login();
+
+        cy.contains('API Mediation Layer API').click();
+
+        cy.url().should('contain', ('/tile/apimediationlayer'));
+
+        cy.get('#go-back-button').should('exist').click();
+
+        cy.get('input[data-testid="search-bar"]').should('exist');
+        cy.contains('Available API services').should('exist');
+
+        cy.get('input[data-testid="search-bar"]')
+            .as('search')
+            .type('API Mediation Layer API');
+
+        cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Mediation Layer API');
+
+    });
 });

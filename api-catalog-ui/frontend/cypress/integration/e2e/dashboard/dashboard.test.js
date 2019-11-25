@@ -40,7 +40,7 @@ describe('>>> Dashboard test', () => {
             .as('search')
             .type('API Mediation Layer API');
 
-        cy.get('.grid-tile').should('have.length', 1);
+        cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Mediation Layer API');
 
         cy.get('@search')
             .clear()
