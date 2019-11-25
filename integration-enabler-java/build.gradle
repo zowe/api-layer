@@ -4,7 +4,6 @@ dependencies {
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml
     implementation libraries.eureka_client
-    //compile libraries.swagger_jersey2_jaxrs
     implementation libraries.lombok
 
 

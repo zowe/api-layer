@@ -53,7 +53,6 @@ public class ApiMediationServiceConfigReaderTest {
     @Test
     public void readNotExistingConfiguration() throws ServiceDefinitionException {
         String file = "no-existing-file";
-        //exceptionRule.expect(ServiceDefinitionException.class);
 
         assertNull(new ApiMediationServiceConfigReader().readConfigurationFile(file));
     }
@@ -62,7 +61,6 @@ public class ApiMediationServiceConfigReaderTest {
     public void readConfigurationWithWrongFormat() throws ServiceDefinitionException {
         String file = "/bad-format-of-service-configuration.yml";
         exceptionRule.expect(ServiceDefinitionException.class);
-        //exceptionRule.expectMessage(String.format("File [%s] can't be parsed as ApiMediationServiceConfig", file.substring(1)));
 
         ApiMediationServiceConfig  config = new ApiMediationServiceConfigReader().loadConfiguration(file);
         assertNull(config);
@@ -95,14 +93,14 @@ public class ApiMediationServiceConfigReaderTest {
         tile.setVersion("1.0.0");
 
         Ssl ssl = new Ssl();
-        //apimlServcieConfig1.setSsl(ssl);
+        apimlServcieConfig1.setSsl(ssl);
         ssl.setKeyAlias("localhost");
-        ssl.setKeyPassword("password-key");
+        ssl.setKeyPassword("password-bad-key");
         ssl.setKeyStore("/keystore.p12");
-        ssl.setKeyStorePassword("password-keystore");
+        ssl.setKeyStorePassword("password-bad-keystore");
         ssl.setKeyStoreType("PKCS12");
         ssl.setTrustStore("/truststore.p12");
-        ssl.setTrustStorePassword("password-trust");
+        ssl.setTrustStorePassword("password-bad-trust");
         ssl.setTrustStoreType("PKCS12");
 
         //----
@@ -154,6 +152,9 @@ public class ApiMediationServiceConfigReaderTest {
             apiMediationServiceConfig = objectMapper.convertValue(map3, ApiMediationServiceConfig.class);
         }
         assertNotNull(apiMediationServiceConfig);
+        assertEquals(((Ssl)map3.get(ssl)).getTrustStore(), "../keystore/localhost/localhost.truststore.p12");
+        assertEquals(((Ssl)map3.get(ssl)).getTrustStorePassword(), "password");
+        assertEquals(((Ssl)map3.get(ssl)).getTrustStorePassword(), "password");
     }
 
 }

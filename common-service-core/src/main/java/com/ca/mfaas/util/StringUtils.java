@@ -129,7 +129,10 @@ public class StringUtils {
      * @param properties
      * @return
      */
-    public static StringBuilder resolveExpressions(String expression, Map<String, String> properties) {
+    public static String resolveExpressions(String expression, Map<String, String> properties) {
+        if (expression == null) {
+            return "";
+        }
         StringBuilder result = new StringBuilder(expression.length());
         int i = 0;
         Matcher matcher = EXPRESSION_PATTERN.matcher(expression);
@@ -149,7 +152,7 @@ public class StringUtils {
             i = matcher.end();
         }
         result.append(expression.substring(i));
-        return result;
+        return result.toString();
     }
 
 
