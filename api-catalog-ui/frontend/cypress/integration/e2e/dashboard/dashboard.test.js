@@ -3,7 +3,7 @@
 /// <reference types="Cypress" />
 
 function login() {
-    cy.visit(`${Cypress.env('catalogHomePage')}ui/v1/apicatalog/#/`);
+    cy.visit(`${Cypress.env('catalogHomePage')}`);
     cy.url().should('contain', '/login');
 
     const username = Cypress.env('username');
