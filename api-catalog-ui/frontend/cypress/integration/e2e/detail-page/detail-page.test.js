@@ -3,7 +3,7 @@
 /// <reference types="Cypress" />
 
 function login() {
-    cy.visit(`${Cypress.env('catalogHomePage')}`);
+    cy.visit(`${Cypress.env('catalogHomePage')}/#/`);
     cy.url().should('contain', '/login');
 
     const username = Cypress.env('username');
@@ -19,7 +19,11 @@ function login() {
 
 describe('>>> Detail page test', () => {
     it('Detail page test', () => {
-        login();
+
+        if (Cypress.env('catalogHomePage').includes('localhost')) {
+            login();
+        }
+        cy.visit(`${Cypress.env('catalogHomePage')}/#/`);
 
         cy.contains('API Mediation Layer API').click();
 

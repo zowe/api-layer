@@ -3,7 +3,7 @@
 /// <reference types="Cypress" />
 
 function login() {
-    cy.visit(`${Cypress.env('catalogHomePage')}`);
+    cy.visit(`${Cypress.env('catalogHomePage')}/#/`);
     cy.url().should('contain', '/login');
 
     const username = Cypress.env('username');
@@ -73,6 +73,6 @@ describe('>>> Dashboard test', () => {
 
         cy.contains('API Mediation Layer API').click();
 
-        cy.url().should('contain', '/tile/apimediationlayer/gateway');
+        cy.url().should('contain', '/tile/apimediationlayer/');
     });
 });
