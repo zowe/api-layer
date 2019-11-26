@@ -15,6 +15,7 @@ import com.ca.mfaas.eurekaservice.client.config.Catalog;
 import com.ca.mfaas.eurekaservice.client.config.Route;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.exception.ServiceDefinitionException;
+import com.ca.mfaas.util.ObjectUtil;
 import com.ca.mfaas.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -115,7 +116,7 @@ public class ApiMediationServiceConfigReaderTest {
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig2, Map.class);
 
         ApiMediationServiceConfig apiMediationServiceConfig = null;
-        Map<String, Object> map3 = ApiMediationServiceConfigReader.deepMerge(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        Map<String, Object> map3 = ObjectUtil.mergeMapsDeep(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
         if (!map3.isEmpty()) {
             apiMediationServiceConfig = objectMapper.convertValue(map3, ApiMediationServiceConfig.class);
         }
@@ -134,7 +135,7 @@ public class ApiMediationServiceConfigReaderTest {
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig2, Map.class);
 
         ApiMediationServiceConfig apiMediationServiceConfig = null;
-        Map<String, Object> map3 = ApiMediationServiceConfigReader.deepMerge(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        Map<String, Object> map3 = ObjectUtil.mergeMapsDeep(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
         if (!map3.isEmpty()) {
             apiMediationServiceConfig = objectMapper.convertValue(map3, ApiMediationServiceConfig.class);
         }
@@ -157,7 +158,7 @@ public class ApiMediationServiceConfigReaderTest {
         Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig1, Map.class);
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig2, Map.class);
 
-        Map<String, Object> map3 = ApiMediationServiceConfigReader.deepMerge(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        Map<String, Object> map3 = ObjectUtil.mergeMapsDeep(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
         ApiMediationServiceConfig apiMediationServiceConfig = null;
         if (!map3.isEmpty()) {
             apiMediationServiceConfig = objectMapper.convertValue(map3, ApiMediationServiceConfig.class);
