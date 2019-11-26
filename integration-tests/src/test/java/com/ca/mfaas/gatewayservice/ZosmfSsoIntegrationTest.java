@@ -154,7 +154,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "rc", equalTo(RC));
     }
@@ -169,7 +169,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "rc", equalTo(RC));
     }
@@ -177,15 +177,15 @@ public class ZosmfSsoIntegrationTest {
 
     @Test
     public void doZosmfCallWithEmptyCookie() {
-        String invalidToken = "";
+        String emptyToken = "";
 
         given()
-            .cookie("apimlAuthenticationToken", invalidToken)
+            .cookie("apimlAuthenticationToken", emptyToken)
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+            .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "rc", equalTo(RC));
     }
