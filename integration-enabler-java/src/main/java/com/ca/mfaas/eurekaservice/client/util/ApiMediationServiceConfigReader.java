@@ -18,7 +18,6 @@ import com.ca.mfaas.util.UrlUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletContext;
 import java.io.*;
@@ -50,7 +49,6 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  *  <Parameter name="apiml.your.very.own.key" value="the-actual-property-value" />
  *
  */
-@Slf4j
 public class ApiMediationServiceConfigReader {
 
     public static final String APIML_DEFAULT_CONFIG = "apiml.config.location";
