@@ -177,7 +177,7 @@ public class ServiceDefinitionProcessor {
                     buildInstanceInfo(instances, errors, service, tile, instanceBaseUrl);
                 }
             } catch (ServiceDefinitionException e) {
-                errors.add(String.format("Error processing file %s - %s", ymlFileName, e.getMessage()) );
+                errors.add(String.format("Error processing file %s - %s", ymlFileName, e.getMessage()));
             }
         }
 
@@ -228,7 +228,7 @@ public class ServiceDefinitionProcessor {
                                        String instanceId, String instanceBaseUrl,
                                        URL url,
                                        String ipAddress,
-                                       CatalogUiTile tile) throws MetadataValidationException {
+                                       CatalogUiTile tile) {
         String serviceId = service.getServiceId();
 
         builder.setAppName(serviceId).setInstanceId(instanceId).setHostName(url.getHost()).setIPAddr(ipAddress)
@@ -271,7 +271,7 @@ public class ServiceDefinitionProcessor {
         }
     }
 
-    private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) throws MetadataValidationException {
+    private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) {
         Map<String, String> mt = new HashMap<>();
 
         mt.put(VERSION, CURRENT_VERSION);
@@ -297,11 +297,7 @@ public class ServiceDefinitionProcessor {
 
             if (service.getApiInfo() != null) {
                 for (ApiInfo apiInfo : service.getApiInfo()) {
-                    try {
-                        mt.putAll(EurekaMetadataParser.generateMetadata(service.getServiceId(), apiInfo));
-                    } catch (MalformedURLException mue) {
-                        throw  new MetadataValidationException("Creating service metadata failed for apiInfo: " + apiInfo.getApiId(), mue);
-                    }
+                    mt.putAll(EurekaMetadataParser.generateMetadata(service.getServiceId(), apiInfo));
                 }
             }
         }

@@ -12,17 +12,8 @@ package com.ca.mfaas.utils;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang.RandomStringUtils;
 
-import java.net.*;
-import java.util.function.Supplier;
-
-
 @UtilityClass
 public class UrlUtils {
-
-    private static Supplier<String> messageSupplier = new Supplier() {
-        public String get() { return "Invalid URL"; }
-    };
-
 
     /**
      * Remove slashes from input string parameter
@@ -45,32 +36,6 @@ public class UrlUtils {
             return url.replaceAll("\\W", "-");
         } else {
             return RandomStringUtils.randomAlphanumeric(10);
-        }
-    }
-
-
-    /**
-     * Checks validity of URL string.
-     * Invalid URL string will trigger throwing a InvalidParameterException encapsulating the message of originally thrown MalformedURLException
-     *
-     * @param url
-     */
-    public static void validateUrl(String url) throws MalformedURLException {
-        validateUrl(url, messageSupplier);
-    }
-
-    /**
-     * Checks validity of URL string.
-     * Invalid URL string will trigger throwing a InvalidParameterException encapsulating the message of originally thrown MalformedURLException
-     *
-     * @param url
-     * @param exceptionSupplier
-     */
-    public static void validateUrl(String url, Supplier<String> exceptionSupplier) throws MalformedURLException {
-        try {
-            new URL(url);
-        } catch (MalformedURLException e) {
-            throw new MalformedURLException(exceptionSupplier.get() + ": " + e.getMessage());
         }
     }
 
