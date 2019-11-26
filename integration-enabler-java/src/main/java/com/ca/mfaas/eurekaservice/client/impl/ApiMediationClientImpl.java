@@ -31,7 +31,6 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,6 +51,10 @@ public class ApiMediationClientImpl implements ApiMediationClient {
      */
     @Override
     public synchronized void register(ApiMediationServiceConfig config) throws ServiceDefinitionException {
+        if (eurekaClient != null) {
+            throw new ServiceDefinitionException("EurekaClient was previously registered for this instance of ApiMediationClient. Call your ApiMediationClient unregister() method before attempting other registration.");
+        }
+
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
         try {
             ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
@@ -145,7 +148,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
-                throw new InvalidParameterException("Invalid protocol for baseUrl property");
+                throw new ServiceDefinitionException(String.format("'%s' is not valid protocol for baseUrl property", protocol));
         }
 
         try {
