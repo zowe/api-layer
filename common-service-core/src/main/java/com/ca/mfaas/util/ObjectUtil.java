@@ -12,6 +12,11 @@ package com.ca.mfaas.util;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Slf4j
 @UtilityClass
 public class ObjectUtil {
@@ -42,4 +47,67 @@ public class ObjectUtil {
         return null;
     }
 
+    /**
+      *  Deep merge of two maps. Drills down recursively into Container values
+      */
+    public static Map mergeMapsDeep(Map map1, Map map2) {
+        for (Object key : map2.keySet()) {
+            if (map2.get(key) instanceof Map && map1.get(key) instanceof Map) {
+                Map originalChild = (Map) map1.get(key);
+                Map newChild = (Map) map2.get(key);
+                map1.put(key, mergeMapsDeep(originalChild, newChild));
+            } else if (map2.get(key) instanceof List && map1.get(key) instanceof List) {
+                List originalChild = (List) map1.get(key);
+                List newChild = (List) map2.get(key);
+                for (Object each : newChild) {
+                    if (!originalChild.contains(each)) {
+                        originalChild.add(each);
+                    }
+                }
+            } else {
+                map1.put(key, map2.get(key));
+            }
+        }
+        return map1;
+    }
+
+    /**
+     * @Experimental
+     *
+     * @param map1
+     * @param map2
+     * @return
+     */
+    public static Map <String, Object> mergeMaps(Map<String, Object> map1, Map<String, Object> map2) {
+
+        Map<String, Object> resultMap = Stream.concat(map1.entrySet().stream(), map2.entrySet().stream())
+            .collect(Collectors.toMap(
+                entry -> entry.getKey() // The key
+                , entry -> entry.getValue() // The value
+                // The "merger"
+                , (entry1, entry2) -> { return mergeMapEntries(entry1, entry2); }
+                )
+            );
+
+        return resultMap;
+    }
+
+    /**
+     * @Experimental
+     *
+     * @param entry1
+     * @param entry2
+     * @return
+     */
+    public static Object mergeMapEntries(Object entry1, Object entry2) {
+        if (entry2 == null) {
+            return  entry1;
+        }
+
+        if (entry2 instanceof Map) {
+            return entry1;
+        } else {
+            return entry2;
+        }
+    }
 }

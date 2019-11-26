@@ -12,6 +12,7 @@ package com.ca.mfaas.eurekaservice.client.util;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.util.FileUtils;
+import com.ca.mfaas.util.ObjectUtil;
 import com.ca.mfaas.util.StringUtils;
 import com.ca.mfaas.util.UrlUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -24,8 +25,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_ABSENT;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -103,7 +102,7 @@ public class ApiMediationServiceConfigReader {
         ApiMediationServiceConfig apimlServcieConfig = null;
         try {
             if ((defaultConfigurationMap != null) && (additionalConfigurationMap != null)) {
-                defaultConfigurationMap = deepMerge(defaultConfigurationMap, additionalConfigurationMap);
+                defaultConfigurationMap = ObjectUtil.mergeMapsDeep(defaultConfigurationMap, additionalConfigurationMap);
             } else {
                 if (additionalConfigurationMap != null) {
                     defaultConfigurationMap = additionalConfigurationMap;
@@ -118,68 +117,6 @@ public class ApiMediationServiceConfigReader {
         }
 
         return apimlServcieConfig;
-    }
-
-    // This is fancier than Map.putAll(Map)
-    public static Map deepMerge(Map original, Map newMap) {
-        for (Object key : newMap.keySet()) {
-            if (newMap.get(key) instanceof Map && original.get(key) instanceof Map) {
-                Map originalChild = (Map) original.get(key);
-                Map newChild = (Map) newMap.get(key);
-                original.put(key, deepMerge(originalChild, newChild));
-            } else if (newMap.get(key) instanceof List && original.get(key) instanceof List) {
-                List originalChild = (List) original.get(key);
-                List newChild = (List) newMap.get(key);
-                for (Object each : newChild) {
-                    if (!originalChild.contains(each)) {
-                        originalChild.add(each);
-                    }
-                }
-            } else {
-                original.put(key, newMap.get(key));
-            }
-        }
-        return original;
-    }
-
-    /**
-     * @Experimental
-     *
-     * @param map1
-     * @param map2
-     * @return
-     */
-    public static Map <String, Object> mergeMaps(Map<String, Object> map1, Map<String, Object> map2) {
-
-        Map<String, Object> resultMap = Stream.concat(map1.entrySet().stream(), map2.entrySet().stream())
-            .collect(Collectors.toMap(
-                 entry -> entry.getKey() // The key
-               , entry -> entry.getValue() // The value
-                // The "merger"
-               , (entry1, entry2) -> { return mergeMapEntries(entry1, entry2); }
-                )
-            );
-
-        return resultMap;
-    }
-
-    /**
-     * @Experimental
-     *
-     * @param entry1
-     * @param entry2
-     * @return
-     */
-    public static Object mergeMapEntries(Object entry1, Object entry2) {
-        if (entry2 == null) {
-            return  entry1;
-        }
-
-        if (entry2 instanceof Map) {
-            return entry1;
-        } else {
-            return entry2;
-        }
     }
 
     /**
