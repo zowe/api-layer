@@ -218,13 +218,17 @@ public class ApiMediationServiceConfigReader {
         return configuration;
     }
 
+    private Map<String, String> getServiceContext() {
+        return  threadConfigurationContext.get();
+    }
+
     /**
      * Utility method for setting this thread configuration context with ServletContext parameters who's keys are prefixed with "apiml."
      *
      * @param servletContext
      */
     public Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
-        Map<String, String> threadContextMap = threadConfigurationContext.get();
+        Map<String, String> threadContextMap = getServiceContext();
 
         /*
            Because this class is intended to be used mainly in web containers it is expected that

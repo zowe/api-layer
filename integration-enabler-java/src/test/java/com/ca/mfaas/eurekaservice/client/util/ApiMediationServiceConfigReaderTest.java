@@ -9,11 +9,7 @@
  */
 package com.ca.mfaas.eurekaservice.client.util;
 
-import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.config.Catalog;
-import com.ca.mfaas.eurekaservice.client.config.Route;
-import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.util.ObjectUtil;
 import com.ca.mfaas.util.StringUtils;
@@ -78,16 +74,6 @@ public class ApiMediationServiceConfigReaderTest {
         String result = apiMediationServiceConfigReader.readConfigurationFile(internalFileName);
         assertNotNull(result);
         assertNotEquals(result.length(),  -1);
-
-        //String additionalFileName = "/additional-service-configuration.yml";
-
-        /*assertTrue(result.getDiscoveryServiceUrls().contains("http://localhost:10011/eureka"));
-        assertEquals("hellopje", result.getServiceId());
-        assertEquals("/", result.getHomePageRelativeUrl());
-        assertEquals("/application/info", result.getStatusPageRelativeUrl());
-        assertEquals("/application/health", result.getHealthCheckRelativeUrl());
-        assertTrue(result.getRoutes().contains(new Route("api/v1/api-doc", "/hellospring/api-doc")));
-        assertTrue(result.getCatalog().getTile().getVersion().equals("1.0.1"));*/
     }
 
     @Test
@@ -173,83 +159,6 @@ public class ApiMediationServiceConfigReaderTest {
         assertEquals(((Map)map3.get("ssl")).get("trustStorePassword"), "password");
     }
 
-    private ApiMediationServiceConfig getApiMediationServiceConfig2() {
-
-        ApiMediationServiceConfig apimlServcieConfig2 = new ApiMediationServiceConfig();
-        apimlServcieConfig2.setServiceId("PJE-service");
-        apimlServcieConfig2.setServiceIpAddress("192.168.0.1");
-
-        apimlServcieConfig2.setTitle("HelloWorld Spring REST API");
-        apimlServcieConfig2.setDescription("POC for exposing a Spring REST API");
-        apimlServcieConfig2.setBaseUrl("http://localhost:10021/hellospring");
-        apimlServcieConfig2.setServiceIpAddress("127.0.0.1");
-
-
-        apimlServcieConfig2.setHomePageRelativeUrl("");
-        apimlServcieConfig2.setStatusPageRelativeUrl("/application/info");
-        apimlServcieConfig2.setHealthCheckRelativeUrl("/application/health");
-
-        apimlServcieConfig2.setDiscoveryServiceUrls(Arrays.asList("http://eureka:password@localhost:10011/eureka", "http://eureka:password@localhost:10011/eureka"));
-
-        Catalog catalog = new Catalog();
-        apimlServcieConfig2.setCatalog(catalog);
-        Catalog.Tile tile = new Catalog.Tile();
-        catalog.setTile(tile);
-        tile.setId("helloworld-pje");
-        tile.setTitle("Hello PJE World");
-        tile.setDescription("Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem");
-        tile.setVersion("1.0.1");
-
-        Ssl ssl = new Ssl();
-        apimlServcieConfig2.setSsl(ssl);
-        ssl.setKeyAlias("localhost");
-        ssl.setKeyPassword("password");
-        ssl.setKeyStore("../keystore/localhost/localhost.truststore.p12");
-        ssl.setKeyStorePassword("password");
-        ssl.setKeyStoreType("PKCS12");
-        ssl.setTrustStore("../keystore/localhost/localhost.truststore.p12");
-        ssl.setTrustStorePassword("password");
-        ssl.setTrustStoreType("PKCS12");
-
-        return apimlServcieConfig2;
-    }
-
-    private ApiMediationServiceConfig getApiMediationServiceConfig1() {
-        ApiMediationServiceConfig apimlServcieConfig1 = new ApiMediationServiceConfig();
-
-        apimlServcieConfig1.setServiceId("PJE-service");
-        apimlServcieConfig1.setTitle("HelloWorld Spring REST API");
-        apimlServcieConfig1.setDescription("POC for exposing a Spring REST API");
-        apimlServcieConfig1.setBaseUrl("http://localhost:10021/hellospring");
-        apimlServcieConfig1.setServiceIpAddress("127.0.0.1");
-
-        apimlServcieConfig1.setDiscoveryServiceUrls(Arrays.asList("http://eureka:password@localhost:10011/eureka", "http://localhost:10011/eureka"));
-        apimlServcieConfig1.setRoutes(Arrays.asList(new Route("api/v1", "/hellospring/api/v1"), new Route("api/v1/api-doc", "/hellospring/api-doc")));
-
-        apimlServcieConfig1.setApiInfo(Arrays.asList(new ApiInfo("org.zowe.hellospring", "api/v1", "1.0.0", "http://localhost:10021/hellospring/api-doc", "http://somehost/documentation/hellospring/api-doc")));
-
-        Catalog catalog = new Catalog();
-        apimlServcieConfig1.setCatalog(catalog);
-        Catalog.Tile tile = new Catalog.Tile();
-        catalog.setTile(tile);
-        tile.setDescription("HelloWorld Spring REST API");
-        tile.setId("helloworld-spring");
-        tile.setTitle("Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem");
-        tile.setVersion("1.0.0");
-
-        Ssl ssl = new Ssl();
-        apimlServcieConfig1.setSsl(ssl);
-        ssl.setKeyAlias("localhost");
-        ssl.setKeyPassword("password-bad-key");
-        ssl.setKeyStore("/keystore.p12");
-        ssl.setKeyStorePassword("password-bad-keystore");
-        ssl.setKeyStoreType("PKCS12");
-        ssl.setTrustStore("/truststore.p12");
-        ssl.setTrustStorePassword("password-bad-trust");
-        ssl.setTrustStoreType("PKCS12");
-
-        return apimlServcieConfig1;
-    }
 
     @Test
     public void testGetApiMediationServiceConfigFromFile() {
