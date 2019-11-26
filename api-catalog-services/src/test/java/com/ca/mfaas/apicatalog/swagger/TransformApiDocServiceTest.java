@@ -70,7 +70,7 @@ public class TransformApiDocServiceTest {
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, null);
 
         exceptionRule.expect(UnexpectedTypeException.class);
-        exceptionRule.expectMessage("Response is not a Swagger type object.");
+        exceptionRule.expectMessage("Response is not a Swagger or OpenAPI type object.");
 
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
     }

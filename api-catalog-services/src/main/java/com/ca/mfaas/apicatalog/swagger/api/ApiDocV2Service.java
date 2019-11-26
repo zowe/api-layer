@@ -21,7 +21,6 @@ import io.swagger.models.Swagger;
 import io.swagger.util.Json;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.util.*;
 
@@ -32,16 +31,8 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
         super(gatewayClient);
     }
 
-    public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
-        Swagger swagger;
-
-        try {
-            swagger = Json.mapper().readValue(apiDocInfo.getApiDocContent(), Swagger.class);
-        } catch (IOException e) {
-            log.debug("Could not convert response body to a Swagger object.", e);
-            throw new UnexpectedTypeException("Response is not a Swagger type object.");
-        }
-
+    public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) throws IOException {
+        Swagger swagger = Json.mapper().readValue(apiDocInfo.getApiDocContent(), Swagger.class);
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
         updateSchemeHostAndLink(swagger, serviceId, hidden);

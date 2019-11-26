@@ -63,8 +63,8 @@ public class TransformApiDocService {
                 }
             }
         } catch (IOException e) {
-            log.debug("Could not convert response body to a Swagger object.", e);
-            throw new UnexpectedTypeException("Response is not a Swagger type object.");
+            log.debug("Could not convert response body to a Swagger/OpenAPI object.", e);
+            throw new UnexpectedTypeException("Response is not a Swagger or OpenAPI type object.");
         }
         return null;
     }

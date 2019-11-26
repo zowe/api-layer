@@ -23,7 +23,6 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -36,16 +35,8 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         super(gatewayClient);
     }
 
-    public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
-        OpenAPI openAPI;
-
-        try {
-            openAPI = Json.mapper().readValue(apiDocInfo.getApiDocContent(), OpenAPI.class);
-        } catch (IOException e) {
-            log.debug("Could not convert response body to an OpenAPI object. {}",serviceId, e);
-            throw new UnexpectedTypeException("Response is not an OpenAPI type object.");
-        }
-
+    public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) throws IOException {
+        OpenAPI openAPI = Json.mapper().readValue(apiDocInfo.getApiDocContent(), OpenAPI.class);
         boolean hidden = isHidden(openAPI.getTags());
 
         updatePaths(openAPI, serviceId, apiDocInfo, hidden);

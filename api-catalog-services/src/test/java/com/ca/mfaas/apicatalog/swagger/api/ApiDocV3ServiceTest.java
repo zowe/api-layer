@@ -20,6 +20,7 @@ import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
@@ -31,7 +32,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,13 +50,12 @@ public class ApiDocV3ServiceTest {
     private static final String SEPARATOR = "/";
 
     private TransformApiDocService transformApiDocService;
-    private GatewayConfigProperties gatewayConfigProperties;
     private GatewayClient gatewayClient;
-    ApiDocV3Service apiDocV3Service;
+    private ApiDocV3Service apiDocV3Service;
 
     @Before
     public void setUp() {
-        gatewayConfigProperties = getProperties();
+        GatewayConfigProperties gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
         transformApiDocService = new TransformApiDocService(gatewayClient);
         apiDocV3Service = new ApiDocV3Service(gatewayClient);
@@ -66,7 +65,7 @@ public class ApiDocV3ServiceTest {
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
-    public void  givenOpenApiValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
+    public void givenOpenApiValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
         List<Server> servers = new ArrayList<>();
         servers.add(0, new Server().url("/apicatalog"));
         OpenAPI dummyOpenApiObject = getDummyOpenApiObject(servers, false);
@@ -110,20 +109,14 @@ public class ApiDocV3ServiceTest {
     }
 
     @Test
-    public void  givenInvalidJson_whenApiDocTransform_thenThrowExeption() {
-        String invalidJson = "{s\n" +
-            "    \"openapi\": \"3.0.0\",\n" +
-            "    \"info\": {\n" +
-            "        \"description\": \"REST API for the API Gateway service, which is a component of the API\\nMediation Layer. Use this API to perform tasks such as logging in with the\\nmainframe credentials and checking authorization to mainframe resources.\",\n" +
-            "        \"version\": \"1.1.2\",\n" +
-            "        \"title\": \"API Gateway\"\n" +
-            "    }";
-
+    public void givenInvalidJson_whenApiDocTransform_thenThrowExeption() throws IOException {
+        String invalidJson = "";
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
         ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
-        exceptionRule.expect(UnexpectedTypeException.class);
-        exceptionRule.expectMessage("Response is not an OpenAPI type object.");
+        exceptionRule.expect(MismatchedInputException.class);
+        exceptionRule.expectMessage("No content to map due to end-of-input\n" +
+            " at [Source: (String)\"\"; line: 1, column: 0]");
         apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
     }
 

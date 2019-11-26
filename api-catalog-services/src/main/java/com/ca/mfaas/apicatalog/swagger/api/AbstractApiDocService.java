@@ -18,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.IOException;
+
 @RequiredArgsConstructor
 @Slf4j
 public abstract class AbstractApiDocService<T, N> {
@@ -27,7 +29,7 @@ public abstract class AbstractApiDocService<T, N> {
     protected static final String EXTERNAL_DOCUMENTATION = "External documentation";
     protected static final String HIDDEN_TAG = "apimlHidden";
 
-    protected abstract String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo);
+    protected abstract String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) throws IOException;
 
     protected abstract void updatePaths(T swaggerAPI, String serviceId, ApiDocInfo apiDocInfo, boolean hidden);
 
