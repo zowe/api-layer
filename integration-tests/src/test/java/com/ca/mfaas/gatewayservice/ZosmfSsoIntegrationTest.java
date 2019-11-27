@@ -28,7 +28,6 @@ public class ZosmfSsoIntegrationTest {
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String BASE_PATH = "/api/zosmfca32";
     private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
-    private final static int RC = 16;
 
     private String token;
     private String scheme;
@@ -154,9 +153,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "rc", equalTo(RC));
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test
@@ -169,9 +166,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "rc", equalTo(RC));
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
 
@@ -185,9 +180,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "rc", equalTo(RC));
+            .statusCode(is(SC_UNAUTHORIZED));
     }
     //@formatter:on
 }
