@@ -14,14 +14,15 @@ sonarqube {
         property "sonar.language", "java"
         property "sonar.links.scm", "https://github.com/zowe/api-layer"
         property "sonar.links.ci", System.getenv()['BUILD_URL'] ?: null
-        property "sonar.pullrequest.key", System.getenv()['CHANGE_ID'] ?: null
-        property "sonar.pullrequest.branch", System.getenv()['CHANGE_BRANCH'] ?: null
-        property "sonar.pullrequest.base", System.getenv()['CHANGE_TARGET'] ?: null
-        property "sonar.branch.name", System.getenv()['BRANCH_NAME'] ?: null
         if (pullRequest != null) {
+            property "sonar.pullrequest.key", System.getenv()['CHANGE_ID'] ?: null
+            property "sonar.pullrequest.branch", System.getenv()['CHANGE_BRANCH'] ?: null
+            property "sonar.pullrequest.base", System.getenv()['CHANGE_TARGET'] ?: null
             property "sonar.github.pullRequest", pullRequest
             property "sonar.github.repository", "zowe/api-layer"
             property "sonar.github.oauth",  project.hasProperty('sonar.github.oauth') ? project.getProperty('sonar.github.oauth') : null
+        } else {
+            property "sonar.branch.name", System.getenv()['BRANCH_NAME'] ?: null
         }
     }
 }
