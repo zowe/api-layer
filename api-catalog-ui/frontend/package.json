@@ -53,16 +53,8 @@
         "cy:open": "cypress open",
         "cy:e2e:ci": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\" --env catalogHomePage=${API_CATALOG_BASE_URL},username=${MF_USERID},password=${MF_PASSWORD}",
         "cy:e2e:localhost": "cypress run --spec \"cypress/integration/e2e/**/*.test.js\"",
-        "cy:e2e:mocked-backend": "cypress run --spec \"cypress/integration/mocked-e2e/**/*.test.js\" --env catalogHomePage=https://localhost:3000/ui/v1/apicagalog,username=user,password=user"
-    },
-    "jest-junit": {
-        "suiteName": "E2E API Catalog UI Tests",
-        "outputDirectory": ".",
-        "outputName": "./test-results/e2e.xml",
-        "classNameTemplate": "{classname}-{title}",
-        "titleTemplate": "{classname}-{title}",
-        "ancestorSeparator": " › ",
-        "usePathForSuiteName": "true"
+        "cy:e2e:mocked-backend": "cypress run --spec \"cypress/integration/mocked-e2e/**/*.test.js\" --env catalogHomePage=https://localhost:3000/ui/v1/apicagalog,username=user,password=user",
+        "delete:reports": "rm ./test-results/e2e/* || true"
     },
     "proxy": "https://localhost:10010",
     "jest-html-reporter": {

@@ -5,5 +5,10 @@
         "viewportHeight": 980,
         "username": "user",
         "password": "user"
+    },
+    "reporter": "junit",
+    "reporterOptions": {
+        "mochaFile": "test-results/e2e/output-[hash].xml"
     }
+
 }
