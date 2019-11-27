@@ -30,7 +30,7 @@ An application is *Zowe API ML conformant* if it follows these criteria:
        - `ui/{serviceId}` reserved for UIs
        - `ws/{serviceId}` reserved for WebSockets
 
-3. The API must be documented in Swagger/OpenAPI 2.0 or OpenAPI 3.0 specification. For more information about Swagger, see [Swagger documentation](https://swagger.io/resources/articles/documenting-apis-with-swagger/). Additionally, the following criteria must be satisfied: 
+3. The API must be documented according to the Swagger/OpenAPI 2.0 or OpenAPI 3.0 specification. For more information about Swagger, see [Swagger documentation](https://swagger.io/resources/articles/documenting-apis-with-swagger/). Additionally, the following criteria must be satisfied: 
    - Documentation must be Swagger/OpenAPI 2.0 or OpenAPI 3.0 compliant
    - Every public resource must be documented with a description of each resource
    - Every method of each REST endpoint must be documented
