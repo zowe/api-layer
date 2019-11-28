@@ -138,7 +138,7 @@ public class StringUtils {
         Matcher matcher = EXPRESSION_PATTERN.matcher(expression);
         while (matcher.find()) {
             // Strip leading "${" and trailing "}" off.
-            result.append(expression.substring(i, matcher.start()));
+            result.append(expression, i, matcher.start());
             String property = matcher.group();
             property = property.substring(2, property.length() - 1);
             if (properties.containsKey(property)) {
