@@ -64,7 +64,9 @@ public class ApiDocV3ServiceTest {
     @Test
     public void givenOpenApiValidJson_whenApiDocTransform_thenCheckUpdatedValues() {
         List<Server> servers = new ArrayList<>();
-        servers.add(0, new Server().url("/apicatalog"));
+        servers.add(0, new Server().url("/api/v1/apicatalog"));
+        servers.add(1, new Server().url("http://localhost:8080/apicatalog"));
+        servers.add(2, new Server().url("http://localhost2:8080/serviceId"));
         OpenAPI dummyOpenApiObject = getDummyOpenApiObject(servers, false);
         String apiDocContent = convertOpenApiToJson(dummyOpenApiObject);
 

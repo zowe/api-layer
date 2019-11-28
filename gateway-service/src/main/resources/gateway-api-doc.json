@@ -72,7 +72,7 @@
                 "operationId": "validateUsingGET",
                 "security": [
                     {
-                        "Set-cookie": []
+                        "CookieAuth": []
                     },
                     {
                         "Bearer": []
@@ -118,11 +118,10 @@
                 "name": "Authorization",
                 "in": "HEADER"
             },
-            "Set-cookie": {
+            "CookieAuth": {
                 "type": "APIKEY",
                 "name": "apimlAuthenticationToken",
-                "in": "HEADER",
-                "description": "Cookie with the authentication token."
+                "in": "COOKIE"
             }
         },
         "schemas": {

@@ -13,6 +13,7 @@ import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.swagger.ApiDocTransformationException;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import com.ca.mfaas.product.routing.RoutedService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.util.Json;
 import io.swagger.v3.oas.models.ExternalDocumentation;
@@ -84,7 +85,8 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
      */
     protected void updatePaths(OpenAPI openAPI, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
         ApiDocPath<PathItem> apiDocPath = new ApiDocPath<>();
-        String basePath = getBasePath(openAPI.getServers());
+        Server server = getBestMatchingServer(openAPI.getServers(), apiDocInfo);
+        String basePath = server != null ? getBasePath(server.getUrl()) : "";
 
         if (openAPI.getPaths() != null && !openAPI.getPaths().isEmpty()) {
             openAPI.getPaths()
@@ -94,10 +96,10 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
         Map<String, PathItem> updatedPaths;
         if (apiDocPath.getPrefixes().size() == 1) {
-            updateServerUrl(openAPI,apiDocPath.getPrefixes().iterator().next() + OpenApiUtil.SEPARATOR + serviceId);
+            updateServerUrl(openAPI, server, apiDocPath.getPrefixes().iterator().next() + OpenApiUtil.SEPARATOR + serviceId);
             updatedPaths = apiDocPath.getShortPaths();
         } else {
-            updateServerUrl(openAPI,"");
+            updateServerUrl(openAPI, server, "");
             updatedPaths = apiDocPath.getLongPaths();
         }
 
@@ -106,6 +108,31 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
             updatedPaths.keySet().forEach(pathName -> paths.addPathItem(pathName, updatedPaths.get(pathName)));
             openAPI.setPaths(paths);
         }
+    }
+
+    private Server getBestMatchingServer(List<Server> servers, ApiDocInfo apiDocInfo) {
+        if (servers != null && !servers.isEmpty()) {
+            for (Server server: servers) {
+                String basePath = getBasePath(server.getUrl());
+                RoutedService route = getRoutedServiceByApiInfo(apiDocInfo, basePath);
+                if (route != null) {
+                    return server;
+                }
+            }
+            return servers.get(0);
+        }
+        return null;
+    }
+
+    private String getBasePath(String serverUrl) {
+        String basePath = "";
+        try {
+            URI uri = new URI(serverUrl);
+            basePath = uri.getPath();
+        } catch (Exception e) {
+            log.debug("serverUrl is not parsable");
+        }
+        return basePath;
     }
 
     /**
@@ -128,25 +155,10 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         }
     }
 
-    private String getBasePath(List<Server> servers) {
-        String basePath = "";
-        if (servers != null && !servers.isEmpty()) {
-            Server server = servers.get(0);
-            try {
-                URI uri = new URI(server.getUrl());
-                basePath = uri.getPath();
-            } catch (Exception e) {
-                log.debug("serverUrl is not parsable");
-            }
-        }
-        return basePath;
-    }
-
-    private void updateServerUrl(OpenAPI openAPI, String basePath) {
-        if (openAPI.getServers() != null && !openAPI.getServers().isEmpty()) {
-            //should we support several servers?
-            Server server = openAPI.getServers().get(0);
+    private void updateServerUrl(OpenAPI openAPI, Server server, String basePath) {
+        if (server != null) {
             server.setUrl(basePath);
+            openAPI.setServers(Collections.singletonList(server));
         } else {
             openAPI.addServersItem(new Server().url(basePath));
         }

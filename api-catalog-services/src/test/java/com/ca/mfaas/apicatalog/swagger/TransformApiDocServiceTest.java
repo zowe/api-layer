@@ -13,9 +13,6 @@ import com.ca.mfaas.apicatalog.services.cached.model.ApiDocInfo;
 import com.ca.mfaas.apicatalog.swagger.api.AbstractApiDocService;
 import com.ca.mfaas.apicatalog.swagger.api.ApiDocV2Service;
 import com.ca.mfaas.apicatalog.swagger.api.ApiDocV3Service;
-import com.ca.mfaas.product.gateway.GatewayClient;
-import com.ca.mfaas.product.gateway.GatewayConfigProperties;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +21,6 @@ import org.junit.rules.ExpectedException;
 import javax.validation.UnexpectedTypeException;
 import java.util.function.Function;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class TransformApiDocServiceTest {
