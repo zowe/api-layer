@@ -28,6 +28,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,7 +70,8 @@ public class ApiDocV2ServiceTest {
 
         ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, null);
 
-        exceptionRule.expect(IOException.class);
+        exceptionRule.expect(UnexpectedTypeException.class);
+        exceptionRule.expectMessage("Response is not a Swagger type object.");
 
         apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
     }
