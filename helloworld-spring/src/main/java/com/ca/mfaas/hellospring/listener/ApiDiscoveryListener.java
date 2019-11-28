@@ -46,4 +46,8 @@ public class ApiDiscoveryListener implements ServletContextListener {
         }
         apiMediationClient = null;
     }
+
+    public ApiMediationClient getApiMediationClient() {
+        return apiMediationClient;
+    }
 }

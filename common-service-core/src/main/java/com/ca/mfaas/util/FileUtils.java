@@ -20,6 +20,8 @@ import java.nio.file.Paths;
 
 @Slf4j
 public class FileUtils {
+    private FileUtils() {}
+
     /**
      * Searches for file with given name.
      * If a file object with that name exists, but is not a file, this method returns NULL.
@@ -28,6 +30,10 @@ public class FileUtils {
      * @return the located file or null
      */
     public static File locateFile(String fileName) {
+        if (fileName == null) {
+            return null;
+        }
+
         File aFile = locateFileOrDirectory(fileName);
         if ((aFile != null) && aFile.isFile()) {
             return aFile;
@@ -43,6 +49,10 @@ public class FileUtils {
      * @return the located directory or null
      */
     public static File locateDirectory(String directoryName) {
+        if (directoryName == null) {
+            return null;
+        }
+
         File aFile = locateFileOrDirectory(directoryName);
         if ((aFile != null) && aFile.isDirectory()) {
             return aFile;
@@ -63,70 +73,68 @@ public class FileUtils {
      * @param fileName file name to locate
      * @return the located file
      */
-    public static File locateFileOrDirectory(String fileName) {
-        if (fileName == null) {
-            return null;
-        }
+    private static File locateFileOrDirectory(String fileName) {
         // Try to find the file as a resource - application local or System resource
-        URL fileUrl = null;
-        try {
-            fileUrl = ObjectUtil.getThisClass().getResource(fileName);
-            if (fileUrl == null) {
-                log.debug(String.format("File resource [%s] can't be found by this class classloader. We'll try with SystemClassLoader...", fileName));
-
-                fileUrl = ClassLoader.getSystemResource(fileName);
-                if (fileUrl == null) {
-                    log.debug(String.format("File resource [%s] can't be found by SystemClassLoader.", fileName));
-                }
-            }
-        } catch (Throwable t) {
-            // Silently swallow the exceptions and try to find the file on the File System
-            log.debug(String.format("File %s can't be found as Java resource. Exception was caught with the following message: [%s]", fileName, t.getMessage()));
-        }
-
         File file = null;
         try {
+            URL fileUrl = getResourceUrl(fileName);
             if (fileUrl != null) {
                 file = new File(fileUrl.getFile());
             } else {
-                Path path = null;
-                try {
-                    path = Paths.get(fileName);
-                } catch (InvalidPathException ipe) {
-                    log.error(String.format("Filename %s has invalid path.", fileName), ipe);
-                }
-
+                Path path = Paths.get(fileName);
                 if (path != null) {
                     if (path.isAbsolute()) {
                         file = path.toFile();
                     } else {
                         String currentWorkingDir = System.getProperty("user.dir");
                         Path currentWorkingPath = Paths.get(currentWorkingDir);
-                        Path resolvedPath = currentWorkingPath.resolve(path);
-
-                        File aFile = resolvedPath.toFile();
-                        if (aFile.canRead()) {
+                        File aFile = findFileInDirectory(path, currentWorkingPath);
+                        if ((aFile != null) && aFile.canRead()) {
                             file = aFile;
-                        } else {
-                            // Relative path can exist on multiple root file systems. Try all of them.
-                            for (File root : File.listRoots()) {
-                                resolvedPath = root.toPath().resolve(path);
-                                aFile = resolvedPath.toFile();
-                                if (aFile.canRead()) {
-                                    file = aFile;
-                                    break;
-                                }
-                            }
                         }
                     }
                 }
             }
-        } catch (Throwable t) {
+        } catch (InvalidPathException ipe) {
+            log.error(String.format("Filename %s has invalid path.", fileName), ipe);
+        } catch (Exception e) {
             // Silently swallow the exceptions and try to find the file on the File System
-            log.debug(String.format("File [%s] can't be found as file system resource. Exception was caught with the following message: [%s]", fileName, t.getMessage()));
+            log.debug(String.format("File %s can't be found as Java resource. Exception was caught: ", fileName), e);
         }
 
         return file;
+    }
+
+    private static File findFileInDirectory(Path path, Path directory) {
+        Path resolvedPath = directory.resolve(path);
+        File aFile = resolvedPath.toFile();
+        if (aFile.canRead()) {
+            return aFile;
+        } else {
+            // Relative path can exist on multiple root file systems. Try all of them.
+            for (File root : File.listRoots()) {
+                resolvedPath = root.toPath().resolve(path);
+                aFile = resolvedPath.toFile();
+                if (aFile.canRead()) {
+                    return aFile;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static URL getResourceUrl(String fileName) {
+        URL fileUrl = ObjectUtil.getThisClass().getResource(fileName);
+        if (fileUrl == null) {
+            log.debug(String.format("File resource [%s] can't be found by this class classloader. We'll try with SystemClassLoader...", fileName));
+
+            fileUrl = ClassLoader.getSystemResource(fileName);
+            if (fileUrl == null) {
+                log.debug(String.format("File resource [%s] can't be found by SystemClassLoader.", fileName));
+            }
+        }
+        return fileUrl;
     }
 
 }

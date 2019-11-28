@@ -12,6 +12,7 @@ package com.ca.mfaas.util;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -53,21 +54,24 @@ public class ObjectUtil {
       *  Deep merge of two maps. Drills down recursively into Container values
       */
     public static Map<String, Object> mergeMapsDeep(Map map1, Map map2) {
-        for (Object key : map2.keySet()) {
-            if (map2.get(key) instanceof Map && map1.get(key) instanceof Map) {
-                Map originalChild = (Map) map1.get(key);
-                Map newChild = (Map) map2.get(key);
-                map1.put(key, mergeMapsDeep(originalChild, newChild));
-            } else if (map2.get(key) instanceof List && map1.get(key) instanceof List) {
+        for (Iterator<Map.Entry<String, Object>> it = map2.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<String, Object> entry = it.next();
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (map1.get(key) instanceof Map && value instanceof Map) {
+                //Map originalChild = (Map) entry.getValue();
+                //Map newChild = (Map) map1.get(key);
+                map1.put(key, mergeMapsDeep((Map) map1.get(key), (Map)value));
+            } else if (map1.get(key) instanceof List && value instanceof List) {
                 List originalChild = (List) map1.get(key);
-                List newChild = (List) map2.get(key);
-                for (Object each : newChild) {
+                //List newChild = (List) map2.get(key);
+                for (Object each : (List)value) {
                     if (!originalChild.contains(each)) {
                         originalChild.add(each);
                     }
                 }
             } else {
-                map1.put(key, map2.get(key));
+                map1.put(key, value);
             }
         }
         return map1;

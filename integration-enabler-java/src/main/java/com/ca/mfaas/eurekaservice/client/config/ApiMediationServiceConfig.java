@@ -180,19 +180,10 @@ public class ApiMediationServiceConfig {
      */
     private String healthCheckRelativeUrl;
 
-
     /**
      * Can be part of serviceBaseUrl if service web context is not "/" (root context).
      */
     private String contextPath;
-
-    /**
-     * @deprecated - Optional for Eureka. Not needed by API ML. Could be of a use if API ML Discovery service
-     * would be deployed in a multi-instance cluster, where each
-     */
-    private String defaultZone;
-
-    private Boolean securePortEnabled;
 
     /**
      *  Rest service routes provide mapping from API ML GW URI address to service URI address.

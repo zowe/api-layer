@@ -9,11 +9,16 @@
  */
 package com.ca.mfaas.hellospring.listener;
 
+import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
+import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class ServletContextListenerTest {
@@ -28,13 +33,27 @@ public class ServletContextListenerTest {
         context.setInitParameter("apiml.discoveryService.hostname", "localhost");
         context.setInitParameter("apiml.ssl.enabled", "true");
         context.setInitParameter("apiml.ssl.verifySslCertificatesOfServices", "true");
-        context.setInitParameter("apiml.ssl.keyPassword", "password");
+        context.setInitParameter("apiml.ssl.keyPassword", "password123");
         context.setInitParameter("apiml.ssl.keyStorePassword", "password");
         context.setInitParameter("apiml.ssl.trustStore", "password");
         context.setInitParameter("apiml.ssl.trustStorePassword", "password");
 
         ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
         contextListener.contextInitialized(new ServletContextEvent(context));
+
+        ApiMediationClient apimlClient = contextListener.getApiMediationClient();
+        assertNotNull(apimlClient);
+        assertNotNull(apimlClient.getEurekaClient());
+        assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager());
+        assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo());
+        assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata());
+        assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().get("Ssl"));
+        assertEquals("10011", apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().get("apiml.discoveryService.port"));
+        assertEquals("127.0.0.2", apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().get("apiml.discoveryService.serviceIpAddress"));
+        assertEquals("password123", apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().get("apiml.ssl.keyPassword"));
+
+            assertNotNull(
+        EurekaInstanceConfig().getSe
     }
 
     @Test

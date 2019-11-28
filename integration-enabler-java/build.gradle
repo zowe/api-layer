@@ -6,6 +6,7 @@ dependencies {
     implementation libraries.eureka_client
     implementation libraries.lombok
 
+    compileOnly libraries.javax_servlet_api
 
     testCompile libraries.junit
     testCompile libraries.mockito_core
@@ -13,4 +14,5 @@ dependencies {
     testCompile libraries.spring4Test
     testCompile libraries.logback_classic
     testCompile libraries.lombok
+    testCompile libraries.javax_servlet_api
 }

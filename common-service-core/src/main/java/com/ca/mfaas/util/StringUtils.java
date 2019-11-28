@@ -36,7 +36,8 @@ public class StringUtils {
             return "";
         }
 
-        int start = 0, stop = input.length();
+        int start = 0;
+        int stop = input.length();
 
         if (input.startsWith(str)) {
             start = 1;
