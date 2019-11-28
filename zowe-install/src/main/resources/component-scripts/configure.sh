@@ -10,22 +10,20 @@
 # Copyright IBM Corporation 2019
 ################################################################################
 
-. ${ROOT_DIR}/scripts/utils/configureJava.sh
-
 # Add static definition for zosmf
 cat <<EOF >${STATIC_DEF_CONFIG_DIR}/zosmf.ebcidic.yml
 # Static definition for z/OSMF
 #
 # Once configured you can access z/OSMF via the API gateway:
 # http --verify=no GET https://${ZOWE_EXPLORER_HOST}:${GATEWAY_PORT}/api/v1/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
-#	
+#
 services:
     - serviceId: zosmf
       title: IBM z/OSMF
       description: IBM z/OS Management Facility REST API service
       catalogUiTileId: zosmf
       instanceBaseUrls:
-        - https://${ZOSMF_IP_ADDRESS}:${ZOSMF_PORT}/zosmf/
+        - https://${ZOSMF_HOST}:${ZOSMF_PORT}/zosmf/
       homePageRelativeUrl:  # Home page is at the same URL
       routedServices:
         - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
