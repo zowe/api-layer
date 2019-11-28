@@ -31,7 +31,7 @@ catalog:
         version: 1.0.0
 
 ssl:
-    verifySslCertificatesOfServices: true
+    enabled: true
     protocol: TLSv1.2
     keyAlias: localhost
     keyPassword: password
