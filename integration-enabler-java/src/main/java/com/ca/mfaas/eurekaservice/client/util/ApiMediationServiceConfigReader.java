@@ -21,6 +21,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import javax.servlet.ServletContext;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -65,7 +67,7 @@ public class ApiMediationServiceConfigReader {
     /**
      * Instance member of ThreadLocal holding a Map<String, String> of configuration properties.
      */
-    private ThreadLocal<Map<String, String>> threadConfigurationContext = ThreadLocal.withInitial(() -> new HashMap<String, String>());
+    private ThreadLocal<Map<String, String>> threadConfigurationContext = ThreadLocal.withInitial(HashMap::new);
 
 
     /**
@@ -159,7 +161,11 @@ public class ApiMediationServiceConfigReader {
 
             ApiMediationServiceConfig externalizedConfig = buildConfiguration(externalizedConfigData);
 
-            ApiMediationServiceConfig mergedConfig = mergeConfigurations(serviceConfig, externalizedConfig);
+            ApiMediationServiceConfig mergedConfig = null;
+            if (externalizedConfig != null) {
+                mergedConfig = mergeConfigurations(serviceConfig, externalizedConfig);
+            }
+
             if (mergedConfig != null) {
                 serviceConfig = mergedConfig;
             }
@@ -167,8 +173,16 @@ public class ApiMediationServiceConfigReader {
 
         // Set instance ipAddress if required by Eureka and not set in the configuration files
         if (serviceConfig != null) {
+
             if (serviceConfig.getServiceIpAddress() == null) {
-                serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(serviceConfig.getBaseUrl()));
+                String urlString = serviceConfig.getBaseUrl();
+                try {
+                    serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(urlString));
+                } catch (MalformedURLException e) {
+                    throw new ServiceDefinitionException(String.format("%s is not a valid URL.", urlString), e);
+                } catch (UnknownHostException e) {
+                    throw new ServiceDefinitionException(String.format("URL %s contains unknown hostname.", urlString), e);
+                }
             }
         }
 
@@ -207,10 +221,12 @@ public class ApiMediationServiceConfigReader {
      */
     public ApiMediationServiceConfig buildConfiguration(String configData) throws ServiceDefinitionException {
         ApiMediationServiceConfig configuration = null;
-        try {
-            configuration = objectMapper.readValue(configData, ApiMediationServiceConfig.class);
-        } catch (IOException e) {
-            throw new ServiceDefinitionException("Configuration data can't be parsed as ApiMediationServiceConfig.", e);
+        if (configData != null) {
+            try {
+                configuration = objectMapper.readValue(configData, ApiMediationServiceConfig.class);
+            } catch (IOException e) {
+                throw new ServiceDefinitionException("Configuration data can't be parsed as ApiMediationServiceConfig.", e);
+            }
         }
 
         return configuration;
@@ -245,6 +261,28 @@ public class ApiMediationServiceConfigReader {
                 threadContextMap.put(param, value);
             }
         }
+        return threadContextMap;
+    }
+
+    /**
+     * Utility method for setting this thread configuration context with ServletContext parameters who's keys are prefixed with "apiml."
+     *
+     * @param servletContext
+     */
+    public Map<String, String> setApiMlServiceContext(Map<String, String> servletContext) {
+        Map<String, String> threadContextMap = getServiceContext();
+
+        /*
+           Because this class is intended to be used mainly in web containers it is expected that
+           the thread instances belong to a thread pool.
+           We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
+        */
+        if (!threadContextMap.isEmpty()) {
+            threadContextMap.clear();
+        }
+
+        threadContextMap.putAll(servletContext);
+
         return threadContextMap;
     }
 
