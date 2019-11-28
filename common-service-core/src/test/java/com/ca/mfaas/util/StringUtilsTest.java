@@ -66,7 +66,7 @@ public class StringUtilsTest {
         String expression = "serviceId: ${apiml.serviceId}\n" +
             "title: Hello Spring REST API\n" +
             "description: Example for exposing a Spring REST API\n" +
-            "baseUrl: http://HTBX6S2:8080/apiml-plugin-poc_plain-java-enabler\n" +
+            "baseUrl: http://localhost:8080/helloworld\n" +
             "serviceIpAddress: ${apiml.serviceIpAddress} #127.0.0.1\n" +
             "\n" +
             "homePageRelativeUrl: /\n" +
@@ -100,7 +100,7 @@ public class StringUtilsTest {
             "apiInfo:\n" +
             "    - apiId: org.zowe.greeting\n" +
             "      gatewayUrl: api/v1\n" +
-            "      swaggerUrl: http://localhost:8080/apiml-plugin-poc_plain-java-enabler/api-doc\n" +
+            "      swaggerUrl: http://localhost:8080/helloworld/api-doc\n" +
             "\n" +
             "catalog:\n" +
             "  tile:\n" +
