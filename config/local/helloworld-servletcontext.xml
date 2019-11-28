@@ -4,7 +4,7 @@
     <Parameter name="companyName" value="My Company, Incorporated" override="false" />
     
     <Parameter name="apiml.config.location" value="/service-config.yml"/>
-    <Parameter name="apiml.config.additional-location" value="c:\zowe\config\local\apiml-plugin-poc_plain-java-enabler.yml" />    
+    <Parameter name="apiml.config.additional-location" value="../localhost/helloworld-additional-config.yml" />
     
     <Parameter name="apiml.serviceId" value="discoplug" />
     <Parameter name="apiml.serviceIpAddress" value="127.0.0.1" />

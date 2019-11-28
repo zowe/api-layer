@@ -20,6 +20,13 @@ import java.nio.file.Paths;
 
 @Slf4j
 public class FileUtils {
+    /**
+     * Searches for file with given name.
+     * If a file object with that name exists, but is not a file, this method returns NULL.
+     *
+     * @param fileName - a file name to try to locate.
+     * @return the located file or null
+     */
     public static File locateFile(String fileName) {
         File aFile = locateFileOrDirectory(fileName);
         if ((aFile != null) && aFile.isFile()) {
@@ -29,8 +36,14 @@ public class FileUtils {
         return null;
     }
 
-    public static File locateDirectory(String fileName) {
-        File aFile = locateFileOrDirectory(fileName);
+    /**
+     * Searches for directory with given name.
+     * If a file object with that name exists, but is not a directory, this method returns NULL.
+     * @param directoryName the name of the directory to be located
+     * @return the located directory or null
+     */
+    public static File locateDirectory(String directoryName) {
+        File aFile = locateFileOrDirectory(directoryName);
         if ((aFile != null) && aFile.isDirectory()) {
             return aFile;
         }
@@ -47,8 +60,8 @@ public class FileUtils {
      * This method never throw exceptions.
      * Returns null If fileName is null or file is not found neither as Java (system) resource, nor as file on the file system.
      *
-     * @param fileName
-     * @return
+     * @param fileName file name to locate
+     * @return the located file
      */
     public static File locateFileOrDirectory(String fileName) {
         if (fileName == null) {
@@ -67,8 +80,8 @@ public class FileUtils {
                 }
             }
         } catch (Throwable t) {
-            // Silently swallow the exceptions and try to find the file on the File Sytem
-            log.debug(String.format("File [%s] can't be found as Java resource. Exception was caught with the following message: [%s]", fileName) + t.getMessage());
+            // Silently swallow the exceptions and try to find the file on the File System
+            log.debug(String.format("File %s can't be found as Java resource. Exception was caught with the following message: [%s]", fileName, t.getMessage()));
         }
 
         File file = null;
@@ -80,16 +93,16 @@ public class FileUtils {
                 try {
                     path = Paths.get(fileName);
                 } catch (InvalidPathException ipe) {
-                    log.error(String.format("Filename {} has invalid path.", fileName), ipe);
+                    log.error(String.format("Filename %s has invalid path.", fileName), ipe);
                 }
 
                 if (path != null) {
                     if (path.isAbsolute()) {
                         file = path.toFile();
                     } else {
-                        String curentWorkingDir = System.getProperty("user.dir");
-                        Path curentWorkingPath = Paths.get(curentWorkingDir);
-                        Path resolvedPath = curentWorkingPath.resolve(path);
+                        String currentWorkingDir = System.getProperty("user.dir");
+                        Path currentWorkingPath = Paths.get(currentWorkingDir);
+                        Path resolvedPath = currentWorkingPath.resolve(path);
 
                         File aFile = resolvedPath.toFile();
                         if (aFile.canRead()) {
@@ -109,8 +122,8 @@ public class FileUtils {
                 }
             }
         } catch (Throwable t) {
-            // Silently swallow the exceptions and try to find the file on the File Sytem
-            log.debug(String.format("File [%s] can't be found as file system resource. Exception was caught with the following message: [%s]", fileName) + t.getMessage());
+            // Silently swallow the exceptions and try to find the file on the File System
+            log.debug(String.format("File [%s] can't be found as file system resource. Exception was caught with the following message: [%s]", fileName, t.getMessage()));
         }
 
         return file;

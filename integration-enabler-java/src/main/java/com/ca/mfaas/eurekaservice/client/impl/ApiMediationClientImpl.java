@@ -38,14 +38,19 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 /**
  *  Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
- *  API Mediation Layer Discovery servce.
+ *  API Mediation Layer Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient} which is
+ *  stored in a member variable for later use. The client instance is internally used during unregistering. Getter method is provided for accessing the instance.
+ *
  */
 public class ApiMediationClientImpl implements ApiMediationClient {
 
     private EurekaClient eurekaClient;
 
     /**
-     * This method intentionally catches RuntimeException, so callers would not fail 4
+     * Rregisters this service with Eureka server using EurekaClient which is initialized with the provided {@link ApiMediationServiceConfig} methods parameter.
+     * Successive calls to {@link #register} method without intermediate call to {@linl #unregister} will be rejected with exception.
+     *
+     * This method catches all RuntimeException, and rethrows {@link ServiceDefinitionException} checked exception.
      * @param config
      * @throws ServiceDefinitionException
      */

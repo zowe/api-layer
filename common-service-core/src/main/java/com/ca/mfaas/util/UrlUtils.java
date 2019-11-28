@@ -20,16 +20,14 @@ import java.util.function.Supplier;
 @UtilityClass
 public class UrlUtils {
 
-    private static Supplier<String> messageSupplier = new Supplier() {
-        public String get() { return "Invalid URL"; }
-    };
+    private static final Supplier<String> messageSupplier = () -> "Invalid URL";
 
 
     /**
      * Remove slashes from input string parameter
      *
-     * @param string
-     * @return
+     * @param string input parameter
+     * @return input without removed trailing slashes.
      */
     public static String trimSlashes(String string) {
         return string.replaceAll("^/|/$", "");
@@ -38,8 +36,8 @@ public class UrlUtils {
     /**
      * Substitute '\\W' with '-' in the input string and return the result
      *
-     * @param url
-     * @return
+     * @param url - input url to be encoded by the hard coded character substitution
+     * @return An url string with any non alpha-numeric characters substituted by '-'
      */
     public static String getEncodedUrl(String url) {
         if (url != null) {
@@ -54,7 +52,7 @@ public class UrlUtils {
      * Checks validity of URL string.
      * Invalid URL string will trigger throwing a InvalidParameterException encapsulating the message of originally thrown MalformedURLException
      *
-     * @param url
+     * @param url validated url
      */
     public static void validateUrl(String url) throws MalformedURLException {
         validateUrl(url, messageSupplier);
@@ -64,8 +62,8 @@ public class UrlUtils {
      * Checks validity of URL string.
      * Invalid URL string will trigger throwing a InvalidParameterException encapsulating the message of originally thrown MalformedURLException
      *
-     * @param url
-     * @param exceptionSupplier
+     * @param url validated URL
+     * @param exceptionSupplier a Supplier<String>
      */
     public static void validateUrl(String url, Supplier<String> exceptionSupplier) throws MalformedURLException {
         try {
@@ -77,8 +75,8 @@ public class UrlUtils {
 
     /**
      * Removes leading and trailing slashes ("/") from input string
-     * @param uri
-     * @return
+     * @param uri an URI string to trim slashes from
+     * @return the trimmed URI string
      */
     public static String removeFirstAndLastSlash(String uri) {
         return StringUtils.removeFirstAndLastOccurrence(uri, "/");
@@ -86,17 +84,17 @@ public class UrlUtils {
 
     /**
      * Prepends a slash ("/") to input string
-     * @param uri
-     * @return
+     * @param uri An URI to prepend a '/' to.
+     * @return the modified URI string
      */
     public static String addFirstSlash(String uri) {
         return StringUtils.prependSubstring(uri, "/");
     }
 
     /**
-     * Removes laast slash ("/") from input string
-     * @param uri
-     * @return
+     * Removes last slash ("/") from input string
+     * @param uri an URI string to trim last slash from
+     * @return the modified URI
      */
     public static String removeLastSlash(String uri) {
         return StringUtils.removeLastOccurrence(uri, "/");
@@ -104,21 +102,16 @@ public class UrlUtils {
 
     /**
      * Finds IP address hostname provided by fqdn string.
-     * @param fqdn
-     * @return
+     * @param fqdn a Fully Qualified Domain Name to resolve as IP address
+     * @return the resolved IP address or 'null'
      */
-    public static String getHostIPAddress(String fqdn) {
-        String ipAddr = null;
-        try {
-            InetAddress address = InetAddress.getByName(fqdn);
-            if (address != null ) {
-                ipAddr = address.getHostAddress();
-            }
-        } catch (UnknownHostException e) {
-            log.warn("InetAddress couldn't get byName: " + fqdn, e);
+    public static String getHostIPAddress(String fqdn) throws UnknownHostException {
+        InetAddress address = InetAddress.getByName(fqdn);
+        if (address != null ) {
+            return address.getHostAddress();
         }
 
-        return ipAddr;
+        return null;
     }
 
     /**
@@ -126,20 +119,11 @@ public class UrlUtils {
      * @param urlString
      * @return IP address of the host domain name provided by FQDN
      */
-    public static String getIpAddressFromUrl(String urlString) {
-        URL baseUrl = null;
-        try {
-            baseUrl = new URL(urlString);
-        } catch (MalformedURLException e) {
-            log.error(String.format("{} is not a valid URL: ", urlString) + e);
-        }
+    public static String getIpAddressFromUrl(String urlString) throws MalformedURLException, UnknownHostException {
+        URL baseUrl = new URL(urlString);
 
-        if (baseUrl != null) {
-            String hostname = baseUrl.getHost();
-            return UrlUtils.getHostIPAddress(hostname);
-        }
-
-        return "";
+        String hostname = baseUrl.getHost();
+        return UrlUtils.getHostIPAddress(hostname);
     }
 
 }
