@@ -44,7 +44,7 @@ public class ApiMediationLayerStartupChecker {
         if (gatewayConfiguration.getInstances() == 2) {
             poolInterval = 5;
         }
-        await().atMost(5, MINUTES).pollDelay(0, SECONDS).pollInterval(poolInterval, SECONDS).until(this::isReady);
+        await().atMost(10, MINUTES).pollDelay(0, SECONDS).pollInterval(poolInterval, SECONDS).until(this::isReady);
     }
 
     private boolean isReady() {
