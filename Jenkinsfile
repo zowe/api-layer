@@ -215,9 +215,9 @@ pipeline {
                 ***********************************************************************/
                 stage('sonar') {
                     steps {
-                        withSonarQubeEnv('sonar-default-server') {
+                        withSonarQubeEnv('sonarcloud-server') {
                             // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                            sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL}"
+                            sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
                         }
                     }
                 }

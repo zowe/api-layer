@@ -7,18 +7,22 @@ sonarqube {
         property "sonar.host.url", project.getProperty('sonar.host.url')
         property "sonar.login", project.hasProperty('sonar.login') ? project.getProperty('sonar.login') : null
         property "sonar.sourceEncoding", "UTF-8"
-        property "sonar.projectKey", "zowe:api-mediation-layer"
+        property "sonar.organization", "zowe"
+        property "sonar.projectKey", "zowe_api-layer"
         property "sonar.projectName", "Zowe API Mediation Layer"
         property "sonar.projectVersion", project.version
         property "sonar.language", "java"
         property "sonar.links.scm", "https://github.com/zowe/api-layer"
-        property "sonar.links.scm_dev", "https://github.com/zowe/api-layer.git"
-        property "sonar.links.ci", project.hasProperty('sonar.links.ci') ? project.getProperty('sonar.links.ci') : null
+        property "sonar.links.ci", System.getenv()['BUILD_URL'] ?: null
         if (pullRequest != null) {
-            property "sonar.analysis.mode", "preview"
+            property "sonar.pullrequest.key", System.getenv()['CHANGE_ID'] ?: null
+            property "sonar.pullrequest.branch", System.getenv()['CHANGE_BRANCH'] ?: null
+            property "sonar.pullrequest.base", System.getenv()['CHANGE_TARGET'] ?: null
             property "sonar.github.pullRequest", pullRequest
             property "sonar.github.repository", "zowe/api-layer"
             property "sonar.github.oauth",  project.hasProperty('sonar.github.oauth') ? project.getProperty('sonar.github.oauth') : null
+        } else {
+            property "sonar.branch.name", System.getenv()['BRANCH_NAME'] ?: null
         }
     }
 }
