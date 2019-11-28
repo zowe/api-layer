@@ -26,6 +26,8 @@ public class EurekaMetadataParser {
 
     private ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
 
+    private static final String THREE_STRING_MERGE_FORMAT = "%s.%s.%s";
+
     /**
      * Parse eureka metadata and construct ApiInfo with the values found
      *
@@ -164,11 +166,11 @@ public class EurekaMetadataParser {
         String encodedGatewayUrl = UrlUtils.getEncodedUrl(apiInfo.getGatewayUrl());
 
         if (apiInfo.getGatewayUrl() != null) {
-            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_GATEWAY_URL), apiInfo.getGatewayUrl());
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_GATEWAY_URL), apiInfo.getGatewayUrl());
         }
 
         if (apiInfo.getVersion() != null) {
-            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_VERSION), apiInfo.getVersion());
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_VERSION), apiInfo.getVersion());
         }
 
         if (apiInfo.getSwaggerUrl() != null) {
@@ -176,7 +178,7 @@ public class EurekaMetadataParser {
                 () -> String.format("The Swagger URL \"%s\" for service %s is not valid", apiInfo.getSwaggerUrl(), serviceId)
             );
 
-            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_SWAGGER_URL), apiInfo.getSwaggerUrl());
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_SWAGGER_URL), apiInfo.getSwaggerUrl());
         }
 
         if (apiInfo.getDocumentationUrl() != null) {
@@ -184,7 +186,7 @@ public class EurekaMetadataParser {
                 () -> String.format("The documentation URL \"%s\" for service %s is not valid", apiInfo.getDocumentationUrl(), serviceId)
             );
 
-            metadata.put(String.format("%s.%s.%s", API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
         }
 
         return metadata;
