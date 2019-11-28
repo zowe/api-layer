@@ -35,14 +35,14 @@ public class FileUtilsTest {
 
         File aFile = FileUtils.locateFile(fileName);
         assertNotNull(aFile);
-        assertEquals(aFile.getName(), "service-configuration.yml");
+        assertEquals("service-configuration.yml", aFile.getName());
         assertNotNull(aFile.canRead());
 
         // Resource accessible using System classloader
         fileName = "service-configuration.yml";
         aFile = FileUtils.locateFile(fileName);
         assertNotNull(aFile);
-        assertEquals(aFile.getName(), "service-configuration.yml");
+        assertEquals("service-configuration.yml", aFile.getName());
         assertNotNull(aFile.canRead());
     }
     @Test

@@ -172,17 +172,14 @@ public class ApiMediationServiceConfigReader {
         }
 
         // Set instance ipAddress if required by Eureka and not set in the configuration files
-        if (serviceConfig != null) {
-
-            if (serviceConfig.getServiceIpAddress() == null) {
-                String urlString = serviceConfig.getBaseUrl();
-                try {
-                    serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(urlString));
-                } catch (MalformedURLException e) {
-                    throw new ServiceDefinitionException(String.format("%s is not a valid URL.", urlString), e);
-                } catch (UnknownHostException e) {
-                    throw new ServiceDefinitionException(String.format("URL %s contains unknown hostname.", urlString), e);
-                }
+        if ((serviceConfig != null) && (serviceConfig.getServiceIpAddress() == null)) {
+            String urlString = serviceConfig.getBaseUrl();
+            try {
+                serviceConfig.setServiceIpAddress(UrlUtils.getIpAddressFromUrl(urlString));
+            } catch (MalformedURLException e) {
+                throw new ServiceDefinitionException(String.format("%s is not a valid URL.", urlString), e);
+            } catch (UnknownHostException e) {
+                throw new ServiceDefinitionException(String.format("URL %s contains unknown hostname.", urlString), e);
             }
         }
 
@@ -353,10 +350,8 @@ public class ApiMediationServiceConfigReader {
         }
 
         /*
-         * Instantiate configuration reader and call loadConfiguration method with both config file names initialized above.
+         * return result of loadConfiguration method with both config file names initialized above.
          */
-        ApiMediationServiceConfig apimlConfig = loadConfiguration(basicConfigurationFileName, externalConfigurationFileName);
-
-        return apimlConfig;
+        return loadConfiguration(basicConfigurationFileName, externalConfigurationFileName);
     }
 }

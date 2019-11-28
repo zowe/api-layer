@@ -20,7 +20,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.springframework.mock.web.MockServletContext;
 
+import javax.servlet.ServletContext;
 import java.util.*;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_ABSENT;
@@ -108,8 +110,8 @@ public class ApiMediationServiceConfigReaderTest {
         }
 
         assertNotNull(apiMediationServiceConfig);
-        assertEquals(((Map)map3.get("ssl")).get("trustStore"), "../keystore/localhost/localhost.truststore.p12");
-        assertEquals(((Map)map3.get("ssl")).get("trustStorePassword"), "password2");
+        assertEquals("../keystore/localhost/localhost.truststore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
     }
 
     @Test
@@ -127,12 +129,12 @@ public class ApiMediationServiceConfigReaderTest {
         }
 
         assertNotNull(apiMediationServiceConfig);
-        assertEquals((map3.get("serviceId")), "hellozowe");
-        assertEquals(((Map)((Map)map3.get("catalog")).get("tile")).get("id"), "hello-zowe");
-        assertEquals(((Map)map3.get("ssl")).get("keyStore"), "../keystore/localhost/localhost.keystore.p12");
-        assertEquals(((Map)map3.get("ssl")).get("keyStorePassword"), "password1");
-        assertEquals(((Map)map3.get("ssl")).get("trustStore"), "../truststore/localhost/localhost.truststore.p12");
-        assertEquals(((Map)map3.get("ssl")).get("trustStorePassword"), "password2");
+        assertEquals("hellozowe", (map3.get("serviceId")));
+        assertEquals("hello-zowe", ((Map)((Map)map3.get("catalog")).get("tile")).get("id"));
+        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("keyStore"));
+        assertEquals("password1", ((Map)map3.get("ssl")).get("keyStorePassword"));
+        assertEquals("../truststore/localhost/localhost.truststore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
     }
 
 
@@ -151,12 +153,12 @@ public class ApiMediationServiceConfigReaderTest {
         }
 
         assertNotNull(apiMediationServiceConfig);
-        assertEquals((map3.get("serviceId")), "hellopje");
-        assertEquals(((Map)map3.get("ssl")).get("ciphers"), "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384");
-        assertEquals(((Map)map3.get("ssl")).get("keyStore"), "../keystore/localhost/localhost.keystore.p12");
-        assertEquals(((Map)map3.get("ssl")).get("keyStorePassword"), "password");
-        assertEquals(((Map)map3.get("ssl")).get("trustStore"), "../keystore/localhost/localhost.truststore.p12");
-        assertEquals(((Map)map3.get("ssl")).get("trustStorePassword"), "password");
+        assertEquals("hellopje", (map3.get("serviceId")));
+        assertEquals("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", ((Map)map3.get("ssl")).get("ciphers"));
+        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("keyStore"));
+        assertEquals("password", ((Map)map3.get("ssl")).get("keyStorePassword"));
+        assertEquals("../keystore/localhost/localhost.truststore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("password", ((Map)map3.get("ssl")).get("trustStorePassword"));
     }
 
 
@@ -184,4 +186,25 @@ public class ApiMediationServiceConfigReaderTest {
 
         return apimlServcieConfig1;
     }
+
+
+    @Test
+    public void testContextOk() {
+        ServletContext context = new MockServletContext();
+        context.setInitParameter("apiml.config.location", "/service-config.yml");
+        context.setInitParameter("apiml.config.additional-location", "../config/local/helloworld-additional-config.yml");
+        context.setInitParameter("apiml.serviceIpAddress", "127.0.0.2");
+        context.setInitParameter("apiml.discoveryService.port", "10011");
+        context.setInitParameter("apiml.discoveryService.hostname", "localhost");
+        context.setInitParameter("apiml.ssl.enabled", "true");
+        context.setInitParameter("apiml.ssl.verifySslCertificatesOfServices", "true");
+        context.setInitParameter("apiml.ssl.keyPassword", "password");
+        context.setInitParameter("apiml.ssl.keyStorePassword", "password");
+        context.setInitParameter("apiml.ssl.trustStore", "password");
+        context.setInitParameter("apiml.ssl.trustStorePassword", "password");
+
+        //ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
+        //contextListener.contextInitialized(new ServletContextEvent(context));
+    }
+
 }

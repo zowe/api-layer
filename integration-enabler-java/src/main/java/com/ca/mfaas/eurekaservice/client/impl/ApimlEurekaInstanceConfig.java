@@ -34,7 +34,7 @@ public class ApimlEurekaInstanceConfig implements EurekaInstanceConfig {
     private Map<String, String> metadataMap;
     private String appGroupName;
     private String appname;
-    private String asgName;
+    private String aSGName;
     private String healthCheckUrl;
     private String healthCheckUrlPath;
     private String homePageUrl;
@@ -58,16 +58,20 @@ public class ApimlEurekaInstanceConfig implements EurekaInstanceConfig {
     private String[] defaultAddressResolutionOrder = new String[0];
     private String namespace = CommonConstants.DEFAULT_CONFIG_NAMESPACE;
 
+    /**
+     * Implementation of getSecurePortEnabled because the interface doesn't specify isSecurePortEnabled
+     * @return
+     */
     @Override
     public boolean getSecurePortEnabled() {
         return securePortEnabled;
     }
 
-    @Override
-    public String getASGName() {
-        return asgName;
-    }
-
+    /**
+     * Special "get" method accepting boolean parameter for triggering "refresh". Not actually used in our implementation
+     * @param refresh
+     * @return
+     */
     @Override
     public String getHostName(boolean refresh) {
         return hostName;
