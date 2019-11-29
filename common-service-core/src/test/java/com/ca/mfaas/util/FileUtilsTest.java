@@ -9,14 +9,60 @@
  */
 package com.ca.mfaas.util;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
 
+
+@RunWith(JUnit4.class)
 public class FileUtilsTest {
+    private static final String pathName = "Documents/apiml";
+    private static final String configPath = System.getProperty("user.home").replace("\\", "/") + File.separator + pathName;
+    private static boolean folderCreated = false;
+
+    private static String fileName = "service-configuration.yml";
+    private static File configFile;
+
+
+    @BeforeClass
+    public static void setUp() {
+        File customDir = new File(configPath);
+        if (!customDir.exists()) {
+            customDir.mkdirs();
+            folderCreated = true;
+        }
+
+        if ((configFile == null) || !configFile.exists()) {
+            configFile = new File(configPath + File.separator + fileName);
+            try {
+                configFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    @AfterClass
+    public static void cleanUp() {
+        if ((configFile != null) && configFile.exists()) {
+            configFile.delete();
+        }
+
+        if (folderCreated) {
+            File documentsFolder = new File(configPath);
+            documentsFolder.delete();
+        }
+
+    }
 
     @Test
     public void testLocateFileForNull() {
@@ -61,15 +107,22 @@ public class FileUtilsTest {
 
     @Test
     public void testLocateFileAbsolutePath() {
-        String fileName = "c:\\Program Files\\desktop.ini";
-        File aFile = FileUtils.locateFile(fileName);
-        assertNotNull(aFile);
-        assertNotNull(aFile.canRead());
+        File aFile = FileUtils.locateFile(configPath + File.separator + "DoesNotExist.file");
+        assertNull(aFile);
 
-        fileName = "c:/Program Files/desktop.ini";
-        aFile = FileUtils.locateFile(fileName);
+        aFile = FileUtils.locateFile(configPath + File.separator + fileName);
         assertNotNull(aFile);
-        assertNotNull(aFile.canRead());
+        assertTrue(aFile.canRead());
+
+        File aDir = FileUtils.locateDirectory(configPath + File.separator + "NotExists.dir");
+        assertNull(aDir);
+
+        aDir = FileUtils.locateFile(configPath);
+        assertNull(aDir);
+
+        aDir = FileUtils.locateDirectory(configPath);
+        assertNotNull(aDir);
+        assertTrue(aDir.canRead());
     }
 
     @Test
