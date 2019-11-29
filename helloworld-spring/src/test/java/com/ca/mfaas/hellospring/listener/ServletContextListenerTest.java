@@ -46,10 +46,6 @@ public class ServletContextListenerTest {
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager());
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo());
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata());
-        assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().get("Ssl"));
-        assertEquals("10011", apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().get("apiml.discoveryService.port"));
-        assertEquals("127.0.0.2", apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().get("apiml.discoveryService.serviceIpAddress"));
-        assertEquals("password123", apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().get("apiml.ssl.keyPassword"));
     }
 
     @Test
