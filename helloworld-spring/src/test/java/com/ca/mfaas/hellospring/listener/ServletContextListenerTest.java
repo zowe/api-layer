@@ -10,7 +10,6 @@
 package com.ca.mfaas.hellospring.listener;
 
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
-import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 
