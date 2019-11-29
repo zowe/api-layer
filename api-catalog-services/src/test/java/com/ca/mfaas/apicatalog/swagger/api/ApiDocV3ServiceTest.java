@@ -163,8 +163,8 @@ public class ApiDocV3ServiceTest {
             openAPI.getTags().add(tag);
         }
 
-        openAPI.getPaths().put("/api1", new PathItem());;
-        openAPI.getPaths().put("/api2", new PathItem());;
+        openAPI.getPaths().put("/api1", new PathItem());
+        openAPI.getPaths().put("/api2", new PathItem());
         return openAPI;
     }
 
