@@ -164,8 +164,8 @@ public class ServiceDefinitionProcessor {
                 CatalogUiTile tile = null;
                 if (service.getCatalogUiTileId() != null) {
                     tile = tiles.get(service.getCatalogUiTileId());
-                    if (tile == null) {
-                        errors.add(String.format("Error processing file test - The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), serviceId));
+                        if (tile == null) {
+                        errors.add(String.format("Error processing file %s - The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", ymlFileName, service.getCatalogUiTileId(), serviceId));
                     } else {
                         tile.setId(service.getCatalogUiTileId());
                     }

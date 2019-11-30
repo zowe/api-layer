@@ -16,7 +16,6 @@ import org.springframework.mock.web.MockServletContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 
