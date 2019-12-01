@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.MalformedURLException;
-import java.net.UnknownHostException;
 
 import static org.junit.Assert.*;
 
