@@ -9,14 +9,14 @@
  */
 package com.ca.mfaas.util;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.InvalidPathException;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
@@ -24,13 +24,15 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(JUnit4.class)
 public class FileUtilsTest {
-    private static final String pathName = "Documents/apiml";
-    private static final String configPath = System.getProperty("user.home").replace("\\", "/") + File.separator + pathName;
+    private static final String relativePathName = "Documents/apiml";
+    private static final String configPath = System.getProperty("user.home").replace("\\", "/") + File.separator + relativePathName;
     private static boolean folderCreated = false;
 
     private static String fileName = "service-configuration.yml";
     private static File configFile;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @BeforeClass
     public static void setUp() {
@@ -103,6 +105,10 @@ public class FileUtilsTest {
         aFile = FileUtils.locateDirectory(fileName);
         assertNotNull(aFile);
         assertTrue(aFile.getAbsolutePath().startsWith(System.getProperty("user.dir")));
+
+        fileName = null;
+        aFile = FileUtils.locateDirectory(fileName);
+        assertNull(aFile);
     }
 
     @Test
@@ -123,6 +129,28 @@ public class FileUtilsTest {
         aDir = FileUtils.locateDirectory(configPath);
         assertNotNull(aDir);
         assertTrue(aDir.canRead());
+    }
+
+    @Test
+    public void testValidRelativePathExists() {
+        File aFile = FileUtils.locateDirectory(relativePathName);
+        assertNotNull(aFile);
+    }
+
+    @Test
+    public void testValidRelativePathNotExists() {
+        String fileName = "relative-path-not-exist/";
+        File aFile = FileUtils.locateDirectory(fileName);
+        assertNull(aFile);
+    }
+
+    @Test
+    public void testInvalidPathException() {
+        thrown.expect(InvalidPathException.class);
+
+        String fileName = "invalid-path:";
+        //File aFile =
+            FileUtils.locateDirectory(fileName);
     }
 
     @Test
