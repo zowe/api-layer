@@ -15,6 +15,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
+
 import static org.junit.Assert.*;
 
 public class UrlUtilsTest {
@@ -89,4 +91,9 @@ public class UrlUtilsTest {
         String hasSlashes = "  /blah/   ";
         assertEquals(UrlUtils.removeLastSlash(hasSlashes), "/blah");
     }
+/*
+    @Test
+    public void testGetHostIPAddress(String fqdn) throws UnknownHostException {
+        UrlUtils.getHostIPAddress(fqdn);
+    }*/
 }

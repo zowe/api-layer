@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -76,51 +75,42 @@ public class FileUtils {
     private static File locateFileOrDirectory(String fileName) {
         // Try to find the file as a resource - application local or System resource
         File file = null;
-        try {
-            URL fileUrl = getResourceUrl(fileName);
-            if (fileUrl != null) {
-                file = new File(fileUrl.getFile());
-            } else {
-                Path path = Paths.get(fileName);
-                if (path != null) {
-                    if (path.isAbsolute()) {
-                        file = path.toFile();
-                    } else {
-                        String currentWorkingDir = System.getProperty("user.dir");
-                        Path currentWorkingPath = Paths.get(currentWorkingDir);
-                        File aFile = findFileInDirectory(path, currentWorkingPath);
-                        if ((aFile != null) && aFile.canRead()) {
-                            file = aFile;
+        URL fileUrl = getResourceUrl(fileName);
+        if (fileUrl != null) {
+            file = new File(fileUrl.getFile());
+        } else {
+            Path path = Paths.get(fileName);
+            if (path != null) {
+                if (path.isAbsolute()) {
+                    file = path.toFile();
+                } else {
+                    Path currentWorkingPath = Paths.get(System.getProperty("user.dir"));
+                    file = currentWorkingPath.resolve(path).toFile();
+                    if ((file == null) || !file.canRead()) {
+                        Path userHomePath = Paths.get(System.getProperty("user.home"));
+                        file = userHomePath.resolve(path).toFile();
+                        if ((file == null) || !file.canRead()) {
+                            // Relative path can exist on multiple root file systems. Try all of them.
+                            file = findPathInRoots(path);
                         }
                     }
                 }
             }
-        } catch (InvalidPathException ipe) {
-            log.error(String.format("Filename %s has invalid path.", fileName), ipe);
-        } catch (Exception e) {
-            // Silently swallow the exceptions and try to find the file on the File System
-            log.debug(String.format("File %s can't be found as Java resource. Exception was caught: ", fileName), e);
         }
 
         return file;
     }
 
-    private static File findFileInDirectory(Path path, Path directory) {
-        Path resolvedPath = directory.resolve(path);
-        File aFile = resolvedPath.toFile();
-        if (aFile.canRead()) {
-            return aFile;
-        } else {
-            // Relative path can exist on multiple root file systems. Try all of them.
-            for (File root : File.listRoots()) {
-                resolvedPath = root.toPath().resolve(path);
-                aFile = resolvedPath.toFile();
-                if (aFile.canRead()) {
-                    return aFile;
-                }
+    private static File findPathInRoots(Path path) {
+        Path resolvedPath;
+        File aFile;
+        for (File root : File.listRoots()) {
+            resolvedPath = root.toPath().resolve(path);
+            aFile = resolvedPath.toFile();
+            if (aFile.canRead()) {
+                return aFile;
             }
         }
-
         return null;
     }
 
