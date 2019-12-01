@@ -64,7 +64,7 @@ public class CatalogApiDocControllerApiDocNotFoundTest {
 
         @Bean
         public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
+            return new YamlMessageService("/apicatalog-messages.yml");
         }
 
         @Bean
