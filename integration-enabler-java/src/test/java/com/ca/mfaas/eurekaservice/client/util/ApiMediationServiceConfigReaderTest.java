@@ -255,6 +255,32 @@ public class ApiMediationServiceConfigReaderTest {
         checkContextMap(contextMap);
     }
 
+
+    @Test
+    public void testSetApiMlSystemProperties_Ok() {
+        ServletContext context = getMockServletContext();
+        setSystemProperties();
+        ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
+        Map<String, String>  contextMap = reader.setApiMlSystemProperties();
+
+        checkContextMap(contextMap);
+    }
+
+    private void setSystemProperties() {
+        System.setProperty("NOT-AN-apiml.config.location", "/service-config.yml");
+        System.setProperty("apiml.config.location", "/service-config.yml");
+        System.setProperty("apiml.config.additional-location", "../config/local/helloworld-additional-config.yml");
+        System.setProperty("apiml.serviceIpAddress", "127.0.0.2");
+        System.setProperty("apiml.discoveryService.port", "10011");
+        System.setProperty("apiml.discoveryService.hostname", "localhost");
+        System.setProperty("apiml.ssl.enabled", "true");
+        System.setProperty("apiml.ssl.verifySslCertificatesOfServices", "true");
+        System.setProperty("apiml.ssl.keyPassword", "password");
+        System.setProperty("apiml.ssl.keyStorePassword", "password");
+        System.setProperty("apiml.ssl.trustStorePassword", "password");
+    }
+
+
     private Map<String, String>getMockServletContextMap() {
         ServletContext context = getMockServletContext();
         Map<String, String> aMap = contextToMap(context);
