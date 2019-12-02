@@ -211,21 +211,33 @@ public class ApiMediationServiceConfigReaderTest {
 
 
     @Test
+    public void testSetApiMlContextMap_Ok() {
+        Map<String, String> aMap = getMockServletContextMap();
+        ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
+        Map<String, String>  contextMap = reader.setApiMlServiceContext(aMap);
+        checkContextMap(contextMap);
+    }
+
+    @Test
     public void testSetApiMlContext_Ok() {
         ServletContext context = getMockServletContext();
 
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
         Map<String, String>  contextMap = reader.setApiMlServiceContext(context);
         //reader.
+        checkContextMap(contextMap);
+    }
+
+    private void checkContextMap(Map<String, String> contextMap) {
         assertNotNull(contextMap);
         assertNull(contextMap.get("NOT-AN-apiml.config.location"));
         assertEquals("/service-config.yml", contextMap.get("apiml.config.location"));
         assertEquals("../config/local/helloworld-additional-config.yml", contextMap.get("apiml.config.additional-location"));
         assertEquals("127.0.0.2", contextMap.get("apiml.serviceIpAddress"));
-        assertEquals( "10011", contextMap.get("apiml.discoveryService.port"));
+        assertEquals("10011", contextMap.get("apiml.discoveryService.port"));
         assertEquals("localhost", contextMap.get("apiml.discoveryService.hostname"));
-        assertEquals( "true", contextMap.get("apiml.ssl.enabled"));
-        assertEquals( "true", contextMap.get("apiml.ssl.verifySslCertificatesOfServices"));
+        assertEquals("true", contextMap.get("apiml.ssl.enabled"));
+        assertEquals("true", contextMap.get("apiml.ssl.verifySslCertificatesOfServices"));
         assertEquals("password", contextMap.get("apiml.ssl.keyPassword"));
         assertEquals("password", contextMap.get("apiml.ssl.keyStorePassword"));
         assertEquals("password", contextMap.get("apiml.ssl.trustStorePassword"));
@@ -240,18 +252,26 @@ public class ApiMediationServiceConfigReaderTest {
 
         contextMap = reader.setApiMlServiceContext(context);
 
-        assertNotNull(contextMap);
-        assertNull(contextMap.get("NOT-AN-apiml.config.location"));
-        assertEquals("/service-config.yml", contextMap.get("apiml.config.location"));
-        assertEquals("../config/local/helloworld-additional-config.yml", contextMap.get("apiml.config.additional-location"));
-        assertEquals("127.0.0.2", contextMap.get("apiml.serviceIpAddress"));
-        assertEquals( "10011", contextMap.get("apiml.discoveryService.port"));
-        assertEquals("localhost", contextMap.get("apiml.discoveryService.hostname"));
-        assertEquals( "true", contextMap.get("apiml.ssl.enabled"));
-        assertEquals( "true", contextMap.get("apiml.ssl.verifySslCertificatesOfServices"));
-        assertEquals("password", contextMap.get("apiml.ssl.keyPassword"));
-        assertEquals("password", contextMap.get("apiml.ssl.keyStorePassword"));
-        assertEquals("password", contextMap.get("apiml.ssl.trustStorePassword"));
+        checkContextMap(contextMap);
+    }
+
+    private Map<String, String>getMockServletContextMap() {
+        ServletContext context = getMockServletContext();
+        Map<String, String> aMap = contextToMap(context);
+        return aMap;
+    }
+
+    private Map<String, String> contextToMap(ServletContext servletContext) {
+        Map<String, String> contextMap = new HashMap<>();
+        Enumeration<String> paramNames = servletContext.getInitParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String param = paramNames.nextElement();
+            String value = servletContext.getInitParameter(param);
+            if (param.startsWith("apiml.")) {
+                contextMap.put(param, value);
+            }
+        }
+        return contextMap;
     }
 
     private ServletContext getMockServletContext() {
