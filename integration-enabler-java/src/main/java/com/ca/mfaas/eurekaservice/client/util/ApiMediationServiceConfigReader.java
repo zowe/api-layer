@@ -66,7 +66,7 @@ public class ApiMediationServiceConfigReader {
     /**
      * Instance member of ThreadLocal holding a Map<String, String> of configuration properties.
      */
-    private ThreadLocal<Map<String, String>> threadConfigurationContext = ThreadLocal.withInitial(HashMap::new);
+    private ThreadLocal<Map<String, String>> threadConfigurationContext = new ThreadLocal(); //.withInitial(HashMap::new);
 
 
     /**
@@ -100,17 +100,13 @@ public class ApiMediationServiceConfigReader {
         throws ServiceDefinitionException {
 
         Map<String, Object> apimlServcieConfigMap = defaultConfigurationMap;
-       // try {
-            if ((defaultConfigurationMap != null) && (additionalConfigurationMap != null)) {
-                apimlServcieConfigMap = mergeMapsDeep(defaultConfigurationMap, additionalConfigurationMap);
-            } else {
-                if (additionalConfigurationMap != null) {
-                    apimlServcieConfigMap = additionalConfigurationMap;
-                }
+        if ((defaultConfigurationMap != null) && (additionalConfigurationMap != null)) {
+            apimlServcieConfigMap = mergeMapsDeep(defaultConfigurationMap, additionalConfigurationMap);
+        } else {
+            if (additionalConfigurationMap != null) {
+                apimlServcieConfigMap = additionalConfigurationMap;
             }
-        /*} catch (RuntimeException rte) {
-            throw new ServiceDefinitionException("Merging service basic and externalized configurations failed. See for previous exceptions: ", rte);
-        }*/
+        }
 
         return apimlServcieConfigMap;
     }
@@ -157,6 +153,10 @@ public class ApiMediationServiceConfigReader {
      * while the second one provides externalization of deployment environment dependent properties.
      * The externalized file has precedence over the basic one, i.e the properties values of the basic YAML file can be rewritten
      * by the values of the same properties defined in the externalized configuration file.
+     *
+     * Note: This method implementation relies on caller to set a map with API ML related System properties and
+     * context parameters provided by system admin at system respectively at service start up time.
+     * Service context parameters take precedence over system properties.
      *
      * @param internalConfigFileName
      * @param externalizedConfigFileName
@@ -236,20 +236,24 @@ public class ApiMediationServiceConfigReader {
      * @throws ServiceDefinitionException
      */
     public ApiMediationServiceConfig buildConfiguration(String configData) throws ServiceDefinitionException {
-        ApiMediationServiceConfig configuration = null;
-        if (configData != null) {
-            try {
-                configuration = objectMapper.readValue(configData, ApiMediationServiceConfig.class);
-            } catch (IOException e) {
-                throw new ServiceDefinitionException("Configuration data can't be parsed as ApiMediationServiceConfig.", e);
-            }
+        if (configData == null) {
+            return null;
         }
 
-        return configuration;
+        try {
+            return objectMapper.readValue(configData, ApiMediationServiceConfig.class);
+        } catch (IOException e) {
+            throw new ServiceDefinitionException("Configuration data can't be parsed as ApiMediationServiceConfig.", e);
+        }
     }
 
     private Map<String, String> getServiceContext() {
-        return  threadConfigurationContext.get();
+        Map<String, String>  aMap = threadConfigurationContext.get();
+        if (aMap == null) {
+            aMap = new HashMap<>();
+            threadConfigurationContext.set(aMap);
+        }
+        return aMap;
     }
 
     /**
@@ -304,12 +308,16 @@ public class ApiMediationServiceConfigReader {
 
 
     /**
-     * The initialize method, uses servlet context parameters to build service configuration for on-boarding with API ML discovery service.
+     * Uses {@link ApiMediationServiceConfigReader} to build {@link ApiMediationServiceConfig} configuration.
      *
-     * It uses {@link ApiMediationServiceConfigReader} to build {@link ApiMediationServiceConfig} configuration.
+     * This is the most flexible API ML service configuration method using several configuration sources in the following order:
+     *     - internal configuration file with default name service-config.yml
+     *     - external configuration file if provided as Java system property or servlet context parameter
+     *     - Java system properties prefixed with "apiml."
+     *     - Servlet context parameters prefixed with "apiml."
      *
-     * The service configuration is provided by YAML files. The names of of the configuration files are passed using
-     * servlet context parameters with following parameter names:
+     * The internal and external service configuration is provided by YAML files. The names of of the configuration files can be set using
+     * Java system properties or servlet context parameters with following parameter names:
      *
      *  <ul>
      *      <li>
@@ -346,6 +354,11 @@ public class ApiMediationServiceConfigReader {
     public ApiMediationServiceConfig loadConfiguration(ServletContext context) throws ServiceDefinitionException {
 
         /*
+         * Store API ML relevant ("apiml." prefixed) Java system properties to a Map in ThreadLocal
+         */
+        setApiMlSystemProperties();
+
+        /*
          * Set Java system properties from ServletContext parameters starting with "apiml." prefix.
          * If rewriting is not used, it is not necessary to call {@link ApiMediationServiceConfigReader#setSystemProperties}
          */
@@ -372,5 +385,27 @@ public class ApiMediationServiceConfigReader {
          * return result of loadConfiguration method with both config file names initialized above.
          */
         return loadConfiguration(basicConfigurationFileName, externalConfigurationFileName);
+    }
+
+    /**
+     * Add/Replace all system properties prefixed with "apiml." to the apiml context map stored in ThreadLocal.
+     *
+     * WARNING: If called after setting Servlet context parameters this could rewrite configuration parameters set using both
+     * methods.
+     *
+     */
+    private void setApiMlSystemProperties() {
+        threadConfigurationContext.remove();
+
+        Map<String, String> threadContextMap = getServiceContext();
+
+        Enumeration<?> propertyNames = System.getProperties().propertyNames();
+        while (propertyNames.hasMoreElements()) {
+            String param = (String)propertyNames.nextElement();
+            String value = System.getProperties().getProperty(param);
+            if (param.startsWith("apiml.")) {
+                threadContextMap.put(param, value);
+            }
+        }
     }
 }
