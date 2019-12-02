@@ -148,7 +148,7 @@ public class FileUtilsTest {
     public void testInvalidPathException() {
         thrown.expect(InvalidPathException.class);
 
-        String fileName = "invalid-path:";
+        String fileName = "invalid-path:\0/";
         //File aFile =
             FileUtils.locateDirectory(fileName);
     }
