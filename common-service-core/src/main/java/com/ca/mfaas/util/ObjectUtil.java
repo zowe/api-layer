@@ -12,10 +12,6 @@ package com.ca.mfaas.util;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 @Slf4j
 @UtilityClass
 public class ObjectUtil {
@@ -45,31 +41,10 @@ public class ObjectUtil {
         try {
             theClass = Class.forName(theClassName);
         } catch (ClassNotFoundException cnfe) {
-            log.error(String.format("Class %s was not found: ", theClassName), cnfe);
+            log.warn(String.format("Class %s was not found: ", theClassName), cnfe);
         }
         return theClass;
     }
 
-    /**
-      *  Deep merge of two maps. Drills down recursively into Container values
-      */
-    public static Map<String, Object> mergeMapsDeep(Map map1, Map map2) {
-        for (Map.Entry<String, Object> entry : (Set<Map.Entry>)map2.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (map1.get(key) instanceof Map && value instanceof Map) {
-                map1.put(key, mergeMapsDeep((Map) map1.get(key), (Map)value));
-            } else if (map1.get(key) instanceof List && value instanceof List) {
-                List originalChild = (List) map1.get(key);
-                for (Object each : (List)value) {
-                    if (!originalChild.contains(each)) {
-                        originalChild.add(each);
-                    }
-                }
-            } else {
-                map1.put(key, value);
-            }
-        }
-        return map1;
-    }
+
 }

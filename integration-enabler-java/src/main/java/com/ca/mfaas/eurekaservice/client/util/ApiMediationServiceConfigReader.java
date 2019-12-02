@@ -12,7 +12,6 @@ package com.ca.mfaas.eurekaservice.client.util;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.util.FileUtils;
-import com.ca.mfaas.util.ObjectUtil;
 import com.ca.mfaas.util.StringUtils;
 import com.ca.mfaas.util.UrlUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -92,31 +91,51 @@ public class ApiMediationServiceConfigReader {
 
         Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(defaultConfiguration, Map.class);
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(additionalConfiguration, Map.class);
+        Map<String, Object> config = mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
 
-        return mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        return objectMapper.convertValue(config, ApiMediationServiceConfig.class);
     }
 
-    private ApiMediationServiceConfig mergeConfigurations(Map<String, Object> defaultConfigurationMap, Map<String, Object> additionalConfigurationMap)
+    public Map<String, Object> mergeConfigurations(Map<String, Object> defaultConfigurationMap, Map<String, Object> additionalConfigurationMap)
         throws ServiceDefinitionException {
 
-        ApiMediationServiceConfig apimlServcieConfig = null;
-        try {
+        Map<String, Object> apimlServcieConfigMap = defaultConfigurationMap;
+       // try {
             if ((defaultConfigurationMap != null) && (additionalConfigurationMap != null)) {
-                defaultConfigurationMap = ObjectUtil.mergeMapsDeep(defaultConfigurationMap, additionalConfigurationMap);
+                apimlServcieConfigMap = mergeMapsDeep(defaultConfigurationMap, additionalConfigurationMap);
             } else {
                 if (additionalConfigurationMap != null) {
-                    defaultConfigurationMap = additionalConfigurationMap;
+                    apimlServcieConfigMap = additionalConfigurationMap;
                 }
             }
-
-            if (defaultConfigurationMap != null)  {
-                apimlServcieConfig = objectMapper.convertValue(defaultConfigurationMap, ApiMediationServiceConfig.class);
-            }
-        } catch (RuntimeException rte) {
+        /*} catch (RuntimeException rte) {
             throw new ServiceDefinitionException("Merging service basic and externalized configurations failed. See for previous exceptions: ", rte);
-        }
+        }*/
 
-        return apimlServcieConfig;
+        return apimlServcieConfigMap;
+    }
+
+    /**
+     *  Deep merge of two maps. Drills down recursively into Container values
+     */
+    private static Map<String, Object> mergeMapsDeep(Map map1, Map map2) {
+        for (Map.Entry<String, Object> entry : (Set<Map.Entry>)map2.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (map1.get(key) instanceof Map && value instanceof Map) {
+                map1.put(key, mergeMapsDeep((Map) map1.get(key), (Map)value));
+            } else if (map1.get(key) instanceof List && value instanceof List) {
+                List originalChild = (List) map1.get(key);
+                for (Object each : (List)value) {
+                    if (!originalChild.contains(each)) {
+                        originalChild.add(each);
+                    }
+                }
+            } else {
+                map1.put(key, value);
+            }
+        }
+        return map1;
     }
 
     /**

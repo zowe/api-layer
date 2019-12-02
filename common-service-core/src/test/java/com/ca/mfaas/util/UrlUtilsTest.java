@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.MalformedURLException;
+import java.net.UnknownHostException;
 
 import static org.junit.Assert.*;
 
@@ -90,9 +91,36 @@ public class UrlUtilsTest {
         String hasSlashes = "  /blah/   ";
         assertEquals(UrlUtils.removeLastSlash(hasSlashes), "/blah");
     }
-/*
+
     @Test
-    public void testGetHostIPAddress(String fqdn) throws UnknownHostException {
-        UrlUtils.getHostIPAddress(fqdn);
-    }*/
+    public void testGetHostIPAddress_DoesNotExist() throws UnknownHostException {
+        thrown.expect(UnknownHostException.class);
+
+        String fqdn = "Does-Not-Exist";
+        String ipAddress = UrlUtils.getHostIPAddress(fqdn);
+        assertNull(ipAddress);
+    }
+
+    @Test
+    public void testGetHostIPAddress_Ok() throws UnknownHostException {
+        String fqdn = "www.google.com";
+        String ipAddress = UrlUtils.getHostIPAddress(fqdn);
+        assertNotNull(ipAddress);
+    }
+
+    @Test
+    public void testGetIPAddressFromUrl_Ok() throws UnknownHostException, MalformedURLException {
+        String fqdn = "https://www.google.com";
+        String ipAddress = UrlUtils.getIpAddressFromUrl(fqdn);
+        assertNotNull(ipAddress);
+    }
+
+    @Test
+    public void testGetIPAddressFromUrl_BAD_PROTOCOL() throws UnknownHostException {
+        thrown.expect(UnknownHostException.class);
+
+        String fqdn = "httpp://www.google.com";
+        String ipAddress = UrlUtils.getHostIPAddress(fqdn);
+        assertNull(ipAddress);
+    }
 }

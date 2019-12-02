@@ -11,7 +11,6 @@ package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.exception.ServiceDefinitionException;
-import com.ca.mfaas.util.ObjectUtil;
 import com.ca.mfaas.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,7 +52,7 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testLoadConfiguration() throws ServiceDefinitionException {
+    public void testLoadConfiguration_TwoFiles_OK() throws ServiceDefinitionException {
 
         String internalFileName = "/service-configuration.yml";
         String additionalFileName = "/additional-service-configuration.yml";
@@ -63,8 +62,13 @@ public class ApiMediationServiceConfigReaderTest {
 
         assertNotNull(result);
         assertEquals(result.getServiceId(), "hellopje");
-    }
 
+        // Use default internal file name
+        result = apiMediationServiceConfigReader.loadConfiguration(null, additionalFileName);
+
+        assertNotNull(result);
+        assertEquals(result.getServiceId(), "hellopje");
+    }
 
     @Test
     public void testReadConfigurationFile_Existing() throws ServiceDefinitionException {
@@ -94,9 +98,8 @@ public class ApiMediationServiceConfigReaderTest {
         assertNull(config);
     }
 
-
     @Test
-    public void testMapMerge_FULL() {
+    public void testMapMerge_FULL() throws ServiceDefinitionException {
         ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
         ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration.yml", null);
 
@@ -104,7 +107,7 @@ public class ApiMediationServiceConfigReaderTest {
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig2, Map.class);
 
         ApiMediationServiceConfig apiMediationServiceConfig = null;
-        Map<String, Object> map3 = ObjectUtil.mergeMapsDeep(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        Map<String, Object> map3 = new ApiMediationServiceConfigReader().mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
         if (!map3.isEmpty()) {
             apiMediationServiceConfig = objectMapper.convertValue(map3, ApiMediationServiceConfig.class);
         }
@@ -115,7 +118,26 @@ public class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    public void testMapMerge_PART_serviceid_keystore_truststore() {
+    public void testMapMerge_Only_Externalized() throws ServiceDefinitionException {
+        ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration.yml", null);
+
+        Map<String, Object> defaultConfigPropertiesMap = null;
+        Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig2, Map.class);
+
+        ApiMediationServiceConfig apiMediationServiceConfig = null;
+        Map<String, Object> map3 = new ApiMediationServiceConfigReader().mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        if (!map3.isEmpty()) {
+            apiMediationServiceConfig = objectMapper.convertValue(map3, ApiMediationServiceConfig.class);
+        }
+
+        assertNotNull(apiMediationServiceConfig);
+        assertEquals("../keystore/localhost/localhost.truststore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
+    }
+
+    @Test
+    public void testMapMerge_PART_serviceid_keystore_truststore() throws ServiceDefinitionException {
+
         ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
         ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration_serviceid-andkeystore-truststore-only.yml", null);
 
@@ -123,7 +145,7 @@ public class ApiMediationServiceConfigReaderTest {
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig2, Map.class);
 
         ApiMediationServiceConfig apiMediationServiceConfig = null;
-        Map<String, Object> map3 = ObjectUtil.mergeMapsDeep(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        Map<String, Object> map3 = new ApiMediationServiceConfigReader().mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
         if (!map3.isEmpty()) {
             apiMediationServiceConfig = objectMapper.convertValue(map3, ApiMediationServiceConfig.class);
         }
@@ -139,14 +161,14 @@ public class ApiMediationServiceConfigReaderTest {
 
 
     @Test
-    public void testMapMerge_PART_serviceid_ciphers() {
+    public void testMapMerge_PART_serviceid_ciphers() throws ServiceDefinitionException {
         ApiMediationServiceConfig apimlServcieConfig1 = getApiMediationServiceConfigFromFile( "/service-configuration.yml", null);
         ApiMediationServiceConfig apimlServcieConfig2 = getApiMediationServiceConfigFromFile( "/additional-service-configuration_serviceid-ssl-ciphers-only.yml", null);
 
         Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig1, Map.class);
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(apimlServcieConfig2, Map.class);
 
-        Map<String, Object> map3 = ObjectUtil.mergeMapsDeep(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        Map<String, Object> map3 = new ApiMediationServiceConfigReader().mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
         ApiMediationServiceConfig apiMediationServiceConfig = null;
         if (!map3.isEmpty()) {
             apiMediationServiceConfig = objectMapper.convertValue(map3, ApiMediationServiceConfig.class);
@@ -189,8 +211,52 @@ public class ApiMediationServiceConfigReaderTest {
 
 
     @Test
-    public void testContextOk() {
+    public void testSetApiMlContext_Ok() {
+        ServletContext context = getMockServletContext();
+
+        ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
+        Map<String, String>  contextMap = reader.setApiMlServiceContext(context);
+        //reader.
+        assertNotNull(contextMap);
+        assertNull(contextMap.get("NOT-AN-apiml.config.location"));
+        assertEquals("/service-config.yml", contextMap.get("apiml.config.location"));
+        assertEquals("../config/local/helloworld-additional-config.yml", contextMap.get("apiml.config.additional-location"));
+        assertEquals("127.0.0.2", contextMap.get("apiml.serviceIpAddress"));
+        assertEquals( "10011", contextMap.get("apiml.discoveryService.port"));
+        assertEquals("localhost", contextMap.get("apiml.discoveryService.hostname"));
+        assertEquals( "true", contextMap.get("apiml.ssl.enabled"));
+        assertEquals( "true", contextMap.get("apiml.ssl.verifySslCertificatesOfServices"));
+        assertEquals("password", contextMap.get("apiml.ssl.keyPassword"));
+        assertEquals("password", contextMap.get("apiml.ssl.keyStorePassword"));
+        assertEquals("password", contextMap.get("apiml.ssl.trustStorePassword"));
+    }
+
+    @Test
+    public void testSetApiMlContextTwice_Ok() {
+        ServletContext context = getMockServletContext();
+
+        ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
+        Map<String, String>  contextMap = reader.setApiMlServiceContext(context);
+
+        contextMap = reader.setApiMlServiceContext(context);
+
+        assertNotNull(contextMap);
+        assertNull(contextMap.get("NOT-AN-apiml.config.location"));
+        assertEquals("/service-config.yml", contextMap.get("apiml.config.location"));
+        assertEquals("../config/local/helloworld-additional-config.yml", contextMap.get("apiml.config.additional-location"));
+        assertEquals("127.0.0.2", contextMap.get("apiml.serviceIpAddress"));
+        assertEquals( "10011", contextMap.get("apiml.discoveryService.port"));
+        assertEquals("localhost", contextMap.get("apiml.discoveryService.hostname"));
+        assertEquals( "true", contextMap.get("apiml.ssl.enabled"));
+        assertEquals( "true", contextMap.get("apiml.ssl.verifySslCertificatesOfServices"));
+        assertEquals("password", contextMap.get("apiml.ssl.keyPassword"));
+        assertEquals("password", contextMap.get("apiml.ssl.keyStorePassword"));
+        assertEquals("password", contextMap.get("apiml.ssl.trustStorePassword"));
+    }
+
+    private ServletContext getMockServletContext() {
         ServletContext context = new MockServletContext();
+        context.setInitParameter("NOT-AN-apiml.config.location", "/service-config.yml");
         context.setInitParameter("apiml.config.location", "/service-config.yml");
         context.setInitParameter("apiml.config.additional-location", "../config/local/helloworld-additional-config.yml");
         context.setInitParameter("apiml.serviceIpAddress", "127.0.0.2");
@@ -200,11 +266,31 @@ public class ApiMediationServiceConfigReaderTest {
         context.setInitParameter("apiml.ssl.verifySslCertificatesOfServices", "true");
         context.setInitParameter("apiml.ssl.keyPassword", "password");
         context.setInitParameter("apiml.ssl.keyStorePassword", "password");
-        context.setInitParameter("apiml.ssl.trustStore", "password");
         context.setInitParameter("apiml.ssl.trustStorePassword", "password");
-
-        //ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
-        //contextListener.contextInitialized(new ServletContextEvent(context));
+        return context;
     }
 
+
+    @Test
+    public void testReadConfigurationFile_Internal_file_name_null() throws ServiceDefinitionException {
+
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+
+        // 1) Existing file
+        String internalFileName = "/service-configuration.yml";
+        ApiMediationServiceConfig result = apiMediationServiceConfigReader.loadConfiguration(null, internalFileName);
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testLoadConfiguration_IpAddressIsNull_OK() throws ServiceDefinitionException {
+        String internalFileName = "/additional-service-configuration_ip-address-null.yml";
+        String additionalFileName = "/additional-service-configuration_ip-address-null.yml";
+
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+        ApiMediationServiceConfig result = apiMediationServiceConfigReader.loadConfiguration(internalFileName, additionalFileName);
+
+        assertNotNull(result);
+        assertEquals(result.getServiceId(), "service");
+    }
 }
