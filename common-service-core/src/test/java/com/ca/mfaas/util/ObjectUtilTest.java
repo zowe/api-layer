@@ -13,6 +13,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+
 public class ObjectUtilTest {
 
     @Rule
@@ -24,5 +27,12 @@ public class ObjectUtilTest {
         exception.expectMessage("Parameter can't be null");
 
         ObjectUtil.requireNotNull(null, "Parameter can't be null");
+    }
+
+    @Test
+    public void testGetThisClas() {
+        Class aClass = ObjectUtil.getThisClass();
+        assertNotNull(aClass);
+        assertEquals("ObjectUtilTest", aClass.getSimpleName());
     }
 }
