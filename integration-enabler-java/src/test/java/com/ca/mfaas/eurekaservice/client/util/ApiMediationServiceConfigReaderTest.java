@@ -274,6 +274,13 @@ public class ApiMediationServiceConfigReaderTest {
         return contextMap;
     }
 
+    @Test
+    public void testLoadConfigurationFromContext_OK() throws ServiceDefinitionException {
+        ServletContext context = getMockServletContext();
+        ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
+        reader.loadConfiguration(context);
+    }
+
     private ServletContext getMockServletContext() {
         ServletContext context = new MockServletContext();
         context.setInitParameter("NOT-AN-apiml.config.location", "/service-config.yml");
