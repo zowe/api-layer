@@ -7,7 +7,6 @@ ext {
     slf4jVersion = '1.7.25'
     jsonVersion = '20180813'
     jsonPathVersion = '2.4.0'
-    springFoxVersion = '2.8.0'
     httpClientVersion = '4.5.3'
     guavaVersion = '23.2-jre'
     mockSpringRestVersion = '1.0.2'
@@ -17,7 +16,6 @@ ext {
     javaxServletApiVersion = '3.1.0'
     jacksonVersion = '2.9.2'
     restAssuredVersion = '3.0.7'
-    swaggerCoreVersion = "1.5.21"
     commonsValidatorVersion = "1.6"
     powerMockVersion = "1.7.3"
     jacksonCoreVersion = "2.9.6"
@@ -43,6 +41,9 @@ ext {
     springHateoasVersion = '0.23.0.RELEASE'
     springRetryVersion = '1.2.2.RELEASE'
     jsonUnitVersion = '1.25.0'
+    springFoxVersion = '2.9.2'
+    swaggerCoreVersion = "1.5.21"
+    swagger3CoreVersion = "2.0.0"
     swaggerJerseyJaxrsVersion = '1.5.10'
     jacksonDataformatYamlVersion = '2.9.7'
     jerseyVersion = '2.26'
@@ -83,11 +84,10 @@ ext {
         json                               : "org.json:json:${jsonVersion}",
         json_path                          : "com.jayway.jsonpath:json-path:${jsonPathVersion}",
         springFox                          : "io.springfox:springfox-swagger2:${springFoxVersion}",
-        springFoxSwaggerUI                 : "io.springfox:springfox-swagger-ui:${springFoxVersion}",
         springFoxWeb                       : "io.springfox:springfox-spring-web:${springFoxVersion}",
         swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
-        swagger_models                     : "io.swagger:swagger-models:${swaggerCoreVersion}",
-        swagger_annotations                : "io.swagger:swagger-annotations:${swaggerCoreVersion}",
+        swagger3_core                      : "io.swagger.core.v3:swagger-core:${swagger3CoreVersion}",
+        swagger_jersey2_jaxrs              : "io.swagger:swagger-jersey2-jaxrs:${swaggerJerseyJaxrsVersion}",
         http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
         http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
 
@@ -125,7 +125,6 @@ ext {
         snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
         json_unit                          : "net.javacrumbs.json-unit:json-unit:${jsonUnitVersion}",
         json_unit_fluent                   : "net.javacrumbs.json-unit:json-unit-fluent:${jsonUnitVersion}",
-        swagger_jersey2_jaxrs              : "io.swagger:swagger-jersey2-jaxrs:${swaggerJerseyJaxrsVersion}",
         jackson_dataformat_yaml            : "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonDataformatYamlVersion}",
         jersey_server                      : "org.glassfish.jersey.core:jersey-server:${jerseyVersion}",
         jersey_hk2                         : "org.glassfish.jersey.inject:jersey-hk2:${jerseyVersion}",

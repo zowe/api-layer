@@ -18,8 +18,8 @@ repositories {
 dependencies {
     compile(project(':integration-enabler-java'))
 
-    compile libraries.springFox
-    compile libraries.swagger_jersey2_jaxrs
+ //   compile 'io.swagger:swagger-jersey2-jaxrs:1.5.21'
+    compile 'io.swagger.core.v3:swagger-jaxrs2:2.0.0'
     compile libraries.jackson_dataformat_yaml
     compileOnly libraries.lombok
     compile libraries.logback_classic

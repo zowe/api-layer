@@ -12,7 +12,6 @@ const loginUrl = `${baseUrl}/#/login`;
 const dashboardUrl = `${baseUrl}/#/dashboard`;
 const defaultDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer`;
 const apiCatalogDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer/apicatalog`;
-const gatewayDetailPageUrl = `${baseUrl}/#/tile/apimediationlayer/gateway`;
 
 beforeAll(async () => {
     browser = await puppeteer.launch({
@@ -141,32 +140,6 @@ describe('>>> e2e tests', () => {
         expect(descriptionText).toBe(
             'The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.'
         );
-    });
-
-    it('Should display the Gateway information in the detail page', async () => {
-        const [res] = await Promise.all([page.waitForNavigation(), page.goto(gatewayDetailPageUrl)]);
-        await page.waitForSelector(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
-        );
-        await page.waitFor(2000);
-        const serviceUrl = await page.$('pre.base-url');
-        const serviceDescription = await page.$(
-            '#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p'
-        );
-        const serviceTitle = await page.$(
-            '#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > h2'
-        );
-        const serviceTitleText = await page.evaluate(el => el.innerText, serviceTitle);
-        const serviceDescriptionText = await page.evaluate(el => el.innerText, serviceDescription);
-        const serviceUrlText = await page.evaluate(el => el.innerText, serviceUrl);
-        const expectedTitleValue = 'API Gateway';
-        const expectedUrl = `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/gateway ]`;
-        const expectedDescriptionValue =
-            'REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.';
-
-        expect(serviceTitleText).toBe(expectedTitleValue);
-        expect(serviceDescriptionText).toBe(expectedDescriptionValue);
-        expect(serviceUrlText).toBe(expectedUrl);
     });
 
     it('Should display the back button', async () => {

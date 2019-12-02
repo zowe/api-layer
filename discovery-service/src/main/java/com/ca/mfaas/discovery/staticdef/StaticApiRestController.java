@@ -10,7 +10,6 @@
 package com.ca.mfaas.discovery.staticdef;
 
 import com.netflix.appinfo.InstanceInfo;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,13 +29,11 @@ public class StaticApiRestController {
     }
 
     @GetMapping
-    @ApiOperation(value = "List static API definitions from the filesystem")
     public List<InstanceInfo> list() {
         return registrationService.getStaticInstances();
     }
 
     @PostMapping
-    @ApiOperation(value = "Reload static API definitions from the filesystem")
     public List<InstanceInfo> reload() {
         registrationService.reloadServices();
         return registrationService.getStaticInstances();

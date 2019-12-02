@@ -3,9 +3,15 @@
     box-sizing: border-box
 }
 
-.swagger-ui .scheme-container {
+#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > label {
     display: none;
 }
+
+/*comment this to see the authorization button */
+#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div.auth-wrapper > button {
+    display: none;
+}
+
 
 #swaggerContainer {
     background-color: #fff;
@@ -484,10 +490,6 @@
 
 .swagger-ui .opblock-body pre span {
     color: #fff !important
-}
-
-.swagger-ui .scheme-container {
-    display: none;
 }
 
 .swagger-ui .scheme-container .schemes {
@@ -1379,16 +1381,13 @@
     color: #3b4151
 }
 
-.swagger-ui .info .title small {
-    font-size: 16px;
-    font-weight: normal;
-}
 
 .swagger-ui .info .title small pre {
     margin: 0;
+    font-size: 14px;
     font-family: Titillium Web, sans-serif;
-    color: black;
 }
+
 
 .swagger-ui .info .title small pre:before {
     content: "API Version:";
