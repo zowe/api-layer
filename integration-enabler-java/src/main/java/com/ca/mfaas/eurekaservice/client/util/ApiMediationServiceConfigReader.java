@@ -394,7 +394,7 @@ public class ApiMediationServiceConfigReader {
      * methods.
      *
      */
-    private void setApiMlSystemProperties() {
+    public Map<String, String> setApiMlSystemProperties() {
         threadConfigurationContext.remove();
 
         Map<String, String> threadContextMap = getServiceContext();
@@ -407,5 +407,7 @@ public class ApiMediationServiceConfigReader {
                 threadContextMap.put(param, value);
             }
         }
+
+        return threadContextMap;
     }
 }

@@ -24,8 +24,8 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(JUnit4.class)
 public class FileUtilsTest {
-    private static final String relativePathName = "Documents/apiml";
-    private static final String configPath = System.getProperty("user.home").replace("\\", "/") + File.separator + relativePathName;
+    private static final String RELATIVE_PATH_NAME = "Documents/apiml";
+    private static final String CONFIG_PATH = System.getProperty("user.home").replace("\\", "/") + File.separator + RELATIVE_PATH_NAME;
     private static boolean folderCreated = false;
 
     private static String fileName = "service-configuration.yml";
@@ -36,14 +36,14 @@ public class FileUtilsTest {
 
     @BeforeClass
     public static void setUp() {
-        File customDir = new File(configPath);
+        File customDir = new File(CONFIG_PATH);
         if (!customDir.exists()) {
             customDir.mkdirs();
             folderCreated = true;
         }
 
         if ((configFile == null) || !configFile.exists()) {
-            configFile = new File(configPath + File.separator + fileName);
+            configFile = new File(CONFIG_PATH + File.separator + fileName);
             try {
                 configFile.createNewFile();
             } catch (IOException e) {
@@ -60,7 +60,7 @@ public class FileUtilsTest {
         }
 
         if (folderCreated) {
-            File documentsFolder = new File(configPath);
+            File documentsFolder = new File(CONFIG_PATH);
             documentsFolder.delete();
         }
 
@@ -113,27 +113,27 @@ public class FileUtilsTest {
 
     @Test
     public void testLocateFileAbsolutePath() {
-        File aFile = FileUtils.locateFile(configPath + File.separator + "DoesNotExist.file");
+        File aFile = FileUtils.locateFile(CONFIG_PATH + File.separator + "DoesNotExist.file");
         assertNull(aFile);
 
-        aFile = FileUtils.locateFile(configPath + File.separator + fileName);
+        aFile = FileUtils.locateFile(CONFIG_PATH + File.separator + fileName);
         assertNotNull(aFile);
         assertTrue(aFile.canRead());
 
-        File aDir = FileUtils.locateDirectory(configPath + File.separator + "NotExists.dir");
+        File aDir = FileUtils.locateDirectory(CONFIG_PATH + File.separator + "NotExists.dir");
         assertNull(aDir);
 
-        aDir = FileUtils.locateFile(configPath);
+        aDir = FileUtils.locateFile(CONFIG_PATH);
         assertNull(aDir);
 
-        aDir = FileUtils.locateDirectory(configPath);
+        aDir = FileUtils.locateDirectory(CONFIG_PATH);
         assertNotNull(aDir);
         assertTrue(aDir.canRead());
     }
 
     @Test
     public void testValidRelativePathExists() {
-        File aFile = FileUtils.locateDirectory(relativePathName);
+        File aFile = FileUtils.locateDirectory(RELATIVE_PATH_NAME);
         assertNotNull(aFile);
     }
 
