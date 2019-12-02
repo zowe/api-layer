@@ -17,6 +17,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 
 public class ServletContextListenerTest {
@@ -67,5 +68,27 @@ public class ServletContextListenerTest {
 
         ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
         contextListener.contextInitialized(new ServletContextEvent(context));
+    }
+
+    @Test
+    public void testContextDestroyed() {
+        ServletContext context = new MockServletContext();
+        context.setInitParameter("apiml.config.location", "/service-config.yml");
+        context.setInitParameter("apiml.config.additional-location", "../config/local/helloworld-additional-config.yml");
+        context.setInitParameter("apiml.serviceIpAddress", "127.0.0.2");
+        context.setInitParameter("apiml.discoveryService.port", "10011");
+        context.setInitParameter("apiml.discoveryService.hostname", "localhost");
+        context.setInitParameter("apiml.ssl.keyPassword", "password");
+        context.setInitParameter("apiml.ssl.enabled", "true");
+        context.setInitParameter("apiml.ssl.verifySslCertificatesOfServices", "true");
+
+        ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
+        contextListener.contextInitialized(new ServletContextEvent(context));
+        assertNotNull(contextListener.getApiMediationClient());
+
+        contextListener.contextDestroyed(null);
+        assertNull(contextListener.getApiMediationClient());
+
+        contextListener.contextDestroyed(null);
     }
 }
