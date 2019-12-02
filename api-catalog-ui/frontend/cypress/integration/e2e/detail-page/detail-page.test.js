@@ -81,9 +81,9 @@ describe('>>> Detail page test', () => {
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
-        cy.get('pre.base-url')
+        cy.get('#swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > div:nth-child(1) > div > label > select > option')
             .should('exist')
-            .should('contain', `[ Base URL: ${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/gateway ]`);
+            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/api/v1/gateway`);
 
         cy.get('.tabs-container')
             .should('exist')
@@ -96,13 +96,16 @@ describe('>>> Detail page test', () => {
 
         cy.get('pre.version').should('contain', '1.1.2');
 
+        cy.get('pre.version').should('contain', 'OAS3');
+
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');
 
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
 
-        cy.get('#swaggerContainer > div > div:nth-child(2) > div.information-container.wrapper > section > div > div > div > div > p')
+        cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > p')
             .should('exist')
-            .should('contain', 'REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.');
+            .should('contain', 'API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.');
+
     });
 
     it('Should go to the detail page, go back to the dashboard page and check if the search bar works', () => {
