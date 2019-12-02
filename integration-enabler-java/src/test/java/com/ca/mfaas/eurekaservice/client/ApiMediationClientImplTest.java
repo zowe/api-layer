@@ -13,12 +13,18 @@ import com.ca.mfaas.eurekaservice.client.config.*;
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.exception.MetadataValidationException;
 import com.ca.mfaas.exception.ServiceDefinitionException;
+import com.netflix.appinfo.InstanceInfo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.util.*;
+
+import static org.hamcrest.core.Is.isA;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class ApiMediationClientImplTest {
@@ -56,6 +62,10 @@ public class ApiMediationClientImplTest {
             .build();
 
         client.register(config);
+        assertNotNull(client.getEurekaClient());
+        assertEquals("SERVICE", client.getEurekaClient().getApplicationInfoManager().getInfo().getAppName());
+        assertEquals(InstanceInfo.InstanceStatus.UP, client.getEurekaClient().getApplicationInfoManager().getInfo().getStatus());
+        // ...
         client.unregister();
     }
 
@@ -98,6 +108,82 @@ public class ApiMediationClientImplTest {
 
         ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
+        client.unregister();
+    }
+
+    @Test
+    public void testMultipleSubsequentRegistrations() throws ServiceDefinitionException {
+        exceptionRule.expect( ServiceDefinitionException.class);
+
+        String file = "/service-configuration.yml";
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+
+        String configData = apiMediationServiceConfigReader.readConfigurationFile(file);
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(configData);
+
+        ApiMediationClient client = new ApiMediationClientImpl();
+        // First registration attempt
+        client.register(config);
+
+        // Second registration attempt
+        client.register(config);
+
+        client.unregister();
+    }
+
+    @Test
+    public void testInitializationServiceDefinitionException() throws ServiceDefinitionException {
+        exceptionRule.expect( ServiceDefinitionException.class);
+
+        String file = "/service-configuration.yml";
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+
+        String configData = apiMediationServiceConfigReader.readConfigurationFile(file);
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(configData);
+        config.setBaseUrl(null);
+
+        ApiMediationClient client = new ApiMediationClientImpl();
+        // First registration attempt
+        client.register(config);
+
+        client.unregister();
+    }
+
+    @Test
+    public void testInitializationRuntimeException() throws ServiceDefinitionException {
+        exceptionRule.expect( ServiceDefinitionException.class);
+        exceptionRule.expectCause(isA(NullPointerException.class));
+
+        String file = "/service-configuration.yml";
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+
+        String configData = apiMediationServiceConfigReader.readConfigurationFile(file);
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(configData);
+        config.setRoutes(null);
+
+        ApiMediationClient client = new ApiMediationClientImpl();
+        // First registration attempt
+        client.register(config);
+
+        client.unregister();
+    }
+
+    @Test
+    public void testInitialization_InvalidDocumentationUrl() throws ServiceDefinitionException {
+        exceptionRule.expect( ServiceDefinitionException.class);
+        exceptionRule.expectCause(isA(MetadataValidationException.class));
+
+        String file = "/service-configuration.yml";
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+
+        String configData = apiMediationServiceConfigReader.readConfigurationFile(file);
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(configData);
+        config.getApiInfo().get(0).setDocumentationUrl("HTT//INVALID-URL");
+
+        ApiMediationClient client = new ApiMediationClientImpl();
+        // First registration attempt
+        client.register(config);
+
         client.unregister();
     }
 }
