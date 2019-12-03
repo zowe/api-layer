@@ -166,7 +166,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     }
 
 
-    private Map<String, String> createMetadata(ApiMediationServiceConfig config) throws MetadataValidationException {
+    private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
         Map<String, String> metadata = new HashMap<>();
 
         // fill routing metadata
@@ -195,11 +195,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
         // fill api-doc info
         for (ApiInfo apiInfo : config.getApiInfo()) {
-            try {
-                metadata.putAll(EurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
-            } catch (MalformedURLException e) {
-                throw new MetadataValidationException("Metadata creation failed for apiInfo: " + apiInfo.getApiId() + " due to: ", e);
-            }
+            metadata.putAll(EurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
         }
 
         return metadata;
@@ -208,6 +204,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     /**
      * The inner EurekaClient instance.
      * Can be used by the caller to work with Eureka registry instances, regions, applications ,etc..
+     *
      * @return
      */
     public EurekaClient getEurekaClient() {
