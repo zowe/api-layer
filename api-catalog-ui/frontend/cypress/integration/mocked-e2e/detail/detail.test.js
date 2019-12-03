@@ -4,7 +4,7 @@
 
 describe('>>> Detail page test', () => {
     it('successfully visits detail page of API Catalog', () => {
-        cy.visit('/#/tile/apicatalog/apicatalog');
+        cy.visit(`${Cypress.env('catalogHomePage')}/#/tile/apicatalog/apicatalog`);
         cy.url().should('contain', 'apicatalog/apicatalog');
     });
 
@@ -37,7 +37,7 @@ describe('>>> Detail page test', () => {
         cy.get('#swaggerContainer');
     });
 
-    it('should show the right infoin swagger container', () => {
+    it('should show the right info in Swagger container', () => {
         cy.get('#swaggerContainer').within($swagger => {
             cy.get('h2.title')
                 .should('contain', 'API Catalog')

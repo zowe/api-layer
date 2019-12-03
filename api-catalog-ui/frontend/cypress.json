@@ -1,5 +1,14 @@
 {
-    "baseUrl": "http://localhost:3000",
-    "viewportWidth": 1400,
-    "viewportHeight": 980
+    "env":{
+        "catalogHomePage": "https://localhost:10010/ui/v1/apicatalog",
+        "viewportWidth": 1400,
+        "viewportHeight": 980,
+        "username": "user",
+        "password": "user"
+    },
+    "reporter": "junit",
+    "reporterOptions": {
+        "mochaFile": "test-results/e2e/output-[hash].xml"
+    }
+
 }

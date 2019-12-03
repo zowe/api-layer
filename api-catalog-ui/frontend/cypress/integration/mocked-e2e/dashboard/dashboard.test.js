@@ -6,7 +6,7 @@ import { PAUSE } from 'redux-persist';
 
 describe('>>> Dashboard test', () => {
     it('successfully visits /dashboard', () => {
-        cy.visit('/#/dashboard');
+        cy.visit(`${Cypress.env('catalogHomePage')}ui/v1/apicatalog/#/`);
         cy.url().should('contain', '/dashboard');
     });
 

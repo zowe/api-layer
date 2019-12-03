@@ -53,9 +53,9 @@ When virtually rendering components you should use `.mount`.
 
 ### e2e tests
 
-For e2e tests we use [puppeteer](https://github.com/GoogleChrome/puppeteer), [Enzyme](https://github.com/airbnb/enzyme) and [jest](https://jestjs.io/).
+For e2e tests we use [Cypress](https://github.com/cypress-io/cypress), [Enzyme](https://github.com/airbnb/enzyme) and [jest](https://jestjs.io/).
 
-We are using [puppeteer](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md) to controll headless chrome and jest for assertions.
+We are using [cypress](https://github.com/cypress-io/cypress) to control headless chrome and jest for assertions.
 
 to run e2e tests follow these steps:
 
@@ -63,15 +63,11 @@ to run e2e tests follow these steps:
 
 2. Point e2e to the instance to the instance you want to test
 
-3. Run the tests with `npm run test:e2e`
+3. Run the tests with `npm run cy:e2e:ci`
 
 **Note:** coverage is not collected from e2e tests
 
 **Note:** you should run the real catalog services as a backend for e2e testing
-
-### Automated testing of responsive design
-
-Check [galen-tests](./src/responsive-tests/galen-tests.MD) to know how to run responsive tests.
 
 ### Code coverage
 
@@ -107,16 +103,16 @@ You can install a tool called _serve_ (`npm install -g serve`) and then run `ser
 
 The tests are located in api-catalog-ui/frontend/cypress/integration. Inside this folder you can find two other folders:
 
-integration - integration tests that are supposed Dictionary to run locally against mocked backend
-e2e - e2e tests that can be run locally but they should mostly run as a part of our pipeline
+`/mocked-e2e` - e2e tests that are supposed to run locally against mocked backend
+`/e2e` - e2e tests that can be run locally but they should mostly run as a part of our pipeline
 Both can be run in interactive mode (more on that bellow).
 
 All commands related to cypress start with cy.
 As of now the available ones are:
 
 `cy:open` - opens the interactive window with no environment variables set
-`cy:e2e` - runs all test inside the e2e folder testing the instance in the baseURL env variable while using credential passed as parameters (This command should be used in the pipeline)
-`cy:e2e:open` - opens the interactive window with the baseURL parameter set but with no credentials (This command should be used to run e2e tests locally)
-`cy:integration` - runs all test inside the /integration/integration folder; integration tests should run locally against mocked backend
+`cy:e2e:ci` - runs all test inside the e2e folder testing the instance in the baseURL env variable while using credential passed as parameters (This command should be used in the pipeline)
+`cy:e2e:localhost` - runs all test inside the e2e folder testing the localhost instance
+`cy:e2e:mocked-backend` - runs all test inside the /integration/integration folder; integration tests should run locally against mocked backend
 
 
