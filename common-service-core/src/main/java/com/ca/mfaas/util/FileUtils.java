@@ -74,28 +74,29 @@ public class FileUtils {
      */
     private static File locateFileOrDirectory(String fileName) {
         // Try to find the file as a resource - application local or System resource
-        File file = null;
         URL fileUrl = getResourceUrl(fileName);
         if (fileUrl != null) {
-            file = new File(fileUrl.getFile());
-        } else {
+            return new File(fileUrl.getFile());
+        }
+
+        File file = null;
             Path path = Paths.get(fileName);
-            if (path != null) {
-                if (path.isAbsolute()) {
-                    file = path.toFile();
-                } else {
-                    Path currentWorkingPath = Paths.get(System.getProperty("user.dir"));
-                    file = currentWorkingPath.resolve(path).toFile();
-                    if ((file == null) || !file.canRead()) {
-                        Path userHomePath = Paths.get(System.getProperty("user.home"));
-                        file = userHomePath.resolve(path).toFile();
-                        if ((file == null) || !file.canRead()) {
-                            // Relative path can exist on multiple root file systems. Try all of them.
-                            file = findPathInRoots(path);
-                        }
-                    }
-                }
+        if (path != null) {
+            if (path.isAbsolute()) {
+                return path.toFile();
             }
+
+            file = Paths.get(System.getProperty("user.dir")).resolve(path).toFile();
+            if ((file != null) && file.canRead()) {
+                return file;
+            }
+
+            file = Paths.get(System.getProperty("user.home")).resolve(path).toFile();
+            if ((file != null) && file.canRead()) {
+                return file;
+            }
+            // Relative path can exist on multiple root file systems. Try all of them.
+            file = findPathInRoots(path);
         }
 
         return file;

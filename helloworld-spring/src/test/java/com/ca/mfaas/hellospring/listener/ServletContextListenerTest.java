@@ -54,6 +54,7 @@ public class ServletContextListenerTest {
 
         ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
         contextListener.contextInitialized(new ServletContextEvent(context));
+        assertNotNull(contextListener.getApiMediationClient().getEurekaClient());
     }
 
     @Test
@@ -68,6 +69,7 @@ public class ServletContextListenerTest {
 
         ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
         contextListener.contextInitialized(new ServletContextEvent(context));
+        assertNotNull(contextListener.getApiMediationClient().getEurekaClient());
     }
 
     @Test

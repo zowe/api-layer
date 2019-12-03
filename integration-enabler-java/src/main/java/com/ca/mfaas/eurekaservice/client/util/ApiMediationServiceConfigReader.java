@@ -32,10 +32,10 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 /**
  *  This class provides facility for loading API ML service on-boarding configuration.
  *  <p/>
- *  It allows to provide one or two file names.
+ *  It allows to load service configuration one or two YAML file .
  *  <p/>
  *  The first file is usually internal to the service deployment artifact or at minimum must be accessible on
- *  the service classpath. It contains basic API ML configuration based on values known at development time.
+ *  the service classpath. It contains basic API ML configuration containing values known at development time.
  *  Typically it is provided by the service developer and is located in the /resources folder of java project source tree.
  *  In the deployment artifact it usually can be found under /WEB-INF/classes.
  *  <p/>
@@ -45,9 +45,9 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  *  At service boot time, both configurations are merged, where the externalized configuration (if provided) has higher
  *  priority.
  *  <p/>
- *  The values of both configuration files can be overwritten by ServletContext parameters. Set a parameter value in
- *  the YAML file to ${apiml.your.very.own.key} and provide the same key with the actual value in a
- *  <Parameter name="apiml.your.very.own.key" value="the-actual-property-value" />
+ *  The values of both configuration files can be overwritten by Java System properties an/or ServletContext parameters.
+ *  Set a parameter value in the YAML file to ${apiml.your.very.own.key} and provide the same key with the actual value
+ *  in a <Parameter name="apiml.your.very.own.key" value="the-actual-property-value" />
  *
  */
 public class ApiMediationServiceConfigReader {
@@ -66,7 +66,7 @@ public class ApiMediationServiceConfigReader {
     /**
      * Instance member of ThreadLocal holding a Map<String, String> of configuration properties.
      */
-    private ThreadLocal<Map<String, String>> threadConfigurationContext = new ThreadLocal(); //.withInitial(HashMap::new);
+    private ThreadLocal<Map<String, String>> threadConfigurationContext = ThreadLocal.withInitial(HashMap::new);
 
 
     /**
@@ -96,19 +96,17 @@ public class ApiMediationServiceConfigReader {
         return objectMapper.convertValue(config, ApiMediationServiceConfig.class);
     }
 
-    public Map<String, Object> mergeConfigurations(Map<String, Object> defaultConfigurationMap, Map<String, Object> additionalConfigurationMap)
-        throws ServiceDefinitionException {
+    public Map<String, Object> mergeConfigurations(Map<String, Object> defaultConfigurationMap, Map<String, Object> additionalConfigurationMap) {
 
-        Map<String, Object> apimlServcieConfigMap = defaultConfigurationMap;
         if ((defaultConfigurationMap != null) && (additionalConfigurationMap != null)) {
-            apimlServcieConfigMap = mergeMapsDeep(defaultConfigurationMap, additionalConfigurationMap);
-        } else {
-            if (additionalConfigurationMap != null) {
-                apimlServcieConfigMap = additionalConfigurationMap;
-            }
+            return mergeMapsDeep(defaultConfigurationMap, additionalConfigurationMap);
         }
 
-        return apimlServcieConfigMap;
+        if (additionalConfigurationMap != null) {
+            return  additionalConfigurationMap;
+        }
+
+        return defaultConfigurationMap;
     }
 
     /**

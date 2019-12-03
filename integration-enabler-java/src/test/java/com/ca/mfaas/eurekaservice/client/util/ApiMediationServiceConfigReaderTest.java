@@ -44,13 +44,6 @@ public class ApiMediationServiceConfigReaderTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
-
-    @Test
-    public void testSetApiMlServiceContext() throws ServiceDefinitionException {
-        //ServletContext servletContext = mock(ServletContext.class);
-
-    }
-
     @Test
     public void testLoadConfiguration_TwoFiles_OK() throws ServiceDefinitionException {
 
@@ -304,7 +297,8 @@ public class ApiMediationServiceConfigReaderTest {
     public void testLoadConfigurationFromContext_OK() throws ServiceDefinitionException {
         ServletContext context = getMockServletContext();
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
-        reader.loadConfiguration(context);
+        ApiMediationServiceConfig config = reader.loadConfiguration(context);
+        assertNotNull(config);
     }
 
     private ServletContext getMockServletContext() {

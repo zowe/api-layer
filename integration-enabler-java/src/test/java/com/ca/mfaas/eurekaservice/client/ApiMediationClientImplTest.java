@@ -23,8 +23,7 @@ import org.junit.rules.ExpectedException;
 import java.util.*;
 
 import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 
 public class ApiMediationClientImplTest {
@@ -94,7 +93,10 @@ public class ApiMediationClientImplTest {
 
         ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
+        assertNotNull(client.getEurekaClient());
+
         client.unregister();
+        assertNull(client.getEurekaClient());
     }
 
     @Test
