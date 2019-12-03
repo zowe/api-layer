@@ -10,6 +10,7 @@
 package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.exception.MetadataValidationException;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import com.ca.mfaas.product.routing.RoutedService;
@@ -17,7 +18,9 @@ import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.util.UrlUtils;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
@@ -161,7 +164,7 @@ public class EurekaMetadataParser {
      * @param serviceId the identifier of a service which ApiInfo configuration belongs
      * @return the generated Eureka metadata
      */
-    public static Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) throws MalformedURLException {
+    public static Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) {
         Map<String, String> metadata = new HashMap<>();
         String encodedGatewayUrl = UrlUtils.getEncodedUrl(apiInfo.getGatewayUrl());
 
@@ -174,7 +177,7 @@ public class EurekaMetadataParser {
         }
 
         if (apiInfo.getSwaggerUrl() != null) {
-            UrlUtils.validateUrl(apiInfo.getSwaggerUrl(),
+            validateUrl(apiInfo.getSwaggerUrl(),
                 () -> String.format("The Swagger URL \"%s\" for service %s is not valid", apiInfo.getSwaggerUrl(), serviceId)
             );
 
@@ -182,7 +185,7 @@ public class EurekaMetadataParser {
         }
 
         if (apiInfo.getDocumentationUrl() != null) {
-            UrlUtils.validateUrl(apiInfo.getDocumentationUrl(),
+            validateUrl(apiInfo.getDocumentationUrl(),
                 () -> String.format("The documentation URL \"%s\" for service %s is not valid", apiInfo.getDocumentationUrl(), serviceId)
             );
 
@@ -190,5 +193,13 @@ public class EurekaMetadataParser {
         }
 
         return metadata;
+    }
+
+    private static void validateUrl(String url, Supplier<String> exceptionSupplier) {
+        try {
+            new URL(url);
+        } catch (MalformedURLException e) {
+            throw new MetadataValidationException(exceptionSupplier.get(), e);
+        }
     }
 }

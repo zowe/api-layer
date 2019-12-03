@@ -1,0 +1,36 @@
+{
+  "0 debug pnpm:scope": {
+    "selected": 1,
+    "workspacePrefix": null
+  },
+  "1 info pnpm": {
+    "message": "Using hooks from: C:\\Work\\Projects\\Zowe\\Code\\api-layer_plain-java-enabler_ONE_\\api-catalog-ui\\frontend\\pnpmfile.js",
+    "prefix": "C:\\Work\\Projects\\Zowe\\Code\\api-layer_plain-java-enabler_ONE_\\api-catalog-ui\\frontend"
+  },
+  "2 info pnpm": {
+    "message": "readPackage hook is declared. Manifests of dependencies might get overridden",
+    "prefix": "C:\\Work\\Projects\\Zowe\\Code\\api-layer_plain-java-enabler_ONE_\\api-catalog-ui\\frontend"
+  },
+  "3 debug pnpm": {
+    "isCaseSensitive": false,
+    "store": "C:\\Users\\pz891284\\.pnpm-store\\2"
+  },
+  "4 warn pnpm": {
+    "message": "Unsupported engine: wanted: {\"node\":\"=8.11.1\"} (current: {\"node\":\"v10.15.3\",\"pnpm\":\"4.2.2\"})",
+    "prefix": "C:\\Work\\Projects\\Zowe\\Code\\api-layer_plain-java-enabler_ONE_\\api-catalog-ui\\frontend"
+  },
+  "5 error pnpm": {
+    "message": {
+      "code": "ERR_PNPM_UNEXPECTED_VIRTUAL_STORE",
+      "expected": "C:\\Work\\Projects\\Zowe\\Code\\api-layer_plain-java-enabler_ONE\\api-catalog-ui\\frontend\\node_modules\\.pnpm",
+      "actual": "C:\\Work\\Projects\\Zowe\\Code\\api-layer_plain-java-enabler_ONE_\\api-catalog-ui\\frontend\\node_modules\\.pnpm",
+      "modulesDir": "C:\\Work\\Projects\\Zowe\\Code\\api-layer_plain-java-enabler_ONE_\\api-catalog-ui\\frontend\\node_modules"
+    },
+    "err": {
+      "name": "Error",
+      "message": "Unexpected virtual store location",
+      "code": "ERR_PNPM_UNEXPECTED_VIRTUAL_STORE",
+      "stack": "Error: Unexpected virtual store location\n    at Object.checkCompatibility [as default] (C:\\Users\\pz891284\\AppData\\Roaming\\npm\\node_modules\\pnpm\\lib\\node_modules\\supi\\lib\\getContext\\checkCompatibility\\index.js:21:15)\n    at Promise.all.importers.map (C:\\Users\\pz891284\\AppData\\Roaming\\npm\\node_modules\\pnpm\\lib\\node_modules\\supi\\lib\\getContext\\index.js:137:41)\n    at Array.map (<anonymous>)\n    at validateNodeModules (C:\\Users\\pz891284\\AppData\\Roaming\\npm\\node_modules\\pnpm\\lib\\node_modules\\supi\\lib\\getContext\\index.js:135:33)\n    at Object.getContext [as default] (C:\\Users\\pz891284\\AppData\\Roaming\\npm\\node_modules\\pnpm\\lib\\node_modules\\supi\\lib\\getContext\\index.js:20:15)\n    at process._tickCallback (internal/process/next_tick.js:68:7)"
+    }
+  }
+}

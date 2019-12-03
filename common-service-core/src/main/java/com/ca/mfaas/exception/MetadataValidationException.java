@@ -10,7 +10,7 @@
 
 package com.ca.mfaas.exception;
 
-public class MetadataValidationException extends Exception {
+public class MetadataValidationException extends RuntimeException {
     public MetadataValidationException(String message, Throwable cause) {
         super(message, cause);
     }

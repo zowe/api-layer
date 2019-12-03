@@ -10,13 +10,13 @@
 package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.exception.MetadataValidationException;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -109,6 +109,17 @@ public class EurekaMetadataParserTest {
         assertEquals("List route size is different", 3, actualRoutes.size());
         assertThat(actualRoutes, containsInAnyOrder(expectedListRoute.toArray()));
     }
+
+    @Test
+    public void testParseToListRoute_whenMetadatakeyElementsIsDifferentFrom4() {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(ROUTES + ".api-v1.test." + ROUTES_GATEWAY_URL, "api/v1");
+
+        List<RoutedService> actualRoutes = eurekaMetadataParser.parseToListRoute(metadata);
+        assertEquals("List route is not empty", 0, actualRoutes.size());
+    }
+
+
     @Test
     public void generateFullMetadata() {
         String serviceId = "test service";
@@ -119,26 +130,22 @@ public class EurekaMetadataParserTest {
         String metadataPrefix = API_INFO + ".api-v1.";
 
         ApiInfo apiInfo = new ApiInfo("org.zowe", gatewayUrl, version, swaggerUrl, documentationUrl);
-        try {
-            Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
-            String metaVersion = metadata.get(metadataPrefix + API_INFO_VERSION);
-            assertNotNull(metaVersion);
-            assertEquals(version, metaVersion);
+        Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        String metaVersion = metadata.get(metadataPrefix + API_INFO_VERSION);
+        assertNotNull(metaVersion);
+        assertEquals(version, metaVersion);
 
-            String metaGatewayUrl = metadata.get(metadataPrefix + API_INFO_GATEWAY_URL);
-            assertNotNull(metaGatewayUrl);
-            assertEquals(gatewayUrl, metaGatewayUrl);
+        String metaGatewayUrl = metadata.get(metadataPrefix + API_INFO_GATEWAY_URL);
+        assertNotNull(metaGatewayUrl);
+        assertEquals(gatewayUrl, metaGatewayUrl);
 
-            String metaSwaggerUrl = metadata.get(metadataPrefix + API_INFO_SWAGGER_URL);
-            assertNotNull(metaSwaggerUrl);
-            assertEquals(swaggerUrl, metaSwaggerUrl);
+        String metaSwaggerUrl = metadata.get(metadataPrefix + API_INFO_SWAGGER_URL);
+        assertNotNull(metaSwaggerUrl);
+        assertEquals(swaggerUrl, metaSwaggerUrl);
 
-            String metaDocumentationUrl = metadata.get(metadataPrefix + API_INFO_DOCUMENTATION_URL);
-            assertNotNull(metaDocumentationUrl);
-            assertEquals(documentationUrl, metaDocumentationUrl);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        String metaDocumentationUrl = metadata.get(metadataPrefix + API_INFO_DOCUMENTATION_URL);
+        assertNotNull(metaDocumentationUrl);
+        assertEquals(documentationUrl, metaDocumentationUrl);
     }
 
     @Test
@@ -147,15 +154,10 @@ public class EurekaMetadataParserTest {
         String version = "1.0.0";
 
         ApiInfo apiInfo = new ApiInfo(null, null, version, null, null);
-        Map<String, String> metadata = null;
-        try {
-            metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
 
-            assertEquals(1, metadata.size());
-            assertTrue(metadata.toString().contains(version));
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        assertEquals(1, metadata.size());
+        assertTrue(metadata.toString().contains(version));
     }
 
     @Test
@@ -163,23 +165,18 @@ public class EurekaMetadataParserTest {
         String serviceId = "test service";
 
         ApiInfo apiInfo = new ApiInfo();
-        Map<String, String> metadata = null;
-        try {
-            metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
-            assertEquals(0, metadata.size());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
+        assertEquals(0, metadata.size());
     }
 
     @Test
-    public void generateMetadataWithIncorrectSwaggerUrl() throws MalformedURLException {
+    public void generateMetadataWithIncorrectSwaggerUrl() {
         String serviceId = "test service";
         String gatewayUrl = "api/v1";
         String swaggerUrl = "www.badAddress";
 
-        exceptionRule.expect(MalformedURLException.class);
-        exceptionRule.expectMessage("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid: no protocol: " + swaggerUrl);
+        exceptionRule.expect(MetadataValidationException.class);
+        exceptionRule.expectMessage("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid");
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null);
         EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
@@ -187,13 +184,13 @@ public class EurekaMetadataParserTest {
 
 
     @Test
-    public void generateMetadataWithIncorrectDocumentationUrl() throws MalformedURLException {
+    public void generateMetadataWithIncorrectDocumentationUrl() {
         String serviceId = "test service";
         String gatewayUrl = "api/v1";
         String documentationUrl = "www.badAddress";
 
-        exceptionRule.expect(MalformedURLException.class);
-        exceptionRule.expectMessage("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid: no protocol: " + documentationUrl);
+        exceptionRule.expect(MetadataValidationException.class);
+        exceptionRule.expectMessage("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid");
 
         ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, documentationUrl);
         EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
