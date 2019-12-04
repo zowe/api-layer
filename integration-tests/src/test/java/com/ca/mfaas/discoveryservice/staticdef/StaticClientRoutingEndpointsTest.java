@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discoveryservice.staticdef;
 
-import com.ca.mfaas.utils.http.HttpRequestUtils;
+import com.ca.mfaas.util.http.HttpRequestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;

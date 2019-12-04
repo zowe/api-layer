@@ -9,10 +9,10 @@
  */
 package com.ca.mfaas.startup.impl;
 
-import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
-import com.ca.mfaas.utils.http.HttpClientUtils;
-import com.ca.mfaas.utils.http.HttpRequestUtils;
+import com.ca.mfaas.util.config.ConfigReader;
+import com.ca.mfaas.util.config.GatewayServiceConfiguration;
+import com.ca.mfaas.util.http.HttpClientUtils;
+import com.ca.mfaas.util.http.HttpRequestUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;

@@ -122,7 +122,7 @@ public class LocationFilterTest {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(REQUEST_URI_KEY, "");
         this.filter.run();
-        assertEquals("/service/v1", ctx.get(REQUEST_URI_KEY));
+        assertEquals("/service/v1/", ctx.get(REQUEST_URI_KEY));
     }
 
     @Test

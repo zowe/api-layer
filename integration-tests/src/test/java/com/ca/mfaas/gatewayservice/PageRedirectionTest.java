@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.utils.config.ConfigReader;
-import com.ca.mfaas.utils.config.DiscoveryServiceConfiguration;
-import com.ca.mfaas.utils.config.GatewayServiceConfiguration;
+import com.ca.mfaas.util.config.ConfigReader;
+import com.ca.mfaas.util.config.DiscoveryServiceConfiguration;
+import com.ca.mfaas.util.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.path.xml.element.Node;

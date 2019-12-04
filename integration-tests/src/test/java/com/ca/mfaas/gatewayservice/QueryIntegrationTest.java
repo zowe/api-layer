@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.utils.config.ConfigReader;
+import com.ca.mfaas.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;

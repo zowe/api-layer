@@ -10,7 +10,7 @@
 package com.ca.mfaas.apicatalog;
 
 import com.ca.mfaas.gatewayservice.SecurityUtils;
-import com.ca.mfaas.utils.config.ConfigReader;
+import com.ca.mfaas.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.Before;

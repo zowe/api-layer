@@ -17,14 +17,27 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Ssl {
-    private boolean verifySslCertificatesOfServices;
+    private Boolean enabled;
+
+    private Boolean verifySslCertificatesOfServices;
+
     private String protocol;
+
+    private String ciphers;
+
     private String keyAlias;
+
     private String keyPassword;
+
     private String keyStore;
+
     private String keyStorePassword;
+
     private String keyStoreType;
+
     private String trustStore;
+
     private String trustStorePassword;
+
     private String trustStoreType;
 }

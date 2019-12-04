@@ -1,0 +1,45 @@
+serviceId: ${apiml.serviceId}
+title: Hello Spring REST API
+description: Example for exposing a Spring REST API
+baseUrl: http://localhost:8080/apiml-plugin-poc_plain-java-enabler
+serviceIpAddress: ${apiml.serviceIpAddress} #127.0.0.1
+
+homePageRelativeUrl: /
+statusPageRelativeUrl: /application/info
+healthCheckRelativeUrl: /application/health
+
+discoveryServiceUrls:
+    - https://${apiml.discoveryService.hostname}:${apiml.discoveryService.port}/eureka
+
+ssl:
+    enabled: ${apiml.ssl.enabled} #true
+    verifySslCertificatesOfServices: ${apiml.ssl.verifySslCertificatesOfServices} #true
+    protocol: TLSv1.2
+    keyAlias: localhost
+    keyPassword: ${apiml.ssl.keyPassword} #password
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    keyStorePassword: ${apiml.ssl.keystore.password}
+    keyStoreType: PKCS12
+    trustStore: ${apiml.ssl.truststore} # keystore/localhost/localhost.truststore.p12
+    trustStorePassword: ${apiml.ssl.truststore.password}
+    trustStoreType: PKCS12
+
+routes:
+    - gatewayUrl: api
+      serviceUrl: /greeting
+    - gatewayUrl: api/v1
+      serviceUrl: /greeting/api/v1
+    - gatewayUrl: api/v1/api-doc
+      serviceUrl: /greeting/api-doc
+
+apiInfo:
+    - apiId: org.zowe.greeting
+      gatewayUrl: api/v1
+      swaggerUrl: http://localhost:8080/apiml-plugin-poc_plain-java-enabler/api-doc
+
+catalog:
+  tile:
+    id: cademoapps
+    title: Sample API Mediation Layer Applications
+    description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+    version: 1.0.0
