@@ -10,6 +10,7 @@
 
 package com.ca.mfaas.product.routing.transform;
 
+import com.ca.mfaas.util.UrlUtils;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.gateway.GatewayClient;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
@@ -17,7 +18,6 @@ import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.ServiceType;
-import com.ca.mfaas.product.utils.UrlUtils;
 import lombok.RequiredArgsConstructor;
 
 import java.net.URI;

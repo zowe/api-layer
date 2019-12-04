@@ -10,7 +10,7 @@
 package com.ca.mfaas.startup;
 
 import com.ca.mfaas.startup.impl.ApiMediationLayerStartupChecker;
-import com.ca.mfaas.utils.categories.StartupCheck;
+import com.ca.mfaas.util.categories.StartupCheck;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

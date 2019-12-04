@@ -13,24 +13,41 @@ import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
+import com.ca.mfaas.exception.ServiceDefinitionException;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 
+@Slf4j
 public class ApiDiscoveryListener implements ServletContextListener {
     private ApiMediationClient apiMediationClient;
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        apiMediationClient = new ApiMediationClientImpl();
-        String configurationFile = "/service-configuration.yml";
-        ApiMediationServiceConfig config = new ApiMediationServiceConfigReader(configurationFile).readConfiguration();
-        apiMediationClient.register(config);
+
+        try {
+            ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().loadConfiguration(sce.getServletContext());
+            if (config != null) {
+                apiMediationClient = new ApiMediationClientImpl();
+                apiMediationClient.register(config);
+            }
+        } catch (ServiceDefinitionException e) {
+            log.error("Service registration failed. Check log for previous errors: ", e);
+        }
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        apiMediationClient.unregister();
+
+        if (apiMediationClient != null) {
+            apiMediationClient.unregister();
+        }
+        apiMediationClient = null;
+    }
+
+    public ApiMediationClient getApiMediationClient() {
+        return apiMediationClient;
     }
 }

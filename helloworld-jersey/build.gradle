@@ -30,7 +30,9 @@ dependencies {
 
     testCompile libraries.junit
     testCompile libraries.jersey_test_provider_jdk_http
-
+    testCompile libraries.spring4Test
+    testCompile libraries.mockito_core
+    testCompile libraries.json_path
 
     def tomcatVersion = '8.0.53'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",

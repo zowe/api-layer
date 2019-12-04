@@ -10,7 +10,9 @@
 package com.ca.mfaas.util;
 
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @UtilityClass
 public class ObjectUtil {
 
@@ -25,6 +27,23 @@ public class ObjectUtil {
         if (param == null) {
             throw new IllegalArgumentException(message);
         }
+    }
+
+    /**
+     *
+     * @return the class object, from which this function was called
+     */
+    public static Class getThisClass() {
+        Thread theThread = Thread.currentThread();
+        StackTraceElement[]  stackTrace = theThread.getStackTrace();
+        String theClassName = stackTrace[2].getClassName();
+        Class theClass = null;
+        try {
+            theClass = Class.forName(theClassName);
+        } catch (ClassNotFoundException cnfe) {
+            log.warn(String.format("Class %s was not found: ", theClassName), cnfe);
+        }
+        return theClass;
     }
 
 

@@ -1,28 +1,31 @@
 serviceId: service
 title: HelloWorld Spring REST API
-eureka:
-    hostname: localhost
-    ipAddress: 127.0.0.1
-    port: 10021
 description: POC for exposing a Spring REST API
 baseUrl: localhost:10021/hellospring
+serviceIpAddress: 127.0.0.1
+
 homePageRelativeUrl: /
 statusPageRelativeUrl: /application/info
 healthCheckRelativeUrl: /application/health
+
 discoveryServiceUrls:
     - http://eureka:password@localhost:10011/eureka
     - http://eureka:password@localhost:10011/eureka
+
 routes:
     - gatewayUrl: api/v1
       serviceUrl: /hellospring/api/v1
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellospring/api-doc
+
 apiInfo:
     - apiId: org.zowe.hellospring
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hellospring/api-doc
-catalogUiTile:
-    id: helloworld-spring
-    title: HelloWorld Spring REST API
-    description: Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem
-    version: 1.0.0
+
+catalog:
+    tile:
+        id: helloworld-spring
+        title: HelloWorld Spring REST API
+        description: Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem
+        version: 1.0.0
