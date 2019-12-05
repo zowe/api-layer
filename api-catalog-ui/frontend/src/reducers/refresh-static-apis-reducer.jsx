@@ -11,6 +11,7 @@ const refreshStaticApisReducer = (state = staticApisDefaultState, action) => {
             return {
                 ...state,
                 shouldRefresh: action.shouldRefresh,
+                error: null,
             };
         case REFRESH_STATIC_APIS_ERROR:
             return {

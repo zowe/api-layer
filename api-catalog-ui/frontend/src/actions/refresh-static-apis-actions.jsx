@@ -3,7 +3,7 @@ import { REFRESH_STATIC_APIS_ERROR } from '../constants/refresh-static-apis-cons
 export function refreshStaticApisError(error) {
     return {
         type: REFRESH_STATIC_APIS_ERROR,
-        error: error
+        error
     }
 }
 
@@ -38,7 +38,7 @@ export function refreshedStaticApi() {
                 // 'Access-Control-Allow-Origin': process.env.REACT_APP_DISCOVERY_URL
             }
         })
-            .then(error => {
+            .catch(error => {
                 dispatch(refreshStaticApisError(error));
             });
     }

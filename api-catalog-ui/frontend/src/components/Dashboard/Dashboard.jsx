@@ -31,7 +31,8 @@ export default class Dashboard extends Component {
     }
 
     render() {
-        const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop } = this.props;
+        const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError } = this.props;
+        console.log(refreshedStaticApisError)
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
@@ -61,6 +62,10 @@ export default class Dashboard extends Component {
                                 <div>
                                     <Button size="medium" onClick={this.refreshStaticApis}>Refresh Static APIs</Button>
                                 </div>
+                                {refreshedStaticApisError  && (
+                                    <Text>erroooo</Text>
+                                )
+                                }
                             </div>
                             {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles &&
