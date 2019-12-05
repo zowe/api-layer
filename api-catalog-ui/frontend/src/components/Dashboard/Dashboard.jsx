@@ -1,4 +1,4 @@
-import { Text } from 'mineral-ui';
+import { Text, Button } from 'mineral-ui';
 import React, { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -24,6 +24,11 @@ export default class Dashboard extends Component {
         const { filterText } = this.props;
         filterText(value);
     };
+
+    refreshStaticApis = () => {
+        const { refreshedStaticApi } = this.props;
+        refreshedStaticApi();
+    }
 
     render() {
         const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop } = this.props;
@@ -53,6 +58,9 @@ export default class Dashboard extends Component {
                                     <SearchCriteria placeholder="Search for APIs" doSearch={this.handleSearch} />
                                 </Shield>
                                 <h2 className="api-heading">Available API services</h2>
+                                <div>
+                                    <Button size="medium" onClick={this.refreshStaticApis}>Refresh Static APIs</Button>
+                                </div>
                             </div>
                             {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles &&

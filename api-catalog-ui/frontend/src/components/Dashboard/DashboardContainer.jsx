@@ -8,6 +8,7 @@ import {
 } from '../../actions/catalog-tile-actions';
 import { clearService } from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
+import { refreshedStaticApi } from "../../actions/refresh-static-apis-actions";
 import { createLoadingSelector, getVisibleTiles } from '../../selectors/selectors';
 
 const loadingSelector = createLoadingSelector(['FETCH_TILES']);
@@ -17,6 +18,7 @@ const mapStateToProps = state => ({
     tiles: getVisibleTiles(state.tilesReducer.tiles, state.filtersReducer.text),
     fetchTilesError: state.tilesReducer.error,
     isLoading: loadingSelector(state),
+    refreshedStaticApisError: state.refreshStaticApisReducer.error,
 });
 
 const mapDispatchToProps = {
@@ -27,6 +29,7 @@ const mapDispatchToProps = {
     fetchTilesStop,
     filterText,
     clear,
+    refreshedStaticApi,
 };
 
 export default connect(
