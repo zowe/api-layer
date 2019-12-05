@@ -63,8 +63,9 @@ public class FileUtils {
     /**
      * Tries to locate or in other words to verify that a file with name 'fileName' exists.
      * First tries to find the file as a resource somewhere on the application or System classpath.
-     * Then tries to locate it using 'fileName' as as relative path
-     * The final attempt is to locate the file using the 'fileName' an absolute path.  resolved from .
+     * Then tries to locate it using 'fileName' as an absolute path
+     * Then the algorithm tries to locate the file using the 'fileName' an relative path in USER_HOME or the current working directory.
+     * Finally attempt is made to locate the file directly in any of the available file system roots.
      *
      * This method never throw exceptions.
      * Returns null If fileName is null or file is not found neither as Java (system) resource, nor as file on the file system.

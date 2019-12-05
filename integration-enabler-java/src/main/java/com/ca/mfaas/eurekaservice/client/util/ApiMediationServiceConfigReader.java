@@ -69,10 +69,12 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
  *  </p>
  *
  *  <p>
- *  The values of the properties configured in both files can be overwritten by Java System properties an/or
+ *  The values of the properties configured in both files can be overwritten by Java System properties and/or
  *  ServletContext parameters. Set a parameter value in the YAML file to ${apiml.your.config.key} and provide the actual
- *  value  under the same key in a servlet cotext init parameter:
+ *  value  under the same key in a servlet context init parameter:
  *      <Parameter name="apiml.your.very.own.key" value="the-actual-property-value" />
+ *
+ *  , or in the corresponding Java System property.
  *  </p>
  *
  */
@@ -112,8 +114,7 @@ public class ApiMediationServiceConfigReader {
      * @param additionalConfiguration
      * @return
      */
-    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig additionalConfiguration)
-            throws ServiceDefinitionException {
+    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig additionalConfiguration) {
 
         Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(defaultConfiguration, Map.class);
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(additionalConfiguration, Map.class);

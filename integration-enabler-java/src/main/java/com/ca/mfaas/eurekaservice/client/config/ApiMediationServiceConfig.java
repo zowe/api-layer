@@ -116,10 +116,12 @@ public class ApiMediationServiceConfig {
      *     **Example in _YAML_:**
      *     * `https://host:port/servicename` for HTTPS service
      *
-     *     `baseUrl` is susequently used as a prefix in combination with the following end points relative addresses to construct their absolute URLs:
+     *     `baseUrl` is used as a prefix in combination with the following end points relative addresses to construct their absolute URLs:
      *     * **homePageRelativeUrl**
      *     * **statusPageRelativeUrl**
      *     * **healthCheckRelativeUrl**
+     *
+     *     `baseUrl` is used  for the
      */
     private String baseUrl;
 
@@ -204,7 +206,7 @@ public class ApiMediationServiceConfig {
     private Catalog catalog;
 
     /**
-     *  {@link Ssl} provides configuration parameters for SSL / TLS security of teh service.
+     *  {@link Ssl} provides configuration parameters for SSL / TLS security of the service.
      */
     private Ssl ssl;
 }

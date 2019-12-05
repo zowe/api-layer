@@ -292,11 +292,11 @@ public class ServiceDefinitionProcessor {
             mt.put(CATALOG_VERSION, DEFAULT_TILE_VERSION);
             mt.put(CATALOG_TITLE, tile.getTitle());
             mt.put(CATALOG_DESCRIPTION, tile.getDescription());
+        }
 
-            if (service.getApiInfo() != null) {
-                for (ApiInfo apiInfo : service.getApiInfo()) {
-                    mt.putAll(EurekaMetadataParser.generateMetadata(service.getServiceId(), apiInfo));
-                }
+        if (service.getApiInfo() != null) {
+            for (ApiInfo apiInfo : service.getApiInfo()) {
+                mt.putAll(EurekaMetadataParser.generateMetadata(service.getServiceId(), apiInfo));
             }
         }
 

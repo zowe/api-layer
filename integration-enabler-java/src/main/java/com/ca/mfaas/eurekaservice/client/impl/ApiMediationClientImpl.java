@@ -88,7 +88,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
      * @param applicationInfoManager
      * @param clientConfig
      * @param config
-     * @return
+     * @return Initialized {@link DiscoveryClient} instance - an implementation of {@link EurekaClient}
      */
     private EurekaClient initializeEurekaClient(
         ApplicationInfoManager applicationInfoManager, EurekaClientConfig clientConfig, ApiMediationServiceConfig config) {

@@ -33,6 +33,6 @@ public class ObjectUtilTest {
     public void testGetThisClas() {
         Class aClass = ObjectUtil.getThisClass();
         assertNotNull(aClass);
-        assertEquals("ObjectUtilTest", aClass.getSimpleName());
+        assertEquals(this.getClass().getSimpleName(), aClass.getSimpleName());
     }
 }

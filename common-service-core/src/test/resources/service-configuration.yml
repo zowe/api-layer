@@ -22,6 +22,7 @@ apiInfo:
     - apiId: org.zowe.hellospring
       gatewayUrl: api/v1
       swaggerUrl: http://localhost:10021/hellospring/api-doc
+      documentationUrl: http://localhost:10021/whatever/api-doc
 
 catalog:
     tile:

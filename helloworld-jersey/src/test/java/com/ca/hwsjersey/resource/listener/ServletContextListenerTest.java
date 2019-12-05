@@ -92,7 +92,7 @@ public class ServletContextListenerTest {
         context.setInitParameter("apiml.discoveryService.hostname", "localhost");
         context.setInitParameter("apiml.ssl.keyPassword", "password");
         context.setInitParameter("apiml.ssl.keyStorePassword", "password");
-        context.setInitParameter("apiml.ssl.trustStore", "password");
+        context.setInitParameter("apiml.ssl.trustStore", "safkeyring://PLATDEV/DBMRING");//
         context.setInitParameter("apiml.ssl.trustStorePassword", "password");
         context.setInitParameter("apiml.ssl.verifySslCertificatesOfServices", "true");
 

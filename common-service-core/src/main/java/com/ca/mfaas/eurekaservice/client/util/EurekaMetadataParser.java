@@ -162,6 +162,7 @@ public class EurekaMetadataParser {
      * Generate Eureka metadata for ApiInfo configuration
      *
      * @param serviceId the identifier of a service which ApiInfo configuration belongs
+     * @param apiInfo ApiInfo config data
      * @return the generated Eureka metadata
      */
     public static Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) {

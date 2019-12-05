@@ -84,14 +84,14 @@ public class FileUtilsTest {
         File aFile = FileUtils.locateFile(fileName);
         assertNotNull(aFile);
         assertEquals("service-configuration.yml", aFile.getName());
-        assertNotNull(aFile.canRead());
+        assertTrue(aFile.canRead());
 
         // Resource accessible using System classloader
         fileName = "service-configuration.yml";
         aFile = FileUtils.locateFile(fileName);
         assertNotNull(aFile);
         assertEquals("service-configuration.yml", aFile.getName());
-        assertNotNull(aFile.canRead());
+        assertTrue(aFile.canRead());
     }
     @Test
     public void testLocateFileAsDirectory() {
@@ -99,7 +99,7 @@ public class FileUtilsTest {
 
         File aFile = FileUtils.locateDirectory(fileName);
         assertNotNull(aFile);
-        assertNotNull(aFile.canRead());
+        assertTrue(aFile.canRead());
 
         fileName = ".";
         aFile = FileUtils.locateDirectory(fileName);
@@ -159,6 +159,6 @@ public class FileUtilsTest {
         File aFile = FileUtils.locateDirectory(fileName);
 
         assertNotNull(aFile);
-        assertNotNull(aFile.canRead());
+        assertTrue(aFile.canRead());
     }
 }

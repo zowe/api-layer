@@ -54,13 +54,13 @@ public class ApiMediationServiceConfigReaderTest {
         ApiMediationServiceConfig result = apiMediationServiceConfigReader.loadConfiguration(internalFileName, additionalFileName);
 
         assertNotNull(result);
-        assertEquals(result.getServiceId(), "hellopje");
+        assertEquals("hellopje", result.getServiceId());
 
         // Use default internal file name
         result = apiMediationServiceConfigReader.loadConfiguration(null, additionalFileName);
 
         assertNotNull(result);
-        assertEquals(result.getServiceId(), "hellopje");
+        assertEquals("hellopje", result.getServiceId());
     }
 
     @Test
@@ -338,6 +338,6 @@ public class ApiMediationServiceConfigReaderTest {
         ApiMediationServiceConfig result = apiMediationServiceConfigReader.loadConfiguration(internalFileName, additionalFileName);
 
         assertNotNull(result);
-        assertEquals(result.getServiceId(), "service");
+        assertEquals("service", result.getServiceId());
     }
 }

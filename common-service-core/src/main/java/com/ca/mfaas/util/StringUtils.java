@@ -18,13 +18,14 @@ import java.util.regex.Pattern;
 @UtilityClass
 public class StringUtils {
 
+    @SuppressWarnings("squid:S4784")
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile("\\$\\{([^}]*)\\}");
 
     /**
      * Remove from parameter 'input' the first and the last occurrence of parameter 'str'
      * @param input
      * @param str
-     * @return
+     * @return the the input string without the initial and final occurrence of str
      */
     public static String removeFirstAndLastOccurrence(String input, String str) {
         if (input == null) {
@@ -69,7 +70,7 @@ public class StringUtils {
      * @param uri
      * @param subStr
      * @param checkAlreadyPrepended
-     * @return
+     * @return result string prepended with subStr
      */
     public static String prependSubstring(String uri, String subStr, boolean checkAlreadyPrepended) {
         return prependSubstring(uri, subStr, checkAlreadyPrepended, true);
@@ -78,6 +79,12 @@ public class StringUtils {
     /**
      * If 'input' is not already prefixed with 'subStr', prepend parameter 'subStr' to parameter 'input'.
      * If 'input' has leading or trailing whitespaces, trim them first if 'shouldTrimWhitespaceFirst' is true
+     *
+     * @param uri
+     * @param subStr
+     * @param checkAlreadyPrepended
+     * @param shouldTrimWhitespaceFirst
+     * @return
      */
     public static String prependSubstring(String uri, String subStr, boolean checkAlreadyPrepended, boolean shouldTrimWhitespaceFirst) {
         if (uri == null) {

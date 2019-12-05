@@ -14,13 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 
 import java.net.*;
-import java.util.function.Supplier;
 
 @Slf4j
 @UtilityClass
 public class UrlUtils {
-
-    private static final Supplier<String> messageSupplier = () -> "Invalid URL";
 
 
     /**
@@ -47,34 +44,9 @@ public class UrlUtils {
         }
     }
 
-
-    /**
-     * Checks validity of URL string.
-     * Invalid URL string will trigger throwing a InvalidParameterException encapsulating the message of originally thrown MalformedURLException
-     *
-     * @param url validated url
-     */
-    public static void validateUrl(String url) throws MalformedURLException {
-        validateUrl(url, messageSupplier);
-    }
-
-    /**
-     * Checks validity of URL string.
-     * Invalid URL string will trigger throwing a InvalidParameterException encapsulating the message of originally thrown MalformedURLException
-     *
-     * @param url validated URL
-     * @param exceptionSupplier a Supplier<String>
-     */
-    public static void validateUrl(String url, Supplier<String> exceptionSupplier) throws MalformedURLException {
-        try {
-            new URL(url);
-        } catch (MalformedURLException e) {
-            throw new MalformedURLException(exceptionSupplier.get() + ": " + e.getMessage());
-        }
-    }
-
     /**
      * Removes leading and trailing slashes ("/") from input string
+     *
      * @param uri an URI string to trim slashes from
      * @return the trimmed URI string
      */
@@ -84,6 +56,7 @@ public class UrlUtils {
 
     /**
      * Prepends a slash ("/") to input string
+     *
      * @param uri An URI to prepend a '/' to.
      * @return the modified URI string
      */
@@ -102,16 +75,12 @@ public class UrlUtils {
 
     /**
      * Finds IP address hostname provided by fqdn string.
+     *
      * @param fqdn a Fully Qualified Domain Name to resolve as IP address
      * @return the resolved IP address or 'null'
      */
     public static String getHostIPAddress(String fqdn) throws UnknownHostException {
-        InetAddress address = InetAddress.getByName(fqdn);
-        if (address != null ) {
-            return address.getHostAddress();
-        }
-
-        return null;
+        return InetAddress.getByName(fqdn).getHostAddress();
     }
 
     /**
