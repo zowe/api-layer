@@ -125,18 +125,4 @@ public class UrlUtilsTest {
         String ipAddress = UrlUtils.getHostIPAddress(fqdn);
         assertNull(ipAddress);
     }
-
-    @Test
-    public void testValidateUrl_InvalidProtocol() throws MalformedURLException {
-        thrown.expect(MalformedURLException.class);
-
-        UrlUtils.validateUrl("httpN://www.google.com");
-    }
-
-    @Test
-    public void testValidateUrl_InvalidTLD() throws MalformedURLException {
-        thrown.expect(MalformedURLException.class);
-
-        UrlUtils.validateUrl("://www.google.com");
-    }
 }
