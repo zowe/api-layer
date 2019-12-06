@@ -62,27 +62,6 @@ public class ApiMediationServiceConfigReaderTest {
         assertEquals("hellopje", result.getServiceId());
     }
 
-/*
-    @Test
-    public void testReadConfigurationFile_Existing() throws ServiceDefinitionException {
-
-        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-
-        // 1) Existing file
-        String internalFileName = "/service-configuration.yml";
-        String result = apiMediationServiceConfigReader.readConfigurationFile(internalFileName);
-        assertNotNull(result);
-        assertNotEquals(result.length(),  -1);
-    }
-
-    @Test
-    public void readNotExistingConfiguration() throws ServiceDefinitionException {
-        String file = "no-existing-file";
-
-        assertNull(new ApiMediationServiceConfigReader().readConfigurationFile(file));
-    }
-*/
-
     @Test
     public void readConfigurationWithWrongFormat() throws ServiceDefinitionException {
         String file = "/bad-format-of-service-configuration.yml";
@@ -213,7 +192,7 @@ public class ApiMediationServiceConfigReaderTest {
     private void checkContextMap(Map<String, String> contextMap) {
         assertNotNull(contextMap);
         assertNull(contextMap.get("NOT-AN-apiml.config.location"));
-        assertEquals("/service-config.yml", contextMap.get("apiml.config.location"));
+        assertEquals("/service-configuration.yml", contextMap.get("apiml.config.location"));
         assertEquals("../config/local/helloworld-additional-config.yml", contextMap.get("apiml.config.additional-location"));
         assertEquals("127.0.0.2", contextMap.get("apiml.serviceIpAddress"));
         assertEquals("10011", contextMap.get("apiml.discoveryService.port"));
@@ -225,14 +204,13 @@ public class ApiMediationServiceConfigReaderTest {
         assertEquals("password", contextMap.get("apiml.ssl.trustStorePassword"));
     }
 
-    /*
+
     @Test
     public void testSetApiMlContext_Ok() {
         ServletContext context = getMockServletContext();
 
         ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
         Map<String, String>  contextMap = reader.setApiMlServiceContext(context);
-        //reader.
         checkContextMap(contextMap);
     }
 
@@ -247,32 +225,6 @@ public class ApiMediationServiceConfigReaderTest {
 
         checkContextMap(contextMap);
     }
-
-
-    @Test
-    public void testSetApiMlSystemProperties_Ok() {
-        ServletContext context = getMockServletContext();
-        setSystemProperties();
-        ApiMediationServiceConfigReader reader = new ApiMediationServiceConfigReader();
-        Map<String, String>  contextMap = reader.setApiMlSystemProperties();
-
-        checkContextMap(contextMap);
-    }*/
-
-    private void setSystemProperties() {
-        System.setProperty("NOT-AN-apiml.config.location", "/service-config.yml");
-        System.setProperty("apiml.config.location", "/service-config.yml");
-        System.setProperty("apiml.config.additional-location", "../config/local/helloworld-additional-config.yml");
-        System.setProperty("apiml.serviceIpAddress", "127.0.0.2");
-        System.setProperty("apiml.discoveryService.port", "10011");
-        System.setProperty("apiml.discoveryService.hostname", "localhost");
-        System.setProperty("apiml.ssl.enabled", "true");
-        System.setProperty("apiml.ssl.verifySslCertificatesOfServices", "true");
-        System.setProperty("apiml.ssl.keyPassword", "password");
-        System.setProperty("apiml.ssl.keyStorePassword", "password");
-        System.setProperty("apiml.ssl.trustStorePassword", "password");
-    }
-
 
     private Map<String, String>getMockServletContextMap() {
         ServletContext context = getMockServletContext();

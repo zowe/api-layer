@@ -305,7 +305,7 @@ public class ApiMediationServiceConfigReader {
      *
      * @param servletContext
      */
-    private Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
+    public Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
         Map<String, String> threadContextMap = getServiceContext();
 
         Enumeration<String> paramNames = servletContext.getInitParameterNames();
@@ -318,29 +318,6 @@ public class ApiMediationServiceConfigReader {
         }
         return threadContextMap;
     }
-
-    /**
-     * Utility method for setting this thread configuration context with ServletContext parameters who's keys are prefixed with "apiml."
-     *
-     * @param servletContext
-     */
-    private Map<String, String> setApiMlServiceContext(Map<String, String> servletContext) {
-        Map<String, String> threadContextMap = getServiceContext();
-
-        /*
-           Because this class is intended to be used mainly in web containers it is expected that
-           the thread instances belong to a thread pool.
-           We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
-        */
-        if (!threadContextMap.isEmpty()) {
-            threadContextMap.clear();
-        }
-
-        threadContextMap.putAll(servletContext);
-
-        return threadContextMap;
-    }
-
 
     /**
      * Uses {@link ApiMediationServiceConfigReader} to build {@link ApiMediationServiceConfig} configuration.
@@ -447,8 +424,7 @@ public class ApiMediationServiceConfigReader {
     /**
      * Add/Replace all system properties prefixed with "apiml." to the apiml context map stored in ThreadLocal.
      *
-     * WARNING: If called after setting Servlet context parameters this could rewrite configuration parameters set using both
-     * methods.
+     * WARNING: This method could rewrite previously set Servlet context parameters
      *
      */
     private Map<String, String> setApiMlSystemProperties() {

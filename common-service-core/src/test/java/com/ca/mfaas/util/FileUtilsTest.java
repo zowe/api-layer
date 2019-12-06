@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.util;
 
+import com.ca.mfaas.exception.ServiceDefinitionException;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
@@ -160,5 +161,21 @@ public class FileUtilsTest {
 
         assertNotNull(aFile);
         assertTrue(aFile.canRead());
+    }
+
+    @Test
+    public void testReadConfigurationFile_Existing() throws IOException, ServiceDefinitionException {
+
+        // 1) Existing file
+        String internalFileName = "/service-configuration.yml";
+        String result = FileUtils.readConfigurationFile(internalFileName);
+        assertNotNull(result);
+        assertNotEquals(result.length(),  -1);
+    }
+
+    @Test
+    public void readNotExistingConfiguration() throws IOException, ServiceDefinitionException {
+        String fileData = FileUtils.readConfigurationFile("no-existing-file");
+        assertNull(fileData);
     }
 }
