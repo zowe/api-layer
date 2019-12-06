@@ -22,8 +22,6 @@ import javax.servlet.ServletContext;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_ABSENT;
@@ -219,16 +217,10 @@ public class ApiMediationServiceConfigReader {
             internalConfigFileName = DEFAULT_CONFIGURATION_FILE_NAME;
         }
 
-        String configData = readConfigurationFile(internalConfigFileName);
-        configData = StringUtils.resolveExpressions(configData, threadConfigurationContext.get());
-
-        ApiMediationServiceConfig serviceConfig = buildConfiguration(configData);
+        ApiMediationServiceConfig serviceConfig = buildConfiguration(internalConfigFileName);
 
         if (externalizedConfigFileName != null) {
-            String externalizedConfigData = readConfigurationFile(externalizedConfigFileName);
-            externalizedConfigData = StringUtils.resolveExpressions(externalizedConfigData, threadConfigurationContext.get());
-
-            ApiMediationServiceConfig externalizedConfig = buildConfiguration(externalizedConfigData);
+            ApiMediationServiceConfig externalizedConfig = buildConfiguration(externalizedConfigFileName);
 
             ApiMediationServiceConfig mergedConfig = null;
             if (externalizedConfig != null) {
@@ -260,38 +252,37 @@ public class ApiMediationServiceConfigReader {
     }
 
     /**
-     * Reads configuration form a single YAML file.
+     * Creates a {@link ApiMediationServiceConfig} from provided config data string.
+     * By default a YAML format string is expected.
      *
      * @param fileName
      * @return
+     * @throws ServiceDefinitionException
      */
-    public String readConfigurationFile(String fileName) throws ServiceDefinitionException {
-        String configData = null;
-
-        File file = FileUtils.locateFile(fileName);
-        if (file != null) {
-            try {
-                configData = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-            } catch (IOException e) {
-                throw new ServiceDefinitionException(String.format("Configuration file [%s] can't be read.", file.getName()), e);
-            }
-        }
-
-        return configData;
+    public ApiMediationServiceConfig buildConfiguration(String fileName) throws ServiceDefinitionException {
+        return buildConfiguration(fileName, threadConfigurationContext.get());
     }
 
     /**
      * Creates a {@link ApiMediationServiceConfig} from provided config data string.
      * By default a YAML format string is expected.
      *
-     * @param configData
+     * @param fileName
      * @return
      * @throws ServiceDefinitionException
-     */
-    public ApiMediationServiceConfig buildConfiguration(String configData) throws ServiceDefinitionException {
-        if (configData == null) {
+    */
+    public ApiMediationServiceConfig buildConfiguration(String fileName, Map<String, String> properties) throws ServiceDefinitionException {
+        if (fileName == null) {
             return null;
         }
+
+        String configData = null;
+        try {
+            configData = FileUtils.readConfigurationFile(fileName);
+        } catch (IOException e) {
+            throw new ServiceDefinitionException(String.format("Configuration data can't be read from file %s.", fileName), e);
+        }
+        configData = StringUtils.resolveExpressions(configData, properties);
 
         try {
             return objectMapper.readValue(configData, ApiMediationServiceConfig.class);
@@ -314,7 +305,7 @@ public class ApiMediationServiceConfigReader {
      *
      * @param servletContext
      */
-    public Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
+    private Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
         Map<String, String> threadContextMap = getServiceContext();
 
         Enumeration<String> paramNames = servletContext.getInitParameterNames();
@@ -333,7 +324,7 @@ public class ApiMediationServiceConfigReader {
      *
      * @param servletContext
      */
-    public Map<String, String> setApiMlServiceContext(Map<String, String> servletContext) {
+    private Map<String, String> setApiMlServiceContext(Map<String, String> servletContext) {
         Map<String, String> threadContextMap = getServiceContext();
 
         /*
@@ -460,7 +451,7 @@ public class ApiMediationServiceConfigReader {
      * methods.
      *
      */
-    public Map<String, String> setApiMlSystemProperties() {
+    private Map<String, String> setApiMlSystemProperties() {
 
         Map<String, String> threadContextMap = getServiceContext();
 

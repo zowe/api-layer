@@ -13,7 +13,9 @@ package com.ca.mfaas.util;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -117,7 +119,7 @@ public class FileUtils {
     }
 
     private static URL getResourceUrl(String fileName) {
-        URL fileUrl = ObjectUtil.getThisClass().getResource(fileName);
+        URL fileUrl = FileUtils.class.getResource(fileName);
         if (fileUrl == null) {
             log.debug(String.format("File resource [%s] can't be found by this class classloader. We'll try with SystemClassLoader...", fileName));
 
@@ -129,4 +131,21 @@ public class FileUtils {
         return fileUrl;
     }
 
+    /**
+     * Reads test data form a file.
+     *
+     * @param fileName
+     * @return the file contents as String
+     * @throws IOException
+     */
+    public static String readConfigurationFile(String fileName) throws IOException {
+        String fileData = null;
+
+        File file = FileUtils.locateFile(fileName);
+        if (file != null) {
+            fileData = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
+        }
+
+        return fileData;
+    }
 }
