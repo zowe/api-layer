@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.util;
 
-import com.ca.mfaas.exception.ServiceDefinitionException;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
@@ -51,7 +50,6 @@ public class FileUtilsTest {
                 e.printStackTrace();
             }
         }
-
     }
 
     @AfterClass
@@ -64,7 +62,6 @@ public class FileUtilsTest {
             File documentsFolder = new File(CONFIG_PATH);
             documentsFolder.delete();
         }
-
     }
 
     @Test
@@ -94,6 +91,7 @@ public class FileUtilsTest {
         assertEquals("service-configuration.yml", aFile.getName());
         assertTrue(aFile.canRead());
     }
+
     @Test
     public void testLocateFileAsDirectory() {
         String fileName = "/";
@@ -107,8 +105,7 @@ public class FileUtilsTest {
         assertNotNull(aFile);
         assertTrue(aFile.getAbsolutePath().startsWith(System.getProperty("user.dir")));
 
-        fileName = null;
-        aFile = FileUtils.locateDirectory(fileName);
+        aFile = FileUtils.locateDirectory(null);
         assertNull(aFile);
     }
 
@@ -164,7 +161,7 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void testReadConfigurationFile_Existing() throws IOException, ServiceDefinitionException {
+    public void testReadConfigurationFile_Existing() throws IOException {
 
         // 1) Existing file
         String internalFileName = "/service-configuration.yml";
@@ -174,7 +171,7 @@ public class FileUtilsTest {
     }
 
     @Test
-    public void readNotExistingConfiguration() throws IOException, ServiceDefinitionException {
+    public void readNotExistingConfiguration() throws IOException {
         String fileData = FileUtils.readConfigurationFile("no-existing-file");
         assertNull(fileData);
     }

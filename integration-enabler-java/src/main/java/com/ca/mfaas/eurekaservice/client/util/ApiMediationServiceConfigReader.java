@@ -12,6 +12,7 @@ package com.ca.mfaas.eurekaservice.client.util;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.util.FileUtils;
+import com.ca.mfaas.util.ObjectUtil;
 import com.ca.mfaas.util.StringUtils;
 import com.ca.mfaas.util.UrlUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -112,57 +113,13 @@ public class ApiMediationServiceConfigReader {
      * @param additionalConfiguration
      * @return
      */
-    private ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig additionalConfiguration) {
+    public ApiMediationServiceConfig mergeConfigurations(ApiMediationServiceConfig defaultConfiguration, ApiMediationServiceConfig additionalConfiguration) {
 
         Map<String, Object> defaultConfigPropertiesMap = objectMapper.convertValue(defaultConfiguration, Map.class);
         Map<String, Object> additionalConfigPropertiesMap = objectMapper.convertValue(additionalConfiguration, Map.class);
-        Map<String, Object> config = mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
+        Map<String, Object> config = ObjectUtil.mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
 
         return objectMapper.convertValue(config, ApiMediationServiceConfig.class);
-    }
-
-    /**
-     * Merges two Maps using deep merge method. The properties in additionalConfigurationMap have higher priority over defaultConfigurationMap,
-     * i.e they will replace the value of property from defaultConfigurationMap having the same key.
-     *
-     * @param defaultConfigurationMap
-     * @param additionalConfigurationMap
-     * @return
-     */
-    public Map<String, Object> mergeConfigurations(Map<String, Object> defaultConfigurationMap, Map<String, Object> additionalConfigurationMap) {
-
-        if ((defaultConfigurationMap != null) && (additionalConfigurationMap != null)) {
-            return mergeMapsDeep(defaultConfigurationMap, additionalConfigurationMap);
-        }
-
-        if (additionalConfigurationMap != null) {
-            return  additionalConfigurationMap;
-        }
-
-        return defaultConfigurationMap;
-    }
-
-    /**
-     *  Deep merge of two maps. Drills down recursively into Container values - Map and List
-     */
-    private static Map<String, Object> mergeMapsDeep(Map map1, Map map2) {
-        for (Map.Entry<String, Object> entry : (Set<Map.Entry>)map2.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if (map1.get(key) instanceof Map && value instanceof Map) {
-                map1.put(key, mergeMapsDeep((Map) map1.get(key), (Map)value));
-            } else if (map1.get(key) instanceof List && value instanceof List) {
-                Collection originalChild = (Collection) map1.get(key);
-                for (Object each : (Collection)value) {
-                    if (!originalChild.contains(each)) {
-                        originalChild.add(each);
-                    }
-                }
-            } else {
-                map1.put(key, value);
-            }
-        }
-        return map1;
     }
 
     /**
@@ -195,7 +152,7 @@ public class ApiMediationServiceConfigReader {
     public ApiMediationServiceConfig loadConfiguration(String internalConfigFileName, String externalizedConfigFileName)
         throws ServiceDefinitionException {
 
-        return loadConfiguration(internalConfigFileName, externalizedConfigFileName, true);
+        return loadConfiguration(internalConfigFileName, externalizedConfigFileName, false);
     }
 
     private ApiMediationServiceConfig loadConfiguration(String internalConfigFileName, String externalizedConfigFileName, boolean isInitialized)
@@ -205,7 +162,7 @@ public class ApiMediationServiceConfigReader {
          * Loading new configuration. Clean context map which might be kept in ThreadLocal object from previous configs.
          */
         if (!isInitialized) {
-            initializeContextMap();
+            ObjectUtil.initializeContextMap(threadConfigurationContext);
 
             /*
              * Store API ML relevant ("apiml." prefixed) Java system properties to a Map in ThreadLocal
@@ -291,22 +248,13 @@ public class ApiMediationServiceConfigReader {
         }
     }
 
-    private Map<String, String> getServiceContext() {
-        Map<String, String>  aMap = threadConfigurationContext.get();
-        if (aMap == null) {
-            aMap = new HashMap<>();
-            threadConfigurationContext.set(aMap);
-        }
-        return aMap;
-    }
-
     /**
      * Utility method for setting this thread configuration context with ServletContext parameters who's keys are prefixed with "apiml."
      *
      * @param servletContext
      */
     public Map<String, String> setApiMlServiceContext(ServletContext servletContext) {
-        Map<String, String> threadContextMap = getServiceContext();
+        Map<String, String> threadContextMap = ObjectUtil.getThreadContextMap(threadConfigurationContext);
 
         Enumeration<String> paramNames = servletContext.getInitParameterNames();
         while (paramNames.hasMoreElements()) {
@@ -368,7 +316,7 @@ public class ApiMediationServiceConfigReader {
         /*
          * Loading new configuration. Clean context map which might be kept in ThreadLocal object from previous configs.
          */
-        initializeContextMap();
+        ObjectUtil.initializeContextMap(threadConfigurationContext);
 
         /*
          * Store API ML relevant ("apiml." prefixed) Java system properties to a Map in ThreadLocal
@@ -381,7 +329,7 @@ public class ApiMediationServiceConfigReader {
          */
         setApiMlServiceContext(context);
 
-        Map<String, String> threadContextMap = getServiceContext();
+        Map<String, String> threadContextMap = ObjectUtil.getThreadContextMap(threadConfigurationContext);
 
         /*
          *  Get default configuration file name from ServletContext init parameter.
@@ -407,21 +355,6 @@ public class ApiMediationServiceConfigReader {
     }
 
     /**
-     *  Because this class is intended to be used mainly in web containers it is expected that
-     *  the thread instances belong to a thread pool.
-     *  We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
-     */
-    private void initializeContextMap() {
-        threadConfigurationContext.remove();
-
-        Map<String, String> threadContextMap = getServiceContext();
-
-        if (!threadContextMap.isEmpty()) {
-            threadContextMap.clear();
-        }
-    }
-
-    /**
      * Add/Replace all system properties prefixed with "apiml." to the apiml context map stored in ThreadLocal.
      *
      * WARNING: This method could rewrite previously set Servlet context parameters
@@ -429,7 +362,7 @@ public class ApiMediationServiceConfigReader {
      */
     private Map<String, String> setApiMlSystemProperties() {
 
-        Map<String, String> threadContextMap = getServiceContext();
+        Map<String, String> threadContextMap = ObjectUtil.getThreadContextMap(threadConfigurationContext);
 
         Enumeration<?> propertyNames = System.getProperties().propertyNames();
         while (propertyNames.hasMoreElements()) {

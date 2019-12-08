@@ -87,8 +87,8 @@ public class UrlUtils {
      *
      * @param urlString is a string representing a URL
      * @return IP address of the host domain name provided by FQDN
-     * @throws MalformedURLException
-     * @throws UnknownHostException
+     * @throws MalformedURLException if urlString parameter is not valid URL
+     * @throws UnknownHostException if host name part of the URL is not resolvable
      */
     public static String getIpAddressFromUrl(String urlString) throws MalformedURLException, UnknownHostException {
         URL baseUrl = new URL(urlString);

@@ -98,24 +98,9 @@ public class FileUtils {
             if ((file != null) && file.canRead()) {
                 return file;
             }
-            // Relative path can exist on multiple root file systems. Try all of them.
-            file = findPathInRoots(path);
         }
 
         return file;
-    }
-
-    private static File findPathInRoots(Path path) {
-        Path resolvedPath;
-        File aFile;
-        for (File root : File.listRoots()) {
-            resolvedPath = root.toPath().resolve(path);
-            aFile = resolvedPath.toFile();
-            if (aFile.canRead()) {
-                return aFile;
-            }
-        }
-        return null;
     }
 
     private static URL getResourceUrl(String fileName) {
@@ -134,9 +119,9 @@ public class FileUtils {
     /**
      * Reads test data form a file.
      *
-     * @param fileName
+     * @param fileName - file name string to look for.
      * @return the file contents as String
-     * @throws IOException
+     * @throws IOException - if file can't be read.
      */
     public static String readConfigurationFile(String fileName) throws IOException {
         String fileData = null;

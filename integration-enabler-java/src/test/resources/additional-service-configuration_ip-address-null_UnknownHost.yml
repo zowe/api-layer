@@ -1,8 +1,7 @@
 serviceId: service
 title: HelloWorld Spring REST API
 description: POC for exposing a Spring REST API
-baseUrl: http://localhost:10021/hellospring
-serviceIpAddress: 127.0.0.1
+baseUrl: http://blah.blah.blah.com:10021/hellospring
 
 homePageRelativeUrl: /
 statusPageRelativeUrl: /application/info
@@ -35,9 +34,9 @@ ssl:
     protocol: TLSv1.2
     keyAlias: localhost
     keyPassword: password
-    keyStore: keystore/localhost/localhost.keystore.p12
+    keyStore: ../keystore/localhost/localhost.keystore.p12
     keyStorePassword: password
     keyStoreType: PKCS12
-    trustStore: keystore/localhost/localhost.truststore.p12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password
     trustStoreType: PKCS12

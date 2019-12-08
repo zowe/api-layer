@@ -12,6 +12,8 @@ package com.ca.mfaas.util;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.*;
+
 @Slf4j
 @UtilityClass
 public class ObjectUtil {
@@ -47,4 +49,67 @@ public class ObjectUtil {
     }
 
 
+    public Map<String, String> getThreadContextMap(ThreadLocal<Map<String, String>> threadConfigurationContext) {
+        Map<String, String>  aMap = threadConfigurationContext.get();
+        if (aMap == null) {
+            aMap = new HashMap<>();
+            threadConfigurationContext.set(aMap);
+        }
+        return aMap;
+    }
+
+
+    /**
+     * Merges two Maps using deep merge method. The properties in secondMap have higher priority over defaultConfigurationMap,
+     * i.e they will replace the value of property from defaultConfigurationMap having the same key.
+     *
+     * @param firstMap
+     * @param secondMap
+     * @return
+     */
+    public Map<String, Object> mergeConfigurations(Map<String, Object> firstMap, Map<String, Object> secondMap) {
+
+        if ((firstMap!= null) && (secondMap != null)) {
+            return mergeMapsDeep(firstMap, secondMap);
+        }
+
+        if (secondMap != null) {
+            return  secondMap;
+        }
+
+        return firstMap;
+    }
+
+    /**
+     *  Deep merge of two maps. Drills down recursively into Container values - Map and List
+     */
+    private static Map<String, Object> mergeMapsDeep(Map map1, Map map2) {
+        for (Map.Entry<String, Object> entry : (Set<Map.Entry>)map2.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (map1.get(key) instanceof Map && value instanceof Map) {
+                map1.put(key, mergeMapsDeep((Map) map1.get(key), (Map)value));
+            } else if (map1.get(key) instanceof List && value instanceof List) {
+                Collection originalChild = (Collection) map1.get(key);
+                for (Object each : (Collection)value) {
+                    if (!originalChild.contains(each)) {
+                        originalChild.add(each);
+                    }
+                }
+            } else {
+                map1.put(key, value);
+            }
+        }
+        return map1;
+    }
+
+
+    /**
+     *  Because this class is intended to be used mainly in web containers it is expected that
+     *  the thread instances belong to a thread pool.
+     *  We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
+     */
+    public static void initializeContextMap(ThreadLocal threadConfigurationContext) {
+        threadConfigurationContext.remove();
+    }
 }
