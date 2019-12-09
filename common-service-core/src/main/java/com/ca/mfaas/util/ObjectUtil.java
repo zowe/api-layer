@@ -69,7 +69,7 @@ public class ObjectUtil {
      */
     public Map<String, Object> mergeConfigurations(Map<String, Object> firstMap, Map<String, Object> secondMap) {
 
-        if ((firstMap!= null) && (secondMap != null)) {
+        if ((firstMap != null) && (secondMap != null)) {
             return mergeMapsDeep(firstMap, secondMap);
         }
 

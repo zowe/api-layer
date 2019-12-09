@@ -72,7 +72,7 @@ public class ObjectUtilTest {
         map3 = ObjectUtil.mergeConfigurations(null, additionalConfigPropertiesMap);
 
         assertNotNull(map3);
-        assertEquals("../keystore/localhost/localhost.truststore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
     }
 
