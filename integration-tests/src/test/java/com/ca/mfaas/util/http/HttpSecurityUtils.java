@@ -11,6 +11,7 @@ package com.ca.mfaas.util.http;
 
 import com.ca.mfaas.util.config.ConfigReader;
 import com.ca.mfaas.util.config.Credentials;
+import com.ca.mfaas.gatewayservice.SecurityUtils;
 import lombok.experimental.UtilityClass;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -29,8 +30,8 @@ public class HttpSecurityUtils {
         Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
         String user = credentials.getUser();
         String password = credentials.getPassword();
-        URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/gateway/auth/login"); //can be centralized in config java file
-
+        URI uri = HttpRequestUtils
+                .getUriFromGateway(SecurityUtils.GATEWAY_BASE_PATH.concat(SecurityUtils.GATEWAY_LOGIN_ENDPOINT));
         return getCookie(uri, user, password);
     }
 
