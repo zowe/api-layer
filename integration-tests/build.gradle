@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     compile libraries.http_client
-    compile group: 'com.netflix.eureka', name: 'eureka-client', version: '1.9.2' //need to replace with libraries.*
+    compile libraries.eureka_client
     compile libraries.jackson_dataformat_yaml
     compile libraries.jackson_databind
     compile libraries.json_path
