@@ -35,7 +35,7 @@ public class ObjectUtilTest {
     }
 
     @Test
-    public void testGetThisClas() {
+    public void testGetThisClass() {
         Class aClass = ObjectUtil.getThisClass();
         assertNotNull(aClass);
         assertEquals(this.getClass().getSimpleName(), aClass.getSimpleName());
@@ -198,30 +198,5 @@ public class ObjectUtilTest {
         assertEquals("password2", ((Map)map3.get("ssl")).get("keyStorePassword"));
         assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
-    }
-
-    @Test
-    public void testInitializeContextMap() {
-        ThreadLocal<Map<String, String>> threadConfigurationContext = new ThreadLocal();
-        Map map = ObjectUtil.getThreadContextMap(threadConfigurationContext);
-        assertNotNull(map);
-        assertEquals(0, map.size());
-
-        map.put("ZOWE", "APIML");
-
-        map = ObjectUtil.getThreadContextMap(threadConfigurationContext);
-        assertNotNull(map);
-        assertEquals(1, map.size());
-        assertEquals("APIML", map.get("ZOWE"));
-
-        ObjectUtil.initializeContextMap(threadConfigurationContext);
-
-        Map newMap = ObjectUtil.getThreadContextMap(threadConfigurationContext);
-        assertNotNull(newMap);
-        assertEquals(0, newMap.size());
-        assertNotSame(map, newMap);
-
-        newMap.put("APIML", "ZOWE");
-        assertNotEquals(map, newMap);
     }
 }

@@ -162,7 +162,7 @@ public class ApiMediationServiceConfigReader {
          * Loading new configuration. Clean context map which might be kept in ThreadLocal object from previous configs.
          */
         if (!isInitialized) {
-            ObjectUtil.initializeContextMap(threadConfigurationContext);
+            initializeContextMap();
 
             /*
              * Store API ML relevant ("apiml." prefixed) Java system properties to a Map in ThreadLocal
@@ -316,7 +316,7 @@ public class ApiMediationServiceConfigReader {
         /*
          * Loading new configuration. Clean context map which might be kept in ThreadLocal object from previous configs.
          */
-        ObjectUtil.initializeContextMap(threadConfigurationContext);
+        initializeContextMap();
 
         /*
          * Store API ML relevant ("apiml." prefixed) Java system properties to a Map in ThreadLocal
@@ -374,5 +374,14 @@ public class ApiMediationServiceConfigReader {
         }
 
         return threadContextMap;
+    }
+
+    /**
+     *  Because this class is intended to be used mainly in web containers it is expected that
+     *  the thread instances belong to a thread pool.
+     *  We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
+     */
+    private void initializeContextMap() {
+        threadConfigurationContext.remove();
     }
 }

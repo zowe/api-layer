@@ -102,14 +102,4 @@ public class ObjectUtil {
         }
         return map1;
     }
-
-
-    /**
-     *  Because this class is intended to be used mainly in web containers it is expected that
-     *  the thread instances belong to a thread pool.
-     *  We need then to clean the threadConfigurationContext before loading new configuration parameters from servlet context.
-     */
-    public static void initializeContextMap(ThreadLocal threadConfigurationContext) {
-        threadConfigurationContext.remove();
-    }
 }
