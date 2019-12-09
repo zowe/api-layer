@@ -24,6 +24,7 @@ dependencies {
     compile libraries.spring_boot_starter_websocket
     compile libraries.json
     compile libraries.jjwt
+    compile(project(':apiml-security-common'))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest

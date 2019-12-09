@@ -11,7 +11,7 @@ package com.ca.mfaas.apicatalog;
 
 import com.ca.apiml.security.common.login.LoginRequest;
 import com.ca.mfaas.util.config.ConfigReader;
-]import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
