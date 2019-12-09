@@ -24,6 +24,7 @@ dependencies {
     compile libraries.jackson_databind
     compile libraries.springFox
     compile libraries.logback_classic
+    compileOnly libraries.lombok
 
     providedCompile libraries.javax_servlet_api
 

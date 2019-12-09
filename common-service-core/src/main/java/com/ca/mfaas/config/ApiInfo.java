@@ -13,16 +13,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.lang.RandomStringUtils;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.InvalidParameterException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 
 /**
  * Represents one API provided by a service
@@ -31,70 +21,27 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 @AllArgsConstructor
 @Data
 public class ApiInfo {
-    private static final String METADATA_FORMAT = "%s.%s.%s";
 
+    /**
+     * apiId - specifies the API identifier that is registered in the API ML installation.
+
+     * The API ID uniquely identifies the API in the API ML.
+     * Multiple services can provide the same API. The API ID can be used
+     * to locate the same APIs that are provided by different services.
+     * The creator of the API defines this ID.
+     * The API ID needs to be a string of up to 64 characters
+     * that uses lowercase alphanumeric characters and a dot: `.` .
+     *
+     * We recommend that you use your organization as the prefix.
+     *
+     * XML Path: /instance/metadata/apiml.apiInfo.${api-index}.apiId
+     */
     @JsonProperty(required = true)
     private String apiId;
+
+
     private String gatewayUrl;
     private String version;
     private String swaggerUrl;
     private String documentationUrl;
-
-    /**
-     * Generate Eureka metadata for ApiInfo configuration
-     *
-     * @param serviceId the identifier of a service which ApiInfo configuration belongs
-     * @return the generated Eureka metadata
-     */
-    //TODO: move to EurekaMetadataParser
-    public Map<String, String> generateMetadata(String serviceId) {
-        Map<String, String> metadata = new HashMap<>();
-        String encodedGatewayUrl = getEncodedGatewayUrl(gatewayUrl);
-
-        if (gatewayUrl != null) {
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_GATEWAY_URL), gatewayUrl);
-        }
-
-        if (version != null) {
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_VERSION), version);
-        }
-
-        if (swaggerUrl != null) {
-            validateUrl(swaggerUrl,
-                () -> String.format("The Swagger URL \"%s\" for service %s is not valid", swaggerUrl, serviceId)
-            );
-
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_SWAGGER_URL), swaggerUrl);
-        }
-
-        if (documentationUrl != null) {
-            validateUrl(documentationUrl,
-                () -> String.format("The documentation URL \"%s\" for service %s is not valid", documentationUrl, serviceId)
-            );
-
-            metadata.put(createMetadataKey(encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), documentationUrl);
-        }
-
-        return metadata;
-    }
-
-    private String createMetadataKey(String encodedGatewayUrl, String url) {
-        return String.format(METADATA_FORMAT, API_INFO, encodedGatewayUrl, url);
-    }
-
-    private String getEncodedGatewayUrl(String gatewayUrl) {
-        if (gatewayUrl != null) {
-            return gatewayUrl.replaceAll("\\W", "-");
-        } else {
-            return RandomStringUtils.randomAlphanumeric(10);
-        }
-    }
-
-    private void validateUrl(String url, Supplier<String> exceptionSupplier) {
-        try {
-            new URL(url);
-        } catch (MalformedURLException e) {
-            throw new InvalidParameterException(exceptionSupplier.get() + ": " + e.getMessage());
-        }
-    }
 }

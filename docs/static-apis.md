@@ -17,7 +17,7 @@ Only routing is supported. Defining metadata for the API catalog will be support
 
 [config/local/api-defs/staticclient.yml](/config/local/api-defs/staticclient.yml) contains a static definition of the "discoverable-client" sample service with service ID "staticclient". An integration test checks that the response of one endpoint is same.
 
-An example for z/OSMF is provided in [config/local/api-defs/zosmf-sample.yml](/config/local/api-defs/zosmf-sample.yml)
+An example for z/OSMF is provided in [config/local/api-defs/zosmf-sample.yml](/config/local/api-defs/zosmf-sample.yml_)
 
 ## Reloading static API definitions
 

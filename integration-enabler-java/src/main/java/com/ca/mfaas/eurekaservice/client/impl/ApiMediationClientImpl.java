@@ -10,12 +10,11 @@
 package com.ca.mfaas.eurekaservice.client.impl;
 
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
-import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.config.EurekaClientConfiguration;
-import com.ca.mfaas.eurekaservice.client.config.Route;
-import com.ca.mfaas.eurekaservice.client.config.Ssl;
-import com.ca.mfaas.eurekaservice.client.util.StringUtils;
-import com.ca.mfaas.eurekaservice.client.util.UrlUtils;
+import com.ca.mfaas.eurekaservice.client.config.*;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
+import com.ca.mfaas.exception.MetadataValidationException;
+import com.ca.mfaas.exception.ServiceDefinitionException;
+import com.ca.mfaas.util.UrlUtils;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsFactory;
@@ -29,35 +28,68 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+
+/**
+ *  Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
+ *  API Mediation Layer Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient}, which is
+ *  stored in a member variable for later use. The client instance is internally used during unregistering.
+ *  A getter method is provided for accessing the instance by the owning object.
+ *
+ */
 public class ApiMediationClientImpl implements ApiMediationClient {
-    private static final Logger log = LoggerFactory.getLogger(ApiMediationClientImpl.class);
 
     private EurekaClient eurekaClient;
 
+    /**
+     * Rregisters this service with Eureka server using EurekaClient which is initialized with the provided {@link ApiMediationServiceConfig} methods parameter.
+     * Successive calls to {@link #register} method without intermediate call to {@linl #unregister} will be rejected with exception.
+     *
+     * This method catches all RuntimeException, and rethrows {@link ServiceDefinitionException} checked exception.
+     *
+     * @param config
+     * @throws ServiceDefinitionException
+     */
     @Override
-    public synchronized void register(ApiMediationServiceConfig config) {
-        ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
+    public synchronized void register(ApiMediationServiceConfig config) throws ServiceDefinitionException {
+        if (eurekaClient != null) {
+            throw new ServiceDefinitionException("EurekaClient was previously registered for this instance of ApiMediationClient. Call your ApiMediationClient unregister() method before attempting other registration.");
+        }
+
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
-        eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
-        log.debug("eurekaClient.getApplicationInfoManager().getInfo().getHostName(): {}", eurekaClient.getApplicationInfoManager().getInfo().getHostName());
+        try {
+            ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
+            eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
+        } catch (RuntimeException rte) {
+            throw new ServiceDefinitionException("Registration was not successful due to unexpected RuntimeException: ", rte);
+        }
     }
 
+    /**
+     * Unregister the service from Eureka server.
+     */
     @Override
     public synchronized void unregister() {
         if (eurekaClient != null) {
             eurekaClient.shutdown();
         }
+        eurekaClient = null;
     }
 
+    /**
+     * Create and initialize EurekaClient instance.
+     *
+     * @param applicationInfoManager
+     * @param clientConfig
+     * @param config
+     * @return Initialized {@link DiscoveryClient} instance - an implementation of {@link EurekaClient}
+     */
     private EurekaClient initializeEurekaClient(
         ApplicationInfoManager applicationInfoManager, EurekaClientConfig clientConfig, ApiMediationServiceConfig config) {
 
@@ -72,7 +104,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             .trustStore(sslConfig.getTrustStore())
             .trustStoreType(sslConfig.getTrustStoreType())
             .trustStorePassword(sslConfig.getTrustStorePassword())
-            .verifySslCertificatesOfServices(sslConfig.isVerifySslCertificatesOfServices())
+            .verifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()))
             .build();
         HttpsFactory factory = new HttpsFactory(httpsConfig);
         EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(
@@ -84,13 +116,13 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         return new DiscoveryClient(applicationInfoManager, clientConfig, args);
     }
 
-    private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) {
+    private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         EurekaInstanceConfig eurekaInstanceConfig = createEurekaInstanceConfig(config);
         InstanceInfo instanceInformation = new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get();
         return new ApplicationInfoManager(eurekaInstanceConfig, instanceInformation);
     }
 
-    private EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) {
+    private EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
         String hostname;
@@ -103,21 +135,20 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             port = baseUrl.getPort();
         } catch (MalformedURLException e) {
             String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
-            throw new InvalidParameterException(message);
+            throw new ServiceDefinitionException(message, e);
         }
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
         result.setAppname(config.getServiceId());
+        result.setAppGroupName(config.getServiceId());
         result.setHostName(hostname);
-        result.setAppGroupName(null);
+        result.setIpAddress(config.getServiceIpAddress());
         result.setInstanceEnabledOnit(true);
         result.setSecureVirtualHostName(config.getServiceId());
         result.setVirtualHostName(config.getServiceId());
-        result.setIpAddress(config.getEureka().getIpAddress());
-        result.setMetadataMap(createMetadata(config));
         result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
 
-        if (!StringUtils.isNullOrEmpty(config.getHomePageRelativeUrl())) {
+        if ((config.getHomePageRelativeUrl() != null) && !config.getHomePageRelativeUrl().isEmpty()) {
             result.setHomePageUrl(config.getBaseUrl() + config.getHomePageRelativeUrl());
         }
 
@@ -135,12 +166,17 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
-                throw new InvalidParameterException("Invalid protocol for baseUrl property");
+                throw new ServiceDefinitionException(String.format("'%s' is not valid protocol for baseUrl property", protocol));
+        }
+
+        try {
+            result.setMetadataMap(createMetadata(config));
+        } catch (MetadataValidationException e) {
+            throw new ServiceDefinitionException("Service configuration failed: ", e);
         }
 
         return result;
     }
-
 
     private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
         Map<String, String> metadata = new HashMap<>();
@@ -150,27 +186,39 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
             String serviceUrl = route.getServiceUrl();
             String key = gatewayUrl.replace("/", "-");
-            metadata.put(String.format("routed-services.%s.gateway-url", key), gatewayUrl);
-            metadata.put(String.format("routed-services.%s.service-url", key), serviceUrl);
+            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
+            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
         }
 
         // fill tile metadata
-        if (config.getCatalogUiTile() != null) {
-            metadata.put("mfaas.discovery.catalogUiTile.id", config.getCatalogUiTile().getId());
-            metadata.put("mfaas.discovery.catalogUiTile.version", config.getCatalogUiTile().getVersion());
-            metadata.put("mfaas.discovery.catalogUiTile.title", config.getCatalogUiTile().getTitle());
-            metadata.put("mfaas.discovery.catalogUiTile.description", config.getCatalogUiTile().getDescription());
+        if (config.getCatalog() != null) {
+            Catalog.Tile tile = config.getCatalog().getTile();
+            if (tile != null) {
+                metadata.put(CATALOG_ID, tile.getId());
+                metadata.put(CATALOG_VERSION, tile.getVersion());
+                metadata.put(CATALOG_TITLE, tile.getTitle());
+                metadata.put(CATALOG_DESCRIPTION, tile.getDescription());
+            }
         }
 
         // fill service metadata
-        metadata.put("mfaas.discovery.service.title", config.getTitle());
-        metadata.put("mfaas.discovery.service.description", config.getDescription());
+        metadata.put(SERVICE_TITLE, config.getTitle());
+        metadata.put(SERVICE_DESCRIPTION, config.getDescription());
 
         // fill api-doc info
         for (ApiInfo apiInfo : config.getApiInfo()) {
-            metadata.putAll(apiInfo.generateMetadata(config.getServiceId()));
+            metadata.putAll(EurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
         }
 
         return metadata;
+    }
+
+    /**
+     * Can be used by the caller to work with Eureka registry instances, regions, applications ,etc.
+     *
+     * @return the inner EurekaClient instance.
+     */
+    public EurekaClient getEurekaClient() {
+        return eurekaClient;
     }
 }
