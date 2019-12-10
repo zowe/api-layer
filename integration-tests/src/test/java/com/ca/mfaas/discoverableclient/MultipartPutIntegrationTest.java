@@ -40,27 +40,32 @@ public class MultipartPutIntegrationTest {
     @Test
     public void shouldDoPutRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
+        String expectedResponseBody = "{\"fileName\":\"example.txt\",\"fileType\":\"application/octet-stream\",\"size\":40}";
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
         given().
             contentType("multipart/form-data").
             multiPart(new File(classLoader.getResource(configFileName).getFile())).
         expect().
             statusCode(200).
-            body(is("fileUploadView")).
+            body(is(expectedResponseBody)).
         when().
             put(uri);
     }
 
     @Test
-    public void shouldDoPutRequestAndReturnOk() {
+    public void shouldDoPostRequestAndMatchReturnBody() {
+        RestAssured.registerParser("text/plain", Parser.JSON);
+        String expectedResponseBody = "{\"fileName\":\"example.txt\",\"fileType\":\"application/octet-stream\",\"size\":40}";
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
         given().
             contentType("multipart/form-data").
             multiPart(new File(classLoader.getResource(configFileName).getFile())).
+        expect().
+            statusCode(200).
+            body(is(expectedResponseBody)).
         when().
-            put(uri).
-        then().
-            statusCode(200);
+            post(uri);
     }
+
     //@formatter:on
 }
