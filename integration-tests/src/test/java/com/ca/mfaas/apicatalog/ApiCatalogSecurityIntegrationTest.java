@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.apicatalog;
 
-import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.gatewayservice.SecurityUtils;
 import com.ca.mfaas.util.config.ConfigReader;
 import io.restassured.RestAssured;
@@ -42,6 +41,7 @@ public class ApiCatalogSecurityIntegrationTest {
     private static final String CATALOG_ACTUATOR_ENDPOINT = "/application";
 
     private final static String COOKIE = "apimlAuthenticationToken";
+    private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
 
     private final String endpoint;
 
@@ -73,7 +73,7 @@ public class ApiCatalogSecurityIntegrationTest {
                 CATALOG_SERVICE_ID, endpoint))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
-            .header(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
+            .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
             .body("messages.find { it.messageNumber == 'ZWEAS105E' }.messageContent", equalTo(expectedMessage)
             );
     }

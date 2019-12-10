@@ -42,8 +42,8 @@ public class SecurityUtils {
     final static String ZOSMF_TOKEN = "LtpaToken2";
 
     private final static String GATEWAY_TOKEN = "apimlAuthenticationToken";
-    private final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
-    private final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
+    public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
+    public final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
 
     private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();

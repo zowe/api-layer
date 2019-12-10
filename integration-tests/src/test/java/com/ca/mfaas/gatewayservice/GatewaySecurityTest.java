@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -39,6 +38,8 @@ public class GatewaySecurityTest {
     private static final String PROTECTED_ENDPOINT = "/application/routes";
     private final static String COOKIE = "apimlAuthenticationToken";
 
+    private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
+
     @Before
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
@@ -52,7 +53,7 @@ public class GatewaySecurityTest {
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
-            .header(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
+            .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX);
     }
 
     @Test

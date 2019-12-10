@@ -17,13 +17,14 @@ repositories {
 
 dependencies {
     compile libraries.http_client
+    compile libraries.eureka_client
     compile libraries.jackson_dataformat_yaml
     compile libraries.jackson_databind
     compile libraries.json_path
     compile libraries.spring_boot_starter_websocket
     compile libraries.json
     compile libraries.jjwt
-    compile(project(':security-service-client-spring'))
+    compile(project(':apiml-security-common'))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest
