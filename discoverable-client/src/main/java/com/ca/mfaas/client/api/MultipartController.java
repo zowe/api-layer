@@ -10,6 +10,7 @@
 package com.ca.mfaas.client.api;
 
 import com.ca.mfaas.client.model.UploadFileResponse;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,9 +18,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class MultipartController {
     @RequestMapping(
         value = "api/v1/multipart",
-        method = {RequestMethod.POST, RequestMethod.PUT},
-        headers = "content-type=multipart/form-data")
-    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file) {
+        method = RequestMethod.POST,
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UploadFileResponse uploadFileWithPost(@RequestParam("file") MultipartFile file) {
+        return new UploadFileResponse(file.getOriginalFilename(), file.getContentType(), file.getSize());
+    }
+
+    @RequestMapping(
+        value = "api/v1/multipart",
+        method = RequestMethod.PUT,
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UploadFileResponse uploadFileWithPut(@RequestParam("file") MultipartFile file) {
         return new UploadFileResponse(file.getOriginalFilename(), file.getContentType(), file.getSize());
     }
 }

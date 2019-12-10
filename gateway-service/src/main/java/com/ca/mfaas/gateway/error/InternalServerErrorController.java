@@ -26,6 +26,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -68,7 +69,7 @@ public class InternalServerErrorController implements ErrorController {
      * @param request Http request
      * @return Http response entity
      */
-    @RequestMapping(value = ERROR_ENDPOINT, produces = "application/json")
+    @RequestMapping(method = RequestMethod.GET, value = ERROR_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessageView> error(HttpServletRequest request) {
         final Throwable exc = (Throwable) request.getAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION);

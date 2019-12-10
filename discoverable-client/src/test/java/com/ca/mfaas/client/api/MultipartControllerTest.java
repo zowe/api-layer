@@ -28,9 +28,19 @@ public class MultipartControllerTest {
     }
 
     @Test
-    public void shouldSubmitAndReturnString() {
+    public void shouldSubmitWithPostAndReturnString() {
         MockMultipartFile file = new MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
-        UploadFileResponse uploadFileResponse = multipartController.uploadFile(file);
+        UploadFileResponse uploadFileResponse = multipartController.uploadFileWithPost(file);
+
+        assertEquals("hello.txt", uploadFileResponse.getFileName());
+        assertEquals("text/plain", uploadFileResponse.getFileType());
+        assertEquals(13, uploadFileResponse.getSize());
+    }
+
+    @Test
+    public void shouldSubmitWithPutAndReturnString() {
+        MockMultipartFile file = new MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
+        UploadFileResponse uploadFileResponse = multipartController.uploadFileWithPut(file);
 
         assertEquals("hello.txt", uploadFileResponse.getFileName());
         assertEquals("text/plain", uploadFileResponse.getFileType());
