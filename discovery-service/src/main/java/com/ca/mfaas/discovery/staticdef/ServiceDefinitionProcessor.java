@@ -300,6 +300,16 @@ public class ServiceDefinitionProcessor {
             }
         }
 
+        if (service.getAuthentication() != null) {
+            AuthenticationScheme scheme = service.getAuthentication().getScheme();
+            if (service.getAuthentication().getScheme() != null) {
+                mt.put(AUTHENTICATION_SCHEME, service.getAuthentication().getScheme().toString());
+            }
+            if (service.getAuthentication().getApplid() != null) {
+                mt.put(AUTHENTICATION_APPLID, service.getAuthentication().getApplid());
+            }
+        }
+
         return mt;
     }
 }

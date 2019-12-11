@@ -495,5 +495,24 @@ public class ServiceDefinitionProcessorTest {
 
         assertThat(instances.size(), is(1));
     }
+
+    @Test
+    public void testProcessServicesDataWithAuthenticationMetadata() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml = "services:\n" +
+            "    - serviceId: casamplerestapiservice\n" +
+            "      instanceBaseUrls:\n" +
+            "        - https://localhost:10019/casamplerestapiservice/\n" +
+            "      authentication:\n" +
+            "        scheme: httpBasicPassTicket\n" +
+            "        applid: TSTAPPL\n";
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        assertTrue(result.getErrors().isEmpty());
+        List<InstanceInfo> instances = result.getInstances();
+        assertEquals(1, instances.size());
+        assertEquals("httpBasicPassTicket", instances.get(0).getMetadata().get(AUTHENTICATION_SCHEME));
+        assertEquals("TSTAPPL", instances.get(0).getMetadata().get(AUTHENTICATION_APPLID));
+    }
 }
 

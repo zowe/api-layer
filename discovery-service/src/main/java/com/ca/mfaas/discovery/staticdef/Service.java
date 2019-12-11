@@ -33,4 +33,5 @@ import java.util.List;
     @JsonAlias({"routedServices"})
     private List<Route> routes;
     private List<ApiInfo> apiInfo;
+    private Authentication authentication;
 }
