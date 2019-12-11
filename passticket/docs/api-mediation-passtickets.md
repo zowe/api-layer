@@ -88,8 +88,9 @@ Add following section to a YAML file with static definition.
 ```yaml
 additionalServiceMetadata:
     <serviceId>:
-        authenticationScheme: httpBasicPassTicket
-        applid: <applid>
+        authentication:
+            scheme: httpBasicPassTicket
+            applid: <applid>
 ```
 
 `<serviceId>` is the service ID of the service where you want to add metadata.
@@ -100,8 +101,9 @@ Add the following metadata to the same level as the `serviceId`, for example:
 
 ```yaml
     - serviceId: ...
-      authenticationScheme: httpBasicPassTicket
-      applid: TSTAPPL
+      authentication:
+        scheme: httpBasicPassTicket
+        applid: TSTAPPL
 ```
 
 The fields are explained below.
@@ -112,15 +114,16 @@ As a developer of this application, you need to provide additional metadata.
 This metadata tell API gateway that it needs to use PassTickets and how to generate them.
 
 ```yaml
-authenticationScheme: httpBasicPassTicket
-applid: <applid>
+authentication:
+    scheme: httpBasicPassTicket
+    applid: <applid>
 ```
 
-`httpBasicPassTicket` is the value that means that HTTP Basic authentication schmeme is used with PassTickets.
+`httpBasicPassTicket` is the value that means that HTTP Basic authentication scheme is used with PassTickets.
 
 `<applid>` if the APPLID value that is used by the API service for PassTicket support (e.g. `OMVSAPPL`).
 
-The other values of `authenticationScheme` that supported:
+The other values of `authentication.scheme` that are supported:
 
 - `bypass` (default) - API gateway does not modify authentication headers for the API service.
 - `zoweJwt` - The Zowe JWT token is expected. API gateway does not modify but can process it.
