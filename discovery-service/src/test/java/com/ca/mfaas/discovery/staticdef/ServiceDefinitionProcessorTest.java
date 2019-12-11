@@ -9,19 +9,37 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.netflix.appinfo.InstanceInfo;
-import org.junit.Test;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.API_INFO;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.API_INFO_SWAGGER_URL;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.API_INFO_VERSION;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_TITLE;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_VERSION;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.SERVICE_TITLE;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import com.netflix.appinfo.InstanceInfo;
+
+import org.junit.Test;
 
 public class ServiceDefinitionProcessorTest {
 
@@ -508,11 +526,27 @@ public class ServiceDefinitionProcessorTest {
             "        applid: TSTAPPL\n";
         ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
             .processServicesData(Collections.singletonMap("test", routedServiceYaml));
-        assertTrue(result.getErrors().isEmpty());
+        assertEquals(new ArrayList<>(), result.getErrors());
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals("httpBasicPassTicket", instances.get(0).getMetadata().get(AUTHENTICATION_SCHEME));
         assertEquals("TSTAPPL", instances.get(0).getMetadata().get(AUTHENTICATION_APPLID));
+    }
+
+    @Test
+    public void testProcessServicesDataWithInvalidAuthenticationScheme() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml = "services:\n" +
+            "    - serviceId: casamplerestapiservice\n" +
+            "      instanceBaseUrls:\n" +
+            "        - https://localhost:10019/casamplerestapiservice/\n" +
+            "      authentication:\n" +
+            "        scheme: bad\n";
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        assertEquals(1, result.getErrors().size());
+        List<InstanceInfo> instances = result.getInstances();
+        assertEquals(0, instances.size());
     }
 }
 

@@ -18,10 +18,15 @@ import lombok.Getter;
 public enum AuthenticationScheme {
     @JsonProperty("bypass")
     BYPASS("bypass"),
+
     @JsonProperty("zoweJwt")
     ZOWE_JWT("zoweJwt"),
+
     @JsonProperty("httpBasicPassTicket")
-    HTTP_BASIC_PASSTICKET("httpBasicPassTicket");
+    HTTP_BASIC_PASSTICKET("httpBasicPassTicket"),
+
+    @JsonProperty("zosmf")
+    ZOSMF("zosmf");
 
     private final String scheme;
 
