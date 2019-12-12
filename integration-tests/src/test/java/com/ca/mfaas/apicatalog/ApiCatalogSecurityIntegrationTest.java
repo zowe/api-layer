@@ -42,6 +42,8 @@ public class ApiCatalogSecurityIntegrationTest {
 
     private final static String COOKIE = "apimlAuthenticationToken";
     private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
+    private final static String INVALID_USERNAME = "incorrectUser";
+    private final static String INVALID_PASSWORD = "incorrectPassword";
 
     private final String endpoint;
 
@@ -105,10 +107,9 @@ public class ApiCatalogSecurityIntegrationTest {
     @Test
     public void accessProtectedEndpointWithInvalidBasicAuth() {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
-        String invalidPassword = "nonsense";
 
         given()
-            .auth().preemptive().basic(USERNAME, invalidPassword)
+            .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
         .when()
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))

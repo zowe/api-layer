@@ -39,6 +39,8 @@ public class GatewaySecurityTest {
     private final static String COOKIE = "apimlAuthenticationToken";
 
     private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
+    private final static String INVALID_USERNAME = "incorrectUser";
+    private final static String INVALID_PASSWORD = "incorrectPassword";
 
     @Before
     public void setUp() {
@@ -93,10 +95,8 @@ public class GatewaySecurityTest {
 
     @Test
     public void accessProtectedEndpointWithInvalidCredentials() {
-        String invalidPassword = "badPassword";
-
         given()
-            .auth().preemptive().basic(USERNAME, invalidPassword)
+            .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
         .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
         .then()
