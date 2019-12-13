@@ -9,7 +9,7 @@
       - [RACF](#racf)
       - [TopSecret](#topsecret)
     - [API Services that Register Dynamically into API ML](#api-services-that-register-dynamically-into-api-ml)
-    - [API Services that Register Dynamically into API ML but not Provide Metadata](#api-services-that-register-dynamically-into-api-ml-but-not-provide-metadata)
+    - [API Services that Register Dynamically into API ML but do not Provide Metadata](#api-services-that-register-dynamically-into-api-ml-but-do-not-provide-metadata)
     - [API Services that are Defined using Static YAML Definition](#api-services-that-are-defined-using-static-yaml-definition)
   - [What Developers Need to with API Services that Register Dynamically into API ML](#what-developers-need-to-with-api-services-that-register-dynamically-into-api-ml)
 
@@ -76,9 +76,9 @@ TSS REFRESH
 The API services that support Zowe API Mediation Layer and use dynamic registration into Discovery Service provide metadata
 that enable PassTicket support.
 
-As a user of the API you are not require to do anything in this case. All required information is provided by the
+As a user of the API you are not require to do anything in this case. All required information is provided by the API service automatically.
 
-### API Services that Register Dynamically into API ML but not Provide Metadata
+### API Services that Register Dynamically into API ML but do not Provide Metadata
 
 Some services that can use PassTickets do not provide the metadata yet. For such service you can provide them
 extenally in the same files as for the static YAML definitons.
