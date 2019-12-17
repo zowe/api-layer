@@ -9,18 +9,16 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.List;
 import java.util.Map;
 
-/**
- * A wrapper for static definition file contents.
- * It used by Jackson object mapper.
- */
 @Data
-public class Definition {
-    private List<Service> services;
-    private Map<String, CatalogUiTile> catalogUiTiles;
-    private List<ServiceOverride> additionalServiceMetadata;
+@AllArgsConstructor
+public class ServiceOverrideData {
+
+    private ServiceOverride.Mode mode;
+    private Map<String, String> metadata;
+
 }

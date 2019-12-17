@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
+import com.ca.mfaas.discovery.metadata.MetadataDefaultsService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
@@ -23,19 +24,14 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class StaticServicesRegistrationServiceTest {
 
@@ -52,15 +48,21 @@ public class StaticServicesRegistrationServiceTest {
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
+    private StaticRegistrationResult createResult(InstanceInfo...instances) {
+        StaticRegistrationResult out = new StaticRegistrationResult();
+        out.getInstances().addAll(Arrays.asList(instances));
+        return out;
+    }
+
     @Test
     public void testFindServicesInDirectoryNoFiles() {
         EurekaServerContext mockEurekaServerContext = mock(EurekaServerContext.class);
         EurekaServerContextHolder.initialize(mockEurekaServerContext);
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
-        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor);
-        Set<String> instances = registrationService.registerServices(folder.getRoot().getAbsolutePath());
-        assertEquals(0, instances.size());
+        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+        StaticRegistrationResult result = registrationService.registerServices(folder.getRoot().getAbsolutePath());
+        assertEquals(0, result.getInstances().size());
     }
 
     @Test
@@ -72,21 +74,21 @@ public class StaticServicesRegistrationServiceTest {
 
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
-        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor);
-        Set<String> instances = registrationService.registerServices(folder.getRoot().getAbsolutePath());
+        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+        StaticRegistrationResult result = registrationService.registerServices(folder.getRoot().getAbsolutePath());
 
-        assertEquals(1, instances.size());
+        assertEquals(4, result.getInstances().size());
     }
 
     @Test
     public void testGetStaticInstances() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
-        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor);
+        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
 
         List<InstanceInfo> instances = registrationService.getStaticInstances();
 
         assertEquals(0, instances.size());
-        verify(serviceDefinitionProcessor, times(0)).findServices(any(String.class));
+        verify(serviceDefinitionProcessor, times(0)).findStaticServicesData(any(String.class));
     }
 
     @Test
@@ -94,16 +96,16 @@ public class StaticServicesRegistrationServiceTest {
         String directory = "directory";
         String service = "service";
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
-        when(serviceDefinitionProcessor.findServices(directory)).thenReturn(Arrays.asList(
+        when(serviceDefinitionProcessor.findStaticServicesData(directory)).thenReturn(createResult(
             InstanceInfo.Builder.newBuilder().setAppName(service).build()));
 
-        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor);
+        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
         registrationService.registerServices(directory);
         List<InstanceInfo> instances = registrationService.getStaticInstances();
 
         assertEquals(1, instances.size());
         assertEquals(service.toUpperCase(), instances.get(0).getAppName());
-        verify(serviceDefinitionProcessor, times(1)).findServices(directory);
+        verify(serviceDefinitionProcessor, times(1)).findStaticServicesData(directory);
     }
 
     @Test
@@ -111,16 +113,17 @@ public class StaticServicesRegistrationServiceTest {
         String service = "service";
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
         InstanceInfo instance = InstanceInfo.Builder.newBuilder().setInstanceId(service).setAppName(service).build();
-        when(serviceDefinitionProcessor.findServices(null))
-            .thenReturn(Arrays.asList(instance))
-            .thenReturn(Collections.emptyList());
 
-        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor);
+        when(serviceDefinitionProcessor.findStaticServicesData(null))
+            .thenReturn(createResult(instance))
+            .thenReturn(createResult());
+
+        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
         registrationService.reloadServices();
-        Set<String> services = registrationService.reloadServices();
+        StaticRegistrationResult result = registrationService.reloadServices();
 
-        assertThat(services.contains(service), is(false));
-        verify(serviceDefinitionProcessor, times(2)).findServices(null);
+        assertThat(result.getRegistredServices().contains(service), is(false));
+        verify(serviceDefinitionProcessor, times(2)).findStaticServicesData(null);
         verify(mockRegistry, times(1)).cancel(instance.getAppName(), instance.getId(), false);
     }
 
@@ -131,17 +134,17 @@ public class StaticServicesRegistrationServiceTest {
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
         InstanceInfo instanceA = InstanceInfo.Builder.newBuilder().setInstanceId(serviceA).setAppName(serviceA).build();
         InstanceInfo instanceB = InstanceInfo.Builder.newBuilder().setInstanceId(serviceB).setAppName(serviceB).build();
-        when(serviceDefinitionProcessor.findServices(null))
-            .thenReturn(Arrays.asList(instanceA))
-            .thenReturn(Arrays.asList(instanceA, instanceB));
+        when(serviceDefinitionProcessor.findStaticServicesData(null))
+            .thenReturn(createResult(instanceA))
+            .thenReturn(createResult(instanceA, instanceB));
 
-        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor);
+        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
         registrationService.reloadServices();
-        Set<String> services = registrationService.reloadServices();
+        StaticRegistrationResult result = registrationService.reloadServices();
 
-        assertThat(services.contains(serviceA), is(true));
-        assertThat(services.contains(serviceB), is(true));
-        verify(serviceDefinitionProcessor, times(2)).findServices(null);
+        assertThat(result.getRegistredServices().contains(serviceA), is(true));
+        assertThat(result.getRegistredServices().contains(serviceB), is(true));
+        verify(serviceDefinitionProcessor, times(2)).findStaticServicesData(null);
         verify(mockRegistry, times(0)).cancel(any(String.class), any(String.class), eq(false));
     }
 
@@ -151,9 +154,9 @@ public class StaticServicesRegistrationServiceTest {
         String service = "service";
         InstanceInfo instance = InstanceInfo.Builder.newBuilder().setInstanceId(service).setAppName(service).build();
         ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
-        when(serviceDefinitionProcessor.findServices(directory)).thenReturn(Arrays.asList(instance));
+        when(serviceDefinitionProcessor.findStaticServicesData(directory)).thenReturn(createResult(instance));
 
-        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor);
+        StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
         registrationService.registerServices(directory);
         registrationService.renewInstances();
 

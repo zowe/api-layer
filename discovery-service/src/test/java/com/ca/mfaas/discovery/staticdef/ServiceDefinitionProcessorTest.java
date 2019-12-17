@@ -9,39 +9,37 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.API_INFO;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.API_INFO_SWAGGER_URL;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.API_INFO_VERSION;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_ID;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_TITLE;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.CATALOG_VERSION;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.SERVICE_TITLE;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import com.netflix.appinfo.InstanceInfo;
+import org.junit.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.netflix.appinfo.InstanceInfo;
-
-import org.junit.Test;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
 
 public class ServiceDefinitionProcessorTest {
+
+    private StaticRegistrationResult processServicesData(ServiceDefinitionProcessor serviceDefinitionProcessor, String ymlFile, String data) {
+        StaticRegistrationResult context = new StaticRegistrationResult();
+        Definition definition = serviceDefinitionProcessor.loadDefinition(context, ymlFile, data);
+        serviceDefinitionProcessor.process(context, ymlFile, definition);
+        return context;
+    }
+
+    private StaticRegistrationResult processServicesData(ServiceDefinitionProcessor serviceDefinitionProcessor, Map<String, String> ymlSources) {
+        StaticRegistrationResult context = new StaticRegistrationResult();
+        for (final Map.Entry<String, String> entry : ymlSources.entrySet()) {
+            Definition definition = serviceDefinitionProcessor.loadDefinition(context, entry.getKey(), entry.getValue());
+            serviceDefinitionProcessor.process(context, entry.getKey(), definition);
+        }
+        return context;
+    }
 
     @Test
     public void testProcessServicesDataWithTwoRoutes() {
@@ -58,8 +56,7 @@ public class ServiceDefinitionProcessorTest {
             "          serviceRelativeUrl: api/v1\n" +
             "        - gatewayUrl: api/v2\n" +
             "          serviceRelativeUrl: api/v2\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -90,8 +87,7 @@ public class ServiceDefinitionProcessorTest {
             "      routes:\n" +
             "        - gatewayUrl: api/v1\n" +
             "          serviceRelativeUrl:\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYamlEmptyRelativeUrls));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYamlEmptyRelativeUrls);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -112,21 +108,23 @@ public class ServiceDefinitionProcessorTest {
     public void testProcessServicesDataNoServicesNode() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", "something: value"));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", "something: value");
         assertEquals(0, result.getInstances().size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("Error processing file test - Unrecognized field \"something\""));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("Error processing file test - Unrecognized field \"something\""));
     }
 
     @Test
     public void testFileInsteadOfDirectoryForDefinitions() throws URISyntaxException {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
-        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(
+        StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(
             Paths.get(ClassLoader.getSystemResource("api-defs/staticclient.yml").toURI()).toAbsolutePath().toString());
 
-        assertThat(instances.size(), is(0));
+        assertThat(result.getInstances().size(), is(0));
     }
 
     @Test
@@ -136,12 +134,14 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - localhost:10019/casamplerestapiservice/\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("The URL localhost:10019/casamplerestapiservice/ is malformed"));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("The URL localhost:10019/casamplerestapiservice/ is malformed"));
     }
 
     @Test
@@ -151,12 +151,14 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - ftp://localhost:10019/casamplerestapiservice/\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("The URL ftp://localhost:10019/casamplerestapiservice/ is malformed"));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("The URL ftp://localhost:10019/casamplerestapiservice/ is malformed"));
     }
 
     @Test
@@ -166,12 +168,14 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - https:///casamplerestapiservice/\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("The URL https:///casamplerestapiservice/ does not contain a hostname. The instance of casamplerestapiservice will not be created"));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("The URL https:///casamplerestapiservice/ does not contain a hostname. The instance of casamplerestapiservice will not be created"));
     }
 
     @Test
@@ -189,8 +193,7 @@ public class ServiceDefinitionProcessorTest {
             "          version: 2.0.0\n" +
             "          documentationUrl: httpBlah://localhost:10021/hellospring/api-doc";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
 
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
@@ -207,12 +210,14 @@ public class ServiceDefinitionProcessorTest {
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - https://host/casamplerestapiservice/\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
         assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0).contains("The URL https://host/casamplerestapiservice/ does not contain a port number. The instance of casamplerestapiservice will not be created"));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("The URL https://host/casamplerestapiservice/ does not contain a port number. The instance of casamplerestapiservice will not be created"));
     }
 
     @Test
@@ -231,8 +236,7 @@ public class ServiceDefinitionProcessorTest {
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", yaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(7, result.getInstances().get(0).getMetadata().size());
@@ -252,11 +256,13 @@ public class ServiceDefinitionProcessorTest {
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", yaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(0));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice is not defined. The instance will not be created."));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("The instanceBaseUrls parameter of casamplerestapiservice is not defined. The instance will not be created."));
     }
 
     @Test
@@ -274,11 +280,13 @@ public class ServiceDefinitionProcessorTest {
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", yaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(0));
-        assertTrue(result.getErrors().get(0).contains("One of the instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created."));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("One of the instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created."));
     }
 
     @Test
@@ -295,11 +303,13 @@ public class ServiceDefinitionProcessorTest {
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", yaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(0));
-        assertTrue(result.getErrors().get(0).contains("ServiceId is not defined in the file 'test'. The instance will not be created."));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("ServiceId is not defined in the file 'test'. The instance will not be created."));
     }
 
     @Test
@@ -329,11 +339,13 @@ public class ServiceDefinitionProcessorTest {
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", yaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(2));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
 
     }
 
@@ -381,10 +393,13 @@ public class ServiceDefinitionProcessorTest {
         ymlSources.put("yaml", yaml);
         ymlSources.put("yaml1", yaml2);
         ymlSources.put("yaml2", yaml3);
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(ymlSources);
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, ymlSources);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(2));
-        assertTrue(result.getErrors().get(0).contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
+        assertTrue(result.getErrors().get(0) instanceof String);
+
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
 
     }
 
@@ -404,8 +419,7 @@ public class ServiceDefinitionProcessorTest {
             "        - gatewayUrl: api/v2\n" +
             "          serviceRelativeUrl: api/v2\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(1));
         assertFalse(instances.get(0).isPortEnabled(InstanceInfo.PortType.SECURE));
@@ -439,8 +453,7 @@ public class ServiceDefinitionProcessorTest {
             "        title: Static API Services\n" +
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor,"test", routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -482,7 +495,7 @@ public class ServiceDefinitionProcessorTest {
             "        title: Static API Services\n" +
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
 
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor.processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         assertEquals("Error processing file test - The API Catalog UI tile ID adajand is invalid. The service casamplerestapiservice will not have API Catalog UI tile", result.getErrors().get(0));
     }
 
@@ -491,27 +504,27 @@ public class ServiceDefinitionProcessorTest {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         String pathTwo = ClassLoader.getSystemResource("ext-config/").getPath();
-        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne + ";" + pathTwo);
+        StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";" + pathTwo);
 
-        assertThat(instances.size(), is(2));
+        assertThat(result.getInstances().size(), is(5));
     }
 
     @Test
     public void testFindServicesWithOneDirectory() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
-        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne);
+        StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne);
 
-        assertThat(instances.size(), is(1));
+        assertThat(result.getInstances().size(), is(4));
     }
 
     @Test
     public void testFindServicesWithSecondEmptyDirectory() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
-        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(pathOne + ";");
+        StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";");
 
-        assertThat(instances.size(), is(1));
+        assertThat(result.getInstances().size(), is(4));
     }
 
     @Test
@@ -524,8 +537,7 @@ public class ServiceDefinitionProcessorTest {
             "      authentication:\n" +
             "        scheme: httpBasicPassTicket\n" +
             "        applid: TSTAPPL\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         assertEquals(new ArrayList<>(), result.getErrors());
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
@@ -542,11 +554,96 @@ public class ServiceDefinitionProcessorTest {
             "        - https://localhost:10019/casamplerestapiservice/\n" +
             "      authentication:\n" +
             "        scheme: bad\n";
-        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
-            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
         assertEquals(1, result.getErrors().size());
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
     }
+
+    @Test
+    public void testAdditionalServiceMetadata() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml =
+            "additionalServiceMetadata:\n" +
+            "    - serviceId: testService\n" +
+            "      mode: FORCE_UPDATE\n" +
+            "      title: testServiceTitle\n" +
+            "      description: testServiceDescription\n" +
+            "      authentication:\n" +
+            "           scheme: httpBasicPassTicket\n" +
+            "           applid: TSTAPPL\n" +
+            "      healthCheckRelativeUrl: actuator/health\n" +
+            "      routes:\n" +
+            "           - gatewayUrl: api/v1\n" +
+            "           - gatewayUrl: api/v2\n" +
+            "      apiInfo:\n" +
+            "           - apiId: apiId1\n" +
+            "             gatewayUrl: api/v1\n" +
+            "             swaggerUrl: https://localhost:10012/discoverableclient/api-doc\n" +
+            "           - apiId: apiId2\n" +
+            "             gatewayUrl: api/v2\n" +
+            "             swaggerUrl: https://localhost:10012/discoverableclient2/api-doc\n";
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        Map<String, ServiceOverrideData> asm = result.getAdditionalServiceMetadata();
+        assertEquals(1, asm.size());
+        assertTrue(asm.containsKey("testService"));
+
+        ServiceOverrideData sod = asm.get("testService");
+        assertEquals(ServiceOverride.Mode.FORCE_UPDATE, sod.getMode());
+
+        Map<String, String> md = sod.getMetadata();
+
+        assertEquals(11, md.size());
+
+        assertEquals("2.0.0", md.get(VERSION));
+        assertEquals("testServiceTitle", md.get(SERVICE_TITLE));
+        assertEquals("testServiceDescription", md.get(SERVICE_DESCRIPTION));
+
+        // routes
+        assertEquals("api/v1", md.get("apiml.routes.api-v1.gatewayUrl"));
+        assertEquals("api/v2", md.get("apiml.routes.api-v2.gatewayUrl"));
+
+        // api info
+        assertEquals("api/v1", md.get("apiml.apiInfo.api-v1.gatewayUrl"));
+        assertEquals("https://localhost:10012/discoverableclient/api-doc", md.get("apiml.apiInfo.api-v1.swaggerUrl"));
+        assertEquals("api/v2", md.get("apiml.apiInfo.api-v2.gatewayUrl"));
+        assertEquals("https://localhost:10012/discoverableclient2/api-doc", md.get("apiml.apiInfo.api-v2.swaggerUrl"));
+
+        assertEquals("httpBasicPassTicket", md.get(AUTHENTICATION_SCHEME));
+        assertEquals("TSTAPPL", md.get(AUTHENTICATION_APPLID));
+    }
+
+    @Test
+    public void testAdditionalServiceMetadataMulti() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml =
+            "additionalServiceMetadata:\n" +
+            "    - serviceId: service1\n" +
+            "      mode: FORCE_UPDATE\n" +
+            "      title: title1\n" +
+            "    - serviceId: service1\n" +
+            "      title: title2\n" +
+            "    - serviceId: service3\n" +
+            "      mode: FORCE_UPDATE\n" +
+            "      title: title3\n";
+
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        Map<String, ServiceOverrideData> asm = result.getAdditionalServiceMetadata();
+
+        assertEquals(2, asm.size());
+
+        assertTrue(asm.containsKey("service1"));
+        assertEquals(ServiceOverride.Mode.UPDATE, asm.get("service1").getMode());
+
+        assertTrue(asm.containsKey("service3"));
+        assertEquals(ServiceOverride.Mode.FORCE_UPDATE, asm.get("service3").getMode());
+
+        assertEquals("title2", asm.get("service1").getMetadata().get(SERVICE_TITLE));
+
+        assertTrue(result.getErrors().get(0) instanceof String);
+        final String errMsg = (String) result.getErrors().get(0);
+        assertTrue(errMsg.contains("were replaced for duplicities"));
+    }
+
 }
 

@@ -65,14 +65,17 @@ public final class ApimlLogger {
      * @param key        of the message
      * @param parameters for message
      */
-    public void log(String key, Object... parameters) {
+    public Message log(String key, Object... parameters) {
         ObjectUtil.requireNotNull(key, "key can't be null");
         ObjectUtil.requireNotNull(parameters, "parameters can't be null");
 
         if (messageService != null) {
             Message message = messageService.createMessage(key, parameters);
             log(message);
+            return message;
         }
+
+        return null;
     }
 
     /**

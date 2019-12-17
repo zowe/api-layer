@@ -10,6 +10,7 @@
 package com.ca.mfaas.discovery.staticdef;
 
 import com.ca.mfaas.discovery.EurekaRegistryAvailableListener;
+import com.ca.mfaas.discovery.metadata.MetadataDefaultsService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.eureka.EurekaServerContext;
@@ -35,14 +36,16 @@ public class StaticServicesRegistrationService {
     private String staticApiDefinitionsDirectories;
 
     private final ServiceDefinitionProcessor serviceDefinitionProcessor;
+    private final MetadataDefaultsService metadataDefaultsService;
 
     private final List<InstanceInfo> staticInstances = new CopyOnWriteArrayList<>();
 
     private final Timer renewalTimer = new Timer();
 
     @Autowired
-    public StaticServicesRegistrationService(ServiceDefinitionProcessor serviceDefinitionProcessor) {
+    public StaticServicesRegistrationService(ServiceDefinitionProcessor serviceDefinitionProcessor, MetadataDefaultsService metadataDefaultsService) {
         this.serviceDefinitionProcessor = serviceDefinitionProcessor;
+        this.metadataDefaultsService = metadataDefaultsService;
     }
 
     /**
@@ -81,38 +84,42 @@ public class StaticServicesRegistrationService {
      * Reloads all statically defined APIs in locations specified by configuration
      * by reading the definitions again.
      */
-    public synchronized Set<String> reloadServices() {
+    public synchronized StaticRegistrationResult reloadServices() {
         List<InstanceInfo> oldStaticInstances = new ArrayList<>(staticInstances);
 
         staticInstances.clear();
-        Set<String> registeredIds = registerServices(staticApiDefinitionsDirectories);
+        StaticRegistrationResult result = registerServices(staticApiDefinitionsDirectories);
 
         PeerAwareInstanceRegistry registry = getRegistry();
         for (InstanceInfo info: oldStaticInstances) {
-            if (!registeredIds.contains(info.getInstanceId())) {
+            if (!result.getRegistredServices().contains(info.getInstanceId())) {
                 log.info("Instance {} is not defined in the new static API definitions. It will be removed", info.getInstanceId());
                 registry.cancel(info.getAppName(), info.getId(), false);
             }
         }
 
-        return registeredIds;
+        return result;
     }
 
     /**
      * Registers all statically defined APIs in a directory.
      */
-    Set<String> registerServices(String staticApiDefinitionsDirectories) {
+    StaticRegistrationResult registerServices(String staticApiDefinitionsDirectories) {
         PeerAwareInstanceRegistry registry = getRegistry();
-        List<InstanceInfo> instances = serviceDefinitionProcessor.findServices(staticApiDefinitionsDirectories);
-        Set<String> registeredIds = new LinkedHashSet<>();
+        StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(staticApiDefinitionsDirectories);
 
-        for (InstanceInfo instanceInfo : instances) {
-            registeredIds.add(instanceInfo.getInstanceId());
+        // at first register service additional data, becase static could be also updated
+        final Map<String, ServiceOverrideData> additionalServiceMetadata = result.getAdditionalServiceMetadata();
+        metadataDefaultsService.setAdditionalServiceMetadata(additionalServiceMetadata);
+
+        // register static services
+        for (InstanceInfo instanceInfo : result.getInstances()) {
+            result.getRegistredServices().add(instanceInfo.getInstanceId());
             staticInstances.add(instanceInfo);
             registry.register(instanceInfo, false);
         }
 
-        return registeredIds;
+        return result;
     }
 
     private PeerAwareInstanceRegistry getRegistry() {
