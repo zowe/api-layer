@@ -10,3 +10,45 @@
 # Copyright IBM Corporation 2019
 ################################################################################
 
+INITIAL_ERRORS_FOUND=$ERRORS_FOUND
+
+error() {
+  . ${ROOT_DIR}/scripts/utils/error.sh $1
+}
+
+. ${ROOT_DIR}/scripts/utils/validate-zowe-prefix.sh 
+
+# - DISCOVERY_PORT, CATALOG_PORT, GATEWAY_PORT - should not be bound to a port currently
+. ${ROOT_DIR}/scripts/utils/validate-port-available.sh ${DISCOVERY_PORT}
+. ${ROOT_DIR}/scripts/utils/validate-port-available.sh ${CATALOG_PORT}
+. ${ROOT_DIR}/scripts/utils/validate-port-available.sh ${GATEWAY_PORT}
+
+if [[ -z "${VERIFY_CERTIFICATES}" ]]
+then 
+    error "VERIFY_CERTIFICATES is empty"
+fi
+
+# Mediation stuff, should validate in a separate script
+. ${ROOT_DIR}/scripts/utils/validate-apiml-variables.sh 
+
+# - ZOSMF_PORT - The SSL port z/OSMF is listening on.
+# - ZOSMF_HOST - The hostname, or ip address z/OSMF can be reached on
+. ${ROOT_DIR}/scripts/utils/validate-zosmf-host-and-port.sh
+
+# Not sure how we validate - just exist ok? dig/oping?
+#TODO - use oping, or the switcher in zowe-install-packaging utils?
+# - ZOWE_EXPLORER_HOST
+if [[ -n "${ZOWE_EXPLORER_HOST}" ]]
+then 
+    oping ${ZOWE_EXPLORER_HOST} > /dev/null    # check host
+    if [[ $? -ne 0 ]]
+    then    
+        error "ZOWE_EXPLORER_HOST '$ZOWE_EXPLORER_HOST' does not point to a valid hostname"
+    fi
+else 
+    error "ZOWE_EXPLORER_HOST is empty"
+fi
+
+. ${ROOT_DIR}/scripts/utils/validate-java.sh
+
+return $ERRORS_FOUND-$INITIAL_ERRORS_FOUND
