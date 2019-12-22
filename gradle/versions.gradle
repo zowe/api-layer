@@ -24,7 +24,7 @@ ext {
     gsonVersion = '2.8.2'
     mockitoCoreVersion = '2.15.0'
     zsslVersion = '1.0.0'
-    tomcatVersion = '8.5.33'
+    tomcatVersion = '9.0.13' //8.5.33
     commonsLang3Version = '3.7'
     gradleGitPropertiesVersion = '1.5.1'
     jettyWebSocketClientVersion = '9.4.11.v20180605'
