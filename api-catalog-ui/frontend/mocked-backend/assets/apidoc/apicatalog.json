@@ -94,13 +94,13 @@
                 }
             }
         },
-        "/api/v1/apicatalog/apidoc/{service-id}/{api-version}": {
+        "/api/v1/apicatalog/apidoc/{serviceId}/{apiVersion}": {
             "get": {
                 "tags": [
                     "API Documentation"
                 ],
                 "summary": "Retrieves the API documentation for a specific service version",
-                "description": "Returns the API documentation for a specific service {service-id} and version {api-version}",
+                "description": "Returns the API documentation for a specific service {serviceId} and version {apiVersion}",
                 "operationId": "getApiDocInfoUsingGET",
                 "produces": [
                     "*/*"

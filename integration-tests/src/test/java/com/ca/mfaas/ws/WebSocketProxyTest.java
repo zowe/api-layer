@@ -120,7 +120,7 @@ public class WebSocketProxyTest {
             response.wait(WAIT_TIMEOUT_MS);
         }
 
-        assertTrue(response.toString().contains("x-test=[value]"));
+        assertTrue(response.toString().contains("x-test:\"value\""));
         session.sendMessage(new TextMessage("bye"));
         session.close();
     }
