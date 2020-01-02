@@ -7,14 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.staticdef;
+package com.ca.apiml.security.common.auth;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Information about expected authentication scheme and APPLID for PassTickets generation.
  */
- @Data class Authentication {
+ @Data
+ @NoArgsConstructor
+ @AllArgsConstructor
+ public class Authentication {
+
     private AuthenticationScheme scheme;
     private String applid;
+
 }

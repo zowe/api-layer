@@ -9,16 +9,26 @@
  */
 package com.ca.mfaas.gateway.ribbon;
 
+import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.IClientConfig;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.reactive.ExecutionContext;
+import com.netflix.loadbalancer.reactive.ExecutionInfo;
+import com.netflix.loadbalancer.reactive.ExecutionListener;
+import com.netflix.loadbalancer.reactive.LoadBalancerCommand;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonApacheHttpRequest;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonApacheHttpResponse;
@@ -26,7 +36,10 @@ import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpCl
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
+import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationService.AUTHENTICATION_COMMAND_KEY;
 import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecureConnectionIfNeeded;
 
 @Slf4j
@@ -35,14 +48,17 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
     private static final String HTTPS = "https";
     private static final String HTTP = "http";
 
+    private final EurekaClient discoveryClient;
+
     /**
      * Ribbon load balancer
      * @param secureHttpClient custom http client for our certificates
      * @param config configuration details
      * @param serverIntrospector introspector
      */
-    public GatewayRibbonLoadBalancingHttpClient(CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector) {
+    public GatewayRibbonLoadBalancingHttpClient(CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector, EurekaClient discoveryClient) {
         super(secureHttpClient, config, serverIntrospector);
+        this.discoveryClient = discoveryClient;
     }
 
     @Override
@@ -72,11 +88,7 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
     @Override
     public RibbonApacheHttpResponse execute(RibbonApacheHttpRequest request, IClientConfig configOverride) throws Exception {
         RibbonApacheHttpRequest sendRequest = null;
-        if (HTTPS.equals(request.getURI().getScheme())) {
-            configOverride.set(CommonClientConfigKey.IsSecure, true);
-        } else {
-            configOverride.set(CommonClientConfigKey.IsSecure, false);
-        }
+        configOverride.set(CommonClientConfigKey.IsSecure, HTTPS.equals(request.getURI().getScheme()));
         final RequestConfig.Builder builder = RequestConfig.custom();
         builder.setConnectTimeout(configOverride.get(
             CommonClientConfigKey.ConnectTimeout, this.connectTimeout));
@@ -97,5 +109,88 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
         final HttpUriRequest httpUriRequest = sendRequest.toRequest(requestConfig);
         final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
         return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
+    }
+
+    /**
+     * This methods write specific InstanceInfo into cache
+     * @param serviceId serviceId of instance
+     * @param instanceId ID of instance
+     * @param instanceInfo instanceInfo to store
+     * @return cached instanceInfo object
+     */
+    @CachePut(value = "instanceInfoByInstanceId", key = "{#serviceId, #instanceId}")
+    public InstanceInfo putInstanceInfo(String serviceId, String instanceId, InstanceInfo instanceInfo) {
+        return instanceInfo;
+    }
+
+    /**
+     * Get the InstanceInfo by id. For searching is used serviceId. It method found another instances it will
+     * cache them for next using
+     * @param serviceId service to call
+     * @param instanceId selected instance of service
+     * @return instance with matching service and instanceId
+     */
+    @Cacheable("instanceInfoByInstanceId")
+    public InstanceInfo getInstanceInfo(String serviceId, String instanceId) {
+        InstanceInfo output = null;
+        for (final InstanceInfo instanceInfo : (List<InstanceInfo>) discoveryClient.getInstancesById(serviceId)) {
+            if (StringUtils.equals(instanceId, instanceInfo.getInstanceId())) {
+                // found instance, store it for output
+                output = instanceInfo;
+            }
+
+            /*
+             * Getting all instance is pretty heavy, cache them, therefor it is very probably, nex using of service
+             * will use different instance and need to find it too.
+             */
+            putInstanceInfo(serviceId, instanceInfo.getInstanceId(), instanceInfo);
+        }
+        return output;
+    }
+
+    @Override
+    protected void customizeLoadBalancerCommandBuilder(RibbonApacheHttpRequest request, IClientConfig config, LoadBalancerCommand.Builder<RibbonApacheHttpResponse> builder) {
+        super.customizeLoadBalancerCommandBuilder(request, config, builder);
+
+        /*
+         * add into builder listener to work with request immediatelly when instance if selected
+         * it is helpfull for selecting {@com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand} in
+         * case there is multiple instances with same serviceId which have different authentication. Therefor it
+         * is necessary wait for selection of instance to apply right authentication command.
+         */
+        builder.withListeners(Collections.singletonList(new ExecutionListener<Object, RibbonApacheHttpResponse>() {
+
+            @Override
+            public void onExecutionStart(ExecutionContext<Object> context) throws AbortExecutionException {
+                // dont needed yet
+            }
+
+            @Override
+            public void onStartWithServer(ExecutionContext<Object> context, ExecutionInfo info) throws AbortExecutionException {
+                final AuthenticationCommand cmd = (AuthenticationCommand) RequestContext.getCurrentContext().get(AUTHENTICATION_COMMAND_KEY);
+                if (cmd != null) {
+                    // in context is a command, it means update of authentication is waiting for select an instance
+                    final Server.MetaInfo metaInfo = info.getServer().getMetaInfo();
+                    final InstanceInfo instanceInfo = getInstanceInfo(metaInfo.getServiceIdForDiscovery(), metaInfo.getInstanceId());
+                    cmd.apply(instanceInfo);
+                }
+            }
+
+            @Override
+            public void onExceptionWithServer(ExecutionContext<Object> context, Throwable exception, ExecutionInfo info) {
+                // dont needed yet
+            }
+
+            @Override
+            public void onExecutionSuccess(ExecutionContext<Object> context, RibbonApacheHttpResponse response, ExecutionInfo info) {
+                // dont needed yet
+            }
+
+            @Override
+            public void onExecutionFailed(ExecutionContext<Object> context, Throwable finalException, ExecutionInfo info) {
+                // dont needed yet
+            }
+        }));
+        builder.withExecutionContext(new ExecutionContext<Object>(request, config, config, null));
     }
 }

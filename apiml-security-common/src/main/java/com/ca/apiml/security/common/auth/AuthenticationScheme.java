@@ -8,11 +8,15 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.discovery.staticdef;
+package com.ca.apiml.security.common.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 public enum AuthenticationScheme {
@@ -30,6 +34,8 @@ public enum AuthenticationScheme {
 
     private final String scheme;
 
+    private static Map<String, AuthenticationScheme> schemeToEnum;
+
     AuthenticationScheme(String scheme) {
         this.scheme = scheme;
     }
@@ -38,4 +44,21 @@ public enum AuthenticationScheme {
     public String toString() {
         return scheme;
     }
+
+    public static AuthenticationScheme fromScheme(String scheme) {
+        if (schemeToEnum != null) return schemeToEnum.get(scheme);
+
+        synchronized (AuthenticationScheme.class) {
+            if (schemeToEnum != null) return schemeToEnum.get(scheme);
+
+            final Map<String, AuthenticationScheme> map = new HashMap<>();
+            for (final AuthenticationScheme as : values()) {
+                map.put(as.scheme, as);
+            }
+            schemeToEnum = Collections.unmodifiableMap(map);
+
+            return schemeToEnum.get(scheme);
+        }
+    }
+
 }

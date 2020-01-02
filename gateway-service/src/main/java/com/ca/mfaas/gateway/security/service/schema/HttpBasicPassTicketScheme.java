@@ -1,0 +1,82 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+package com.ca.mfaas.gateway.security.service.schema;
+
+import com.ca.apiml.security.common.auth.Authentication;
+import com.ca.apiml.security.common.auth.AuthenticationScheme;
+import com.ca.apiml.security.common.service.PassTicketService;
+import com.ca.apiml.security.common.token.QueryResponse;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.zuul.context.RequestContext;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import org.apache.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
+/**
+ * This bean support PassTicket. Bean is responsible for getting Passticket from RAC and generating new authentication
+ * header in request.
+ */
+@Component
+@AllArgsConstructor
+public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
+
+    private final PassTicketService passTicketService;
+
+    @Value("${apiml.security.auth.passTicket.timeout:600}")
+    private Integer timeout;
+
+    @Override
+    public AuthenticationScheme getScheme() {
+        return AuthenticationScheme.HTTP_BASIC_PASSTICKET;
+    }
+
+    @Override
+    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) {
+        final long before = System.currentTimeMillis();
+
+        final String applId = authentication.getApplid();
+        final String userId = token.getUserId();
+        final String passTicket = passTicketService.generate(userId, applId);
+        final String encoded = Base64.getEncoder().encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
+        final String value = "Basic " + encoded;
+
+        final long expiredAt = Math.min(before + timeout * 1000, token.getExpiration().getTime());
+
+        return new PassTicketCommand(value, expiredAt);
+    }
+
+    @lombok.Value
+    @EqualsAndHashCode(callSuper = false)
+    public static class PassTicketCommand extends AuthenticationCommand {
+
+        private static final long serialVersionUID = 3941300386857998443L;
+
+        private final String authorizationValue;
+        private final long expireAt;
+
+        @Override
+        public void apply(InstanceInfo instanceInfo) {
+            final RequestContext context = RequestContext.getCurrentContext();
+            context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+        }
+
+        @Override
+        public boolean isExpired() {
+            return System.currentTimeMillis() > expireAt;
+        }
+
+    }
+
+}

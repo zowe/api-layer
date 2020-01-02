@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.service;
+package com.ca.apiml.security.common.service;
 
 import com.ca.mfaas.util.ClassOrDefaultProxyUtils;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 
 /**
- * This method allow to get a passticket from RAC.
+ * This method allow to get a passTicket from RAC.
  */
 @Service
 public class PassTicketService {

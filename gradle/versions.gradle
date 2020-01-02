@@ -47,6 +47,7 @@ ext {
     swaggerJerseyJaxrsVersion = '1.5.10'
     jacksonDataformatYamlVersion = '2.9.7'
     jerseyVersion = '2.26'
+    ehCacheVersion = '2.10.6'
 
     libraries = [
         lombok                             : "org.projectlombok:lombok:${lombokVersion}",
@@ -65,6 +66,7 @@ ext {
         spring_boot_starter_aop            : "org.springframework.boot:spring-boot-starter-aop:${springBootVersion}",
         spring_boot_starter_log4j2         : "org.springframework.boot:spring-boot-starter-log4j2:${springBootVersion}",
         spring_boot_starter_thymeleaf      : "org.springframework.boot:spring-boot-starter-thymeleaf:${springBootVersion}",
+        spring_boot_starter_cache          : "org.springframework.boot:spring-boot-starter-cache:${springBootVersion}",
         spring_boot_devtools               : "org.springframework.boot:spring-boot-devtools:${springBootVersion}",
         spring_retry                       : "org.springframework.retry:spring-retry:${springRetryVersion}",
         spring_hateoas                     : "org.springframework.hateoas:spring-hateoas:${springHateoasVersion}",
@@ -90,6 +92,7 @@ ext {
         swagger_jersey2_jaxrs              : "io.swagger:swagger-jersey2-jaxrs:${swaggerJerseyJaxrsVersion}",
         http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
         http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",
+        eh_cache                           : "net.sf.ehcache:ehcache:${ehCacheVersion}",
 
         mockSpringRest                     : "com.github.skjolber:mockito-rest-spring:${mockSpringRestVersion}",
         reactorCore                        : "io.projectreactor:reactor-core:${reactorVersion}",

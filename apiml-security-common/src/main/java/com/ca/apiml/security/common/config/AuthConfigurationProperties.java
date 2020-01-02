@@ -41,6 +41,8 @@ public class AuthConfigurationProperties {
     private String zosmfServiceId;
     private String provider = "zosmf";
 
+    private AuthConfigurationProperties.PassTicket passTicket;
+
     private String jwtKeyAlias;
 
     //Token properties
@@ -62,9 +64,15 @@ public class AuthConfigurationProperties {
         private Integer cookieMaxAge = -1;
     }
 
+    @Data
+    public static class PassTicket {
+        private Integer timeout = 360;
+    }
+
     public AuthConfigurationProperties() {
         this.cookieProperties = new AuthConfigurationProperties.CookieProperties();
         this.tokenProperties = new AuthConfigurationProperties.TokenProperties();
+        this.passTicket = new AuthConfigurationProperties.PassTicket();
     }
 
     /**

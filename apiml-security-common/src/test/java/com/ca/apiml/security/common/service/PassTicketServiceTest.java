@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.service;
+package com.ca.apiml.security.common.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,8 +53,8 @@ public class PassTicketServiceTest {
     @Order(2)
     public void testCalledMethod() {
         evaluated = null;
-        passTicketService.evaluate("userId", "applId", "passticket");
-        assertEquals("userId-applId-passticket", evaluated);
+        passTicketService.evaluate("userId", "applId", "passTicket");
+        assertEquals("userId-applId-passTicket", evaluated);
         passTicketService.evaluate("1", "2", "3");
         assertEquals("1-2-3", evaluated);
 

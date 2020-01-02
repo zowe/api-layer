@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.service;
+package com.ca.apiml.security.common.service;
 
 /**
  * Interface covering com.ibm.eserver.zos.racf.IRRPassTicket class

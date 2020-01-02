@@ -27,6 +27,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 /**
  * Security configuration for Gateway
@@ -74,6 +75,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
+
+            // logout endpoint
+            .and()
+            .logout()
+            .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
+            .addLogoutHandler(logoutHandler())
 
             // endpoint protection
             .and()
@@ -135,5 +142,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties,
             PROTECTED_ENDPOINTS);
+    }
+
+    private LogoutHandler logoutHandler() {
+        return (request, response, authentication) -> authenticationService.getJwtTokenFromRequest(request)
+            .ifPresent(x ->
+                authenticationService.invalidateJwtToken(x, true)
+            );
     }
 }

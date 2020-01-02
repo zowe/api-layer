@@ -18,6 +18,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -85,7 +87,7 @@ public final class ClassOrDefaultProxyUtils {
         return (T) Proxy.newProxyInstance(
             ClassOrDefaultProxyUtils.class.getClassLoader(),
             new Class<?>[] {interfaceClass, ClassOrDefaultProxyUtils.ClassOrDefaultProxyState.class},
-            new MethodInvocationHandler(implementation, usingBaseImplementation));
+            new MethodInvocationHandler(implementation, interfaceClass, usingBaseImplementation));
     }
 
     /**
@@ -109,52 +111,92 @@ public final class ClassOrDefaultProxyUtils {
 
     private static class MethodInvocationHandler implements InvocationHandler, ClassOrDefaultProxyState {
 
-        private final Map<String, EndPoint> mapping = new HashMap<>();
+        private final Map<Method, EndPoint> mapping = new HashMap<>();
 
         private final boolean usingBaseImplementation;
         private final Object implementation;
+        private final Class<?> interfaceClass;
 
-        public MethodInvocationHandler(Object implementation, boolean usingBaseImplementation) {
+        public MethodInvocationHandler(Object implementation, Class<?> interfaceClass, boolean usingBaseImplementation) {
             this.usingBaseImplementation = usingBaseImplementation;
             this.implementation = implementation;
+            this.interfaceClass = interfaceClass;
 
             this.initMapping();
         }
 
-        private void addMapping(Object target, Method caller, Method callee) {
-            final String key = ObjectUtil.getMethodIdentifier(caller);
+        private EndPoint addMapping(Object target, Method caller, Method callee) {
             final EndPoint endPoint = new EndPoint(target, callee);
-            mapping.put(key, endPoint);
+            mapping.put(caller, endPoint);
+            return endPoint;
+        }
+
+        private Method findMethod(Class<?> clazz, Method method) {
+            try {
+                return clazz.getDeclaredMethod(method.getName(), method.getParameterTypes());
+            } catch (NoSuchMethodException nsme) {
+                if (clazz == Object.class) {
+                    throw new IllegalArgumentException("Cannot construct proxy", nsme);
+                }
+                return findMethod(clazz.getSuperclass(), method);
+            }
+        }
+
+        private void fetchAllInterfaces(Class<?> interfaceClass, List<Class<?>> list) {
+            list.add(interfaceClass);
+
+            for (final Class<?> superInterface : interfaceClass.getInterfaces()) {
+                fetchAllInterfaces(superInterface, list);
+            }
+        }
+
+        private List<Class<?>> fetchAllInterfaces(Class<?> interfaceClass) {
+            final List<Class<?>> output = new LinkedList<>();
+            fetchAllInterfaces(interfaceClass, output);
+            return output;
         }
 
         private void initMapping() {
-            // first map methods of target
-            Class<?> clazz = implementation.getClass();
-            while (true) {
-                for (final Method method : clazz.getDeclaredMethods()) {
-                    addMapping(implementation, method, method);
-                }
+            final Class<?> implementationClass = implementation.getClass();
+            final Map<String, EndPoint> byName = new HashMap<>();
 
-                // the highest superclass (Object) was scanned, end the loop
-                if (clazz == Object.class) break;
-
-                // check also superclass
-                clazz = clazz.getSuperclass();
+            // first check the state interface. It has higher priority, could rewrite previous mapping
+            for (final Method method : ClassOrDefaultProxyState.class.getDeclaredMethods()) {
+                final EndPoint endPoint = addMapping(this, method, method);
+                byName.put(ObjectUtil.getMethodIdentifier(method), endPoint);
             }
 
-            // second check the state interface. It has higher priority, could rewrite previous mapping
-            for (final Method method : ClassOrDefaultProxyState.class.getDeclaredMethods()) {
-                addMapping(this, method, method);
+            // second map methods of target
+            for (Class<?> partInterfaceClass : fetchAllInterfaces(interfaceClass)) {
+                for (final Method caller : partInterfaceClass.getDeclaredMethods()) {
+                    // ignore methods of frameworks created during execution
+                    if (caller.isSynthetic()) continue;
+
+                    // try to find by name - avoid to multiple implementation for same method name, ie. getImplementationClass (proxy vs. implementation)
+                    final EndPoint oldEndPoint = byName.get(ObjectUtil.getMethodIdentifier(caller));
+                    if (oldEndPoint != null) {
+                        // use same mapping like previous matching
+                        mapping.put(caller, oldEndPoint);
+                    } else {
+                        // find it in implementation and make a mapping
+                        try {
+                            final Method callee = findMethod(implementationClass, caller);
+                            final EndPoint newEndPoint = addMapping(implementation, caller, callee);
+                            byName.put(ObjectUtil.getMethodIdentifier(caller), newEndPoint);
+                        } catch (Exception e) {
+                            throw new IllegalArgumentException("Method " + ObjectUtil.getMethodIdentifier(caller) + " was not found on " + partInterfaceClass);
+                        }
+                    }
+                }
             }
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            final String methodKey = ObjectUtil.getMethodIdentifier(method);
-            final EndPoint endPoint = mapping.get(methodKey);
+            final EndPoint endPoint = mapping.get(method);
 
             if (endPoint == null) {
-                throw new NoSuchMethodException(String.format("Cannot found method %s", endPoint));
+                throw new NoSuchMethodException(String.format("Cannot found method %s", method));
             }
 
             return endPoint.invoke(args);

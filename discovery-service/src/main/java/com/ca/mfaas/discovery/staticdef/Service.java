@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
+import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.mfaas.config.ApiInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;

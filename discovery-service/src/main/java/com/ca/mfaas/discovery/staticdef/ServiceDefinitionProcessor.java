@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
+import com.ca.apiml.security.common.auth.Authentication;
+import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
 import com.ca.mfaas.exception.MetadataValidationException;
@@ -195,7 +197,7 @@ public class ServiceDefinitionProcessor {
             final List<InstanceInfo> output = new ArrayList<>(service.getInstanceBaseUrls().size());
             for (final String instanceBaseUrl : service.getInstanceBaseUrls()) {
                 final InstanceInfo instanceInfo = buildInstanceInfo(context, service, tile, instanceBaseUrl);
-                if (instanceBaseUrl != null) output.add(instanceInfo);
+                if (instanceInfo != null) output.add(instanceInfo);
             }
 
             return output;
