@@ -199,7 +199,11 @@ public final class ClassOrDefaultProxyUtils {
                 throw new NoSuchMethodException(String.format("Cannot found method %s", method));
             }
 
-            return endPoint.invoke(args);
+            try {
+                return endPoint.invoke(args);
+            } catch (InvocationTargetException ite) {
+                throw ite.getCause();
+            }
         }
 
         @Override
@@ -214,7 +218,7 @@ public final class ClassOrDefaultProxyUtils {
 
         @Value
         @AllArgsConstructor
-        private static final class EndPoint {
+        public static final class EndPoint {
 
             private final Object target;
             private final Method method;

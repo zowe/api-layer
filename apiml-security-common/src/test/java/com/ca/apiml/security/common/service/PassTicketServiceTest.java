@@ -9,6 +9,7 @@
  */
 package com.ca.apiml.security.common.service;
 
+import com.ca.mfaas.util.ClassOrDefaultProxyUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration
@@ -60,6 +60,36 @@ public class PassTicketServiceTest {
 
         assertEquals("userId-applId", passTicketService.generate("userId", "applId"));
         assertEquals("1-2", passTicketService.generate("1", "2"));
+    }
+
+    @Test
+    public void testProxy() {
+        IRRPassTicket irrPassTicket = ClassOrDefaultProxyUtils.createProxy(
+            IRRPassTicket.class,
+            "notExistingClass",
+            Impl::new
+        );
+
+        try {
+            irrPassTicket.evaluate("user", "applId", "passTicket");
+            fail();
+        } catch (Exception e) {
+            assertEquals("Dummy implementation of evaluate : user x applId x passTicket", e.getMessage());
+        }
+
+        assertEquals("success", irrPassTicket.generate("user", "applId"));
+    }
+
+    public static class Impl implements IRRPassTicket {
+        @Override
+        public void evaluate(String userId, String applId, String passTicket) {
+            throw new RuntimeException("Dummy implementation of evaluate : " + userId + " x " + applId + " x " + passTicket);
+        }
+
+        @Override
+        public String generate(String userId, String applId) {
+            return "success";
+        }
     }
 
     @Configuration

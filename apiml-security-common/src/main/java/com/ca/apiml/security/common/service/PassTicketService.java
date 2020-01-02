@@ -27,21 +27,7 @@ public class PassTicketService {
         this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(
             IRRPassTicket.class,
             "com.ibm.eserver.zos.racf.IRRPassTicket",
-            () -> new IRRPassTicket() {
-                @Override
-                public void evaluate(String userId, String applId, String passTicket) {
-                    if (userId == null) throw new IllegalArgumentException("Parameter userId is empty");
-                    if (applId == null) throw new IllegalArgumentException("Parameter applId is empty");
-                    if (passTicket == null) throw new IllegalArgumentException("Parameter passTicket is empty");
-
-                    throw new IllegalStateException("This implementation only for testing purpose");
-                }
-
-                @Override
-                public String generate(String userId, String applId) {
-                    return null;
-                }
-            }
+            DefaultPassTicketImpl::new
         );
     }
 
@@ -56,6 +42,24 @@ public class PassTicketService {
     public boolean isUsingRacImplementation() {
         ClassOrDefaultProxyUtils.ClassOrDefaultProxyState stateInterface = (ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) irrPassTicket;
         return stateInterface.isUsingBaseImplementation();
+    }
+
+    public static class DefaultPassTicketImpl implements IRRPassTicket {
+
+        @Override
+        public void evaluate(String userId, String applId, String passTicket) {
+            if (userId == null) throw new IllegalArgumentException("Parameter userId is empty");
+            if (applId == null) throw new IllegalArgumentException("Parameter applId is empty");
+            if (passTicket == null) throw new IllegalArgumentException("Parameter passTicket is empty");
+
+            throw new IllegalStateException("This implementation only for testing purpose");
+        }
+
+        @Override
+        public String generate(String userId, String applId) {
+            return null;
+        }
+
     }
 
 }
