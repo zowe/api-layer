@@ -40,6 +40,7 @@ dependencies {
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_websocket
     compile libraries.spring_boot_starter_thymeleaf
+    compile libraries.spring_boot_starter_cache
     compile libraries.spring_security_web
     compile libraries.spring_security_config
     compile libraries.tomcat_coyote

@@ -15,9 +15,9 @@ import com.ca.apiml.security.common.service.PassTicketService;
 import com.ca.apiml.security.common.token.QueryResponse;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -29,13 +29,16 @@ import java.util.Base64;
  * header in request.
  */
 @Component
-@AllArgsConstructor
 public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
 
     private final PassTicketService passTicketService;
 
     @Value("${apiml.security.auth.passTicket.timeout:600}")
     private Integer timeout;
+
+    public HttpBasicPassTicketScheme(@Autowired PassTicketService passTicketService) {
+        this.passTicketService = passTicketService;
+    }
 
     @Override
     public AuthenticationScheme getScheme() {
