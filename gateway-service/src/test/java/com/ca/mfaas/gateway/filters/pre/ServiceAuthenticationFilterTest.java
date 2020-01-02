@@ -12,7 +12,6 @@ import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.ServiceAuthenticationService;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.zuul.context.RequestContext;
-import com.netflix.zuul.exception.ZuulException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
-import java.security.Principal;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
@@ -56,12 +54,7 @@ public class ServiceAuthenticationFilterTest {
         verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", "token");
         verify(command, times(1)).apply(null);
 
-        when(request.getUserPrincipal()).thenReturn(new Principal() {
-            @Override
-            public String getName() {
-                return null;
-            }
-        });
+        when(request.getUserPrincipal()).thenReturn(() -> null);
         serviceAuthenticationFilter.run();
         verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", null);
         verify(command, times(2)).apply(null);
