@@ -9,27 +9,35 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
-import com.ca.apiml.security.common.token.TokenAuthentication;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+
+import java.util.Optional;
+
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.security.Principal;
-
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
-
 /**
- * This filter is responsible for customization request to clients from security point of view. In this filter is
- * fetched AuthenticationCommand which support target security. In case it is possible decide now (all instances
- * use the same authentication) it will modify immediately. Otherwise in request params will be set a command to
- * load balancer. The request will be modified after specific instance will be selected.
+ * This filter is responsible for customization request to clients from security
+ * point of view. In this filter is fetched AuthenticationCommand which support
+ * target security. In case it is possible decide now (all instances use the
+ * same authentication) it will modify immediately. Otherwise in request params
+ * will be set a command to load balancer. The request will be modified after
+ * specific instance will be selected.
  */
 public class ServiceAuthenticationFilter extends ZuulFilter {
 
     @Autowired
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @Override
     public String filterType() {
@@ -50,16 +58,13 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
     public Object run() {
         final RequestContext context = RequestContext.getCurrentContext();
 
-        String jwtToken = null;
-        final Principal principal = RequestContext.getCurrentContext().getRequest().getUserPrincipal();
-        if (principal instanceof TokenAuthentication) {
-            jwtToken = ((TokenAuthentication) principal).getCredentials();
+        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        if (jwtToken.isPresent()) {
+            final String serviceId = (String) context.get(SERVICE_ID_KEY);
+            final AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId,
+                    jwtToken.get());
+            cmd.apply(null);
         }
-
-        final String serviceId = (String) context.get(SERVICE_ID_KEY);
-
-        final AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, jwtToken);
-        cmd.apply(null);
 
         return null;
     }

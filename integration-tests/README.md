@@ -81,7 +81,7 @@ Slow tests are annotated using @Category(SlowTests.class) as in the following ex
 Start the suite of slow tests by executing the following shell script:
 
 ```shell
-./gradlew :integrationTests:runAllIntegrationTests
+./gradlew :integration-tests:runAllIntegrationTests
 ```
 
 ## Running a Specific Test

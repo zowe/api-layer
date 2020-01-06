@@ -52,8 +52,9 @@ public class PassTicketService {
             if (userId == null) throw new IllegalArgumentException("Parameter userId is empty");
             if (applId == null) throw new IllegalArgumentException("Parameter applId is empty");
             if (passTicket == null) throw new IllegalArgumentException("Parameter passTicket is empty");
-
-            throw new IllegalStateException("This implementation only for testing purpose");
+            if (!passTicket.equals(ZOWE_DUMMY_PASSTICKET)) {
+                throw new IllegalArgumentException("Invalid PassTicket");
+            }
         }
 
         @Override

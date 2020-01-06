@@ -101,7 +101,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @CacheEvict(value = CACHE_BY_SERVICE_ID, condition = "#result != null && #result.isExpired()")
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
-        final List<InstanceInfo> instances = discoveryClient.getInstancesById(serviceId);
+        final List<InstanceInfo> instances = discoveryClient.getApplication(serviceId).getInstances();
 
         Authentication found = null;
         for (final InstanceInfo instance : instances) {
@@ -111,7 +111,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
                 // this is the first record
                 found = auth;
             } else if (!found.equals(auth)) {
-                // if next record is different, authentication cannot be determinated before load balancer
+                // if next record is different, authentication cannot be determined before load balancer
                 return loadBalancerCommand;
             }
         }
