@@ -9,10 +9,12 @@
  */
 package com.ca.mfaas.gateway.config;
 
+import com.ca.mfaas.cache.CompositeKeyGenerator;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
+import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -23,6 +25,8 @@ import org.springframework.core.io.ClassPathResource;
 @EnableCaching
 @Configuration
 public class CacheConfig {
+
+    public static final String COMPOSITE_KEY_GENERATOR = "compositeKeyGenerator";
 
     @Bean
     public CacheManager cacheManager() {
@@ -35,6 +39,11 @@ public class CacheConfig {
         cmfb.setConfigLocation(new ClassPathResource("ehcache.xml"));
         cmfb.setShared(true);
         return cmfb;
+    }
+
+    @Bean(CacheConfig.COMPOSITE_KEY_GENERATOR)
+    public KeyGenerator getCompositeKeyGenerator() {
+        return new CompositeKeyGenerator();
     }
 
 }

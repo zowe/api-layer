@@ -41,14 +41,15 @@ public class AuthControllerTest {
     @Test
     public void invalidateJwtToken() throws Exception {
         when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/invalidate/a/b")).andExpect(status().isOk()).andExpect(content().string("<Boolean>true</Boolean>"));
+        this.mockMvc.perform(delete("/auth/invalidate/a/b")).andExpect(status().isOk()).andExpect(content().string("<Boolean>true</Boolean>"));
 
         when(authenticationService.invalidateJwtToken("abcde", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/invalidate/abcde")).andExpect(status().isOk()).andExpect(content().string("<Boolean>true</Boolean>"));
+        this.mockMvc.perform(delete("/auth/invalidate/abcde")).andExpect(status().isOk()).andExpect(content().string("<Boolean>true</Boolean>"));
 
-        this.mockMvc.perform(delete("/invalidate/xyz")).andExpect(status().isOk()).andExpect(content().string("<Boolean>false</Boolean>"));
+        this.mockMvc.perform(delete("/auth/invalidate/xyz")).andExpect(status().isOk()).andExpect(content().string("<Boolean>false</Boolean>"));
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
     }
+
 }

@@ -17,7 +17,6 @@ import org.mockito.Mockito;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -26,19 +25,10 @@ public class EurekaInstanceRegisteredListenerTest {
 
     @Test
     public void getServiceId() {
-
         MetadataTranslationService metadataTranslationService = Mockito.mock(MetadataTranslationService.class);
         MetadataDefaultsService metadataDefaultsService = Mockito.mock(MetadataDefaultsService.class);
 
-        EurekaInstanceRegisteredListener eirl = new EurekaInstanceRegisteredListener(metadataTranslationService, metadataDefaultsService);
-
-        assertEquals("abc", eirl.getServiceId("123:abc:def:::::xyz"));
-        assertEquals("abc", eirl.getServiceId("123:abc:def"));
-        assertEquals("", eirl.getServiceId("123::def"));
-        assertEquals("", eirl.getServiceId("::"));
-        assertNull(eirl.getServiceId(":"));
-        assertNull(eirl.getServiceId(""));
-        assertNull(eirl.getServiceId("abc"));
+        EurekaInstanceRegisteredListener eirl = new EurekaInstanceRegisteredListener(metadataTranslationService, metadataDefaultsService, mock(GatewayNotifier.class));
 
         doAnswer(
             x -> {
@@ -48,13 +38,34 @@ public class EurekaInstanceRegisteredListenerTest {
         ).when(metadataDefaultsService).updateMetadata(anyString(), any());
 
         InstanceInfo instanceInfo = mock(InstanceInfo.class);
-        when(instanceInfo.getId()).thenReturn("1:serviceName:2");
+        when(instanceInfo.getInstanceId()).thenReturn("1:serviceName:2");
         EurekaInstanceRegisteredEvent event = mock(EurekaInstanceRegisteredEvent.class);
         when(event.getInstanceInfo()).thenReturn(instanceInfo);
 
         eirl.listen(event);
 
         verify(metadataDefaultsService, times(1)).updateMetadata(anyString(), any());
+    }
+
+    private EurekaInstanceRegisteredEvent createEvent(String instanceId) {
+        InstanceInfo instanceInfo = mock(InstanceInfo.class);
+        when(instanceInfo.getInstanceId()).thenReturn(instanceId);
+
+        EurekaInstanceRegisteredEvent out = mock(EurekaInstanceRegisteredEvent.class);
+        when(out.getInstanceInfo()).thenReturn(instanceInfo);
+
+        return out;
+    }
+
+    @Test
+    public void testListen() {
+        GatewayNotifier notifier = mock(GatewayNotifier.class);
+        EurekaInstanceRegisteredListener listener = new EurekaInstanceRegisteredListener(Mockito.mock(MetadataTranslationService.class), Mockito.mock(MetadataDefaultsService.class), notifier);
+
+        listener.listen(createEvent("host:service:instance"));
+        verify(notifier, times(1)).serviceUpdated("service");
+        listener.listen(createEvent("unknown format"));
+        verify(notifier, times(1)).serviceUpdated(null);
     }
 
 }

@@ -10,6 +10,7 @@
 package com.ca.mfaas.discovery.metadata;
 
 import com.ca.mfaas.discovery.EurekaInstanceRegisteredListener;
+import com.ca.mfaas.discovery.GatewayNotifier;
 import com.ca.mfaas.discovery.staticdef.ServiceDefinitionProcessor;
 import com.ca.mfaas.discovery.staticdef.StaticRegistrationResult;
 import com.ca.mfaas.discovery.staticdef.StaticServicesRegistrationService;
@@ -21,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
@@ -56,6 +58,9 @@ public class MetadataDefaultsServiceTest {
 
     @Spy
     private ServiceDefinitionProcessorMock serviceDefinitionProcessor;
+
+    @Mock
+    private GatewayNotifier gatewayNotifier;
 
     private PeerAwareInstanceRegistry mockRegistry;
 

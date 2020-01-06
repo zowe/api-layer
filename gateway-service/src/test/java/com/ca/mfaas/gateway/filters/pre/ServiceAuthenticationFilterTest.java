@@ -9,7 +9,7 @@ package com.ca.mfaas.gateway.filters.pre;/*
  */
 
 import com.ca.apiml.security.common.token.TokenAuthentication;
-import com.ca.mfaas.gateway.security.service.ServiceAuthenticationService;
+import com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.Before;
@@ -28,7 +28,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 public class ServiceAuthenticationFilterTest {
 
     @Mock
-    private ServiceAuthenticationService serviceAuthenticationService;
+    private ServiceAuthenticationServiceImpl serviceAuthenticationService;
 
     @InjectMocks
     private ServiceAuthenticationFilter serviceAuthenticationFilter;

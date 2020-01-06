@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.controllers;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,14 +22,19 @@ import javax.servlet.http.HttpServletRequest;
  * by gateway to distribute state of authentication between nodes.
  */
 @AllArgsConstructor
-@RestController("/auth")
+@RestController
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthenticationService authenticationService;
 
-    @DeleteMapping("/invalidate/**")
+    @DeleteMapping(path = "/invalidate/**")
     public Boolean invalidateJwtToken(HttpServletRequest request) {
-        final String jwtToken = request.getRequestURI().split(request.getContextPath() + "/invalidate/")[1];
+        final String path = "/auth/invalidate/";
+        final String uri = request.getRequestURI();
+        final int index = uri.indexOf(path);
+
+        final String jwtToken = (index >= 0) ? uri.substring(index + path.length()) : "";
         return authenticationService.invalidateJwtToken(jwtToken, false);
     }
 

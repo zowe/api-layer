@@ -10,7 +10,7 @@
 package com.ca.mfaas.gateway.filters.pre;
 
 import com.ca.apiml.security.common.token.TokenAuthentication;
-import com.ca.mfaas.gateway.security.service.ServiceAuthenticationService;
+import com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
@@ -29,7 +29,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 public class ServiceAuthenticationFilter extends ZuulFilter {
 
     @Autowired
-    private ServiceAuthenticationService serviceAuthenticationService;
+    private ServiceAuthenticationServiceImpl serviceAuthenticationService;
 
     @Override
     public String filterType() {

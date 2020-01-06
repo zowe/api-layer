@@ -15,6 +15,7 @@ import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.apiml.security.common.token.TokenExpireException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
 import com.ca.mfaas.constants.ApimlConstants;
+import com.ca.mfaas.util.EurekaUtils;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import io.jsonwebtoken.Claims;
@@ -109,12 +110,7 @@ public class AuthenticationService {
             for (final InstanceInfo instanceInfo : (List<InstanceInfo>) discoveryClient.getInstancesById("gateway")) {
                 if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
 
-                final String url;
-                if (instanceInfo.getSecurePort() == 0) {
-                    url = "http://" + instanceInfo.getIPAddr() + ":" + instanceInfo.getPort() + "/auth/invalidate/{}";
-                } else {
-                    url = "https://" + instanceInfo.getIPAddr() + ":" + instanceInfo.getSecurePort() + "/auth/invalidate/{}";
-                }
+                final String url = EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}";
                 restTemplate.delete(url, jwtToken);
             }
         }

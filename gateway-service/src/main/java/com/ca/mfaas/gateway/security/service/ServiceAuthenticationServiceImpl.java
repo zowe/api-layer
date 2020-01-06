@@ -12,13 +12,18 @@ package com.ca.mfaas.gateway.security.service;
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
+import com.ca.mfaas.cache.CompositeKey;
+import com.ca.mfaas.gateway.config.CacheConfig;
 import com.ca.mfaas.gateway.security.service.schema.AbstractAuthenticationScheme;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationSchemeFactory;
+import com.ca.mfaas.gateway.security.service.schema.ServiceAuthenticationService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -52,15 +57,19 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCH
  */
 @Service
 @AllArgsConstructor
-public class ServiceAuthenticationService {
+public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationService {
 
     public static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
+
+    private static final String CACHE_BY_SERVICE_ID = "serviceAuthenticationByServiceId";
+    private static final String CACHE_BY_AUTHENTICATION = "serviceAuthenticationByAuthentication";
 
     private final LoadBalancerAuthenticationCommand loadBalancerCommand = new LoadBalancerAuthenticationCommand();
 
     private final EurekaClient discoveryClient;
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
     private final AuthenticationService authenticationService;
+    private final CacheManager cacheManager;
 
     protected Authentication getAuthentication(InstanceInfo instanceInfo) {
         final Map<String, String> metadata = instanceInfo.getMetadata();
@@ -79,16 +88,18 @@ public class ServiceAuthenticationService {
         return authenticationService;
     }
 
-    @CacheEvict(value = "serviceAuthenticationByAuthentication", condition = "#result != null && #result.isExpired()")
-    @Cacheable("serviceAuthenticationByAuthentication")
+    @Override
+    @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
+    @Cacheable(CACHE_BY_AUTHENTICATION)
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         final QueryResponse queryResponse = authenticationService.parseJwtToken(jwtToken);
         return scheme.createCommand(authentication, queryResponse);
     }
 
-    @CacheEvict(value = "serviceAuthenticationByServiceId", condition = "#result != null && #result.isExpired()")
-    @Cacheable("serviceAuthenticationByServiceId")
+    @Override
+    @CacheEvict(value = CACHE_BY_SERVICE_ID, condition = "#result != null && #result.isExpired()")
+    @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
         final List<InstanceInfo> instances = discoveryClient.getInstancesById(serviceId);
 
@@ -111,6 +122,41 @@ public class ServiceAuthenticationService {
         return getAuthenticationCommand(found, jwtToken);
     }
 
+    @Override
+    @CacheEvict(value = CACHE_BY_SERVICE_ID, allEntries = true)
+    public void evictCacheAllService() {
+        // evict all cached data accessible by serviceId
+    }
+
+    /**
+     * Method evicts all records in cache serviceAuthenticationByServiceId, where is as key serviceId or records where
+     * is impossible to known, which service is belongs to.
+     *
+     * @param serviceId Id of service to evict
+     */
+    @Override
+    public void evictCacheService(String serviceId) {
+        final Cache cache = cacheManager.getCache(CACHE_BY_SERVICE_ID);
+        if (cache == null) throw new IllegalArgumentException("Unknown cache " + CACHE_BY_SERVICE_ID);
+        final Object nativeCache = cache.getNativeCache();
+        if (nativeCache instanceof net.sf.ehcache.Cache) {
+            final net.sf.ehcache.Cache ehCache = (net.sf.ehcache.Cache) nativeCache;
+
+            for (final Object key : ehCache.getKeys()) {
+                if (key instanceof CompositeKey) {
+                    // if entry is compositeKey and first param is different, skip it (be sure this is not to evict)
+                    final CompositeKey compositeKey = ((CompositeKey) key);
+                    if (!compositeKey.equals(0, serviceId)) continue;
+                }
+                // if key is not composite key (unknown for evict) or has same serviceId, evict record
+                ehCache.remove(key);
+            }
+        } else {
+            // in case of using different cache manager, evict all records for sure
+            cache.clear();
+        }
+    }
+
     public class UniversalAuthenticationCommand extends AuthenticationCommand {
 
         private static final long serialVersionUID = -2980076158001292742L;
@@ -124,7 +170,7 @@ public class ServiceAuthenticationService {
             final Authentication auth = getAuthentication(instanceInfo);
             final HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
 
-            final String jwtToken = getAuthenticationService().getJwtTokenFromRequest(request).get();
+            final String jwtToken = getAuthenticationService().getJwtTokenFromRequest(request).orElse(null);
 
             final AuthenticationCommand cmd = getAuthenticationCommand(auth, jwtToken);
             cmd.apply(null);

@@ -11,6 +11,7 @@ package com.ca.mfaas.discovery;
 
 import com.ca.mfaas.discovery.metadata.MetadataDefaultsService;
 import com.ca.mfaas.discovery.metadata.MetadataTranslationService;
+import com.ca.mfaas.util.EurekaUtils;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
@@ -28,16 +29,7 @@ public class EurekaInstanceRegisteredListener {
 
     private final MetadataTranslationService metadataTranslationService;
     private final MetadataDefaultsService metadataDefaultsService;
-
-    protected String getServiceId(String instanceId) {
-        final int startIndex = instanceId.indexOf(':');
-        if (startIndex < 0) return null;
-
-        final int endIndex = instanceId.indexOf(':', startIndex + 1);
-        if (endIndex < 0) return null;
-
-        return instanceId.substring(startIndex + 1, endIndex);
-    }
+    private final GatewayNotifier gatewayNotifier;
 
     /**
      * Translates service instance Eureka metadata from older versions to the current version
@@ -46,8 +38,12 @@ public class EurekaInstanceRegisteredListener {
     public void listen(EurekaInstanceRegisteredEvent event) {
         final InstanceInfo instanceInfo = event.getInstanceInfo();
         final Map<String, String> metadata = instanceInfo.getMetadata();
+        final String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceInfo.getInstanceId());
 
         metadataTranslationService.translateMetadata(metadata);
-        metadataDefaultsService.updateMetadata(getServiceId(instanceInfo.getId()), metadata);
+        metadataDefaultsService.updateMetadata(serviceId, metadata);
+        // ie. new instance can have different authentication (than other one), this is reason to evict caches on gateway
+        gatewayNotifier.serviceUpdated(serviceId);
     }
+
 }

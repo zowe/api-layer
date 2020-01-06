@@ -9,7 +9,9 @@ dependencies {
 
     compileOnly(libraries.javax_servlet_api)
     compileOnly(libraries.lombok)
+    compileOnly(libraries.spring_boot_starter_cache)
 
+    testCompile(libraries.spring_boot_starter_cache)
     testCompile(libraries.jackson_core)
     testCompile(libraries.jackson_databind)
     testCompile(libraries.javax_servlet_api)

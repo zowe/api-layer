@@ -39,7 +39,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
-import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationService.AUTHENTICATION_COMMAND_KEY;
+import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecureConnectionIfNeeded;
 
 @Slf4j
