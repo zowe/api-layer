@@ -40,12 +40,20 @@ public class ApiMediationLayerStartupChecker {
     }
 
     public void waitUntilReady() {
-        await().atMost(3, MINUTES).pollDelay(0, SECONDS).pollInterval(10, SECONDS).until(this::isReady);
+        long poolInterval = 10;
+        if (gatewayConfiguration.getInstances() == 2) {
+            poolInterval = 5;
+        }
+        await().atMost(10, MINUTES).pollDelay(0, SECONDS).pollInterval(poolInterval, SECONDS).until(this::isReady);
     }
 
     private boolean isReady() {
         log.info("Checking of the API Mediation Layer is ready to be used...");
-        return severalSuccessfulResponses(3);
+        int times = 3;
+        if (gatewayConfiguration.getInstances() == 2) {
+            times = 2;
+        }
+        return severalSuccessfulResponses(times);
     }
 
     private boolean severalSuccessfulResponses(int times) {
@@ -67,9 +75,20 @@ public class ApiMediationLayerStartupChecker {
                 return false;
             }
             final String jsonResponse = EntityUtils.toString(response.getEntity());
+            log.debug("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
+
             DocumentContext documentContext = JsonPath.parse(jsonResponse);
-            return documentContext.read("$.status").equals("UP") && allInstancesUp(documentContext)
-                && testApplicationUp(documentContext);
+
+            boolean isGatewayUp = documentContext.read("$.status").equals("UP");
+            log.debug("Gateway is {}", isGatewayUp ? "UP" : "DOWN");
+
+            boolean isAllInstancesUp = allInstancesUp(documentContext);
+            log.debug("All instances is {}", isAllInstancesUp ? "UP" : "DOWN");
+
+            boolean isTestApplicationUp = testApplicationUp(documentContext);
+            log.debug("Discoverableclient is {}", isTestApplicationUp ? "UP" : "DOWN");
+
+            return isGatewayUp && isAllInstancesUp && isTestApplicationUp;
         } catch (IOException | PathNotFoundException e) {
             log.warn("Check failed: {}", e.getMessage());
         }

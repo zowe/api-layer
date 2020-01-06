@@ -31,6 +31,12 @@ gitProperties {
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
+configurations.all {
+    resolutionStrategy {
+        force (libraries.jetty_websocket_client)
+    }
+}
+
 dependencies {
     compile(project(':apiml-security-common'))
     compile(project(':integration-enabler-spring-v2'))
@@ -48,6 +54,7 @@ dependencies {
     compile libraries.spring_cloud_starter_eureka
     compile libraries.spring_cloud_starter_ribbon
     compile libraries.jetty_websocket_client
+    compile libraries.jetty_util
     compile libraries.jjwt
     compile libraries.eh_cache
 
