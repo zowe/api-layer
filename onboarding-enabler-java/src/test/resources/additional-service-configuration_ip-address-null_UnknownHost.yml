@@ -1,0 +1,42 @@
+serviceId: service
+title: HelloWorld Spring REST API
+description: POC for exposing a Spring REST API
+baseUrl: http://blah.blah.blah.com:10021/hellospring
+
+homePageRelativeUrl: /
+statusPageRelativeUrl: /application/info
+healthCheckRelativeUrl: /application/health
+
+discoveryServiceUrls:
+    - http://eureka:password@localhost:10011/eureka
+    - http://eureka:password@localhost:10011/eureka1
+
+routes:
+    - gatewayUrl: api/v1
+      serviceUrl: /hellospring/api/v1
+    - gatewayUrl: api/v1/api-doc
+      serviceUrl: /hellospring/api-doc
+
+apiInfo:
+    - apiId: org.zowe.hellospring
+      gatewayUrl: api/v1
+      swaggerUrl: http://localhost:10021/hellospring/api-doc
+
+catalog:
+    tile:
+        id: helloworld-spring
+        title: HelloWorld Spring REST API
+        description: Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem
+        version: 1.0.0
+
+ssl:
+    enabled: true
+    protocol: TLSv1.2
+    keyAlias: localhost
+    keyPassword: password
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    keyStorePassword: password
+    keyStoreType: PKCS12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+    trustStoreType: PKCS12

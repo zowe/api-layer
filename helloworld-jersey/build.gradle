@@ -16,9 +16,10 @@ repositories {
 }
 
 dependencies {
-    compile(project(':integration-enabler-java'))
 
- //   compile 'io.swagger:swagger-jersey2-jaxrs:1.5.21'
+    compile(project(':onboarding-enabler-java'))
+    compile(project(':common-service-core'))
+
     compile 'io.swagger.core.v3:swagger-jaxrs2:2.0.0'
     compile libraries.jackson_dataformat_yaml
     compileOnly libraries.lombok

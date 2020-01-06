@@ -1,10 +1,12 @@
 ext.springBootEnablers= [
     'integration-enabler-spring-v1',
-    'integration-enabler-spring-v2'
+    'integration-enabler-spring-v2',
+    'onboarding-enabler-spring-v1',
+    'onboarding-enabler-spring-v2'
 ]
 
 ext.javaEnablers = [
-    'integration-enabler-java'
+    'onboarding-enabler-java'
 ]
 
 ext.javaLibraries = [

@@ -1,0 +1,13 @@
+dependencies {
+    compile project(':apiml-common')
+    compile project(':onboarding-enabler-java')
+
+    implementation libraries.lombok
+    implementation libraries.spring_boot_starter
+
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.mockito_core
+
+    annotationProcessor libraries.spring_boot_configuration_processor
+    annotationProcessor libraries.lombok
+}

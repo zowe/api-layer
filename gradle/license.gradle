@@ -14,7 +14,10 @@ ext.projectsNeedLicense = [
     'integration-tests',
     'security-module',
     'security-service-client-spring',
-    'zowe-install'
+    'zowe-install',
+    'onboarding-enabler-java',
+    'onboarding-enabler-spring-v1',
+    'onboarding-enabler-spring-v2'
 ]
 
 configure(subprojects.findAll { it.name in projectsNeedLicense }) {
