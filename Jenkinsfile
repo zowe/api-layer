@@ -161,14 +161,6 @@ pipeline {
                     }
                 }
 
-                stage('Test apiml_cm.sh') {
-                    steps {
-                      /*  sh 'wget https://github.com/zowe/zowe-install-packaging/blob/staging/bin/apiml_cm.sh -O scripts/apiml_cm.sh' */
-                        sh 'npm install'
-                        sh 'npm run test-scripts-ci'
-                    }
-                }
-
                 stage('Build and unit test with coverage') {
                     steps {
                         timeout(time: 20, unit: 'MINUTES') {
