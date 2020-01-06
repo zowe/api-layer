@@ -36,6 +36,7 @@ public class DownloadApiIntegrationTest {
             expect().
             statusCode(200).
             header("Content-Disposition", "attachment;filename=sample-text.zip").
+            header("Content-Encoding", "gzip").
             when().
             get(uri)
             .then().contentType("application/zip")

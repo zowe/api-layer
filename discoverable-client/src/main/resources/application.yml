@@ -22,7 +22,7 @@ apiml:
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10012  # Default port name for discoverable-clinet service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        preferIpAddress: false        
+        preferIpAddress: false
 
 spring:
     application:
@@ -49,6 +49,10 @@ server:
         ciphers: ${apiml.security.ssl.ciphers}
         keyStoreType: PKCS12
         trustStoreType: PKCS12
+    compression:
+        mime-types: application/zip
+        enabled: true
+        min-response-size: 500
 
 eureka:
     instance:

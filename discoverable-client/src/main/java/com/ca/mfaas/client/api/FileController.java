@@ -15,13 +15,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.URL;
 
 /**
  * Version 1 of the controller that returns a zip file.
@@ -31,20 +31,19 @@ import java.io.FileNotFoundException;
 public class FileController {
 
     private final ServletContext servletContext;
-    private static final String DIRECTORY = "C:\\Users\\cz670745\\myRepos\\api-layer\\discoverable-client\\src\\main\\resources";
-    private static final String DEFAULT_FILE_NAME = "sample-text.zip";
 
     public FileController(ServletContext servletContext) {
         this.servletContext = servletContext;
     }
 
     @GetMapping(value = "/api/v1/get-file", produces = "application/zip")
-    public ResponseEntity<InputStreamResource> zipFiles(@RequestParam(defaultValue = DEFAULT_FILE_NAME) String fileName) throws FileNotFoundException {
+    public ResponseEntity<InputStreamResource> zipFiles() throws FileNotFoundException {
 
-        File file = new File(DIRECTORY + "/" + fileName);
+        URL url = getClass().getResource("/sample-text.zip");
+        File file = new File(url.getPath());
         InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 
-        String mineType = servletContext.getMimeType(fileName);
+        String mineType = servletContext.getMimeType("sample-text.zip");
         MediaType mediaType = MediaType.parseMediaType(mineType);
 
         return ResponseEntity.ok()
