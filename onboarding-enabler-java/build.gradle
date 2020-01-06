@@ -1,0 +1,18 @@
+dependencies {
+    implementation(project(':common-service-core'))
+
+    implementation libraries.jackson_annotations
+    implementation libraries.jackson_dataformat_yaml
+    implementation libraries.eureka_client
+    implementation libraries.lombok
+
+    compileOnly libraries.javax_servlet_api
+
+    testCompile libraries.junit
+    testCompile libraries.mockito_core
+    testCompile libraries.spring4Mvc
+    testCompile libraries.spring4Test
+    testCompile libraries.logback_classic
+    testCompile libraries.lombok
+    testCompile libraries.javax_servlet_api
+}

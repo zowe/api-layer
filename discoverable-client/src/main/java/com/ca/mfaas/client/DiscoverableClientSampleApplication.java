@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.client;
 
-import com.ca.mfaas.enable.EnableApiDiscovery;
+import com.ca.apiml.enable.EnableApiDiscovery;
 import com.ca.mfaas.product.logging.annotations.EnableApimlLogger;
 import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
@@ -30,7 +30,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableApimlLogger
 @ComponentScan(value = {
     "com.ca.mfaas.client",
-    "com.ca.mfaas.enable",
+    "com.ca.apiml.enable",
     "com.ca.mfaas.product.security",
     "com.ca.mfaas.product.web" })
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {

@@ -31,8 +31,8 @@ gitProperties {
 }
 
 dependencies {
-    compile(project(':integration-enabler-spring-v2'))
-    compile(project(':apiml-common'))
+    implementation project(':apiml-common')
+    implementation project(':onboarding-enabler-spring-v2')
 
     compile libraries.gson
     compile libraries.spring_boot_starter_actuator

@@ -53,6 +53,7 @@ ext {
         slf4j_simple                       : "org.slf4j:slf4j-simple:${slf4jVersion}",
         slf4j_api                          : "org.slf4j:slf4j-api:${slf4jVersion}",
         spring_boot_gradle_plugin          : "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}",
+        spring_boot_starter                : "org.springframework.boot:spring-boot-starter:${springBootVersion}",
         spring_boot_starter_actuator       : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}",
         spring_boot_starter_security       : "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
         spring_boot_starter_web            : "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",

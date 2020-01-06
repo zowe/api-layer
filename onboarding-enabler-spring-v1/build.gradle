@@ -1,0 +1,52 @@
+buildscript {
+    ext {
+        springBootVersion = "1.5.9.RELEASE"
+    }
+    repositories mavenRepositories
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+
+sourceSets {
+    main {
+        java {
+            srcDir '../onboarding-enabler-spring/src/main/java'
+        } resources {
+            srcDir '../onboarding-enabler-spring/src/main/resources'
+        }
+    }
+
+    test {
+        resources {
+            srcDir '../onboarding-enabler-spring/src/main/resources'
+        }
+    }
+}
+
+jar {
+    baseName = "enabler-springboot-${springBootVersion}"
+    archiveName = "${baseName}.jar"
+}
+
+dependencies {
+    compile project(':onboarding-enabler-spring')
+
+    compile "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
+    compile "io.springfox:springfox-swagger2:2.7.0"
+    compile "io.springfox:springfox-spring-web:2.7.0"
+
+    compileOnly libraries.javax_servlet_api
+    compileOnly libraries.lombok
+
+    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile libraries.javax_servlet_api
+    testCompile libraries.gson
+    testCompile libraries.powermock_api_mockito2
+    testCompile libraries.power_mock_junit4
+    testCompile libraries.power_mock_junit4_rule
+    testCompile libraries.lombok
+}

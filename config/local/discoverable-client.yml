@@ -26,3 +26,15 @@ server:
         # trustStore: keystore/selfsigned/localhost-untrusted.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+
+eureka:
+    instance:
+        metadata-map:
+            mfaas:
+                api-info:
+                    apiVersionProperties:
+                        v1:
+                            title: Service Integration Enabler V2 Sample Application API # © #Copyright is for UTF8 encoding check
+                            description: API of sample API service showing how to integrate a Spring Boot v2.x application
+                            version: 1.0.0
+                            basePackage: com.ca.mfaas.client.api
