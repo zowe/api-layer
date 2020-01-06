@@ -45,6 +45,7 @@ public class PassTicketService {
     }
 
     public static class DefaultPassTicketImpl implements IRRPassTicket {
+        public static final String ZOWE_DUMMY_PASSTICKET = "ZoweDummyPassTicket";
 
         @Override
         public void evaluate(String userId, String applId, String passTicket) {
@@ -57,7 +58,7 @@ public class PassTicketService {
 
         @Override
         public String generate(String userId, String applId) {
-            return null;
+            return ZOWE_DUMMY_PASSTICKET;
         }
 
     }

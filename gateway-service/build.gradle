@@ -18,10 +18,10 @@ springBoot {
         properties {
             // Generate extra build info:
             additionalProperties = [
-                by: System.properties['user.name'],
+                by             : System.properties['user.name'],
                 operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
-                number: System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
-                machine: InetAddress.localHost.hostName
+                number         : System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
+                machine        : InetAddress.localHost.hostName
             ]
         }
     }
@@ -49,7 +49,6 @@ dependencies {
     compile libraries.spring_cloud_starter_ribbon
     compile libraries.jetty_websocket_client
     compile libraries.jjwt
-    compile libraries.spring_boot_starter_cache
     compile libraries.eh_cache
 
     compileOnly libraries.lombok

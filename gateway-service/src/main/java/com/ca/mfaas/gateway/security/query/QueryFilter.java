@@ -35,17 +35,20 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final AuthenticationService authenticationService;
+    private final HttpMethod httpMethod;
 
     public QueryFilter(
         String authEndpoint,
         AuthenticationSuccessHandler successHandler,
         AuthenticationFailureHandler failureHandler,
         AuthenticationService authenticationService,
+        HttpMethod httpMethod,
         AuthenticationManager authenticationManager) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.authenticationService = authenticationService;
+        this.httpMethod = httpMethod;
         this.setAuthenticationManager(authenticationManager);
     }
 
@@ -60,7 +63,7 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        if (!request.getMethod().equals(HttpMethod.GET.name())) {
+        if (!request.getMethod().equals(httpMethod.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
         }
 

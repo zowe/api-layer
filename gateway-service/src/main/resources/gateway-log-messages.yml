@@ -147,4 +147,10 @@ messages:
       reason: "No authorization token is provided."
       action: "Provide a valid authorization token."
 
-
+    # Ticket messages (140 - 150)
+    - key: apiml.security.ticket.invalidApplicationName
+      number: ZWEAG140
+      type: ERROR
+      text: "The 'applicationName' parameter name is missing."
+      reason: "The application name is not provided."
+      action: "Provide the 'applicationName' parameter."
