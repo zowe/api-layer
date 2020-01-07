@@ -41,7 +41,7 @@ public class ZosmfSchemeTest {
     private ZosmfScheme zosmfScheme;
 
     @Test
-    public void testCreateCommand() {
+    public void testCreateCommand() throws Exception {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
         QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime());

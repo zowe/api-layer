@@ -45,6 +45,6 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * In all other case call apply(null).
      * @param instanceInfo Specific instanceIf if it is needed
      */
-    public abstract  void apply(InstanceInfo instanceInfo);
+    public abstract  void apply(InstanceInfo instanceInfo) throws Exception;
 
 }

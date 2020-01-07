@@ -51,7 +51,7 @@ public class PassTicketServiceTest {
 
     @Test
     @Order(2)
-    public void testCalledMethod() {
+    public void testCalledMethod() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
         evaluated = null;
         passTicketService.evaluate("userId", "applId", "passTicket");
         assertEquals("userId-applId-passTicket", evaluated);
@@ -63,7 +63,7 @@ public class PassTicketServiceTest {
     }
 
     @Test
-    public void testProxy() {
+    public void testProxy() throws IRRPassTicketGenerationException {
         IRRPassTicket irrPassTicket = ClassOrDefaultProxyUtils.createProxy(
             IRRPassTicket.class,
             "notExistingClass",

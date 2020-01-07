@@ -1,10 +1,3 @@
-package com.ca.mfaas.util;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import static org.junit.Assert.*;
-
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -14,6 +7,18 @@ import static org.junit.Assert.*;
  *
  * Copyright Contributors to the Zowe Project.
  */
+package com.ca.mfaas.util;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import java.lang.reflect.UndeclaredThrowableException;
+
+import static org.junit.Assert.*;
+
 @RunWith(JUnit4.class)
 public class ClassOrDefaultProxyUtilsTest {
 
@@ -58,6 +63,65 @@ public class ClassOrDefaultProxyUtilsTest {
 
         // getImplementationClass is override with base implementation
         assertEquals(TestImplementation2.class, ((ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) ti).getImplementationClass());
+    }
+
+    @Test
+    public void testExceptionMapping() {
+        TestInterfaceException tie;
+
+        tie = ClassOrDefaultProxyUtils.createProxy(
+            TestInterfaceException.class,
+            TestImplementationException.class.getName(),
+            () -> {
+                fail("Test failed, missing implementation for test");
+                return null;
+            },
+            new ClassOrDefaultProxyUtils.ByMethodName<>(
+                TestSourceException.class.getName(),
+                TestTargetException.class,
+                "getParam1", "getParam2", "getParam3"
+            )
+        );
+
+        Object testObject = new Object();
+        try {
+            tie.doSomething(testObject, "testString", 123);
+            fail();
+        } catch (TestTargetException e) {
+            assertSame(testObject, e.getObject());
+            assertEquals("testString", e.getString());
+            assertEquals(123, e.getNumber());
+        }
+    }
+
+    @Test
+    public void testExceptionMappingUnkwnown() {
+        TestInterfaceException tie;
+
+        tie = ClassOrDefaultProxyUtils.createProxy(
+            TestInterfaceException.class,
+            TestImplementationException.class.getName(),
+            () -> {
+                fail("Test failed, missing implementation for test");
+                return null;
+            },
+            new ClassOrDefaultProxyUtils.ByMethodName<>(
+                "Unkwnown",
+                TestTargetException.class,
+                "getParam1", "getParam2", "getParam3"
+            )
+        );
+
+        Object testObject = new Object();
+        try {
+            tie.doSomething(testObject, "testString", 123);
+            fail();
+        } catch (TestTargetException e) {
+            // there is missing mapping, it will throw source exception
+            fail();
+        } catch (UndeclaredThrowableException e) {
+            assertTrue(e.getCause() instanceof TestSourceException);
+        }
     }
 
     public interface TestInterface1Super {
@@ -127,6 +191,44 @@ public class ClassOrDefaultProxyUtilsTest {
         @Override
         public Class<?> getImplementationClass() {
             return Object.class;
+        }
+
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class TestSourceException extends Exception {
+
+        private static final long serialVersionUID = -5824895837948769100L;
+
+        private final Object param1;
+        private final String param2;
+        private final int param3;
+
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class TestTargetException extends Exception {
+
+        private static final long serialVersionUID = -3566209353622503908L;
+
+        private final Object object;
+        private final String string;
+        private final int number;
+
+    }
+
+    public interface TestInterfaceException {
+
+        public void doSomething(Object param1, String param2, int param3) throws TestTargetException;
+
+    }
+
+    public static class TestImplementationException {
+
+        public void doSomething(Object param1, String param2, int param3) throws TestSourceException {
+            throw new TestSourceException(param1, param2, param3);
         }
 
     }

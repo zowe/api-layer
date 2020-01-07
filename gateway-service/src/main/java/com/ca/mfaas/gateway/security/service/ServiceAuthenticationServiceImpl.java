@@ -91,7 +91,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) throws Exception {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         final QueryResponse queryResponse = authenticationService.parseJwtToken(jwtToken);
         return scheme.createCommand(authentication, queryResponse);
@@ -100,7 +100,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @CacheEvict(value = CACHE_BY_SERVICE_ID, condition = "#result != null && #result.isExpired()")
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws Exception {
         final List<InstanceInfo> instances = discoveryClient.getInstancesById(serviceId);
 
         Authentication found = null;
@@ -164,7 +164,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         protected UniversalAuthenticationCommand() {}
 
         @Override
-        public void apply(InstanceInfo instanceInfo) {
+        public void apply(InstanceInfo instanceInfo) throws Exception {
             if (instanceInfo == null) throw new NullPointerException("Argument instanceInfo is required");
 
             final Authentication auth = getAuthentication(instanceInfo);

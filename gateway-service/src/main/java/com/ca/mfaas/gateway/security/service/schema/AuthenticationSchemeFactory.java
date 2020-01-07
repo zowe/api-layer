@@ -78,7 +78,7 @@ public class AuthenticationSchemeFactory {
         return output;
     }
 
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication) {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication) throws Exception {
         final AbstractAuthenticationScheme scheme;
         if ((authentication == null) || (authentication.getScheme() == null)) {
             scheme = defaultScheme;

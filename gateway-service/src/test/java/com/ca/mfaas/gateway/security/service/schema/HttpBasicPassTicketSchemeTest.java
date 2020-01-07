@@ -45,7 +45,7 @@ public class HttpBasicPassTicketSchemeTest {
     }
 
     @Test
-    public void testCreateCommand() {
+    public void testCreateCommand() throws Exception {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime());

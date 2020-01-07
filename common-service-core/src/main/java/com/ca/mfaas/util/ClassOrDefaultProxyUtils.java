@@ -10,17 +10,17 @@
 package com.ca.mfaas.util;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -65,9 +65,10 @@ public final class ClassOrDefaultProxyUtils {
      * @param implementationClassName Full name of prefer implementation
      * @param defaultImplementation Supplier to fetch implementation to use, if the prefer one is missing
      * @param <T> Common interface for prefer and default implementation
+     * @param exceptionMappings handlers to map exception to custom class
      * @return Proxy object implementing interfaceClass and ClassOrDefaultProxyState
      */
-    public static <T> T createProxy(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation) {
+    public static <T> T createProxy(Class<T> interfaceClass, String implementationClassName, Supplier<? extends T> defaultImplementation, ExceptionMapping<? extends Exception> ... exceptionMappings) {
         ObjectUtil.requireNotNull(interfaceClass, "interfaceClass can't be null");
         ObjectUtil.requireNotEmpty(implementationClassName, "implementationClassName can't be empty");
         ObjectUtil.requireNotNull(defaultImplementation, "defaultImplementation can't be null");
@@ -75,19 +76,19 @@ public final class ClassOrDefaultProxyUtils {
         try {
             final Class<?> implementationClazz = Class.forName(implementationClassName);
             final Object implementation = implementationClazz.getDeclaredConstructor().newInstance();
-            return makeProxy(interfaceClass, implementation, true);
+            return makeProxy(interfaceClass, implementation, true, exceptionMappings);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             log.warn("Implementation {} is not available, it will continue with default one {} : " + e.getLocalizedMessage(), implementationClassName, defaultImplementation);
         }
 
-        return makeProxy(interfaceClass, defaultImplementation.get(), false);
+        return makeProxy(interfaceClass, defaultImplementation.get(), false, exceptionMappings);
     }
 
-    private static <T> T makeProxy(Class<T> interfaceClass, Object implementation, boolean usingBaseImplementation) {
+    private static <T> T makeProxy(Class<T> interfaceClass, Object implementation, boolean usingBaseImplementation, ExceptionMapping<? extends Exception> ... exceptionMappings) {
         return (T) Proxy.newProxyInstance(
             ClassOrDefaultProxyUtils.class.getClassLoader(),
             new Class<?>[] {interfaceClass, ClassOrDefaultProxyUtils.ClassOrDefaultProxyState.class},
-            new MethodInvocationHandler(implementation, interfaceClass, usingBaseImplementation));
+            new MethodInvocationHandler(implementation, interfaceClass, usingBaseImplementation, exceptionMappings));
     }
 
     /**
@@ -109,6 +110,9 @@ public final class ClassOrDefaultProxyUtils {
 
     }
 
+    /**
+     * Handler of proxy. This class prepare mapping of call and then invoke target method.
+     */
     private static class MethodInvocationHandler implements InvocationHandler, ClassOrDefaultProxyState {
 
         private final Map<Method, EndPoint> mapping = new HashMap<>();
@@ -116,11 +120,21 @@ public final class ClassOrDefaultProxyUtils {
         private final boolean usingBaseImplementation;
         private final Object implementation;
         private final Class<?> interfaceClass;
+        private final ExceptionMapping<? extends Exception>[] exceptionMappings;
 
-        public MethodInvocationHandler(Object implementation, Class<?> interfaceClass, boolean usingBaseImplementation) {
+        public MethodInvocationHandler(Object implementation, Class<?> interfaceClass, boolean usingBaseImplementation, ExceptionMapping<? extends Exception> ... exceptionMappings) {
             this.usingBaseImplementation = usingBaseImplementation;
             this.implementation = implementation;
             this.interfaceClass = interfaceClass;
+            this.exceptionMappings = exceptionMappings;
+
+            if (this.usingBaseImplementation) {
+                for (ExceptionMapping<? extends Exception> exceptionMapping : exceptionMappings) {
+                    if (!exceptionMapping.isInitialized()) {
+                        log.error("Mapping of exception {} is not initialized", exceptionMapping);
+                    }
+                }
+            }
 
             this.initMapping();
         }
@@ -202,7 +216,13 @@ public final class ClassOrDefaultProxyUtils {
             try {
                 return endPoint.invoke(args);
             } catch (InvocationTargetException ite) {
-                throw ite.getCause();
+                // thrown exception in proxied object
+                Throwable t = ite.getCause();
+                // if there is a mapping of exceptions, apply it to use custom Exception
+                for (ExceptionMapping em : exceptionMappings) {
+                    em.apply(t);
+                }
+                throw t;
             }
         }
 
@@ -216,6 +236,10 @@ public final class ClassOrDefaultProxyUtils {
             return usingBaseImplementation;
         }
 
+        /**
+         * Object define instance of object where should be invoked the method and contains also method instance. It is
+         * prepare before to make invoke in the fastest way.
+         */
         @Value
         @AllArgsConstructor
         public static final class EndPoint {
@@ -227,6 +251,163 @@ public final class ClassOrDefaultProxyUtils {
                 return method.invoke(target, args);
             }
 
+        }
+
+    }
+
+    /**
+     * Interface to controll an exception mapping. It offer base method to make controll on exception conversion
+     * from Handler side.
+     * @param <T> Target exception (which is thrown in case of mapping)
+     */
+    public interface ExceptionMapping<T extends Exception> {
+
+        /**
+         * Method indicate if mapping was created well (to controll from proxy handler)
+         * @return true if mapping is ready to use otherwise false
+         */
+        public boolean isInitialized();
+
+        /**
+         * Method will check if t is able to map. If yes, make mapping and throw new (mapped) expception
+         * @param t Original exception
+         * @throws T Type of mapped exception to throw in case of mapping is right to type of t
+         */
+        public void apply(Throwable t) throws T;
+
+    }
+
+    /**
+     * This exception mapper is based on getter in source exception. It allows to get from zero to N getters without
+     * argument in source exception and use them as arguments in target constructor.
+     *
+     * You have to define same count of getter names (with same result type) as a contructor in target exception. The
+     * order has to be also same.
+     *
+     * @param <T> Type of target exception
+     */
+    @AllArgsConstructor
+    @Data
+    public static class ByMethodName<T extends Exception> implements ExceptionMapping<T> {
+
+        private final String sourceExceptionClassName;
+        private final Function<Throwable, T> mappingFunction;
+
+        /**
+         * Constructor define all required values to make a mapping
+         * @param sourceExceptionClassName Name of source exception's class type  {@see Class#getName()}
+         * @param targetExceptionClass Type of exception to be thrown in case of successful mapping
+         * @param methodNames names of getter without arguments in sources exception, which results will be use as constructor parameters
+         */
+        public ByMethodName(String sourceExceptionClassName, Class<T> targetExceptionClass, String...methodNames) {
+            this.sourceExceptionClassName = sourceExceptionClassName;
+            this.mappingFunction = getMappingFunction(sourceExceptionClassName, targetExceptionClass, methodNames);
+        }
+
+        /**
+         * Find method with name and no arguments in the class hierarchy
+         * @param clazz - base method to lookup
+         * @param methodName - name of method
+         * @return found method with name methodName and no arguments or null
+         */
+        private Method findMethod(Class<?> clazz, String methodName) {
+            if (clazz == Object.class) return null;
+
+            try {
+                return clazz.getDeclaredMethod(methodName);
+            } catch (NoSuchMethodException e) {
+                return findMethod(clazz.getSuperclass(), methodName);
+            }
+        }
+
+        /**
+         * Method find constructor in target exception, prepare lambdas to get values from source exception and return
+         * function to comvert source exception to new (target) one
+         * @param sourceExceptionClassName name of exception to map
+         * @param targetExceptionClass exception which could be construct after mapping
+         * @param methodNames names of methods without argument on source exception to get values into constructor to create target exception
+         * @return function to mapping of exception
+         */
+        private Function<Throwable, T> getMappingFunction(String sourceExceptionClassName, Class<T> targetExceptionClass, String...methodNames ) {
+            // find source exception
+            final Class<Throwable> eClass;
+            try {
+                eClass = (Class<Throwable>) Class.forName(sourceExceptionClassName);
+            } catch (ClassNotFoundException e) {
+                log.debug("Exception {} is not available, it will not be mapped into {} : " + e.getLocalizedMessage(), sourceExceptionClassName, targetExceptionClass);
+                return null;
+            }
+
+            // find arguments of constructor and methods by names, methods should be without any arguments
+            final List<Class<?>> argClasses = new LinkedList<>();
+            final List<Function<Throwable, Object>> mapFunctions = new LinkedList<>();
+            for (String methodName : methodNames) {
+                final Method method = findMethod(eClass, methodName);
+                if (method == null) {
+                    log.debug("Cannot find method {} in {} to map exceptions", methodName, sourceExceptionClassName);
+                    return null;
+                }
+                argClasses.add(method.getReturnType());
+                mapFunctions.add(x -> {
+                    try {
+                        return method.invoke(x);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new IllegalArgumentException(e);
+                    }
+                });
+            }
+
+            // find the constructor and store functions to invoke then
+            try {
+                return getMappingFunction((Constructor<T>) targetExceptionClass.getConstructor(argClasses.toArray(new Class[0])), mapFunctions);
+            } catch (NoSuchMethodException e) {
+                log.debug("Cannot find constructor on {} with {}", sourceExceptionClassName, argClasses);
+                return null;
+            }
+        }
+
+        /**
+         * Method will create lambda to fully conversion of source exception
+         * @param constructor constructor to use (right count and type of arguments)
+         * @param mapFunctions list of lambdas to get results from source exception
+         * @return lambda function to convert exception
+         */
+        private Function<Throwable, T> getMappingFunction(Constructor<T> constructor, List<Function<Throwable, Object>> mapFunctions) {
+            return x -> {
+                try {
+                    return constructor.newInstance(
+                        mapFunctions.stream().map(y -> y.apply(x)).toArray()
+                    );
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                    throw new RuntimeException("Cannot construct exception " + constructor.getDeclaringClass(), e);
+                }
+            };
+        }
+
+        @Override
+        public boolean isInitialized() {
+            return mappingFunction != null;
+        }
+
+        /**
+         * Check if this mapping is right for type of t
+         * @param t source exception
+         * @return true if mapping is for type of t, otherwise false
+         */
+        private boolean isMatching(Throwable t) {
+            return StringUtils.equals(t.getClass().getName(), sourceExceptionClassName);
+        }
+
+        @Override
+        public void apply(Throwable t) throws T {
+            if (!isMatching(t)) return;
+
+           throw mappingFunction.apply(t);
+        }
+
+        @Override
+        public String toString() {
+            return "{ExceptionMapping [sourceExceptionClassName = " + sourceExceptionClassName + "]}";
         }
 
     }

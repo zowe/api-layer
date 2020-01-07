@@ -120,7 +120,7 @@ public class AuthenticationSchemeFactoryTest {
     }
 
     @Test
-    public void testGetAuthenticationCommand() {
+    public void testGetAuthenticationCommand() throws Exception {
         final AbstractAuthenticationScheme byPass = spy(createScheme(AuthenticationScheme.BYPASS, true));
         final AbstractAuthenticationScheme passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false));
 
@@ -164,7 +164,7 @@ public class AuthenticationSchemeFactoryTest {
     }
 
     @Test
-    public void testUnknownScheme() {
+    public void testUnknownScheme() throws Exception {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
             mock(AuthenticationService.class),
             Arrays.asList(

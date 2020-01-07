@@ -14,7 +14,10 @@ import com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.exception.ZuulException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
+import org.springframework.http.HttpStatus;
 
 import java.security.Principal;
 
@@ -58,8 +61,12 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
 
         final String serviceId = (String) context.get(SERVICE_ID_KEY);
 
-        final AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, jwtToken);
-        cmd.apply(null);
+        try {
+            final AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, jwtToken);
+            cmd.apply(null);
+        } catch (Exception e) {
+            throw new ZuulRuntimeException(new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), String.valueOf(e)));
+        }
 
         return null;
     }

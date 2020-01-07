@@ -11,6 +11,7 @@ package com.ca.mfaas.gateway.security.service.schema;
 
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
+import com.ca.apiml.security.common.service.IRRPassTicketGenerationException;
 import com.ca.apiml.security.common.service.PassTicketService;
 import com.ca.apiml.security.common.token.QueryResponse;
 import com.netflix.appinfo.InstanceInfo;
@@ -33,7 +34,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
 
     private final PassTicketService passTicketService;
 
-    @Value("${apiml.security.auth.passTicket.timeout:600}")
+    @Value("${apiml.security.auth.passTicket.timeout:540}")
     private Integer timeout;
 
     public HttpBasicPassTicketScheme(@Autowired PassTicketService passTicketService) {
@@ -46,7 +47,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) {
+    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) throws IRRPassTicketGenerationException {
         final long before = System.currentTimeMillis();
 
         final String applId = authentication.getApplid();

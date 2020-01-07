@@ -25,7 +25,7 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      * @param jwtToken JWT security token of user (authentication can depends on user privilege)
      * @return authentication command to update request in ZUUL
      */
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken);
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) throws Exception;
 
     /**
      * Get or create command to service's authentication using serviceId and jwtToken of current user
@@ -33,6 +33,6 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      * @param jwtToken JWT security token of user (authentication can depends on user privilege)
      * @return authentication command to update request in ZUUL (or lazy command to be updated in load balancer)
      */
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken);
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws Exception;
 
 }

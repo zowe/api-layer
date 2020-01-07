@@ -115,7 +115,7 @@ public class ServiceAuthenticationServiceImplTest {
     }
 
     @Test
-    public void testGetAuthenticationCommand() {
+    public void testGetAuthenticationCommand() throws Exception {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
         // token1 - valid
         QueryResponse qr1 = new QueryResponse("domain", "userId",
@@ -153,7 +153,7 @@ public class ServiceAuthenticationServiceImplTest {
     }
 
     @Test
-    public void testGetAuthenticationCommandByServiceId() {
+    public void testGetAuthenticationCommandByServiceId() throws Exception {
         AuthenticationCommand ok = new AuthenticationCommandTest(false);
         Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
         Authentication a2 = new Authentication(AuthenticationScheme.ZOWE_JWT, null);
@@ -198,7 +198,7 @@ public class ServiceAuthenticationServiceImplTest {
     }
 
     @Test
-    public void testGetAuthenticationCommandByServiceIdCache() {
+    public void testGetAuthenticationCommandByServiceIdCache() throws Exception {
         InstanceInfo ii1 = createInstanceInfo("i1", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1");
         AuthenticationCommand ac1 = new AuthenticationCommandTest(true);
         AuthenticationCommand ac2 = new AuthenticationCommandTest(false);
@@ -225,7 +225,7 @@ public class ServiceAuthenticationServiceImplTest {
     }
 
     @Test
-    public void testUniversalAuthenticationCommand() {
+    public void testUniversalAuthenticationCommand() throws Exception {
         ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand uac = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
 
         try {
@@ -264,7 +264,7 @@ public class ServiceAuthenticationServiceImplTest {
     }
 
     @Test
-    public void testEvictCacheService() {
+    public void testEvictCacheService() throws Exception {
         AuthenticationCommand command = AuthenticationCommand.EMPTY;
         Authentication auth = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0001");
         doReturn(Collections.singletonList(createInstanceInfo("instance0001", auth))).when(discoveryClient).getInstancesById("service0001");

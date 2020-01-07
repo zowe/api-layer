@@ -32,7 +32,7 @@ public interface AbstractAuthenticationScheme {
      * @param authentication DTO describing details about authentication
      * @param token User's parsed (Zowe's) JWT token
      */
-    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token);
+    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) throws Exception;
 
     /**
      * Define implementation, which will be use in case no scheme is defined.

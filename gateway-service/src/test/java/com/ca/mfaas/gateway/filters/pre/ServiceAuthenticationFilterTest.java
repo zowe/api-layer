@@ -37,12 +37,12 @@ public class ServiceAuthenticationFilterTest {
     private AuthenticationCommand command;
 
     @Before
-    public void init() {
+    public void init() throws Exception {
         when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
     }
 
     @Test
-    public void testRun() {
+    public void testRun() throws Exception {
         HttpServletRequest request = mock(HttpServletRequest.class);
         when(request.getUserPrincipal()).thenReturn(new TokenAuthentication("user", "token"));
         RequestContext requestContext = mock(RequestContext.class);

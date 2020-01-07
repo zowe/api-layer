@@ -172,7 +172,11 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
                     // in context is a command, it means update of authentication is waiting for select an instance
                     final Server.MetaInfo metaInfo = info.getServer().getMetaInfo();
                     final InstanceInfo instanceInfo = getInstanceInfo(metaInfo.getServiceIdForDiscovery(), metaInfo.getInstanceId());
-                    cmd.apply(instanceInfo);
+                    try {
+                        cmd.apply(instanceInfo);
+                    } catch (Exception e) {
+                        throw new AbortExecutionException(String.valueOf(e), e);
+                    }
                 }
             }
 
