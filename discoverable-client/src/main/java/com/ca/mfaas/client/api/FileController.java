@@ -36,14 +36,14 @@ public class FileController {
         this.servletContext = servletContext;
     }
 
-    @GetMapping(value = "/api/v1/get-file", produces = "application/zip")
+    @GetMapping(value = "/api/v1/get-file", produces = "application/png")
     public ResponseEntity<InputStreamResource> zipFiles() throws FileNotFoundException {
 
-        URL url = getClass().getResource("/sample-text.zip");
+        URL url = getClass().getResource("/api-catalog.png");
         File file = new File(url.getPath());
         InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
 
-        String mineType = servletContext.getMimeType("sample-text.zip");
+        String mineType = servletContext.getMimeType("api-catalog.png");
         MediaType mediaType = MediaType.parseMediaType(mineType);
 
         return ResponseEntity.ok()

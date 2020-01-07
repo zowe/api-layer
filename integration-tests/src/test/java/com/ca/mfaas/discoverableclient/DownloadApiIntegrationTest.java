@@ -27,19 +27,18 @@ public class DownloadApiIntegrationTest {
     }
 
     @Test
-    public void shouldDoGetRequestAndDownloadZipFile() {
+    public void shouldSendGetRequestAndDownloadCompressedImage() {
         RestAssured.registerParser("application/zip", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/get-file");
         given().
             contentType("application/octet-stream").
-            accept("application/zip").
-            expect().
-            statusCode(200).
-            header("Content-Disposition", "attachment;filename=sample-text.zip").
-            header("Content-Encoding", "gzip").
+            accept("image/png").
             when().
-            get(uri)
-            .then().contentType("application/zip")
-            ;
+            get(uri).
+            then().
+            statusCode(200).
+            header("Content-Disposition", "attachment;filename=api-catalog.png").
+            header("Content-Encoding", "gzip").
+            contentType("image/png");
     }
 }
