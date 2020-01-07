@@ -11,19 +11,6 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
 
-apiml:
-    security:
-        ssl:
-            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-    # The `apiml` node contains API Mediation Layer specific configuration
-    service:
-        # The `apiml.service` node contains information required by any APIML service
-        id: discoverableclient  # Service ID of this service
-        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
-        port: 10012  # Default port name for discoverable-clinet service
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        preferIpAddress: false        
-
 spring:
     application:
         name: ${apiml.service.id}
@@ -36,6 +23,72 @@ spring:
     output:
         ansi:
             enabled: detect
+
+apiml:
+    enabled: true
+    service:
+        # The `apiml.service` node contains information required by any APIML service
+        id: discoverableclient  # Service ID of this service
+        serviceId: discoverableclient2
+        #serviceId: discoverableclient2
+        title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
+        description:  Sample API services to demonstrate Spring Integration Enabler
+
+        scheme: https
+        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
+        port: 10016  # Default port name for discoverable-clinet service
+        # securePort: ${server.port}
+        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        serviceIpAddress: ${apiml.service.ipAddress}
+        # preferIpAddress: false
+
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+
+        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+
+
+        homePageRelativeUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
+        statusPageRelativeUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
+        healthCheckRelativeUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
+
+        contextPath:
+
+        discoveryServiceUrls: https://localhost:10011/eureka/
+
+        routes:
+            -   gateway-url: "ui/v1"
+                service-url: ${server.servlet.contextPath}
+            -   gateway-url: "api/v1"
+                service-url: ${server.servlet.contextPath}/api/v1
+            -   gateway-url: "ws/v1"
+                service-url: ${server.servlet.contextPath}/ws
+        apiInfo:
+            -   apiId: org.zowe.discoverableclient
+                version: 1.0.0
+                gatewayUrl: api/v1
+                swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
+                documentationUrl: https://www.zowe.org
+        catalog:
+            tile:
+                id: cademoapps
+                title: Sample API Mediation Layer Applications
+                description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+                version: 1.0.1
+    security:
+        ssl:
+            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+            verifySslCertificatesOfServices: true
+            protocol: TLSv1.2
+            keyAlias: localhost
+            keyPassword: password
+            keyStore: keystore/localhost/localhost.keystore.p12
+            keyStorePassword: password
+            keyStoreType: PKCS12
+            trustStore: keystore/localhost/localhost.truststore.p12
+            trustStorePassword: password
+            trustStoreType: PKCS12
+    # The `apiml` node contains API Mediation Layer specific configuration
 
 server:
     address: ${apiml.service.ipAddress}
@@ -105,7 +158,6 @@ eureka:
             defaultZone: ${apiml.service.discoveryServiceUrls}
         healthcheck:
             enabled: true
-
 ##############################################################################################
 management:
     endpoints:
