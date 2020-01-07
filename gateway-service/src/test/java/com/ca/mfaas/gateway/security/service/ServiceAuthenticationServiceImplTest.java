@@ -1,12 +1,12 @@
 package com.ca.mfaas.gateway.security.service;/*
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License v2.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v20.html
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Copyright Contributors to the Zowe Project.
- */
+                                              * This program and the accompanying materials are made available under the terms of the
+                                              * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+                                              * https://www.eclipse.org/legal/epl-v20.html
+                                              *
+                                              * SPDX-License-Identifier: EPL-2.0
+                                              *
+                                              * Copyright Contributors to the Zowe Project.
+                                              */
 
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
@@ -16,7 +16,6 @@ import com.ca.mfaas.gateway.security.service.schema.*;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.zuul.context.RequestContext;
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +31,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
