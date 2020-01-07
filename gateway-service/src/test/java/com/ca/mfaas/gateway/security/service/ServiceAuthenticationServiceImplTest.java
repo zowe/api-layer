@@ -1,4 +1,4 @@
-package com.ca.mfaas.gateway.security.service;/*
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -7,6 +7,7 @@ package com.ca.mfaas.gateway.security.service;/*
  *
  * Copyright Contributors to the Zowe Project.
  */
+package com.ca.mfaas.gateway.security.service;
 
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
@@ -98,7 +99,7 @@ public class ServiceAuthenticationServiceImplTest {
         return createInstanceInfo(id, authentication == null ? null : authentication.getScheme(), authentication == null ? null : authentication.getApplid());
     }
 
-    private Application createApplication(InstanceInfo...instances) {
+    private Application createApplication(InstanceInfo... instances) {
         final Application out = mock(Application.class);
         when(out.getInstances()).thenReturn(Arrays.asList(instances));
         return out;
@@ -117,7 +118,7 @@ public class ServiceAuthenticationServiceImplTest {
         ii = createInstanceInfo("instance2", "httpBasicPassTicket", null);
         assertEquals(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, null), serviceAuthenticationServiceImpl.getAuthentication(ii));
 
-        ii = createInstanceInfo("instance2",  (AuthenticationScheme) null, null);
+        ii = createInstanceInfo("instance2", (AuthenticationScheme) null, null);
         assertEquals(new Authentication(), serviceAuthenticationServiceImpl.getAuthentication(ii));
     }
 
@@ -126,13 +127,13 @@ public class ServiceAuthenticationServiceImplTest {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
         // token1 - valid
         QueryResponse qr1 = new QueryResponse("domain", "userId",
-            Date.valueOf(LocalDate.of(1900,1, 1)),
-            Date.valueOf(LocalDate.of(2100,1, 1))
+            Date.valueOf(LocalDate.of(1900, 1, 1)),
+            Date.valueOf(LocalDate.of(2100, 1, 1))
         );
         // token2 - expired
         QueryResponse qr2 = new QueryResponse("domain", "userId",
-            Date.valueOf(LocalDate.of(1900,1, 1)),
-            Date.valueOf(LocalDate.of(2000,1, 1))
+            Date.valueOf(LocalDate.of(1900, 1, 1)),
+            Date.valueOf(LocalDate.of(2000, 1, 1))
         );
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));
@@ -166,11 +167,13 @@ public class ServiceAuthenticationServiceImplTest {
         Authentication a2 = new Authentication(AuthenticationScheme.ZOWE_JWT, null);
         Authentication a3 = new Authentication(AuthenticationScheme.ZOWE_JWT, "applid01");
         Authentication a4 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid02");
+        Authentication a5 = new Authentication(null, null);
 
         InstanceInfo ii1 = createInstanceInfo("inst01", a1);
         InstanceInfo ii2 = createInstanceInfo("inst01", a2);
         InstanceInfo ii3 = createInstanceInfo("inst01", a3);
         InstanceInfo ii4 = createInstanceInfo("inst01", a4);
+        InstanceInfo ii5 = createInstanceInfo("inst02", a5);
 
         Application application;
 
@@ -210,6 +213,10 @@ public class ServiceAuthenticationServiceImplTest {
         application = createApplication(ii1, ii2, ii3, ii4);
         when(discoveryClient.getApplication("svr03")).thenReturn(application);
         assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
+
+        reset(discoveryClient);
+        when(discoveryClient.getInstancesById("svr03")).thenReturn(Collections.singletonList(ii5));
+        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr03", "jwt03"));
     }
 
     @Test

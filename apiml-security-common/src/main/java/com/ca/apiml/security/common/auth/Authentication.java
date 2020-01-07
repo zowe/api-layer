@@ -16,12 +16,15 @@ import lombok.NoArgsConstructor;
 /**
  * Information about expected authentication scheme and APPLID for PassTickets generation.
  */
- @Data
- @NoArgsConstructor
- @AllArgsConstructor
- public class Authentication {
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Authentication {
 
     private AuthenticationScheme scheme;
     private String applid;
 
+    public boolean isEmpty() {
+        return (scheme == null) && (applid == null);
+    }
 }

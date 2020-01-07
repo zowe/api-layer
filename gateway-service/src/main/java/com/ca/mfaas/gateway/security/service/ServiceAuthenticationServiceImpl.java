@@ -121,7 +121,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         }
 
         // if no instance exist, do nothing
-        if (found == null) return AuthenticationCommand.EMPTY;
+        if (found == null || found.isEmpty()) return AuthenticationCommand.EMPTY;
 
         return getAuthenticationCommand(found, jwtToken);
     }
