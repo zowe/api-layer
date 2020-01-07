@@ -31,21 +31,14 @@ public class PassTicketService {
 
     @PostConstruct
     public void init() {
-        this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(
-            IRRPassTicket.class,
-            "com.ibm.eserver.zos.racf.IRRPassTicket",
-            DefaultPassTicketImpl::new,
-            new ClassOrDefaultProxyUtils.ByMethodName<IRRPassTicketEvaluationException>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
-                IRRPassTicketEvaluationException.class,
-                "getSafRc", "getRacfRsn", "getRacfRc"
-            ),
-            new ClassOrDefaultProxyUtils.ByMethodName<IRRPassTicketGenerationException>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
-                IRRPassTicketGenerationException.class,
-                "getSafRc", "getRacfRsn", "getRacfRc"
-            )
-        );
+        this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
+                "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
+                new ClassOrDefaultProxyUtils.ByMethodName<IRRPassTicketEvaluationException>(
+                        "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
+                        IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRsn", "getRacfRc"),
+                new ClassOrDefaultProxyUtils.ByMethodName<IRRPassTicketGenerationException>(
+                        "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
+                        IRRPassTicketGenerationException.class, "getSafRc", "getRacfRsn", "getRacfRc"));
     }
 
     public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
@@ -74,11 +67,19 @@ public class PassTicketService {
 
         @Override
         public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
-            if (userId == null) throw new IllegalArgumentException("Parameter userId is empty");
-            if (applId == null) throw new IllegalArgumentException("Parameter applId is empty");
-            if (passTicket == null) throw new IllegalArgumentException("Parameter passTicket is empty");
+            if (userId == null)
+                throw new IllegalArgumentException("Parameter userId is empty");
+            if (applId == null)
+                throw new IllegalArgumentException("Parameter applId is empty");
+            if (passTicket == null)
+                throw new IllegalArgumentException("Parameter passTicket is empty");
+
+            if (passTicket.equals(ZOWE_DUMMY_PASS_TICKET_PREFIX)) {
+                return;
+            }
 
             final Set<String> passTickets = userAppToPasstickets.get(new UserApp(userId, applId));
+
             if ((passTickets == null) || !passTickets.contains(passTicket)) {
                 throw new IRRPassTicketEvaluationException(8, 16, 32);
             }
@@ -97,7 +98,7 @@ public class PassTicketService {
             final UserApp userApp = new UserApp(userId, applId);
             final int currentId;
             synchronized (DefaultPassTicketImpl.class) {
-                currentId = DefaultPassTicketImpl.id ++;
+                currentId = DefaultPassTicketImpl.id++;
             }
             final String passTicket = ZOWE_DUMMY_PASS_TICKET_PREFIX + "_" + applId + "_" + userId + "_" + currentId;
 
