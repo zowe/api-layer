@@ -22,8 +22,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.http.HttpMethod;
 
-import javax.ws.rs.HttpMethod;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -56,13 +56,14 @@ public class QueryFilterTest {
             authenticationSuccessHandler,
             authenticationFailureHandler,
             authenticationService,
+            HttpMethod.GET,
             authenticationManager);
     }
 
     @Test
     public void shouldCallAuthenticationManagerAuthenticate() {
         httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setMethod(HttpMethod.GET);
+        httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
         queryFilter.setAuthenticationManager(authenticationManager);
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
@@ -77,7 +78,7 @@ public class QueryFilterTest {
     @Test(expected = AuthMethodNotSupportedException.class)
     public void shouldRejectHttpMethods() {
         httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setMethod(HttpMethod.POST);
+        httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
         queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
@@ -86,7 +87,7 @@ public class QueryFilterTest {
     @Test(expected = TokenNotProvidedException.class)
     public void shouldRejectIfTokenIsNotPresent() {
         httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setMethod(HttpMethod.GET);
+        httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
             Optional.empty()

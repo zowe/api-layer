@@ -93,7 +93,7 @@ public class ApiCatalogEndpointIntegrationTest {
         assertNull(apiCatalogSwagger, paths.get("/status/updates"));
         assertNotNull(apiCatalogSwagger, paths.get("/containers/{id}"));
         assertNotNull(apiCatalogSwagger, paths.get("/containers"));
-        assertNotNull(apiCatalogSwagger, paths.get("/apidoc/{service-id}/{api-version}"));
+        assertNotNull(apiCatalogSwagger, paths.get("/apidoc/{serviceId}/{apiVersion}"));
         assertNotNull(apiCatalogSwagger, definitions.get("APIContainer"));
         assertNotNull(apiCatalogSwagger, definitions.get("APIService"));
         assertNotNull(apiCatalogSwagger, definitions.get("TimeZone"));

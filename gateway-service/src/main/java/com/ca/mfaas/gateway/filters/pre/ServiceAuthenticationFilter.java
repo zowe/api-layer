@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
-import com.ca.apiml.security.common.token.TokenAuthentication;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.zuul.ZuulFilter;
@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
 
-import java.security.Principal;
+import java.util.Optional;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -33,6 +33,9 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
 
     @Autowired
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     @Override
     public String filterType() {
@@ -53,19 +56,15 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
     public Object run() {
         final RequestContext context = RequestContext.getCurrentContext();
 
-        String jwtToken = null;
-        final Principal principal = RequestContext.getCurrentContext().getRequest().getUserPrincipal();
-        if (principal instanceof TokenAuthentication) {
-            jwtToken = ((TokenAuthentication) principal).getCredentials();
-        }
-
-        final String serviceId = (String) context.get(SERVICE_ID_KEY);
-
-        try {
-            final AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, jwtToken);
-            cmd.apply(null);
-        } catch (Exception e) {
-            throw new ZuulRuntimeException(new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), String.valueOf(e)));
+        Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
+        if (jwtToken.isPresent()) {
+            final String serviceId = (String) context.get(SERVICE_ID_KEY);
+            try {
+                final AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId,  jwtToken.get());
+                cmd.apply(null);
+            } catch (Exception e) {
+                throw new ZuulRuntimeException(new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), String.valueOf(e)));
+            }
         }
 
         return null;

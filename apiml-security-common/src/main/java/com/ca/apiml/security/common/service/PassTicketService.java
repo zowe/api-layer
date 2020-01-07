@@ -55,19 +55,21 @@ public class PassTicketService {
     }
 
     public static class DefaultPassTicketImpl implements IRRPassTicket {
+        public static final String ZOWE_DUMMY_PASSTICKET = "ZoweDummyPassTicket";
 
         @Override
         public void evaluate(String userId, String applId, String passTicket) {
             if (userId == null) throw new IllegalArgumentException("Parameter userId is empty");
             if (applId == null) throw new IllegalArgumentException("Parameter applId is empty");
             if (passTicket == null) throw new IllegalArgumentException("Parameter passTicket is empty");
-
-            throw new IllegalStateException("This implementation only for testing purpose");
+            if (!passTicket.equals(ZOWE_DUMMY_PASSTICKET)) {
+                throw new IllegalArgumentException("Invalid PassTicket");
+            }
         }
 
         @Override
         public String generate(String userId, String applId) {
-            return null;
+            return ZOWE_DUMMY_PASSTICKET;
         }
 
     }

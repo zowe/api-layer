@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
@@ -395,7 +394,7 @@ public class EurekaInstancesIntegrationTest {
         return value != null ? value.toCharArray() : null;
     }
 
-    private URI getDiscoveryUriWithPath(@Nonnull String path) throws Exception {
+    private URI getDiscoveryUriWithPath(String path) throws Exception {
         return new URIBuilder()
             .setScheme(scheme)
             .setHost(host)

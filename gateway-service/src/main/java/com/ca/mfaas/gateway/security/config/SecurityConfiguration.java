@@ -17,6 +17,7 @@ import com.ca.apiml.security.common.login.LoginFilter;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.mfaas.gateway.security.ticket.SuccessfulTicketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -50,6 +51,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final HandlerInitializer handlerInitializer;
     private final SuccessfulQueryHandler successfulQueryHandler;
+    private final SuccessfulTicketHandler successfulTicketHandler;
     private final AuthProviderInitializer authProviderInitializer;
 
     @Override
@@ -88,10 +90,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/application/health", "/application/info").permitAll()
             .antMatchers("/application/**").authenticated()
 
-            // add filters - login + query
+            // add filters - login, query, ticket
             .and()
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
@@ -118,6 +121,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             successfulQueryHandler,
             handlerInitializer.getAuthenticationFailureHandler(),
             authenticationService,
+            HttpMethod.GET,
+            authenticationManager());
+    }
+
+    /**
+     * Processes /ticket requests
+     */
+    private QueryFilter ticketFilter(String ticketEndpoint) throws Exception {
+        return new QueryFilter(
+            ticketEndpoint,
+            successfulTicketHandler,
+            handlerInitializer.getAuthenticationFailureHandler(),
+            authenticationService,
+            HttpMethod.POST,
             authenticationManager());
     }
 

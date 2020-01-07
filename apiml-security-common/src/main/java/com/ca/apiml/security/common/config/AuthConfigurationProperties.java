@@ -31,6 +31,7 @@ public class AuthConfigurationProperties {
     // General properties
     private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
     private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
+    private String gatewayTicketEndpoint = "/api/v1/gateway/auth/ticket";
 
     private String serviceLoginEndpoint = "/auth/login";
     private String serviceLogoutEndpoint = "/auth/logout";

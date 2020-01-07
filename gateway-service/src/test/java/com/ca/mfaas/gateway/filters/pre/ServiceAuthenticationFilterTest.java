@@ -37,7 +37,7 @@ public class ServiceAuthenticationFilterTest {
     private AuthenticationCommand command;
 
     @Before
-    public void init() throws Exception {
+    public void init() {
         when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
     }
 

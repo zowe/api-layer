@@ -33,6 +33,8 @@ import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
 import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
@@ -115,7 +117,7 @@ public class ServiceAuthenticationServiceImplTest {
     }
 
     @Test
-    public void testGetAuthenticationCommand() throws Exception {
+    public void testGetAuthenticationCommand() {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
         // token1 - valid
         QueryResponse qr1 = new QueryResponse("domain", "userId",
