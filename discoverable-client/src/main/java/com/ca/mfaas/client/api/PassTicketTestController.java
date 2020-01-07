@@ -25,7 +25,7 @@ import java.util.Base64;
  * Controller for testing PassTickets.
  */
 @RestController
-@Api(tags = { "Test Operations" }, description = "Operations for APIML Testing")
+@Api(tags = { "Test Operations" })
 public class PassTicketTestController {
 
     @Value("${apiml.service.applId:ZOWEAPPL}")
@@ -42,7 +42,8 @@ public class PassTicketTestController {
      */
     @GetMapping(value = "/api/v1/passticketTest")
     @ApiOperation(value = "Validate that the PassTicket in Authorization header is valid", tags = { "Test Operations" })
-    public void passticketTest(@RequestHeader("authorization") String authorization) throws IRRPassTicketEvaluationException {
+    public void passticketTest(@RequestHeader("authorization") String authorization)
+            throws IRRPassTicketEvaluationException {
         if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
             String base64Credentials = authorization.substring("Basic".length()).trim();
             String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
@@ -50,8 +51,8 @@ public class PassTicketTestController {
             String userId = values[0];
             String passTicket = values[1];
             passTicketService.evaluate(userId, applId, passTicket);
-            return;
+        } else {
+            throw new IllegalArgumentException("Missing Basic authorization header");
         }
-        throw new IllegalArgumentException("Missing Basic authorization header");
     }
 }
