@@ -11,7 +11,6 @@ package com.ca.mfaas.gateway.security.ticket;
 
 import com.ca.apiml.security.common.service.PassTicketService;
 import com.ca.apiml.security.common.token.TokenAuthentication;
-
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,7 +24,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.UnsupportedEncodingException;
 
-import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASSTICKET;
+import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX;
 import static org.junit.Assert.*;
 
 public class SuccessfulTicketHandlerTest {
@@ -57,8 +56,7 @@ public class SuccessfulTicketHandlerTest {
 
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
-        String expectedResponse = mapper.writeValueAsString(new TicketResponse(TOKEN, USER, APPLICATION_NAME, ZOWE_DUMMY_PASSTICKET));
-        assertEquals(expectedResponse, httpServletResponse.getContentAsString());
+        assertTrue(httpServletResponse.getContentAsString().contains(ZOWE_DUMMY_PASS_TICKET_PREFIX));
         assertTrue(httpServletResponse.isCommitted());
     }
 

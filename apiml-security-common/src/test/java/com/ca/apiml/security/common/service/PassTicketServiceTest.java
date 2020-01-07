@@ -80,6 +80,75 @@ public class PassTicketServiceTest {
         assertEquals("success", irrPassTicket.generate("user", "applId"));
     }
 
+    @Test
+    public void testDefaultPassTicketImpl() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
+        PassTicketService.DefaultPassTicketImpl dpti = new PassTicketService.DefaultPassTicketImpl();
+
+        try {
+            dpti.evaluate("user", "applId", "passticket");
+            fail();
+        } catch (IRRPassTicketEvaluationException e) {
+            assertEquals(8, e.getSafRc());
+            assertEquals(16, e.getRacfRsn());
+            assertEquals(32, e.getRacfRc());
+        }
+
+        String passTicket1 = dpti.generate("user", "applId");
+        String passTicket2 = dpti.generate("user", "applId");
+
+        assertNotNull(passTicket1);
+        assertNotNull(passTicket2);
+        assertNotEquals(passTicket1, passTicket2);
+
+        dpti.evaluate("user", "applId", passTicket1);
+        dpti.evaluate("user", "applId", passTicket2);
+
+        try {
+            dpti.evaluate("userx", "applId", passTicket1);
+            fail();
+        } catch (IRRPassTicketEvaluationException e) {
+            // different user, should throw exception
+        }
+
+        try {
+            dpti.evaluate("user", "applIdx", passTicket1);
+            fail();
+        } catch (IRRPassTicketEvaluationException e) {
+            // different applId, should throw exception
+        }
+
+        try {
+            dpti.generate(PassTicketService.DefaultPassTicketImpl.UNKWNOWN_USER, "anyApplId");
+            fail();
+        } catch (IRRPassTicketGenerationException e) {
+            assertEquals(8, e.getSafRc());
+            assertEquals(8, e.getRacfRsn());
+            assertEquals(16, e.getRacfRc());
+            assertNotNull(e.getErrorCodes());
+            assertEquals(1, e.getErrorCodes().size());
+            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16, e.getErrorCodes().get(0));
+            assertEquals(
+                "Error on generation of PassTicket\n" +
+                    "\tNot authorized to use this service.\n"
+                , e.getMessage()
+            );
+        }
+
+        try {
+            dpti.generate("anyUser", PassTicketService.DefaultPassTicketImpl.UNKWNOWN_APPLID);
+            fail();
+        } catch (IRRPassTicketGenerationException e) {
+            assertEquals(8, e.getSafRc());
+            assertEquals(16, e.getRacfRsn());
+            assertEquals(28, e.getRacfRc());
+            assertNotNull(e.getErrorCodes());
+            assertEquals(3, e.getErrorCodes().size());
+            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_X_1, e.getErrorCodes().get(0));
+            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, e.getErrorCodes().get(1));
+            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_X_2, e.getErrorCodes().get(2));
+        }
+    }
+
     public static class Impl implements IRRPassTicket {
         @Override
         public void evaluate(String userId, String applId, String passTicket) {

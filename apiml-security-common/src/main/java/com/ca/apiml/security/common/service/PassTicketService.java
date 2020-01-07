@@ -10,9 +10,16 @@
 package com.ca.apiml.security.common.service;
 
 import com.ca.mfaas.util.ClassOrDefaultProxyUtils;
+import lombok.AllArgsConstructor;
+import lombok.Value;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This method allow to get a passTicket from RAC.
@@ -55,21 +62,58 @@ public class PassTicketService {
     }
 
     public static class DefaultPassTicketImpl implements IRRPassTicket {
-        public static final String ZOWE_DUMMY_PASSTICKET = "ZoweDummyPassTicket";
+
+        private static int id = 0;
+
+        public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZoweDummyPassTicket";
+
+        public static final String UNKWNOWN_USER = "unknownUser";
+        public static final String UNKWNOWN_APPLID = "unknownApplId";
+
+        private Map<UserApp, Set<String>> userAppToPasstickets = new HashMap<>();
 
         @Override
-        public void evaluate(String userId, String applId, String passTicket) {
+        public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
             if (userId == null) throw new IllegalArgumentException("Parameter userId is empty");
             if (applId == null) throw new IllegalArgumentException("Parameter applId is empty");
             if (passTicket == null) throw new IllegalArgumentException("Parameter passTicket is empty");
-            if (!passTicket.equals(ZOWE_DUMMY_PASSTICKET)) {
-                throw new IllegalArgumentException("Invalid PassTicket");
+
+            final Set<String> passTickets = userAppToPasstickets.get(new UserApp(userId, applId));
+            if ((passTickets == null) || !passTickets.contains(passTicket)) {
+                throw new IRRPassTicketEvaluationException(8, 16, 32);
             }
         }
 
         @Override
-        public String generate(String userId, String applId) {
-            return ZOWE_DUMMY_PASSTICKET;
+        public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
+            if (StringUtils.equalsIgnoreCase(UNKWNOWN_USER, userId)) {
+                throw new IRRPassTicketGenerationException(8, 8, 16);
+            }
+
+            if (StringUtils.equalsIgnoreCase(UNKWNOWN_APPLID, applId)) {
+                throw new IRRPassTicketGenerationException(8, 16, 28);
+            }
+
+            final UserApp userApp = new UserApp(userId, applId);
+            final int currentId;
+            synchronized (DefaultPassTicketImpl.class) {
+                currentId = DefaultPassTicketImpl.id ++;
+            }
+            final String passTicket = ZOWE_DUMMY_PASS_TICKET_PREFIX + "_" + applId + "_" + userId + "_" + currentId;
+
+            final Set<String> passTickets = userAppToPasstickets.computeIfAbsent(userApp, x -> new HashSet<>());
+            passTickets.add(passTicket);
+
+            return passTicket;
+        }
+
+        @AllArgsConstructor
+        @Value
+        private class UserApp {
+
+            private final String userId;
+            private final String applId;
+
         }
 
     }
