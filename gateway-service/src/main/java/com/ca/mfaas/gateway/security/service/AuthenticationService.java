@@ -47,7 +47,7 @@ import java.util.*;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Scope( proxyMode = ScopedProxyMode.TARGET_CLASS )
+@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class AuthenticationService {
     private static final String LTPA_CLAIM_NAME = "ltpa";
@@ -94,9 +94,10 @@ public class AuthenticationService {
 
     /**
      * Method will invalidate jwtToken. It could be called from two reasons:
-     *  - on logout phase (distribute = true)
-     *  - from another gateway instance to notify about change (distribute = false)
-     * @param jwtToken token to invalidated
+     * - on logout phase (distribute = true)
+     * - from another gateway instance to notify about change (distribute = false)
+     *
+     * @param jwtToken   token to invalidated
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
@@ -130,28 +131,12 @@ public class AuthenticationService {
 
     @Cacheable(value = "validationJwtToken", key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
-        try {
-            Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
-                .parseClaimsJws(jwtToken)
-                .getBody();
+        TokenAuthentication validTokenAuthentication = new TokenAuthentication(getClaims(jwtToken).getSubject(), jwtToken);
+        // without a proxy cache aspect is not working, thus it is necessary get bean from application context
+        final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
+        validTokenAuthentication.setAuthenticated(authenticated);
 
-            TokenAuthentication validTokenAuthentication = new TokenAuthentication(claims.getSubject(), jwtToken);
-            // without a proxy cache aspect is not working, thus it is necessary get bean from application context
-            final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
-            validTokenAuthentication.setAuthenticated(authenticated);
-
-            return validTokenAuthentication;
-        } catch (ExpiredJwtException exception) {
-            log.debug("Token with id '{}' for user '{}' is expired.", exception.getClaims().getId(), exception.getClaims().getSubject());
-            throw new TokenExpireException("Token is expired.");
-        } catch (JwtException exception) {
-            log.debug("Token is not valid due to: {}.", exception.getMessage());
-            throw new TokenNotValidException("Token is not valid.");
-        } catch (Exception exception) {
-            log.debug("Token is not valid due to: {}.", exception.getMessage());
-            throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid.");
-        }
+        return validTokenAuthentication;
     }
 
     /**
@@ -169,14 +154,11 @@ public class AuthenticationService {
     /**
      * Parse the JWT token and return a {@link QueryResponse} object containing the domain, user id, date of creation and date of expiration
      *
-     * @param token the JWT token
+     * @param jwtToken the JWT token
      * @return the query response
      */
-    public QueryResponse parseJwtToken(String token) {
-        Claims claims = Jwts.parser()
-            .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
-            .parseClaimsJws(token)
-            .getBody();
+    public QueryResponse parseJwtToken(String jwtToken) {
+        Claims claims = getClaims(jwtToken);
 
         return new QueryResponse(
             claims.get(DOMAIN_CLAIM_NAME, String.class),
@@ -216,20 +198,7 @@ public class AuthenticationService {
      * @throws TokenNotValidException if the JWT token is not valid
      */
     public String getLtpaTokenFromJwtToken(String jwtToken) {
-        try {
-            Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
-                .parseClaimsJws(jwtToken)
-                .getBody();
-
-            return claims.get(LTPA_CLAIM_NAME, String.class);
-        } catch (ExpiredJwtException exception) {
-            log.debug("Authentication: Token with id '{}' for user '{}' is expired", exception.getClaims().getId(), exception.getClaims().getSubject());
-            throw new TokenExpireException("Token is expired");
-        } catch (JwtException exception) {
-            log.debug("Authentication: Token is not valid due to: {}", exception.getMessage());
-            throw new TokenNotValidException("Token is not valid");
-        }
+        return getClaims(jwtToken).get(LTPA_CLAIM_NAME, String.class);
     }
 
     /**
@@ -270,4 +239,21 @@ public class AuthenticationService {
         return expiration;
     }
 
+    private Claims getClaims(String jwtToken) {
+        try {
+            return Jwts.parser()
+                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
+                .parseClaimsJws(jwtToken)
+                .getBody();
+        } catch (ExpiredJwtException exception) {
+            log.debug("Token with id '{}' for user '{}' is expired.", exception.getClaims().getId(), exception.getClaims().getSubject());
+            throw new TokenExpireException("Token is expired.");
+        } catch (JwtException exception) {
+            log.debug("Token is not valid due to: {}.", exception.getMessage());
+            throw new TokenNotValidException("Token is not valid.");
+        } catch (Exception exception) {
+            log.debug("Token is not valid due to: {}.", exception.getMessage());
+            throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid.");
+        }
+    }
 }
