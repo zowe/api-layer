@@ -13,7 +13,6 @@ import com.ca.apiml.security.common.service.IRRPassTicketEvaluationException;
 import com.ca.apiml.security.common.service.PassTicketService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -25,7 +24,6 @@ import java.util.Base64;
 /**
  * Controller for testing PassTickets.
  */
-@AllArgsConstructor
 @RestController
 @Api(tags = { "Test Operations" }, description = "Operations for APIML Testing")
 public class PassTicketTestController {
@@ -34,6 +32,10 @@ public class PassTicketTestController {
     private String applId;
 
     private final PassTicketService passTicketService;
+
+    public PassTicketTestController(PassTicketService passTicketService) {
+        this.passTicketService = passTicketService;
+    }
 
     /**
      * Validates the PassTicket in authorization header.
