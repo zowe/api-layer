@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.ticket;
 
+import com.ca.apiml.security.common.service.IRRPassTicketGenerationException;
 import com.ca.apiml.security.common.service.PassTicketService;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.message.api.ApiMessageView;
@@ -64,7 +65,7 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private TicketResponse getTicketResponse(HttpServletRequest request, Authentication authentication) throws ApplicationNameNotFoundException {
+    private TicketResponse getTicketResponse(HttpServletRequest request, Authentication authentication) throws ApplicationNameNotFoundException, IRRPassTicketGenerationException {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         String userId = tokenAuthentication.getPrincipal();
 

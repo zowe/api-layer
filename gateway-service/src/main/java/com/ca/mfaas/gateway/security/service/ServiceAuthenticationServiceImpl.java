@@ -20,6 +20,7 @@ import com.ca.mfaas.gateway.security.service.schema.AuthenticationSchemeFactory;
 import com.ca.mfaas.gateway.security.service.schema.ServiceAuthenticationService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.Cache;
@@ -101,7 +102,10 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @CacheEvict(value = CACHE_BY_SERVICE_ID, condition = "#result != null && #result.isExpired()")
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws Exception {
-        final List<InstanceInfo> instances = discoveryClient.getApplication(serviceId).getInstances();
+        final Application application = discoveryClient.getApplication(serviceId);
+        if (application == null) return AuthenticationCommand.EMPTY;
+
+        final List<InstanceInfo> instances = application.getInstances();
 
         Authentication found = null;
         for (final InstanceInfo instance : instances) {

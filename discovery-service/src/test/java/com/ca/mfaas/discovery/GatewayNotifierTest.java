@@ -9,6 +9,7 @@ package com.ca.mfaas.discovery;/*
  */
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.AwsInstanceRegistry;
@@ -57,7 +58,9 @@ public class GatewayNotifierTest {
             createInstanceInfo("192.168.0.1", 1000, 0)
         );
 
-        when(registry.getInstancesById("gateway")).thenReturn(instances);
+        Application application = mock(Application.class);
+        when(application.getInstances()).thenReturn(instances);
+        when(registry.getApplication("gateway")).thenReturn(application);
 
         gatewayNotifier.serviceUpdated("testService");
         verify(restTemplate, times(1)).delete("https://127.0.0.1:1433/cache/services/testService");

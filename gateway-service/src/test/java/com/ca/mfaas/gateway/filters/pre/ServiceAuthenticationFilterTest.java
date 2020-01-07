@@ -8,7 +8,7 @@ package com.ca.mfaas.gateway.filters.pre;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import com.ca.apiml.security.common.token.TokenAuthentication;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.zuul.context.RequestContext;
@@ -20,6 +20,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
@@ -36,28 +38,32 @@ public class ServiceAuthenticationFilterTest {
     @Mock
     private AuthenticationCommand command;
 
+    @Mock
+    private AuthenticationService authenticationService;
+
     @Before
-    public void init() {
+    public void init() throws Exception {
         when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
     }
 
     @Test
     public void testRun() throws Exception {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getUserPrincipal()).thenReturn(new TokenAuthentication("user", "token"));
+
         RequestContext requestContext = mock(RequestContext.class);
         when(requestContext.getRequest()).thenReturn(request);
         when(requestContext.get(SERVICE_ID_KEY)).thenReturn("service");
         RequestContext.testSetCurrentContext(requestContext);
 
+        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("token"));
+
         serviceAuthenticationFilter.run();
         verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", "token");
         verify(command, times(1)).apply(null);
 
-        when(request.getUserPrincipal()).thenReturn(() -> null);
+        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
         serviceAuthenticationFilter.run();
-        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", null);
-        verify(command, times(2)).apply(null);
+        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand(anyString(), any());
     }
 
 }

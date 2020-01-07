@@ -18,6 +18,7 @@ import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.util.EurekaUtils;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -106,8 +107,12 @@ public class AuthenticationService {
          * until ehCache is not distributed, send to other instances invalidation request
          */
         if (distribute) {
+            final Application application = discoveryClient.getApplication("gateway");
+            // wrong state, gateway have to exists (at least this current instance), return false like unsuccessful
+            if (application == null) return Boolean.FALSE;
+
             final String myInstanceId = discoveryClient.getApplicationInfoManager().getInfo().getInstanceId();
-            for (final InstanceInfo instanceInfo : (List<InstanceInfo>) discoveryClient.getInstancesById("gateway")) {
+            for (final InstanceInfo instanceInfo : application.getInstances()) {
                 if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
 
                 final String url = EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}";

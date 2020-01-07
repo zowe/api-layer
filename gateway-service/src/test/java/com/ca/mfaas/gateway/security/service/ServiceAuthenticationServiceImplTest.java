@@ -15,8 +15,8 @@ import com.ca.mfaas.gateway.config.CacheConfig;
 import com.ca.mfaas.gateway.security.service.schema.*;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import com.netflix.zuul.context.RequestContext;
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,11 +29,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
@@ -99,6 +98,12 @@ public class ServiceAuthenticationServiceImplTest {
         return createInstanceInfo(id, authentication == null ? null : authentication.getScheme(), authentication == null ? null : authentication.getApplid());
     }
 
+    private Application createApplication(InstanceInfo...instances) {
+        final Application out = mock(Application.class);
+        when(out.getInstances()).thenReturn(Arrays.asList(instances));
+        return out;
+    }
+
     @Test
     public void testGetAuthentication() {
         InstanceInfo ii;
@@ -117,7 +122,7 @@ public class ServiceAuthenticationServiceImplTest {
     }
 
     @Test
-    public void testGetAuthenticationCommand() {
+    public void testGetAuthenticationCommand() throws Exception {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
         // token1 - valid
         QueryResponse qr1 = new QueryResponse("domain", "userId",
@@ -167,35 +172,43 @@ public class ServiceAuthenticationServiceImplTest {
         InstanceInfo ii3 = createInstanceInfo("inst01", a3);
         InstanceInfo ii4 = createInstanceInfo("inst01", a4);
 
+        Application application;
+
         ServiceAuthenticationService sas = spy(serviceAuthenticationServiceImpl);
 
         when(authenticationSchemeFactory.getSchema(any())).thenReturn(mock(AbstractAuthenticationScheme.class));
 
         // just one instance
         when(sas.getAuthenticationCommand(a1, "jwt01")).thenReturn(ok);
-        when(discoveryClient.getInstancesById("svr01")).thenReturn(Collections.singletonList(ii1));
+        application = createApplication(ii1);
+        when(discoveryClient.getApplication("svr01")).thenReturn(application);
         assertSame(ok, sas.getAuthenticationCommand("svr01", "jwt01"));
 
         // multiple same instances
         when(sas.getAuthenticationCommand(a1, "jwt02")).thenReturn(ok);
-        when(discoveryClient.getInstancesById("svr02")).thenReturn(Arrays.asList(ii1, ii1, ii1));
+        application = createApplication(ii1, ii1, ii1);
+        when(discoveryClient.getApplication("svr02")).thenReturn(application);
         assertSame(ok, sas.getAuthenticationCommand("svr02", "jwt02"));
 
         // multiple different instances
         reset(discoveryClient);
-        when(discoveryClient.getInstancesById("svr03")).thenReturn(Arrays.asList(ii1, ii2));
+        application = createApplication(ii1, ii2);
+        when(discoveryClient.getApplication("svr03")).thenReturn(application);
         assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
 
         reset(discoveryClient);
-        when(discoveryClient.getInstancesById("svr03")).thenReturn(Arrays.asList(ii1, ii3));
+        application = createApplication(ii1, ii3);
+        when(discoveryClient.getApplication("svr03")).thenReturn(application);
         assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
 
         reset(discoveryClient);
-        when(discoveryClient.getInstancesById("svr03")).thenReturn(Arrays.asList(ii1, ii4));
+        application = createApplication(ii1, ii4);
+        when(discoveryClient.getApplication("svr03")).thenReturn(application);
         assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
 
         reset(discoveryClient);
-        when(discoveryClient.getInstancesById("svr03")).thenReturn(Arrays.asList(ii1, ii2, ii3, ii4));
+        application = createApplication(ii1, ii2, ii3, ii4);
+        when(discoveryClient.getApplication("svr03")).thenReturn(application);
         assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
     }
 
@@ -207,13 +220,14 @@ public class ServiceAuthenticationServiceImplTest {
         AbstractAuthenticationScheme aas1 = mock(AbstractAuthenticationScheme.class);
         when(aas1.getScheme()).thenReturn(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
 
-        when(discoveryClient.getInstancesById("s1")).thenReturn(Collections.singletonList(ii1));
+        Application application = createApplication(ii1);
+        when(discoveryClient.getApplication("s1")).thenReturn(application);
         when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(aas1);
         when(aas1.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1")), any()))
             .thenReturn(ac1);
 
         assertSame(ac1, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
-        verify(discoveryClient, times(1)).getInstancesById("s1");
+        verify(discoveryClient, times(1)).getApplication("s1");
 
         serviceAuthenticationService.evictCacheAllService();
         Mockito.reset(aas1);
@@ -221,9 +235,9 @@ public class ServiceAuthenticationServiceImplTest {
         when(aas1.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1")), any()))
             .thenReturn(ac2);
         assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
-        verify(discoveryClient, times(2)).getInstancesById("s1");
+        verify(discoveryClient, times(2)).getApplication("s1");
         assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
-        verify(discoveryClient, times(2)).getInstancesById("s1");
+        verify(discoveryClient, times(2)).getApplication("s1");
     }
 
     @Test
@@ -278,30 +292,36 @@ public class ServiceAuthenticationServiceImplTest {
 
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
-        verify(discoveryClient, times(1)).getInstancesById("service0001");
-        verify(discoveryClient, never()).getInstancesById("service0002");
+        verify(discoveryClient, times(1)).getApplication("service0001");
+        verify(discoveryClient, never()).getApplication("service0002");
 
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
-        verify(discoveryClient, times(2)).getInstancesById("service0001");
-        verify(discoveryClient, times(1)).getInstancesById("service0002");
+        verify(discoveryClient, times(2)).getApplication("service0001");
+        verify(discoveryClient, times(1)).getApplication("service0002");
 
         serviceAuthenticationService.evictCacheService("service0001");
 
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
-        verify(discoveryClient, times(3)).getInstancesById("service0001");
+        verify(discoveryClient, times(3)).getApplication("service0001");
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
-        verify(discoveryClient, times(4)).getInstancesById("service0001");
+        verify(discoveryClient, times(4)).getApplication("service0001");
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
-        verify(discoveryClient, times(1)).getInstancesById("service0002");
+        verify(discoveryClient, times(1)).getApplication("service0002");
 
         serviceAuthenticationService.evictCacheAllService();
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt01"));
-        verify(discoveryClient, times(5)).getInstancesById("service0001");
+        verify(discoveryClient, times(5)).getApplication("service0001");
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0001", "jwt02"));
-        verify(discoveryClient, times(6)).getInstancesById("service0001");
+        verify(discoveryClient, times(6)).getApplication("service0001");
         assertSame(command, serviceAuthenticationService.getAuthenticationCommand("service0002", "jwt01"));
-        verify(discoveryClient, times(2)).getInstancesById("service0002");
+        verify(discoveryClient, times(2)).getApplication("service0002");
+    }
+
+    @Test
+    public void testNoApplication() throws Exception {
+        when(discoveryClient.getApplication(any())).thenReturn(null);
+        assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", "jwtToken"));
     }
 
     public class AuthenticationCommandTest extends AuthenticationCommand {

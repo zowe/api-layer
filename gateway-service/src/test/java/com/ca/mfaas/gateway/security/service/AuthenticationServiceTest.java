@@ -19,6 +19,7 @@ import com.ca.mfaas.security.SecurityUtils;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang.time.DateUtils;
@@ -40,6 +41,7 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -241,11 +243,14 @@ public class AuthenticationServiceTest {
         when(applicationInfoManager.getInfo()).thenReturn(myInstance);
         when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
 
-        doReturn(Arrays.asList(
+        Application application = mock(Application.class);
+        List<InstanceInfo> instances = Arrays.asList(
             createInstanceInfo("instance02", "192.168.0.1", 10000, 10433),
             createInstanceInfo("myInstance01", "127.0.0.0.1", 10000, 10433),
             createInstanceInfo("instance03", "192.168.0.2", 10001, 0)
-        )).when(discoveryClient).getInstancesById("gateway");
+        );
+        when(application.getInstances()).thenReturn(instances);
+        when(discoveryClient.getApplication("gateway")).thenReturn(application);
 
         authService.invalidateJwtToken(jwt1, true);
         assertTrue(authService.isInvalidated(jwt1));

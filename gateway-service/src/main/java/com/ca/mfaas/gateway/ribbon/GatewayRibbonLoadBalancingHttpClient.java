@@ -14,6 +14,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.loadbalancer.reactive.ExecutionInfo;
@@ -37,7 +38,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
 
 import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecureConnectionIfNeeded;
@@ -133,7 +133,11 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
     @Cacheable("instanceInfoByInstanceId")
     public InstanceInfo getInstanceInfo(String serviceId, String instanceId) {
         InstanceInfo output = null;
-        for (final InstanceInfo instanceInfo : (List<InstanceInfo>) discoveryClient.getInstancesById(serviceId)) {
+
+        Application application = discoveryClient.getApplication(serviceId);
+        if (application == null) return output;
+
+        for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(instanceId, instanceInfo.getInstanceId())) {
                 // found instance, store it for output
                 output = instanceInfo;

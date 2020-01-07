@@ -9,56 +9,45 @@
  */
 package com.ca.mfaas.client.api;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
-import javax.annotation.PostConstruct;
-
-import com.ca.apiml.security.common.service.IRRPassTicket;
-import com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl;
-import com.ca.mfaas.util.ClassOrDefaultProxyUtils;
-
+import com.ca.apiml.security.common.service.IRRPassTicketEvaluationException;
+import com.ca.apiml.security.common.service.PassTicketService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * Controller for testing PassTickets.
  */
+@AllArgsConstructor
 @RestController
 @Api(tags = { "Test Operations" }, description = "Operations for APIML Testing")
 public class PassTicketTestController {
+
     @Value("${apiml.service.applId:ZOWEAPPL}")
     private String applId;
 
-    private IRRPassTicket irrPassTicket;
-
-    @PostConstruct
-    public void init() {
-        this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(
-            IRRPassTicket.class,
-            "com.ibm.eserver.zos.racf.IRRPassTicket",
-            DefaultPassTicketImpl::new
-        );
-    }
+    private final PassTicketService passTicketService;
 
     /**
      * Validates the PassTicket in authorization header.
      */
     @GetMapping(value = "/api/v1/passticketTest")
     @ApiOperation(value = "Validate that the PassTicket in Authorization header is valid", tags = { "Test Operations" })
-    public void passticketTest(@RequestHeader("authorization") String authorization) {
+    public void passticketTest(@RequestHeader("authorization") String authorization) throws IRRPassTicketEvaluationException {
         if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
             String base64Credentials = authorization.substring("Basic".length()).trim();
             String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
             String[] values = credentials.split(":", 2);
             String userId = values[0];
             String passTicket = values[1];
-            irrPassTicket.evaluate(userId, applId, passTicket);
+            passTicketService.evaluate(userId, applId, passTicket);
             return;
         }
         throw new IllegalArgumentException("Missing Basic authorization header");

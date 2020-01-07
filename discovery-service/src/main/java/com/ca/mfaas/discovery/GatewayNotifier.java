@@ -11,10 +11,12 @@ package com.ca.mfaas.discovery;
 
 import com.ca.mfaas.util.EurekaUtils;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,6 +24,7 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class GatewayNotifier {
 
     private final RestTemplate restTemplate;
@@ -36,7 +39,13 @@ public class GatewayNotifier {
 
     public void serviceUpdated(String serviceId) {
         final PeerAwareInstanceRegistry registry = getRegistry();
-        final List<InstanceInfo> gatewayInstances = registry.getInstancesById("gateway");
+        final Application application = registry.getApplication("gateway");
+        if (application == null) {
+            log.error("Gateway application doesn't exists, cannot be notified about service change");
+            return;
+        }
+
+        final List<InstanceInfo> gatewayInstances = application.getInstances();
 
         for (final InstanceInfo instanceInfo : gatewayInstances) {
             final StringBuilder url = new StringBuilder();
