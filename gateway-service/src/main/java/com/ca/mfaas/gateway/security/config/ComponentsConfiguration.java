@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.gateway.security.config;
 
-import com.ca.apiml.security.common.service.PassTicketService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,11 +27,4 @@ public class ComponentsConfiguration {
         return new BCryptPasswordEncoder(10);
     }
 
-    /**
-     * Used to generate PassTickets
-     */
-    @Bean
-    public PassTicketService passTicketService() {
-        return new PassTicketService();
-    }
 }
