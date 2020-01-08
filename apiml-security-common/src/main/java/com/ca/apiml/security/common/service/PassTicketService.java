@@ -75,6 +75,10 @@ public class PassTicketService {
             if (passTicket == null)
                 throw new IllegalArgumentException("Parameter passTicket is empty");
 
+            if (StringUtils.equalsIgnoreCase(UNKWNOWN_APPLID, applId)) {
+                throw new IRRPassTicketEvaluationException(8, 16, 28);
+            }
+
             if (userId.equals(ZOWE_DUMMY_USERID) && passTicket.startsWith(ZOWE_DUMMY_PASS_TICKET_PREFIX)) {
                 return;
             }

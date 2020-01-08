@@ -57,7 +57,7 @@ public class PassTicketTest {
                 .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH,
                         PASSTICKET_TEST_ENDPOINT))
                 .then().statusCode(is(SC_INTERNAL_SERVER_ERROR))
-                .body("message", containsString("No PTKTDATA profile exists to match the specified application"));
+                .body("message", containsString("Unable to generate PassTicket"));
     }
 
     @Test
