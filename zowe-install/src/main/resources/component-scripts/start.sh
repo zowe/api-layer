@@ -48,10 +48,10 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dserver.ssl.keyStoreType=PKCS12 \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=password \
+    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
     -Dserver.ssl.trustStoreType=PKCS12 \
-    -Dserver.ssl.trustStorePassword=password \
+    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/discovery-service.jar" &
 
@@ -76,10 +76,10 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Dserver.ssl.keyStoreType=PKCS12 \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=password \
+    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
     -Dserver.ssl.trustStoreType=PKCS12 \
-    -Dserver.ssl.trustStorePassword=password \
+    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/api-catalog-services.jar" &
 
@@ -103,9 +103,9 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dserver.ssl.keyStoreType=PKCS12 \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=password \
+    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
     -Dserver.ssl.trustStoreType=PKCS12 \
-    -Dserver.ssl.trustStorePassword=password \
+    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/gateway-service.jar" &
