@@ -9,9 +9,8 @@
  */
 package com.ca.mfaas.apicatalog;
 
-import com.ca.mfaas.constants.ApimlConstants;
 import com.ca.mfaas.gatewayservice.SecurityUtils;
-import com.ca.mfaas.utils.config.ConfigReader;
+import com.ca.mfaas.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +41,9 @@ public class ApiCatalogSecurityIntegrationTest {
     private static final String CATALOG_ACTUATOR_ENDPOINT = "/application";
 
     private final static String COOKIE = "apimlAuthenticationToken";
+    private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
+    private final static String INVALID_USERNAME = "incorrectUser";
+    private final static String INVALID_PASSWORD = "incorrectPassword";
 
     private final String endpoint;
 
@@ -73,7 +75,7 @@ public class ApiCatalogSecurityIntegrationTest {
                 CATALOG_SERVICE_ID, endpoint))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
-            .header(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX)
+            .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
             .body("messages.find { it.messageNumber == 'ZWEAS105E' }.messageContent", equalTo(expectedMessage)
             );
     }
@@ -105,10 +107,9 @@ public class ApiCatalogSecurityIntegrationTest {
     @Test
     public void accessProtectedEndpointWithInvalidBasicAuth() {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
-        String invalidPassword = "nonsense";
 
         given()
-            .auth().preemptive().basic(USERNAME, invalidPassword)
+            .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
         .when()
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))

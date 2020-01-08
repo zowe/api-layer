@@ -75,7 +75,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
             messageKey: 'com.ca.mfaas.security.invalidUsername',
         });
-        expect(messageText).toEqual('Invalid username or password ZWEAS120E');
+        expect(messageText).toEqual('(ZWEAS120E) Invalid username or password');
     });
 
     it('should display authetication service not available message', () => {
@@ -88,7 +88,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication service is not available by URL",
             messageKey: 'com.ca.mfaas.security.authenticationRequired',
         });
-        expect(messageText).toEqual('Authentication service not available, please try again later ZWEAS104E');
+        expect(messageText).toEqual('(ZWEAS104E) Authentication service not available, please try again later');
     });
 
     it('should display session has expired', () => {
@@ -101,7 +101,7 @@ describe('>>> Login page component tests', () => {
                 "Token is expired for URL",
             messageKey: 'apiml.security.expiredToken',
         });
-        expect(messageText).toEqual('Session has expired, please login again ZWEAS102E');
+        expect(messageText).toEqual('(ZWEAS102E) Session has expired, please login again');
     });
 
     it('should display generic failure message', () => {
@@ -114,7 +114,7 @@ describe('>>> Login page component tests', () => {
                 "Authentication exception for URL",
             messageKey: 'apiml.security.generic',
         });
-        expect(messageText).toEqual('A generic failure occurred while authenticating ZWEAS100E');
+        expect(messageText).toEqual('(ZWEAS100E) A generic failure occurred while authenticating');
     });
 
     it('should display request timeout message', () => {
@@ -127,7 +127,7 @@ describe('>>> Login page component tests', () => {
                 "No response received within the allowed time",
             messageKey: 'apiml.common.serviceTimeout',
         });
-        expect(messageText).toEqual(`Request timeout, please try again later ZWEAM700E`);
+        expect(messageText).toEqual(`(ZWEAM700E) Request timeout, please try again later`);
     });
 
     it('should disable button and show spinner when request is being resolved', () => {

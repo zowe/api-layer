@@ -10,13 +10,17 @@
 package com.ca.mfaas.eurekaservice.client.util;
 
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.exception.MetadataValidationException;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import com.ca.mfaas.product.routing.RoutedService;
 import com.ca.mfaas.product.routing.RoutedServices;
-import com.ca.mfaas.product.utils.UrlUtils;
+import com.ca.mfaas.util.UrlUtils;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
@@ -24,6 +28,8 @@ import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 public class EurekaMetadataParser {
 
     private ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
+
+    private static final String THREE_STRING_MERGE_FORMAT = "%s.%s.%s";
 
     /**
      * Parse eureka metadata and construct ApiInfo with the values found
@@ -150,5 +156,51 @@ public class EurekaMetadataParser {
         }
 
         return null;
+    }
+
+    /**
+     * Generate Eureka metadata for ApiInfo configuration
+     *
+     * @param serviceId the identifier of a service which ApiInfo configuration belongs
+     * @param apiInfo ApiInfo config data
+     * @return the generated Eureka metadata
+     */
+    public static Map<String, String> generateMetadata(String serviceId, ApiInfo apiInfo) {
+        Map<String, String> metadata = new HashMap<>();
+        String encodedGatewayUrl = UrlUtils.getEncodedUrl(apiInfo.getGatewayUrl());
+
+        if (apiInfo.getGatewayUrl() != null) {
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_GATEWAY_URL), apiInfo.getGatewayUrl());
+        }
+
+        if (apiInfo.getVersion() != null) {
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_VERSION), apiInfo.getVersion());
+        }
+
+        if (apiInfo.getSwaggerUrl() != null) {
+            validateUrl(apiInfo.getSwaggerUrl(),
+                () -> String.format("The Swagger URL \"%s\" for service %s is not valid", apiInfo.getSwaggerUrl(), serviceId)
+            );
+
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_SWAGGER_URL), apiInfo.getSwaggerUrl());
+        }
+
+        if (apiInfo.getDocumentationUrl() != null) {
+            validateUrl(apiInfo.getDocumentationUrl(),
+                () -> String.format("The documentation URL \"%s\" for service %s is not valid", apiInfo.getDocumentationUrl(), serviceId)
+            );
+
+            metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
+        }
+
+        return metadata;
+    }
+
+    private static void validateUrl(String url, Supplier<String> exceptionSupplier) {
+        try {
+            new URL(url);
+        } catch (MalformedURLException e) {
+            throw new MetadataValidationException(exceptionSupplier.get(), e);
+        }
     }
 }

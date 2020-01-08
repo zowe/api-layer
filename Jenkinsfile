@@ -50,7 +50,7 @@ def GIT_REVISION_LOOKUP = 'git log -n 1 --pretty=format:%h'
 /**
  * The credentials id field for the artifactory username and password
  */
-def ARTIFACTORY_CREDENTIALS_ID = 'GizaArtifactory'
+def ARTIFACTORY_CREDENTIALS_ID = 'zowe.jfrog.io'
 
 /**
  * The email address for the artifactory
@@ -208,9 +208,9 @@ pipeline {
                 ***********************************************************************/
                 stage('sonar') {
                     steps {
-                        withSonarQubeEnv('sonar-default-server') {
+                        withSonarQubeEnv('sonarcloud-server') {
                             // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                            sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL}"
+                            sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
                         }
                     }
                 }

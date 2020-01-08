@@ -9,7 +9,12 @@
  */
 package com.ca.hwsjersey.resource;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -20,14 +25,8 @@ import javax.ws.rs.core.Response;
 
 import java.util.Date;
 
-@SwaggerDefinition(
-    info = @Info(
-        title = "Hello World Jersey",
-        description = "REST API for a Jersey Application",
-        version = "1.0.0")
-)
-@Api(value = "Greeting", tags = {"Greeting Controller"})
 @Path("/api/v1")
+@Tag(name = "Greeting", description = "Greeting Controller")
 public class GreetingController {
 
     private static final String TEMPLATE = "Hello, %s!";
@@ -35,12 +34,24 @@ public class GreetingController {
     @GET
     @Path("/greeting/{name}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Send a greeting",
-        notes = "Send a greeting to the named person",
-        response = Greeting.class)
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "URI not found")})
+    @Operation(
+        summary = "Send a greeting",
+        tags = {"Greeting"},
+        description = "Send a greeting to the named person",
+        responses = {
+            @ApiResponse(
+                description = "successful operation",
+                responseCode = "200",
+                content = @Content(
+                    schema = @Schema(implementation = Greeting.class)
+                )
+            ),
+            @ApiResponse(responseCode = "404", description = "URI not found")
+        })
     public Response greeting(
-        @ApiParam(value = "The person who will be greeted", required = true)
+        @Parameter(
+            description = "The person who will be greeted",
+            required = true)
         @PathParam("name") String name) {
         return Response.ok(new Greeting(new Date(), String.format(TEMPLATE, name))).build();
     }
@@ -48,10 +59,20 @@ public class GreetingController {
     @GET
     @Path("/greeting")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Send the default greeting",
-        notes = "Send a default greeting to the caller",
-        response = Greeting.class)
-    @ApiResponses(value = {@ApiResponse(code = 404, message = "URI not found")})
+    @Operation(
+        summary = "Send the default greeting",
+        tags = {"Greeting"},
+        description = "Send a default greeting to the caller",
+        responses = {
+            @ApiResponse(
+                description = "successful operation",
+                responseCode = "200",
+                content = @Content(
+                    schema = @Schema(implementation = Greeting.class)
+                )
+            ),
+            @ApiResponse(responseCode = "404", description = "URI not found")
+        })
     public Response defaultGreeting() {
         return Response.ok(new Greeting(new Date(), String.format(TEMPLATE, "World"))).build();
     }

@@ -1,12 +1,10 @@
 {
-    "swagger": "2.0",
+    "openapi": "3.0.0",
     "info": {
-        "description": "REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.",
+        "description": "REST API for the API Gateway service, which is a component of the API\nMediation Layer. Use this API to perform tasks such as logging in with the\nmainframe credentials and checking authorization to mainframe resources.",
         "version": "1.1.2",
         "title": "API Gateway"
     },
-    "host": "",
-    "basePath": "/api/v1/gateway/auth",
     "tags": [
         {
             "name": "Security",
@@ -20,24 +18,18 @@
                     "Security"
                 ],
                 "summary": "Authenticate mainframe user credentials and return authentication token.",
-                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token.\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n  \nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
+                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token.\n\nThe login request requires the user credentials in one of the following formats:  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n\n  \nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
                 "operationId": "loginUsingPOST",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [
-                    {
-                        "name": "LoginRequest",
-                        "in": "body",
-                        "description": "Specifies the user credentials to be authenticated.",
-                        "schema": {
-                            "$ref": "#/definitions/LoginRequest"
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
                         }
-                    }
-                ],
+                    },
+                    "description": "Specifies the user credentials to be authenticated."
+                },
                 "security": [
                     {
                         "LoginBasicAuth": []
@@ -48,8 +40,10 @@
                         "description": "Authenticated",
                         "headers": {
                             "Set-Cookie": {
-                                "description": "Cookie named apimlAuthenticationToken contains authentication token.",
-                                "type": "string"
+                                "description": "Cookie named apimlAuthenticationToken contains authentication\ntoken.",
+                                "schema": {
+                                    "type": "string"
+                                }
                             }
                         }
                     },
@@ -74,15 +68,11 @@
                     "Security"
                 ],
                 "summary": "Validate the authentication token.",
-                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n    **Header example:** Authorization: Bearer *token*\n    \nThe response is a JSON object, which contains information associated with the token.\n",
+                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\nThe query request requires the token in one of the following formats:  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n    **Header example:** Authorization: Bearer *token*\n\n    \nThe response is a JSON object, which contains information associated with the token.\n",
                 "operationId": "validateUsingGET",
-                "produces": [
-                    "application/json"
-                ],
-                "parameters": [],
                 "security": [
                     {
-                        "Set-cookie": []
+                        "CookieAuth": []
                     },
                     {
                         "Bearer": []
@@ -91,8 +81,12 @@
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/Authentication"
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Authentication"
+                                }
+                            }
                         }
                     },
                     "401": {
@@ -108,71 +102,78 @@
             }
         }
     },
-    "securityDefinitions": {
-        "LoginBasicAuth": {
-            "type": "basic"
-        },
-        "Bearer": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        },
-        "Set-cookie": {
-            "type": "apiKey",
-            "name": "apimlAuthenticationToken",
-            "in": "header",
-            "description": "Cookie with the authentication token."
+    "servers": [
+        {
+            "url": "/api/v1/gateway/auth"
         }
-    },
-    "definitions": {
-        "LoginRequest": {
-            "type": "object",
-            "title": "Credentials",
-            "properties": {
-                "username": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
+    ],
+    "components": {
+        "securitySchemes": {
+            "LoginBasicAuth": {
+                "type": "HTTP",
+                "scheme": "BASIC"
             },
-            "required": [
-                "username",
-                "password"
-            ],
-            "example": {
-                "username": "John",
-                "password": "qwerty"
+            "Bearer": {
+                "type": "APIKEY",
+                "name": "Authorization",
+                "in": "HEADER"
+            },
+            "CookieAuth": {
+                "type": "APIKEY",
+                "name": "apimlAuthenticationToken",
+                "in": "COOKIE"
             }
         },
-        "Authentication": {
-            "type": "object",
-            "title": "Authentication",
-            "properties": {
-                "userId": {
-                    "type": "string",
-                    "description": "Specifies the identity of the logged-in user."
+        "schemas": {
+            "LoginRequest": {
+                "type": "object",
+                "title": "Credentials",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
                 },
-                "domain": {
-                    "type": "string",
-                    "description": "Specifies the name of the security domain where the user has been logged-in."
-                },
-                "creation": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Specifies the UNIX timestamp of the login time, in UTC."
-                },
-                "expiration": {
-                    "type": "string",
-                    "format": "date-time",
-                    "description": "Specifies the UNIX timestamp of the token expiration time, in UTC."
+                "required": [
+                    "username",
+                    "password"
+                ],
+                "example": {
+                    "username": "John",
+                    "password": "qwerty"
                 }
             },
-            "example": {
-                "userId": "John",
-                "domain": "SAFRealm",
-                "creation": "2019-05-13T12:47:04.000+0000",
-                "expiration": "2019-05-14T12:47:04.000+0000"
+            "Authentication": {
+                "type": "object",
+                "title": "Authentication",
+                "properties": {
+                    "userId": {
+                        "type": "string",
+                        "description": "Specifies the identity of the logged-in user."
+                    },
+                    "domain": {
+                        "type": "string",
+                        "description": "Specifies the name of the security domain where the user has been\nlogged-in."
+                    },
+                    "creation": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Specifies the UNIX timestamp of the login time, in UTC."
+                    },
+                    "expiration": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Specifies the UNIX timestamp of the token expiration time, in UTC."
+                    }
+                },
+                "example": {
+                    "userId": "John",
+                    "domain": "SAFRealm",
+                    "creation": "2019-05-13T12:47:04.000+0000",
+                    "expiration": "2019-05-14T12:47:04.000+0000"
+                }
             }
         }
     }

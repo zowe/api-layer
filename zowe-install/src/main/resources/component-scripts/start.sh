@@ -21,8 +21,10 @@
 # - KEYSTORE - The keystore to use for SSL certificates
 # - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
 # - KEY_ALIAS - The alias of the key within the keystore
-# - ZOSMF_PORT - The SSL port z/OSMF is listening on.
-# - ZOSMF_IP_ADDRESS - The IP Address z/OSMF can be reached
+
+# API Mediation Layer Debug Mode
+# To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
+LOG_LEVEL=
 
 DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart \
@@ -30,7 +32,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
     -Dspring.profiles.active=https \
-    -Dspring.profiles.include= \
+    -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.discovery.password=password \
@@ -67,7 +69,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Denvironment.eurekaPassword=password \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
-    -Dspring.profiles.include= \
+    -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
@@ -81,17 +83,17 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/api-catalog-services.jar" &
 
-GATEWAY_CODE=AG 
+GATEWAY_CODE=AG
 _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Djava.io.tmpdir=/tmp \
-    -Dspring.profiles.include= \
+    -Dspring.profiles.include=$LOG_LEVEL \
     -Dapiml.service.hostname=${ZOWE_EXPLORER_HOST} \
     -Dapiml.service.port=${GATEWAY_PORT} \
     -Dapiml.service.discoveryServiceUrls=https://${ZOWE_EXPLORER_HOST}:${DISCOVERY_PORT}/eureka/ \
     -Dapiml.service.preferIpAddress=true \
-    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
+    -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Dapiml.security.auth.zosmfServiceId=zosmf \

@@ -9,9 +9,9 @@
  */
 package com.ca.mfaas.gateway.filters.pre;
 
+import com.ca.mfaas.util.UrlUtils;
 import com.ca.mfaas.product.routing.RoutedServices;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
-import com.ca.mfaas.product.utils.UrlUtils;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;

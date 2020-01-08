@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.helloworldjersey;
 
-import com.ca.mfaas.utils.categories.AdditionalLocalTest;
-import com.ca.mfaas.utils.http.HttpRequestUtils;
+import com.ca.mfaas.util.categories.AdditionalLocalTest;
+import com.ca.mfaas.util.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import org.junit.BeforeClass;
 import org.junit.Test;

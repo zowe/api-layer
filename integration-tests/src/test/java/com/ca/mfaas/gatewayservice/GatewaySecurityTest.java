@@ -9,8 +9,7 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import com.ca.mfaas.constants.ApimlConstants;
-import com.ca.mfaas.utils.config.ConfigReader;
+import com.ca.mfaas.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.Before;
@@ -39,6 +38,10 @@ public class GatewaySecurityTest {
     private static final String PROTECTED_ENDPOINT = "/application/routes";
     private final static String COOKIE = "apimlAuthenticationToken";
 
+    private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
+    private final static String INVALID_USERNAME = "incorrectUser";
+    private final static String INVALID_PASSWORD = "incorrectPassword";
+
     @Before
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
@@ -52,7 +55,7 @@ public class GatewaySecurityTest {
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
-            .header(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
+            .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX);
     }
 
     @Test
@@ -92,10 +95,8 @@ public class GatewaySecurityTest {
 
     @Test
     public void accessProtectedEndpointWithInvalidCredentials() {
-        String invalidPassword = "badPassword";
-
         given()
-            .auth().preemptive().basic(USERNAME, invalidPassword)
+            .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
         .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
         .then()

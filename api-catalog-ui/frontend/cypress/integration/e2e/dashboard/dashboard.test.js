@@ -3,7 +3,7 @@
 /// <reference types="Cypress" />
 
 function login() {
-    cy.visit(`${Cypress.env('baseURL')}ui/v1/apicatalog/#/`);
+    cy.visit(`${Cypress.env('catalogHomePage')}/#/`);
     cy.url().should('contain', '/login');
 
     const username = Cypress.env('username');
@@ -40,7 +40,7 @@ describe('>>> Dashboard test', () => {
             .as('search')
             .type('API Mediation Layer API');
 
-        cy.get('.grid-tile').should('have.length', 1);
+        cy.get('.grid-tile').should('have.length', 1).should('contain', 'API Mediation Layer API');
 
         cy.get('@search')
             .clear()
@@ -73,6 +73,6 @@ describe('>>> Dashboard test', () => {
 
         cy.contains('API Mediation Layer API').click();
 
-        cy.url().should('contain', '/tile/apimediationlayer/apicatalog');
+        cy.url().should('contain', '/tile/apimediationlayer/');
     });
 });

@@ -7,7 +7,7 @@ for all services (gateway, discovery service, and API catalog):
 
 The default value is in the `application.yml` files, for example: [gateway-service/src/main/resources/application.yml](/gateway-service/src/main/resources/application.yml). The default configuration is in the resulting JAR files.
 
-On z/OS, this can be overridden in `$ZOWE_ROOT_DIR/api-mediation/scripts/api-mediation-start-*.sh` where `*` expands to `gateway`, `catalog`, and `discovery`.
+On z/OS, you can override the default configuration in `$ZOWE_ROOT_DIR/components/api-mediation/bin/start.sh`.
 
 On localhost, the default configuration can be overridden on [config/local/gateway-service.yml](/config/local/gateway-service.yml) and other YAML files for development purposes without rebuilding the JAR files.
 

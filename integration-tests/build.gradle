@@ -17,13 +17,14 @@ repositories {
 
 dependencies {
     compile libraries.http_client
+    compile libraries.eureka_client
     compile libraries.jackson_dataformat_yaml
     compile libraries.jackson_databind
     compile libraries.json_path
     compile libraries.spring_boot_starter_websocket
     compile libraries.json
     compile libraries.jjwt
-    compile(project(':security-service-client-spring'))
+    compile(project(':apiml-security-common'))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest
@@ -60,7 +61,7 @@ task startUpCheck(type: Test) {
 
     systemProperties System.properties
     useJUnit {
-        includeCategories 'com.ca.mfaas.utils.categories.StartupCheck'
+        includeCategories 'com.ca.mfaas.util.categories.StartupCheck'
     }
     outputs.upToDateWhen { false }
 }
@@ -71,7 +72,7 @@ task runWebsocketTests(type: Test) {
 
     systemProperties System.properties
     useJUnit {
-        includeCategories 'com.ca.mfaas.utils.categories.WebsocketTest'
+        includeCategories 'com.ca.mfaas.util.categories.WebsocketTest'
     }
     outputs.upToDateWhen { false }
 }
@@ -84,9 +85,9 @@ task runIntegrationTests(type: Test) {
     systemProperties System.properties
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.SlowTests',
-            'com.ca.mfaas.utils.categories.AdditionalLocalTest'
+            'com.ca.mfaas.util.categories.StartupCheck',
+            'com.ca.mfaas.util.categories.SlowTests',
+            'com.ca.mfaas.util.categories.AdditionalLocalTest'
         )
     }
 }
@@ -99,10 +100,10 @@ task runLocalIntegrationTests(type: Test) {
     systemProperties System.getProperties()
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.SlowTests',
-            'com.ca.mfaas.utils.categories.MainframeDependentTests',
-            'com.ca.mfaas.utils.categories.AdditionalLocalTest'
+            'com.ca.mfaas.util.categories.StartupCheck',
+            'com.ca.mfaas.util.categories.SlowTests',
+            'com.ca.mfaas.util.categories.MainframeDependentTests',
+            'com.ca.mfaas.util.categories.AdditionalLocalTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -116,9 +117,9 @@ task runAllLocalIntegrationTests(type: Test) {
     systemProperties System.getProperties()
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.SlowTests',
-            'com.ca.mfaas.utils.categories.MainframeDependentTests'
+            'com.ca.mfaas.util.categories.StartupCheck',
+            'com.ca.mfaas.util.categories.SlowTests',
+            'com.ca.mfaas.util.categories.MainframeDependentTests'
         )
     }
     outputs.upToDateWhen { false }
@@ -132,8 +133,8 @@ task runAllIntegrationTests(type: Test) {
     systemProperties System.properties
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.utils.categories.StartupCheck',
-            'com.ca.mfaas.utils.categories.AdditionalLocalTest'
+            'com.ca.mfaas.util.categories.StartupCheck',
+            'com.ca.mfaas.util.categories.AdditionalLocalTest'
         )
     }
     outputs.upToDateWhen { false }

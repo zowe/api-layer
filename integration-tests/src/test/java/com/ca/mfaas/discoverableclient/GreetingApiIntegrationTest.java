@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.discoverableclient;
 
-import com.ca.mfaas.utils.http.HttpRequestUtils;
+import com.ca.mfaas.util.http.HttpRequestUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.apache.http.HttpResponse;

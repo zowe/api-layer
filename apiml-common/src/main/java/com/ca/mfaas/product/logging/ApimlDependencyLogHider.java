@@ -40,7 +40,8 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "Error while sending response to client",
         "Request execution error",
         "The Hystrix timeout",
-        ".*Error during filtering.*Token is not valid.*");
+        ".*Error during filtering.*Token is not valid.*",
+        ".*Endpoint ID .* contains invalid characters.*");
 
     private boolean isFilterActive;
 

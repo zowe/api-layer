@@ -13,6 +13,7 @@ import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.product.routing.RoutedServices;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * Contains all necessary information to create API Documentation
@@ -20,6 +21,7 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
+@ToString
 public class ApiDocInfo {
     ApiInfo apiInfo;
     String apiDocContent;

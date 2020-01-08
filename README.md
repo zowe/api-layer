@@ -3,7 +3,7 @@
 [Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
 
 [![codecov](https://codecov.io/gh/zowe/api-layer/branch/master/graph/badge.svg)](https://codecov.io/gh/zowe/api-layer)
-[![SonarQube](https://jayne.zowe.org:9000/api/project_badges/measure?project=zowe%3Aapi-mediation-layer&metric=alert_status)](https://jayne.zowe.org:9000/dashboard?id=zowe%3Aapi-mediation-layer)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=alert_status)](https://sonarcloud.io/dashboard?id=zowe_api-layer)
 
 The home of Zowe API Mediation Layer
 

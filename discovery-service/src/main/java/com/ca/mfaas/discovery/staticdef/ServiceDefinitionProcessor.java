@@ -10,6 +10,10 @@
 package com.ca.mfaas.discovery.staticdef;
 
 import com.ca.mfaas.config.ApiInfo;
+import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
+import com.ca.mfaas.exception.MetadataValidationException;
+import com.ca.mfaas.exception.ServiceDefinitionException;
+import com.ca.mfaas.util.UrlUtils;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -106,9 +110,7 @@ public class ServiceDefinitionProcessor {
             }
         }
         ProcessServicesDataResult result = processServicesData(ymlSources);
-        if (!result.getErrors().isEmpty()) {
-            apimlLog.log("apiml.discovery.errorParsingStaticDefinitionData", result.getErrors());
-        }
+        apimlLog.log("apiml.discovery.errorParsingStaticDefinitionData", result.getErrors());
         return result.getInstances();
     }
 
@@ -162,7 +164,7 @@ public class ServiceDefinitionProcessor {
                 CatalogUiTile tile = null;
                 if (service.getCatalogUiTileId() != null) {
                     tile = tiles.get(service.getCatalogUiTileId());
-                    if (tile == null) {
+                        if (tile == null) {
                         errors.add(String.format("Error processing file %s - The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", ymlFileName, service.getCatalogUiTileId(), serviceId));
                     } else {
                         tile.setId(service.getCatalogUiTileId());
@@ -173,7 +175,7 @@ public class ServiceDefinitionProcessor {
                     buildInstanceInfo(instances, errors, service, tile, instanceBaseUrl);
                 }
             } catch (ServiceDefinitionException e) {
-                errors.add(String.format("Error processing file %s - %s", ymlFileName, e.getMessage()) );
+                errors.add(e.getMessage());
             }
         }
 
@@ -213,6 +215,9 @@ public class ServiceDefinitionProcessor {
         } catch (UnknownHostException e) {
             throw new ServiceDefinitionException(String.format("The hostname of URL %s is unknown. The instance of %s will not be created: %s",
                 instanceBaseUrl, serviceId, e.getMessage()));
+        } catch (MetadataValidationException mve) {
+            throw new ServiceDefinitionException(String.format("Metadata creation failed. The instance of %s will not be created: %s",
+                serviceId, mve));
         }
     }
 
@@ -287,11 +292,11 @@ public class ServiceDefinitionProcessor {
             mt.put(CATALOG_VERSION, DEFAULT_TILE_VERSION);
             mt.put(CATALOG_TITLE, tile.getTitle());
             mt.put(CATALOG_DESCRIPTION, tile.getDescription());
+        }
 
-            if (service.getApiInfo() != null) {
-                for (ApiInfo apiInfo : service.getApiInfo()) {
-                    mt.putAll(apiInfo.generateMetadata(service.getServiceId()));
-                }
+        if (service.getApiInfo() != null) {
+            for (ApiInfo apiInfo : service.getApiInfo()) {
+                mt.putAll(EurekaMetadataParser.generateMetadata(service.getServiceId(), apiInfo));
             }
         }
 

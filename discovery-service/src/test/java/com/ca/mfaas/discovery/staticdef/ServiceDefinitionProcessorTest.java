@@ -157,6 +157,32 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
+    public void testProcessServicesDataWithWrongDocumentationUrl() {
+
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String routedServiceYaml = "services:\n" +
+            "    - serviceId: casamplerestapiservice\n" +
+            "      instanceBaseUrls:\n" +
+            "        - https://localhost:20020/\n" +
+            "      apiInfo:\n" +
+            "        - apiId: swagger.io.petstore\n" +
+            "          gatewayUrl: api/v2\n" +
+            "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
+            "          version: 2.0.0\n" +
+            "          documentationUrl: httpBlah://localhost:10021/hellospring/api-doc";
+
+        ServiceDefinitionProcessor.ProcessServicesDataResult result = serviceDefinitionProcessor
+            .processServicesData(Collections.singletonMap("test", routedServiceYaml));
+
+        List<InstanceInfo> instances = result.getInstances();
+        assertEquals(0, instances.size());
+
+        assertNotNull(result.getErrors());
+        assertEquals(1, result.getErrors().size());
+        assertEquals("Metadata creation failed. The instance of casamplerestapiservice will not be created: com.ca.mfaas.exception.MetadataValidationException: The documentation URL \"httpBlah://localhost:10021/hellospring/api-doc\" for service casamplerestapiservice is not valid", result.getErrors().get(0));
+    }
+
+    @Test
     public void testProcessServicesDataWithWrongUrlMissingPort() {
         ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +

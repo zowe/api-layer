@@ -39,14 +39,14 @@ export default class Login extends React.Component {
             messageText = `Unexpected error, please try again later (${error.messageNumber})`;
             const filter = errorMessages.messages.filter(x => x.messageKey != null && x.messageKey === error.messageNumber);
             if (filter.length !== 0)
-                messageText = filter[0].messageText + `${error.messageNumber}`;
+                messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
         }
         else if (error.status === 401 && authentication.sessionOn) {
-            messageText = `${errorMessages.messages[0].messageText} (${errorMessages.messages[0].messageKey})`
+            messageText = `(${errorMessages.messages[0].messageKey}) ${errorMessages.messages[0].messageText}`
             authentication.onCompleteHandling();
         }
         else if (error.status === 500) {
-            messageText = `${errorMessages.messages[1].messageText} (${errorMessages.messages[1].messageKey})`;
+            messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[1].messageText}`;
         }
         return messageText;
     };
