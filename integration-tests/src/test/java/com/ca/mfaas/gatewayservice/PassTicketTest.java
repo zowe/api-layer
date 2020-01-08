@@ -14,7 +14,9 @@ import static com.ca.mfaas.gatewayservice.SecurityUtils.gatewayToken;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.Is.is;
 
 import com.ca.mfaas.util.config.ConfigReader;
@@ -26,9 +28,9 @@ import io.restassured.RestAssured;
 
 public class PassTicketTest {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
-        .getScheme();
+            .getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
-        .getHost();
+            .getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     private final static String STATICCLIENT_BASE_PATH = "/api/v1/staticclient";
     private final static String PASSTICKET_TEST_ENDPOINT = "/passticketTest";
@@ -44,10 +46,19 @@ public class PassTicketTest {
     public void accessServiceWithCorrectPassTicket() {
         String jwt = gatewayToken();
         given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when().get(
-            String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
-            .then().statusCode(is(SC_OK));
+                String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
+                .then().statusCode(is(SC_OK));
     }
 
+    @Test
+    public void accessServiceWithIncorrectApplId() {
+        String jwt = gatewayToken();
+        given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when()
+                .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH,
+                        PASSTICKET_TEST_ENDPOINT))
+                .then().statusCode(is(SC_INTERNAL_SERVER_ERROR))
+                .body("message", containsString("No PTKTDATA profile exists to match the specified application"));
+    }
 
     @Test
     //@formatter:off

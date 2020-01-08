@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.charset.StandardCharsets;
@@ -29,7 +30,7 @@ import java.util.Base64;
 public class PassTicketTestController {
 
     @Value("${apiml.service.applId:ZOWEAPPL}")
-    private String applId;
+    private String defaultApplId;
 
     private final PassTicketService passTicketService;
 
@@ -42,7 +43,8 @@ public class PassTicketTestController {
      */
     @GetMapping(value = "/api/v1/passticketTest")
     @ApiOperation(value = "Validate that the PassTicket in Authorization header is valid", tags = { "Test Operations" })
-    public void passticketTest(@RequestHeader("authorization") String authorization)
+    public void passticketTest(@RequestHeader("authorization") String authorization,
+            @RequestParam(value = "applId", defaultValue = "", required = false) String applId)
             throws IRRPassTicketEvaluationException {
         if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
             String base64Credentials = authorization.substring("Basic".length()).trim();
@@ -50,6 +52,9 @@ public class PassTicketTestController {
             String[] values = credentials.split(":", 2);
             String userId = values[0];
             String passTicket = values[1];
+            if (applId.isEmpty()) {
+                 applId = defaultApplId;
+            }
             passTicketService.evaluate(userId, applId, passTicket);
         } else {
             throw new IllegalArgumentException("Missing Basic authorization header");

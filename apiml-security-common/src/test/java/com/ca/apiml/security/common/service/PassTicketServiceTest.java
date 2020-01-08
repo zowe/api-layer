@@ -26,6 +26,8 @@ import static org.junit.Assert.*;
 @ContextConfiguration
 public class PassTicketServiceTest {
 
+    private static final String TEST_USERID = "userId";
+
     @Autowired
     private PassTicketService passTicketService;
 
@@ -71,13 +73,13 @@ public class PassTicketServiceTest {
         );
 
         try {
-            irrPassTicket.evaluate("user", "applId", "passTicket");
+            irrPassTicket.evaluate(TEST_USERID, "applId", "passTicket");
             fail();
         } catch (Exception e) {
-            assertEquals("Dummy implementation of evaluate : user x applId x passTicket", e.getMessage());
+            assertEquals("Dummy implementation of evaluate : userId x applId x passTicket", e.getMessage());
         }
 
-        assertEquals("success", irrPassTicket.generate("user", "applId"));
+        assertEquals("success", irrPassTicket.generate(TEST_USERID, "applId"));
     }
 
     @Test
@@ -85,7 +87,7 @@ public class PassTicketServiceTest {
         PassTicketService.DefaultPassTicketImpl dpti = new PassTicketService.DefaultPassTicketImpl();
 
         try {
-            dpti.evaluate("user", "applId", "passticket");
+            dpti.evaluate(TEST_USERID, "applId", "passticket");
             fail();
         } catch (IRRPassTicketEvaluationException e) {
             assertEquals(8, e.getSafRc());
@@ -93,15 +95,15 @@ public class PassTicketServiceTest {
             assertEquals(32, e.getRacfRc());
         }
 
-        String passTicket1 = dpti.generate("user", "applId");
-        String passTicket2 = dpti.generate("user", "applId");
+        String passTicket1 = dpti.generate(TEST_USERID, "applId");
+        String passTicket2 = dpti.generate(TEST_USERID, "applId");
 
         assertNotNull(passTicket1);
         assertNotNull(passTicket2);
         assertNotEquals(passTicket1, passTicket2);
 
-        dpti.evaluate("user", "applId", passTicket1);
-        dpti.evaluate("user", "applId", passTicket2);
+        dpti.evaluate(TEST_USERID, "applId", passTicket1);
+        dpti.evaluate(TEST_USERID, "applId", passTicket2);
 
         try {
             dpti.evaluate("userx", "applId", passTicket1);
@@ -111,7 +113,7 @@ public class PassTicketServiceTest {
         }
 
         try {
-            dpti.evaluate("user", "applIdx", passTicket1);
+            dpti.evaluate(TEST_USERID, "applIdx", passTicket1);
             fail();
         } catch (IRRPassTicketEvaluationException e) {
             // different applId, should throw exception

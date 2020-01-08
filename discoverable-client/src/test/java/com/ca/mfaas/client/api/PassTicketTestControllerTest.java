@@ -30,10 +30,10 @@ public class PassTicketTestControllerTest {
     private MockMvc mockMvc;
 
     private static final String ZOWE_PASSTICKET_AUTH_HEADER = "Basic "
-            + Base64.getEncoder().encodeToString(("USER:ZoweDummyPassTicket").getBytes());
+            + Base64.getEncoder().encodeToString(("user:ZoweDummyPassTicket").getBytes());
 
     private static final String BAD_PASSTICKET_AUTH_HEADER = "Basic "
-            + Base64.getEncoder().encodeToString(("USER:bad").getBytes());
+            + Base64.getEncoder().encodeToString(("user:bad").getBytes());
 
     @Test
     public void callToPassTicketTestEndpointWithCorrectTicket() throws Exception {

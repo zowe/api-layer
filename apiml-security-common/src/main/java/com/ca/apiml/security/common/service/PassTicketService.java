@@ -58,10 +58,11 @@ public class PassTicketService {
 
         private static int id = 0;
 
+        public static final String ZOWE_DUMMY_USERID = "user";
         public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZoweDummyPassTicket";
 
         public static final String UNKWNOWN_USER = "unknownUser";
-        public static final String UNKWNOWN_APPLID = "unknownApplId";
+        public static final String UNKWNOWN_APPLID = "XBADAPPL";
 
         private Map<UserApp, Set<String>> userAppToPasstickets = new HashMap<>();
 
@@ -74,7 +75,7 @@ public class PassTicketService {
             if (passTicket == null)
                 throw new IllegalArgumentException("Parameter passTicket is empty");
 
-            if (passTicket.equals(ZOWE_DUMMY_PASS_TICKET_PREFIX)) {
+            if (userId.equals(ZOWE_DUMMY_USERID) && passTicket.startsWith(ZOWE_DUMMY_PASS_TICKET_PREFIX)) {
                 return;
             }
 
