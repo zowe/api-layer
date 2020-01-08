@@ -26,6 +26,13 @@
 # To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
 LOG_LEVEL=
 
+# If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
+APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
+if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
+then
+  APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
+fi
+
 DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dibm.serversocket.recover=true \
@@ -41,17 +48,17 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dapiml.service.port=${DISCOVERY_PORT} \
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.service.preferIpAddress=true \
-    -Dapiml.discovery.staticApiDefinitionsDirectories=${STATIC_DEF_CONFIG_DIR} \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
     -Dserver.ssl.keyStoreType=PKCS12 \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=password \
+    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
     -Dserver.ssl.trustStoreType=PKCS12 \
-    -Dserver.ssl.trustStorePassword=password \
+    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/discovery-service.jar" &
 
@@ -76,10 +83,10 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Dserver.ssl.keyStoreType=PKCS12 \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=password \
+    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
     -Dserver.ssl.trustStoreType=PKCS12 \
-    -Dserver.ssl.trustStorePassword=password \
+    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/api-catalog-services.jar" &
 
@@ -103,9 +110,9 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dserver.ssl.keyStoreType=PKCS12 \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
-    -Dserver.ssl.keyPassword=password \
+    -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
     -Dserver.ssl.trustStoreType=PKCS12 \
-    -Dserver.ssl.trustStorePassword=password \
+    -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/gateway-service.jar" &
