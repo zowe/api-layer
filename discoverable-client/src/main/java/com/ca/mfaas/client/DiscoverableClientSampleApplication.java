@@ -18,12 +18,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
-@SpringBootApplication(exclude = HystrixAutoConfiguration.class)
+@SpringBootApplication/*(exclude = HystrixAutoConfiguration.class)*/
 @EnableApiDiscovery
 @EnableConfigurationProperties
 @EnableWebSocket

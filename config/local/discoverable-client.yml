@@ -5,8 +5,8 @@ apiml:
     enabled: true
     service:
         # The `apiml.service` node contains information required by any APIML service
-        id: discoverableclient  # Service ID of this service
-        serviceId: discoverableclient2
+        # id: discoverableclient  # Service ID of this service
+        serviceId: discoverableclient
         #serviceId: discoverableclient2
         title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
         description:  Sample API services to demonstrate Spring Integration Enabler
@@ -15,15 +15,14 @@ apiml:
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10016  # Default port name for discoverable-clinet service
         # securePort: ${server.port}
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        serviceIpAddress: ${apiml.service.ipAddress}
+        # #ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        serviceIpAddress: 127.0.0.1
         # preferIpAddress: false
 
-        nonSecurePortEnabled: false
-        securePortEnabled: true
+        # nonSecurePortEnabled: false
+        # securePortEnabled: true
 
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
-
 
         homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
         statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
@@ -85,14 +84,19 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 
+#eureka:
+#    instance:
+#        metadata-map:
+#            mfaas:
+#                api-info:
+#                    apiVersionProperties:
+#                        v1:
+#                            title: Service Integration Enabler V2 Sample Application API # © #Copyright is for UTF8 encoding check
+#                            description: API of sample API service showing how to integrate a Spring Boot v2.x application
+#                            version: 1.0.0
+#                            basePackage: com.ca.mfaas.client.api
+
 eureka:
-    instance:
-        metadata-map:
-            mfaas:
-                api-info:
-                    apiVersionProperties:
-                        v1:
-                            title: Service Integration Enabler V2 Sample Application API # © #Copyright is for UTF8 encoding check
-                            description: API of sample API service showing how to integrate a Spring Boot v2.x application
-                            version: 1.0.0
-                            basePackage: com.ca.mfaas.client.api
+    client:
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
