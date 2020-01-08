@@ -28,7 +28,7 @@ public class DownloadApiIntegrationTest {
 
     @Test
     public void shouldSendGetRequestAndDownloadCompressedImage() {
-        RestAssured.registerParser("application/zip", Parser.JSON);
+        RestAssured.registerParser("image/png", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/get-file");
         given().
             contentType("application/octet-stream").
