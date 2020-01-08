@@ -14,11 +14,13 @@ import com.ca.apiml.enable.config.ApiMediationServiceConfigBean;
 import com.ca.apiml.enable.config.SslConfigBean;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.exception.ServiceDefinitionException;
+import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertNotNull;
@@ -28,8 +30,10 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @EnableApiDiscovery
+@ContextConfiguration(classes = EurekaClientWrapper.class)
 public class ApimlDisabledRegisterToApiLayerTest {
 
+    @Autowired
     private RegisterToApiLayer registerToApiLayer;
 
     @Autowired
@@ -44,7 +48,7 @@ public class ApimlDisabledRegisterToApiLayerTest {
     @Before
     public void setup() {
         registerToApiLayer = new RegisterToApiLayer(
-            apiMediationServiceConfigBean, sslConfigBean, null);
+            apiMediationServiceConfigBean, sslConfigBean);
     }
 
 

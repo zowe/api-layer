@@ -8,6 +8,6 @@ dependencies {
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.mockito_core
 
-    annotationProcessor libraries.spring_boot_configuration_processor
-    annotationProcessor libraries.lombok
+    // annotationProcessor libraries.spring_boot_configuration_processor
+    // annotationProcessor libraries.lombok
 }

@@ -28,7 +28,7 @@ ext {
     commonsLang3Version = '3.7'
     gradleGitPropertiesVersion = '1.5.1'
     jettyWebSocketClientVersion = '9.4.11.v20180605'
-    eurekaClientVersion = '1.8.6'
+    eurekaClientVersion = '1.9.13'
     junitVersion = '4.12'
     logbackVersion = '1.2.3'
     spring4Version = '4.3.7.RELEASE'

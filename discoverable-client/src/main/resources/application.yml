@@ -13,11 +13,11 @@ logging:
 
 spring:
     application:
-        name: ${apiml.service.id}
-    cloud:
-        client:
-            hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
+        name: discoverableclient
+    #cloud:
+    #    client:
+    #        hostname: ${apiml.service.hostname}
+    #        ipAddress: ${apiml.service.ipAddress}
     mvc:
         throw-exception-if-no-handler-found: true
     output:
@@ -28,8 +28,8 @@ apiml:
     enabled: true
     service:
         # The `apiml.service` node contains information required by any APIML service
-        id: discoverableclient  # Service ID of this service
-        serviceId: discoverableclient2
+        # id: discoverableclient  # Service ID of this service
+        serviceId: ${spring.application.name}
         #serviceId: discoverableclient2
         title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
         description:  Sample API services to demonstrate Spring Integration Enabler
@@ -38,12 +38,12 @@ apiml:
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10016  # Default port name for discoverable-clinet service
         # securePort: ${server.port}
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        serviceIpAddress: ${apiml.service.ipAddress}
+        # ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        # serviceIpAddress: 127.0.0.1 # ${apiml.service.ipAddress}
         # preferIpAddress: false
 
-        nonSecurePortEnabled: false
-        securePortEnabled: true
+        # nonSecurePortEnabled: false
+        # securePortEnabled: true
 
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
 
@@ -91,7 +91,7 @@ apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
 
 server:
-    address: ${apiml.service.ipAddress}
+    address: ${apiml.service.serviceIpAddress}
     port: ${apiml.service.port}
     servlet:
         contextPath: /discoverableclient
@@ -107,62 +107,16 @@ server:
         enabled: true
         min-response-size: 500
 
-eureka:
-    instance:
-        hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
-        port: ${server.port}
-        securePort: ${server.port}
-        nonSecurePortEnabled: false
-        securePortEnabled: true
-        preferIpAddress: ${apiml.service.preferIpAddress}
-        homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
-        statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
-        healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
-        metadata-map:
-            routed-services:
-                ui_v1:
-                    gateway-url: "ui/v1"
-                    service-url: ${server.servlet.contextPath}
-                api_v1:
-                    gateway-url: "api/v1"
-                    service-url: ${server.servlet.contextPath}/api/v1
-                ws_v1:
-                    gateway-url: "ws/v1"
-                    service-url: ${server.servlet.contextPath}/ws
-            apiml:
-                apiInfo:
-                    - apiId: org.zowe.discoverableclient
-                      gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
-                      documentationUrl: https://www.zowe.org
-            mfaas:
-                api-info:
-                    apiVersionProperties:
-                        v1:
-                            title: Service Integration Enabler V2 Sample Application API © #Copyright is for UTF8 encoding check
-                            description: API of sample API service showing how to integrate a Spring Boot v2.x application
-                            version: 1.0.0
-                            basePackage: com.ca.mfaas.client.api
-                discovery:
-                    catalogUiTile:
-                        id: cademoapps
-                        title: Sample API Mediation Layer Applications
-                        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
-                        version: 1.0.1
-                    enableApiDoc: true
-                    service:
-                        title: Service Integration Enabler V2 Sample Application (Spring Boot 2.x) © #Copyright is for UTF8 encoding check
-                        description: Sample API service showing how to integrate a Spring Boot v2.x application
-    client:
-        fetchRegistry: true
-        registerWithEureka: true
-        region: default
-        serviceUrl:
-            defaultZone: ${apiml.service.discoveryServiceUrls}
-        healthcheck:
-            enabled: true
-
+#eureka:
+#    instance:
+#    client:
+#        fetchRegistry: true
+#        registerWithEureka: true
+#        region: default
+#        serviceUrl:
+#            defaultZone: ${apiml.service.discoveryServiceUrls}
+#        healthcheck:
+#            enabled: true
 ##############################################################################################
 management:
     endpoints:

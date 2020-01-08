@@ -13,6 +13,7 @@ import com.ca.apiml.enable.EnableApiDiscovery;
 import com.ca.apiml.enable.config.ApiMediationServiceConfigBean;
 import com.ca.apiml.enable.config.SslConfigBean;
 import com.ca.mfaas.exception.ServiceDefinitionException;
+import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @TestPropertySource(locations = "/application.yml")
-@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
+@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = EurekaClientWrapper.class)
 @EnableApiDiscovery
 public class ApimlEnabledRegisterToApiLayerTest {
 
