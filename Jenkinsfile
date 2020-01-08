@@ -251,7 +251,7 @@ pipeline {
                 stage('Publish snapshot version to Artifactory for Pull Request') {
                     when {
                         expression {
-                            return BRANCH_NAME.contains("PR-") && PUBLISH_PR_ARTIFACTS;
+                            return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
                         }
                     }
                     steps {
