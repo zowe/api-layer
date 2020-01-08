@@ -91,3 +91,4 @@ api-layer.tar.gz
 # EHCache
 gateway-service/*.data
 gateway-service/*.index
+.ehcache-diskstore.lock
