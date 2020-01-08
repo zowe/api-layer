@@ -12,18 +12,17 @@ package com.ca.mfaas.gateway.security.service;
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
-import com.ca.mfaas.cache.CompositeKey;
 import com.ca.mfaas.gateway.config.CacheConfig;
 import com.ca.mfaas.gateway.security.service.schema.AbstractAuthenticationScheme;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationSchemeFactory;
 import com.ca.mfaas.gateway.security.service.schema.ServiceAuthenticationService;
+import com.ca.mfaas.util.CacheUtils;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -140,25 +139,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
      */
     @Override
     public void evictCacheService(String serviceId) {
-        final Cache cache = cacheManager.getCache(CACHE_BY_SERVICE_ID);
-        if (cache == null) throw new IllegalArgumentException("Unknown cache " + CACHE_BY_SERVICE_ID);
-        final Object nativeCache = cache.getNativeCache();
-        if (nativeCache instanceof net.sf.ehcache.Cache) {
-            final net.sf.ehcache.Cache ehCache = (net.sf.ehcache.Cache) nativeCache;
-
-            for (final Object key : ehCache.getKeys()) {
-                if (key instanceof CompositeKey) {
-                    // if entry is compositeKey and first param is different, skip it (be sure this is not to evict)
-                    final CompositeKey compositeKey = ((CompositeKey) key);
-                    if (!compositeKey.equals(0, serviceId)) continue;
-                }
-                // if key is not composite key (unknown for evict) or has same serviceId, evict record
-                ehCache.remove(key);
-            }
-        } else {
-            // in case of using different cache manager, evict all records for sure
-            cache.clear();
-        }
+        CacheUtils.evictSubset(cacheManager, CACHE_BY_SERVICE_ID, x -> x.equals(0, serviceId));
     }
 
     public class UniversalAuthenticationCommand extends AuthenticationCommand {

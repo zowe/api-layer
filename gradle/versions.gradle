@@ -17,7 +17,7 @@ ext {
     jacksonVersion = '2.9.2'
     restAssuredVersion = '3.0.7'
     commonsValidatorVersion = "1.6"
-    powerMockVersion = "1.7.3"
+    powerMockVersion = "2.0.4"
     jacksonCoreVersion = "2.9.6"
     javaxValidationApiVersion = "2.0.1.Final"
     esmClientVersion = '2.0.0-SNAPSHOT'
@@ -57,7 +57,6 @@ ext {
         spring_boot_starter_actuator       : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}",
         spring_boot_starter_security       : "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
         spring_boot_starter_web            : "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",
-        spring_boot_starter_websocket      : "org.springframework.boot:spring-boot-starter-websocket:${springBootVersion}",
         spring_boot_starter_websocket      : "org.springframework.boot:spring-boot-starter-websocket:${springBootVersion}",
         spring_boot_starter_test           : "org.springframework.boot:spring-boot-starter-test:${springBootVersion}",
         spring_boot_starter_mobile         : "org.springframework.boot:spring-boot-starter-mobile:${springBootVersion}",
@@ -109,7 +108,6 @@ ext {
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
         jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonCoreVersion}",
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
-        jackson_dataformat_yaml            : "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonCoreVersion}",
         esm_client                         : "dbm:esm-client:${esmClientVersion}",
         javax_validation                   : "javax.validation:validation-api:${javaxValidationApiVersion}",
         gson                               : "com.google.code.gson:gson:${gsonVersion}",
