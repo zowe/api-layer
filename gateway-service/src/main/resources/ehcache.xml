@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd" updateCheck="true" monitoring="autodetect" dynamicConfig="true">
 
+    <diskStore path="user.dir" />
+
     <defaultCache maxEntriesLocalHeap="0" eternal="false" timeToIdleSeconds="60" timeToLiveSeconds="60" />
 
     <cache name="invalidatedJwtTokens" diskPersistent="true" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" maxBytesLocalHeap="1048576" />
