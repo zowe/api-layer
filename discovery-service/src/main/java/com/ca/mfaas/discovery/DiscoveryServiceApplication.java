@@ -13,7 +13,6 @@ import com.ca.mfaas.product.logging.annotations.EnableApimlLogger;
 import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.service.ServiceStartupEventHandler;
 import com.ca.mfaas.product.version.BuildInfo;
-import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -38,7 +37,6 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
-        app.setBannerMode(Banner.Mode.OFF);
         new BuildInfo().logBuildInfo();
         app.run(args);
     }
