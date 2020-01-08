@@ -13,6 +13,7 @@ import com.ca.mfaas.enable.EnableApiDiscovery;
 import com.ca.mfaas.product.logging.annotations.EnableApimlLogger;
 import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
 import com.ca.mfaas.product.version.BuildInfo;
+import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -42,6 +43,7 @@ public class ApiCatalogApplication {
         SpringApplication app = new SpringApplication(ApiCatalogApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
+        app.setBannerMode(Banner.Mode.OFF);
         new BuildInfo().logBuildInfo();
         app.run(args);
     }
