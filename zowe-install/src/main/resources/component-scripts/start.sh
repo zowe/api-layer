@@ -26,6 +26,13 @@
 # To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
 LOG_LEVEL=
 
+# If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
+APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
+if [[ ! -z "$ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES" ]]
+then
+  APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
+fi
+
 DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dibm.serversocket.recover=true \
@@ -41,7 +48,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dapiml.service.port=${DISCOVERY_PORT} \
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.service.preferIpAddress=true \
-    -Dapiml.discovery.staticApiDefinitionsDirectories=${STATIC_DEF_CONFIG_DIR} \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
