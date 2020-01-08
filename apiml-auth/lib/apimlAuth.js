@@ -11,13 +11,20 @@
 const https = require('https');
 const fs = require('fs');
 
-function ApimlAuthenticator(pluginDef, pluginConf, serverConf) {
+/*495 minutes default session length
+ * TODO: This is the session length of a zosmf session according to their documentation.
+ * However, it is not clear if that is configurable or if APIML may use a different value under other circumstances
+ */
+const DEFAULT_EXPIRATION_MS = 29700000;
+
+function ApimlAuthenticator(pluginDef, pluginConf, serverConf, context) {
   this.authPluginID = pluginDef.identifier;
   this.pluginConf = pluginConf;
   this.apimlConf = serverConf.node.mediationLayer.server;
   this.gatewayUrl = `https://${this.apimlConf.hostname}:${this.apimlConf.gatewayPort}`;
+  this.logger = context.logger;
   if (serverConf.node.https.certificateAuthorities === undefined) {
-    console.log("zLUX server is not configured with certificate authorities, APIML authentication plugin will not validate certificates");
+    this.logger.warn("zLUX server is not configured with certificate authorities, APIML authentication plugin will not validate certificates");
     this.httpsAgent = new https.Agent({
       rejectUnauthorized: false
     });
@@ -27,6 +34,14 @@ function ApimlAuthenticator(pluginDef, pluginConf, serverConf) {
       ca: readUtf8FilesToArray(serverConf.node.https.certificateAuthorities)
     });
   }
+  this.capabilities = {
+    "canGetStatus": true,
+    "canRefresh": false,
+    "canAuthenticate": true,
+    "canAuthorize": true,
+    "proxyAuthorizations": true,
+    "processesProxyHeaders": false
+  };
 }
 
 function deleteApimlAuthFromSession(sessionState) {
@@ -35,6 +50,7 @@ function deleteApimlAuthFromSession(sessionState) {
   delete sessionState.apimlToken;
   delete sessionState.apimlCookie;
   delete sessionState.gatewayUrl;
+  delete sessionState.sessionExpTime;
 }
 
 function readUtf8FilesToArray(fileArray) {
@@ -52,11 +68,11 @@ function readUtf8FilesToArray(fileArray) {
           contentArray.push(content);
         }
         else {
-          console.log('Error: file ' + filePath + ' is not a certificate')
+          this.logger.warn('Error: file ' + filePath + ' is not a certificate')
         }
       }
     } catch (e) {
-      console.log('Error when reading file=' + filePath + '. Error=' + e.message);
+      this.logger.warn('Error when reading file=' + filePath + '. Error=' + e.message);
     }
   }
 
@@ -69,10 +85,20 @@ function readUtf8FilesToArray(fileArray) {
 
 ApimlAuthenticator.prototype = {
 
+  getCapabilities(){
+    return this.capabilities;
+  },
+
   getStatus(sessionState) {
+    const expms = sessionState.sessionExpTime - Date.now();
+    if (expms <= 0 || sessionState.sessionExpTime === undefined) {
+      deleteApimlAuthFromSession(sessionState);
+      return { authenticated: false };
+    }
     return {
       authenticated: !!sessionState.authenticated,
-      username: sessionState.zssUsername
+      username: sessionState.apimlUsername,
+      expms: sessionState.sessionExpTime ? expms : undefined
     };
   },
 
@@ -128,7 +154,8 @@ ApimlAuthenticator.prototype = {
             sessionState.apimlCookie = apimlCookie;
             sessionState.apimlToken = apimlCookie.split("=")[1];
             sessionState.gatewayUrl = gatewayUrl;
-            resolve({ success: true });
+            sessionState.sessionExpTime = Date.now() + DEFAULT_EXPIRATION_MS;
+            resolve({ success: true, username: sessionState.apimlUsername, expms: DEFAULT_EXPIRATION_MS });
           } else {
             deleteApimlAuthFromSession(sessionState);
             resolve({
@@ -142,8 +169,8 @@ ApimlAuthenticator.prototype = {
       });
 
       req.on('error', (error) => {
-        console.log("APIML login has failed:");
-        console.log(error);
+        this.logger.warn("APIML login has failed:");
+        this.logger.warn(error);
         var details = error.message;
         if ((error.response !== undefined) && (error.response.data !== undefined)) {
           details = error.response.data;
@@ -191,6 +218,6 @@ ApimlAuthenticator.prototype = {
   }
 };
 
-module.exports = function (pluginDef, pluginConf, serverConf) {
-  return Promise.resolve(new ApimlAuthenticator(pluginDef, pluginConf, serverConf));
+module.exports = function (pluginDef, pluginConf, serverConf, context) {
+  return Promise.resolve(new ApimlAuthenticator(pluginDef, pluginConf, serverConf, context));
 }
