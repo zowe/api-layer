@@ -36,7 +36,7 @@ public class FileController {
         this.servletContext = servletContext;
     }
 
-    @GetMapping(value = "/api/v1/get-file", produces = "application/png")
+    @GetMapping(value = "/api/v1/get-file", produces = "image/png")
     public ResponseEntity<InputStreamResource> zipFiles() throws FileNotFoundException {
 
         URL url = getClass().getResource("/api-catalog.png");
