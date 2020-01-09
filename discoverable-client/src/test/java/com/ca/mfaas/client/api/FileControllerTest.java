@@ -28,7 +28,7 @@ public class FileControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void callGreetingEndpoint() throws Exception {
+    public void callFileDownloadEndpoint() throws Exception {
         this.mockMvc.perform(get("/api/v1/get-file"))
             .andExpect(status().isOk())
             .andExpect(header().string("Content-Disposition","attachment;filename=api-catalog.png"));
