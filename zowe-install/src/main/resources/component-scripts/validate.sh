@@ -49,6 +49,15 @@ else
     error "ZOWE_EXPLORER_HOST is empty"
 fi
 
+# Check we can access all external static def directories
+OLDIFS="$IFS"
+IFS=";"
+for DIRECTORY in ${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES} 
+do
+  . ${ROOT_DIR}/scripts/utils/validate-directory-is-accessible.sh ${DIRECTORY}
+done
+export IFS="$OLDIFS"
+
 . ${ROOT_DIR}/scripts/utils/validate-java.sh
 
 return $ERRORS_FOUND-$INITIAL_ERRORS_FOUND
