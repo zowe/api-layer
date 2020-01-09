@@ -18,7 +18,7 @@ ext {
     restAssuredVersion = '3.0.7'
     commonsValidatorVersion = "1.6"
     powerMockVersion = "2.0.4"
-    jacksonCoreVersion = "2.9.6"
+    jacksonCoreVersion = "2.10.1"
     javaxValidationApiVersion = "2.0.1.Final"
     esmClientVersion = '2.0.0-SNAPSHOT'
     gsonVersion = '2.8.2'
@@ -44,6 +44,7 @@ ext {
     springFoxVersion = '2.9.2'
     swaggerCoreVersion = "1.5.21"
     swagger3CoreVersion = "2.0.0"
+    swagger3ParserVersion = "2.0.17"
     swaggerJerseyJaxrsVersion = '1.5.10'
     jacksonDataformatYamlVersion = '2.9.7'
     jerseyVersion = '2.26'
@@ -89,6 +90,7 @@ ext {
         springFoxWeb                       : "io.springfox:springfox-spring-web:${springFoxVersion}",
         swagger_core                       : "io.swagger:swagger-core:${swaggerCoreVersion}",
         swagger3_core                      : "io.swagger.core.v3:swagger-core:${swagger3CoreVersion}",
+        swagger3_parser                    : "io.swagger.parser.v3:swagger-parser-v3:${swagger3ParserVersion}",
         swagger_jersey2_jaxrs              : "io.swagger:swagger-jersey2-jaxrs:${swaggerJerseyJaxrsVersion}",
         http_client                        : "org.apache.httpcomponents:httpclient:${httpClientVersion}",
         http_core                          : "org.apache.httpcomponents:httpcore:${httpCoreVersion}",

@@ -22,10 +22,11 @@ import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.UnexpectedTypeException;
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
@@ -38,13 +39,17 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
-        OpenAPI openAPI;
+        SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(apiDocInfo.getApiDocContent());
+        OpenAPI openAPI = parseResult.getOpenAPI();
 
-        try {
-            openAPI = Json.mapper().readValue(apiDocInfo.getApiDocContent(), OpenAPI.class);
-        } catch (IOException e) {
-            log.debug("Could not convert response body to an OpenAPI object. {}",serviceId, e);
-            throw new UnexpectedTypeException("Response is not an OpenAPI type object.");
+        if (openAPI == null) {
+            log.debug("Could not convert response body to an OpenAPI object for service {}. {}", serviceId, parseResult.getMessages());
+
+            if (parseResult.getMessages() == null) {
+                throw new UnexpectedTypeException("Response is not an OpenAPI type object.");
+            } else {
+                throw new UnexpectedTypeException(parseResult.getMessages().toString());
+            }
         }
 
         boolean hidden = isHidden(openAPI.getTags());
@@ -112,7 +117,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
     private Server getBestMatchingServer(List<Server> servers, ApiDocInfo apiDocInfo) {
         if (servers != null && !servers.isEmpty()) {
-            for (Server server: servers) {
+            for (Server server : servers) {
                 String basePath = getBasePath(server.getUrl());
                 RoutedService route = getRoutedServiceByApiInfo(apiDocInfo, basePath);
                 if (route != null) {
