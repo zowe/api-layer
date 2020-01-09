@@ -14,10 +14,6 @@ logging:
 spring:
     application:
         name: discoverableclient
-    #cloud:
-    #    client:
-    #        hostname: ${apiml.service.hostname}
-    #        ipAddress: ${apiml.service.ipAddress}
     mvc:
         throw-exception-if-no-handler-found: true
     output:
@@ -27,30 +23,19 @@ spring:
 apiml:
     enabled: true
     service:
-        # The `apiml.service` node contains information required by any APIML service
-        # id: discoverableclient  # Service ID of this service
         serviceId: ${spring.application.name}
-        #serviceId: discoverableclient2
         title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
         description:  Sample API services to demonstrate Spring Integration Enabler
 
         scheme: https
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10016  # Default port name for discoverable-clinet service
-        # securePort: ${server.port}
-        # ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        # serviceIpAddress: 127.0.0.1 # ${apiml.service.ipAddress}
-        # preferIpAddress: false
-
-        # nonSecurePortEnabled: false
-        # securePortEnabled: true
 
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
 
-
-        homePageRelativeUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
-        statusPageRelativeUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
-        healthCheckRelativeUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
+        homePageRelativeUrl: ${server.servlet.contextPath}
+        statusPageRelativeUrl: ${server.servlet.contextPath}/application/info
+        healthCheckRelativeUrl: ${server.servlet.contextPath}/application/health
 
         contextPath:
 
@@ -88,7 +73,6 @@ apiml:
             trustStore: keystore/localhost/localhost.truststore.p12
             trustStorePassword: password
             trustStoreType: PKCS12
-    # The `apiml` node contains API Mediation Layer specific configuration
 
 server:
     address: ${apiml.service.serviceIpAddress}
@@ -107,17 +91,6 @@ server:
         enabled: true
         min-response-size: 500
 
-#eureka:
-#    instance:
-#    client:
-#        fetchRegistry: true
-#        registerWithEureka: true
-#        region: default
-#        serviceUrl:
-#            defaultZone: ${apiml.service.discoveryServiceUrls}
-#        healthcheck:
-#            enabled: true
-##############################################################################################
 management:
     endpoints:
         web:

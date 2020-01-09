@@ -1,32 +1,22 @@
 spring.profiles.include: diag
 
-
 apiml:
     enabled: true
     service:
-        # The `apiml.service` node contains information required by any APIML service
-        # id: discoverableclient  # Service ID of this service
         serviceId: discoverableclient
-        #serviceId: discoverableclient2
         title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
         description:  Sample API services to demonstrate Spring Integration Enabler
 
         scheme: https
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10016  # Default port name for discoverable-clinet service
-        # securePort: ${server.port}
-        # #ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         serviceIpAddress: 127.0.0.1
-        # preferIpAddress: false
-
-        # nonSecurePortEnabled: false
-        # securePortEnabled: true
 
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
 
-        homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
-        statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
-        healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
+        homePageUrl: ${server.servlet.contextPath}
+        statusPageUrl: ${server.servlet.contextPath}/application/info
+        healthCheckUrl: ${server.servlet.contextPath}/application/health
 
         discoveryServiceUrls: https://localhost:10011/eureka/
 
@@ -62,7 +52,6 @@ apiml:
             trustStore: keystore/localhost/localhost.truststore.p12
             trustStorePassword: password
             trustStoreType: PKCS12
-    # The `apiml` node contains API Mediation Layer specific configuration
 
 spring:
     output:
@@ -74,27 +63,11 @@ server:
         keyAlias: localhost
         keyPassword: password
         keyStore: keystore/localhost/localhost.keystore.p12
-        # keyStore: keystore/selfsigned/localhost.keystore.p12        
-        # keyStore: keystore/selfsigned/localhost-untrusted.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
         trustStore: keystore/localhost/localhost.truststore.p12
-        # trustStore: keystore/selfsigned/localhost.truststore.p12
-        # trustStore: keystore/selfsigned/localhost-untrusted.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
-
-#eureka:
-#    instance:
-#        metadata-map:
-#            mfaas:
-#                api-info:
-#                    apiVersionProperties:
-#                        v1:
-#                            title: Service Integration Enabler V2 Sample Application API # © #Copyright is for UTF8 encoding check
-#                            description: API of sample API service showing how to integrate a Spring Boot v2.x application
-#                            version: 1.0.0
-#                            basePackage: com.ca.mfaas.client.api
 
 eureka:
     client:
