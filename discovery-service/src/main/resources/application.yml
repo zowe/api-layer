@@ -2,6 +2,7 @@ logging:
     level:
         ROOT: INFO
         com.ca.mfaas: INFO
+        com.ca.mfaas.discovery.GatewayNotifier: OFF
         org.springframework: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
@@ -10,6 +11,7 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
+        net.sf.ehcache: WARN
 
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -126,11 +128,13 @@ logging:
     level:
         ROOT: INFO
         com.ca.mfaas: DEBUG
+        com.ca.mfaas.discovery.GatewayNotifier: INFO
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+        net.sf.ehcache: INFO
 
 ---
 spring:

@@ -14,6 +14,7 @@ logging:
         com.ca.mfaas.gateway.error: INFO
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
+        net.sf.ehcache: WARN
 
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -205,6 +206,7 @@ logging:
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
+        net.sf.ehcache: INFO
 
 ---
 spring:

@@ -22,7 +22,6 @@ logging:
     level:
         ROOT: INFO
         com.ca.mfaas: INFO
-        com.ca.mfaas.discovery.GatewayNotifier: OFF
         org.springframework: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
