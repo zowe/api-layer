@@ -9,7 +9,7 @@ apiml:
 
         scheme: https
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
-        port: 10016  # Default port name for discoverable-clinet service
+        port: 10012  # Default port name for discoverable-clinet service
         serviceIpAddress: 127.0.0.1
 
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
