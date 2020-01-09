@@ -1,6 +1,6 @@
 ext {
-    springBootVersion = '2.0.4.RELEASE'
-    springCloudVersion = '2.0.1.RELEASE'
+    springBootVersion = '2.1.1.RELEASE'
+    springCloudVersion = '2.1.3.RELEASE'
     springSecurityVersion = '5.1.0.RELEASE'
 
     lombokVersion = '1.16.20'
@@ -24,7 +24,7 @@ ext {
     gsonVersion = '2.8.2'
     mockitoCoreVersion = '2.15.0'
     zsslVersion = '1.0.0'
-    tomcatVersion = '8.5.33'
+    tomcatVersion = '9.0.13' //8.5.33
     commonsLang3Version = '3.7'
     gradleGitPropertiesVersion = '1.5.1'
     jettyWebSocketClientVersion = '9.4.11.v20180605'
@@ -56,6 +56,7 @@ ext {
         spring_boot_starter_actuator       : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}",
         spring_boot_starter_security       : "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
         spring_boot_starter_web            : "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",
+        spring_boot_starter_websocket      : "org.springframework.boot:spring-boot-starter-websocket:${springBootVersion}",
         spring_boot_starter_websocket      : "org.springframework.boot:spring-boot-starter-websocket:${springBootVersion}",
         spring_boot_starter_test           : "org.springframework.boot:spring-boot-starter-test:${springBootVersion}",
         spring_boot_starter_mobile         : "org.springframework.boot:spring-boot-starter-mobile:${springBootVersion}",
@@ -114,6 +115,7 @@ ext {
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
+        jetty_util                         : "org.eclipse.jetty:jetty-util:${jettyWebSocketClientVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
         junit                              : "junit:junit:${junitVersion}",
         logback_classic                    : "ch.qos.logback:logback-classic:${logbackVersion}",

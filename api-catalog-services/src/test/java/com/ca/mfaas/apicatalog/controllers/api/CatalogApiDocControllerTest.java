@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import reactor.core.publisher.Mono;
 
 import static org.mockito.Mockito.when;
 
@@ -35,10 +34,8 @@ public class CatalogApiDocControllerTest {
         ResponseEntity<String> response = new ResponseEntity<>("Some API Doc", HttpStatus.OK);
 
         when(apiServiceStatusService.getServiceCachedApiDocInfo("service", "1.0.0")).thenReturn(response);
-        Mono<ResponseEntity<String>> r = catalogApiDocController.getApiDocInfo("service", "1.0.0");
-        Assert.assertNotNull(r);
-        r.subscribe((ResponseEntity<String> res) -> {
-            Assert.assertEquals("Some API Doc", res.getBody());
-        });
+        ResponseEntity<String> res = catalogApiDocController.getApiDocInfo("service", "1.0.0");
+        Assert.assertNotNull(res);
+        Assert.assertEquals("Some API Doc", res.getBody());
     }
 }

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
 
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
@@ -49,9 +48,9 @@ public class CatalogApiDocController {
      * @param apiVersion the version of the api
      * @return api-doc info (as JSON)
      */
-    @GetMapping(value = "/{service-id}/{api-version}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{serviceId}/{apiVersion}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Retrieves the API documentation for a specific service version",
-        notes = "Returns the API documentation for a specific service {service-id} and version {api-version}. When " +
+        notes = "Returns the API documentation for a specific service {serviceId} and version {apiVersion}. When " +
             " the API documentation for the specified version is not found, the first discovered version will be used.",
         response = String.class)
     @ApiResponses(value = {
@@ -61,11 +60,11 @@ public class CatalogApiDocController {
         @ApiResponse(code = 404, message = "URI not found"),
         @ApiResponse(code = 500, message = "An unexpected condition occurred"),
     })
-    public Mono<ResponseEntity<String>> getApiDocInfo(
-        @ApiParam(name = "service-id", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
-        @PathVariable(value = "service-id") String serviceId,
-        @ApiParam(name = "api-version", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v1")
-        @PathVariable(value = "api-version") String apiVersion) {
-        return Mono.just(this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiVersion));
+    public ResponseEntity<String> getApiDocInfo(
+        @ApiParam(name = "serviceId", value = "The unique identifier of the registered service", required = true, example = "apicatalog")
+        @PathVariable(value = "serviceId") String serviceId,
+        @ApiParam(name = "apiVersion", value = "The major version of the API documentation (v1, v2, etc.)", required = true, example = "v1")
+        @PathVariable(value = "apiVersion") String apiVersion) {
+        return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiVersion);
     }
 }
