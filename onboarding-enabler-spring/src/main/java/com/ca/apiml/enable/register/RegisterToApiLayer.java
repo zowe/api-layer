@@ -23,7 +23,6 @@ import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -33,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@Configuration
 @Import(value = {EurekaClientWrapper.class})
 @EnableConfigurationProperties(value = {ApiMediationServiceConfigBean.class, SslConfigBean.class}) //, EurekaClientWrapper.class
 public class RegisterToApiLayer {
@@ -41,7 +39,7 @@ public class RegisterToApiLayer {
     private final SslConfigBean ssl;
 
     @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
+    private final ApimlLogger logger = ApimlLogger.empty();
 
     @Autowired
     private EurekaClientWrapper eurekaClientWrapper;
@@ -50,9 +48,6 @@ public class RegisterToApiLayer {
         this.config = config;
         this.ssl = ssl;
     }
-
-    @Value("${apiml.service.ipAddress:127.0.0.1}")
-    private String ipAddress;
 
     @Value("${apiml.enabled:false}")
     private boolean enabled;
@@ -65,17 +60,21 @@ public class RegisterToApiLayer {
     }
 
     private void register(ApiMediationServiceConfig config, Ssl ssl) {
-        ApiMediationClient apiMediationClient = new ApiMediationClientImpl();
         config.setSsl(ssl);
-        apimlLog .log("apiml.enabler.register.successful",
+
+        logger.log("apiml.enabler.register.successful",
             config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
         log.debug("Registering to API Mediation Layer with settings: {}", config.toString());
+
         try {
+            ApiMediationClient apiMediationClient = new ApiMediationClientImpl();
             apiMediationClient.register(config);
 
             eurekaClientWrapper.setEurekaClient(apiMediationClient.getEurekaClient());
         } catch (ServiceDefinitionException e) {
-            apimlLog .log(e.toString());
+            logger.log("apiml.enabler.register.fail"
+                , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls(), e.toString());
+            log.debug(String.format("Service %s registration to API ML failed: ", config.getBaseUrl()), e);
         }
     }
 }
