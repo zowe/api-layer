@@ -84,6 +84,7 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
             CommonClientConfigKey.ReadTimeout, this.readTimeout));
         builder.setRedirectsEnabled(configOverride.get(
             CommonClientConfigKey.FollowRedirects, this.followRedirects));
+        builder.setContentCompressionEnabled(false);
 
         final RequestConfig requestConfig = builder.build();
         if (HTTPS.equals(request.getURI().getScheme())) {

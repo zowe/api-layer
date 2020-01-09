@@ -2,9 +2,9 @@
 
 ## Guidelines
 
-- Master build creates a new [_snapshot_](https://stackoverflow.com/questions/5901378/what-exactly-is-a-maven-snapshot-and-why-do-we-need-it) that is deployed to [libs-snapshot-local repository in Zowe Artifactory](https://gizaartifactory.jfrog.io/gizaartifactory/libs-snapshot-local/com/ca/mfaas/sdk/ ) automatically
+- Master build creates a new [_snapshot_](https://stackoverflow.com/questions/5901378/what-exactly-is-a-maven-snapshot-and-why-do-we-need-it) that is deployed to [libs-snapshot-local repository in Zowe Artifactory](https://zowe.jfrog.io/zowe/libs-snapshot-local/com/ca/mfaas/sdk/ ) automatically
 - New release is done starting Jenkins job [api-layer-release](https://wash.zowe.org:8443/job/api-layer-release/build?delay=0sec) when the contents of the master is stable and contains new functionality or bugfixes
-- Artifacts are deployed to [lib-release-local repository](https://gizaartifactory.jfrog.io/gizaartifactory/libs-release-local/com/ca/mfaas/sdk/)
+- Artifacts are deployed to [lib-release-local repository](https://zowe.jfrog.io/zowe/libs-release-local/com/ca/mfaas/sdk/)
 - The versioning follows [semantic versioning](https://semver.org/):
   - Patch versions are done when no external APIs and user functionality is changed and only fixes are done
     - [zowe-install-packaging/artifactory-download-spec.json.template](https://github.com/zowe/zowe-install-packaging/blob/master/artifactory-download-spec.json.template) includes the latest patch version
@@ -45,7 +45,7 @@ The commands are listed for reference. Use the Jenkins job to execute them.
 
 ## Properties
 
-- `zowe.deploy.username` and `zowe.deploy.password` - credentials to [Zowe Artifactory](https://gizaartifactory.jfrog.io/)
+- `zowe.deploy.username` and `zowe.deploy.password` - credentials to [Zowe Artifactory](https://zowe.jfrog.io/)
 
 You can set them:
 
@@ -54,4 +54,4 @@ You can set them:
 
 **Warning!** Do not commit them to the Git repository. They are secret
 
-They are stored in Jenkins Credentials: https://wash.zowe.org:8443/credentials/store/system/domain/_/credential/GizaArtifactory/
+They are stored in Jenkins Credentials: https://wash.zowe.org:8443/credentials/store/system/domain/_/credential/zowe/
