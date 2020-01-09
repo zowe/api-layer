@@ -41,7 +41,7 @@ public class GatewayNotifier {
         final PeerAwareInstanceRegistry registry = getRegistry();
         final Application application = registry.getApplication("gateway");
         if (application == null) {
-            log.error("Gateway application doesn't exists, cannot be notified about service change");
+            log.error("Gateway service is not available so it cannot be notified about changes");
             return;
         }
 
