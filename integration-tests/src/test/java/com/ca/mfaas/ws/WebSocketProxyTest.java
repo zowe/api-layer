@@ -90,7 +90,7 @@ public class WebSocketProxyTest {
     private WebSocketSession appendingWebSocketSession(String url, StringBuilder response, int countToNotify)
             throws Exception {
         return appendingWebSocketSession(url, null, response, countToNotify);
-    }    
+    }
 
     @Test
     @Category(WebsocketTest.class)
@@ -120,7 +120,7 @@ public class WebSocketProxyTest {
             response.wait(WAIT_TIMEOUT_MS);
         }
 
-        assertTrue(response.toString().contains("x-test=[value]"));
+        assertTrue(response.toString().contains("x-test:\"value\""));
         session.sendMessage(new TextMessage("bye"));
         session.close();
     }
@@ -140,7 +140,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category(WebsocketTest.class) 
+    @Category(WebsocketTest.class)
     public void shouldFailIfPathIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL + "bad"), response, 1);

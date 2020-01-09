@@ -16,14 +16,14 @@ java -jar gateway-service/build/libs/gateway-service.jar --spring.config.additio
 
 #### HTTPS
 
-By default, the gateway runs in encrypted mode (HTTPS) for northbound traffic using signed certificates in Java keystores.
+By default, the gateway runs in encrypted mode (HTTPS) for northbound traffic using signed certificates in Java keystore.
 
 To override this and run the gateway without TLS encryption, add the following two arguments:
     
     -Denvironment.scheme=http -Denvironment.sslEnabled=false
 
 The source code contains sample certificates that are used by configuration for testing on your local machine. 
-Do not use these certificates in other environments. More details can be found at [/keystore/local_ca/README.md](/keystore/local_ca/README.md).
+Do not use these certificates in other environments. More details can be found at [/keystore/README.md](/keystore/README.md).
 
 
 ### Discovery Service
@@ -51,7 +51,7 @@ java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config
 ### Sample Application -EnablerV1Sample 
 
 ```shell
-java -jar integration-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.additional-location=file:./config/local/integration-enabler-spring-v1-sample-app.yml
+java -jar integration-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.location=file:./config/local/integration-enabler-spring-v1-sample-app.yml
 ```
 
 ### Helloworld Jersey
@@ -95,7 +95,7 @@ If you need some more information about SSL configuration status while deploying
     * [https://localhost:10016/hellojersey/api-doc](https://localhost:10016/hellojersey/api-doc) which contains the API documentation
     * [https://localhost:10016/hellojersey/application/health](https://localhost:10016/hellojersey/application/health) for the health check endpoint containing the status of the application
     * [https://localhost:10016](https://localhost:10016) for the homepage 
-    * [https://localhost:10016/hellojersey/application/info](https://localhost:10016/hellojersey/application/info) for the service informations such as hostname, port etc
+    * [https://localhost:10016/hellojersey/application/info](https://localhost:10016/hellojersey/application/info) for the service information such as hostname, port etc
     * [https://localhost:10016/hellojersey/v1/greeting](https://localhost:10016/hellojersey/v1/greeting) for the greeting endpoint
     
     Go to the [API Catalog](https://localhost:10010/ui/v1/apicatalog) and check if the API documentation of the service is retrieved.
@@ -142,7 +142,7 @@ To turn on SSL/TLS protocol debugging:
 
 ### IntelliJ Idea setup
 
-If your editor of choice happens to be Idea and you wnat to use its 'Run Dashboard' refer to [Setup your Idea](./idea-setup.md).
+If your editor of choice happens to be Idea and you want to use its 'Run Dashboard' refer to [Setup your Idea](./idea-setup.md).
 
 ### Running multiple instances of Eureka locally
 
@@ -236,6 +236,6 @@ If your editor of choice happens to be Idea and you wnat to use its 'Run Dashboa
 |   Discovery Service    | 10011 |
 |  Discoverable client   | 10012 |
 |      API Catalog       | 10014 |
-|   Helloword (Jersey)   | 10016 |
+|   Helloworld (Jersey)  | 10016 |
 | Helloworld (ExpressJs) | 10020 |
 |   Helloworld (Spring)  | 10021 |
