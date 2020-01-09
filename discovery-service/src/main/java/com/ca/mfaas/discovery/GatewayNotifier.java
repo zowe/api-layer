@@ -9,13 +9,14 @@
  */
 package com.ca.mfaas.discovery;
 
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.util.EurekaUtils;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -23,11 +24,17 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
 @Slf4j
 public class GatewayNotifier {
 
+    private final ApimlLogger logger;
+
     private final RestTemplate restTemplate;
+
+    public GatewayNotifier(RestTemplate restTemplate, MessageService messageService) {
+        this.restTemplate = restTemplate;
+        this.logger = ApimlLogger.of(GatewayNotifier.class, messageService);
+    }
 
     private EurekaServerContext getServerContext() {
         return EurekaServerContextHolder.getInstance().getServerContext();
@@ -41,7 +48,7 @@ public class GatewayNotifier {
         final PeerAwareInstanceRegistry registry = getRegistry();
         final Application application = registry.getApplication("gateway");
         if (application == null) {
-            log.error("Gateway service is not available so it cannot be notified about changes");
+            logger.log("apiml.discovery.errorNotifyingGateway");
             return;
         }
 
@@ -50,7 +57,8 @@ public class GatewayNotifier {
         for (final InstanceInfo instanceInfo : gatewayInstances) {
             final StringBuilder url = new StringBuilder();
             url.append(EurekaUtils.getUrl(instanceInfo)).append("/cache/services");
-            if (serviceId != null) url.append('/').append(serviceId);
+            if (serviceId != null)
+                url.append('/').append(serviceId);
             restTemplate.delete(url.toString());
         }
     }

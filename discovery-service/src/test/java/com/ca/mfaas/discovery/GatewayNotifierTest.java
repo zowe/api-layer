@@ -8,6 +8,7 @@ package com.ca.mfaas.discovery;/*
  * Copyright Contributors to the Zowe Project.
  */
 
+import com.ca.mfaas.message.core.MessageService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
@@ -49,7 +50,8 @@ public class GatewayNotifierTest {
     @Test
     public void testServiceUpdated() {
         RestTemplate restTemplate = mock(RestTemplate.class);
-        GatewayNotifier gatewayNotifier = new GatewayNotifier(restTemplate);
+        MessageService messageService = mock(MessageService.class);
+        GatewayNotifier gatewayNotifier = new GatewayNotifier(restTemplate, messageService);
 
         verify(restTemplate, never()).delete(anyString());
 
