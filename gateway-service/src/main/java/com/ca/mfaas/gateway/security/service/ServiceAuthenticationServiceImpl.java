@@ -9,6 +9,14 @@
  */
 package com.ca.mfaas.gateway.security.service;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
@@ -22,18 +30,13 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.zuul.context.RequestContext;
-import lombok.AllArgsConstructor;
+
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
-
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import lombok.AllArgsConstructor;
 
 /**
  * This bean is responsible for "translating" security to specific service. It decorate request with security data for
@@ -91,7 +94,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) throws Exception {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) throws AuthenticationException {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
         final QueryResponse queryResponse = authenticationService.parseJwtToken(jwtToken);
         return scheme.createCommand(authentication, queryResponse);
@@ -100,7 +103,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @CacheEvict(value = CACHE_BY_SERVICE_ID, condition = "#result != null && #result.isExpired()")
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws Exception {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws AuthenticationException {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 

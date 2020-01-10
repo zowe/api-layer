@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.security.service.schema;
 
 import com.ca.apiml.security.common.auth.Authentication;
+import com.ca.mfaas.gateway.security.service.AuthenticationException;
 import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
 
 /**
@@ -25,7 +26,7 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      * @param jwtToken JWT security token of user (authentication can depends on user privilege)
      * @return authentication command to update request in ZUUL
      */
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) throws Exception;
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) throws AuthenticationException;
 
     /**
      * Get or create command to service's authentication using serviceId and jwtToken of current user
@@ -33,6 +34,6 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      * @param jwtToken JWT security token of user (authentication can depends on user privilege)
      * @return authentication command to update request in ZUUL (or lazy command to be updated in load balancer)
      */
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws Exception;
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws AuthenticationException;
 
 }

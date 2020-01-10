@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This method allow to get a passTicket from RAC.
+ * This method allow to get a PassTicket from SAF.
  */
 @Service
 public class PassTicketService {

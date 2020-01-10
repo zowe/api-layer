@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.security.service.schema;
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
+import com.ca.mfaas.gateway.security.service.AuthenticationException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.context.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +79,7 @@ public class AuthenticationSchemeFactory {
         return output;
     }
 
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication) throws Exception {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication) throws AuthenticationException {
         final AbstractAuthenticationScheme scheme;
         if ((authentication == null) || (authentication.getScheme() == null)) {
             scheme = defaultScheme;

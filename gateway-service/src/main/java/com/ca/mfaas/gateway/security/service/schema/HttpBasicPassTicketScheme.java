@@ -14,6 +14,7 @@ import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.service.IRRPassTicketGenerationException;
 import com.ca.apiml.security.common.service.PassTicketService;
 import com.ca.apiml.security.common.token.QueryResponse;
+import com.ca.mfaas.gateway.security.service.AuthenticationException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
@@ -26,8 +27,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
- * This bean support PassTicket. Bean is responsible for getting Passticket from RAC and generating new authentication
- * header in request.
+ * This bean support PassTicket. Bean is responsible for getting PassTicket from
+ * SAF and generating new authentication header in request.
  */
 @Component
 public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
@@ -47,13 +48,21 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) throws IRRPassTicketGenerationException {
+    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token)
+            throws AuthenticationException {
         final long before = System.currentTimeMillis();
 
         final String applId = authentication.getApplid();
         final String userId = token.getUserId();
-        final String passTicket = passTicketService.generate(userId, applId);
-        final String encoded = Base64.getEncoder().encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
+        String passTicket;
+        try {
+            passTicket = passTicketService.generate(userId, applId);
+        } catch (IRRPassTicketGenerationException e) {
+            throw new AuthenticationException(
+                    String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e);
+        }
+        final String encoded = Base64.getEncoder()
+                .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
         final String value = "Basic " + encoded;
 
         final long expiredAt = Math.min(before + timeout * 1000, token.getExpiration().getTime());

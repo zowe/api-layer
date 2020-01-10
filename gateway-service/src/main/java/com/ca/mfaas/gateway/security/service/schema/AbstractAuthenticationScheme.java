@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.security.service.schema;
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
+import com.ca.mfaas.gateway.security.service.AuthenticationException;
 
 /**
  * This is abstract class for any processor which support service's authentication. They are called from ZUUL filters
@@ -32,7 +33,7 @@ public interface AbstractAuthenticationScheme {
      * @param authentication DTO describing details about authentication
      * @param token User's parsed (Zowe's) JWT token
      */
-    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) throws Exception;
+    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) throws AuthenticationException;
 
     /**
      * Define implementation, which will be use in case no scheme is defined.
