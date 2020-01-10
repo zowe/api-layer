@@ -152,7 +152,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         protected UniversalAuthenticationCommand() {}
 
         @Override
-        public void apply(InstanceInfo instanceInfo) throws Exception {
+        public void apply(InstanceInfo instanceInfo) throws AuthenticationException {
             if (instanceInfo == null) throw new NullPointerException("Argument instanceInfo is required");
 
             final Authentication auth = getAuthentication(instanceInfo);

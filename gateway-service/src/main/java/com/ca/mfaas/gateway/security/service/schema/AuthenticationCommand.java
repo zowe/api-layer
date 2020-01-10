@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.security.service.schema;
 
 import com.ca.mfaas.cache.EntryExpiration;
+import com.ca.mfaas.gateway.security.service.AuthenticationException;
 import com.netflix.appinfo.InstanceInfo;
 
 import java.io.Serializable;
@@ -45,6 +46,6 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * In all other case call apply(null).
      * @param instanceInfo Specific instanceIf if it is needed
      */
-    public abstract  void apply(InstanceInfo instanceInfo) throws Exception;
+    public abstract void apply(InstanceInfo instanceInfo) throws AuthenticationException;
 
 }
