@@ -46,3 +46,7 @@ dependencies {
     testCompile libraries.power_mock_junit4_rule
     testCompile libraries.lombok
 }
+
+sonarqube {
+    skipProject = true
+}
