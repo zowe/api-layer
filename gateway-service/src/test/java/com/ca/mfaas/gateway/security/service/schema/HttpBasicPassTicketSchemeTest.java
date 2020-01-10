@@ -82,7 +82,7 @@ public class HttpBasicPassTicketSchemeTest {
         calendar = Calendar.getInstance();
         calendar.add(Calendar.SECOND, PASSTICKET_DURATION);
         // checking setup of expired time, JWT expired in future (more than hour), check if set date is similar to passticket timeout (5s)
-        assertEquals(Math.abs(calendar.getTime().getTime() - (long) ReflectionTestUtils.getField(ac, "expireAt")), 0.0, 10.0);
+        assertEquals(0.0, Math.abs(calendar.getTime().getTime() - (long) ReflectionTestUtils.getField(ac, "expireAt")), 10.0);
     }
 
 }
