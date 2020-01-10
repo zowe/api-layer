@@ -23,7 +23,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 /**
  * Extract LTPA token from JWT token and set it as a cookie when accessing z/OSMF
  *
- * TODO: Remove after zowe-install-packaging is updated
+ * @deprecated TODO: Remove after zowe-install-packaging is updated
  */
 @Deprecated
 public class ZosmfFilter extends ZuulFilter {
