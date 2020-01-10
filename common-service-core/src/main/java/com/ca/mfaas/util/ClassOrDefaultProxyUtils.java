@@ -379,7 +379,7 @@ public final class ClassOrDefaultProxyUtils {
                         mapFunctions.stream().map(y -> y.apply(x)).toArray()
                     );
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException("Cannot construct exception " + constructor.getDeclaringClass(), e);
+                    throw new ExceptionMappingError("Cannot construct exception " + constructor.getDeclaringClass(), e);
                 }
             };
         }
