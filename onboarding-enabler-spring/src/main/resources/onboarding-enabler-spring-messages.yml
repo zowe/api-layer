@@ -5,6 +5,11 @@ messages:
       type: INFO
       text: "Registering to API Mediation Layer: baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s"
 
+    - key: apiml.enabler.register.successful
+      number: ZWEA001
+      type: INFO
+      text: "Registering to API Mediation Layer: baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s"
+
     - key: apiml.enabler.register.fail
       number: ZWEA002
       type: ERROR

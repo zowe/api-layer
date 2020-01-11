@@ -9,9 +9,7 @@
  */
 package com.ca.apiml.enable.register;
 
-//import com.ca.apiml.enable.config.ApiMediationServiceConfigBean;
 //import com.ca.apiml.enable.config.OnboardingEnablerConfig;
-//import com.ca.apiml.enable.config.SslConfigBean;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
@@ -20,13 +18,12 @@ import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
-//import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 //import org.springframework.boot.context.properties.EnableConfigurationProperties;
-//import org.springframework.context.annotation.Bean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-//import org.springframework.context.annotation.Import;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.context.event.EventListener;
@@ -39,10 +36,14 @@ import javax.inject.Singleton;
 @Slf4j
 @Component
 @Configuration
-//@Import(value = {EurekaClientWrapper.class})
-//@EnableConfigurationProperties(value = {OnboardingEnablerConfig.class})
 public class RegisterToApiLayer {
 
+    /**
+     * {@link ApiMediationClient} is a wrapper and initializer for a {@link com.netflix.discovery.EurekaClient} instance.
+     * It also provides methods for registering and unregistering API ML services with Eureka server.
+     * RegisterToApiLayer class provides the apiMediationClient as a spring bean to be used in code where EurekaClient
+     * is needed.
+     */
     private ApiMediationClient apiMediationClient = new ApiMediationClientImpl();
 
     @Autowired
@@ -54,18 +55,12 @@ public class RegisterToApiLayer {
     @InjectApimlLogger
     private final ApimlLogger logger = ApimlLogger.empty();
 
-//    @Autowired
-//    private EurekaClientWrapper eurekaClientWrapper;
-
-    public RegisterToApiLayer() { /*ApiMediationServiceConfig config, Ssl ssl) {
-        this.config = config;
-        this.ssl = ssl;*/
+    public RegisterToApiLayer() {
     }
 
     @Value("${apiml.enabled:false}")
     private boolean enabled;
 
-    //@Bean
     @Singleton
     public ApiMediationClient apiMediationClient() {
         return apiMediationClient;
@@ -75,9 +70,9 @@ public class RegisterToApiLayer {
     public void onContextRefreshedEventEvent() {
         if (enabled) {
             if (apiMediationClient.getEurekaClient() != null) {
-                // TODO: Create appropriate error message
-                logger.log("apiml.enabler.register.fail"
+                logger.log("apiml.enabler.register.successful"
                     , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
+                // TODO: If already registered. Unregister first
             } else {
                 register(config, ssl);
             }
@@ -87,11 +82,16 @@ public class RegisterToApiLayer {
     @EventListener(ContextStoppedEvent.class)
     public void onContextStoppedEvent() {
         if (apiMediationClient.getEurekaClient() != null) {
-            apiMediationClient.unregister();
+            unregister();
         }
     }
 
+    private void unregister() {
+        apiMediationClient.unregister();
+    }
+
     private void register(ApiMediationServiceConfig config, Ssl ssl) {
+
         config.setSsl(ssl);
 
         logger.log("apiml.enabler.register.successful",
@@ -100,9 +100,6 @@ public class RegisterToApiLayer {
 
         try {
             apiMediationClient.register(config);
-
-            // TODO: Substitute eurekaClientWrapper with apiMediatioNClient bean
-//            eurekaClientWrapper.setEurekaClient(apiMediationClient.getEurekaClient());
         } catch (ServiceDefinitionException e) {
             logger.log("apiml.enabler.register.fail"
                 , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls(), e.toString());
@@ -110,17 +107,15 @@ public class RegisterToApiLayer {
         }
     }
 
-/*
-    @Bean
     @ConfigurationProperties(prefix = "apiml.service")
+    @Bean
     public ApiMediationServiceConfig apiMediationServiceConfig() {
         return new ApiMediationServiceConfig();
     }
 
-    @Bean
     @ConfigurationProperties(prefix = "server.ssl")
+    @Bean
     public Ssl ssl() {
         return new Ssl();
     }
-*/
 }

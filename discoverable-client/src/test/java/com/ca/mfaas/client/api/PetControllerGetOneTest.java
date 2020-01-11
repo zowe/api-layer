@@ -10,7 +10,6 @@
 package com.ca.mfaas.client.api;
 
 import com.ca.mfaas.client.configuration.ApplicationConfiguration;
-//import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import com.ca.mfaas.client.model.Pet;
 import com.ca.mfaas.client.service.PetService;
 import org.junit.Test;
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
-@Import(value = {ApplicationConfiguration.class/*, EurekaClientWrapper.class*/})
+@Import(value = {ApplicationConfiguration.class})
 public class PetControllerGetOneTest {
     @Autowired
     private MockMvc mockMvc;

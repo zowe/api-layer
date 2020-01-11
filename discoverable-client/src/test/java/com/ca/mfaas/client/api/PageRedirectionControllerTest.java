@@ -12,7 +12,6 @@ package com.ca.mfaas.client.api;
 import com.ca.mfaas.client.configuration.ApplicationConfiguration;
 import com.ca.mfaas.client.configuration.SpringComponentsConfiguration;
 import com.ca.mfaas.client.model.RedirectLocation;
-//import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {PageRedirectionController.class}, secure = false)
-@Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class/*, EurekaClientWrapper.class*/})
+@Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class})
 public class PageRedirectionControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
