@@ -11,8 +11,8 @@ package com.ca.apiml.enable.config;
 
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+//import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties("server.ssl")
+//@ConfigurationProperties("server.ssl")
 public class SslConfigBean extends Ssl {
 }

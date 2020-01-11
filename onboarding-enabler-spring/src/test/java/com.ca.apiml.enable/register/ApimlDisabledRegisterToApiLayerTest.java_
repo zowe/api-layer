@@ -10,9 +10,10 @@
 package com.ca.apiml.enable.register;
 
 import com.ca.apiml.enable.EnableApiDiscovery;
-import com.ca.apiml.enable.config.ApiMediationServiceConfigBean;
-import com.ca.apiml.enable.config.SslConfigBean;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
+import com.ca.apiml.enable.config.OnboardingEnablerConfig;
+import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
+import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import org.junit.Before;
@@ -20,7 +21,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertNotNull;
@@ -29,36 +32,42 @@ import static org.mockito.Mockito.verify;
 
 
 @RunWith(SpringRunner.class)
+@TestPropertySource(locations = "/application.yml")
+@ContextConfiguration(classes = {EurekaClientWrapper.class/*, OnboardingEnablerConfig.class*/}, initializers = ConfigFileApplicationContextInitializer.class)
+EnableAutoConfiguration
+@EnableConfigurationProperties(value = { MyConfigProperties.class })
+@Import(value = {OnboardingEnablerConfig.class})
 @EnableApiDiscovery
-@ContextConfiguration(classes = EurekaClientWrapper.class)
 public class ApimlDisabledRegisterToApiLayerTest {
 
     @Autowired
     private RegisterToApiLayer registerToApiLayer;
 
     @Autowired
-    private ApiMediationServiceConfigBean apiMediationServiceConfigBean;
+    private ApiMediationServiceConfig apiMediationServiceConfig;
 
     @Autowired
-    private SslConfigBean sslConfigBean;
+    private Ssl ssl;
 
+/*
     @MockBean
     private ApiMediationClient apiMediationClient;
+*/
 
-    @Before
+    /*@Before
     public void setup() {
         registerToApiLayer = new RegisterToApiLayer(
-            apiMediationServiceConfigBean, sslConfigBean);
-    }
+            apiMediationServiceConfig, ssl);
+    }*/
 
 
     @Test
     public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
         registerToApiLayer.onContextRefreshedEventEvent();
 
-        assertNotNull("ApiMediationServiceConfigBean is null", apiMediationServiceConfigBean);
-        assertNotNull("SslConfigBean is null", sslConfigBean);
+        assertNotNull("ApiMediationServiceConfigBean is null", apiMediationServiceConfig);
+        assertNotNull("SslConfigBean is null", ssl);
 
-        verify(apiMediationClient, never()).register(apiMediationServiceConfigBean);
+        verify(apiMediationClient, never()).register(apiMediationServiceConfig);
     }
 }

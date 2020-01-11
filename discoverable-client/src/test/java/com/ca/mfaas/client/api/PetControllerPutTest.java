@@ -13,7 +13,7 @@ import com.ca.mfaas.client.configuration.ApplicationConfiguration;
 import com.ca.mfaas.client.configuration.SpringComponentsConfiguration;
 import com.ca.mfaas.client.model.Pet;
 import com.ca.mfaas.client.service.PetService;
-import com.ca.mfaas.product.registry.EurekaClientWrapper;
+//import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
-@Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class, EurekaClientWrapper.class})
+@Import(value = {SpringComponentsConfiguration.class, ApplicationConfiguration.class/*, EurekaClientWrapper.class*/})
 public class PetControllerPutTest {
     @Autowired
     private MockMvc mockMvc;

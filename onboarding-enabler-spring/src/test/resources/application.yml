@@ -1,9 +1,14 @@
 server:
     port: 10043
     ssl:
-        keyStore: keystore
-        trustStore: truststore
-
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
 apiml:
     enabled: true
     service:

@@ -10,14 +10,16 @@
 package com.ca.apiml.enable.register;
 
 import com.ca.apiml.enable.EnableApiDiscovery;
-import com.ca.apiml.enable.config.ApiMediationServiceConfigBean;
-import com.ca.apiml.enable.config.SslConfigBean;
+import com.ca.apiml.enable.config.OnboardingEnablerConfig;
+import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
+import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -29,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(SpringRunner.class)
 @TestPropertySource(locations = "/application.yml")
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = EurekaClientWrapper.class)
+@Import(value = {OnboardingEnablerConfig.class})
 @EnableApiDiscovery
 public class ApimlEnabledRegisterToApiLayerTest {
 
@@ -36,20 +39,20 @@ public class ApimlEnabledRegisterToApiLayerTest {
     private RegisterToApiLayer registerToApiLayer;
 
     @Autowired
-    private ApiMediationServiceConfigBean apiMediationServiceConfigBean;
+    private ApiMediationServiceConfig apiMediationServiceConfig;
 
     @Autowired
-    private SslConfigBean sslConfigBean;
+    private Ssl ssl;
 
     @Test
     public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
         registerToApiLayer.onContextRefreshedEventEvent();
 
-        assertNotNull("ApiMediationServiceConfigBean is null", apiMediationServiceConfigBean);
-        assertEquals("Service id is not equal", "discoverableclient2", apiMediationServiceConfigBean.getServiceId());
+        assertNotNull("ApiMediationServiceConfigBean is null", apiMediationServiceConfig);
+        assertEquals("Service id is not equal", "discoverableclient2", apiMediationServiceConfig.getServiceId());
 
-        assertNotNull("SslConfigBean is null", sslConfigBean);
-        assertEquals("keystore is not equal", "keystore", sslConfigBean.getKeyStore());
-        assertEquals("truststore id is not equal", "truststore", sslConfigBean.getTrustStore());
+        assertNotNull("SslConfigBean is null", ssl);
+        assertEquals("keystore is not equal", "keystore", ssl.getKeyStore());
+        assertEquals("truststore id is not equal", "truststore", ssl.getTrustStore());
     }
 }

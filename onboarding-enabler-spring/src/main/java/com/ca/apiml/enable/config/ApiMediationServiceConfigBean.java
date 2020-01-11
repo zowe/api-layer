@@ -11,8 +11,8 @@ package com.ca.apiml.enable.config;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+//import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties("apiml.service")
+//@ConfigurationProperties("apiml.service")
 public class ApiMediationServiceConfigBean extends ApiMediationServiceConfig {
 }

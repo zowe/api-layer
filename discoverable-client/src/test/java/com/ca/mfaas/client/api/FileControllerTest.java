@@ -9,10 +9,14 @@
  */
 package com.ca.mfaas.client.api;
 
+//import com.ca.apiml.enable.config.OnboardingEnablerConfig;
+// import com.ca.mfaas.product.registry.EurekaClientWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+//import org.springframework.context.annotation.Import;
+//import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {FileController.class}, secure = false)
+//@ContextConfiguration(classes = OnboardingEnablerConfig.class)
+//@Import(EurekaClientWrapper.class)
 public class FileControllerTest {
     @Autowired
     private MockMvc mockMvc;
