@@ -47,10 +47,12 @@ public class RegisterToApiLayer {
     private ApiMediationClient apiMediationClient = new ApiMediationClientImpl();
 
     @Autowired
-    private ApiMediationServiceConfig config;
+    private ApiMediationServiceConfig _config;
+    private ApiMediationServiceConfig  config;
 
     @Autowired
-    private Ssl ssl;
+    private Ssl _ssl;
+    private Ssl  ssl;
 
     @InjectApimlLogger
     private final ApimlLogger logger = ApimlLogger.empty();
@@ -69,13 +71,23 @@ public class RegisterToApiLayer {
     @EventListener(ContextRefreshedEvent.class)
     public void onContextRefreshedEventEvent() {
         if (enabled) {
+
             if (apiMediationClient.getEurekaClient() != null) {
-                logger.log("apiml.enabler.register.successful"
-                    , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
-                // TODO: If already registered. Unregister first
+                if (config != null) {
+                    logger.log("apiml.enabler.registration.renew"
+                        , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls()
+                        , _config.getBaseUrl(), _config.getServiceIpAddress(), _config.getDiscoveryServiceUrls()
+                    );
+                }
+
+                unregister();
             } else {
-                register(config, ssl);
+                logger.log("apiml.enabler.registration.initial"
+                    , _config.getBaseUrl(), _config.getServiceIpAddress(), _config.getDiscoveryServiceUrls()
+                );
             }
+
+            register(_config, _ssl);
         }
     }
 
@@ -94,14 +106,18 @@ public class RegisterToApiLayer {
 
         config.setSsl(ssl);
 
-        logger.log("apiml.enabler.register.successful",
-            config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
-        log.debug("Registering to API Mediation Layer with settings: {}", config.toString());
-
         try {
             apiMediationClient.register(config);
+
+            // TODO: Deep copy
+            config = _config;
+            ssl = _ssl;
+
+            logger.log("apiml.enabler.registration.successful",
+                config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
+            log.debug("Registering to API Mediation Layer with settings: {}", config.toString());
         } catch (ServiceDefinitionException e) {
-            logger.log("apiml.enabler.register.fail"
+            logger.log("apiml.enabler.registration.fail"
                 , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls(), e.toString());
             log.debug(String.format("Service %s registration to API ML failed: ", config.getBaseUrl()), e);
         }
@@ -110,6 +126,7 @@ public class RegisterToApiLayer {
     @ConfigurationProperties(prefix = "apiml.service")
     @Bean
     public ApiMediationServiceConfig apiMediationServiceConfig() {
+
         return new ApiMediationServiceConfig();
     }
 

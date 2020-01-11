@@ -24,11 +24,11 @@ public class EnableApiDiscoveryConfigTest {
         String ipAddress = "127.0.0.0";
         String discovery = "https://localhost:10011/discovery";
         String correctMessage = String.format(
-            "ZWEA001I Registering to API Mediation Layer: baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s",
+            "ZWEA001I Registering to API Mediation Layer: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}",
             baseUrl, ipAddress, discovery);
 
         MessageService messageService = new EnableApiDiscoveryConfig().messageServiceDiscovery();
-        Message message = messageService.createMessage("apiml.enabler.register.successful",
+        Message message = messageService.createMessage("apiml.enabler.registration.successful",
             baseUrl, ipAddress, discovery);
 
         assertTrue(message.mapToLogMessage().contains(correctMessage));

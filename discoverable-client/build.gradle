@@ -31,7 +31,6 @@ gitProperties {
 }
 
 dependencies {
-    //compile project(':apiml-common')
     compile project(':onboarding-enabler-spring-v2')
 
     implementation libraries.gson

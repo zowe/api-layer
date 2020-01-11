@@ -12,21 +12,21 @@ package com.ca.apiml.enable.config;
 
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
+//import org.springframework.boot.context.properties.ConfigurationProperties;
+//import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OnboardingEnablerConfig {
 
-    @ConfigurationProperties(prefix = "apiml.service")
-    @Bean
+    //@ConfigurationProperties(prefix = "apiml.service")
+    //@Bean
     public ApiMediationServiceConfig apiMediationServiceConfig() {
         return new ApiMediationServiceConfig();
     }
 
-    @ConfigurationProperties(prefix = "server.ssl")
-    @Bean
+    //@ConfigurationProperties(prefix = "server.ssl")
+    //@Bean
     public Ssl ssl() {
         return new Ssl();
     }
