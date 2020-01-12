@@ -45,21 +45,21 @@ public class ApiMediationClientImplTest {
         routes.add(apiRoute);
         routes.add(apiDocRoute);
         ApiMediationClient client = new ApiMediationClientImpl();
-        ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
-            .apiInfo(Collections.singletonList(apiInfo))
-            .catalog(catalogUiTile)
-            .routes(routes)
-            .description("Example for exposing a Spring REST API")
-            .title("Hello Spring REST API")
-            .serviceId("service")
-            .baseUrl("http://host:1000/service")
-            .healthCheckRelativeUrl("")
-            .homePageRelativeUrl("")
-            .statusPageRelativeUrl("")
-            .discoveryServiceUrl("https://localhost:10011/eureka")
-            .ssl(ssl)
-            .serviceIpAddress("127.0.0.1")
-            .build();
+        ApiMediationServiceConfig config = new ApiMediationServiceConfig(); //.builder()
+        config.setApiInfo(Collections.singletonList(apiInfo));
+        config.setCatalog(catalogUiTile);
+        config.setRoutes(routes);
+        config.setDescription("Example for exposing a Spring REST API");
+        config.setTitle("Hello Spring REST API");
+        config.setServiceId("service");
+        config.setBaseUrl("http://host:1000/service");
+        config.setHealthCheckRelativeUrl("");
+        config.setHomePageRelativeUrl("");
+        config.setStatusPageRelativeUrl("");
+        config.setDiscoveryServiceUrls(Arrays.asList("https://localhost:10011/eureka"));
+        config.setSsl(ssl);
+        config.setServiceIpAddress("127.0.0.1");
+        //config.build();
 
         client.register(config);
         assertNotNull(client.getEurekaClient());

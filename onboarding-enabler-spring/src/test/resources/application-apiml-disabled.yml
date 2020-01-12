@@ -14,7 +14,7 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 apiml:
-    enabled: true
+    enabled: false
     service:
         hostname: localhost
         ipAddress: 127.0.0.1

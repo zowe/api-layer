@@ -18,5 +18,5 @@ dependencies {
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule
     testCompile libraries.lombok
-    testCompile libraries.gson
+    //testCompile libraries.gson
 }

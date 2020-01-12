@@ -9,20 +9,14 @@
  */
 package com.ca.apiml.enable.register;
 
-//import com.ca.apiml.enable.config.OnboardingEnablerConfig;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
-import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.ContextStoppedEvent;
@@ -31,7 +25,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
-import javax.inject.Singleton;
 
 @Slf4j
 @Component
@@ -44,7 +37,8 @@ public class RegisterToApiLayer {
      * RegisterToApiLayer class provides the apiMediationClient as a spring bean to be used in code where EurekaClient
      * is needed.
      */
-    private ApiMediationClient apiMediationClient = new ApiMediationClientImpl();
+    @Autowired
+    private ApiMediationClient apiMediationClient;
 
     @Autowired
     private ApiMediationServiceConfig _config;
@@ -54,23 +48,18 @@ public class RegisterToApiLayer {
     private Ssl _ssl;
     private Ssl  ssl;
 
+    @Autowired
+    private Boolean apimlEnabled;
+
     @InjectApimlLogger
     private final ApimlLogger logger = ApimlLogger.empty();
 
     public RegisterToApiLayer() {
     }
 
-    @Value("${apiml.enabled:false}")
-    private boolean enabled;
-
-    @Singleton
-    public ApiMediationClient apiMediationClient() {
-        return apiMediationClient;
-    }
-
     @EventListener(ContextRefreshedEvent.class)
     public void onContextRefreshedEventEvent() {
-        if (enabled) {
+        if (Boolean.TRUE.equals(apimlEnabled)) {
 
             if (apiMediationClient.getEurekaClient() != null) {
                 if (config != null) {
@@ -121,18 +110,5 @@ public class RegisterToApiLayer {
                 , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls(), e.toString());
             log.debug(String.format("Service %s registration to API ML failed: ", config.getBaseUrl()), e);
         }
-    }
-
-    @ConfigurationProperties(prefix = "apiml.service")
-    @Bean
-    public ApiMediationServiceConfig apiMediationServiceConfig() {
-
-        return new ApiMediationServiceConfig();
-    }
-
-    @ConfigurationProperties(prefix = "server.ssl")
-    @Bean
-    public Ssl ssl() {
-        return new Ssl();
     }
 }

@@ -17,7 +17,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
+//@Builder(toBuilder = true)
 public class ApiMediationServiceConfig {
 
     @Singular

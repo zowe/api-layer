@@ -9,21 +9,19 @@
  */
 package com.ca.apiml.enable.register;
 
-import com.ca.apiml.enable.EnableApiDiscovery;
+import com.ca.apiml.enable.config.EnableApiDiscoveryConfig;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
-import com.ca.apiml.enable.config.OnboardingEnablerConfig;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.exception.ServiceDefinitionException;
-import com.ca.mfaas.product.registry.EurekaClientWrapper;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertNotNull;
@@ -32,12 +30,9 @@ import static org.mockito.Mockito.verify;
 
 
 @RunWith(SpringRunner.class)
-@TestPropertySource(locations = "/application.yml")
-@ContextConfiguration(classes = {EurekaClientWrapper.class/*, OnboardingEnablerConfig.class*/}, initializers = ConfigFileApplicationContextInitializer.class)
-EnableAutoConfiguration
-@EnableConfigurationProperties(value = { MyConfigProperties.class })
-@Import(value = {OnboardingEnablerConfig.class})
-@EnableApiDiscovery
+@EnableAutoConfiguration
+@ActiveProfiles("apiml-disabled")
+@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {/*RegisterToApiLayer.class,*/ EnableApiDiscoveryConfig.class})
 public class ApimlDisabledRegisterToApiLayerTest {
 
     @Autowired
@@ -49,24 +44,14 @@ public class ApimlDisabledRegisterToApiLayerTest {
     @Autowired
     private Ssl ssl;
 
-/*
     @MockBean
     private ApiMediationClient apiMediationClient;
-*/
-
-    /*@Before
-    public void setup() {
-        registerToApiLayer = new RegisterToApiLayer(
-            apiMediationServiceConfig, ssl);
-    }*/
-
 
     @Test
     public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
-        registerToApiLayer.onContextRefreshedEventEvent();
 
-        assertNotNull("ApiMediationServiceConfigBean is null", apiMediationServiceConfig);
-        assertNotNull("SslConfigBean is null", ssl);
+        assertNotNull("ApiMediationServiceConfig is null", apiMediationServiceConfig);
+        assertNotNull("Ssl is null", ssl);
 
         verify(apiMediationClient, never()).register(apiMediationServiceConfig);
     }

@@ -2,7 +2,7 @@ dependencies {
     compile project(':apiml-common')
     compile project(':onboarding-enabler-java')
 
-    // compile libraries.spring_boot_starter_actuator
+    compile libraries.spring_boot_starter_actuator
     compile libraries.springFox
     compile libraries.springFoxWeb
 
@@ -14,4 +14,5 @@ dependencies {
 
     annotationProcessor libraries.spring_boot_configuration_processor
     annotationProcessor libraries.lombok
+    testCompile libraries.gson
 }
