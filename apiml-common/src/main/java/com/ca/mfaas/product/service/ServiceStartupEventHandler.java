@@ -20,6 +20,7 @@ import java.lang.management.ManagementFactory;
 
 public class ServiceStartupEventHandler {
     public static final int DEFAULT_DELAY_FACTOR = 5;
+
     private final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class,
             YamlMessageServiceInstance.getInstance());
 
@@ -40,6 +41,6 @@ public class ServiceStartupEventHandler {
                     logger.setLevel(Level.ERROR);
                 }
             }
-        }, uptime * 5);
+        }, uptime * delayFactor);
     }
 }
