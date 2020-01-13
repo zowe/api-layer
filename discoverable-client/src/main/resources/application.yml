@@ -20,6 +20,25 @@ spring:
         ansi:
             enabled: detect
 
+server:
+    scheme: https
+    hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
+    port: 10012  # Default port name for discoverable-client service
+    address: 127.0.0.1
+    servlet:
+        contextPath: /${spring.application.name}
+    ssl:
+        enabled: true
+        protocol: TLSv1.2
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+    compression:
+        mime-types: image/png
+        enabled: true
+        min-response-size: 500
+
 apiml:
     enabled: true
     service:
@@ -27,9 +46,10 @@ apiml:
         title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
         description:  Sample API services to demonstrate Spring Integration Enabler
 
-        scheme: https
-        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
-        port: 10016  # Default port name for discoverable-clinet service
+        scheme: ${server.scheme}
+        hostname: ${server.hostname}
+        port: ${server.port}
+        serviceIpAddress: ${server.address}
 
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
 
@@ -37,22 +57,22 @@ apiml:
         statusPageRelativeUrl: ${server.servlet.contextPath}/application/info
         healthCheckRelativeUrl: ${server.servlet.contextPath}/application/health
 
-        contextPath:
+        contextPath: ${server.servlet.contextPath}
 
         discoveryServiceUrls: https://localhost:10011/eureka/
 
         routes:
             -   gateway-url: "ui/v1"
-                service-url: ${server.servlet.contextPath}
+                service-url: ${apiml.service.contextPath}
             -   gateway-url: "api/v1"
-                service-url: ${server.servlet.contextPath}/api/v1
+                service-url: ${apiml.service.contextPath}/api/v1
             -   gateway-url: "ws/v1"
-                service-url: ${server.servlet.contextPath}/ws
+                service-url: ${apiml.service.contextPath}/ws
         apiInfo:
             -   apiId: org.zowe.discoverableclient
                 version: 1.0.0
                 gatewayUrl: api/v1
-                swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
@@ -62,34 +82,35 @@ apiml:
                 version: 1.0.1
     security:
         ssl:
-            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+            enabled: true
             verifySslCertificatesOfServices: true
-            protocol: TLSv1.2
-            keyAlias: localhost
-            keyPassword: password
-            keyStore: keystore/localhost/localhost.keystore.p12
-            keyStorePassword: password
-            keyStoreType: PKCS12
-            trustStore: keystore/localhost/localhost.truststore.p12
-            trustStorePassword: password
-            trustStoreType: PKCS12
+            ciphers: ${server.ssl.ciphers}
+            protocol: ${server.ssl.protocol}
+            keyStoreType: ${server.ssl.keyStoreType}
+            trustStoreType: ${server.ssl.trustStoreType}
+            #keyAlias: localhost
+            #keyPassword: password
+            #keyStore: keystore/localhost/localhost.keystore.p12
+            #keyStorePassword: password
+            #trustStore: keystore/localhost/localhost.truststore.p12
+            #trustStorePassword: password
 
-server:
-    address: ${apiml.service.serviceIpAddress}
-    port: ${apiml.service.port}
-    servlet:
-        contextPath: /discoverableclient
-    ssl:
-        enabled: true
-        protocol: TLSv1.2
-        enabled-protocols: TLSv1.2
-        ciphers: ${apiml.security.ssl.ciphers}
-        keyStoreType: PKCS12
-        trustStoreType: PKCS12
-    compression:
-        mime-types: image/png
-        enabled: true
-        min-response-size: 500
+#server:
+#    address: ${apiml.service.serviceIpAddress}
+#    port: ${apiml.service.port}
+#    servlet:
+#        contextPath: /discoverableclient
+#    ssl:
+#        enabled: true
+#        protocol: TLSv1.2
+#        enabled-protocols: TLSv1.2
+#        ciphers: ${apiml.security.ssl.ciphers}
+#        keyStoreType: PKCS12
+#        trustStoreType: PKCS12
+#    compression:
+#        mime-types: image/png
+#        enabled: true
+#        min-response-size: 500
 
 management:
     endpoints:

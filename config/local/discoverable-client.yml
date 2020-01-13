@@ -1,58 +1,5 @@
 spring.profiles.include: diag
 
-apiml:
-    enabled: true
-    service:
-        serviceId: discoverableclient
-        title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
-        description:  Sample API services to demonstrate Spring Integration Enabler
-
-        scheme: https
-        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
-        port: 10012  # Default port name for discoverable-clinet service
-        serviceIpAddress: 127.0.0.1
-
-        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
-
-        homePageUrl: ${server.servlet.contextPath}
-        statusPageUrl: ${server.servlet.contextPath}/application/info
-        healthCheckUrl: ${server.servlet.contextPath}/application/health
-
-        discoveryServiceUrls: https://localhost:10011/eureka/
-
-        routes:
-            -   gateway-url: "ui/v1"
-                service-url: ${server.servlet.contextPath}
-            -   gateway-url: "api/v1"
-                service-url: ${server.servlet.contextPath}/api/v1
-            -   gateway-url: "ws/v1"
-                service-url: ${server.servlet.contextPath}/ws
-        apiInfo:
-            -   apiId: org.zowe.discoverableclient
-                version: 1.0.0
-                gatewayUrl: api/v1
-                swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
-                documentationUrl: https://www.zowe.org
-        catalog:
-            tile:
-                id: cademoapps
-                title: Sample API Mediation Layer Applications
-                description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
-                version: 1.0.1
-    security:
-        ssl:
-            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-            verifySslCertificatesOfServices: true
-            protocol: TLSv1.2
-            keyAlias: localhost
-            keyPassword: password
-            keyStore: keystore/localhost/localhost.keystore.p12
-            keyStorePassword: password
-            keyStoreType: PKCS12
-            trustStore: keystore/localhost/localhost.truststore.p12
-            trustStorePassword: password
-            trustStoreType: PKCS12
-
 spring:
     output:
         ansi:
@@ -64,10 +11,24 @@ server:
         keyPassword: password
         keyStore: keystore/localhost/localhost.keystore.p12
         keyStorePassword: password
-        keyStoreType: PKCS12
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
-        trustStoreType: PKCS12
+
+apiml:
+    enabled: true
+
+    service:
+        serviceIpAddress: 127.0.0.1
+        discoveryServiceUrls: https://localhost:10011/eureka/
+
+    security:
+        ssl:
+            keyAlias: localhost
+            keyPassword: password
+            keyStore: keystore/localhost/localhost.keystore.p12
+            keyStorePassword: password
+            trustStore: keystore/localhost/localhost.truststore.p12
+            trustStorePassword: password
 
 eureka:
     client:
