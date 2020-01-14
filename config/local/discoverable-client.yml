@@ -1,9 +1,9 @@
 spring.profiles.include: diag
 
-spring:
-    output:
-        ansi:
-            enabled: always
+#spring:
+#    output:
+#        ansi:
+#            enabled: always
 
 server:
     ssl:
@@ -21,7 +21,6 @@ apiml:
         serviceIpAddress: 127.0.0.1
         discoveryServiceUrls: https://localhost:10011/eureka/
 
-    security:
         ssl:
             keyAlias: localhost
             keyPassword: password

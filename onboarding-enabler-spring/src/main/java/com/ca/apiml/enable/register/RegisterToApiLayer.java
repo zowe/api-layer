@@ -11,13 +11,12 @@ package com.ca.apiml.enable.register;
 
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.config.Ssl;
 
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.context.event.EventListener;
@@ -28,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@Configuration
 public class RegisterToApiLayer {
 
     /**
@@ -44,22 +42,15 @@ public class RegisterToApiLayer {
     private ApiMediationServiceConfig _config;
     private ApiMediationServiceConfig  config;
 
-    @Autowired
-    private Ssl _ssl;
-    private Ssl  ssl;
-
-    @Autowired
-    private Boolean apimlEnabled;
+    @Value("${apiml.enabled:false}")
+    private boolean apimlEnabled;
 
     @InjectApimlLogger
     private final ApimlLogger logger = ApimlLogger.empty();
 
-    public RegisterToApiLayer() {
-    }
-
     @EventListener(ContextRefreshedEvent.class)
     public void onContextRefreshedEventEvent() {
-        if (Boolean.TRUE.equals(apimlEnabled)) {
+        if (apimlEnabled) {
 
             if (apiMediationClient.getEurekaClient() != null) {
                 if (config != null) {
@@ -76,7 +67,7 @@ public class RegisterToApiLayer {
                 );
             }
 
-            register(_config, _ssl);
+            register(_config);
         }
     }
 
@@ -91,16 +82,13 @@ public class RegisterToApiLayer {
         apiMediationClient.unregister();
     }
 
-    private void register(ApiMediationServiceConfig config, Ssl ssl) {
+    private void register(ApiMediationServiceConfig _config) {
 
-        config.setSsl(ssl);
+        // TODO: Deep copy
+        this.config = _config;
 
         try {
             apiMediationClient.register(config);
-
-            // TODO: Deep copy
-            config = _config;
-            ssl = _ssl;
 
             logger.log("apiml.enabler.registration.successful",
                 config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());

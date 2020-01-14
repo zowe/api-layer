@@ -9,10 +9,10 @@
  */
 package com.ca.apiml.enable.register;
 
+import com.ca.apiml.enable.EnableApiDiscovery;
 import com.ca.apiml.enable.config.EnableApiDiscoveryConfig;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,10 +25,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
+@EnableApiDiscovery
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {RegisterToApiLayer.class, EnableApiDiscoveryConfig.class})
 public class ApimlEnabledRegisterToApiLayerTest {
 
@@ -38,9 +40,6 @@ public class ApimlEnabledRegisterToApiLayerTest {
     @Autowired
     private ApiMediationServiceConfig apiMediationServiceConfig;
 
-    @Autowired
-    private Ssl ssl;
-
     @MockBean
     private ApiMediationClient apiMediationClient;
 
@@ -49,8 +48,10 @@ public class ApimlEnabledRegisterToApiLayerTest {
         assertNotNull("ApiMediationServiceConfig is null", apiMediationServiceConfig);
         assertEquals("Service id is not equal", "discoverableclient2", apiMediationServiceConfig.getServiceId());
 
-        assertNotNull("SslConfig is null", ssl);
-        assertEquals("keystore is not equal", "keystore/localhost/localhost.keystore.p12", ssl.getKeyStore());
-        assertEquals("truststore id is not equal", "keystore/localhost/localhost.truststore.p12", ssl.getTrustStore());
+        assertNotNull("SslConfig is null", apiMediationServiceConfig.getSsl());
+        assertEquals("keystore is not equal", "keystore/localhost/localhost.keystore.p12", apiMediationServiceConfig.getSsl().getKeyStore());
+        assertEquals("truststore id is not equal", "keystore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore());
+
+        verify(apiMediationClient, times(1)).register(apiMediationServiceConfig);
     }
 }

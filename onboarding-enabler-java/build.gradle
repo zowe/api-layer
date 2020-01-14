@@ -1,5 +1,5 @@
 dependencies {
-    implementation(project(':common-service-core'))
+    compile(project(':common-service-core'))
 
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml

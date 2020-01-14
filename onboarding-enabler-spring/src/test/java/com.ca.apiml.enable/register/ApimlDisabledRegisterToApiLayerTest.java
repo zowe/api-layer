@@ -9,10 +9,10 @@
  */
 package com.ca.apiml.enable.register;
 
+import com.ca.apiml.enable.EnableApiDiscovery;
 import com.ca.apiml.enable.config.EnableApiDiscoveryConfig;
 import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.config.Ssl;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,8 +31,9 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
+@EnableApiDiscovery
 @ActiveProfiles("apiml-disabled")
-@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {/*RegisterToApiLayer.class,*/ EnableApiDiscoveryConfig.class})
+@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {RegisterToApiLayer.class, EnableApiDiscoveryConfig.class})
 public class ApimlDisabledRegisterToApiLayerTest {
 
     @Autowired
@@ -41,9 +42,6 @@ public class ApimlDisabledRegisterToApiLayerTest {
     @Autowired
     private ApiMediationServiceConfig apiMediationServiceConfig;
 
-    @Autowired
-    private Ssl ssl;
-
     @MockBean
     private ApiMediationClient apiMediationClient;
 
@@ -51,7 +49,7 @@ public class ApimlDisabledRegisterToApiLayerTest {
     public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
 
         assertNotNull("ApiMediationServiceConfig is null", apiMediationServiceConfig);
-        assertNotNull("Ssl is null", ssl);
+        assertNotNull("Ssl is null", apiMediationServiceConfig.getSsl());
 
         verify(apiMediationClient, never()).register(apiMediationServiceConfig);
     }

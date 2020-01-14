@@ -50,7 +50,11 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
                 groupId 'com.ca.mfaas.sdk'
                 version rootProject.version
                 if (project.name in springBootEnablers) {
-                    artifactId "mfaas-${project.name}-springboot-${springBootVersion}"
+                    if (project.name.contains("spring-v1")) {
+                        artifactId "mfaas-${project.name}-springboot-${springBootVersionV1}"
+                    } else {
+                        artifactId "mfaas-${project.name}-springboot-${springBootVersion}"
+                    }
                 } else {
                     artifactId "mfaas-${project.name}"
                 }

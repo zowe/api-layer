@@ -7,7 +7,6 @@ buildscript {
 
 apply plugin: 'io.spring.dependency-management'
 
-
 sourceSets {
     main {
         java {
@@ -25,12 +24,13 @@ sourceSets {
 }
 
 jar {
-    baseName = "enabler-springboot-${springBootVersion}"
+    baseName = "enabler-springboot-${springBootVersionV1}"
     archiveName = "${baseName}.jar"
 }
 
 dependencies {
-    compile project(':onboarding-enabler-spring')
+    compile project(':apiml-logging')
+    compile project(':onboarding-enabler-java')
 
     compile libraries.spring_boot_v1_starter_actuator
 

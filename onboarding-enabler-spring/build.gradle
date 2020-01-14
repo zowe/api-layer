@@ -1,5 +1,6 @@
 dependencies {
-    compile project(':apiml-common')
+    compile project(':apiml-logging')
+    //compile project(':apiml-common')
     compile project(':onboarding-enabler-java')
 
     compile libraries.spring_boot_starter_actuator

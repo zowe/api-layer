@@ -29,9 +29,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @EnableApimlLogger
 @ComponentScan(value = {
     "com.ca.mfaas.client",
-    "com.ca.apiml.enable",
-    "com.ca.mfaas.product.security",
-    "com.ca.mfaas.product.web" })
+    "com.ca.apiml.enable" })
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
