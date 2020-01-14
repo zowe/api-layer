@@ -77,7 +77,7 @@ services:
                 gatewayUrl: api/v1
                 version: 1.0.0
 
-# Proposal - Additional metadata that will be added to existing dynamically registered services:
+# Additional metadata that will be added to existing dynamically registered services:
 additionalServiceMetadata:
     - serviceId: staticclient  # The staticclient service metadata will be extended
       mode: UPDATE # How to update UPDATE=only missing, FORCE_UPDATE=update all set values
