@@ -89,7 +89,7 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
         final RequestConfig requestConfig = builder.build();
         if (HTTPS.equals(request.getURI().getScheme())) {
             final URI secureUri = UriComponentsBuilder.fromUri(request.getUri())
-                .scheme(HTTPS).build().toUri();
+                .scheme(HTTPS).build(true).toUri();
             sendRequest = request.withNewUri(secureUri);
         }
         if (sendRequest == null) {

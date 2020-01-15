@@ -72,6 +72,7 @@ public class ApimlRoutingConfig {
         routedServicesUsers.add(locationFilter());
         routedServicesUsers.add(webSocketProxyServerHandler);
         routedServicesUsers.add(pageRedirectionFilter);
+        zuulProperties.setDecodeUrl(false);
 
         return new ApimlRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
     }
