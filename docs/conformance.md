@@ -36,7 +36,7 @@ An application is *Zowe API ML conformant* if it follows these criteria:
    - Every method of each REST endpoint must be documented
    - Every method of each REST endpoint must be demonstrated by an example
    - Every parameter (headers, query parameters, payload, cookies, etc.) must be documented with definitions of all possible values and their associated meanings
-   - Every HTTP error code must be documented. If endpoint has more granular error codes just the documentation reference can be provided.
+   - Every HTTP error code must be documented. If endpoint has additional more granular error codes just the documentation reference can be provided for these.
 
 Note: WebSockets must be documented. The documentation location and format is determined by the provider.
 
