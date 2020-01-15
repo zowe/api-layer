@@ -1,6 +1,6 @@
 # Sample Spring service
 
-This is a sample Spring Hello World application using the 'integration-enabler-java' enabler.
+This is a sample Spring Hello World application using the 'onboarding-enabler-java' enabler.
 
 # How to Run 
 

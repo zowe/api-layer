@@ -19,17 +19,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
-@SpringBootApplication/*(exclude = HystrixAutoConfiguration.class)*/
+@SpringBootApplication
 @EnableApiDiscovery
 @EnableConfigurationProperties
 @EnableWebSocket
 @EnableApimlLogger
-@ComponentScan(value = {
-    "com.ca.mfaas.client",
-    "com.ca.apiml.enable" })
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {

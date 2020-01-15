@@ -47,6 +47,8 @@ dependencies {
     testCompile libraries.lombok
 }
 
+/*
 sonarqube {
     skipProject = true
 }
+*/

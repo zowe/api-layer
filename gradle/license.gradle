@@ -8,7 +8,6 @@ ext.projectsNeedLicense = [
     'discovery-service',
     'gateway-common',
     'gateway-service',
-    'integration-enabler-java',
     'integration-enabler-spring-v1',
     'integration-enabler-spring-v2',
     'integration-tests',

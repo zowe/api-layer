@@ -17,10 +17,12 @@ import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
+@ComponentScan(value = {"com.ca.apiml.enable"})
 public class EnableApiDiscoveryConfig {
 
     @Bean
