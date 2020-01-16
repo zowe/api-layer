@@ -31,25 +31,25 @@ An application is *Zowe API ML conformant* if it follows these criteria:
        - `ws/{serviceId}` reserved for WebSockets
 
 3. The API must be documented according to the Swagger/OpenAPI 2.0 or OpenAPI 3.0 specification. For more information about Swagger, see [Swagger documentation](https://swagger.io/resources/articles/documenting-apis-with-swagger/). Additionally, the following criteria must be satisfied: 
-   - Documentation must be Swagger/OpenAPI 2.0 or OpenAPI 3.0 compliant
+   - Documentation must be Swagger/OpenAPI 2.0/OpenAPI 3.0 compliant
    - Every public resource must be documented with a description of each resource
    - Every method of each REST endpoint must be documented
    - Every method of each REST endpoint must be demonstrated by an example
    - Every parameter (headers, query parameters, payload, cookies, etc.) must be documented with definitions of all possible values and their associated meanings
-   - Every error code, including errors returned in the payload, must be documented
+   - Every HTTP error code must be documented. If endpoint has additional more granular error codes just the documentation reference can be provided for these.
 
 Note: WebSockets must be documented. The documentation location and format is determined by the provider.
 
 Tip: We strongly recommend all documentation be reviewed by a technical writer.
 
 4. API naming and addressing must be consistent with the rest of the Zowe ecosystem. The following criteria apply:
-   - Encoded slash must not be used. For example: `/abc%2fgef` cannot be used
+   - Encoded slash is not used - **preferred** (best practice)
    - The service must interpret values independent of their URL encoding
    - `lowerCamelCase` should be used for names of resources, parameters, and JSON properties
 
 5. Service requests and responses
    - API 
-     - Request and response payloads should be in JSON or binary data format
+     - Request and response payloads should be in JSON or binary data format - **preferred** (best practice)
      - In JSON format, links must be relative, and must not contain the schema, hostname, and port 
    - WebSocket
      - Service URIs contained in WebSocket messages payload must be addressed through the API Meditation Layer Gateway.
