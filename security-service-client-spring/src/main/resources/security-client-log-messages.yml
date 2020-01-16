@@ -15,13 +15,6 @@ messages:
       reason: "The HTTP request method is not supported for the URL."
       action: "Use the correct HTTP request method that is supported for the URL."
 
-    - key: apiml.security.expiredToken
-      number: ZWEAS102
-      type: ERROR
-      text: "Token is expired for URL '%s'"
-      reason: "The validity of the token is expired."
-      action: "Obtain new token by performing an authentication request."
-
     - key: apiml.security.gatewayNotAvailable
       number: ZWEAS103
       type: ERROR

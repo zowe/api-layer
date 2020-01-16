@@ -11,6 +11,8 @@ package com.ca.mfaas.gateway.security.ticket;
 
 import com.ca.apiml.security.common.service.IRRPassTicketGenerationException;
 import com.ca.apiml.security.common.service.PassTicketService;
+import com.ca.apiml.security.common.ticket.TicketRequest;
+import com.ca.apiml.security.common.ticket.TicketResponse;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.message.api.ApiMessageView;
 import com.ca.mfaas.message.core.MessageService;
@@ -56,6 +58,11 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
         } catch (ApplicationNameNotFoundException e) {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             ApiMessageView messageView = messageService.createMessage("apiml.security.ticket.invalidApplicationName").mapToView();
+            mapper.writeValue(response.getWriter(), messageView);
+        } catch (IRRPassTicketGenerationException e) {
+            response.setStatus(e.getHttpStatus().value());
+            ApiMessageView messageView = messageService.createMessage("apiml.security.ticket.generateFailed",
+                e.getErrorCode().getMessage()).mapToView();
             mapper.writeValue(response.getWriter(), messageView);
         }
 

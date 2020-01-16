@@ -32,13 +32,13 @@ public class PassTicketService {
     @PostConstruct
     public void init() {
         this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
-                "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
-                new ClassOrDefaultProxyUtils.ByMethodName<IRRPassTicketEvaluationException>(
-                        "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
-                        IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRsn", "getRacfRc"),
-                new ClassOrDefaultProxyUtils.ByMethodName<IRRPassTicketGenerationException>(
-                        "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
-                        IRRPassTicketGenerationException.class, "getSafRc", "getRacfRsn", "getRacfRc"));
+            "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
+            new ClassOrDefaultProxyUtils.ByMethodName<>(
+                "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
+                IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRc", "getRacfRsn"),
+            new ClassOrDefaultProxyUtils.ByMethodName<>(
+                "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
+                IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
     }
 
     public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
@@ -61,10 +61,10 @@ public class PassTicketService {
         public static final String ZOWE_DUMMY_USERID = "user";
         public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZoweDummyPassTicket";
 
-        public static final String UNKWNOWN_USER = "unknownUser";
-        public static final String UNKWNOWN_APPLID = "XBADAPPL";
+        public static final String UNKNOWN_USER = "unknownUser";
+        public static final String UNKNOWN_APPLID = "XBADAPPL";
 
-        private Map<UserApp, Set<String>> userAppToPasstickets = new HashMap<>();
+        private final Map<UserApp, Set<String>> userAppToPasstickets = new HashMap<>();
 
         @Override
         public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
@@ -75,7 +75,7 @@ public class PassTicketService {
             if (passTicket == null)
                 throw new IllegalArgumentException("Parameter passTicket is empty");
 
-            if (StringUtils.equalsIgnoreCase(UNKWNOWN_APPLID, applId)) {
+            if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {
                 throw new IRRPassTicketEvaluationException(8, 16, 28);
             }
 
@@ -92,11 +92,11 @@ public class PassTicketService {
 
         @Override
         public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
-            if (StringUtils.equalsIgnoreCase(UNKWNOWN_USER, userId)) {
+            if (StringUtils.equalsIgnoreCase(UNKNOWN_USER, userId)) {
                 throw new IRRPassTicketGenerationException(8, 8, 16);
             }
 
-            if (StringUtils.equalsIgnoreCase(UNKWNOWN_APPLID, applId)) {
+            if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {
                 throw new IRRPassTicketGenerationException(8, 16, 28);
             }
 
@@ -115,7 +115,7 @@ public class PassTicketService {
 
         @AllArgsConstructor
         @Value
-        private class UserApp {
+        private static class UserApp {
 
             private final String userId;
             private final String applId;
@@ -123,5 +123,4 @@ public class PassTicketService {
         }
 
     }
-
 }

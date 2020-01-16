@@ -154,3 +154,10 @@ messages:
       text: "The 'applicationName' parameter name is missing."
       reason: "The application name is not provided."
       action: "Provide the 'applicationName' parameter."
+
+    - key: apiml.security.ticket.generateFailed
+      number: ZWEAG141
+      type: ERROR
+      text: "The generation of the PassTicket failed. Reason: %s"
+      reason: "An error occurred in the SAF Auth Service. Review the reason in the error message."
+      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."

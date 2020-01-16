@@ -15,12 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 @Slf4j
 public class ConfigReader {
-    private ConfigReader() {
-    }
-
     private static volatile EnvironmentConfiguration instance;
 
     public static EnvironmentConfiguration environmentConfiguration() {
@@ -29,7 +27,7 @@ public class ConfigReader {
                 if (instance == null) {
                     final String configFileName = "environment-configuration.yml";
                     ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-                    File configFile = new File(classLoader.getResource(configFileName).getFile());
+                    File configFile = new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile());
                     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                     EnvironmentConfiguration configuration;
                     try {
@@ -40,6 +38,7 @@ public class ConfigReader {
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", 10010, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost", 10011, 1);
+                        DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("ZOWEAPPL");
 
                         TlsConfiguration tlsConfiguration = TlsConfiguration.builder()
                             .keyAlias("localhost")
@@ -53,9 +52,15 @@ public class ConfigReader {
                             .build();
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);
-                        configuration = new EnvironmentConfiguration(credentials, gatewayServiceConfiguration, discoveryServiceConfiguration, tlsConfiguration, zosmfServiceConfiguration);
-
+                        configuration = new EnvironmentConfiguration(
+                            credentials,
+                            gatewayServiceConfiguration,
+                            discoveryServiceConfiguration,
+                            discoverableClientConfiguration,
+                            tlsConfiguration,
+                            zosmfServiceConfiguration);
                     }
+
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
                     configuration.getCredentials().setPassword(System.getProperty("credentials.password", configuration.getCredentials().getPassword()));
 
@@ -71,7 +76,6 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
-                    
                     setTlsConfigurationFromSystemProperties(configuration);
 
                     instance = configuration;

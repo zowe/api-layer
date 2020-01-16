@@ -27,8 +27,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+
+import java.util.Collections;
 
 /**
  * Security configuration for Gateway
@@ -78,6 +82,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
 
+            // ticket endpoint
+            .and()
+            .authorizeRequests()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
+            .and()
+            .x509().userDetailsService(x509UserDetailsService())
+
             // logout endpoint
             .and()
             .logout()
@@ -122,6 +133,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getAuthenticationFailureHandler(),
             authenticationService,
             HttpMethod.GET,
+            false,
             authenticationManager());
     }
 
@@ -135,6 +147,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getAuthenticationFailureHandler(),
             authenticationService,
             HttpMethod.POST,
+            true,
             authenticationManager());
     }
 
@@ -166,5 +179,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .ifPresent(x ->
                 authenticationService.invalidateJwtToken(x, true)
             );
+    }
+
+    private UserDetailsService x509UserDetailsService() {
+        return username -> new User("gatewayClient", "", Collections.emptyList());
     }
 }

@@ -7,18 +7,18 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.ticket;
+package com.ca.mfaas.util.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Represents /ticket JSON request with application id
+ * Configuration parameters for DiscoverableClient
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TicketRequest {
-    private String applicationName;
+public class DiscoverableClientConfiguration {
+    private String applId;
 }

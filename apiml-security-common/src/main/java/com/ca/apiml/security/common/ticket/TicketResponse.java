@@ -7,15 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.ticket;
+package com.ca.apiml.security.common.ticket;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Represents /ticket JSON response with the ticket information
  */
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class TicketResponse {
     private String token;

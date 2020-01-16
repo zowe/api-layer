@@ -70,6 +70,7 @@ server:
     port: ${apiml.service.port}
     ssl:
         enabled: true
+        clientAuth: want
         protocol: TLSv1.2
         enabled-protocols: TLSv1.2
         ciphers: ${apiml.security.ssl.ciphers}

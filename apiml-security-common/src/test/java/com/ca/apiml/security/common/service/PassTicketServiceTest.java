@@ -91,8 +91,8 @@ public class PassTicketServiceTest {
             fail();
         } catch (IRRPassTicketEvaluationException e) {
             assertEquals(8, e.getSafRc());
-            assertEquals(16, e.getRacfRsn());
-            assertEquals(32, e.getRacfRc());
+            assertEquals(16, e.getRacfRc());
+            assertEquals(32, e.getRacfRsn());
         }
 
         String passTicket1 = dpti.generate(TEST_USERID, "applId");
@@ -120,34 +120,29 @@ public class PassTicketServiceTest {
         }
 
         try {
-            dpti.generate(PassTicketService.DefaultPassTicketImpl.UNKWNOWN_USER, "anyApplId");
+            dpti.generate(PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER, "anyApplId");
             fail();
         } catch (IRRPassTicketGenerationException e) {
             assertEquals(8, e.getSafRc());
-            assertEquals(8, e.getRacfRsn());
-            assertEquals(16, e.getRacfRc());
-            assertNotNull(e.getErrorCodes());
-            assertEquals(1, e.getErrorCodes().size());
-            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16, e.getErrorCodes().get(0));
+            assertEquals(8, e.getRacfRc());
+            assertEquals(16, e.getRacfRsn());
+            assertNotNull(e.getErrorCode());
+            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16, e.getErrorCode());
             assertEquals(
-                "Error on generation of PassTicket\n" +
-                    "\tNot authorized to use this service.\n"
+                "Error on generation of PassTicket: Not authorized to use this service."
                 , e.getMessage()
             );
         }
 
         try {
-            dpti.generate("anyUser", PassTicketService.DefaultPassTicketImpl.UNKWNOWN_APPLID);
+            dpti.generate("anyUser", PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
             fail();
         } catch (IRRPassTicketGenerationException e) {
             assertEquals(8, e.getSafRc());
-            assertEquals(16, e.getRacfRsn());
-            assertEquals(28, e.getRacfRc());
-            assertNotNull(e.getErrorCodes());
-            assertEquals(3, e.getErrorCodes().size());
-            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_X_1, e.getErrorCodes().get(0));
-            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, e.getErrorCodes().get(1));
-            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_X_2, e.getErrorCodes().get(2));
+            assertEquals(16, e.getRacfRc());
+            assertEquals(28, e.getRacfRsn());
+            assertNotNull(e.getErrorCode());
+            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, e.getErrorCode());
         }
     }
 

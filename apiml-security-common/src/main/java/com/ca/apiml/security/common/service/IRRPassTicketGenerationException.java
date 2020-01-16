@@ -16,13 +16,13 @@ public class IRRPassTicketGenerationException extends AbstractIRRPassTicketExcep
 
     private static final long serialVersionUID = -8944250582222779122L;
 
-    public IRRPassTicketGenerationException(int safRc, int racfRsn, int racfRc) {
-        super(safRc, racfRsn, racfRc);
+    public IRRPassTicketGenerationException(int safRc, int racfRc, int racfRsn) {
+        super(safRc, racfRc, racfRsn);
     }
 
     @Override
     public String getMessage() {
-        return getMessage("Error on generation of PassTicket");
+        return getMessage("Error on generation of PassTicket:");
     }
 
 }

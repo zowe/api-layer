@@ -9,31 +9,41 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import static com.ca.mfaas.gatewayservice.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
-import static com.ca.mfaas.gatewayservice.SecurityUtils.gatewayToken;
+import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
+import static com.ca.mfaas.gatewayservice.SecurityUtils.*;
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static io.restassured.http.ContentType.JSON;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 
+import com.ca.apiml.security.common.ticket.TicketRequest;
+import com.ca.apiml.security.common.ticket.TicketResponse;
 import com.ca.mfaas.util.config.ConfigReader;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.restassured.RestAssured;
 
+@Slf4j
 public class PassTicketTest {
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
-            .getScheme();
+        .getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
-            .getHost();
+        .getHost();
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration()
+        .getDiscoverableClientConfiguration().getApplId();
     private final static String STATICCLIENT_BASE_PATH = "/api/v1/staticclient";
+    private final static String DISCOVERABLECLIENT_BASE_PATH = "/api/v1/discoverableclient";
     private final static String PASSTICKET_TEST_ENDPOINT = "/passticketTest";
+    private final static String TICKET_ENDPOINT = "/api/v1/gateway/auth/ticket";
+    private final static String COOKIE = "apimlAuthenticationToken";
 
     @Before
     public void setUp() {
@@ -46,22 +56,22 @@ public class PassTicketTest {
     public void accessServiceWithCorrectPassTicket() {
         String jwt = gatewayToken();
         given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when().get(
-                String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
-                .then().statusCode(is(SC_OK));
+            String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
+            .then().statusCode(is(SC_OK));
     }
 
     @Test
     public void accessServiceWithIncorrectApplId() {
         String jwt = gatewayToken();
         given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when()
-                .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH,
-                        PASSTICKET_TEST_ENDPOINT))
-                .then().statusCode(is(SC_INTERNAL_SERVER_ERROR))
-                .body("message", containsString("Error on evaluation of PassTicket"));
+            .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH,
+                PASSTICKET_TEST_ENDPOINT))
+            .then().statusCode(is(SC_INTERNAL_SERVER_ERROR))
+            .body("message", containsString("Error on evaluation of PassTicket"));
     }
 
-    @Test
     //@formatter:off
+    @Test
     public void accessServiceWithIncorrectToken() {
         String jwt = "nonsense";
         String expectedMessage = "Token is not valid";
@@ -73,6 +83,196 @@ public class PassTicketTest {
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body("messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage));
+    }
+
+    /*
+     * /ticket endpoint tests
+     */
+
+    @Test
+    public void doTicketWithValidCookieAndCertificate() {
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        String jwt = gatewayToken();
+        log.info(APPLICATION_NAME);
+        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        // Generate ticket
+        TicketResponse ticketResponse = given()
+            .contentType(JSON)
+            .body(ticketRequest)
+            .cookie(COOKIE, jwt)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK))
+            .extract().body().as(TicketResponse.class);
+
+        assertEquals(jwt, ticketResponse.getToken());
+        assertEquals(USERNAME, ticketResponse.getUserId());
+        assertEquals(APPLICATION_NAME, ticketResponse.getApplicationName());
+
+        // Validate ticket
+        given()
+             .auth().preemptive().basic(USERNAME, ticketResponse.getTicket())
+             .param("appliId", APPLICATION_NAME)
+        .when()
+            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK));
+    }
+
+    @Test
+    public void doTicketWithValidHeaderAndCertificate() {
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        String jwt = gatewayToken();
+        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        //Generate ticket
+        TicketResponse ticketResponse = given()
+            .contentType(JSON)
+            .body(ticketRequest)
+            .header("Authorization", "Bearer " + jwt)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK))
+            .extract().body().as(TicketResponse.class);
+
+        assertEquals(jwt, ticketResponse.getToken());
+        assertEquals(USERNAME, ticketResponse.getUserId());
+        assertEquals(APPLICATION_NAME, ticketResponse.getApplicationName());
+
+        // Validate ticket
+        given()
+            .auth().preemptive().basic(USERNAME, ticketResponse.getTicket())
+            .param("appliId", APPLICATION_NAME)
+        .when()
+            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
+        .then()
+            .statusCode(is(SC_OK));
+    }
+
+    @Test
+    public void doTicketWithInvalidMethod() {
+        String expectedMessage = "Authentication method 'GET' is not supported for URL '" + TICKET_ENDPOINT + "'";
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        given()
+            .contentType(JSON)
+            .body(ticketRequest)
+        .when()
+            .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_METHOD_NOT_ALLOWED))
+            .body("messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage));
+    }
+
+    @Test
+    public void doTicketWithoutCertificate() {
+        String jwt = gatewayToken();
+        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        given()
+            .contentType(JSON)
+            .body(ticketRequest)
+            .cookie(COOKIE, jwt)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_FORBIDDEN));
+    }
+
+    @Test
+    public void doTicketWithoutToken() {
+        String expectedMessage = "No authorization token provided for URL '" + TICKET_ENDPOINT + "'";
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        given()
+            .contentType(JSON)
+            .body(ticketRequest)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
+    }
+
+    @Test
+    public void doTicketWithInvalidCookie() {
+        String jwt = "invalidToken";
+        String expectedMessage = "Token is not valid for URL '" + TICKET_ENDPOINT + "'";
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        given()
+            .contentType(JSON)
+            .body(ticketRequest)
+            .cookie(COOKIE, jwt)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
+    }
+
+    @Test
+    public void doTicketWithInvalidHeader() {
+        String jwt = "invalidToken";
+        String expectedMessage = "Token is not valid for URL '" + TICKET_ENDPOINT + "'";
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
+
+        given()
+            .contentType(JSON)
+            .body(ticketRequest)
+            .header("Authorization", "Bearer " + jwt)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
+    }
+
+    @Test
+    public void doTicketWithoutApplicationName() {
+        String expectedMessage = "The 'applicationName' parameter name is missing.";
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        String jwt = gatewayToken();
+
+        given()
+            .cookie(COOKIE, jwt)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_BAD_REQUEST))
+            .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
+    }
+
+    @Test
+    public void doTicketWithInvalidApplicationName() {
+        String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        String jwt = gatewayToken();
+        TicketRequest ticketRequest = new TicketRequest(UNKNOWN_APPLID);
+
+        given()
+            .contentType(JSON)
+            .body(ticketRequest)
+            .cookie(COOKIE, jwt)
+        .when()
+            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, TICKET_ENDPOINT))
+        .then()
+            .statusCode(is(SC_BAD_REQUEST))
+            .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
+
     }
     //@formatter:on
 }

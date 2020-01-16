@@ -7,14 +7,18 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.ticket;
+package com.ca.apiml.security.common.ticket;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * Exception thrown when applicationName parameter was not provided
+ * Represents /ticket JSON request with application id
  */
-public class ApplicationNameNotFoundException extends Exception {
-
-    public ApplicationNameNotFoundException(String message) {
-        super(message);
-    }
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class TicketRequest {
+    private String applicationName;
 }

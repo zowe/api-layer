@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.security.ticket;
 
 import com.ca.apiml.security.common.service.PassTicketService;
+import com.ca.apiml.security.common.ticket.TicketRequest;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.message.core.MessageService;
 import com.ca.mfaas.message.yaml.YamlMessageService;

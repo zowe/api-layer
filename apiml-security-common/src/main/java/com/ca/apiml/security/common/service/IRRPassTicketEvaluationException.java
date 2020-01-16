@@ -16,13 +16,12 @@ public class IRRPassTicketEvaluationException extends AbstractIRRPassTicketExcep
 
     private static final long serialVersionUID = -7401871844111323433L;
 
-    public IRRPassTicketEvaluationException(int safRc, int racfRsn, int racfRc) {
-        super(safRc, racfRsn, racfRc);
+    public IRRPassTicketEvaluationException(int safRc, int racfRc, int racfRsn) {
+        super(safRc, racfRc, racfRsn);
     }
 
     @Override
     public String getMessage() {
-        return getMessage("Error on evaluation of PassTicket");
+        return getMessage("Error on evaluation of PassTicket:");
     }
-
 }
