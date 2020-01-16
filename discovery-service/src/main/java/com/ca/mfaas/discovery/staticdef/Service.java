@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.discovery.staticdef;
 
-import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.mfaas.config.ApiInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
@@ -34,5 +33,4 @@ import java.util.List;
     @JsonAlias({"routedServices"})
     private List<Route> routes;
     private List<ApiInfo> apiInfo;
-    private Authentication authentication;
 }

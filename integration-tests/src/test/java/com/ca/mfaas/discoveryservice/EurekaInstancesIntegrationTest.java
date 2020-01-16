@@ -12,20 +12,33 @@ package com.ca.mfaas.discoveryservice;
 import com.ca.mfaas.gatewayservice.SecurityUtils;
 import com.ca.mfaas.util.config.ConfigReader;
 import com.ca.mfaas.util.config.DiscoveryServiceConfiguration;
+import com.ca.mfaas.util.config.TlsConfiguration;
+import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
 import io.restassured.RestAssured;
+import io.restassured.config.SSLConfig;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.ssl.SSLContexts;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.net.ssl.SSLContext;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.*;
 
-import static com.ca.mfaas.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
@@ -39,7 +52,9 @@ import static org.junit.Assert.assertThat;
 public class EurekaInstancesIntegrationTest {
 
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
+
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
+    private TlsConfiguration tlsConfiguration;
     private final static String COOKIE = "apimlAuthenticationToken";
     private String scheme;
     private String username;
@@ -51,6 +66,7 @@ public class EurekaInstancesIntegrationTest {
     @Before
     public void setUp() {
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
+        tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
         scheme = discoveryServiceConfiguration.getScheme();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -350,6 +366,32 @@ public class EurekaInstancesIntegrationTest {
             Assert.assertEquals(registeredReplicas, availableReplicas);
             Assert.assertEquals(servicesList.size(), instances - 1);
         }
+    }
+
+    private SSLConfig getConfiguredSslConfig() {
+        try {
+            SSLContext sslContext = SSLContexts.custom()
+                .loadKeyMaterial(
+                    new File(tlsConfiguration.getKeyStore()),
+                    getCharArray(tlsConfiguration.getKeyStorePassword()),
+                    getCharArray(tlsConfiguration.getKeyPassword()),
+                    (aliases, socket) -> tlsConfiguration.getKeyAlias())
+                .loadTrustMaterial(
+                    new File(tlsConfiguration.getTrustStore()),
+                    getCharArray(tlsConfiguration.getTrustStorePassword()))
+                .build();
+
+            SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext,
+                NoopHostnameVerifier.INSTANCE));
+            return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);
+        } catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException
+            | CertificateException | IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private char[] getCharArray(String value) {
+        return value != null ? value.toCharArray() : null;
     }
 
     private URI getDiscoveryUriWithPath(String path) throws Exception {

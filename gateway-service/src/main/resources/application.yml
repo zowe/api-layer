@@ -14,7 +14,6 @@ logging:
         com.ca.mfaas.gateway.error: INFO
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
-        net.sf.ehcache: WARN
 
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -59,9 +58,6 @@ spring:
     output:
         ansi:
             enabled: detect
-    cache:
-        ehcache:
-            config: classpath:ehcache.xml
     main:
         banner-mode: ${apiml.banner:"off"}
 
@@ -70,7 +66,6 @@ server:
     port: ${apiml.service.port}
     ssl:
         enabled: true
-        clientAuth: want
         protocol: TLSv1.2
         enabled-protocols: TLSv1.2
         ciphers: ${apiml.security.ssl.ciphers}
@@ -207,7 +202,6 @@ logging:
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
-        net.sf.ehcache: INFO
 
 ---
 spring:

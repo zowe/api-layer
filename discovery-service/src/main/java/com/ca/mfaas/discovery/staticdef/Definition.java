@@ -18,9 +18,7 @@ import java.util.Map;
  * A wrapper for static definition file contents.
  * It used by Jackson object mapper.
  */
-@Data
-public class Definition {
+@Data class Definition {
     private List<Service> services;
     private Map<String, CatalogUiTile> catalogUiTiles;
-    private List<ServiceOverride> additionalServiceMetadata;
 }

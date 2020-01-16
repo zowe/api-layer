@@ -5,14 +5,8 @@ messages:
 
     # General messages
     # 100-199
-    - key: apiml.security.expiredToken
-      number: ZWEAT100
-      type: ERROR
-      text: "Token is expired for URL '%s'"
-      reason: "The validity of the token is expired."
-      action: "Obtain new token by performing an authentication request."
 
-    - key: apiml.security.errorWritingResponse
+    - key: apiml.security.errorWrittingResponse
       number: ZWEAT103
       type: ERROR
       text: "Could not write response: %s"

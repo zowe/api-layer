@@ -14,8 +14,6 @@ discoveryServiceConfiguration:
     host: localhost
     port: 10011
     instances: 1
-discoverableClientConfiguration:
-    applId: ZOWEAPPL
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

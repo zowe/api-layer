@@ -86,9 +86,3 @@ api-catalog-ui/frontend/debug.log
 
 debug.log
 api-layer.tar.gz
-/*.log
-
-# EHCache
-gateway-service/**/*.data
-gateway-service/**/*.index
-.ehcache-diskstore.lock

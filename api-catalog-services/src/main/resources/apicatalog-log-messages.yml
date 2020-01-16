@@ -80,8 +80,8 @@ messages:
     - key: apiml.apicatalog.apidocRetrievalProblem
       number: ZWEAC704
       type: ERROR
-      text: "ApiDoc retrieval problem for '%s' service. %s"
-      reason: "ApiDoc for service could not be retrieved."
+      text: "ApiDoc retrieval problem for service %s. %s"
+      reason: "ApiDoc for service could not be retrieved from cache."
       action: "Verify that the service provides a valid ApiDoc."
 
     - key: apiml.apicatalog.homePageTransformFailed

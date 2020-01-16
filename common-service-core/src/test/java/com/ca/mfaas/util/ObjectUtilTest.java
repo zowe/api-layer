@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 public class ObjectUtilTest {
 
@@ -31,25 +32,6 @@ public class ObjectUtilTest {
         exception.expectMessage("Parameter can't be null");
 
         ObjectUtil.requireNotNull(null, "Parameter can't be null");
-    }
-
-    @Test
-    public void testRequireNotEmpty() {
-        try {
-            ObjectUtil.requireNotEmpty(null, "Parameter can't be empty");
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals("Parameter can't be empty", e.getMessage());
-        }
-
-        try {
-            ObjectUtil.requireNotEmpty(new String(), "Parameter can't be empty");
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertEquals("Parameter can't be empty", e.getMessage());
-        }
-
-        ObjectUtil.requireNotEmpty(" ", "Parameter can't be empty");
     }
 
     @Test
@@ -201,6 +183,7 @@ public class ObjectUtilTest {
         return map1;
     }
 
+
     @Test
     public void testMapMerge_PART_serviceid_ciphers() {
         Map<String, Object> defaultConfigPropertiesMap = getMap1();
@@ -216,14 +199,4 @@ public class ObjectUtilTest {
         assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
     }
-
-    private void testMethod1(String a, int b, Object c) {
-    }
-
-    @Test
-    public void testGetMethodIdentifier() throws NoSuchMethodException {
-        assertEquals("testGetMethodIdentifier()", ObjectUtil.getMethodIdentifier(ObjectUtilTest.class.getDeclaredMethod("testGetMethodIdentifier")));
-        assertEquals("testMethod1(class java.lang.String,int,class java.lang.Object)", ObjectUtil.getMethodIdentifier(ObjectUtilTest.class.getDeclaredMethod("testMethod1", String.class, int.class, Object.class)));
-    }
-
 }

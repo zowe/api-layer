@@ -23,39 +23,6 @@ services:
           serviceRelativeUrl: /ws
         - gatewayUrl: api-doc
           serviceRelativeUrl: /api-doc
-    - serviceId: toAddAuth
-      title: Service to add auth info
-      instanceBaseUrls:
-        - https://localhost:10012/discoverableclient
-    - serviceId: toReplaceAuth
-      title: Service to replace auth info
-      instanceBaseUrls:
-        - https://localhost:10012/discoverableclient
-      authentication:
-        scheme: httpBasicPassTicket
-        applid: TSTAPPL2
-    - serviceId: nowFixedAuth
-      title: Service with temporary auth, althought auth is defined now
-      instanceBaseUrls:
-        - https://localhost:10012/discoverableclient
-      authentication:
-          scheme: httpBasicPassTicket
-          applid: TSTAPPL3
-
-additionalServiceMetadata:
-    - serviceId: toAddAuth
-      authentication:
-        scheme: httpBasicPassTicket
-        applid: TSTAPPL4
-    - serviceId: toReplaceAuth
-      mode: FORCE_UPDATE
-      authentication:
-        scheme: httpBasicPassTicket
-        applid: TSTAPPL5
-    - serviceId: nowFixedAuth
-      authentication:
-        scheme: httpBasicPassTicket
-        applid: TSTAPPL6
 
 # List of tiles that can be used by services defined in YAML files:
 catalogUiTiles:

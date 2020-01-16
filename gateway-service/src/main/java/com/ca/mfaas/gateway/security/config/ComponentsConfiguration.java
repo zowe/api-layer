@@ -26,5 +26,4 @@ public class ComponentsConfiguration {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
-
 }

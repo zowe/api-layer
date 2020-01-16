@@ -63,8 +63,6 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleTokenNotProvided(request, response, ex);
         } else if (ex instanceof TokenExpireException) {
             handleTokenExpire(request, response, ex);
-        } else if (ex instanceof InvalidCertificateException) {
-            handleInvalidCertificate(response, ex);
         } else if (ex instanceof AuthenticationException) {
             handleAuthenticationException(request, response, ex);
         } else {
@@ -108,11 +106,6 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleTokenExpire(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(ERROR_MESSAGE_400, ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
-    }
-
-    private void handleInvalidCertificate(HttpServletResponse response, RuntimeException ex) {
-        log.debug(ERROR_MESSAGE_400, ex.getMessage());
-        response.setStatus(HttpStatus.FORBIDDEN.value());
     }
 
     //500

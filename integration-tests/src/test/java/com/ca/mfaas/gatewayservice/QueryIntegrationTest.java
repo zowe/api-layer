@@ -76,7 +76,7 @@ public class QueryIntegrationTest {
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, QUERY_ENDPOINT))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
-            .body(
+        .body(
             "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
         );
     }

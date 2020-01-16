@@ -17,7 +17,6 @@ import com.ca.apiml.security.common.login.LoginFilter;
 import com.ca.mfaas.gateway.security.query.QueryFilter;
 import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.security.ticket.SuccessfulTicketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -27,12 +26,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
-
-import java.util.Collections;
 
 /**
  * Security configuration for Gateway
@@ -55,7 +49,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final HandlerInitializer handlerInitializer;
     private final SuccessfulQueryHandler successfulQueryHandler;
-    private final SuccessfulTicketHandler successfulTicketHandler;
     private final AuthProviderInitializer authProviderInitializer;
 
     @Override
@@ -82,30 +75,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
 
-            // ticket endpoint
-            .and()
-            .authorizeRequests()
-            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
-            .and()
-            .x509().userDetailsService(x509UserDetailsService())
-
-            // logout endpoint
-            .and()
-            .logout()
-            .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
-            .addLogoutHandler(logoutHandler())
-
             // endpoint protection
             .and()
             .authorizeRequests()
             .antMatchers("/application/health", "/application/info").permitAll()
             .antMatchers("/application/**").authenticated()
 
-            // add filters - login, query, ticket
+            // add filters - login + query
             .and()
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
@@ -132,22 +111,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             successfulQueryHandler,
             handlerInitializer.getAuthenticationFailureHandler(),
             authenticationService,
-            HttpMethod.GET,
-            false,
-            authenticationManager());
-    }
-
-    /**
-     * Processes /ticket requests
-     */
-    private QueryFilter ticketFilter(String ticketEndpoint) throws Exception {
-        return new QueryFilter(
-            ticketEndpoint,
-            successfulTicketHandler,
-            handlerInitializer.getAuthenticationFailureHandler(),
-            authenticationService,
-            HttpMethod.POST,
-            true,
             authenticationManager());
     }
 
@@ -172,16 +135,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getResourceAccessExceptionHandler(),
             authConfigurationProperties,
             PROTECTED_ENDPOINTS);
-    }
-
-    private LogoutHandler logoutHandler() {
-        return (request, response, authentication) -> authenticationService.getJwtTokenFromRequest(request)
-            .ifPresent(x ->
-                authenticationService.invalidateJwtToken(x, true)
-            );
-    }
-
-    private UserDetailsService x509UserDetailsService() {
-        return username -> new User("gatewayClient", "", Collections.emptyList());
     }
 }

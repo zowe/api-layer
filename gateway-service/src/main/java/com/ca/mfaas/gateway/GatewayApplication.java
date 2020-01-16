@@ -37,8 +37,7 @@ import javax.annotation.Nonnull;
         "com.ca.mfaas.gateway",
         "com.ca.mfaas.product",
         "com.ca.mfaas.enable",
-        "com.ca.apiml.security.common"
-    },
+        "com.ca.apiml.security.common"},
     excludeFilters = {
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)

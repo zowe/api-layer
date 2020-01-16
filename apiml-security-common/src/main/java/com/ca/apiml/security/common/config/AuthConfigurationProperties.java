@@ -31,7 +31,6 @@ public class AuthConfigurationProperties {
     // General properties
     private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
     private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
-    private String gatewayTicketEndpoint = "/api/v1/gateway/auth/ticket";
 
     private String serviceLoginEndpoint = "/auth/login";
     private String serviceLogoutEndpoint = "/auth/logout";
@@ -41,8 +40,6 @@ public class AuthConfigurationProperties {
 
     private String zosmfServiceId;
     private String provider = "zosmf";
-
-    private AuthConfigurationProperties.PassTicket passTicket;
 
     private String jwtKeyAlias;
 
@@ -65,15 +62,9 @@ public class AuthConfigurationProperties {
         private Integer cookieMaxAge = -1;
     }
 
-    @Data
-    public static class PassTicket {
-        private Integer timeout = 360;
-    }
-
     public AuthConfigurationProperties() {
         this.cookieProperties = new AuthConfigurationProperties.CookieProperties();
         this.tokenProperties = new AuthConfigurationProperties.TokenProperties();
-        this.passTicket = new AuthConfigurationProperties.PassTicket();
     }
 
     /**

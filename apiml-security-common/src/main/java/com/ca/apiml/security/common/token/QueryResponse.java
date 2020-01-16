@@ -9,7 +9,6 @@
  */
 package com.ca.apiml.security.common.token;
 
-import com.ca.mfaas.cache.EntryExpiration;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,16 +21,9 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class QueryResponse implements EntryExpiration {
-
+public class QueryResponse {
     private String domain;
     private String userId;
     private Date creation;
     private Date expiration;
-
-    @Override
-    public boolean isExpired() {
-        return expiration.before(new Date());
-    }
-
 }

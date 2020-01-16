@@ -31,9 +31,8 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 @ComponentScan(value = {
     "com.ca.mfaas.client",
     "com.ca.mfaas.enable",
-    "com.ca.mfaas.product.web",
-    "com.ca.apiml.security.common.service"
-})
+    "com.ca.mfaas.product.security",
+    "com.ca.mfaas.product.web" })
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {

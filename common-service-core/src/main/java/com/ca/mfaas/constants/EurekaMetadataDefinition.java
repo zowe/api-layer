@@ -38,9 +38,6 @@ public final class EurekaMetadataDefinition {
     public static final String API_INFO_SWAGGER_URL = "swaggerUrl";
     public static final String API_INFO_DOCUMENTATION_URL = "documentationUrl";
 
-    public static final String AUTHENTICATION_SCHEME = "apiml.authentication.scheme";
-    public static final String AUTHENTICATION_APPLID = "apiml.authentication.applid";
-
     //v1
     public static final String ROUTES_V1 = "routed-services";
     public static final String ROUTES_GATEWAY_URL_V1 = "gateway-url";
