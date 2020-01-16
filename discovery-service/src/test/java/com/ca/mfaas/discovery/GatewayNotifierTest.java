@@ -17,8 +17,6 @@ import com.netflix.eureka.registry.AwsInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -26,7 +24,6 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(JUnit4.class)
 public class GatewayNotifierTest {
 
     private PeerAwareInstanceRegistry registry;

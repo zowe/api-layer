@@ -12,14 +12,11 @@ package com.ca.mfaas.util;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.lang.reflect.UndeclaredThrowableException;
 
 import static org.junit.Assert.*;
 
-@RunWith(JUnit4.class)
 public class ClassOrDefaultProxyUtilsTest {
 
     private static String voidResponse;

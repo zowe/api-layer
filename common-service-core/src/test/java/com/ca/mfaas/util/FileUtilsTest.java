@@ -11,8 +11,6 @@ package com.ca.mfaas.util;
 
 import org.junit.*;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +20,6 @@ import static org.junit.Assert.*;
 import static org.junit.Assert.assertNotNull;
 
 
-@RunWith(JUnit4.class)
 public class FileUtilsTest {
     private static final String RELATIVE_PATH_NAME = "Documents/apiml";
     private static final String CONFIG_PATH = System.getProperty("user.home").replace("\\", "/") + File.separator + RELATIVE_PATH_NAME;

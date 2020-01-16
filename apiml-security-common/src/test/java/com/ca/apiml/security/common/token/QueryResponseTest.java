@@ -9,8 +9,6 @@ package com.ca.apiml.security.common.token;/*
  */
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -18,7 +16,6 @@ import java.util.Date;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(JUnit4.class)
 public class QueryResponseTest {
 
     @Test

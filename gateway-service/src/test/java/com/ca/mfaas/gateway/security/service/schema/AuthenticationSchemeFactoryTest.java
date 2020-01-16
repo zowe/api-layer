@@ -15,8 +15,6 @@ import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
@@ -26,7 +24,6 @@ import java.util.Optional;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(JUnit4.class)
 public class AuthenticationSchemeFactoryTest {
 
     private static final AuthenticationCommand COMMAND = mock(AuthenticationCommand.class);

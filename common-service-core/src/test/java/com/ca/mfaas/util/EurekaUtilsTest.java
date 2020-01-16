@@ -10,15 +10,12 @@ package com.ca.mfaas.util;/*
 
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class EurekaUtilsTest {
 
     @Test
