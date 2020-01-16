@@ -3,7 +3,8 @@
   "pluginType": "nodeAuthentication",
   "authenticationCategory": "apiml",
   "apiVersion": "1.0.0",
-  "pluginVersion": "0.3.5",
+  "pluginVersion": "0.3.6",
+  "license": "EPL-2.0",
   "filename": "apimlAuth.js",
   "dataServices": [
     {
