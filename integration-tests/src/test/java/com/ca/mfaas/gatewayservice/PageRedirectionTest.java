@@ -65,7 +65,7 @@ public class PageRedirectionTest {
     public void apiRouteOfDiscoverableClient() {
         String apiRelativeUrl = "/api/v1";
         String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, BASE_URL, apiRelativeUrl, "/greeting");
-        String trasformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_PREFIX, "/" + SERVICE_ID, "/greeting");
+        String transformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_PREFIX, "/" + SERVICE_ID, "/greeting");
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -76,7 +76,7 @@ public class PageRedirectionTest {
             .post(requestUrl)
             .then()
             .statusCode(is(HttpStatus.TEMPORARY_REDIRECT.value()))
-            .header(LOCATION, trasformedLocation);
+            .header(LOCATION, transformedLocation);
     }
 
     /**
@@ -87,7 +87,7 @@ public class PageRedirectionTest {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
         String wsPrefix = "/ws/v1";
-        String trasformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, wsPrefix, "/" + SERVICE_ID);
+        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, wsPrefix, "/" + SERVICE_ID);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -98,7 +98,7 @@ public class PageRedirectionTest {
             .post(requestUrl)
             .then()
             .statusCode(is(HttpStatus.TEMPORARY_REDIRECT.value()))
-            .header(LOCATION, trasformedLocation);
+            .header(LOCATION, transformedLocation);
     }
 
     /**
@@ -108,7 +108,7 @@ public class PageRedirectionTest {
     public void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
         String uiPrefix = "/ui/v1";
-        String trasformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, uiPrefix, "/" + SERVICE_ID);
+        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, uiPrefix, "/" + SERVICE_ID);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -119,7 +119,7 @@ public class PageRedirectionTest {
             .post(requestUrl)
             .then()
             .statusCode(is(HttpStatus.TEMPORARY_REDIRECT.value()))
-            .header(LOCATION, trasformedLocation);
+            .header(LOCATION, transformedLocation);
     }
 
     /**

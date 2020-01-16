@@ -21,8 +21,11 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 /**
- * Extract LTPA token from JWT token and set it as a cookie when accessing zOSMF
+ * Extract LTPA token from JWT token and set it as a cookie when accessing z/OSMF
+ *
+ * @deprecated TODO: Remove after zowe-install-packaging is updated
  */
+@Deprecated
 public class ZosmfFilter extends ZuulFilter {
     private static final String ZOSMF = "zosmf";
 

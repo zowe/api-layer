@@ -13,6 +13,7 @@ import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import com.ca.mfaas.gateway.filters.post.PageRedirectionFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
+import com.ca.mfaas.gateway.filters.pre.ServiceAuthenticationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
@@ -46,6 +47,11 @@ public class ApimlRoutingConfig {
     @Bean
     public ZosmfFilter zosmfFilter(AuthenticationService authenticationService) {
         return new ZosmfFilter(authenticationService);
+    }
+
+    @Bean
+    public ServiceAuthenticationFilter serviceAuthenticationFilter() {
+        return new ServiceAuthenticationFilter();
     }
 
     @Bean

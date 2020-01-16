@@ -20,24 +20,27 @@ import java.lang.management.ManagementFactory;
 
 public class ServiceStartupEventHandler {
     public static final int DEFAULT_DELAY_FACTOR = 5;
-    private final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class, YamlMessageServiceInstance.getInstance());
+
+    private final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class,
+            YamlMessageServiceInstance.getInstance());
 
     @SuppressWarnings("squid:S1172")
     public void onServiceStartup(String serviceName, int delayFactor) {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        apimlLog.log("apiml.common.serviceStarted",serviceName, uptime / 1000.0);
+        apimlLog.log("apiml.common.serviceStarted", serviceName, uptime / 1000.0);
 
         new java.util.Timer().schedule(new java.util.TimerTask() {
             @Override
             public void run() {
                 LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
                 String[] names = new String[] { "com.netflix.discovery.DiscoveryClient",
-                        "com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient" };
+                        "com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient",
+                        "com.ca.mfaas.discovery.GatewayNotifier" };
                 for (String name : names) {
                     Logger logger = loggerContext.getLogger(name);
                     logger.setLevel(Level.ERROR);
                 }
             }
-        }, uptime * 5);
+        }, uptime * delayFactor);
     }
 }

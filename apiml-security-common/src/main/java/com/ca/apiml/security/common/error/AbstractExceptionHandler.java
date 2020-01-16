@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +38,7 @@ public abstract class AbstractExceptionHandler {
     protected final ObjectMapper mapper;
 
     @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Entry method that takes care of an exception passed to it
@@ -78,8 +79,8 @@ public abstract class AbstractExceptionHandler {
         try {
             mapper.writeValue(response.getWriter(), message);
         } catch (IOException e) {
-            apimlLog.log("apiml.security.errorWrittingResponse", e.getMessage());
-            throw new ServletException("Error writting response", e);
+            apimlLog.log("apiml.security.errorWritingResponse", e.getMessage());
+            throw new ServletException("Error writing response", e);
         }
     }
 }

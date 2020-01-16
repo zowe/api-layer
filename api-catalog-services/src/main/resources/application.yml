@@ -29,7 +29,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-
+        net.sf.ehcache: WARN
 
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
@@ -184,6 +184,7 @@ logging:
         org.apache.http: DEBUG
         com.netflix: INFO
         springfox: INFO
+        net.sf.ehcache: INFO
 
 ---
 spring:

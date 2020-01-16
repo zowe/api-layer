@@ -65,19 +65,20 @@ public class StaticApiRestControllerTest {
         String serviceName = "service";
         String basicToken = "Basic " + Base64.getEncoder().encodeToString(CREDENTIALS.getBytes());
 
+        StaticRegistrationResult result = new StaticRegistrationResult();
         List<InstanceInfo> instancesInfo = Arrays.asList(
             InstanceInfo.Builder.newBuilder()
                 .setAppName(serviceName)
                 .build()
         );
+        result.getInstances().addAll(instancesInfo);
 
-        when(registrationService.getStaticInstances()).thenReturn(instancesInfo);
+        when(registrationService.reloadServices()).thenReturn(result);
 
         this.mockMvc.perform(post("/discovery/api/v1/staticApi").header("Authorization", basicToken))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[*].app", hasItem(serviceName.toUpperCase())));
+            .andExpect(jsonPath("$.instances[*].app", hasItem(serviceName.toUpperCase())));
 
         verify(registrationService, times(1)).reloadServices();
-        verify(registrationService, times(1)).getStaticInstances();
     }
 }

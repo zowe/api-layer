@@ -10,6 +10,8 @@
 package com.ca.mfaas.gateway.security.query;
 
 import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.common.error.InvalidCertificateException;
+import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import org.junit.Before;
@@ -20,15 +22,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.http.HttpMethod;
 
-import javax.ws.rs.HttpMethod;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QueryFilterTest {
@@ -56,13 +58,15 @@ public class QueryFilterTest {
             authenticationSuccessHandler,
             authenticationFailureHandler,
             authenticationService,
+            HttpMethod.GET,
+            false,
             authenticationManager);
     }
 
     @Test
     public void shouldCallAuthenticationManagerAuthenticate() {
         httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setMethod(HttpMethod.GET);
+        httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
         queryFilter.setAuthenticationManager(authenticationManager);
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
@@ -77,7 +81,7 @@ public class QueryFilterTest {
     @Test(expected = AuthMethodNotSupportedException.class)
     public void shouldRejectHttpMethods() {
         httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setMethod(HttpMethod.POST);
+        httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
         queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
@@ -86,12 +90,32 @@ public class QueryFilterTest {
     @Test(expected = TokenNotProvidedException.class)
     public void shouldRejectIfTokenIsNotPresent() {
         httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setMethod(HttpMethod.GET);
+        httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
             Optional.empty()
         );
 
         queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+    }
+
+    @Test(expected = InvalidCertificateException.class)
+    public void shouldRejectIfNotAuthenticatedByCertficate() {
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setMethod(HttpMethod.GET.name());
+        httpServletResponse = new MockHttpServletResponse();
+        TokenAuthentication authentication = new TokenAuthentication("token");
+        authentication.setAuthenticated(true);
+        SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
+
+        QueryFilter protectedQueryFilter = new QueryFilter("TEST_ENDPOINT",
+            authenticationSuccessHandler,
+            authenticationFailureHandler,
+            authenticationService,
+            HttpMethod.GET,
+            true,
+            authenticationManager);
+
+        protectedQueryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
 }

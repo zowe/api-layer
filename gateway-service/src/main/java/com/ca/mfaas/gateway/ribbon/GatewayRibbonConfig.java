@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.ribbon;
 
 import com.netflix.client.config.IClientConfig;
+import com.netflix.discovery.EurekaClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
@@ -25,7 +26,10 @@ public class GatewayRibbonConfig {
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
         CloseableHttpClient secureHttpClient,
         IClientConfig config,
-        ServerIntrospector serverIntrospector) {
-        return new GatewayRibbonLoadBalancingHttpClient(secureHttpClient, config, serverIntrospector);
+        ServerIntrospector serverIntrospector,
+        EurekaClient discoveryClient
+    ) {
+        return new GatewayRibbonLoadBalancingHttpClient(secureHttpClient, config, serverIntrospector, discoveryClient);
     }
+
 }

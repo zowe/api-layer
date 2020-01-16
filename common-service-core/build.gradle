@@ -9,7 +9,11 @@ dependencies {
 
     compileOnly(libraries.javax_servlet_api)
     compileOnly(libraries.lombok)
+    compileOnly(libraries.spring_boot_starter_cache)
+    compileOnly(libraries.eh_cache)
 
+    testCompile(libraries.spring_boot_starter_cache)
+    testCompile(libraries.eh_cache)
     testCompile(libraries.jackson_core)
     testCompile(libraries.jackson_databind)
     testCompile(libraries.javax_servlet_api)
@@ -20,6 +24,8 @@ dependencies {
     testCompile(libraries.logback_classic)
     testCompile(libraries.tomcat_embed_core)
     testCompile(libraries.mockito_core)
+    testCompile(libraries.powermock_api_mockito2)
+    testCompile(libraries.power_mock_junit4)
 
     testCompileOnly(libraries.lombok)
 }
