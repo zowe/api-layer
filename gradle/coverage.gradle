@@ -5,7 +5,7 @@ ext.javaProjectsWithUnitTests = [
     'discovery-service',
     'apiml-common',
     'gateway-service',
-    'integration-enabler-spring-v1',
+    //'integration-enabler-spring-v1',
     'integration-enabler-spring-v2',
     'onboarding-enabler-java',
     //'onboarding-enabler-spring',
