@@ -22,7 +22,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
  * RequestContext.getCurrentContext at a time
  */
 public class CurrentRequestContextTest {
-    private final ReentrantLock currentRequestContext = new ReentrantLock();
+    private final static ReentrantLock currentRequestContext = new ReentrantLock();
 
     protected RequestContext ctx;
 
