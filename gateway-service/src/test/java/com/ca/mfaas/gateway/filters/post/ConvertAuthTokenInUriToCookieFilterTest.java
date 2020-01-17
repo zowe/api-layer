@@ -45,6 +45,9 @@ public class ConvertAuthTokenInUriToCookieFilterTest {
     public void doesNotDoAnythingWhenThereIsNoParam() {
         RequestContext ctx = getMockRequestContext();
         runFilter(ctx);
+        System.err.println(ctx);
+        System.err.println(ctx.getResponse());
+        System.err.println(ctx.getResponse().getHeaderNames());
         assertFalse(ctx.getResponse().getHeaderNames().contains("Set-Cookie"));
     }
 
