@@ -14,6 +14,7 @@ import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
 import com.ca.mfaas.gateway.config.CacheConfig;
 import com.ca.mfaas.gateway.security.service.schema.*;
+import com.ca.mfaas.gateway.utils.CurrentRequestContextTest;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
@@ -46,7 +47,7 @@ import static org.mockito.Mockito.*;
     ServiceAuthenticationServiceImplTest.Context.class,
     CacheConfig.class
 })
-public class ServiceAuthenticationServiceImplTest {
+public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
     @Autowired
     private EurekaClient discoveryClient;
