@@ -282,6 +282,14 @@ pipeline {
         always {
             junit allowEmptyResults: true, testResults: '**/test-results/**/*.xml'
             archiveArtifacts '.change_class'
+            publishHTML (target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'gateway-service/build/reports/tests/test',
+                reportFiles: 'index.html',
+                reportName: "Unit Tests Report - gateway-service"
+            ])
         }
 
         success {
