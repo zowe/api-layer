@@ -100,13 +100,13 @@ public final class ClassOrDefaultProxyUtils {
          *
          * @return class which is now proxied. It could be one of implementationClassName or defaultImplementation
          */
-        public Class<?> getImplementationClass();
+        Class<?> getImplementationClass();
 
         /**
          *
          * @return true if proxy use the original class, false if is using default (dummy) class
          */
-        public boolean isUsingBaseImplementation();
+        boolean isUsingBaseImplementation();
 
     }
 
@@ -256,24 +256,24 @@ public final class ClassOrDefaultProxyUtils {
     }
 
     /**
-     * Interface to controll an exception mapping. It offer base method to make controll on exception conversion
+     * Interface to control an exception mapping. It offer base method to make control on exception conversion
      * from Handler side.
      * @param <T> Target exception (which is thrown in case of mapping)
      */
     public interface ExceptionMapping<T extends Exception> {
 
         /**
-         * Method indicate if mapping was created well (to controll from proxy handler)
+         * Method indicate if mapping was created well (to control from proxy handler)
          * @return true if mapping is ready to use otherwise false
          */
-        public boolean isInitialized();
+        boolean isInitialized();
 
         /**
-         * Method will check if t is able to map. If yes, make mapping and throw new (mapped) expception
+         * Method will check if t is able to map. If yes, make mapping and throw new (mapped) exception
          * @param t Original exception
          * @throws T Type of mapped exception to throw in case of mapping is right to type of t
          */
-        public void apply(Throwable t) throws T;
+        void apply(Throwable t) throws T;
 
     }
 
@@ -281,7 +281,7 @@ public final class ClassOrDefaultProxyUtils {
      * This exception mapper is based on getter in source exception. It allows to get from zero to N getters without
      * argument in source exception and use them as arguments in target constructor.
      *
-     * You have to define same count of getter names (with same result type) as a contructor in target exception. The
+     * You have to define same count of getter names (with same result type) as a constructor in target exception. The
      * order has to be also same.
      *
      * @param <T> Type of target exception
@@ -322,7 +322,7 @@ public final class ClassOrDefaultProxyUtils {
 
         /**
          * Method find constructor in target exception, prepare lambdas to get values from source exception and return
-         * function to comvert source exception to new (target) one
+         * function to convert source exception to new (target) one
          * @param sourceExceptionClassName name of exception to map
          * @param targetExceptionClass exception which could be construct after mapping
          * @param methodNames names of methods without argument on source exception to get values into constructor to create target exception
@@ -359,7 +359,7 @@ public final class ClassOrDefaultProxyUtils {
 
             // find the constructor and store functions to invoke then
             try {
-                return getMappingFunction((Constructor<T>) targetExceptionClass.getConstructor(argClasses.toArray(new Class[0])), mapFunctions);
+                return getMappingFunction(targetExceptionClass.getConstructor(argClasses.toArray(new Class[0])), mapFunctions);
             } catch (NoSuchMethodException e) {
                 log.debug("Cannot find constructor on {} with {}", sourceExceptionClassName, argClasses);
                 return null;

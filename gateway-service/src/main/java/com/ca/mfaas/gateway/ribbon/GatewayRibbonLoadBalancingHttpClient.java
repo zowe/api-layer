@@ -52,8 +52,9 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
 
     /**
      * Ribbon load balancer
-     * @param secureHttpClient custom http client for our certificates
-     * @param config configuration details
+     *
+     * @param secureHttpClient   custom http client for our certificates
+     * @param config             configuration details
      * @param serverIntrospector introspector
      */
     public GatewayRibbonLoadBalancingHttpClient(CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector, EurekaClient discoveryClient) {
@@ -114,8 +115,9 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
 
     /**
      * This methods write specific InstanceInfo into cache
-     * @param serviceId serviceId of instance
-     * @param instanceId ID of instance
+     *
+     * @param serviceId    serviceId of instance
+     * @param instanceId   ID of instance
      * @param instanceInfo instanceInfo to store
      * @return cached instanceInfo object
      */
@@ -127,7 +129,8 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
     /**
      * Get the InstanceInfo by id. For searching is used serviceId. It method found another instances it will
      * cache them for next using
-     * @param serviceId service to call
+     *
+     * @param serviceId  service to call
      * @param instanceId selected instance of service
      * @return instance with matching service and instanceId
      */
@@ -136,7 +139,7 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
         InstanceInfo output = null;
 
         Application application = discoveryClient.getApplication(serviceId);
-        if (application == null) return output;
+        if (application == null) return null;
 
         for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(instanceId, instanceInfo.getInstanceId())) {
@@ -158,20 +161,20 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
         super.customizeLoadBalancerCommandBuilder(request, config, builder);
 
         /*
-         * add into builder listener to work with request immediatelly when instance if selected
-         * it is helpfull for selecting {@com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand} in
+         * add into builder listener to work with request immediately when instance if selected
+         * it is helpful for selecting {@com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand} in
          * case there is multiple instances with same serviceId which have different authentication. Therefor it
          * is necessary wait for selection of instance to apply right authentication command.
          */
         builder.withListeners(Collections.singletonList(new ExecutionListener<Object, RibbonApacheHttpResponse>() {
 
             @Override
-            public void onExecutionStart(ExecutionContext<Object> context) throws AbortExecutionException {
+            public void onExecutionStart(ExecutionContext<Object> context) {
                 // dont needed yet
             }
 
             @Override
-            public void onStartWithServer(ExecutionContext<Object> context, ExecutionInfo info) throws AbortExecutionException {
+            public void onStartWithServer(ExecutionContext<Object> context, ExecutionInfo info) {
                 final AuthenticationCommand cmd = (AuthenticationCommand) RequestContext.getCurrentContext().get(AUTHENTICATION_COMMAND_KEY);
                 if (cmd != null) {
                     // in context is a command, it means update of authentication is waiting for select an instance
