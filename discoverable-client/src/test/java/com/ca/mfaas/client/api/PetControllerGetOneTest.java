@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {PetController.class}, secure = false)
-@Import(value = {ApplicationConfiguration.class})
+@Import(ApplicationConfiguration.class)
 public class PetControllerGetOneTest {
     @Autowired
     private MockMvc mockMvc;
