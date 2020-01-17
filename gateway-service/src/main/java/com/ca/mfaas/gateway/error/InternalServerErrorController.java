@@ -68,6 +68,7 @@ public class InternalServerErrorController implements ErrorController {
      * @param request Http request
      * @return Http response entity
      */
+    @SuppressWarnings("squid:S3752")
     @RequestMapping(value = ERROR_ENDPOINT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<ApiMessageView> error(HttpServletRequest request) {
