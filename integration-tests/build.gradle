@@ -43,10 +43,6 @@ jar {
     baseName = "integration-tests"
 }
 
-testlogger {
-    theme 'standard-parallel'
-}
-
 test.enabled = false
 
 apply plugin : 'java'
