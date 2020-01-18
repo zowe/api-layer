@@ -24,6 +24,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -36,6 +37,12 @@ public class TomcatHttpsTest {
     private static final String EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN = "excepted SSLHandshakeException exception not thrown";
     private static final String EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN = "excepted HttpsConfigError exception not thrown";
     private static final String UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE = "unable to find valid certification path";
+
+    @Before
+    public void setUp() {
+        System.clearProperty("javax.net.ssl.keyStore");
+        System.clearProperty("javax.net.ssl.trustStore");
+    }
 
     @Test
     public void correctConfigurationShouldWork() throws IOException, LifecycleException {
