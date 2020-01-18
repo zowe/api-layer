@@ -27,12 +27,15 @@ import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 
 import javax.net.ssl.SSLHandshakeException;
 
 import com.ca.mfaas.security.SecurityTestUtils;
 
+@Slf4j
 public class TomcatHttpsTest {
     private static final String EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN = "excepted SSLHandshakeException exception not thrown";
     private static final String EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN = "excepted HttpsConfigError exception not thrown";
@@ -41,7 +44,11 @@ public class TomcatHttpsTest {
     @Before
     public void setUp() {
         System.clearProperty("javax.net.ssl.keyStore");
+        System.clearProperty("javax.net.ssl.keyStorePassword");
+        System.clearProperty("javax.net.ssl.keyStoreType");
         System.clearProperty("javax.net.ssl.trustStore");
+        System.clearProperty("javax.net.ssl.trustStorePassword");
+        System.clearProperty("javax.net.ssl.keyStoreType");
     }
 
     @Test
@@ -57,6 +64,7 @@ public class TomcatHttpsTest {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
         } catch (SSLHandshakeException e) {  // NOSONAR
+            log.info("SSLHandshakeException: {}", e, e);
             assertTrue(e.getMessage().contains(UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE));
         }
     }
