@@ -9,14 +9,29 @@
  */
 package com.ca.mfaas.gateway.security.service.schema;
 
+import static com.ca.mfaas.gateway.security.service.schema.ZosmfScheme.ZosmfCommand.COOKIE_HEADER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Calendar;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
 import com.ca.apiml.security.common.token.TokenNotValidException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.utils.CurrentRequestContextTest;
+import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
 import com.netflix.zuul.context.RequestContext;
-import io.jsonwebtoken.JwtException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -24,17 +39,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Calendar;
-import java.util.Optional;
-
-import static com.ca.mfaas.gateway.security.service.schema.ZosmfScheme.ZosmfCommand.COOKIE_HEADER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import io.jsonwebtoken.JwtException;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ZosmfSchemeTest extends CurrentRequestContextTest {
+public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Mock
     private AuthenticationService authenticationService;

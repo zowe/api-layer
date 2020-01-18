@@ -12,8 +12,9 @@ package com.ca.mfaas.gateway.filters.pre;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
-import com.ca.mfaas.gateway.utils.CurrentRequestContextTest;
+import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
 import com.netflix.zuul.context.RequestContext;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ServiceAuthenticationFilterTest extends CurrentRequestContextTest {
+public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @Mock
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;

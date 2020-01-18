@@ -9,12 +9,23 @@
  */
 package com.ca.mfaas.gateway.security.service.schema;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.util.Calendar;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.service.PassTicketService;
 import com.ca.apiml.security.common.token.QueryResponse;
-import com.ca.mfaas.gateway.utils.CurrentRequestContextTest;
+import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
 import com.netflix.zuul.context.RequestContext;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,14 +35,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Calendar;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
-
 @RunWith(MockitoJUnitRunner.class)
-public class HttpBasicPassTicketSchemeTest extends CurrentRequestContextTest {
+public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
     private final int PASSTICKET_DURATION = 300;
 

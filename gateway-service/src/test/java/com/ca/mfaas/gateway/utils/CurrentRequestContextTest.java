@@ -13,29 +13,28 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.netflix.zuul.context.RequestContext;
 
-import org.junit.After;
-import org.junit.Before;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
- * Makes sure that only one test class derived from this class is using
- * RequestContext.getCurrentContext at a time
+ * Provides functions to lock, clear, and unlock CurrentRequestContext in a test
+ * so there are no race conditions in parallel test execution.
  */
 public class CurrentRequestContextTest {
     private final static ReentrantLock currentRequestContext = new ReentrantLock();
 
     protected RequestContext ctx;
 
-    @Before
-    public void setUp() {
+    public void lockAndClearRequestContext() {
         currentRequestContext.lock();
+        RequestContext.testSetCurrentContext(null);
         ctx = RequestContext.getCurrentContext();
         ctx.clear();
         ctx.setResponse(new MockHttpServletResponse());
     }
 
-    @After
-    public void tearDown() {
+    public void unlockRequestContext() {
+        RequestContext.testSetCurrentContext(null);
+        ctx.clear();
         currentRequestContext.unlock();
     }
 }

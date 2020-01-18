@@ -19,12 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.mfaas.gateway.utils.CurrentRequestContextTest;
+import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
 
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-public class ConvertAuthTokenInUriToCookieFilterTest extends CurrentRequestContextTest {
+public class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContextTest {
 
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private final ConvertAuthTokenInUriToCookieFilter filter = new ConvertAuthTokenInUriToCookieFilter(

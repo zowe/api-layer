@@ -9,24 +9,33 @@
 */
 package com.ca.mfaas.gateway.security.service.schema;
 
-import com.ca.apiml.security.common.auth.Authentication;
-import com.ca.apiml.security.common.auth.AuthenticationScheme;
-import com.ca.apiml.security.common.token.QueryResponse;
-import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.utils.CurrentRequestContextTest;
-import com.netflix.zuul.context.RequestContext;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import javax.servlet.http.HttpServletRequest;
 
-public class AuthenticationSchemeFactoryTest extends CurrentRequestContextTest {
+import com.ca.apiml.security.common.auth.Authentication;
+import com.ca.apiml.security.common.auth.AuthenticationScheme;
+import com.ca.apiml.security.common.token.QueryResponse;
+import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
+import com.netflix.zuul.context.RequestContext;
+
+import org.junit.Test;
+
+public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     private static final AuthenticationCommand COMMAND = mock(AuthenticationCommand.class);
 
@@ -47,11 +56,6 @@ public class AuthenticationSchemeFactoryTest extends CurrentRequestContextTest {
                 return COMMAND;
             }
         };
-    }
-
-    @Before
-    public void init() {
-        RequestContext.testSetCurrentContext(null);
     }
 
     @Test

@@ -9,16 +9,51 @@
  */
 package com.ca.mfaas.gateway.security.service;
 
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
+import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletRequest;
+
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
 import com.ca.mfaas.gateway.config.CacheConfig;
-import com.ca.mfaas.gateway.security.service.schema.*;
+import com.ca.mfaas.gateway.security.service.schema.AbstractAuthenticationScheme;
+import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
+import com.ca.mfaas.gateway.security.service.schema.AuthenticationSchemeFactory;
+import com.ca.mfaas.gateway.security.service.schema.ByPassScheme;
+import com.ca.mfaas.gateway.security.service.schema.ServiceAuthenticationService;
 import com.ca.mfaas.gateway.utils.CurrentRequestContextTest;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.zuul.context.RequestContext;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,17 +65,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import javax.servlet.http.HttpServletRequest;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.*;
-
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
-import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -71,11 +95,17 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
 
     @Before
     public void init() {
+        lockAndClearRequestContext();
         MockitoAnnotations.initMocks(this);
         RequestContext.testSetCurrentContext(null);
         serviceAuthenticationService.evictCacheAllService();
 
         serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(discoveryClient, authenticationSchemeFactory, authenticationService, cacheManager);
+    }
+
+    @After
+    public void tearDown() {
+        unlockRequestContext();
     }
 
     private InstanceInfo createInstanceInfo(String instanceId, String scheme, String applid) {
