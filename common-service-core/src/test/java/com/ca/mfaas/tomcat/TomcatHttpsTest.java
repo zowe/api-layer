@@ -48,7 +48,7 @@ public class TomcatHttpsTest {
         System.clearProperty("javax.net.ssl.keyStoreType");
         System.clearProperty("javax.net.ssl.trustStore");
         System.clearProperty("javax.net.ssl.trustStorePassword");
-        System.clearProperty("javax.net.ssl.keyStoreType");
+        System.clearProperty("javax.net.ssl.trustStoreType");
     }
 
     @Test
