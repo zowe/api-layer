@@ -10,11 +10,11 @@
 
 package com.ca.mfaas.client.api;
 
+import com.ca.mfaas.client.model.UploadFileResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.ui.ModelMap;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,10 +28,22 @@ public class MultipartControllerTest {
     }
 
     @Test
-    public void shouldSubmitAndReturnString() {
+    public void shouldSubmitWithPostAndReturnString() {
         MockMultipartFile file = new MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
-        ModelMap model = new ModelMap();
+        UploadFileResponse uploadFileResponse = multipartController.uploadFileWithPost(file);
 
-        assertEquals("fileUploadView", multipartController.submit(file, model));
+        assertEquals("hello.txt", uploadFileResponse.getFileName());
+        assertEquals("text/plain", uploadFileResponse.getFileType());
+        assertEquals(13, uploadFileResponse.getSize());
+    }
+
+    @Test
+    public void shouldSubmitWithPutAndReturnString() {
+        MockMultipartFile file = new MockMultipartFile("file", "hello.txt", MediaType.TEXT_PLAIN_VALUE, "Hello, World!".getBytes());
+        UploadFileResponse uploadFileResponse = multipartController.uploadFileWithPut(file);
+
+        assertEquals("hello.txt", uploadFileResponse.getFileName());
+        assertEquals("text/plain", uploadFileResponse.getFileType());
+        assertEquals(13, uploadFileResponse.getSize());
     }
 }

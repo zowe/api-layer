@@ -9,18 +9,26 @@
  */
 package com.ca.mfaas.client.api;
 
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.ca.mfaas.client.model.UploadFileResponse;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class MultipartController {
-    @PutMapping(value = "api/v1/multipart",
-        headers = "content-type=multipart/form-data")
-    public String submit(@RequestParam("file") MultipartFile file, ModelMap modelMap) {
-        modelMap.addAttribute("file", file);
-        return "fileUploadView";
+    @RequestMapping(
+        value = "api/v1/multipart",
+        method = RequestMethod.POST,
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UploadFileResponse uploadFileWithPost(@RequestParam("file") MultipartFile file) {
+        return new UploadFileResponse(file.getOriginalFilename(), file.getContentType(), file.getSize());
+    }
+
+    @RequestMapping(
+        value = "api/v1/multipart",
+        method = RequestMethod.PUT,
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UploadFileResponse uploadFileWithPut(@RequestParam("file") MultipartFile file) {
+        return new UploadFileResponse(file.getOriginalFilename(), file.getContentType(), file.getSize());
     }
 }
