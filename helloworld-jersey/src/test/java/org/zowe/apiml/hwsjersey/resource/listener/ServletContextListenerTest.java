@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.hwsjersey.resource.listener;
+package org.zowe.apiml.hwsjersey.resource.listener;
 
-import com.ca.hwsjersey.listener.ApiDiscoveryListener;
-import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.hwsjersey.listener.ApiDiscoveryListener;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 

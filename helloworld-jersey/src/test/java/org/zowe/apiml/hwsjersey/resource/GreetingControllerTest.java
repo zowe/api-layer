@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.hwsjersey.resource;
+package org.zowe.apiml.hwsjersey.resource;
 
 import org.junit.Test;
 

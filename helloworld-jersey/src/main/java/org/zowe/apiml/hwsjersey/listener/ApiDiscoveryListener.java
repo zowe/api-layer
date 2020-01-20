@@ -7,13 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.hwsjersey.listener;
+package org.zowe.apiml.hwsjersey.listener;
 
-import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
-import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
-import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
-import com.ca.mfaas.exception.ServiceDefinitionException;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
+import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
+import org.zowe.apiml.exception.ServiceDefinitionException;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletContextEvent;

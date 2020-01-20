@@ -9,8 +9,8 @@
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
             <param-value>
-                com.ca.mfaas.eurekaservice,
-                com.ca.hwsjersey.resource,
+                org.zowe.apiml.eurekaservice,
+                org.zowe.apiml.hwsjersey.resource,
                 io.swagger.v3.jaxrs2.integration.resources
             </param-value>
         </init-param>
@@ -38,7 +38,7 @@
     </security-constraint>
 
     <listener>
-        <listener-class>com.ca.hwsjersey.listener.ApiDiscoveryListener</listener-class>
+        <listener-class>org.zowe.apiml.hwsjersey.listener.ApiDiscoveryListener</listener-class>
     </listener>
 
 </web-app>
