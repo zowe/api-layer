@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 
 /**
  * Controller offer method to control security. It can contains method for user and also method for calling services
@@ -29,13 +33,15 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     @DeleteMapping(path = "/invalidate/**")
-    public Boolean invalidateJwtToken(HttpServletRequest request) {
+    public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
         final String path = "/auth/invalidate/";
         final String uri = request.getRequestURI();
         final int index = uri.indexOf(path);
 
         final String jwtToken = (index >= 0) ? uri.substring(index + path.length()) : "";
-        return authenticationService.invalidateJwtToken(jwtToken, false);
+        final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
+
+        response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
     }
 
 }

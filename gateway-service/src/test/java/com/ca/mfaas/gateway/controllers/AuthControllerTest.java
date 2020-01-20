@@ -17,9 +17,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -41,12 +42,12 @@ public class AuthControllerTest {
     @Test
     public void invalidateJwtToken() throws Exception {
         when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/auth/invalidate/a/b")).andExpect(status().isOk()).andExpect(content().string("<Boolean>true</Boolean>"));
+        this.mockMvc.perform(delete("/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
 
         when(authenticationService.invalidateJwtToken("abcde", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/auth/invalidate/abcde")).andExpect(status().isOk()).andExpect(content().string("<Boolean>true</Boolean>"));
+        this.mockMvc.perform(delete("/auth/invalidate/abcde")).andExpect(status().is(SC_OK));
 
-        this.mockMvc.perform(delete("/auth/invalidate/xyz")).andExpect(status().isOk()).andExpect(content().string("<Boolean>false</Boolean>"));
+        this.mockMvc.perform(delete("/auth/invalidate/xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
