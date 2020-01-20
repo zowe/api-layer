@@ -46,6 +46,7 @@ import javax.annotation.Nonnull;
 @EnableWebSocket
 @EnableApiDiscovery
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
+
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());

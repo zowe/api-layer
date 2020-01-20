@@ -11,25 +11,24 @@ package com.ca.mfaas.discovery;
 
 import com.ca.mfaas.util.EurekaUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRenewedEvent;
+import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceCanceledEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
 /**
- * Listener of updated services.
+ * Called by Eureka when the service instance is unregistered (/cancelled)
  */
 @Component
 @RequiredArgsConstructor
-public class EurekaInstanceRenewedListener {
+public class EurekaInstanceCanceledListener {
 
     private final GatewayNotifier gatewayNotifier;
 
+    /**
+     * Translates service instance Eureka metadata from older versions to the current version
+     */
     @EventListener
-    public void listen(EurekaInstanceRenewedEvent event) {
-        final String instanceId = event.getInstanceInfo().getInstanceId();
-        final String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
-        // ie. update instance can have different authentication, this is reason to evict caches on gateway
-        gatewayNotifier.serviceUpdated(serviceId);
+    public void listen(EurekaInstanceCanceledEvent event) {
+        gatewayNotifier.serviceUpdated(EurekaUtils.getServiceIdFromInstanceId(event.getServerId()));
     }
 
 }

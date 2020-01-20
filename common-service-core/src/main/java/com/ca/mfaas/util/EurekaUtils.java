@@ -43,9 +43,9 @@ public final class EurekaUtils {
      */
     public static final String getUrl(InstanceInfo instanceInfo) {
         if (instanceInfo.getSecurePort() == 0) {
-            return "http://" + instanceInfo.getIPAddr() + ":" + instanceInfo.getPort();
+            return "http://" + instanceInfo.getHostName() + ":" + instanceInfo.getPort();
         } else {
-            return "https://" + instanceInfo.getIPAddr() + ":" + instanceInfo.getSecurePort();
+            return "https://" + instanceInfo.getHostName() + ":" + instanceInfo.getSecurePort();
         }
     }
 

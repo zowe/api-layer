@@ -8,6 +8,7 @@ package com.ca.mfaas.gateway.controllers;/*
  * Copyright Contributors to the Zowe Project.
  */
 
+import com.ca.mfaas.gateway.discovery.ApimlDiscoveryClient;
 import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,11 +35,14 @@ public class CacheServiceControllerTest {
     @Mock
     private ServiceCacheEvict service2;
 
+    @Mock
+    private ApimlDiscoveryClient discoveryClient;
+
     private CacheServiceController cacheServiceController;
 
     @Before
     public void setUp() {
-        cacheServiceController = new CacheServiceController(Arrays.asList(service1, service2));
+        cacheServiceController = new CacheServiceController(Arrays.asList(service1, service2), discoveryClient);
         mockMvc = MockMvcBuilders.standaloneSetup(cacheServiceController).build();
     }
 
@@ -46,22 +50,26 @@ public class CacheServiceControllerTest {
     public void testEvictAll() throws Exception {
         verify(service1, never()).evictCacheAllService();
         verify(service2, never()).evictCacheAllService();
+        verify(discoveryClient, never()).fetchRegistry();
 
         this.mockMvc.perform(delete("/cache/services")).andExpect(status().isOk());
 
         verify(service1, times(1)).evictCacheAllService();
         verify(service2, times(1)).evictCacheAllService();
+        verify(discoveryClient, times(1)).fetchRegistry();
     }
 
     @Test
     public void testEvict() throws Exception {
         verify(service1, never()).evictCacheService(any());
         verify(service2, never()).evictCacheService(any());
+        verify(discoveryClient, never()).fetchRegistry();
 
         this.mockMvc.perform(delete("/cache/services/service01")).andExpect(status().isOk());
 
         verify(service1, times(1)).evictCacheService("service01");
         verify(service2, times(1)).evictCacheService("service01");
+        verify(discoveryClient, times(1)).fetchRegistry();
     }
 
 }

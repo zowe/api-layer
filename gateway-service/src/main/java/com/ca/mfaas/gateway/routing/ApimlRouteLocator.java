@@ -10,10 +10,10 @@
 package com.ca.mfaas.gateway.routing;
 
 import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
-import com.ca.mfaas.product.routing.RoutedServices;
-import com.ca.mfaas.product.routing.RoutedServicesUser;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
+import com.ca.mfaas.product.routing.RoutedServices;
+import com.ca.mfaas.product.routing.RoutedServicesUser;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;

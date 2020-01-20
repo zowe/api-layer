@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.gateway.controllers;
 
+import com.ca.mfaas.gateway.discovery.ApimlDiscoveryClient;
 import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,15 +30,18 @@ import java.util.List;
 public class CacheServiceController {
 
     private final List<ServiceCacheEvict> toEvict;
+    private final ApimlDiscoveryClient discoveryClient;
 
     @DeleteMapping(path = "")
     public void evictAll() {
         toEvict.forEach(ServiceCacheEvict::evictCacheAllService);
+        discoveryClient.fetchRegistry();
     }
 
     @DeleteMapping(path = "/{serviceId}")
     public void evict(@PathVariable("serviceId") String serviceId) {
         toEvict.forEach(s -> s.evictCacheService(serviceId));
+        discoveryClient.fetchRegistry();
     }
 
 }

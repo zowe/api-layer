@@ -61,6 +61,7 @@ public class PassTicketService {
         public static final String ZOWE_DUMMY_USERID = "user";
         public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZoweDummyPassTicket";
 
+        public static final String DUMMY_USER = "user";
         public static final String UNKNOWN_USER = "unknownUser";
         public static final String UNKNOWN_APPLID = "XBADAPPL";
 
@@ -100,6 +101,10 @@ public class PassTicketService {
                 throw new IRRPassTicketGenerationException(8, 16, 28);
             }
 
+            if (StringUtils.equalsIgnoreCase(DUMMY_USER, userId)) {
+                return ZOWE_DUMMY_PASS_TICKET_PREFIX;
+            }
+
             final UserApp userApp = new UserApp(userId, applId);
             final int currentId;
             synchronized (DefaultPassTicketImpl.class) {
@@ -123,4 +128,5 @@ public class PassTicketService {
         }
 
     }
+
 }

@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.discovery;
 
+import com.ca.mfaas.discovery.config.EurekaConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "eureka.client.fetchRegistry=false",
         "eureka.client.registerWithEureka=false"
     },
-    classes = {DiscoveryServiceApplication.class}
+    classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
 @AutoConfigureMockMvc
 public class EurekaSecuredEndpointsTest {
@@ -59,4 +60,5 @@ public class EurekaSecuredEndpointsTest {
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized());
     }
+
 }

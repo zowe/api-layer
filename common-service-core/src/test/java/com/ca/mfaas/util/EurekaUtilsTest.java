@@ -29,9 +29,9 @@ public class EurekaUtilsTest {
         assertNull(EurekaUtils.getServiceIdFromInstanceId("abc"));
     }
 
-    private InstanceInfo createInstanceInfo(String ip, int port, int securePort) {
+    private InstanceInfo createInstanceInfo(String host, int port, int securePort) {
         InstanceInfo out = mock(InstanceInfo.class);
-        when(out.getIPAddr()).thenReturn(ip);
+        when(out.getHostName()).thenReturn(host);
         when(out.getPort()).thenReturn(port);
         when(out.getSecurePort()).thenReturn(securePort);
         return out;
@@ -39,11 +39,11 @@ public class EurekaUtilsTest {
 
     @Test
     public void testGetUrl() {
-        InstanceInfo ii1 = createInstanceInfo("127.0.0.1", 80, 0);
-        InstanceInfo ii2 = createInstanceInfo("192.168.0.1", 80, 443);
+        InstanceInfo ii1 = createInstanceInfo("hostname1", 80, 0);
+        InstanceInfo ii2 = createInstanceInfo("locahost", 80, 443);
 
-        assertEquals("http://127.0.0.1:80", EurekaUtils.getUrl(ii1));
-        assertEquals("https://192.168.0.1:443", EurekaUtils.getUrl(ii2));
+        assertEquals("http://hostname1:80", EurekaUtils.getUrl(ii1));
+        assertEquals("https://locahost:443", EurekaUtils.getUrl(ii2));
     }
 
 }

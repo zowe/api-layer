@@ -37,6 +37,7 @@ dependencies {
     testCompile libraries.lombok
     testCompile libraries.jsoup
     testCompile libraries.rest_assured
+    testCompile libraries.javax_servlet_api
 }
 
 jar {
@@ -133,5 +134,14 @@ task runAllIntegrationTests(type: Test) {
             'com.ca.mfaas.util.categories.AdditionalLocalTest'
         )
     }
+    outputs.upToDateWhen { false }
+}
+
+task runTestWithoutStartupCheck(type: Test) {
+    group "Integration tests"
+    description "Run integration test without startup check"
+
+    systemProperties System.properties
+
     outputs.upToDateWhen { false }
 }

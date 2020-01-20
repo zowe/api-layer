@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.filters.pre;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
@@ -43,7 +44,7 @@ public class ZosmfFilter extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
 
         String serviceId = (String) context.get(SERVICE_ID_KEY);
-        return serviceId.toLowerCase().contains(ZOSMF);
+        return StringUtils.containsIgnoreCase(serviceId, ZOSMF);
     }
 
     @Override

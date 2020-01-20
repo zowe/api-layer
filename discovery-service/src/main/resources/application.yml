@@ -73,6 +73,8 @@ eureka:
         region: default
         serviceUrl:
             defaultZone: ${apiml.discovery.allPeersUrls}
+    server:
+        useReadOnlyResponseCache: false
 
 management:
     endpoints:

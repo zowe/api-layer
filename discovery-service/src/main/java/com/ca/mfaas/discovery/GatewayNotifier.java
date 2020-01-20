@@ -46,7 +46,7 @@ public class GatewayNotifier {
 
     public void serviceUpdated(String serviceId) {
         final PeerAwareInstanceRegistry registry = getRegistry();
-        final Application application = registry.getApplication("gateway");
+        final Application application = registry.getApplication("GATEWAY");
         if (application == null) {
             logger.log("apiml.discovery.errorNotifyingGateway");
             return;

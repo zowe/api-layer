@@ -216,10 +216,10 @@ public class AuthenticationServiceTest {
             .compact();
     }
 
-    private InstanceInfo createInstanceInfo(String instanceId, String ip, int port, int securePort) {
+    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int port, int securePort) {
         InstanceInfo out = mock(InstanceInfo.class);
         when(out.getInstanceId()).thenReturn(instanceId);
-        when(out.getIPAddr()).thenReturn(ip);
+        when(out.getHostName()).thenReturn(hostName);
         when(out.getPort()).thenReturn(port);
         when(out.getSecurePort()).thenReturn(securePort);
         return out;
@@ -245,9 +245,9 @@ public class AuthenticationServiceTest {
 
         Application application = mock(Application.class);
         List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("instance02", "192.168.0.1", 10000, 10433),
-            createInstanceInfo("myInstance01", "127.0.0.0.1", 10000, 10433),
-            createInstanceInfo("instance03", "192.168.0.2", 10001, 0)
+            createInstanceInfo("instance02", "hostname1", 10000, 10433),
+            createInstanceInfo("myInstance01", "localhost", 10000, 10433),
+            createInstanceInfo("instance03", "hostname2", 10001, 0)
         );
         when(application.getInstances()).thenReturn(instances);
         when(discoveryClient.getApplication("gateway")).thenReturn(application);
@@ -257,8 +257,8 @@ public class AuthenticationServiceTest {
         tokenAuthentication = authService.validateJwtToken(jwt1);
         assertFalse(tokenAuthentication.isAuthenticated());
         verify(restTemplate, times(2)).delete(anyString(), (Object[]) any());
-        verify(restTemplate).delete("https://192.168.0.1:10433/auth/invalidate/{}", jwt1);
-        verify(restTemplate).delete("http://192.168.0.2:10001/auth/invalidate/{}", jwt1);
+        verify(restTemplate).delete("https://hostname1:10433/auth/invalidate/{}", jwt1);
+        verify(restTemplate).delete("http://hostname2:10001/auth/invalidate/{}", jwt1);
     }
 
     @Test

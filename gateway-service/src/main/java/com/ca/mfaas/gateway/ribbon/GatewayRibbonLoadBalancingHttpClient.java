@@ -38,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.Map;
 
 import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecureConnectionIfNeeded;
@@ -168,6 +169,24 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
          */
         builder.withListeners(Collections.singletonList(new ExecutionListener<Object, RibbonApacheHttpResponse>() {
 
+            /**
+             * This method update current request by added values on sending in load balancer. It is used at least
+             * for service authentication.
+             *
+             * Now it updates only headers, but could be extended for another values in future.
+             *
+             * @param context
+             */
+            private void updateRequestByZuulChanges(ExecutionContext<Object> context) {
+                final Map<String, String> newHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
+                if (!newHeaders.isEmpty()) {
+                    final RibbonApacheHttpRequest req = (RibbonApacheHttpRequest) context.getRequest();
+                    for (Map.Entry<String, String> entry : newHeaders.entrySet()) {
+                        req.getContext().getHeaders().add(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+
             @Override
             public void onExecutionStart(ExecutionContext<Object> context) {
                 // dont needed yet
@@ -186,6 +205,8 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
                         throw new AbortExecutionException(String.valueOf(e), e);
                     }
                 }
+
+                updateRequestByZuulChanges(context);
             }
 
             @Override

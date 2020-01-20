@@ -36,9 +36,9 @@ public class GatewayNotifierTest {
         EurekaServerContextHolder.initialize(context);
     }
 
-    private InstanceInfo createInstanceInfo(String ipAddr, int port, int securePort) {
+    private InstanceInfo createInstanceInfo(String hostName, int port, int securePort) {
         InstanceInfo out = mock(InstanceInfo.class);
-        when(out.getIPAddr()).thenReturn(ipAddr);
+        when(out.getHostName()).thenReturn(hostName);
         when(out.getPort()).thenReturn(port);
         when(out.getSecurePort()).thenReturn(securePort);
         return out;
@@ -53,21 +53,21 @@ public class GatewayNotifierTest {
         verify(restTemplate, never()).delete(anyString());
 
         List<InstanceInfo> instances = Arrays.asList(
-            createInstanceInfo("127.0.0.1", 1000, 1433),
-            createInstanceInfo("192.168.0.1", 1000, 0)
+            createInstanceInfo("hostname1", 1000, 1433),
+            createInstanceInfo("hostname2", 1000, 0)
         );
 
         Application application = mock(Application.class);
         when(application.getInstances()).thenReturn(instances);
-        when(registry.getApplication("gateway")).thenReturn(application);
+        when(registry.getApplication("GATEWAY")).thenReturn(application);
 
         gatewayNotifier.serviceUpdated("testService");
-        verify(restTemplate, times(1)).delete("https://127.0.0.1:1433/cache/services/testService");
-        verify(restTemplate, times(1)).delete("http://192.168.0.1:1000/cache/services/testService");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services/testService");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services/testService");
 
         gatewayNotifier.serviceUpdated(null);
-        verify(restTemplate, times(1)).delete("https://127.0.0.1:1433/cache/services");
-        verify(restTemplate, times(1)).delete("http://192.168.0.1:1000/cache/services");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services");
 
         verify(restTemplate, times(4)).delete(anyString());
     }
