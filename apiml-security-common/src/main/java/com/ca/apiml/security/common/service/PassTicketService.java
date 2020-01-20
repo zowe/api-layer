@@ -10,6 +10,7 @@
 package com.ca.apiml.security.common.service;
 
 import com.ca.mfaas.util.ClassOrDefaultProxyUtils;
+import com.ca.mfaas.util.ObjectUtil;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import org.apache.commons.lang.StringUtils;
@@ -69,15 +70,12 @@ public class PassTicketService {
 
         @Override
         public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
-            if (userId == null)
-                throw new IllegalArgumentException("Parameter userId is empty");
-            if (applId == null)
-                throw new IllegalArgumentException("Parameter applId is empty");
-            if (passTicket == null)
-                throw new IllegalArgumentException("Parameter passTicket is empty");
+            ObjectUtil.requireNotNull(userId, "Parameter userId is empty");
+            ObjectUtil.requireNotNull(applId, "Parameter applId is empty");
+            ObjectUtil.requireNotNull(passTicket, "Parameter passTicket is empty");
 
             if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {
-                throw new IRRPassTicketEvaluationException(8, 16, 28);
+                throw new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28);
             }
 
             if (userId.equals(ZOWE_DUMMY_USERID) && passTicket.startsWith(ZOWE_DUMMY_PASS_TICKET_PREFIX)) {
@@ -87,18 +85,18 @@ public class PassTicketService {
             final Set<String> passTickets = userAppToPasstickets.get(new UserApp(userId, applId));
 
             if ((passTickets == null) || !passTickets.contains(passTicket)) {
-                throw new IRRPassTicketEvaluationException(8, 16, 32);
+                throw new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32);
             }
         }
 
         @Override
         public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
             if (StringUtils.equalsIgnoreCase(UNKNOWN_USER, userId)) {
-                throw new IRRPassTicketGenerationException(8, 8, 16);
+                throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16);
             }
 
             if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {
-                throw new IRRPassTicketGenerationException(8, 16, 28);
+                throw new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28);
             }
 
             if (StringUtils.equalsIgnoreCase(DUMMY_USER, userId)) {
@@ -126,7 +124,6 @@ public class PassTicketService {
             private final String applId;
 
         }
-
     }
 
 }

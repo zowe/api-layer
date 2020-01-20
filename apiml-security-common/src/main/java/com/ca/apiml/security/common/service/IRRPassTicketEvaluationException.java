@@ -20,6 +20,10 @@ public class IRRPassTicketEvaluationException extends AbstractIRRPassTicketExcep
         super(safRc, racfRc, racfRsn);
     }
 
+    public IRRPassTicketEvaluationException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
     @Override
     public String getMessage() {
         return getMessage("Error on evaluation of PassTicket:");

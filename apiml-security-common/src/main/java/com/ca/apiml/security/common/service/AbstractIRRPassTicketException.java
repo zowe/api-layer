@@ -26,6 +26,12 @@ public abstract class AbstractIRRPassTicketException extends Exception {
     protected final int racfRc;
     protected final int racfRsn;
 
+    public AbstractIRRPassTicketException(ErrorCode errorCode) {
+        this.safRc = errorCode.getSafRc();
+        this.racfRc = errorCode.getRacfRc();
+        this.racfRsn = errorCode.getRacfRsn();
+    }
+
     public ErrorCode getErrorCode() {
         return ErrorCode.getErrorCode(this);
     }

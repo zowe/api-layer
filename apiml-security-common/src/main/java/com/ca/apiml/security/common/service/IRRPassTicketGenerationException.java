@@ -20,6 +20,10 @@ public class IRRPassTicketGenerationException extends AbstractIRRPassTicketExcep
         super(safRc, racfRc, racfRsn);
     }
 
+    public IRRPassTicketGenerationException(ErrorCode errorCode) {
+        super(errorCode);
+    }
+
     @Override
     public String getMessage() {
         return getMessage("Error on generation of PassTicket:");

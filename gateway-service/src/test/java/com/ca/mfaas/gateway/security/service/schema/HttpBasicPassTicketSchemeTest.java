@@ -9,11 +9,11 @@
  */
 package com.ca.mfaas.gateway.security.service.schema;
 
+import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 import java.util.Calendar;
 
@@ -21,34 +21,32 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
+import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.apiml.security.common.service.PassTicketService;
 import com.ca.apiml.security.common.token.QueryResponse;
+import com.ca.mfaas.gateway.security.service.AuthenticationException;
 import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
 import com.netflix.zuul.context.RequestContext;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.rules.ExpectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
-@RunWith(MockitoJUnitRunner.class)
 public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
-
-    private final int PASSTICKET_DURATION = 300;
-
-    @Mock
-    private PassTicketService passTicketService;
-
-    @InjectMocks
+    private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private HttpBasicPassTicketScheme httpBasicPassTicketScheme;
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void init() {
-        ReflectionTestUtils.setField(httpBasicPassTicketScheme, "timeout", PASSTICKET_DURATION);
+        PassTicketService passTicketService = new PassTicketService();
+        passTicketService.init();
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
     }
 
     @Test
@@ -56,8 +54,6 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime());
-
-        when(passTicketService.generate("username", "applid")).thenReturn("123456");
 
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
         assertNotNull(ac);
@@ -68,7 +64,8 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
         RequestContext.testSetCurrentContext(requestContext);
         ac.apply(null);
 
-        assertEquals("Basic dXNlcm5hbWU6MTIzNDU2", requestContext.getZuulRequestHeaders().get("authorization"));
+        assertEquals("Basic dXNlcm5hbWU6Wm93ZUR1bW15UGFzc1RpY2tldF9hcHBsaWRfdXNlcm5hbWVfMA==",
+            requestContext.getZuulRequestHeaders().get("authorization"));
 
         // JWT token expired one minute ago (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, -1);
@@ -87,9 +84,27 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
         ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
 
         calendar = Calendar.getInstance();
-        calendar.add(Calendar.SECOND, PASSTICKET_DURATION);
+        calendar.add(Calendar.SECOND, authConfigurationProperties.getPassTicket().getTimeout());
         // checking setup of expired time, JWT expired in future (more than hour), check if set date is similar to passticket timeout (5s)
         assertEquals(0.0, Math.abs(calendar.getTime().getTime() - (long) ReflectionTestUtils.getField(ac, "expireAt")), 10.0);
     }
 
+    @Test
+    public void returnsCorrectScheme() {
+        assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, httpBasicPassTicketScheme.getScheme());
+    }
+
+    @Test
+    public void getExceptionWhenUserIdNotValid() throws AuthenticationException {
+        String applId = "applId";
+
+        Calendar calendar = Calendar.getInstance();
+        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, applId);
+        QueryResponse queryResponse = new QueryResponse("domain", UNKNOWN_USER, calendar.getTime(), calendar.getTime());
+
+        exceptionRule.expect(AuthenticationException.class);
+        exceptionRule.expectMessage(String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId));
+
+        httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
+    }
 }

@@ -11,6 +11,7 @@ package com.ca.apiml.security.common.auth;/*
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+
 public class AuthenticationSchemeTest {
 
     @Test
@@ -19,7 +20,6 @@ public class AuthenticationSchemeTest {
             AuthenticationScheme as2 = AuthenticationScheme.fromScheme(as.getScheme());
             assertSame(as, as2);
         }
-        assertNull(AuthenticationScheme.fromScheme("absolutly nonsence"));
+        assertNull(AuthenticationScheme.fromScheme("absolute nonsense"));
     }
-
 }

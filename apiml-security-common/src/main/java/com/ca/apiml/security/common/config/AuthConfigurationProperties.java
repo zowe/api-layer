@@ -67,7 +67,7 @@ public class AuthConfigurationProperties {
 
     @Data
     public static class PassTicket {
-        private Integer timeout = 360;
+        private Integer timeout = 540;
     }
 
     public AuthConfigurationProperties() {

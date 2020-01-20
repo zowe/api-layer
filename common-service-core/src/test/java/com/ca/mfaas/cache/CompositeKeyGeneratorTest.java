@@ -28,13 +28,13 @@ public class CompositeKeyGeneratorTest {
 
         assertEquals("a", g.generate(target, method, "a"));
 
-        Object param = new Object[] {"a"};
+        Object param = new Object[]{"a"};
         Object response = g.generate(target, method, param);
         assertTrue(response instanceof CompositeKey);
         assertEquals(param, ((CompositeKey) response).get(0));
 
         assertEquals(new CompositeKey("a", "b"), g.generate(target, method, "a", "b"));
-        assertEquals(new CompositeKey(new String[] {"a"}, "b"), g.generate(target, method, new String[] {"a"}, "b"));
+        assertEquals(new CompositeKey(new String[]{"a"}, "b"), g.generate(target, method, new String[]{"a"}, "b"));
     }
 
 }
