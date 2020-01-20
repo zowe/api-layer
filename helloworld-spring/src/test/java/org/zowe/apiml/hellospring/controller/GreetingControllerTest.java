@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.hellospring.controller;
+package org.zowe.apiml.hellospring.controller;
 
 import org.junit.Assert;
 import org.junit.Before;

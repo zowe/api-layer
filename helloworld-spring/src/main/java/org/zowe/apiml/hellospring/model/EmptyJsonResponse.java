@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.hellospring.model;
+package org.zowe.apiml.hellospring.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 

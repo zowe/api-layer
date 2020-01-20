@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.hellospring.controller;
+package org.zowe.apiml.hellospring.controller;
 
-import com.ca.mfaas.eurekaservice.model.Health;
-import com.ca.mfaas.hellospring.model.EmptyJsonResponse;
+import org.zowe.apiml.eurekaservice.model.Health;
+import org.zowe.apiml.hellospring.model.EmptyJsonResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.hellospring.controller;
+package org.zowe.apiml.hellospring.controller;
 
-import com.ca.mfaas.hellospring.model.Greeting;
+import org.zowe.apiml.hellospring.model.Greeting;
 import io.swagger.annotations.*;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
