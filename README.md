@@ -83,7 +83,7 @@ For the code coverage of a single Java module (for example `discovery-service`),
 
 You can an individual test class by:
 
-    ./gradlew :discovery-service:test --tests com.ca.mfaas.discovery.staticdef.ServiceDefinitionProcessorTest
+    ./gradlew :discovery-service:test --tests org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessorTest
 
 ## Run integration tests
 
