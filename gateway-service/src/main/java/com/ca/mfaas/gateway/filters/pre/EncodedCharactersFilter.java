@@ -10,19 +10,20 @@
 
 package com.ca.mfaas.gateway.filters.pre;
 
+import com.ca.mfaas.message.log.ApimlLogger;
+import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
+import org.springframework.http.HttpStatus;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 /**
  *  This filter should run on all requests for services, which do not have enabled encoded characters in URL
@@ -38,6 +39,10 @@ public class EncodedCharactersFilter extends ZuulFilter {
 
     private final DiscoveryClient discoveryClient;
     public static final String METADATA_KEY = "apiml.enableUrlEncodedCharacters";
+    private static final List<String> prohibitedCharacters = Arrays.asList("%2e", "%2E", ";", "%3b", "%3B", "%2f", "%2F", "\\", "%5c", "%5C", "%25", "%");
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Override
     public String filterType() {
@@ -72,9 +77,33 @@ public class EncodedCharactersFilter extends ZuulFilter {
 
     @Override
     public Object run() {
+        RequestContext context = RequestContext.getCurrentContext();
+        final String requestPath = context.getRequest().getRequestURI();
 
-        // TODO Chris part
+            if (checkRequestForEncodedCharacters(requestPath)) {
+            rejectRequest(context);
+        }
 
         return null;
+    }
+
+    private boolean checkRequestForEncodedCharacters(String request) {
+        for (String forbidden : prohibitedCharacters) {
+            if (pathContains(request, forbidden)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void rejectRequest(RequestContext ctx) {
+        apimlLog.log("apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY));
+        ctx.setSendZuulResponse(false);
+        ctx.setResponseStatusCode(HttpStatus.BAD_REQUEST.value());
+        ctx.setResponseBody("Instance " + ctx.get(SERVICE_ID_KEY) + " does not allow encoded characters in the URL.");
+    }
+
+    private static boolean pathContains(String path, String character) {
+        return path != null && path.contains(character);
     }
 }
