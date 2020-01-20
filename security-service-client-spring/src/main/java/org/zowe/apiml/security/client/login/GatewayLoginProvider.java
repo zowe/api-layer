@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.client.login;
+package org.zowe.apiml.security.client.login;
 
-import com.ca.apiml.security.client.service.GatewaySecurityService;
-import com.ca.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.client.service.GatewaySecurityService;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;

@@ -7,14 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.client.service;
+package org.zowe.apiml.security.client.service;
 
-import com.ca.apiml.security.client.handler.RestResponseHandler;
-import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.apiml.security.common.token.QueryResponse;
-import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.product.gateway.GatewayClient;
-import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.security.client.handler.RestResponseHandler;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Before;

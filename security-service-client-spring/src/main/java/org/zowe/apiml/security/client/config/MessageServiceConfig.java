@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.client.config;
+package org.zowe.apiml.security.client.config;
 
-import com.ca.mfaas.message.core.MessageService;
-import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

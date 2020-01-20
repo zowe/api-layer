@@ -8,11 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.apiml.security.client.token;
+package org.zowe.apiml.security.client.token;
 
-import com.ca.apiml.security.client.service.GatewaySecurityService;
-import com.ca.apiml.security.common.token.QueryResponse;
-import com.ca.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.client.service.GatewaySecurityService;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.junit.MockitoJUnit;
