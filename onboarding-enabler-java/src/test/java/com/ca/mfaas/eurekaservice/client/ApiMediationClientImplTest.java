@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.IOException;
 import java.util.*;
 
 import static org.hamcrest.core.Is.isA;
@@ -45,7 +44,7 @@ public class ApiMediationClientImplTest {
         routes.add(apiRoute);
         routes.add(apiDocRoute);
         ApiMediationClient client = new ApiMediationClientImpl();
-        ApiMediationServiceConfig config = new ApiMediationServiceConfig(); //.builder()
+        ApiMediationServiceConfig config = new ApiMediationServiceConfig();
         config.setApiInfo(Collections.singletonList(apiInfo));
         config.setCatalog(catalogUiTile);
         config.setRoutes(routes);
@@ -70,14 +69,12 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badBaseUrlFormat() throws IOException, ServiceDefinitionException {
+    public void badBaseUrlFormat() throws ServiceDefinitionException {
         exceptionRule.expect(ServiceDefinitionException.class);
 
-        // Use the ApiMediationServiceConfigReader to load service configuration
-        String file = "/bad-baseurl-service-configuration.yml";
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-        //String configData = FileUtils.readConfigurationFile(file);
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(file);
+
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/bad-baseurl-service-configuration.yml");
 
         // Try register the services - expecting to throw ServiceDefinitionException
         ApiMediationClient client = new ApiMediationClientImpl();
@@ -86,11 +83,28 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void httpsBaseUrlFormat() throws IOException, ServiceDefinitionException {
-        String file = "/https-service-configuration.yml";
+    public void sslDisabledNoTrustStoreNoKeyStoreNeeded() throws ServiceDefinitionException {
+        //exceptionRule.expect(ServiceDefinitionException.class);
+
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-        //String configData = FileUtils.readConfigurationFile(file);
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(file);
+
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-disabled-service-configuration.yml");
+
+        // Try register the services - expecting to throw ServiceDefinitionException
+        ApiMediationClient client = new ApiMediationClientImpl();
+        client.register(config);
+        client.unregister();
+
+        config.getSsl().setVerifySslCertificatesOfServices(false);
+        client.register(config);
+        client.unregister();
+    }
+
+    @Test
+    public void httpsBaseUrlFormat() throws ServiceDefinitionException {
+        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
+
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-service-configuration.yml");
 
         ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
@@ -101,13 +115,12 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badProtocolForBaseUrl() throws IOException, ServiceDefinitionException  {
+    public void badProtocolForBaseUrl() throws ServiceDefinitionException  {
         exceptionRule.expect( ServiceDefinitionException.class);
 
-        String file = "/bad-protocol-baseurl-service-configuration.yml";
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-        //String configData = FileUtils.readConfigurationFile(file);
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(file);
+
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/bad-protocol-baseurl-service-configuration.yml");
 
         ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
@@ -115,16 +128,15 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void testMultipleSubsequentRegistrations() throws IOException, ServiceDefinitionException {
+    public void testMultipleSubsequentRegistrations() throws ServiceDefinitionException {
         exceptionRule.expect( ServiceDefinitionException.class);
 
-        String file = "/service-configuration.yml";
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
-        //String configData = FileUtils.readConfigurationFile(file);
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(file);
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
 
         ApiMediationClient client = new ApiMediationClientImpl();
+
         // First registration attempt
         client.register(config);
 
@@ -135,56 +147,50 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void testInitializationServiceDefinitionException() throws IOException, ServiceDefinitionException {
+    public void testInitializationServiceDefinitionException() throws ServiceDefinitionException {
         exceptionRule.expect( ServiceDefinitionException.class);
 
-        String file = "/service-configuration.yml";
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
-        //String configData = FileUtils.readConfigurationFile(file);
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(file);
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
         config.setBaseUrl(null);
 
         ApiMediationClient client = new ApiMediationClientImpl();
-        // First registration attempt
+
         client.register(config);
 
         client.unregister();
     }
 
     @Test
-    public void testInitializationRuntimeException() throws IOException, ServiceDefinitionException {
+    public void testInitializationRuntimeException() throws ServiceDefinitionException {
         exceptionRule.expect( ServiceDefinitionException.class);
         exceptionRule.expectCause(isA(NullPointerException.class));
 
-        String file = "/service-configuration.yml";
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
-        //String configData = FileUtils.readConfigurationFile(file);
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(file);
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
         config.setRoutes(null);
 
         ApiMediationClient client = new ApiMediationClientImpl();
-        // First registration attempt
+
         client.register(config);
 
         client.unregister();
     }
 
     @Test
-    public void testInitialization_InvalidDocumentationUrl() throws IOException, ServiceDefinitionException {
+    public void testInitialization_InvalidDocumentationUrl() throws ServiceDefinitionException {
         exceptionRule.expect( ServiceDefinitionException.class);
         exceptionRule.expectCause(isA(MetadataValidationException.class));
 
-        String file = "/service-configuration.yml";
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
-        //String configData = FileUtils.readConfigurationFile(file);
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration(file);
+        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
         config.getApiInfo().get(0).setDocumentationUrl("HTT//INVALID-URL");
 
         ApiMediationClient client = new ApiMediationClientImpl();
-        // First registration attempt
+
         client.register(config);
 
         client.unregister();

@@ -1,4 +1,8 @@
 spring.profiles.include: diag
+logging:
+    level:
+        com.ca.mfaas.client: DEBUG
+        com.ca.mfaas.security: DEBUG
 
 #spring:
 #    output:
@@ -21,7 +25,12 @@ apiml:
         serviceIpAddress: 127.0.0.1
         discoveryServiceUrls: https://localhost:10011/eureka/
 
+        scheme: https
+        #baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+
         ssl:
+            enabled: false
+            verifySslCertificatesOfServices: false
             keyAlias: localhost
             keyPassword: password
             keyStore: keystore/localhost/localhost.keystore.p12

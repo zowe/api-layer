@@ -94,18 +94,33 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         ApplicationInfoManager applicationInfoManager, EurekaClientConfig clientConfig, ApiMediationServiceConfig config) {
 
         Ssl sslConfig = config.getSsl();
-        HttpsConfig httpsConfig = HttpsConfig.builder()
-            .protocol(sslConfig.getProtocol())
-            .keyAlias(sslConfig.getKeyAlias())
-            .keyStore(sslConfig.getKeyStore())
-            .keyPassword(sslConfig.getKeyPassword())
-            .keyStorePassword(sslConfig.getKeyStorePassword())
-            .keyStoreType(sslConfig.getKeyStoreType())
-            .trustStore(sslConfig.getTrustStore())
-            .trustStoreType(sslConfig.getTrustStoreType())
-            .trustStorePassword(sslConfig.getTrustStorePassword())
-            .verifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()))
-            .build();
+        HttpsConfig httpsConfig = null;
+
+        HttpsConfig.HttpsConfigBuilder builder = HttpsConfig.builder();
+        builder.protocol(sslConfig.getProtocol());
+
+        if (Boolean.TRUE.equals(sslConfig.getEnabled())) {
+            builder.keyAlias(sslConfig.getKeyAlias())
+                   .keyStore(sslConfig.getKeyStore())
+                   .keyPassword(sslConfig.getKeyPassword())
+                   .keyStorePassword(sslConfig.getKeyStorePassword())
+                   .keyStoreType(sslConfig.getKeyStoreType());
+            // If config.getDiscoveryServiceUrls().get(0) doesnt begin with "https" we don't need keystore to call Eureka with secure client
+            //      TODO: Evaluate such situation as an error and report configuration validation issue
+        } else {
+            // If config.getDiscoveryServiceUrls().get(0) begins with "https", We won't be able to successfully call Eureka to register without https settings,
+            //      TODO: Evaluate as configuration validation error
+        }
+
+        builder.verifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()));
+        if (Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices())) {
+            builder.trustStore(sslConfig.getTrustStore())
+                   .trustStoreType(sslConfig.getTrustStoreType())
+                   .trustStorePassword(sslConfig.getTrustStorePassword());
+        }
+
+        httpsConfig = builder.build();
+
         HttpsFactory factory = new HttpsFactory(httpsConfig);
         EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(
             config.getDiscoveryServiceUrls().get(0), config.getServiceId()).build();

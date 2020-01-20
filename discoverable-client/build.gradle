@@ -33,6 +33,7 @@ gitProperties {
 dependencies {
     compile project(':onboarding-enabler-spring-v2')
 
+    implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket

@@ -245,19 +245,20 @@ public class HttpsFactory {
         builder.withMaxTotalConnections(10);
         builder.withMaxConnectionsPerHost(10);
 
+        // See:
+        // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("apiml.common.insecureHttpWarning");
+            //System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "false");
+
+            //builder.withCustomSSL(createSecureSslContext());
         } else {
-            // Setup HTTPS for Eureka replication client:
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
             setSystemSslProperties();
-            // See:
-            // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
-
-            // Setup HTTPS for Eureka client:
             builder.withCustomSSL(createSecureSslContext());
             builder.withHostnameVerifier(createHostnameVerifier());
         }
+
         return builder;
     }
 }

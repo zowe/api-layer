@@ -97,12 +97,12 @@ apiml:
             trustStoreType: ${server.ssl.trustStoreType}
 
             ### DEFINE FOLLOWING PROPERTIES IN EXTERNAL CONFIGURATION
-            #keyAlias: localhost
-            #keyPassword: password
-            #keyStore: keystore/localhost/localhost.keystore.p12
-            #keyStorePassword: password
-            #trustStore: keystore/localhost/localhost.truststore.p12
-            #trustStorePassword: password
+            keyAlias: localhost-blah
+            keyPassword: password-blah
+            keyStore: keystore/localhost/localhost.keystore.p12-blah
+            keyStorePassword: password-blah
+            trustStore: keystore/localhost/localhost.truststore.p12-blah
+            trustStorePassword: password-blah
 
 management:
     endpoints:

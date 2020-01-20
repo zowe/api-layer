@@ -17,9 +17,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Ssl {
-    private Boolean enabled;
+    private Boolean enabled = true;
 
-    private Boolean verifySslCertificatesOfServices;
+    private Boolean verifySslCertificatesOfServices = true;
 
     private String protocol;
 
