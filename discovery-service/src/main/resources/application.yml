@@ -1,7 +1,7 @@
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: INFO
+        org.zowe.apiml: INFO
         org.springframework: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
@@ -125,7 +125,7 @@ management:
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: DEBUG
+        org.zowe.apiml: DEBUG
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
