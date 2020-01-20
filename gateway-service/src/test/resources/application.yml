@@ -1,7 +1,7 @@
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: INFO
+        org.zowe.apiml: INFO
         org.springframework: WARN
         org.apache.catalina: WARN
         com.netflix: WARN
@@ -14,8 +14,8 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         org.apache.tomcat.websocket: WARN
         org.springframework.web.socket: WARN
-        com.ca.mfaas.ws: INFO
-        com.ca.mfaas.gateway.error: INFO
+        org.zowe.apiml.ws: INFO
+        org.zowe.apiml.gateway.error: INFO
         org.eclipse.jetty: WARN
 
 apiml:
@@ -163,7 +163,7 @@ spring:
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: DEBUG
+        org.zowe.apiml: DEBUG
         org.springframework: INFO
         org.apache.catalina: INFO
         com.netflix: INFO
