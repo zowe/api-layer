@@ -21,7 +21,7 @@ spring:
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: INFO
+        org.zowe.apiml: INFO
         org.springframework: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
@@ -133,7 +133,7 @@ eureka:
                             title: API Catalog
                             description: REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.
                             version: 1.0.0
-                            basePackage: com.ca.mfaas.apicatalog.controllers.api
+                            basePackage: org.zowe.apiml.apicatalog.controllers.api
 
                 discovery:
                     catalogUiTile:
@@ -178,7 +178,7 @@ management:
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: DEBUG
+        org.zowe.apiml: DEBUG
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
