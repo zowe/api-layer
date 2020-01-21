@@ -28,7 +28,7 @@ import static org.springframework.http.HttpHeaders.LOCATION;
  * Response Header and returns status code 307
  */
 @RestController
-@Api(tags = {"Other Operations"}, description = "General Operations")
+@Api(tags = {"Other Operations"})
 public class PageRedirectionController {
 
     /**
