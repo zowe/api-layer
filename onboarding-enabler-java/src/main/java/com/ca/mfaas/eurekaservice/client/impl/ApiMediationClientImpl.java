@@ -105,11 +105,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                    .keyPassword(sslConfig.getKeyPassword())
                    .keyStorePassword(sslConfig.getKeyStorePassword())
                    .keyStoreType(sslConfig.getKeyStoreType());
-            // If config.getDiscoveryServiceUrls().get(0) doesnt begin with "https" we don't need keystore to call Eureka with secure client
-            //      TODO: Evaluate such situation as an error and report configuration validation issue
-        } else {
-            // If config.getDiscoveryServiceUrls().get(0) begins with "https", We won't be able to successfully call Eureka to register without https settings,
-            //      TODO: Evaluate as configuration validation error
         }
 
         builder.verifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()));
