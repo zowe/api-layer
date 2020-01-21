@@ -9,9 +9,7 @@
  */
 package com.ca.mfaas.util;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
@@ -150,7 +148,7 @@ public final class ClassOrDefaultProxyUtils {
                 return clazz.getDeclaredMethod(method.getName(), method.getParameterTypes());
             } catch (NoSuchMethodException nsme) {
                 if (clazz == Object.class) {
-                    throw new IllegalArgumentException("Cannot construct proxy", nsme);
+                    throw new ExceptionMappingError("Cannot construct proxy", nsme);
                 }
                 return findMethod(clazz.getSuperclass(), method);
             }
@@ -198,7 +196,7 @@ public final class ClassOrDefaultProxyUtils {
                             final EndPoint newEndPoint = addMapping(implementation, caller, callee);
                             byName.put(ObjectUtil.getMethodIdentifier(caller), newEndPoint);
                         } catch (Exception e) {
-                            throw new IllegalArgumentException("Method " + ObjectUtil.getMethodIdentifier(caller) + " was not found on " + partInterfaceClass);
+                            throw new ExceptionMappingError("Method " + ObjectUtil.getMethodIdentifier(caller) + " was not found on " + implementationClass);
                         }
                     }
                 }
@@ -210,7 +208,7 @@ public final class ClassOrDefaultProxyUtils {
             final EndPoint endPoint = mapping.get(method);
 
             if (endPoint == null) {
-                throw new NoSuchMethodException(String.format("Cannot found method %s", method));
+                throw new ExceptionMappingError(String.format("Cannot found method %s", method));
             }
 
             try {
@@ -240,8 +238,7 @@ public final class ClassOrDefaultProxyUtils {
          * Object define instance of object where should be invoked the method and contains also method instance. It is
          * prepare before to make invoke in the fastest way.
          */
-        @Value
-        @AllArgsConstructor
+        @Data
         public static final class EndPoint {
 
             private final Object target;
@@ -286,7 +283,6 @@ public final class ClassOrDefaultProxyUtils {
      *
      * @param <T> Type of target exception
      */
-    @AllArgsConstructor
     @Data
     public static class ByMethodName<T extends Exception> implements ExceptionMapping<T> {
 
@@ -334,7 +330,7 @@ public final class ClassOrDefaultProxyUtils {
             try {
                 eClass = (Class<Throwable>) Class.forName(sourceExceptionClassName);
             } catch (ClassNotFoundException e) {
-                log.debug("Exception {} is not available, it will not be mapped into {} : " + e.getLocalizedMessage(), sourceExceptionClassName, targetExceptionClass);
+                log.debug("Exception {} is not available, it will not be mapped into {} : " + e, sourceExceptionClassName, targetExceptionClass);
                 return null;
             }
 
@@ -344,15 +340,14 @@ public final class ClassOrDefaultProxyUtils {
             for (String methodName : methodNames) {
                 final Method method = findMethod(eClass, methodName);
                 if (method == null) {
-                    log.debug("Cannot find method {} in {} to map exceptions", methodName, sourceExceptionClassName);
-                    return null;
+                    throw new ExceptionMappingError("Cannot find method " + methodName + " in " + sourceExceptionClassName + " to map exceptions");
                 }
                 argClasses.add(method.getReturnType());
                 mapFunctions.add(x -> {
                     try {
                         return method.invoke(x);
                     } catch (IllegalAccessException | InvocationTargetException e) {
-                        throw new IllegalArgumentException(e);
+                        throw new ExceptionMappingError("Cannot invoke method " + method, e);
                     }
                 });
             }
@@ -361,8 +356,7 @@ public final class ClassOrDefaultProxyUtils {
             try {
                 return getMappingFunction(targetExceptionClass.getConstructor(argClasses.toArray(new Class[0])), mapFunctions);
             } catch (NoSuchMethodException e) {
-                log.debug("Cannot find constructor on {} with {}", sourceExceptionClassName, argClasses);
-                return null;
+                throw new ExceptionMappingError("Cannot find constructor on " + sourceExceptionClassName + " with " + argClasses);
             }
         }
 

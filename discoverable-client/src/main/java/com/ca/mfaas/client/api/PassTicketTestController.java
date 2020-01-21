@@ -45,7 +45,8 @@ public class PassTicketTestController {
     @ApiOperation(value = "Validate that the PassTicket in Authorization header is valid", tags = { "Test Operations" })
     public void passticketTest(@RequestHeader("authorization") String authorization,
             @RequestParam(value = "applId", defaultValue = "", required = false) String applId)
-            throws IRRPassTicketEvaluationException {
+            throws IRRPassTicketEvaluationException
+    {
         if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
             String base64Credentials = authorization.substring("Basic".length()).trim();
             String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);

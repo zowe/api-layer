@@ -15,11 +15,11 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.*;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
@@ -34,10 +34,15 @@ public class PassTicketServiceTest {
     private static String evaluated;
 
     @Test
-    @Order(1)
-    public void testInit() {
-        assertNotNull(passTicketService);
-        assertNotNull(ReflectionTestUtils.getField(passTicketService, "irrPassTicket"));
+    public void testIsUsingSafImplementation() {
+        IRRPassTicket irrPassTicket = (IRRPassTicket) ReflectionTestUtils.getField(passTicketService, "irrPassTicket");
+        ClassOrDefaultProxyUtils.ClassOrDefaultProxyState stateInterface = (ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) irrPassTicket;
+        assertEquals(stateInterface.isUsingBaseImplementation(), passTicketService.isUsingSafImplementation());
+    }
+
+    @Test
+    public void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
+        PassTicketService passTicketService = new PassTicketService();
         ReflectionTestUtils.setField(passTicketService, "irrPassTicket", new IRRPassTicket() {
             @Override
             public void evaluate(String userId, String applId, String passTicket) {
@@ -49,11 +54,7 @@ public class PassTicketServiceTest {
                 return userId + "-" + applId;
             }
         });
-    }
 
-    @Test
-    @Order(2)
-    public void testCalledMethod() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
         evaluated = null;
         passTicketService.evaluate("userId", "applId", "passTicket");
         assertEquals("userId-applId-passTicket", evaluated);
@@ -106,6 +107,23 @@ public class PassTicketServiceTest {
         dpti.evaluate(TEST_USERID, "applId", passTicket2);
 
         try {
+            dpti.evaluate(TEST_USERID, "applId", "wrongPassTicket");
+            fail();
+        } catch (IRRPassTicketEvaluationException e) {
+            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32, e.getErrorCode());
+        }
+
+        try {
+            dpti.evaluate("anyUser", UNKNOWN_APPLID, "anyPassTicket");
+            fail();
+        } catch (IRRPassTicketEvaluationException e) {
+            assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28, e.getErrorCode());
+        }
+
+        dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX);
+        dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX + "xyz");
+
+        try {
             dpti.evaluate("userx", "applId", passTicket1);
             fail();
         } catch (IRRPassTicketEvaluationException e) {
@@ -134,8 +152,10 @@ public class PassTicketServiceTest {
             );
         }
 
+        assertEquals(ZOWE_DUMMY_PASS_TICKET_PREFIX, dpti.generate(DUMMY_USER, "anyApplid"));
+
         try {
-            dpti.generate("anyUser", PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
+            dpti.generate("anyUser", UNKNOWN_APPLID);
             fail();
         } catch (IRRPassTicketGenerationException e) {
             assertEquals(8, e.getSafRc());

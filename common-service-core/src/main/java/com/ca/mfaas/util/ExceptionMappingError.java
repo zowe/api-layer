@@ -12,6 +12,10 @@ package com.ca.mfaas.util;
 public class ExceptionMappingError extends RuntimeException {
     private static final long serialVersionUID = 7278565687932741451L;
 
+    public ExceptionMappingError(String message) {
+        super(message);
+    }
+
     public ExceptionMappingError(String message, Throwable cause) {
         super(message, cause);
     }

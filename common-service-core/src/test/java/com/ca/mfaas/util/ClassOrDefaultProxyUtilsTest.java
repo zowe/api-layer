@@ -12,8 +12,14 @@ package com.ca.mfaas.util;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.junit.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -121,6 +127,131 @@ public class ClassOrDefaultProxyUtilsTest {
         }
     }
 
+    @Test
+    public void testMissingMethod() {
+        try {
+            ClassOrDefaultProxyUtils.createProxy(
+                TestInterface1.class,
+                Object.class.getName(),
+                TestImplementation1B::new
+            );
+            fail();
+        } catch (ExceptionMappingError e) {
+            assertTrue(e.getMessage().contains(" was not found on class java.lang.Object"));
+        }
+    }
+
+    class InnerClass implements TestInterface1 {
+        private String name;
+
+        @Override
+        public String method1() {
+            return "Hello world!";
+        }
+
+        @Override
+        public String method2(String x, int y) {
+            return x + y;
+        }
+
+        @Override
+        public void method3() {
+        }
+    }
+
+    @Test
+    public void testSyntentic() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        new InnerClass().name = "toCompilarMakeASyntheticMethod";
+
+        TestInterface1Super ti = ClassOrDefaultProxyUtils.createProxy(TestInterface1Super.class, "unknownClassName", InnerClass::new);
+        Optional<Method> jacocoMethod = Arrays.stream(InnerClass.class.getDeclaredMethods()).filter(x -> x.isSynthetic()).filter(x -> x.getParameterTypes().length == 0).findFirst();
+        assertTrue(jacocoMethod.isPresent());
+
+        Method method = jacocoMethod.get();
+        method.setAccessible(true);
+        method.invoke(ti);
+    }
+
+    @Test
+    public void testImplementationWithExtends() {
+        TestInterface2 ti = ClassOrDefaultProxyUtils.createProxy(TestInterface2.class, "unknownClassName", Extends::new);
+        assertEquals("method1Response", ti.method1());
+    }
+
+    @Test
+    public void testWrongMapping() {
+        TestInterface1 ti = ClassOrDefaultProxyUtils.createProxy(TestInterface1.class, "unknownClassName", TestImplementation1B::new);
+        ((Map<String, Object>) ReflectionTestUtils.getField(ReflectionTestUtils.getField(ti, "h"), "mapping")).clear();
+        try {
+            ti.method1();
+            fail();
+        } catch (ExceptionMappingError e) {
+            assertTrue(e.getMessage().startsWith("Cannot found method "));
+        }
+    }
+
+    @Test
+    public void testExceptionMappingSourceMethod() {
+        try {
+            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerException.class, "getOurStackTraceX");
+            fail();
+        } catch (ExceptionMappingError e) {
+            assertEquals("Cannot find method getOurStackTraceX in java.lang.NullPointerException to map exceptions", e.getMessage());
+        }
+
+        try {
+            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerException.class, "getOurStackTrace").apply(new NullPointerException("x"));
+            fail();
+        } catch (ExceptionMappingError e) {
+            assertEquals("Cannot find constructor on java.lang.NullPointerException with [class [Ljava.lang.StackTraceElement;]", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testCannotConstructException() throws NullPointerExceptionPrivate, NullPointerExceptionException {
+        try {
+            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionPrivate.class, "getMessage").apply(new NullPointerException("x"));
+            fail();
+        } catch (ExceptionMappingError e) {
+            assertEquals("Cannot find constructor on java.lang.NullPointerException with [class java.lang.String]", e.getMessage());
+        }
+
+        try {
+            new ClassOrDefaultProxyUtils.ByMethodName<>("com.ca.mfaas.util.ClassOrDefaultProxyUtilsTest$NullPointerExceptionPrivate", NullPointerException.class, "getMsg").apply(new NullPointerExceptionPrivate("x"));
+        } catch (ExceptionMappingError e) {
+            assertTrue(e.getMessage().contains("Cannot invoke method private"));
+        }
+
+        try {
+            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerExceptionException.class, "getMessage").apply(new NullPointerException("x"));
+            fail();
+        } catch (ExceptionMappingError e) {
+            assertTrue(e.getMessage().startsWith("Cannot construct exception"));
+        }
+    }
+
+    private static class NullPointerExceptionPrivate extends Exception {
+
+        private NullPointerExceptionPrivate(String arg) {}
+
+        private String getMsg() {
+            return "x";
+        }
+
+    }
+
+    public static class NullPointerExceptionException extends Exception {
+
+        public NullPointerExceptionException(String arg) {
+            throw new RuntimeException("an error");
+        }
+
+        private String getMsg() {
+            return "x";
+        }
+
+    }
+
     public interface TestInterface1Super {
 
         public String method1();
@@ -140,6 +271,23 @@ public class ClassOrDefaultProxyUtilsTest {
         public String method1();
 
         public Class<?> getImplementationClass();
+
+    }
+
+    public class ExtendsSuper {
+
+        public String method1() {
+            return "method1Response";
+        }
+
+    }
+
+    public class Extends extends ExtendsSuper implements TestInterface2 {
+
+        @Override
+        public Class<?> getImplementationClass() {
+            return this.getClass();
+        }
 
     }
 

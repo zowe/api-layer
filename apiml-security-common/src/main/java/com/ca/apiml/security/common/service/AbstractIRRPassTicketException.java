@@ -81,9 +81,11 @@ public abstract class AbstractIRRPassTicketException extends Exception {
 
         public static ErrorCode getErrorCode(AbstractIRRPassTicketException e) {
             for (final ErrorCode ec : values()) {
-                if (ec.getSafRc() != null && ec.getSafRc() == e.getSafRc() &&
-                    ec.getRacfRc() != null && ec.getRacfRc() == e.getRacfRc() &&
-                    ec.getRacfRsn() != null && ec.getRacfRsn() == e.getRacfRsn()) {
+                if (
+                    (ec.getSafRc() == null || ec.getSafRc().equals(e.getSafRc())) &&
+                    (ec.getRacfRc() == null || ec.getRacfRc().equals(e.getRacfRc())) &&
+                    (ec.getRacfRsn() == null || ec.getRacfRsn().equals(e.getRacfRsn()))
+                ) {
                     return ec;
                 }
             }

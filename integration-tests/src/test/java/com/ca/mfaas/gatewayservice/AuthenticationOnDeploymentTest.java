@@ -12,7 +12,7 @@ package com.ca.mfaas.gatewayservice;
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.service.PassTicketService;
-import com.ca.mfaas.util.categories.MainframeDependentTests;
+import com.ca.mfaas.util.categories.AdditionalLocalTest;
 import com.ca.mfaas.util.service.RequestVerifier;
 import com.ca.mfaas.util.service.VirtualService;
 import io.restassured.RestAssured;
@@ -36,7 +36,7 @@ import static org.junit.Assert.assertEquals;
  * This test requires to allow endpoint routes on gateway (ie profile dev)
  */
 @RunWith(JUnit4.class)
-@Category(MainframeDependentTests.class)
+@Category(AdditionalLocalTest.class)
 public class AuthenticationOnDeploymentTest {
 
     private static final int TIMEOUT = 10;
