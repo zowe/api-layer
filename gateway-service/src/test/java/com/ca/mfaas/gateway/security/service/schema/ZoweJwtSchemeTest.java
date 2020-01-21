@@ -10,16 +10,18 @@ package com.ca.mfaas.gateway.security.service.schema;/*
 
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.*;
-
-public class ByPassSchemeTest {
+@RunWith(JUnit4.class)
+public class ZoweJwtSchemeTest {
 
     @Test
     public void testScheme() {
-        ByPassScheme scheme = new ByPassScheme();
-        assertTrue(scheme.isDefault());
-        assertEquals(AuthenticationScheme.BYPASS, scheme.getScheme());
+        ZoweJwtScheme scheme = new ZoweJwtScheme();
+        assertFalse(scheme.isDefault());
+        assertEquals(AuthenticationScheme.ZOWE_JWT, scheme.getScheme());
         assertSame(AuthenticationCommand.EMPTY, scheme.createCommand(null, null));
     }
 
