@@ -19,6 +19,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
@@ -40,8 +43,8 @@ public class EncodedCharactersFilterTest {
     private final String METADATA_KEY = EncodedCharactersFilter.METADATA_KEY;
     private final String SERVICE_ID = "serviceid";
 
-    private final DefaultServiceInstance serviceInstanceWithoutConfiguration = new DefaultServiceInstance("INSTANCE1", SERVICE_ID ,"",0,true, new HashMap<String, String>());
-    private final DefaultServiceInstance serviceInstanceWithConfiguration = new DefaultServiceInstance("INSTANCE2", SERVICE_ID ,"",0,true, new HashMap<String, String>());
+    private final DefaultServiceInstance serviceInstanceWithConfiguration = new DefaultServiceInstance("INSTANCE1", SERVICE_ID ,"",0,true, new HashMap<String, String>());
+    private final DefaultServiceInstance serviceInstanceWithoutConfiguration = new DefaultServiceInstance("INSTANCE2", SERVICE_ID ,"",0,true, new HashMap<String, String>());
 
     @Mock
     DiscoveryClient discoveryClient;
@@ -49,13 +52,13 @@ public class EncodedCharactersFilterTest {
     @Before
     public void setup() {
         filter = new EncodedCharactersFilter(discoveryClient);
-        serviceInstanceWithConfiguration.getMetadata().put(METADATA_KEY, "TRUE");
-
+        serviceInstanceWithConfiguration.getMetadata().put(METADATA_KEY, "true");
+        serviceInstanceWithoutConfiguration.getMetadata().put(METADATA_KEY, "false");
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
-        ctx.set(REQUEST_URI_KEY, "/path");
         ctx.set(PROXY_KEY, "api/v1/" + SERVICE_ID);
         ctx.set(SERVICE_ID_KEY, SERVICE_ID);
+        ctx.setResponse(new MockHttpServletResponse());
     }
 
     @Test
@@ -86,4 +89,28 @@ public class EncodedCharactersFilterTest {
         assertThat(filter.shouldFilter(), is(equalTo(true)));
     }
 
+    @Test
+    public void shouldRejectRequestsWithEncodedCharacters() {
+        RequestContext context = RequestContext.getCurrentContext();
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.setRequestURI("/He%2f%2f0%2dwor%2fd");
+        context.setRequest(mockRequest);
+
+        this.filter.run();
+
+        assertEquals("Instance serviceid does not allow encoded characters in the URL.", context.getResponseBody());
+        assertEquals(400, context.getResponse().getStatus());
+    }
+
+    @Test
+    public void shouldAllowRequestsWithoutEncodedCharacters() {
+        RequestContext context = RequestContext.getCurrentContext();
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.setRequestURI("/HelloWorld");
+        context.setRequest(mockRequest);
+
+        this.filter.run();
+
+        assertEquals(200, context.getResponse().getStatus());
+    }
 }

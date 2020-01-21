@@ -28,8 +28,8 @@ messages:
       number: ZWEAG701
       type: ERROR
       text: "Service '%s' does not allow encoded characters in the URL."
-      reason: "The request that was issued to gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
-      action: "Contact the system administrator and ask to enable encoded characters in the gateway"
+      reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
+      action: "Contact the system administrator and ask to enable encoded characters in the service"
 
     - key: apiml.gateway.jwtInitConfigError
       number: ZWEAG704

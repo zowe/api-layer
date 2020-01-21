@@ -68,7 +68,7 @@ public class EncodedCharactersFilter extends ZuulFilter {
             .filter( metadata -> String.valueOf(true).equalsIgnoreCase(metadata.get(METADATA_KEY)) )
             .collect(Collectors.toList());
 
-        if( enabledList.size() == instanceList.size() ) {
+        if (enabledList.size() == instanceList.size()) {
             shouldFilter = false;
         }
 
@@ -79,11 +79,9 @@ public class EncodedCharactersFilter extends ZuulFilter {
     public Object run() {
         RequestContext context = RequestContext.getCurrentContext();
         final String requestPath = context.getRequest().getRequestURI();
-
-            if (checkRequestForEncodedCharacters(requestPath)) {
+        if (checkRequestForEncodedCharacters(requestPath)) {
             rejectRequest(context);
         }
-
         return null;
     }
 

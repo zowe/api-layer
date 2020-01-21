@@ -45,4 +45,29 @@ public class GreetingControllerTest {
             .andExpect(jsonPath("$.content", is("Hello, " + name + "!")));
     }
 
+    @Test
+    public void callPlainGreeting() throws Exception {
+
+        this.mockMvc.perform(get("/api/v1/greeting"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", is("Hello, world!")));
+    }
+
+    @Test
+    public void callGreetingWithoutQuery() throws Exception {
+        String name = "Petr";
+
+        this.mockMvc.perform(get("/api/v1/" + name + "/greeting"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", is("Hello, " + name + "!")));
+    }
+
+    @Test
+    public void callGreetingWithoutQueryWithDelay() throws Exception {
+        String name = "Petr";
+
+        this.mockMvc.perform(get("/api/v1/" + name + "/greeting" + "?delayMs=100"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", is("Hello, " + name + "!")));
+    }
 }
