@@ -182,7 +182,7 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
                 if (!newHeaders.isEmpty()) {
                     final RibbonApacheHttpRequest req = (RibbonApacheHttpRequest) context.getRequest();
                     for (Map.Entry<String, String> entry : newHeaders.entrySet()) {
-                        req.getContext().getHeaders().add(entry.getKey(), entry.getValue());
+                        req.getContext().getHeaders().set(entry.getKey(), entry.getValue());
                     }
                 }
             }
@@ -204,9 +204,8 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
                     } catch (Exception e) {
                         throw new AbortExecutionException(String.valueOf(e), e);
                     }
+                    updateRequestByZuulChanges(context);
                 }
-
-                updateRequestByZuulChanges(context);
             }
 
             @Override
