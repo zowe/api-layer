@@ -17,9 +17,7 @@ import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.ContextStoppedEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.context.event.*;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +71,13 @@ public class RegisterToApiLayer {
 
     @EventListener(ContextStoppedEvent.class)
     public void onContextStoppedEvent() {
+        if (apiMediationClient.getEurekaClient() != null) {
+            unregister();
+        }
+    }
+
+    @EventListener(ContextClosedEvent.class)
+    public void onContextClosedEvent() {
         if (apiMediationClient.getEurekaClient() != null) {
             unregister();
         }
