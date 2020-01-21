@@ -155,6 +155,12 @@ public class AuthExceptionHandlerTest {
         verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
     }
 
+    @Test
+    public void testInvalidCertificateException() throws ServletException {
+        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, new InvalidCertificateException("method"));
+        assertEquals(HttpStatus.FORBIDDEN.value(), httpServletResponse.getStatus());
+    }
+
     @Test(expected = ServletException.class)
     public void testAuthenticationFailure_whenOccurUnexpectedException() throws ServletException {
         authExceptionHandler.handleException(
@@ -163,7 +169,6 @@ public class AuthExceptionHandlerTest {
             new RuntimeException("unexpectedException"));
     }
 
-
     @Configuration
     static class ContextConfiguration {
         @Bean
@@ -171,4 +176,5 @@ public class AuthExceptionHandlerTest {
             return new YamlMessageService("/security-service-messages.yml");
         }
     }
+
 }

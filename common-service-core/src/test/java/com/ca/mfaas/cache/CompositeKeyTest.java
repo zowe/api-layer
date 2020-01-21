@@ -52,6 +52,28 @@ public class CompositeKeyTest {
     }
 
     @Test
+    public void testEquals() {
+        CompositeKey c1 = new CompositeKey();
+
+        assertEquals(c1, c1);
+        assertNotEquals(c1, null);
+        assertNotEquals(c1, new CompositeKey() {});
+    }
+
+    @Test
+    public void testHashCode() {
+        assertEquals(
+            new CompositeKey("a", "b", new String[] {"c", "d"}).hashCode(),
+            new CompositeKey("a", "b", new String[] {"c", "d"}).hashCode()
+        );
+
+        assertNotEquals(
+            new CompositeKey("a", "b", new String[] {"c", "d"}).hashCode(),
+            new CompositeKey("a", "b", new String[] {"c", "E"}).hashCode()
+        );
+    }
+
+    @Test
     public void testToString() {
         assertEquals("CompositeKey []", new CompositeKey().toString());
         assertEquals("CompositeKey []", new CompositeKey((Object[]) null).toString());

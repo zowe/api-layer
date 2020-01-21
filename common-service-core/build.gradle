@@ -13,6 +13,7 @@ dependencies {
     compileOnly(libraries.eh_cache)
 
     testCompile(libraries.spring_boot_starter_cache)
+    testCompile(libraries.spring_boot_starter_test)
     testCompile(libraries.eh_cache)
     testCompile(libraries.jackson_core)
     testCompile(libraries.jackson_databind)

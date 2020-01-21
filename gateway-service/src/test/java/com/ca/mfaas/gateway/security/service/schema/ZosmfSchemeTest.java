@@ -9,21 +9,6 @@
  */
 package com.ca.mfaas.gateway.security.service.schema;
 
-import static com.ca.mfaas.gateway.security.service.schema.ZosmfScheme.ZosmfCommand.COOKIE_HEADER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Calendar;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.token.QueryResponse;
@@ -31,15 +16,24 @@ import com.ca.apiml.security.common.token.TokenNotValidException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
 import com.netflix.zuul.context.RequestContext;
-
+import io.jsonwebtoken.JwtException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import io.jsonwebtoken.JwtException;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Optional;
+
+import static com.ca.mfaas.gateway.security.service.schema.ZosmfScheme.ZosmfCommand.COOKIE_HEADER;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
@@ -104,6 +98,50 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         } catch (JwtException e) {
             // exception is not handled
         }
+    }
+
+    @Test
+    public void testScheme() {
+        ZosmfScheme scheme = new ZosmfScheme(authenticationService);
+        assertEquals(AuthenticationScheme.ZOSMF, scheme.getScheme());
+    }
+
+    @Test
+    public void testExpiration() {
+        ZosmfScheme scheme = new ZosmfScheme(authenticationService);
+
+        AuthenticationCommand command;
+        QueryResponse queryResponse = new QueryResponse();
+
+        // no JWT token
+        command = scheme.createCommand(null, null);
+        assertNull(ReflectionTestUtils.getField(command, "expireAt"));
+        assertFalse(command.isExpired());
+
+        // token without expiration
+        command = scheme.createCommand(null, queryResponse);
+        assertNull(ReflectionTestUtils.getField(command, "expireAt"));
+        assertFalse(command.isExpired());
+
+        // token with expiration
+        queryResponse.setExpiration(new Date(123L));
+        command = scheme.createCommand(null, queryResponse);
+        assertNotNull(ReflectionTestUtils.getField(command, "expireAt"));
+        assertEquals(123L, ReflectionTestUtils.getField(command, "expireAt"));
+        assertTrue(command.isExpired());
+
+        // expired 1 sec ago
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.SECOND, -1);
+        queryResponse.setExpiration(c.getTime());
+        command = scheme.createCommand(null, queryResponse);
+        assertTrue(command.isExpired());
+
+        // expired in 1 secs
+        c.add(Calendar.SECOND, 2);
+        queryResponse.setExpiration(c.getTime());
+        command = scheme.createCommand(null, queryResponse);
+        assertFalse(command.isExpired());
     }
 
 }

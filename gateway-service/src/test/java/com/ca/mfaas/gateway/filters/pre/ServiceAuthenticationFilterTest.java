@@ -14,18 +14,21 @@ import com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
 import com.netflix.zuul.context.RequestContext;
-
+import com.netflix.zuul.exception.ZuulException;
+import com.netflix.zuul.monitoring.CounterFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
+import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.Optional;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
@@ -50,6 +53,13 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     }
 
     @Test
+    public void testConfig() {
+        assertEquals("pre", serviceAuthenticationFilter.filterType());
+        assertEquals(9, serviceAuthenticationFilter.filterOrder());
+        assertTrue(serviceAuthenticationFilter.shouldFilter());
+    }
+
+    @Test
     public void testRun() throws Exception {
         HttpServletRequest request = mock(HttpServletRequest.class);
 
@@ -67,6 +77,27 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
         serviceAuthenticationFilter.run();
         verify(serviceAuthenticationService, times(1)).getAuthenticationCommand(anyString(), any());
+
+        reset(requestContext);
+        reset(authenticationService);
+        CounterFactory.initialize(new CounterFactory() {
+            @Override
+            public void increment(String name) {
+            }
+        });
+        when(requestContext.get(SERVICE_ID_KEY)).thenReturn("error");
+        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("token"));
+        when(serviceAuthenticationService.getAuthenticationCommand(eq("error"), any()))
+            .thenThrow(new RuntimeException("Potential exception"));
+        try {
+            serviceAuthenticationFilter.run();
+            fail();
+        } catch (ZuulRuntimeException zre) {
+            assertTrue(zre.getCause() instanceof ZuulException);
+            ZuulException ze = (ZuulException) zre.getCause();
+            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), ze.nStatusCode);
+            assertEquals(String.valueOf(new RuntimeException("Potential exception")), ze.errorCause);
+        }
     }
 
 }
