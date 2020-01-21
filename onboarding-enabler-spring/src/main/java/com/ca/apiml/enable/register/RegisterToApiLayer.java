@@ -39,7 +39,7 @@ public class RegisterToApiLayer {
     private ApiMediationClient apiMediationClient;
 
     @Autowired
-    private ApiMediationServiceConfig _config;
+    private ApiMediationServiceConfig newConfig;
     private ApiMediationServiceConfig  config;
 
     @Value("${apiml.enabled:false}")
@@ -56,18 +56,18 @@ public class RegisterToApiLayer {
                 if (config != null) {
                     logger.log("apiml.enabler.registration.renew"
                         , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls()
-                        , _config.getBaseUrl(), _config.getServiceIpAddress(), _config.getDiscoveryServiceUrls()
+                        , newConfig.getBaseUrl(), newConfig.getServiceIpAddress(), newConfig.getDiscoveryServiceUrls()
                     );
                 }
 
                 unregister();
             } else {
                 logger.log("apiml.enabler.registration.initial"
-                    , _config.getBaseUrl(), _config.getServiceIpAddress(), _config.getDiscoveryServiceUrls()
+                    , newConfig.getBaseUrl(), newConfig.getServiceIpAddress(), newConfig.getDiscoveryServiceUrls()
                 );
             }
 
-            register(_config);
+            register(newConfig);
         }
     }
 
