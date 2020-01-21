@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
-import java.util.Optional;
 /**
  * Version 1 of the controller that returns greetings.
  */
 @RestController
-@Api(tags = {"Other Operations"}, description = "General Operations")
+@Api(tags = {"Other Operations"})
 public class GreetingController {
     private static final String TEMPLATE = "Hello, %s!";
+
     /**
      * Gets a greeting for anyone.
      */
@@ -41,20 +41,15 @@ public class GreetingController {
         }
         return new Greeting(new Date(), String.format(TEMPLATE, name));
     }
+
     /**
-     * Gets a greeting for anyone.
+     * Gets a custom greeting.
      */
-    @GetMapping(value = {"api/v1/{yourName}/greeting"})
+    @GetMapping(value = {"/api/v1/{yourName}/greeting"})
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Other Operations"})
-    public Greeting greeting(@PathVariable(value = "yourName") Optional<String> yourName,
+    public Greeting customGreeting(@PathVariable(value = "yourName") String yourName,
                              @RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs) {
-        String name;
-        if (yourName.isPresent()) {
-            name = yourName.get();
-        } else {
-            name = "world";
-        }
         if (delayMs > 0) {
             try {
                 Thread.sleep(delayMs);
@@ -62,7 +57,7 @@ public class GreetingController {
                 Thread.currentThread().interrupt();
             }
         }
-        return new Greeting(new Date(), String.format(TEMPLATE, name));
+        return new Greeting(new Date(), String.format(TEMPLATE, yourName));
     }
 }
 

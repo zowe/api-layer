@@ -9,18 +9,44 @@
  */
 package com.ca.mfaas.discoverableclient;
 
+import com.ca.mfaas.util.config.ConfigReader;
+import com.ca.mfaas.util.config.GatewayServiceConfiguration;
 import com.ca.mfaas.util.http.HttpRequestUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import io.restassured.RestAssured;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class GreetingApiIntegrationTest {
+
+
+    private String scheme;
+    private String host;
+    private int port;
+
+    @BeforeClass
+    public static void beforeClass() {
+        RestAssured.useRelaxedHTTPSValidation();
+    }
+
+    @Before
+    public void setUp() {
+        GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        scheme = serviceConfiguration.getScheme();
+        host = serviceConfiguration.getHost();
+        port = serviceConfiguration.getPort();
+    }
+
     @Test
     public void shouldCallDiscoverableServiceApi() throws Exception {
         // When
@@ -31,5 +57,18 @@ public class GreetingApiIntegrationTest {
 
         // Then
         assertThat(content, equalTo("Hello, world!"));
+    }
+
+    @Test
+    public void shouldCallDiscoverableServiceWithEncodedCharacterWhenConfigurationAllow() {
+        final String encodedURI = "/api/v1/discoverableclient/wor%2fld/greeting";
+
+        given()
+            .urlEncodingEnabled(false)
+            .when()
+            .get(String.format("%s://%s:%s%s", scheme, host, port, encodedURI))
+            .then()
+            .body("content", is("Hello, wor/ld!"))
+            .statusCode(is(SC_OK));
     }
 }
