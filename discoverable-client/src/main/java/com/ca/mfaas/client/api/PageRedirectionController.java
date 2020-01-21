@@ -50,7 +50,7 @@ public class PageRedirectionController {
     @ApiResponses(value = {
         @ApiResponse(code = 307, message = "Redirect to specified location", response = String.class)
     })
-    public RedirectLocation redirectPage(@ApiParam(value = "Location that need to be redirected to", required = true)
+    public RedirectLocation redirectPage(@ApiParam(value = "Location that need to be redirected to", required = true, example = "https://host:port/context/path")
                                          @RequestBody RedirectLocation redirectLocation,
                                          HttpServletResponse response) {
         response.setHeader(LOCATION, redirectLocation.getLocation());
