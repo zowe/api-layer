@@ -257,8 +257,8 @@ public class AuthenticationServiceTest {
         tokenAuthentication = authService.validateJwtToken(jwt1);
         assertFalse(tokenAuthentication.isAuthenticated());
         verify(restTemplate, times(2)).delete(anyString(), (Object[]) any());
-        verify(restTemplate).delete("https://hostname1:10433/auth/invalidate/{}", jwt1);
-        verify(restTemplate).delete("http://hostname2:10001/auth/invalidate/{}", jwt1);
+        verify(restTemplate).delete("https://hostname1:10433/api/v1/gateway/auth/invalidate/{}", jwt1);
+        verify(restTemplate).delete("http://hostname2:10001/api/v1/gateway/auth/invalidate/{}", jwt1);
     }
 
     @Test

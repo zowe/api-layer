@@ -49,7 +49,7 @@ public class AuthenticationSchemeFactory {
 
             if (prev != null) {
                 throw new IllegalArgumentException("Multiple beans for scheme " + aas.getScheme() +
-                    " : " + prev.getScheme() + " x " + aas.getScheme());
+                    " : " + prev.getClass() + " x " + aas.getClass());
             }
 
             if (aas.isDefault()) {

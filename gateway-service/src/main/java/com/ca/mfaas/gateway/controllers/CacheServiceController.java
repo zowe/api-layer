@@ -26,7 +26,7 @@ import java.util.List;
  */
 @AllArgsConstructor
 @RestController
-@RequestMapping("/cache/services")
+@RequestMapping("/api/v1/gateway/cache/services")
 public class CacheServiceController {
 
     private final List<ServiceCacheEvict> toEvict;

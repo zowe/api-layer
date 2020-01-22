@@ -52,7 +52,7 @@ public class CacheServiceControllerTest {
         verify(service2, never()).evictCacheAllService();
         verify(discoveryClient, never()).fetchRegistry();
 
-        this.mockMvc.perform(delete("/cache/services")).andExpect(status().isOk());
+        this.mockMvc.perform(delete("/api/v1/gateway/cache/services")).andExpect(status().isOk());
 
         verify(service1, times(1)).evictCacheAllService();
         verify(service2, times(1)).evictCacheAllService();
@@ -65,7 +65,7 @@ public class CacheServiceControllerTest {
         verify(service2, never()).evictCacheService(any());
         verify(discoveryClient, never()).fetchRegistry();
 
-        this.mockMvc.perform(delete("/cache/services/service01")).andExpect(status().isOk());
+        this.mockMvc.perform(delete("/api/v1/gateway/cache/services/service01")).andExpect(status().isOk());
 
         verify(service1, times(1)).evictCacheService("service01");
         verify(service2, times(1)).evictCacheService("service01");

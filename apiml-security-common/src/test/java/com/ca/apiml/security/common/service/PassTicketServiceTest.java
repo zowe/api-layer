@@ -124,6 +124,17 @@ public class PassTicketServiceTest {
         dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX + "xyz");
 
         try {
+            dpti.evaluate("unknownUser", "anyApplId", ZOWE_DUMMY_PASS_TICKET_PREFIX);
+            fail();
+        } catch (IRRPassTicketEvaluationException e) {
+        }
+        try {
+            dpti.evaluate(ZOWE_DUMMY_USERID, "anyApplId", "wrongPassticket");
+            fail();
+        } catch (IRRPassTicketEvaluationException e) {
+        }
+
+        try {
             dpti.evaluate("userx", "applId", passTicket1);
             fail();
         } catch (IRRPassTicketEvaluationException e) {

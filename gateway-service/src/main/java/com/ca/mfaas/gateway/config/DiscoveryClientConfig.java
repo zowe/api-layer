@@ -70,7 +70,7 @@ public class DiscoveryClientConfig {
 
         discoveryClientClient.registerEventListener(event -> {
             if (event instanceof CacheRefreshedEvent) {
-                refreshableRouteLocators.forEach(x -> x.refresh());
+                refreshableRouteLocators.forEach(RefreshableRouteLocator::refresh);
                 zuulHandlerMapping.setDirty(true);
             }
         });

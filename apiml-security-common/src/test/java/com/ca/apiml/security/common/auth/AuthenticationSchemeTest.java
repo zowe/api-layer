@@ -21,5 +21,7 @@ public class AuthenticationSchemeTest {
             assertSame(as, as2);
         }
         assertNull(AuthenticationScheme.fromScheme("absolute nonsense"));
+        assertEquals("bypass", AuthenticationScheme.fromScheme("bypass").toString());
     }
+
 }

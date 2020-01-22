@@ -116,7 +116,7 @@ public class AuthenticationService {
             for (final InstanceInfo instanceInfo : application.getInstances()) {
                 if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
 
-                final String url = EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}";
+                final String url = EurekaUtils.getUrl(instanceInfo) + "/api/v1/gateway/auth/invalidate/{}";
                 restTemplate.delete(url, jwtToken);
             }
         }

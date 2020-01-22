@@ -8,7 +8,10 @@ package com.ca.mfaas.discovery;/*
  * Copyright Contributors to the Zowe Project.
  */
 
+import com.ca.mfaas.message.core.Message;
 import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.core.MessageType;
+import com.ca.mfaas.message.template.MessageTemplate;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
@@ -62,14 +65,34 @@ public class GatewayNotifierTest {
         when(registry.getApplication("GATEWAY")).thenReturn(application);
 
         gatewayNotifier.serviceUpdated("testService");
-        verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services/testService");
-        verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services/testService");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/api/v1/gateway/cache/services/testService");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/api/v1/gateway/cache/services/testService");
 
         gatewayNotifier.serviceUpdated(null);
-        verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services");
-        verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/api/v1/gateway/cache/services");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/api/v1/gateway/cache/services");
 
         verify(restTemplate, times(4)).delete(anyString());
+    }
+
+    @Test
+    public void testMissingGateway() {
+        final String messageKey = "apiml.discovery.errorNotifyingGateway";
+        final MessageTemplate mt = new MessageTemplate();
+        mt.setKey(messageKey);
+        mt.setText("message");
+        mt.setType(MessageType.INFO);
+        final Message m = Message.of(messageKey, mt, new Object[0]);
+
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        MessageService messageService = mock(MessageService.class);
+        GatewayNotifier gatewayNotifier = new GatewayNotifier(restTemplate, messageService);
+        when(registry.getApplication(anyString())).thenReturn(null);
+        when(messageService.createMessage(messageKey)).thenReturn(m);
+
+        gatewayNotifier.serviceUpdated("serviceX");
+
+        verify(messageService, times(1)).createMessage(messageKey);
     }
 
 }

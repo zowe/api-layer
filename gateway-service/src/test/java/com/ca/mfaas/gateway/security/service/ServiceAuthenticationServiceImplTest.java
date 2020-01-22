@@ -12,11 +12,7 @@ package com.ca.mfaas.gateway.security.service;
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
 import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -248,6 +244,9 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         reset(discoveryClient);
         when(discoveryClient.getInstancesById("svr03")).thenReturn(Collections.singletonList(ii5));
         assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr03", "jwt03"));
+
+        when(discoveryClient.getInstancesById("svr04")).thenReturn(Collections.emptyList());
+        assertSame(AuthenticationCommand.EMPTY, sas.getAuthenticationCommand("svr04", "jwt03"));
     }
 
     @Test
@@ -281,6 +280,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     @Test
     public void testUniversalAuthenticationCommand() throws Exception {
         ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand uac = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
+        assertFalse(uac.isExpired());
 
         try {
             uac.apply(null);
@@ -308,6 +308,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     @Test
     public void testLoadBalancerAuthenticationCommand() {
         ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand lbac = serviceAuthenticationServiceImpl.new LoadBalancerAuthenticationCommand();
+        assertFalse(lbac.isExpired());
 
         RequestContext requestContext = new RequestContext();
         RequestContext.testSetCurrentContext(requestContext);

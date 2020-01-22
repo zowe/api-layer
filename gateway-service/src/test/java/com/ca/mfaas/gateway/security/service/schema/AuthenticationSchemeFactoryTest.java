@@ -102,6 +102,21 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
             assertTrue(e.getMessage().contains(AuthenticationScheme.BYPASS.getScheme()));
             assertTrue(e.getMessage().contains(AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme()));
         }
+
+        // multiple same scheme
+        try {
+            new AuthenticationSchemeFactory(
+                mock(AuthenticationService.class),
+                Arrays.asList(
+                    createScheme(AuthenticationScheme.BYPASS, true),
+                    createScheme(AuthenticationScheme.BYPASS, false)
+                )
+            );
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("Multiple beans for scheme"));
+            assertTrue(e.getMessage().contains("AuthenticationSchemeFactoryTest$1"));
+        }
     }
 
     @Test
@@ -153,7 +168,13 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
         verify(passTicket, times(1)).createCommand(authentication, null);
         authentication.setScheme(null);
         asf.getAuthenticationCommand(authentication);
+
         verify(byPass, times(2)).createCommand(authentication, null);
+        verify(passTicket, times(1)).createCommand(authentication, null);
+        asf.getAuthenticationCommand(null);
+
+        verify(byPass, times(2)).createCommand(authentication, null);
+        verify(byPass, times(1)).createCommand(null, null);
         verify(passTicket, times(1)).createCommand(authentication, null);
 
         RequestContext.testSetCurrentContext(requestContext);

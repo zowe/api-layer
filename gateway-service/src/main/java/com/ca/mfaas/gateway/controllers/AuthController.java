@@ -27,7 +27,7 @@ import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
  */
 @AllArgsConstructor
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/gateway/auth")
 public class AuthController {
 
     private final AuthenticationService authenticationService;
@@ -38,7 +38,7 @@ public class AuthController {
         final String uri = request.getRequestURI();
         final int index = uri.indexOf(path);
 
-        final String jwtToken = (index >= 0) ? uri.substring(index + path.length()) : "";
+        final String jwtToken = uri.substring(index + path.length());
         final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
 
         response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
