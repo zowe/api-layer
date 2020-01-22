@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.config;
 
 import com.ca.mfaas.cache.CompositeKeyGenerator;
+import com.ca.mfaas.cache.CompositeKeyGeneratorWithoutLast;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
@@ -27,6 +28,7 @@ import org.springframework.core.io.ClassPathResource;
 public class CacheConfig {
 
     public static final String COMPOSITE_KEY_GENERATOR = "compositeKeyGenerator";
+    public static final String COMPOSITE_KEY_GENERATOR_WITHOUT_LAST = "compositeKeyGeneratorWithoutLast";
 
     @Bean
     public CacheManager cacheManager() {
@@ -44,6 +46,11 @@ public class CacheConfig {
     @Bean(CacheConfig.COMPOSITE_KEY_GENERATOR)
     public KeyGenerator getCompositeKeyGenerator() {
         return new CompositeKeyGenerator();
+    }
+
+    @Bean(CacheConfig.COMPOSITE_KEY_GENERATOR_WITHOUT_LAST)
+    public KeyGenerator getCompositeKeyGeneratorWithoutLast() {
+        return new CompositeKeyGeneratorWithoutLast();
     }
 
 }

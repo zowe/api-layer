@@ -15,10 +15,11 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.loadbalancer.*;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
 import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClientName;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
-import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,13 +34,15 @@ public class GatewayRibbonConfig {
 
     @Bean
     @Autowired
-    public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
+    public GatewayRibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
         CloseableHttpClient secureHttpClient,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
-        EurekaClient discoveryClient
+        EurekaClient discoveryClient,
+        CacheManager cacheManager,
+        ApplicationContext applicationContext
     ) {
-        return new GatewayRibbonLoadBalancingHttpClient(secureHttpClient, config, serverIntrospector, discoveryClient);
+        return new GatewayRibbonLoadBalancingHttpClientImpl(secureHttpClient, config, serverIntrospector, discoveryClient, cacheManager, applicationContext);
     }
 
     @Bean
