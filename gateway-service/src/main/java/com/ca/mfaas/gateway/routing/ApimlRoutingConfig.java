@@ -40,7 +40,7 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    public EncodedCharactersFilter testFilter(DiscoveryClient discovery) { return new EncodedCharactersFilter(discovery); }
+    public EncodedCharactersFilter encodedCharactersFilterFilter(DiscoveryClient discovery) { return new EncodedCharactersFilter(discovery); }
 
     @Bean
     public SlashFilter slashFilter() {

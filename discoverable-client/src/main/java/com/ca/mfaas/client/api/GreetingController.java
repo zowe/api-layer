@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
+
+
 /**
  * Version 1 of the controller that returns greetings.
  */
@@ -48,15 +50,7 @@ public class GreetingController {
     @GetMapping(value = {"/api/v1/{yourName}/greeting"})
     @ApiOperation(value = "Get a greeting", response = Greeting.class,
         tags = {"Other Operations"})
-    public Greeting customGreeting(@PathVariable(value = "yourName") String yourName,
-                             @RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs) {
-        if (delayMs > 0) {
-            try {
-                Thread.sleep(delayMs);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
+    public Greeting customGreeting(@PathVariable(value = "yourName") String yourName) {
         return new Greeting(new Date(), String.format(TEMPLATE, yourName));
     }
 }

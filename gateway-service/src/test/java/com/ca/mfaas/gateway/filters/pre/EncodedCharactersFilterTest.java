@@ -80,6 +80,18 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
+    public void shouldReturnFilterType() {
+        String filterType = this.filter.filterType();
+        assertEquals("pre", filterType);
+    }
+
+    @Test
+    public void shouldReturnFilterOrder() {
+        int filterOrder = this.filter.filterOrder();
+        assertEquals(6, filterOrder);
+    }
+
+    @Test
     public void givenMultipleInstancesWhenMixedSetupShouldBePesimistic() {
         List<ServiceInstance> instanceList = new ArrayList<>();
         instanceList.add(serviceInstanceWithoutConfiguration);
@@ -113,4 +125,17 @@ public class EncodedCharactersFilterTest {
 
         assertEquals(200, context.getResponse().getStatus());
     }
+
+    @Test
+    public void shouldPassNullRequest() {
+        RequestContext context = RequestContext.getCurrentContext();
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.setRequestURI(null);
+        context.setRequest(mockRequest);
+
+        this.filter.run();
+
+        assertEquals(200, context.getResponse().getStatus());
+    }
+
 }

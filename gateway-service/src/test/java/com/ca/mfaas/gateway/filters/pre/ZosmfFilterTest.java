@@ -50,6 +50,18 @@ public class ZosmfFilterTest {
     }
 
     @Test
+    public void shouldReturnFilterType() {
+        String filterType = this.filter.filterType();
+        assertEquals("pre", filterType);
+    }
+
+    @Test
+    public void shouldReturnFilterOrder() {
+        int filterOrder = this.filter.filterOrder();
+        assertEquals(9, filterOrder);
+    }
+
+    @Test
     public void shouldNotFilterOtherServiceRequests() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "testservice");
