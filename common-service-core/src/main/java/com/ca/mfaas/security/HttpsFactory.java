@@ -249,16 +249,12 @@ public class HttpsFactory {
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("apiml.common.insecureHttpWarning");
-            //System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "false");
-
-            //builder.withCustomSSL(createSecureSslContext());
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
             setSystemSslProperties();
             builder.withCustomSSL(createSecureSslContext());
             builder.withHostnameVerifier(createHostnameVerifier());
         }
-
         return builder;
     }
 }
