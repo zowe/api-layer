@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "description": "REST API for the API Gateway service, which is a component of the API\nMediation Layer. Use this API to perform tasks such as logging in with the\nmainframe credentials and checking authorization to mainframe resources.",
-        "version": "1.8.0",
+        "version": "1.3.0",
         "title": "API Gateway"
     },
     "tags": [
@@ -58,6 +58,9 @@
                     },
                     "405": {
                         "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
                     }
                 }
             }
@@ -97,6 +100,9 @@
                     },
                     "405": {
                         "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
                     }
                 }
             }
@@ -107,7 +113,7 @@
                     "Security"
                 ],
                 "summary": "Generate a passticket for the user associated with a token.",
-                "description": "Use the `/ticket` API to request a passticket for the user associated with a token.\n\n**HTTP Headers:**\n\nThe ticket request requires the token in one of the following formats:  \n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n  \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request takes one parameter, the name of the application for which the passticket should be generated. This parameter must be supplied.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the ticket.\n",
+                "description": "Use the `/ticket` API to request a passticket for the user associated with a token.\n\nThis endpoint is protect by a client certificate.\n\n**HTTP Headers:**\n\nThe ticket request requires the token in one of the following formats:  \n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n  \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request takes one parameter, the name of the application for which the passticket should be generated. This parameter must be supplied.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the ticket.\n",
                 "operationId": "GenerateTicketUsingPOST",
                 "requestBody": {
                     "content": {
@@ -138,14 +144,23 @@
                             }
                         }
                     },
+                    "400": {
+                        "description": "Incorrect applicationName parameter. The parameter is not provided, is invalid or not defined to security."
+                    },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Zowe token is not provided, is invalid or is expired."
+                    },
+                    "403": {
+                        "description": "A client certificate is not provided or is expired."
                     },
                     "404": {
                         "description": "Not Found"
                     },
                     "405": {
                         "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "The external security manager failed to generate a PassTicket for the user and application specified."
                     }
                 }
             }
@@ -236,7 +251,7 @@
                     "applicationName"
                 ],
                 "example": {
-                    "applicationName": "MYAPP"
+                    "applicationName": "ZOWEAPPL"
                 }
             },
             "TicketResponse": {
@@ -263,7 +278,7 @@
                 "example": {
                     "token": "eyJhbGciOiJSUzI1N",
                     "userId": "John",
-                    "applicationName": "MYAPP",
+                    "applicationName": "ZOWEAPPL",
                     "ticket": "LZTKEEDQ"
                 }
             }
