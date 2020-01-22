@@ -13,10 +13,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+
+import javax.net.ssl.SSLHandshakeException;
+
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsConfigError;
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.ca.mfaas.security.HttpsFactory;
+import com.ca.mfaas.security.SecurityTestUtils;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
@@ -28,12 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-
-import javax.net.ssl.SSLHandshakeException;
-
-import com.ca.mfaas.security.SecurityTestUtils;
 
 @Slf4j
 public class TomcatHttpsTest {
@@ -51,7 +50,7 @@ public class TomcatHttpsTest {
         System.clearProperty("javax.net.ssl.trustStoreType");
     }
 
-    @Test
+   @Test
     public void correctConfigurationShouldWork() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().build();
         startTomcatAndDoHttpsRequest(httpsConfig);

@@ -82,7 +82,6 @@ subprojects {
     tasks.withType(Test) {
         maxParallelForks = 1
     }
-
 }
 
 configurations {

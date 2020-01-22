@@ -290,6 +290,22 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - gateway-service"
             ])
+            publishHTML (target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'discovery-service/build/reports/tests/test',
+                reportFiles: 'index.html',
+                reportName: "Unit Tests Report - discovery-service"
+            ])
+            publishHTML (target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'api-catalog-services/build/reports/tests/test',
+                reportFiles: 'index.html',
+                reportName: "Unit Tests Report - api-catalog-services"
+            ])
         }
 
         success {
