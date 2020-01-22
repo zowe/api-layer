@@ -142,11 +142,11 @@ Ribbon can throw many exception in this time, and it is not sure, that it retry 
 
 **solution**
 
-Now we use as load balancer implementation ApimlZoneAwareLoadBalancer (it extends original ZoneAwareLoadBalancer). This
+Now we use as load balancer implementation `ApimlZoneAwareLoadBalancer` (it extends original ZoneAwareLoadBalancer). This
 implementation only add method ```public void serverChanged()``` which call super class to reload information about servers,
 it means about instances and their addresses.
 
-This is call from ServiceCacheEvictor to be sure, that before custom EhCaches are evicted and load balancer get right 
+This is call from `ServiceCacheEvictor` to be sure, that before custom EhCaches are evicted and load balancer get right 
 information from ZUUL.
 
 ### Service cache - our custom EhCache
@@ -155,12 +155,12 @@ For own purpose was added EhCache, which can collect many information about proc
 state of EhCache with discovery client. If not, it is possible to use old values (ie. before registering new service's 
 instance with different data than old one). It can make many problems in logic (based on race condition).
 
-It was reason to add CacheServiceController. This controller is called from discovery service (exactly from
-EurekaInstanceRegisteredListener by event EurekaInstanceRegisteredEvent). For cleaning caches gateway uses interface
-ServiceCacheEvict. It means each bean can be called about any changes in registry and evict EhCache (or different cache).
+It was reason to add `CacheServiceController`. This controller is called from discovery service (exactly from
+`EurekaInstanceRegisteredListener` by event `EurekaInstanceRegisteredEvent`). For cleaning caches gateway uses interface
+`ServiceCacheEvict`. It means each bean can be called about any changes in registry and evict EhCache (or different cache).
 
-Controller evict all custom caches via interface ServiceCacheEvict and as ApimlDiscoveryClient to fetch new registry. After
-than other beans are notified (see CacheRefreshedEvent from discovery client).
+Controller evict all custom caches via interface `ServiceCacheEvict` and as `ApimlDiscoveryClient` to fetch new registry. After
+than other beans are notified (see `CacheRefreshedEvent` from discovery client).
 
 This mechanism is working, but not strictly right. There is one case:
 
@@ -169,12 +169,12 @@ This mechanism is working, but not strictly right. There is one case:
 3. new request accept and make a cache (again with old state) - **this is wrong**
 4. fetching of registry is done, evict all Eureka caches
 
-For this reason there was added new bean CacheEvictor.
+For this reason there was added new bean `CacheEvictor`.
  
 #### CacheEvictor
 
-This bean collect all calls from CacheServiceController and is waiting for registry fetching. On this event it will clean all
-custom caches (via interface ServiceCacheEvict). On the end it means that custom caches are evicted twice (before Eureka parts
+This bean collect all calls from `CacheServiceController` and is waiting for registry fetching. On this event it will clean all
+custom caches (via interface `ServiceCacheEvict`). On the end it means that custom caches are evicted twice (before Eureka parts
 and after). It fully supported right state.
 
 ## Other improvements
@@ -183,10 +183,10 @@ Implementation of this improvement wasn't just about caches, but discovery servi
 
 ### Event from InstanceRegistry
 
-In Discovery service exist bean InstanceRegistry. This bean is call for register, renew and unregister of service. 
+In Discovery service exist bean `InstanceRegistry`. This bean is call for register, renew and unregister of service. 
 Unfortunately, this bean contains also one problem. It notified about newly registered instances before it register it, in
 similar way about unregister (cancellation) and renew. It doesnt matter about renew, but other makes problem for us. We
-can clean caches before update in InstanceRegistry happened. On this topic exists issue:
+can clean caches before update in `InstanceRegistry` happened. On this topic exists issue:
 ```
 #2659 Race condition with registration events in Eureka server
 https://github.com/spring-cloud/spring-cloud-netflix/issues/2659
@@ -199,10 +199,10 @@ Eureka will be fixed.
 ## Using caches and their evicting 
 
 If you use anywhere custom cache, implement interface ServiceCacheEvict to evict. It offer to methods:
-- public void evictCacheService(String serviceId)
+- `public void evictCacheService(String serviceId)`
     - to evict only part of caches for service with serviceId
     - if there is no way how to do it, you can evict all records
-- public void evictCacheAllService()
+- public void `evictCacheAllService()`
     - to evict all records in the caches, which can has a relationship with any service
     - this method will be call very rare, only in case that, there is impossible to get serviceId (ie. wrong format of instanceId)
 
