@@ -14,10 +14,14 @@ import lombok.Data;
 
 import java.util.*;
 
+/**
+ * Result of registration of static services
+ * Contains registered services, additional metadata, errors ...
+ */
 @Data
 public class StaticRegistrationResult {
     private final List<Object> errors = new LinkedList<>();
     private final List<InstanceInfo> instances = new LinkedList<>();
     private final Map<String, ServiceOverrideData> additionalServiceMetadata = new HashMap<>();
-    private final List<String> registredServices = new LinkedList<>();
+    private final List<String> registeredServices = new LinkedList<>();
 }

@@ -13,6 +13,7 @@ import com.ca.mfaas.gateway.cache.ServiceCacheEvictor;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.loadbalancer.*;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -23,14 +24,16 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration of client side load balancing with Ribbon
+ */
 @Configuration
+@RequiredArgsConstructor
 public class GatewayRibbonConfig {
+    private final PropertiesFactory propertiesFactory;
 
     @RibbonClientName
     private String ribbonClientName = "client";
-
-    @Autowired
-    private PropertiesFactory propertiesFactory;
 
     @Bean
     @Autowired

@@ -122,7 +122,7 @@ public class StaticServicesRegistrationServiceTest {
         registrationService.reloadServices();
         StaticRegistrationResult result = registrationService.reloadServices();
 
-        assertThat(result.getRegistredServices().contains(service), is(false));
+        assertThat(result.getRegisteredServices().contains(service), is(false));
         verify(serviceDefinitionProcessor, times(2)).findStaticServicesData(null);
         verify(mockRegistry, times(1)).cancel(instance.getAppName(), instance.getId(), false);
     }
@@ -142,8 +142,8 @@ public class StaticServicesRegistrationServiceTest {
         registrationService.reloadServices();
         StaticRegistrationResult result = registrationService.reloadServices();
 
-        assertThat(result.getRegistredServices().contains(serviceA), is(true));
-        assertThat(result.getRegistredServices().contains(serviceB), is(true));
+        assertThat(result.getRegisteredServices().contains(serviceA), is(true));
+        assertThat(result.getRegisteredServices().contains(serviceB), is(true));
         verify(serviceDefinitionProcessor, times(2)).findStaticServicesData(null);
         verify(mockRegistry, times(0)).cancel(any(String.class), any(String.class), eq(false));
     }

@@ -92,7 +92,7 @@ public class StaticServicesRegistrationService {
 
         PeerAwareInstanceRegistry registry = getRegistry();
         for (InstanceInfo info: oldStaticInstances) {
-            if (!result.getRegistredServices().contains(info.getInstanceId())) {
+            if (!result.getRegisteredServices().contains(info.getInstanceId())) {
                 log.info("Instance {} is not defined in the new static API definitions. It will be removed", info.getInstanceId());
                 registry.cancel(info.getAppName(), info.getId(), false);
             }
@@ -114,7 +114,7 @@ public class StaticServicesRegistrationService {
 
         // register static services
         for (InstanceInfo instanceInfo : result.getInstances()) {
-            result.getRegistredServices().add(instanceInfo.getInstanceId());
+            result.getRegisteredServices().add(instanceInfo.getInstanceId());
             staticInstances.add(instanceInfo);
             registry.register(instanceInfo, false);
         }
