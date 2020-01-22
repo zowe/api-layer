@@ -200,10 +200,10 @@ public class ClassOrDefaultProxyUtilsTest {
         }
 
         try {
-            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerException.class, "getOurStackTrace").apply(new NullPointerException("x"));
+            new ClassOrDefaultProxyUtils.ByMethodName<>("java.lang.NullPointerException", NullPointerException.class, "getCause").apply(new NullPointerException("x"));
             fail();
         } catch (ExceptionMappingError e) {
-            assertEquals("Cannot find constructor on java.lang.NullPointerException with [class [Ljava.lang.StackTraceElement;]", e.getMessage());
+            assertEquals("Cannot find constructor on java.lang.NullPointerException with [class java.lang.Throwable]", e.getMessage());
         }
     }
 
