@@ -80,7 +80,7 @@ apiml:
             -   apiId: org.zowe.discoverableclient
                 version: 1.0.0
                 gatewayUrl: api/v1
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/v2/api-docs
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
@@ -89,7 +89,7 @@ apiml:
                 description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
                 version: 1.0.1
         ssl:
-            enabled: true
+            enabled: ${server.ssl.enabled} #true
             verifySslCertificatesOfServices: true
             ciphers: ${server.ssl.ciphers}
             protocol: ${server.ssl.protocol}
@@ -97,12 +97,12 @@ apiml:
             trustStoreType: ${server.ssl.trustStoreType}
 
             ### DEFINE FOLLOWING PROPERTIES IN EXTERNAL CONFIGURATION
-            keyAlias: localhost-blah
-            keyPassword: password-blah
-            keyStore: keystore/localhost/localhost.keystore.p12-blah
-            keyStorePassword: password-blah
-            trustStore: keystore/localhost/localhost.truststore.p12-blah
-            trustStorePassword: password-blah
+            keyAlias: ${server.ssl.keyAlias} #localhost-blah
+            keyPassword: ${server.ssl.keyPassword} #password-blah
+            keyStore: ${server.ssl.keyStore} #keystore/localhost/localhost.keystore.p12-blah
+            keyStorePassword: ${server.ssl.keyStorePassword} #password-blah
+            trustStore: ${server.ssl.trustStore} #keystore/localhost/localhost.truststore.p12-blah
+            trustStorePassword: ${server.ssl.trustStorePassword} #password-blah
 
 management:
     endpoints:
