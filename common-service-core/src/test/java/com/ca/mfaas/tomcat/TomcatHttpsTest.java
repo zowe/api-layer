@@ -13,10 +13,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
+
+import javax.net.ssl.SSLHandshakeException;
+
 import com.ca.mfaas.security.HttpsConfig;
 import com.ca.mfaas.security.HttpsConfigError;
 import com.ca.mfaas.security.HttpsConfigError.ErrorCode;
 import com.ca.mfaas.security.HttpsFactory;
+import com.ca.mfaas.security.SecurityTestUtils;
 
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.startup.Tomcat;
@@ -24,19 +29,26 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.net.ssl.SSLHandshakeException;
-
-import com.ca.mfaas.security.SecurityTestUtils;
-
+@Slf4j
 public class TomcatHttpsTest {
     private static final String EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN = "excepted SSLHandshakeException exception not thrown";
     private static final String EXPECTED_HTTPS_CONFIG_ERROR_NOT_THROWN = "excepted HttpsConfigError exception not thrown";
     private static final String UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE = "unable to find valid certification path";
 
+    @Before
+    public void setUp() {
+        System.clearProperty("javax.net.ssl.keyStore");
+        System.clearProperty("javax.net.ssl.keyStorePassword");
+        System.clearProperty("javax.net.ssl.keyStoreType");
+        System.clearProperty("javax.net.ssl.trustStore");
+        System.clearProperty("javax.net.ssl.trustStorePassword");
+        System.clearProperty("javax.net.ssl.trustStoreType");
+    }
     @Test
     public void correctConfigurationShouldWork() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().build();
@@ -50,6 +62,7 @@ public class TomcatHttpsTest {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
         } catch (SSLHandshakeException e) {  // NOSONAR
+            log.info("SSLHandshakeException: {}", e, e);
             assertTrue(e.getMessage().contains(UNABLE_TO_FIND_CERTIFICATION_PATH_MESSAGE));
         }
     }
