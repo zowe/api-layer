@@ -25,6 +25,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.UnsupportedEncodingException;
 
+import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX;
 import static org.junit.Assert.*;
 
@@ -77,6 +78,18 @@ public class SuccessfulTicketHandlerTest {
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
         assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG140E"));
+        assertTrue(httpServletResponse.isCommitted());
+    }
+
+    @Test
+    public void shouldFailWhenGenerationFails() throws JsonProcessingException, UnsupportedEncodingException {
+        httpServletRequest.setContent(mapper.writeValueAsBytes(new TicketRequest(UNKNOWN_APPLID)));
+
+        successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
+
+        assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
+        assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG141E"));
         assertTrue(httpServletResponse.isCommitted());
     }
 }

@@ -16,6 +16,7 @@ import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClientConfig;
+import lombok.RequiredArgsConstructor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -32,24 +33,17 @@ import java.util.List;
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
  * fetchRegistry. User can call this method to asynchronously fetch new data from discovery service. There is no time
  * to fetching.
- *
+ * <p>
  * Configuration also add listeners to call other beans waiting for fetch new registry. It speed up distribution of
  * changes in whole gateway.
  */
 @Configuration
+@RequiredArgsConstructor
 public class DiscoveryClientConfig {
-
-    @Autowired
-    private ApplicationContext context;
-
-    @Autowired
-    private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
-
-    @Autowired
-    private List<RefreshableRouteLocator> refreshableRouteLocators;
-
-    @Autowired
-    private ZuulHandlerMapping zuulHandlerMapping;
+    private final ApplicationContext context;
+    private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
+    private final List<RefreshableRouteLocator> refreshableRouteLocators;
+    private final ZuulHandlerMapping zuulHandlerMapping;
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
@@ -61,8 +55,7 @@ public class DiscoveryClientConfig {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
             appManager = ProxyUtils.getTargetObject(manager);
-        }
-        else {
+        } else {
             appManager = manager;
         }
         final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
