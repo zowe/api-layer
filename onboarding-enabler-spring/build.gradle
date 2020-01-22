@@ -1,11 +1,10 @@
 dependencies {
     compile project(':apiml-logging')
-    //compile project(':apiml-common')
     compile project(':onboarding-enabler-java')
 
     compile libraries.spring_boot_starter_actuator
     compile libraries.springFox
-    compile libraries.springFoxWeb
+    //compile libraries.springFoxWeb
 
     implementation libraries.lombok
     // implementation libraries.spring_boot_starter

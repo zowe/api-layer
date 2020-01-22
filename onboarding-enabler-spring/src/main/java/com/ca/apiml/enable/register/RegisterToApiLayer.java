@@ -15,7 +15,7 @@ import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
 import com.ca.mfaas.exception.ServiceDefinitionException;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class RegisterToApiLayer {
 
     /**
@@ -35,14 +36,12 @@ public class RegisterToApiLayer {
      * RegisterToApiLayer class provides the apiMediationClient as a spring bean to be used in code where EurekaClient
      * is needed.
      */
-    @Autowired
-    private ApiMediationClient apiMediationClient;
+    private final ApiMediationClient apiMediationClient;
 
-    @Autowired
-    private ApiMediationServiceConfig newConfig;
+    private final ApiMediationServiceConfig newConfig;
     private ApiMediationServiceConfig  config;
 
-    @Value("${apiml.enabled:false}")
+    @Value("${apiml.enabled:true}")
     private boolean apimlEnabled;
 
     @InjectApimlLogger

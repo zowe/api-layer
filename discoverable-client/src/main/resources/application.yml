@@ -80,7 +80,7 @@ apiml:
             -   apiId: org.zowe.discoverableclient
                 version: 1.0.0
                 gatewayUrl: api/v1
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/v2/api-docs
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
@@ -89,7 +89,7 @@ apiml:
                 description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
                 version: 1.0.1
         ssl:
-            enabled: ${server.ssl.enabled} #true
+            enabled: ${server.ssl.enabled}
             verifySslCertificatesOfServices: true
             ciphers: ${server.ssl.ciphers}
             protocol: ${server.ssl.protocol}

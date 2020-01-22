@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice.client;
+package com.ca.mfaas.eurekaservice.client.impl;
 
+import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
 import com.ca.mfaas.eurekaservice.client.config.*;
-import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
 import com.ca.mfaas.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import com.ca.mfaas.config.ApiInfo;
 import com.ca.mfaas.exception.MetadataValidationException;
@@ -92,6 +92,7 @@ public class ApiMediationClientImplTest {
 
         // Try register the services - expecting to throw ServiceDefinitionException
         ApiMediationClient client = new ApiMediationClientImpl();
+        //client.getEurekaClient().getEurekaClientConfig()
         client.register(config);
         client.unregister();
 

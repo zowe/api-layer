@@ -18,7 +18,6 @@ repositories {
 dependencies {
 
     compile(project(':onboarding-enabler-java'))
-    compile(project(':common-service-core'))
 
     compile 'io.swagger.core.v3:swagger-jaxrs2:2.0.0'
     compile libraries.jackson_dataformat_yaml
