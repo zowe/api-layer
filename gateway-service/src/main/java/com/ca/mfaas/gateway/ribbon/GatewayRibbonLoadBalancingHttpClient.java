@@ -71,12 +71,7 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
 
     @Override
     public RibbonApacheHttpResponse execute(RibbonApacheHttpRequest request, IClientConfig configOverride) throws Exception {
-        RibbonApacheHttpRequest sendRequest = null;
-        if (HTTPS.equals(request.getURI().getScheme())) {
-            configOverride.set(CommonClientConfigKey.IsSecure, true);
-        } else {
-            configOverride.set(CommonClientConfigKey.IsSecure, false);
-        }
+        configOverride.set(CommonClientConfigKey.IsSecure, HTTPS.equals(request.getURI().getScheme()));
         final RequestConfig.Builder builder = RequestConfig.custom();
         builder.setConnectTimeout(configOverride.get(
             CommonClientConfigKey.ConnectTimeout, this.connectTimeout));
@@ -87,15 +82,7 @@ public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHtt
         builder.setContentCompressionEnabled(false);
 
         final RequestConfig requestConfig = builder.build();
-        if (HTTPS.equals(request.getURI().getScheme())) {
-            final URI secureUri = UriComponentsBuilder.fromUri(request.getUri())
-                .scheme(HTTPS).build(true).toUri();
-            sendRequest = request.withNewUri(secureUri);
-        }
-        if (sendRequest == null) {
-            sendRequest = request;
-        }
-        final HttpUriRequest httpUriRequest = sendRequest.toRequest(requestConfig);
+        final HttpUriRequest httpUriRequest = request.toRequest(requestConfig);
         final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
         return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
     }
