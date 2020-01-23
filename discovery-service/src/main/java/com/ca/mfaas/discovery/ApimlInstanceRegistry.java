@@ -22,6 +22,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -126,6 +127,10 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     protected int resolveInstanceLeaseDurationRewritten(final InstanceInfo info) {
         try {
             return (int) handlerResolveInstanceLeaseDurationMethod.invokeWithArguments(this, info);
+        } catch (ClassCastException | WrongMethodTypeException e) {
+            throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Throwable t) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
         }
@@ -136,6 +141,10 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
             handleRegistrationMethod.invokeWithArguments(this, info, leaseDuration, isReplication);
+        } catch (ClassCastException | WrongMethodTypeException e) {
+            throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Throwable t) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
         }
@@ -146,6 +155,10 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
             handleRegistrationMethod.invokeWithArguments(this, info, resolveInstanceLeaseDurationRewritten(info), isReplication);
+        } catch (ClassCastException | WrongMethodTypeException e) {
+            throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Throwable t) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
         }
@@ -157,6 +170,10 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             final boolean out = (boolean) cancelMethodHandle.invokeWithArguments(this, appName, serverId, isReplication);
             handleCancelationMethod.invokeWithArguments(this, appName, serverId, isReplication);
             return out;
+        } catch (ClassCastException | WrongMethodTypeException e) {
+            throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
+        } catch (RuntimeException re) {
+            throw re;
         } catch (Throwable t) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
         }
