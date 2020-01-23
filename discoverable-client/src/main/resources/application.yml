@@ -92,7 +92,7 @@ apiml:
             verifySslCertificatesOfServices: true
             ciphers: ${server.ssl.ciphers}
             protocol: ${server.ssl.protocol}
-            enabled-protocol: ${server.ssl.protocol}
+            enabled-protocols: ${server.ssl.protocol}
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}
 
