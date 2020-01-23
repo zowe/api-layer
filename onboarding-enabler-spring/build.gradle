@@ -4,10 +4,8 @@ dependencies {
 
     compile libraries.spring_boot_starter_actuator
     compile libraries.springFox
-    //compile libraries.springFoxWeb
 
     implementation libraries.lombok
-    // implementation libraries.spring_boot_starter
 
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.mockito_core

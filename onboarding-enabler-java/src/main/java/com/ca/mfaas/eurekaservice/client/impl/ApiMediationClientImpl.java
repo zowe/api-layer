@@ -94,7 +94,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         ApplicationInfoManager applicationInfoManager, EurekaClientConfig clientConfig, ApiMediationServiceConfig config) {
 
         Ssl sslConfig = config.getSsl();
-        HttpsConfig httpsConfig = null;
 
         HttpsConfig.HttpsConfigBuilder builder = HttpsConfig.builder();
         builder.protocol(sslConfig.getProtocol());
@@ -114,7 +113,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                    .trustStorePassword(sslConfig.getTrustStorePassword());
         }
 
-        httpsConfig = builder.build();
+        HttpsConfig httpsConfig = builder.build();
 
         HttpsFactory factory = new HttpsFactory(httpsConfig);
         EurekaJerseyClient eurekaJerseyClient = factory.createEurekaJerseyClientBuilder(

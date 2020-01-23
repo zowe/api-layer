@@ -58,7 +58,6 @@ public class ApiMediationClientImplTest {
         config.setDiscoveryServiceUrls(Arrays.asList("https://localhost:10011/eureka"));
         config.setSsl(ssl);
         config.setServiceIpAddress("127.0.0.1");
-        //config.build();
 
         client.register(config);
         assertNotNull(client.getEurekaClient());
