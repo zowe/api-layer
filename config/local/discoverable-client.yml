@@ -4,6 +4,14 @@ spring:
     output:
         ansi:
             enabled: always
+server:
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: ../keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
 
 eureka:
     client:
