@@ -26,7 +26,6 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.http.MediaType;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,28 +36,30 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 
 /**
  * This class simulate a service. You can create new instance dynamically in the test. It will register into discovery
- * service and then you can call methods on it. This service also support heartBean, health check and unregistration.
- *
- * It is recommended to use try-with-resource to be sure, service will be unregistred on the end, ie.:
- *
+ * service and then you can call methods on it. This service also support heartBean, health check and unregistering.
+ * <p>
+ * It is recommended to use try-with-resource to be sure, service will be unregistered on the end, ie.:
+ * <p>
  * try (final VirtualService service = new VirtualService("testService")) {
  *      service
  *          // add same servlet and setting of service
  *          .start()
- *          // you should wait until service is registred, usually registration is faster, but for sure - registration
+ *          // you should wait until service is registered, usually registration is faster, but for sure - registration
  *          // contains many asynchronous steps
  *          .waitForGatewayRegistration(1, TIMEOUT);
- *      // use serice
+ *      // use service
  *  }
  *
  *  If you want to unregister service during the test, you can do that like this:
@@ -66,22 +67,22 @@ import static org.junit.Assert.*;
  *  service1
  *      .unregister()
  *      // similar to registration, unregister contains same asynchronous steps
- *      .waitForGatewayUnregistration(1, TIMEOUT)
+ *      .waitForGatewayUnregistering(1, TIMEOUT)
  *      .stop();
  *
  *  VirtualService allow to you add custom servlets for checking, but few are implemented yet:
  *  - HeaderServlet
  *      - register with addGetHeaderServlet({header})
  *      - it will response content of header with name {header} on /header/{header}
- *  - VerifyServlet
+ * - VerifyServlet
  *      - register with addVerifyServlet
  *      - it allows to store all request on path /verify/* and then make asserts on them
  *      - see also method getGatewayVerifyUrls
- *  - InstanceServlet
+ * - InstanceServlet
  *      - automatically created
  *      - return instanceId in the body at /application/instance
- *      - it is used for checking of gateways (see waitForGatewayRegistration and waitForGatewayUnregistration)
- *  - HealthServlet
+ *      - it is used for checking of gateways (see waitForGatewayRegistration and waitForGatewayUnregistering)
+ * - HealthServlet
  *      - automatically created
  *      - to check state of service from discovery service (see /application/health)
  */
@@ -91,28 +92,29 @@ public class VirtualService implements AutoCloseable {
     private final String serviceId;
     private String instanceId;
 
-    private boolean registred, started;
+    private boolean registered, started;
 
     private Tomcat tomcat;
     private Context context;
     private Connector httpConnector;
     private VirtualService.HealthService healthService;
 
-    private int renewalIntervalInSecs = 10;
+    private final int renewalIntervalInSecs = 10;
 
-    private Map<String, String> metadata = new HashMap<String, String>();
+    private final Map<String, String> metadata = new HashMap<>();
 
     private String gatewayPath;
 
-    public VirtualService(String serviceId) throws LifecycleException {
+    public VirtualService(String serviceId) {
         this.serviceId = serviceId;
         createTomcat();
     }
 
     /**
      * To start tomcat and register service
+     *
      * @return this instance to next command
-     * @throws IOException problem with socket
+     * @throws IOException        problem with socket
      * @throws LifecycleException Tomcat exception
      */
     public VirtualService start() throws IOException, LifecycleException {
@@ -132,11 +134,11 @@ public class VirtualService implements AutoCloseable {
     /**
      * @return state of registration to discovery service
      */
-    public boolean isRegistred() {
-        return registred;
+    public boolean isRegistered() {
+        return registered;
     }
 
-    private void createTomcat() throws LifecycleException {
+    private void createTomcat() {
         httpConnector = new Connector();
         httpConnector.setPort(0);
         httpConnector.setScheme("http");
@@ -160,6 +162,7 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * On begin of initialization is generated from serviceId, hostname and port.
+     *
      * @return instance if of this client
      */
     public String getInstanceId() {
@@ -168,7 +171,8 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Add custom servlet as part of test to simulate a service method
-     * @param name name of servlet
+     *
+     * @param name    name of servlet
      * @param pattern url to listen
      * @param servlet instance of servlet
      * @return this instance to next command
@@ -182,6 +186,7 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Register servlet to echo header value with name headerName
+     *
      * @param headerName which header value should be in echo
      * @return this instance to next command
      */
@@ -192,8 +197,9 @@ public class VirtualService implements AutoCloseable {
     }
 
     /**
-     * Register verify servlet which remember request and its data on url /verify/* to be analyzed then. For this pursose
+     * Register verify servlet which remember request and its data on url /verify/* to be analyzed then. For this purpose
      * is using {@link RequestVerifier}
+     *
      * @return this instance to next command
      */
     public VirtualService addVerifyServlet() {
@@ -203,15 +209,15 @@ public class VirtualService implements AutoCloseable {
     }
 
     /**
-     * Method wait for gateways to be this service registred. It will make a check via InstanceServlet. It the response
+     * Method wait for gateways to be this service registered. It will make a check via InstanceServlet. It the response
      * is correct (this service will answer) it ends, otherwise it make next checking until that. Whole method has
      * timeout to stop if something fails.
-     *
+     * <p>
      * The check means make serviceCount calls. There is a preposition that load balancer is based on cyclic queue and
      * if it will call multiple times (same to count of instances of same service), it should call all instances.
      *
      * @param instanceCount Assumed count of instances of the same service at the moment
-     * @param timeoutSec Timeout in secs to break waiting
+     * @param timeoutSec    Timeout in secs to break waiting
      */
     public VirtualService waitForGatewayRegistration(int instanceCount, int timeoutSec) {
         final long time0 = System.currentTimeMillis();
@@ -230,7 +236,7 @@ public class VirtualService implements AutoCloseable {
                     assertEquals(instanceId, responseBody.print());
                     break;
                 } catch (RuntimeException | AssertionError e) {
-                    testCounter ++;
+                    testCounter++;
                     // less calls than instance counts, continue without waiting
                     if (testCounter < instanceCount) continue;
 
@@ -239,12 +245,8 @@ public class VirtualService implements AutoCloseable {
 
                     if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
 
-                    try {
-                        Thread.sleep(1000);
-                        slept = true;
-                    } catch (InterruptedException ex) {
-                        throw new RuntimeException("Error durring waiting for gateways to go up, slept for " + (System.currentTimeMillis() - time0) / 1000 + "s", ex);
-                    }
+                    await().timeout(1, TimeUnit.SECONDS);
+                    slept = true;
                 }
             }
         }
@@ -258,12 +260,12 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Method will wait until all gateways will unregister this instance. It will make few calls (instanceCountBefore)
-     * to check if this service will answer. If not it ends immediatelly, otherwise it will wait for a while.
+     * to check if this service will answer. If not it ends immediately, otherwise it will wait for a while.
      *
-     * @param instanceCountBefore Count of instances with same serviceId before unregistration
-     * @param timeoutSec timeout in sec to checking
+     * @param instanceCountBefore Count of instances with same serviceId before unregistering
+     * @param timeoutSec          timeout in sec to checking
      */
-    public VirtualService waitForGatewayUnregistration(int instanceCountBefore, int timeoutSec) {
+    public VirtualService waitForGatewayUnregistering(int instanceCountBefore, int timeoutSec) {
         final long time0 = System.currentTimeMillis();
         boolean slept = false;
         for (String gatewayUrl : getGatewayUrls()) {
@@ -282,12 +284,8 @@ public class VirtualService implements AutoCloseable {
                 } catch (RuntimeException | AssertionError e) {
                     if (System.currentTimeMillis() - time0 > timeoutSec * 1000) throw e;
 
-                    try {
-                        Thread.sleep(1000);
-                        slept = true;
-                    } catch (InterruptedException ex) {
-                        throw new RuntimeException("Error durring waiting for gateways to go down, slept for " + (System.currentTimeMillis() - time0) / 1000 + "s", ex);
-                    }
+                    await().timeout(1, TimeUnit.SECONDS);
+                    slept = true;
                 }
             }
         }
@@ -301,6 +299,7 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Unregister service from discovery service and stop tomcat
+     *
      * @throws LifecycleException Tomcat problem
      */
     public void stop() throws LifecycleException {
@@ -313,7 +312,8 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Stop virtual service - to easy use with try-with-resources
-     * @throws Exception
+     *
+     * @throws Exception when any issue
      */
     @Override
     public void close() throws Exception {
@@ -360,7 +360,7 @@ public class VirtualService implements AutoCloseable {
                     )
                     .put("healthCheckUrl", getUrl() + "/application/health")
                     .put("dataCenterInfo", new JSONObject()
-                        .put("@class", "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo")
+                        .put("@class", "com.netflix.appinfo.")
                         .put("name", "MyOwn")
                     )
                     .put("leaseInfo", new JSONObject()
@@ -373,17 +373,18 @@ public class VirtualService implements AutoCloseable {
             .post(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}", serviceId)
             .then().statusCode(SC_NO_CONTENT);
 
-        registred = true;
+        registered = true;
     }
 
     /**
-     * Explicitly unregistration, if you need test state after service is down
+     * Explicitly unregistering, if you need test state after service is down
+     *
      * @return this instance to next command
      */
     public VirtualService unregister() {
-        if (!registred) return this;
+        if (!registered) return this;
 
-        registred = false;
+        registered = false;
 
         given().when()
             .delete(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}/{instanceId}", serviceId, instanceId)
@@ -395,13 +396,14 @@ public class VirtualService implements AutoCloseable {
     /**
      * To adding metadata of instance. They are usually added before start (send with registration), but method support
      * also sending after that, during service is up.
-     * @param key metadata's key
-     * @param value metadata's value, empty string has same meaning as unregistry
+     *
+     * @param key   metadata's key
+     * @param value metadata's value, empty string will unregister the service
      * @return this instance to next command
      */
     public VirtualService addMetadata(String key, String value) {
         metadata.put(key, value);
-        if (registred) {
+        if (registered) {
             given().when()
                 .param(key, value)
                 .put(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}/{instanceId}/metadata", serviceId, instanceId)
@@ -413,7 +415,8 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * To remove metadata. Support also sending during service is up (after registration)
-     * @param key
+     *
+     * @param key of metadata which should be removed
      */
     public void removeMetadata(String key) {
         addMetadata(key, "");
@@ -422,6 +425,7 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Method to easy set metadata about authentication
+     *
      * @param authentication authentication of this service (gateway will send right scheme)
      * @return this instance to next command
      */
@@ -444,7 +448,8 @@ public class VirtualService implements AutoCloseable {
     /**
      * If you need add special routing rule to discovery service, catalog and especially gateway service. If no route is
      * added, default one is creating on starting.
-     * @param gatewayUrl url on gateway side
+     *
+     * @param gatewayUrl         url on gateway side
      * @param serviceRelativeUrl url part on this service
      * @return this instance to next command
      */
@@ -465,7 +470,8 @@ public class VirtualService implements AutoCloseable {
     /**
      * Add default routing, not necessary to call, it is part of initialization, you can use it just to be clear that
      * there is no other
-     * @return
+     *
+     * @return the service
      */
     public VirtualService addDefaultRoute() {
         addRoute("api/v1", "/");
@@ -474,7 +480,7 @@ public class VirtualService implements AutoCloseable {
     }
 
     private void addDefaultRouteIfMissing() {
-        if (!metadata.keySet().stream().filter(x -> x.startsWith(ROUTES + ".")).findAny().isPresent()) {
+        if (metadata.keySet().stream().noneMatch(x -> x.startsWith(ROUTES + "."))) {
             addDefaultRoute();
         }
     }
@@ -509,12 +515,12 @@ public class VirtualService implements AutoCloseable {
     }
 
     @AllArgsConstructor
-    class HeaderServlet extends HttpServlet {
+    static class HeaderServlet extends HttpServlet {
 
         private final String headerName;
 
         @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setStatus(HttpStatus.SC_OK);
             resp.getWriter().print(req.getHeader(headerName));
             resp.getWriter().close();
@@ -552,23 +558,18 @@ public class VirtualService implements AutoCloseable {
 
         @Override
         public void run() {
-            try {
-                long lastCall = System.currentTimeMillis();
-                sendHeartBeat();
-                while (up) {
-                    Thread.sleep(100);
-                    if (instanceId == null) continue;
+            long lastCall = System.currentTimeMillis();
+            sendHeartBeat();
+            while (up) {
+                await().timeout(100, TimeUnit.MILLISECONDS);
+                if (instanceId == null) continue;
 
-                    if (lastCall + 1000 * heartbeatInterval < System.currentTimeMillis()) {
-                        lastCall = System.currentTimeMillis();
-                        sendHeartBeat();
-                    }
+                if (lastCall + 1000 * heartbeatInterval < System.currentTimeMillis()) {
+                    lastCall = System.currentTimeMillis();
+                    sendHeartBeat();
                 }
-            } catch (InterruptedException e) {
-                // never happened
             }
         }
-
     }
 
     /**
@@ -579,10 +580,10 @@ public class VirtualService implements AutoCloseable {
     class HealthServlet extends HttpServlet {
 
         @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setStatus(HttpStatus.SC_OK);
             resp.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-            final Status status =  healthService == null ? Status.UNKNOWN : healthService.getStatus();
+            final Status status = healthService == null ? Status.UNKNOWN : healthService.getStatus();
             resp.getWriter().print("{\"status\":\"" + status + "\"}");
             resp.getWriter().close();
         }
@@ -597,7 +598,7 @@ public class VirtualService implements AutoCloseable {
         private RequestVerifier verify;
 
         @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
             verify.add(VirtualService.this, req);
             resp.setStatus(HttpStatus.SC_OK);
         }
@@ -606,12 +607,12 @@ public class VirtualService implements AutoCloseable {
 
     /**
      * Servlet answer on /application/instance instanceId. This is base part of method to verify registration on
-     * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistration(int, int)}
+     * gateways, see {@link #waitForGatewayRegistration(int, int)} and {@link #waitForGatewayUnregistering(int, int)}
      */
     class InstanceServlet extends HttpServlet {
 
         @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             resp.setStatus(HttpStatus.SC_OK);
             resp.getWriter().print(VirtualService.this.instanceId);
             resp.getWriter().close();

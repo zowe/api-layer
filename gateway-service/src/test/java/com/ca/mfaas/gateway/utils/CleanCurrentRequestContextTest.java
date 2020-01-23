@@ -16,7 +16,7 @@ import org.junit.Before;
  * Makes sure that only one test class derived from this class is using
  * RequestContext.getCurrentContext at a time.
  */
-public class CleanCurrentRequestContextTest extends CurrentRequestContextTest {
+public abstract class CleanCurrentRequestContextTest extends CurrentRequestContextTest {
     @Before
     public void setup() {
         this.lockAndClearRequestContext();

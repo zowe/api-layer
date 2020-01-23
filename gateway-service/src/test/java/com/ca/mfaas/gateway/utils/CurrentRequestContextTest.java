@@ -19,7 +19,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
  * Provides functions to lock, clear, and unlock CurrentRequestContext in a test
  * so there are no race conditions in parallel test execution.
  */
-public class CurrentRequestContextTest {
+public abstract class CurrentRequestContextTest {
     private final static ReentrantLock currentRequestContext = new ReentrantLock();
 
     protected RequestContext ctx;

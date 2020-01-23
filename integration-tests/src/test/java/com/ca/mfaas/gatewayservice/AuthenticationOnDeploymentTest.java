@@ -115,7 +115,7 @@ public class AuthenticationOnDeploymentTest {
             // stop first service without authentication
             service1
                 .unregister()
-                .waitForGatewayUnregistration(2, TIMEOUT)
+                .waitForGatewayUnregistering(2, TIMEOUT)
                 .stop();
 
             // check second service, all called second one with passTicket, same url like service1 (removed)
