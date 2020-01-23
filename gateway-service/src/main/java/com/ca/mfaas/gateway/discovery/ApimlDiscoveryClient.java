@@ -50,10 +50,9 @@ public class ApimlDiscoveryClient extends CloudEurekaClient {
             Field schedulerField = DiscoveryClient.class.getDeclaredField("scheduler");
             schedulerField.setAccessible(true);
             scheduler = (ScheduledExecutorService) schedulerField.get(this);
-
             // find class with process to fetch from discovery server and construct instance for call to fetch
             Optional<Class<?>> cacheRefreshClass = Arrays.stream(DiscoveryClient.class.getDeclaredClasses())
-                .filter(x -> "CacheRefreshThread".equals(x.getSimpleName())).findFirst();
+                .filter(x -> "CacheRefreshThread".equals(x.getSimpleName())).findFirst();  // NOSONAR: This class cannot be imported for usage with instanceof
             if (!cacheRefreshClass.isPresent()) throw new NoSuchMethodException();
             Constructor cacheRefreshConstructor = cacheRefreshClass.get().getDeclaredConstructor(DiscoveryClient.class);
             cacheRefreshConstructor.setAccessible(true);
