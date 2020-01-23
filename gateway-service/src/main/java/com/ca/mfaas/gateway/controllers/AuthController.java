@@ -27,7 +27,7 @@ import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
  */
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/gateway/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthenticationService authenticationService;

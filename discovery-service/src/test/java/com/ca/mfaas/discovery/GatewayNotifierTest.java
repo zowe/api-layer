@@ -65,12 +65,12 @@ public class GatewayNotifierTest {
         when(registry.getApplication("GATEWAY")).thenReturn(application);
 
         gatewayNotifier.serviceUpdated("testService");
-        verify(restTemplate, times(1)).delete("https://hostname1:1433/api/v1/gateway/cache/services/testService");
-        verify(restTemplate, times(1)).delete("http://hostname2:1000/api/v1/gateway/cache/services/testService");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services/testService");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services/testService");
 
         gatewayNotifier.serviceUpdated(null);
-        verify(restTemplate, times(1)).delete("https://hostname1:1433/api/v1/gateway/cache/services");
-        verify(restTemplate, times(1)).delete("http://hostname2:1000/api/v1/gateway/cache/services");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services");
 
         verify(restTemplate, times(4)).delete(anyString());
     }

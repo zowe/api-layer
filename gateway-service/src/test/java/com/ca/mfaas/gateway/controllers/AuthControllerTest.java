@@ -42,12 +42,12 @@ public class AuthControllerTest {
     @Test
     public void invalidateJwtToken() throws Exception {
         when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/api/v1/gateway/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
+        this.mockMvc.perform(delete("/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
 
         when(authenticationService.invalidateJwtToken("abcde", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/api/v1/gateway/auth/invalidate/abcde")).andExpect(status().is(SC_OK));
+        this.mockMvc.perform(delete("/auth/invalidate/abcde")).andExpect(status().is(SC_OK));
 
-        this.mockMvc.perform(delete("/api/v1/gateway/auth/invalidate/xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
+        this.mockMvc.perform(delete("/auth/invalidate/xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);

@@ -40,7 +40,9 @@ import javax.annotation.Nonnull;
         "com.ca.apiml.security.common"
     },
     excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
+        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")
+    }
+)
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
 @EnableEurekaClient
 @EnableWebSocket

@@ -61,7 +61,6 @@ public class AuthenticationOnDeploymentTest {
         ) {
             // start first instance - without passTickets
             service1
-                .addGetHeaderServlet(HttpHeaders.AUTHORIZATION)
                 .addVerifyServlet()
                 .start()
                 .waitForGatewayRegistration(1, TIMEOUT);
@@ -82,7 +81,6 @@ public class AuthenticationOnDeploymentTest {
 
             // start second service (with passTicket authorization)
             service2
-                .addGetHeaderServlet(HttpHeaders.AUTHORIZATION)
                 .addVerifyServlet()
                 .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "TESTAPPL"))
                 .start()

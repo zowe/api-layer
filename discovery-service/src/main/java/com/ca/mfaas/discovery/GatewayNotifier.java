@@ -56,7 +56,7 @@ public class GatewayNotifier {
 
         for (final InstanceInfo instanceInfo : gatewayInstances) {
             final StringBuilder url = new StringBuilder();
-            url.append(EurekaUtils.getUrl(instanceInfo)).append("/api/v1/gateway/cache/services");
+            url.append(EurekaUtils.getUrl(instanceInfo)).append("/cache/services");
             if (serviceId != null)
                 url.append('/').append(serviceId);
             restTemplate.delete(url.toString());

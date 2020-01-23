@@ -20,9 +20,11 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClientName;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
+import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -36,8 +38,9 @@ public class GatewayRibbonConfig {
     private String ribbonClientName = "client";
 
     @Bean
+    @Primary
     @Autowired
-    public GatewayRibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
+    public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
         CloseableHttpClient secureHttpClient,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
@@ -49,6 +52,7 @@ public class GatewayRibbonConfig {
     }
 
     @Bean
+    @Primary
     @Autowired
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
