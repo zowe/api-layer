@@ -360,7 +360,7 @@ public class VirtualService implements AutoCloseable {
                     )
                     .put("healthCheckUrl", getUrl() + "/application/health")
                     .put("dataCenterInfo", new JSONObject()
-                        .put("@class", "com.netflix.appinfo.")
+                        .put("@class", "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo")
                         .put("name", "MyOwn")
                     )
                     .put("leaseInfo", new JSONObject()
