@@ -62,7 +62,7 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void givenSingleInstanceWhenNotConfiguredShouldFilter() {
+    public void givenSingleInstance_WhenNotConfigured_ShouldFilter() {
         List<ServiceInstance> instanceList = new ArrayList<>();
         instanceList.add(serviceInstanceWithoutConfiguration);
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(instanceList);
@@ -71,7 +71,7 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void givenSingleInstanceWhenConfiguredShouldNotFilter() {
+    public void givenSingleInstance_WhenConfigured_ShouldNotFilter() {
         List<ServiceInstance> instanceList = new ArrayList<>();
         instanceList.add(serviceInstanceWithConfiguration);
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(instanceList);
@@ -92,7 +92,7 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void givenMultipleInstancesWhenMixedSetupShouldBePesimistic() {
+    public void givenMultipleInstances_WhenMixedSetup_ShouldBePesimistic() {
         List<ServiceInstance> instanceList = new ArrayList<>();
         instanceList.add(serviceInstanceWithoutConfiguration);
         instanceList.add(serviceInstanceWithConfiguration);

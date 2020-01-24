@@ -53,7 +53,7 @@ public class GatewayRibbonLoadBalancingHttpClientTest {
     }
 
     @Test
-    public void shouldReconstructURIWithServerWhenUnsecurePortEnabled() throws URISyntaxException {
+    public void shouldReconstructURIWithServer_WhenUnsecurePortEnabled() throws URISyntaxException {
         HttpGet httpGet = mock(HttpGet.class);
         CloseableHttpResponse closeableHttpResponse = mock(CloseableHttpResponse.class);
         try {
@@ -69,7 +69,7 @@ public class GatewayRibbonLoadBalancingHttpClientTest {
     }
 
     @Test
-    public void shouldReconstructURIWithServerWhenSecurePortEnabled() throws URISyntaxException {
+    public void shouldReconstructURIWithServer_WhenSecurePortEnabled() throws URISyntaxException {
         HttpGet httpGet = mock(HttpGet.class);
         CloseableHttpResponse closeableHttpResponse = mock(CloseableHttpResponse.class);
         try {
