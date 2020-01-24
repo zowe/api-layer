@@ -11,6 +11,8 @@ package com.ca.mfaas.client.api;
 import com.ca.mfaas.client.model.Greeting;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +25,8 @@ import java.util.Date;
  */
 @RestController
 @Api(tags = {"Other Operations"})
+@SwaggerDefinition(tags = {
+    @Tag(name = "Other Operations", description = "General Operations")})
 public class GreetingController {
     private static final String TEMPLATE = "Hello, %s!";
 

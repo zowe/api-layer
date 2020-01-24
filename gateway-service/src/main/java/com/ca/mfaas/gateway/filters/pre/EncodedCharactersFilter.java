@@ -39,7 +39,7 @@ public class EncodedCharactersFilter extends ZuulFilter {
 
     private final DiscoveryClient discoveryClient;
     public static final String METADATA_KEY = "apiml.enableUrlEncodedCharacters";
-    private static final List<String> prohibitedCharacters = Arrays.asList("%2e", "%2E", ";", "%3b", "%3B", "%2f", "%2F", "\\", "%5c", "%5C", "%25", "%");
+    private static final List<String> PROHIBITED_CHARACTERS = Arrays.asList("%2e", "%2E", ";", "%3b", "%3B", "%2f", "%2F", "\\", "%5c", "%5C", "%25", "%");
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -86,12 +86,8 @@ public class EncodedCharactersFilter extends ZuulFilter {
     }
 
     private boolean checkRequestForEncodedCharacters(String request) {
-        for (String forbidden : prohibitedCharacters) {
-            if (pathContains(request, forbidden)) {
-                return true;
-            }
-        }
-        return false;
+        return PROHIBITED_CHARACTERS.stream()
+            .anyMatch(forbidden -> pathContains(request, forbidden));
     }
 
     private void rejectRequest(RequestContext ctx) {

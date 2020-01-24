@@ -13,94 +13,56 @@ package com.ca.mfaas.gateway.ribbon;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.*;
+import com.netflix.loadbalancer.Server;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.netflix.ribbon.DefaultServerIntrospector;
-import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 
-
-@Import(GatewayRibbonLoadBalancingHttpClientTest.TestConfiguration.class)
 public class GatewayRibbonLoadBalancingHttpClientTest {
 
     private GatewayRibbonLoadBalancingHttpClient gatewayRibbonLoadBalancingHttpClient;
-    private CloseableHttpClient closeableHttpClient;
-    private IClientConfig iClientConfig;
-
-    @Autowired
-    private ServerIntrospector serverIntrospector;
 
     @Before
     public void setup() {
-        closeableHttpClient = mock(CloseableHttpClient.class);
-        iClientConfig = IClientConfig.Builder.newBuilder(DefaultClientConfigImpl.class, "apicatalog").withSecure(false).withFollowRedirects(false).withDeploymentContextBasedVipAddresses("apicatalog").withLoadBalancerEnabled(false).build();
-        gatewayRibbonLoadBalancingHttpClient = new GatewayRibbonLoadBalancingHttpClient(closeableHttpClient, iClientConfig, serverIntrospector);
+        IClientConfig iClientConfig = IClientConfig.Builder.newBuilder(DefaultClientConfigImpl.class, "apicatalog")
+            .withSecure(false)
+            .withFollowRedirects(false)
+            .withDeploymentContextBasedVipAddresses("apicatalog")
+            .withLoadBalancerEnabled(false)
+            .build();
+
+        gatewayRibbonLoadBalancingHttpClient = new GatewayRibbonLoadBalancingHttpClient(
+            null, iClientConfig, null);
     }
 
     @Test
     public void shouldReconstructURIWithServer_WhenUnsecurePortEnabled() throws URISyntaxException {
-        HttpGet httpGet = mock(HttpGet.class);
-        CloseableHttpResponse closeableHttpResponse = mock(CloseableHttpResponse.class);
-        try {
-            when(closeableHttpClient.execute(httpGet)).thenReturn(closeableHttpResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         URI request = new URI("/apicatalog/");
 
         Server server = createServer("localhost", 10014, false, true, "defaultZone");
         URI reconstructedURI = gatewayRibbonLoadBalancingHttpClient.reconstructURIWithServer(server, request);
-        assertEquals("http://localhost:10014/apicatalog/", reconstructedURI.toString());
+        assertEquals("URI is not same with expected", "http://localhost:10014/apicatalog/", reconstructedURI.toString());
     }
 
     @Test
     public void shouldReconstructURIWithServer_WhenSecurePortEnabled() throws URISyntaxException {
-        HttpGet httpGet = mock(HttpGet.class);
-        CloseableHttpResponse closeableHttpResponse = mock(CloseableHttpResponse.class);
-        try {
-            when(closeableHttpClient.execute(httpGet)).thenReturn(closeableHttpResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         URI request = new URI("/apicatalog/");
 
         Server server = createServer("localhost", 10014, true, false, "defaultZone");
         URI reconstructedURI = gatewayRibbonLoadBalancingHttpClient.reconstructURIWithServer(server, request);
-        assertEquals("https://localhost:10014/apicatalog/", reconstructedURI.toString());
+        assertEquals("URI is not same with expected", "https://localhost:10014/apicatalog/", reconstructedURI.toString());
     }
 
-    @Test
-    public void shouldReconstructEncodedURIWithServer() throws URISyntaxException {
-        HttpGet httpGet = mock(HttpGet.class);
-        CloseableHttpResponse closeableHttpResponse = mock(CloseableHttpResponse.class);
-        try {
-            when(closeableHttpClient.execute(httpGet)).thenReturn(closeableHttpResponse);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        URI request = new URI("/api%2fcatalog/");
-
-        Server server = createServer("localhost", 10014, true, false, "defaultZone");
-        URI reconstructedURI = gatewayRibbonLoadBalancingHttpClient.reconstructURIWithServer(server, request);
-        assertEquals("https://localhost:10014/api%2fcatalog/", reconstructedURI.toString());
-    }
-
-    private DiscoveryEnabledServer createServer(String host, int port, boolean isSecureEnabled, boolean isUnsecureEnabled, String zone) {
+    private DiscoveryEnabledServer createServer(String host,
+                                                int port,
+                                                boolean isSecureEnabled,
+                                                boolean isUnsecureEnabled,
+                                                String zone) {
 
         InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
         InstanceInfo info = builder
@@ -115,15 +77,5 @@ public class GatewayRibbonLoadBalancingHttpClientTest {
         DiscoveryEnabledServer server = new DiscoveryEnabledServer(info, false, false);
         server.setZone(zone);
         return server;
-    }
-
-    @Configuration
-    protected static class TestConfiguration {
-
-        @Bean
-        public DefaultServerIntrospector defaultServerIntrospector() {
-            return new DefaultServerIntrospector();
-        }
-
     }
 }
