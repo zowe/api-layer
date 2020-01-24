@@ -34,11 +34,11 @@ public class AuthController {
 
     @DeleteMapping(path = "/invalidate/**")
     public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
-        final String path = "/auth/invalidate/";
+        final String endpoint = "/auth/invalidate/";
         final String uri = request.getRequestURI();
-        final int index = uri.indexOf(path);
+        final int index = uri.indexOf(endpoint);
 
-        final String jwtToken = uri.substring(index + path.length());
+        final String jwtToken = uri.substring(index + endpoint.length());
         final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
 
         response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
