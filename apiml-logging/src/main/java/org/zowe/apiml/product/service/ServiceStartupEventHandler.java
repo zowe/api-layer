@@ -27,7 +27,7 @@ public class ServiceStartupEventHandler {
     @SuppressWarnings("squid:S1172")
     public void onServiceStartup(String serviceName, int delayFactor) {
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-        apimlLog.log("apiml.common.serviceStarted", serviceName, uptime / 1000.0);
+        apimlLog.log("org.zowe.apiml.common.serviceStarted",serviceName, uptime / 1000.0);
 
         new java.util.Timer().schedule(new java.util.TimerTask() {
             @Override
@@ -35,7 +35,7 @@ public class ServiceStartupEventHandler {
                 LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
                 String[] names = new String[] { "com.netflix.discovery.DiscoveryClient",
                         "com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient",
-                        "com.ca.mfaas.discovery.GatewayNotifier" };
+                        "org.zowe.apiml.discovery.GatewayNotifier" };
                 for (String name : names) {
                     Logger logger = loggerContext.getLogger(name);
                     logger.setLevel(Level.ERROR);
