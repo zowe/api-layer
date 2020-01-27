@@ -1,49 +1,49 @@
 messages:
     # Security messages (100 - 199)
     # General messages (100 - 120)
-    - key: apiml.security.generic
+    - key: org.zowe.apiml.security.generic
       number: ZWEAS100
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
 
-    - key: apiml.security.invalidMethod
+    - key: org.zowe.apiml.security.invalidMethod
       number: ZWEAS101
       type: ERROR
       text: "Authentication method '%s' is not supported for URL '%s'"
 
-    - key: apiml.security.expiredToken
+    - key: org.zowe.apiml.security.expiredToken
       number: ZWEAS102
       type: ERROR
       text: "Token is expired for URL '%s'"
 
-    - key: apiml.security.gatewayNotFound
+    - key: org.zowe.apiml.security.gatewayNotFound
       number: ZWEAS103
       type: ERROR
       text: "API Gateway Service not found by URL '%s'"
 
-    - key: apiml.security.serviceUnavailable
+    - key: org.zowe.apiml.security.serviceUnavailable
       number: ZWEAS104
       type: ERROR
       text: "Authentication service not available by URL '%s'"
 
     # Login messages (120 - 130)
-    - key: apiml.security.login.invalidCredentials
+    - key: org.zowe.apiml.security.login.invalidCredentials
       number: ZWEAS120
       type: ERROR
       text: "Invalid username or password for URL '%s'"
 
-    - key: apiml.security.login.invalidInput
+    - key: org.zowe.apiml.security.login.invalidInput
       number: ZWEAS121
       type: ERROR
       text: "Authorization header is missing, or request body is missing or invalid for URL '%s'"
 
     # Query messages (130 - 140)
-    - key: apiml.security.query.invalidToken
+    - key: org.zowe.apiml.security.query.invalidToken
       number: ZWEAS130
       type: ERROR
       text: "Token is not valid for URL '%s'"
 
-    - key: apiml.security.query.tokenNotProvided
+    - key: org.zowe.apiml.security.query.tokenNotProvided
       number: ZWEAS131
       type: ERROR
       text: "No authorization token provided for URL '%s'"
