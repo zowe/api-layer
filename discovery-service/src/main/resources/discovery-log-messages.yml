@@ -18,21 +18,21 @@ messages:
     # Service specific messages
     # 700-999
 
-    - key: apiml.discovery.staticDefinitionsDirectoryNotValid
+    - key: org.zowe.apiml.discovery.staticDefinitionsDirectoryNotValid
       number: ZWEAD700
       type: WARNING
       text: "Static API definition directory '%s' is not a directory or does not exist"
       reason: "One of the specified static API definition directories does not exist or is not a directory."
       action: "Review the static API definition directories and their setup. The static definition directories are specified as a launch parameter to a Discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
 
-    - key: apiml.discovery.errorParsingStaticDefinitionFile
+    - key: org.zowe.apiml.discovery.errorParsingStaticDefinitionFile
       number: ZWEAD701
       type: ERROR
       text: "Error loading static API definition file '%s'"
       reason: "A problem occurred while reading (IO operation) of a specific static API definition file."
       action: "Ensure that the file data is not corrupted or incorrectly encoded."
 
-    - key: apiml.discovery.errorParsingStaticDefinitionData
+    - key: org.zowe.apiml.discovery.errorParsingStaticDefinitionData
       number: ZWEAD702
       type: WARNING
       text: "Unable to process static API definition data: '%s'"
@@ -50,7 +50,7 @@ messages:
       - The hostname of URL %s is unknown. The instance of %s will not be created: The specified hostname of the URL is invalid. Make sure to specify valid hostname.\n
       - Invalid protocol. The specified protocol of the URL is invalid. Make sure to specify valid protocol."
 
-    - key: apiml.discovery.errorReadingStaticDefinitionFolder
+    - key: org.zowe.apiml.discovery.errorReadingStaticDefinitionFolder
       number: ZWEAD703
       type: ERROR
       text: "A problem occurred during reading the static API definition directory: '%s'"
