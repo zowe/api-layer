@@ -23,8 +23,8 @@ import java.util.MissingFormatArgumentException;
  * Message creator immutable class
  */
 public final class Message {
-    public static final String INVALID_KEY_MESSAGE = "apiml.common.invalidMessageKey";
-    public static final String INVALID_MESSAGE_TEXT_FORMAT = "apiml.common.invalidMessageTextFormat";
+    public static final String INVALID_KEY_MESSAGE = "org.zowe.apiml.common.invalidMessageKey";
+    public static final String INVALID_MESSAGE_TEXT_FORMAT = "org.zowe.apiml.common.invalidMessageTextFormat";
 
     private final String requestedKey;
     private final MessageTemplate messageTemplate;

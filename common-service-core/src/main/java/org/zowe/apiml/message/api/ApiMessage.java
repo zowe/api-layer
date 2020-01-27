@@ -90,7 +90,7 @@ public class ApiMessage<T> {
 
     /**
      * Optional unique key describing the reason of the error.
-     * It should be a dot delimited string "com.ca.service[.subservice].detail".
+     * It should be a dot delimited string "org.zowe.apiml.service[.subservice].detail".
      * The purpose of this field is to enable UI to show a meaningful and localized error message.
      */
     public String getMessageKey() {
@@ -129,7 +129,7 @@ public class ApiMessage<T> {
      * Source service that generated the error (can MFaaS service name or host:port).
      * This field is optional.
      * <p>
-     * Example: mfaas-discovery-service, ca31:12345
+     * Example: apiml-discovery-service, ca31:12345
      */
     public String getMessageSource() {
         return messageSource;

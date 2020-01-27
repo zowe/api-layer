@@ -66,7 +66,7 @@ public class EurekaMetadataParser {
                             api.setDocumentationUrl(metadata.getValue());
                             break;
                         default:
-                            apimlLog.log("apiml.common.apiInfoParsingError", metadata);
+                            apimlLog.log("org.zowe.apiml.common.apiInfoParsingError", metadata);
                             break;
                     }
                 }
