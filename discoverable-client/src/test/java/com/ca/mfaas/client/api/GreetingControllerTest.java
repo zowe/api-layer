@@ -54,19 +54,10 @@ public class GreetingControllerTest {
     }
 
     @Test
-    public void callGreetingWithoutQuery() throws Exception {
+    public void callCustomGreetingEndpoint() throws Exception {
         String name = "Petr";
 
         this.mockMvc.perform(get("/api/v1/" + name + "/greeting"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content", is("Hello, " + name + "!")));
-    }
-
-    @Test
-    public void callGreetingWithoutQueryWithDelay() throws Exception {
-        String name = "Petr";
-
-        this.mockMvc.perform(get("/api/v1/" + name + "/greeting" + "?delayMs=100"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content", is("Hello, " + name + "!")));
     }

@@ -1,7 +1,7 @@
 function unsecureCall() {
     var name = $('#name').val();
     $.ajax({
-        url: "api/v1/" + ((name !== undefined) ? (name + "/greeting") : "greeting")
+        url: "api/v1/" + ((name) ? (name + "/greeting") : "greeting")
     }).then(function (data) {
         $('.hello-date').text(data.date);
         $('.hello-content').text(data.content);
