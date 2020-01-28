@@ -40,7 +40,7 @@ public class TimeoutErrorCheckTest {
 
     private void assertCorrectMessage(ResponseEntity<ApiMessageView> response, String expectedMessage) {
         assertEquals(HttpStatus.GATEWAY_TIMEOUT.value(), response.getStatusCodeValue());
-        assertEquals("apiml.common.serviceTimeout", response.getBody().getMessages().get(0).getMessageKey());
+        assertEquals("org.zowe.apiml.common.serviceTimeout", response.getBody().getMessages().get(0).getMessageKey());
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains(expectedMessage));
     }
 

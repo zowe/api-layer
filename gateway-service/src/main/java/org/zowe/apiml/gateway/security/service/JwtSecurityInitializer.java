@@ -58,11 +58,11 @@ public class JwtSecurityInitializer {
             jwtSecret = SecurityUtils.loadKey(config);
             jwtPublicKey = SecurityUtils.loadPublicKey(config);
         } catch (HttpsConfigError er) {
-            apimlLog.log("apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
+            apimlLog.log("org.zowe.apiml.gateway.jwtInitConfigError", er.getCode(), er.getMessage());
         }
         if (jwtSecret == null || jwtPublicKey == null) {
             String errorMessage = String.format("Not found '%s' key alias in the keystore '%s'.", keyAlias, keyStore);
-            apimlLog.log("apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
+            apimlLog.log("org.zowe.apiml.gateway.jwtKeyMissing", keyAlias, keyStore);
             throw new HttpsConfigError(errorMessage, HttpsConfigError.ErrorCode.WRONG_KEY_ALIAS, config);
         }
     }
