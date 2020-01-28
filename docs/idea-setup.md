@@ -10,6 +10,6 @@ First of all enable _Annotations processing_ if you haven't done so already (Jus
 
 3. Clear all 'VM options' in the 'Environment' section
 
-4. Then under the 'Override parameters' section add a new parameter `--spring.config.additional-location` and its value `file:./config/local/{SERVICE_NAME}.yml`
+4. Then under the 'Override parameters' section add a new parameter `spring.config.additional-location` and its value `file:./config/local/{SERVICE_NAME}.yml`
 
 5. Run the service

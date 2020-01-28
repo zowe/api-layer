@@ -30,8 +30,6 @@
 	<Source exclude="false" path="./helloworld-jersey/src/test/java" web="false"/>
 	<Source exclude="false" path="./helloworld-spring/src/main/java" web="false"/>
 	<Source exclude="false" path="./helloworld-spring/src/test/java" web="false"/>
-	<Source exclude="false" path="./integration-enabler-java/src/main/java" web="false"/>
-	<Source exclude="false" path="./integration-enabler-java/src/test/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1-sample-app/src/main/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1-sample-app/src/test/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1/src/main/java" web="false"/>

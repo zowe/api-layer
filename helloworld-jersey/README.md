@@ -1,6 +1,6 @@
 # Sample Java Jersey service
 
-This is a sample Hello World application using Java Jersey that uses the 'integration-enabler-java' enabler.
+This is a sample Hello World application using Java Jersey that uses the 'onboarding-enabler-java' enabler.
 
 # How to Run 
 
