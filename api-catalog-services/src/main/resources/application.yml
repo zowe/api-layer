@@ -122,6 +122,7 @@ eureka:
                     gateway-url: "api/v1"
                     service-url: /apicatalog
             apiml:
+                enableUrlEncodedCharacters: false
                 apiInfo:
                     - apiId: org.zowe.apicatalog
                       gatewayUrl: api/v1

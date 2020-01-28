@@ -24,6 +24,13 @@ messages:
       reason: "The Gateway could not find an instance of the service from the Discovery Service."
       action: "Check that the service was successfully registered to the Discovery Service and wait for Spring Cloud to refresh the routes definitions"
 
+    - key: apiml.gateway.requestContainEncodedCharacter
+      number: ZWEAG701
+      type: WARNING
+      text: "Service '%s' does not allow encoded characters in the URL."
+      reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
+      action: "Contact the system administrator and ask to enable encoded characters in the service"
+
     - key: apiml.gateway.jwtInitConfigError
       number: ZWEAG704
       type: ERROR
