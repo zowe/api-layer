@@ -10,7 +10,6 @@
 package com.ca.mfaas.client.configuration;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
@@ -22,18 +21,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @Slf4j
 public class TomcatConfiguration {
-
-    @Value("${apiml.security.allowEncodedCharacters}")
-    Boolean allowEncodedCharacters;
-
     @Bean
     public ServletWebServerFactory servletContainer() {
-        Boolean encodedCharactersAllowed = allowEncodedCharacters;
-
-        if (encodedCharactersAllowed){
-            System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
-        }
-
+        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
+        System.setProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", "true");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         return tomcat;

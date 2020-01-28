@@ -16,8 +16,6 @@ import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * Configuration of Tomcat
  */
@@ -29,15 +27,15 @@ public class TomcatConfiguration {
     Boolean allowEncodedCharacters;
 
     @Bean
-    public ServletWebServerFactory servletContainer(HttpServletResponse response) {
-        Boolean encodedCharactersAllowed = allowEncodedCharacters;
-
-        if (encodedCharactersAllowed){
-            System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
-        }
-
+    public ServletWebServerFactory servletContainer() {
+        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", getAllowEncodedCharacters());
+        System.setProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", getAllowEncodedCharacters());
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         return tomcat;
+    }
+
+    private String getAllowEncodedCharacters() {
+        return allowEncodedCharacters != null ? allowEncodedCharacters.toString() : "false";
     }
 }
