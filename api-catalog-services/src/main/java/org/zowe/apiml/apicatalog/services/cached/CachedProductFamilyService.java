@@ -221,7 +221,7 @@ public class CachedProductFamilyService {
                     instanceHomePage,
                     routes);
             } catch (URLTransformationException e) {
-                apimlLog.log("apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
+                apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
             }
         }
 
