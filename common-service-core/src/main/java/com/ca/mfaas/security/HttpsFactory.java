@@ -139,6 +139,9 @@ public class HttpsFactory {
             }
         } else {
             log.info("No key store is defined");
+            KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            emptyKeystore.load(null, null);
+            sslContextBuilder.loadKeyMaterial(emptyKeystore, null);
         }
     }
 

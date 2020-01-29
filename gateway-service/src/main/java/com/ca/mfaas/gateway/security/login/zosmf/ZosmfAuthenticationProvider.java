@@ -61,12 +61,12 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                                        AuthenticationService authenticationService,
                                        DiscoveryClient discovery,
                                        ObjectMapper securityObjectMapper,
-                                       RestTemplate restTemplate) {
+                                       RestTemplate restTemplateWithoutKeystore) {
         this.authConfigurationProperties = authConfigurationProperties;
         this.discovery = discovery;
         this.authenticationService = authenticationService;
         this.securityObjectMapper = securityObjectMapper;
-        this.restTemplate = restTemplate;
+        this.restTemplate = restTemplateWithoutKeystore;
     }
 
     /**
