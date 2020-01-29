@@ -137,7 +137,7 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
         if (sendRequest == null) {
             sendRequest = request;
         }
-        final HttpUriRequest httpUriRequest = sendRequest.toRequest(requestConfig);
+        final HttpUriRequest httpUriRequest = request.toRequest(requestConfig);
         final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
         return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
     }
