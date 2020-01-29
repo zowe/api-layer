@@ -9,8 +9,12 @@
  */
 package com.ca.mfaas.gateway.ribbon;
 
+import java.net.URI;
+
 import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.loadbalancer.Server;
+
 import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 
 public interface GatewayRibbonLoadBalancingHttpClient extends ServiceInstanceChooser, ServiceCacheEvict {
@@ -19,58 +23,5 @@ public interface GatewayRibbonLoadBalancingHttpClient extends ServiceInstanceCho
 
     public InstanceInfo getInstanceInfo(String serviceId, String instanceId);
 
-    private static final String HTTPS = "https";
-    private static final String HTTP = "http";
-
-    /**
-     * Ribbon load balancer
-     * @param secureHttpClient custom http client for our certificates
-     * @param config configuration details
-     * @param serverIntrospector introspector
-     */
-    public GatewayRibbonLoadBalancingHttpClient(CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector) {
-        super(secureHttpClient, config, serverIntrospector);
-    }
-
-    @Override
-    public URI reconstructURIWithServer(Server server, URI original) {
-        URI uriToSend;
-        URI updatedURI = updateToSecureConnectionIfNeeded(original, this.config, this.serverIntrospector,
-            server);
-        final URI uriWithServer = super.reconstructURIWithServer(server, updatedURI);
-
-        // if instance is not secure, override with http:
-        DiscoveryEnabledServer discoveryEnabledServer = (DiscoveryEnabledServer) server;
-        final InstanceInfo instanceInfo = discoveryEnabledServer.getInstanceInfo();
-        if (instanceInfo.isPortEnabled(InstanceInfo.PortType.UNSECURE)) {
-            log.debug("Resetting scheme to HTTP based on instance info of instance: " + instanceInfo.getId());
-            UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uriWithServer).scheme(HTTP);
-            uriToSend = uriComponentsBuilder.build(true).toUri();
-        } else {
-            uriToSend = uriWithServer;
-            if (uriWithServer.getScheme().equalsIgnoreCase("http")) {
-                uriToSend = UriComponentsBuilder.fromUri(uriWithServer).scheme(HTTPS).build(true).toUri();
-            }
-        }
-        return uriToSend;
-    }
-
-
-    @Override
-    public RibbonApacheHttpResponse execute(RibbonApacheHttpRequest request, IClientConfig configOverride) throws Exception {
-        configOverride.set(CommonClientConfigKey.IsSecure, HTTPS.equals(request.getURI().getScheme()));
-        final RequestConfig.Builder builder = RequestConfig.custom();
-        builder.setConnectTimeout(configOverride.get(
-            CommonClientConfigKey.ConnectTimeout, this.connectTimeout));
-        builder.setSocketTimeout(configOverride.get(
-            CommonClientConfigKey.ReadTimeout, this.readTimeout));
-        builder.setRedirectsEnabled(configOverride.get(
-            CommonClientConfigKey.FollowRedirects, this.followRedirects));
-        builder.setContentCompressionEnabled(false);
-
-        final RequestConfig requestConfig = builder.build();
-        final HttpUriRequest httpUriRequest = request.toRequest(requestConfig);
-        final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
-        return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
-    }
+    public URI reconstructURIWithServer(Server server, URI request);
 }

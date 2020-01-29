@@ -36,8 +36,8 @@ public class GatewayRibbonLoadBalancingHttpClientTest {
             .withLoadBalancerEnabled(false)
             .build();
 
-        gatewayRibbonLoadBalancingHttpClient = new GatewayRibbonLoadBalancingHttpClient(
-            null, iClientConfig, null);
+        gatewayRibbonLoadBalancingHttpClient = new GatewayRibbonLoadBalancingHttpClientImpl(
+            null, iClientConfig, null, null, null, null);
     }
 
     @Test

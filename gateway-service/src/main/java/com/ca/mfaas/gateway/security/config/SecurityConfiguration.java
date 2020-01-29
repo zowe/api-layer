@@ -185,6 +185,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("gatewayClient", "", Collections.emptyList());
+    }
 
     @Override
     public void configure(WebSecurity web) {
