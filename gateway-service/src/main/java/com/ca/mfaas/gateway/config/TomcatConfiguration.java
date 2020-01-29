@@ -9,7 +9,6 @@
  */
 package com.ca.mfaas.gateway.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
@@ -20,7 +19,6 @@ import org.springframework.context.annotation.Configuration;
  * Configuration of Tomcat
  */
 @Configuration
-@Slf4j
 public class TomcatConfiguration {
 
     @Value("${apiml.service.allowEncodedCharacters}")
