@@ -112,7 +112,7 @@ server:
     scheme: ${apiml.service.scheme}
     hostname: ${apiml.service.hostname} #localhost # Hostname that is advertised in Eureka. Default is valid only for localhost
     port: ${apiml.service.port} #10012         # Default port name for discoverable-client service
-    address: 127.0.0.1 # ${apiml.service.ipAddress}
+    address: ${apiml.service.ipAddress} #127.0.0.1
 
     servlet:
         contextPath: /${apiml.service.id}
