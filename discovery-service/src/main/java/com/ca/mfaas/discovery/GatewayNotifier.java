@@ -17,6 +17,7 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,8 +30,8 @@ public class GatewayNotifier {
 
     private final RestTemplate restTemplate;
 
-    public GatewayNotifier(RestTemplate restTemplateWithKeystore, MessageService messageService) {
-        this.restTemplate = restTemplateWithKeystore;
+    public GatewayNotifier(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate, MessageService messageService) {
+        this.restTemplate = restTemplate;
         this.logger = ApimlLogger.of(GatewayNotifier.class, messageService);
     }
 
