@@ -52,7 +52,8 @@ spring:
             enabled: detect
 
 apiml:
-    enabled: ${eureka.client.enabled} # true
+    enabled: ${eureka.client.enabled}
+    enableUrlEncodedCharacters: true
     service:
         serviceId: ${apiml.service.id}
         title: ${eureka.instance.metadata-map.discovery.service.title} # Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
