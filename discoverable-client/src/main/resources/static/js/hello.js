@@ -1,12 +1,14 @@
 function unsecureCall() {
     var name = $('#name').val();
     $.ajax({
-        url: "api/v1/greeting" + ((name !== undefined) ? ("?name=" + name) : "")
+        url: "api/v1/" + ((name) ? (name + "/greeting") : "greeting")
     }).then(function (data) {
         $('.hello-date').text(data.date);
         $('.hello-content').text(data.content);
     });
 }
+
+
 
 function openWebsocket() {
     var loc = window.location, wsUri;

@@ -78,6 +78,7 @@ eureka:
                     gateway-url: "ws/v1"
                     service-url: ${server.servlet.contextPath}/ws
             apiml:
+                enableUrlEncodedCharacters: true
                 apiInfo:
                     - apiId: org.zowe.discoverableclient
                       gatewayUrl: api/v1

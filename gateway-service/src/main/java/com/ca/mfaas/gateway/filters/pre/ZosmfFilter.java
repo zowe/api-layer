@@ -54,7 +54,7 @@ public class ZosmfFilter extends ZuulFilter {
 
     @Override
     public int filterOrder() {
-        return PRE_DECORATION_FILTER_ORDER + 3;
+        return PRE_DECORATION_FILTER_ORDER + 4;
     }
 
     @Override
