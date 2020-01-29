@@ -13,9 +13,10 @@ import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
+import com.ca.mfaas.gateway.security.service.zosmf.ZosmfServiceV2;
 import com.ca.mfaas.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.DiscoveryClient;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,7 +58,7 @@ public class SuccessfulQueryHandlerTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private EurekaClient discoveryClient;
+    private DiscoveryClient discoveryClient;
 
     @Before
     public void setup() {
@@ -73,10 +74,12 @@ public class SuccessfulQueryHandlerTest {
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
         }
-        AuthenticationService authenticationService = new AuthenticationService(applicationContext, authConfigurationProperties, jwtSecurityInitializer, discoveryClient, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
+        AuthenticationService authenticationService = new AuthenticationService(
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService, discoveryClient, restTemplate
+        );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
-        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
 

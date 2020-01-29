@@ -40,7 +40,7 @@ public class EurekaInstanceRegisteredListener {
         final Map<String, String> metadata = instanceInfo.getMetadata();
         final String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceInfo.getInstanceId());
 
-        metadataTranslationService.translateMetadata(metadata);
+        metadataTranslationService.translateMetadata(serviceId, metadata);
         metadataDefaultsService.updateMetadata(serviceId, metadata);
         // ie. new instance can have different authentication (than other one), this is reason to evict caches on gateway
         gatewayNotifier.serviceUpdated(serviceId);

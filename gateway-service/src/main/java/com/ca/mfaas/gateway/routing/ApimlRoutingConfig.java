@@ -15,8 +15,6 @@ import com.ca.mfaas.gateway.filters.post.PageRedirectionFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.ServiceAuthenticationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
-import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
-import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.ws.WebSocketProxyServerHandler;
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
 import com.ca.mfaas.product.routing.RoutedServicesUser;
@@ -42,11 +40,6 @@ public class ApimlRoutingConfig {
     @Bean
     public SlashFilter slashFilter() {
         return new SlashFilter();
-    }
-
-    @Bean
-    public ZosmfFilter zosmfFilter(AuthenticationService authenticationService) {
-        return new ZosmfFilter(authenticationService);
     }
 
     @Bean

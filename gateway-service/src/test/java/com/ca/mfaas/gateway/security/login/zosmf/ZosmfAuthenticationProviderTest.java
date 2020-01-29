@@ -12,16 +12,20 @@ package com.ca.mfaas.gateway.security.login.zosmf;
 
 import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
+import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.mfaas.gateway.security.service.zosmf.ZosmfServiceV2;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.shared.Application;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
-import org.springframework.cloud.client.DefaultServiceInstance;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -34,22 +38,21 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ZosmfAuthenticationProviderTest {
+
     private static final String USERNAME = "user";
     private static final String PASSWORD = "password";
     private static final String SERVICE_ID = "service";
     private static final String HOST = "localhost";
     private static final int PORT = 0;
     private static final String ZOSMF = "zosmf";
-    private static final String COOKIE1 = "JwtToken=test";
+    private static final String COOKIE1 = "Cookie1=testCookie1";
     private static final String COOKIE2 = "LtpaToken2=test";
     private static final String DOMAIN = "realm";
     private static final String RESPONSE = "{\"zosmf_saf_realm\": \"" + DOMAIN + "\"}";
@@ -59,8 +62,9 @@ public class ZosmfAuthenticationProviderTest {
     private DiscoveryClient discovery;
     private ObjectMapper mapper;
     private RestTemplate restTemplate;
-    private ServiceInstance zosmfInstance;
+    private InstanceInfo zosmfInstance;
     private AuthenticationService authenticationService;
+    private ObjectMapper securityObjectMapper = new ObjectMapper();
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -73,27 +77,50 @@ public class ZosmfAuthenticationProviderTest {
         authenticationService = mock(AuthenticationService.class);
         mapper = new ObjectMapper();
         restTemplate = mock(RestTemplate.class);
-        zosmfInstance = new DefaultServiceInstance(SERVICE_ID, HOST, PORT, false);
+        zosmfInstance = createInstanceInfo(SERVICE_ID, HOST, PORT);
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                return TokenAuthentication.createAuthenticated(invocation.getArgument(0), invocation.getArgument(1));
+            }
+        }).when(authenticationService).createTokenAuthentication(anyString(), anyString());
+        when(authenticationService.createJwtToken(anyString(), anyString(), anyString())).thenReturn("someJwtToken");
+    }
+
+    private InstanceInfo createInstanceInfo(String serviceId, String host, int port) {
+        InstanceInfo out = mock(InstanceInfo.class);
+        when(out.getAppName()).thenReturn(serviceId);
+        when(out.getHostName()).thenReturn(host);
+        when(out.getPort()).thenReturn(port);
+        return out;
+    }
+
+    private Application createApplication(InstanceInfo...instanceInfos) {
+        Application out = mock(Application.class);
+        when(out.getInstances()).thenReturn(Arrays.asList(instanceInfos));
+        return out;
     }
 
     @Test
     public void loginWithExistingUser() {
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, COOKIE1);
         headers.add(HttpHeaders.SET_COOKIE, COOKIE2);
         when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
+            Mockito.eq(HttpMethod.POST),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
             .thenReturn(new ResponseEntity<>(RESPONSE, headers, HttpStatus.OK));
 
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         Authentication tokenAuthentication
             = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
@@ -106,18 +133,19 @@ public class ZosmfAuthenticationProviderTest {
     public void loginWithBadUser() {
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
         HttpHeaders headers = new HttpHeaders();
         when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
+            Mockito.eq(HttpMethod.POST),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
             .thenReturn(new ResponseEntity<>(RESPONSE, headers, HttpStatus.OK));
 
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Username or password are invalid.");
@@ -128,11 +156,13 @@ public class ZosmfAuthenticationProviderTest {
     @Test
     public void noZosmfInstance() {
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(null);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
 
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        final Application application = createApplication();
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         exception.expect(ServiceNotAccessibleException.class);
         exception.expectMessage("z/OSMF instance not found or incorrectly configured.");
@@ -142,8 +172,9 @@ public class ZosmfAuthenticationProviderTest {
 
     @Test
     public void noZosmfServiceId() {
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("The parameter 'zosmfServiceId' is not configured.");
@@ -155,20 +186,21 @@ public class ZosmfAuthenticationProviderTest {
     public void notValidZosmfResponse() {
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, COOKIE1);
         headers.add(HttpHeaders.SET_COOKIE, COOKIE2);
         when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
+            Mockito.eq(HttpMethod.POST),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
             .thenReturn(new ResponseEntity<>("", headers, HttpStatus.OK));
 
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("z/OSMF domain cannot be read.");
@@ -182,20 +214,21 @@ public class ZosmfAuthenticationProviderTest {
 
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, COOKIE1);
         headers.add(HttpHeaders.SET_COOKIE, COOKIE2);
         when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
+            Mockito.eq(HttpMethod.POST),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
             .thenReturn(new ResponseEntity<>(invalidResponse, headers, HttpStatus.OK));
 
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("z/OSMF domain cannot be read.");
@@ -209,19 +242,20 @@ public class ZosmfAuthenticationProviderTest {
 
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, invalidCookie);
         when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
+            Mockito.eq(HttpMethod.POST),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
             .thenReturn(new ResponseEntity<>(RESPONSE, headers, HttpStatus.OK));
 
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Username or password are invalid.");
@@ -235,19 +269,20 @@ public class ZosmfAuthenticationProviderTest {
 
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.SET_COOKIE, cookie);
         when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
+            Mockito.eq(HttpMethod.POST),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
             .thenReturn(new ResponseEntity<>(RESPONSE, headers, HttpStatus.OK));
 
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         Authentication tokenAuthentication
             = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
@@ -260,15 +295,16 @@ public class ZosmfAuthenticationProviderTest {
     public void shouldThrowNewExceptionIfRestClientException() {
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
         when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
+            Mockito.eq(HttpMethod.POST),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
             .thenThrow(RestClientException.class);
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("A failure occurred when authenticating.");
@@ -281,15 +317,16 @@ public class ZosmfAuthenticationProviderTest {
     public void shouldThrowNewExceptionIfResourceAccessException() {
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
         when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
+            Mockito.eq(HttpMethod.POST),
             Mockito.any(),
             Mockito.<Class<Object>>any()))
             .thenThrow(ResourceAccessException.class);
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         exception.expect(ServiceNotAccessibleException.class);
         exception.expectMessage("Could not get an access to z/OSMF service.");
@@ -302,13 +339,15 @@ public class ZosmfAuthenticationProviderTest {
     public void shouldReturnTrueWhenSupportMethodIsCalledWithCorrectClass() {
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
-        List<ServiceInstance> zosmfInstances = Collections.singletonList(zosmfInstance);
-        when(discovery.getInstances(ZOSMF)).thenReturn(zosmfInstances);
-        ZosmfAuthenticationProvider zosmfAuthenticationProvider
-            = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
+        final Application application = createApplication(zosmfInstance);
+        when(discovery.getApplication(ZOSMF)).thenReturn(application);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
 
         boolean supports = zosmfAuthenticationProvider.supports(usernamePasswordAuthentication.getClass());
         assertTrue(supports);
 
     }
+
 }

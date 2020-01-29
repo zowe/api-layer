@@ -150,7 +150,7 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
         RequestContext requestContext = new RequestContext();
         requestContext.setRequest(request);
 
-        QueryResponse qr = new QueryResponse("domain", "userId", new Date(), new Date());
+        QueryResponse qr = new QueryResponse("domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOWE);
         when(as.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken123"));
         when(as.getJwtTokenFromRequest(null)).thenReturn(Optional.empty());
         when(as.parseJwtToken("jwtToken123")).thenReturn(qr);

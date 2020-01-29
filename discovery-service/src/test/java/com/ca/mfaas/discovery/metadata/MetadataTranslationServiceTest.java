@@ -9,6 +9,7 @@
  */
 package com.ca.mfaas.discovery.metadata;
 
+import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -17,7 +18,8 @@ import java.util.Map;
 import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class MetadataTranslationServiceTest {
 
@@ -28,7 +30,7 @@ public class MetadataTranslationServiceTest {
         Map<String, String> metadata = generateMetadataV1();
 
         MetadataTranslationService metadataTranslationService = new MetadataTranslationService();
-        metadataTranslationService.translateMetadata(metadata);
+        metadataTranslationService.translateMetadata("serviceV1", metadata);
 
         assertThat(metadata, hasEntry(ROUTES + ".ui__v1." + ROUTES_SERVICE_URL, "/" + INSTANCE_NAME));
         assertThat(metadata, hasEntry(ROUTES + ".ui__v1." + ROUTES_GATEWAY_URL, "ui/v1"));
@@ -90,4 +92,52 @@ public class MetadataTranslationServiceTest {
         metadata.put(ENABLE_APIDOC_V1, "true");
         return metadata;
     }
+
+    @Test
+    public void testSetZosmfAuthentication() {
+        MetadataTranslationService metadataTranslationService = new MetadataTranslationService();
+        Map<String, String> metadata = new HashMap<>();
+
+        metadataTranslationService.updateZosmfAuthentication("service", metadata);
+        assertTrue(metadata.isEmpty());
+
+        metadataTranslationService.updateZosmfAuthentication("serviceZosmfX", metadata);
+        assertFalse(metadata.isEmpty());
+        assertEquals(1, metadata.size());
+        assertEquals(AuthenticationScheme.ZOSMF.getScheme(), metadata.get(AUTHENTICATION_SCHEME));
+
+        metadata.put(AUTHENTICATION_SCHEME, AuthenticationScheme.BYPASS.getScheme());
+        metadataTranslationService.updateZosmfAuthentication("serviceZosmfX", metadata);
+        assertEquals(AuthenticationScheme.BYPASS.getScheme(), metadata.get(AUTHENTICATION_SCHEME));
+        assertEquals(1, metadata.size());
+
+        metadata.put(AUTHENTICATION_SCHEME, AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme());
+        metadata.put(AUTHENTICATION_APPLID, "applid");
+        metadataTranslationService.updateZosmfAuthentication("serviceZosmfX", metadata);
+        assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme(), metadata.get(AUTHENTICATION_SCHEME));
+        assertEquals("applid", metadata.get(AUTHENTICATION_APPLID));
+        assertEquals(2, metadata.size());
+    }
+
+    @Test
+    public void testDependentMethods() {
+        MetadataTranslationService metadataTranslationService = spy(new MetadataTranslationService());
+        Map<String, String> metadata = new HashMap<>();
+
+        metadata.put(CATALOG_ID_V1, "x");
+        metadataTranslationService.translateMetadata("XzosmfX", metadata);
+        verify(metadataTranslationService, times(1)).updateZosmfAuthentication("XzosmfX", metadata);
+        assertEquals(AuthenticationScheme.ZOSMF.getScheme(), metadata.get(AUTHENTICATION_SCHEME));
+        assertEquals("x", metadata.get(CATALOG_ID));
+
+        metadata = new HashMap<>();
+        metadata.put(CATALOG_ID_V1, "x");
+        metadata.put(VERSION, "1");
+        metadataTranslationService.translateMetadata("XzosmfX", metadata);
+        verify(metadataTranslationService, times(1)).updateZosmfAuthentication("XzosmfX", metadata);
+        assertEquals(AuthenticationScheme.ZOSMF.getScheme(), metadata.get(AUTHENTICATION_SCHEME));
+        assertEquals("x", metadata.get(CATALOG_ID_V1));
+        assertEquals("1", metadata.get(VERSION));
+    }
+
 }

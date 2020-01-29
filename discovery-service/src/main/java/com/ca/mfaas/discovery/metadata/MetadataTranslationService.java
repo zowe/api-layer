@@ -9,6 +9,8 @@
  */
 package com.ca.mfaas.discovery.metadata;
 
+import com.ca.apiml.security.common.auth.AuthenticationScheme;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -27,12 +29,14 @@ public class MetadataTranslationService {
      *
      * @param metadata to be translated
      */
-    public void translateMetadata(Map<String, String> metadata) {
+    public void translateMetadata(String serviceId, Map<String, String> metadata) {
         // Version check
         String version = metadata.get(VERSION);
         if (version == null) {
             translateV1toV2(metadata);
         }
+
+        updateZosmfAuthentication(serviceId, metadata);
     }
 
     private void translateV1toV2(Map<String, String> metadata) {
@@ -86,4 +90,12 @@ public class MetadataTranslationService {
             metadata.put(newParameter, parameterValue);
         }
     }
+
+    public void updateZosmfAuthentication(String serviceId, Map<String, String> metadata) {
+        if (!StringUtils.containsIgnoreCase(serviceId, "zosmf")) return;
+        if (metadata.containsKey(AUTHENTICATION_SCHEME)) return;
+
+        metadata.put(AUTHENTICATION_SCHEME, AuthenticationScheme.ZOSMF.getScheme());
+    }
+
 }

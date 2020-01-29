@@ -13,8 +13,7 @@ import org.junit.Test;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class QueryResponseTest {
 
@@ -27,8 +26,16 @@ public class QueryResponseTest {
         c.add(Calendar.MINUTE, 2);
         final Date after = c.getTime();
 
-        assertTrue(new QueryResponse("domain", "user", now, before).isExpired());
-        assertFalse(new QueryResponse("domain", "user", now, after).isExpired());
+        assertTrue(new QueryResponse("domain", "user", now, before, QueryResponse.Source.ZOWE).isExpired());
+        assertFalse(new QueryResponse("domain", "user", now, after, QueryResponse.Source.ZOWE).isExpired());
+    }
+
+    @Test
+    public void testSource() {
+        assertEquals(QueryResponse.Source.ZOSMF, QueryResponse.Source.valueByIssuer("zosmf"));
+        assertEquals(QueryResponse.Source.ZOSMF, QueryResponse.Source.valueByIssuer("zOSMF"));
+        assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("zosmfX"));
+        assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer(null));
     }
 
 }

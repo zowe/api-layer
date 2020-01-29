@@ -13,6 +13,7 @@ import com.ca.mfaas.cache.EntryExpiration;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
 
@@ -28,10 +29,28 @@ public class QueryResponse implements EntryExpiration {
     private String userId;
     private Date creation;
     private Date expiration;
+    private Source source;
 
     @Override
     public boolean isExpired() {
         return expiration.before(new Date());
+    }
+
+    public enum Source {
+
+            ZOWE,
+            ZOSMF
+
+        ;
+
+        public static Source valueByIssuer(String issuer) {
+            if (StringUtils.equalsIgnoreCase(issuer, "zOSMF")) {
+                return ZOSMF;
+            }
+
+            return ZOWE;
+        }
+
     }
 
 }

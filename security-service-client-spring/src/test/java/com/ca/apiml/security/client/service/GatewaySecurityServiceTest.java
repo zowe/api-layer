@@ -134,7 +134,7 @@ public class GatewaySecurityServiceTest {
 
     @Test
     public void doSuccessfulQuery() {
-        QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", new Date(), new Date());
+        QueryResponse expectedQueryResponse = new QueryResponse("domain", "user", new Date(), new Date(), QueryResponse.Source.ZOWE);
 
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
