@@ -155,6 +155,11 @@ public class HttpConfig {
     }
 
     @Bean
+    public CloseableHttpClient secureHttpClientWithoutKeystore() {
+        return secureHttpClient;
+    }
+
+    @Bean
     public SSLContext secureSslContext() {
         return secureSslContext;
     }

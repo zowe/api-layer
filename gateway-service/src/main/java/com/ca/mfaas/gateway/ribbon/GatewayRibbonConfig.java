@@ -41,14 +41,14 @@ public class GatewayRibbonConfig {
     @Primary
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
-        CloseableHttpClient secureHttpClient,
+        CloseableHttpClient secureHttpClientWithoutKeystore,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
         EurekaClient discoveryClient,
         CacheManager cacheManager,
         ApplicationContext applicationContext
     ) {
-        return new GatewayRibbonLoadBalancingHttpClientImpl(secureHttpClient, config, serverIntrospector, discoveryClient, cacheManager, applicationContext);
+        return new GatewayRibbonLoadBalancingHttpClientImpl(secureHttpClientWithoutKeystore, config, serverIntrospector, discoveryClient, cacheManager, applicationContext);
     }
 
     @Bean

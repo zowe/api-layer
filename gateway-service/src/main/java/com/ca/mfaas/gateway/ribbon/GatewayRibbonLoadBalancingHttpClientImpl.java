@@ -68,19 +68,19 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
     /**
      * Ribbon load balancer
      *
-     * @param secureHttpClient   custom http client for our certificates
+     * @param secureHttpClientWithoutKeystore   custom http client for our certificates
      * @param config             configuration details
      * @param serverIntrospector introspector
      */
     public GatewayRibbonLoadBalancingHttpClientImpl(
-        CloseableHttpClient secureHttpClient,
+        CloseableHttpClient secureHttpClientWithoutKeystore,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
         EurekaClient discoveryClient,
         CacheManager cacheManager,
         ApplicationContext applicationContext
     ) {
-        super(secureHttpClient, config, serverIntrospector);
+        super(secureHttpClientWithoutKeystore, config, serverIntrospector);
         this.discoveryClient = discoveryClient;
         this.cacheManager = cacheManager;
         this.applicationContext = applicationContext;
