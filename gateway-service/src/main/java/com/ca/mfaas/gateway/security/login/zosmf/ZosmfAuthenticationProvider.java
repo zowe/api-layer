@@ -13,7 +13,6 @@ import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.ZosmfService;
 import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,8 +36,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
     public ZosmfAuthenticationProvider(
         AuthenticationService authenticationService,
-        ZosmfService zosmfService,
-        ObjectMapper securityObjectMapper
+        ZosmfService zosmfService
     ) {
         this.authenticationService = authenticationService;
         this.zosmfService = zosmfService;

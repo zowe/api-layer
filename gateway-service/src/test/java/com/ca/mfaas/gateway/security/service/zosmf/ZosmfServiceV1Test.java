@@ -30,7 +30,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -67,7 +67,7 @@ public class ZosmfServiceV1Test {
         when(instanceInfo.getHostName()).thenReturn(hostname);
         when(instanceInfo.getPort()).thenReturn(port);
         Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(Arrays.asList(instanceInfo));
+        when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo));
         when(discovery.getApplication(ZOSMF_ID)).thenReturn(application);
     }
 
@@ -81,7 +81,7 @@ public class ZosmfServiceV1Test {
 
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.SET_COOKIE, "LtpaToken2=lt");
-        ResponseEntity responseEntity = new ResponseEntity("{\"zosmf_saf_realm\":\"domain\"}", responseHeaders, HttpStatus.OK);
+        ResponseEntity<String> responseEntity = new ResponseEntity<>("{\"zosmf_saf_realm\":\"domain\"}", responseHeaders, HttpStatus.OK);
 
         when(restTemplate.exchange(
             "http://zosmf:1433/zosmf/info",
@@ -106,7 +106,7 @@ public class ZosmfServiceV1Test {
         when(restTemplate.exchange(
             anyString(),
             (HttpMethod) any(),
-            (HttpEntity) any(),
+            (HttpEntity<?>) any(),
             (Class<?>) any()
         )).thenThrow(new RestClientException("any exception"));
 
@@ -196,6 +196,7 @@ public class ZosmfServiceV1Test {
     public void testInvalidate() {
         ZosmfServiceV1 service = new ZosmfServiceV1(null, null, null, null);
         service.invalidate(null, null);
+        assertNull(service.restTemplate);
     }
 
     @Test

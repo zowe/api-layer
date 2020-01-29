@@ -66,9 +66,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
         final String password = authentication.getCredentials().toString();
 
         final String credentials = user + ":" + password;
-        final String authorization = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-
-        return authorization;
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
     }
 
     /**
@@ -89,7 +87,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
             .stream()
             .filter(Objects::nonNull)
             .findFirst()
-            .map(zosmfInstance -> EurekaUtils.getUrl(zosmfInstance))
+            .map(EurekaUtils::getUrl)
             .orElseThrow(authenticationServiceExceptionSupplier);
     }
 
@@ -153,7 +151,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
 
     protected AuthenticationResponse getAuthenticationResponse(ResponseEntity<String> responseEntity) {
         final List<String> cookies = responseEntity.getHeaders().get(HttpHeaders.SET_COOKIE);
-        final Map<TokenType, String> tokens = new HashMap<>();
+        final EnumMap<TokenType, String> tokens = new EnumMap<>(TokenType.class);
         for (final TokenType tokenType : TokenType.values()) {
             final String token = readTokenFromCookie(cookies, tokenType.getCookieName());
             if (token != null) tokens.put(tokenType, token);
