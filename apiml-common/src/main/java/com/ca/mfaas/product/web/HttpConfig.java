@@ -139,12 +139,13 @@ public class HttpConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
         return new RestTemplate(factory);
     }
 
     @Bean
+    @Primary
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
         return new RestTemplate(factory);
