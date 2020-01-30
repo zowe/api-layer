@@ -32,7 +32,7 @@
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: INFO
+        org.zowe.apiml: INFO
         org.springframework: WARN
         org.apache.catalina: WARN
         com.netflix: WARN
@@ -161,7 +161,7 @@ spring:
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: DEBUG
+        org.zowe.apiml: DEBUG
         org.springframework: INFO
         org.apache.catalina: INFO
         com.netflix: INFO
