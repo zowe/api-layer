@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.ribbon;
 import com.netflix.client.config.IClientConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.Bean;
@@ -23,9 +24,8 @@ public class GatewayRibbonConfig {
     @Bean
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
-        CloseableHttpClient secureHttpClient,
-        IClientConfig config,
-        ServerIntrospector serverIntrospector) {
-        return new GatewayRibbonLoadBalancingHttpClient(secureHttpClient, config, serverIntrospector);
+            @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore,
+            IClientConfig config, ServerIntrospector serverIntrospector) {
+        return new GatewayRibbonLoadBalancingHttpClient(secureHttpClientWithoutKeystore, config, serverIntrospector);
     }
 }

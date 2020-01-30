@@ -20,9 +20,11 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.Eure
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -150,8 +152,15 @@ public class HttpConfig {
     }
 
     @Bean
+    @Primary
     public CloseableHttpClient secureHttpClient() {
         return secureHttpClient;
+    }
+
+    @Bean
+    @Qualifier("secureHttpClientWithoutKeystore")
+    public CloseableHttpClient secureHttpClientWithoutKeystore() {
+        return secureHttpClientWithoutKeystore;
     }
 
     @Bean
