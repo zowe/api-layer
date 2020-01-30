@@ -7,14 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.client.handler;
+package org.zowe.apiml.security.client.handler;
 
-import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.common.error.ErrorType;
-import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
-import com.ca.apiml.security.common.token.TokenNotProvidedException;
-import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.product.gateway.GatewayNotAvailableException;
+import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.ErrorType;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;

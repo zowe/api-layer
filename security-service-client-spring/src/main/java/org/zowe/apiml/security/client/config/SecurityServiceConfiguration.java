@@ -7,11 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.client.config;
+package org.zowe.apiml.security.client.config;
 
-import com.ca.mfaas.product.gateway.GatewayClient;
-import com.ca.mfaas.product.gateway.GatewayInstanceInitializer;
-import com.ca.mfaas.product.instance.lookup.InstanceLookupExecutor;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayInstanceInitializer;
+import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 import com.netflix.discovery.EurekaClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Configuration;
  * General configuration of security client
  */
 @Configuration
-@ComponentScan({"com.ca.apiml.security", "com.ca.mfaas.product.gateway"})
+@ComponentScan({"org.zowe.apiml.security", "org.zowe.apiml.product.gateway"})
 public class SecurityServiceConfiguration {
 
     @Bean

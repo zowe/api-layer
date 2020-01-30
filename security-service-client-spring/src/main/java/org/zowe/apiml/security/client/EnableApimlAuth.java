@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.security.client;
+package org.zowe.apiml.security.client;
 
-import com.ca.apiml.security.client.config.SecurityServiceConfiguration;
+import org.zowe.apiml.security.client.config.SecurityServiceConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
