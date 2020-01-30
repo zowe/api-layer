@@ -37,6 +37,9 @@ dependencies {
     testCompile libraries.lombok
     testCompile libraries.jsoup
     testCompile libraries.rest_assured
+    testCompile(libraries.jackson_core)
+    testCompile(libraries.jackson_databind)
+    testCompile libraries.jackson_dataformat_yaml
 }
 
 jar {

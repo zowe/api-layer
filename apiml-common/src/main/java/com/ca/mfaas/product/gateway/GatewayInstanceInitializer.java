@@ -42,7 +42,7 @@ public class GatewayInstanceInitializer {
         try {
             String gatewayHomePage = instanceInfo.getHomePageUrl();
             URI uri = new URI(gatewayHomePage);
-
+            log.debug("Gateway homePageUrl: " + gatewayHomePage);
             return GatewayConfigProperties.builder()
                 .scheme(uri.getScheme())
                 .hostname(uri.getHost() + ":" + uri.getPort())

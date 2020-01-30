@@ -25,7 +25,7 @@ services:
       apiInfo:
         - apiId: org.zowe.discoverableclient
           gatewayUrl: api/v1
-          swaggerUrl: https://localhost:10012/discoverableclient/api-doc
+          swaggerUrl: https://localhost:10012/discoverableclient/v2/api-docs
 
     - serviceId: staticclient2  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
