@@ -7,16 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.sample.enable.v1;
+package org.zowe.apiml.sample.enable.v1;
 
-import com.ca.mfaas.enable.EnableApiDiscovery;
+import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan({"com.ca.mfaas.sample.enable","com.ca.mfaas.enable"})
+@ComponentScan({"org.zowe.apiml.sample.enable","org.zowe.apiml.enable"})
 @EnableApiDiscovery
 @EnableConfigurationProperties
 public class EnablerV1SampleApplication {

@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.sample.enable.v1.controller;
+package org.zowe.apiml.sample.enable.v1.controller;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
