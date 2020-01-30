@@ -1,7 +1,7 @@
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: INFO
+        org.zowe.apiml: INFO
         org.springframework: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
@@ -10,8 +10,8 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.springframework.web.socket: WARN
-        com.ca.mfaas.gateway.ws: INFO
-        com.ca.mfaas.gateway.error: INFO
+        org.zowe.apiml.gateway.ws: INFO
+        org.zowe.apiml.gateway.error: INFO
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
         net.sf.ehcache: WARN
@@ -153,7 +153,7 @@ eureka:
                     service-url: /api/v1/gateway
             apiml:
                 apiInfo:
-                    - apiId: com.ca.mfaas.gateway
+                    - apiId: org.zowe.apiml.gateway
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
                       documentationUrl: https://zowe.github.io/docs-site/
@@ -201,7 +201,7 @@ management:
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: DEBUG
+        org.zowe.apiml: DEBUG
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
