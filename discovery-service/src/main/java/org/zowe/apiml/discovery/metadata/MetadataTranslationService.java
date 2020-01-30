@@ -7,14 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.metadata;
+package org.zowe.apiml.discovery.metadata;
 
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
  * Translation service for Eureka metadata

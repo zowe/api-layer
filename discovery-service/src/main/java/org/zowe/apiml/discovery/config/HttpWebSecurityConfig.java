@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.config;
+package org.zowe.apiml.discovery.config;
 
-import com.ca.apiml.security.common.config.HandlerInitializer;
-import com.ca.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.content.BasicContentFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 @Configuration
 @ComponentScan({
-    "com.ca.apiml.security.common",
+    "org.zowe.apiml.security.common",
 })
 @EnableWebSecurity
 @RequiredArgsConstructor

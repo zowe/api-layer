@@ -7,10 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.staticdef;
+package org.zowe.apiml.discovery.staticdef;
 
-import com.ca.apiml.security.common.auth.Authentication;
-import com.ca.mfaas.config.ApiInfo;
+import org.zowe.apiml.config.ApiInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 

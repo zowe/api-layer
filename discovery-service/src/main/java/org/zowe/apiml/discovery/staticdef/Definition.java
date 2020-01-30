@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.staticdef;
+package org.zowe.apiml.discovery.staticdef;
 
 import lombok.Data;
 

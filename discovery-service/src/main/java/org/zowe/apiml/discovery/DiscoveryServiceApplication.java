@@ -7,12 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery;
+package org.zowe.apiml.discovery;
 
-import com.ca.mfaas.product.logging.annotations.EnableApimlLogger;
-import com.ca.mfaas.product.monitoring.LatencyUtilsConfigInitializer;
-import com.ca.mfaas.product.service.ServiceStartupEventHandler;
-import com.ca.mfaas.product.version.BuildInfo;
+import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
+import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
+import org.zowe.apiml.product.version.BuildInfo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -26,9 +26,9 @@ import javax.annotation.Nonnull;
 @EnableEurekaServer
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @ComponentScan({
-    "com.ca.mfaas.discovery",
-    "com.ca.mfaas.product.security",
-    "com.ca.mfaas.product.web"
+    "org.zowe.apiml.discovery",
+    "org.zowe.apiml.product.security",
+    "org.zowe.apiml.product.web"
 })
 @EnableApimlLogger
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {

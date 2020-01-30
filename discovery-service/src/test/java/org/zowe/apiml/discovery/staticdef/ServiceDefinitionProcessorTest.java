@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.staticdef;
+package org.zowe.apiml.discovery.staticdef;
 
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Test;
@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
@@ -200,7 +200,7 @@ public class ServiceDefinitionProcessorTest {
 
         assertNotNull(result.getErrors());
         assertEquals(1, result.getErrors().size());
-        assertEquals("Metadata creation failed. The instance of casamplerestapiservice will not be created: com.ca.mfaas.exception.MetadataValidationException: The documentation URL \"httpBlah://localhost:10021/hellospring/api-doc\" for service casamplerestapiservice is not valid", result.getErrors().get(0));
+        assertEquals("Metadata creation failed. The instance of casamplerestapiservice will not be created: org.zowe.apiml.exception.MetadataValidationException: The documentation URL \"httpBlah://localhost:10021/hellospring/api-doc\" for service casamplerestapiservice is not valid", result.getErrors().get(0));
     }
 
     @Test

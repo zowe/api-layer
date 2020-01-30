@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery;
+package org.zowe.apiml.discovery;
 
-import com.ca.mfaas.discovery.staticdef.StaticServicesRegistrationService;
+import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.ApplicationListener;

@@ -7,14 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.metadata;
+package org.zowe.apiml.discovery.metadata;
 
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;

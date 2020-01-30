@@ -7,12 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery;
+package org.zowe.apiml.discovery;
 
-import com.ca.mfaas.discovery.metadata.MetadataDefaultsService;
-import com.ca.mfaas.discovery.metadata.MetadataTranslationService;
-import com.ca.mfaas.util.EurekaUtils;
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.context.event.EventListener;

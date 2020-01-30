@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery;
+package org.zowe.apiml.discovery;
 
 import com.ca.mfaas.discovery.config.EurekaConfig;
 import org.junit.Test;
