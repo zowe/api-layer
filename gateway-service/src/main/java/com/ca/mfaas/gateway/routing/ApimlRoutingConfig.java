@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.routing;
 import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import com.ca.mfaas.gateway.filters.post.PageRedirectionFilter;
+import com.ca.mfaas.gateway.filters.pre.EncodedCharactersFilter;
 import com.ca.mfaas.gateway.filters.pre.LocationFilter;
 import com.ca.mfaas.gateway.filters.pre.SlashFilter;
 import com.ca.mfaas.gateway.filters.pre.ZosmfFilter;
@@ -37,6 +38,9 @@ public class ApimlRoutingConfig {
     public LocationFilter locationFilter() {
         return new LocationFilter();
     }
+
+    @Bean
+    public EncodedCharactersFilter encodedCharactersFilterFilter(DiscoveryClient discovery) { return new EncodedCharactersFilter(discovery); }
 
     @Bean
     public SlashFilter slashFilter() {
@@ -72,6 +76,7 @@ public class ApimlRoutingConfig {
         routedServicesUsers.add(locationFilter());
         routedServicesUsers.add(webSocketProxyServerHandler);
         routedServicesUsers.add(pageRedirectionFilter);
+        zuulProperties.setDecodeUrl(false);
 
         return new ApimlRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
     }

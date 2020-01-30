@@ -56,6 +56,18 @@ public class SlashFilterTest {
     }
 
     @Test
+    public void shouldReturnFilterType() {
+        String filterType = this.filter.filterType();
+        assertEquals("pre", filterType);
+    }
+
+    @Test
+    public void shouldReturnFilterOrder() {
+        int filterOrder = this.filter.filterOrder();
+        assertEquals(8, filterOrder);
+    }
+
+    @Test
     public void proxyStartsWithSlash() throws Exception {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "/ui/service");

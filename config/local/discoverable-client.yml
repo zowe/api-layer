@@ -1,28 +1,41 @@
-spring.profiles.include: diag
-
-apiml:
-    service:
-        hostname: localhost
-        ipAddress: 127.0.0.1
-        port: 10012
-        discoveryServiceUrls: https://localhost:10011/eureka/
-
 spring:
+    profiles:
+        include: diag
     output:
         ansi:
             enabled: always
+
+apiml:
+    security:
+        ssl:
+            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+    # The `apiml` node contains API Mediation Layer specific configuration
+    service:
+        # The `apiml.service` node contains information required by any APIML service
+        id: discoverableclient  # Service ID of this service
+        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
+        port: 10012  # Default port name for discoverable-clinet service
+        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        preferIpAddress: false
+        discoveryServiceUrls: https://localhost:10011/eureka/
 
 server:
     ssl:
         keyAlias: localhost
         keyPassword: password
         keyStore: keystore/localhost/localhost.keystore.p12
-        # keyStore: keystore/selfsigned/localhost.keystore.p12        
-        # keyStore: keystore/selfsigned/localhost-untrusted.keystore.p12
         keyStorePassword: password
-        keyStoreType: PKCS12
         trustStore: keystore/localhost/localhost.truststore.p12
-        # trustStore: keystore/selfsigned/localhost.truststore.p12
-        # trustStore: keystore/selfsigned/localhost-untrusted.truststore.p12
         trustStorePassword: password
-        trustStoreType: PKCS12
+
+eureka:
+    client:
+        enabled: true
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
+    instance:
+        metadata-map:
+            discovery:
+                service:
+                    title: Service Spring Integration Enabler sample application API
+                    description:  Sample API services to demonstrate Spring Integration Enabler

@@ -80,7 +80,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'apiml-jenkins-agent'
+        label 'apiml-jenkins-agent-swarm'
     }
 
     options {
@@ -244,7 +244,7 @@ pipeline {
                 stage('Publish snapshot version to Artifactory for Pull Request') {
                     when {
                         expression {
-                            return BRANCH_NAME.contains("PR-") && PUBLISH_PR_ARTIFACTS;
+                            return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
                         }
                     }
                     steps {
@@ -275,6 +275,30 @@ pipeline {
         always {
             junit allowEmptyResults: true, testResults: '**/test-results/**/*.xml'
             archiveArtifacts '.change_class'
+            publishHTML (target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'gateway-service/build/reports/tests/test',
+                reportFiles: 'index.html',
+                reportName: "Unit Tests Report - gateway-service"
+            ])
+            publishHTML (target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'discovery-service/build/reports/tests/test',
+                reportFiles: 'index.html',
+                reportName: "Unit Tests Report - discovery-service"
+            ])
+            publishHTML (target: [
+                allowMissing: true,
+                alwaysLinkToLastBuild: true,
+                keepAll: true,
+                reportDir: 'api-catalog-services/build/reports/tests/test',
+                reportFiles: 'index.html',
+                reportName: "Unit Tests Report - api-catalog-services"
+            ])
         }
 
         success {

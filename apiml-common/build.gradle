@@ -1,9 +1,9 @@
 dependencies {
-    compile(project(':common-service-core'))
+    compile project(':apiml-logging')
+    //compile project(':common-service-core')
 
     compile libraries.spring_boot_starter_web
     compile libraries.commons_validator
-    compile libraries.spring_cloud_starter_eureka_server
     compile libraries.jackson_databind
     compile libraries.apache_commons_lang3
     compile libraries.http_client
@@ -19,5 +19,4 @@ dependencies {
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule
     testCompile libraries.lombok
-    testCompile libraries.gson
 }

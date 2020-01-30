@@ -149,8 +149,32 @@ public class InstanceLookupExecutorTest {
                                        InstanceInfo.InstanceStatus status,
                                        InstanceInfo.ActionType actionType,
                                        HashMap<String, String> metadata) {
-        return new InstanceInfo(instanceId, serviceId.toUpperCase(), null, "192.168.0.1", null,
-            new InstanceInfo.PortWrapper(true, 9090), null, null, null, null, null, null, null, 0, null, "hostname",
-            status, null, null, null, null, metadata, null, null, actionType, null);
+        return new InstanceInfo(
+            instanceId,
+            serviceId.toUpperCase(),
+            null,
+            "192.168.0.1",
+            null,
+            new InstanceInfo.PortWrapper(true, 9090),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0,
+            null,
+            "hostname",
+            status,
+            null,
+            null,
+            null,
+            null,
+            metadata,
+            null,
+            null,
+            actionType,
+            null);
     }
 }
