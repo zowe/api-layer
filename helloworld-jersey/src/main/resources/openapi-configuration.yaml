@@ -1,5 +1,5 @@
 resourcePackages:
-    - com.ca.hwsjersey.resource
+    - org.zowe.apiml.hwsjersey.resource
 prettyPrint: true
 cacheTTL: 0
 openAPI:

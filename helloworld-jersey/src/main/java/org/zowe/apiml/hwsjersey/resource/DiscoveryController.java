@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.hwsjersey.resource;
+package org.zowe.apiml.hwsjersey.resource;
 
-import com.ca.mfaas.eurekaservice.model.Health;
+import org.zowe.apiml.eurekaservice.model.Health;
 import io.swagger.v3.oas.annotations.Hidden;
 
 import javax.ws.rs.GET;
