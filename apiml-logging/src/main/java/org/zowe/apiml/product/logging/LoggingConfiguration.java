@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.logging;
+package org.zowe.apiml.product.logging;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
  * General logging configuration
  */
 @Configuration
-@ComponentScan({"com.ca.mfaas.product.logging"})
+@ComponentScan({"org.zowe.apiml.product.logging"})
 public class LoggingConfiguration {
 
 

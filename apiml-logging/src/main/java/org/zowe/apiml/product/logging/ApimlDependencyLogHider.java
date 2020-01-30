@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.logging;
+package org.zowe.apiml.product.logging;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;

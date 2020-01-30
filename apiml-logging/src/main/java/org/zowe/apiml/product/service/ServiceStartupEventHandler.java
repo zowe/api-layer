@@ -7,13 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.service;
+package org.zowe.apiml.product.service;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;

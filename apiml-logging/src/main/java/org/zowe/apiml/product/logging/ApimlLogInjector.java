@@ -7,11 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.logging;
+package org.zowe.apiml.product.logging;
 
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;

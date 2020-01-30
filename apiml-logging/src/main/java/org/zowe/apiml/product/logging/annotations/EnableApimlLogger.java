@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.logging.annotations;
+package org.zowe.apiml.product.logging.annotations;
 
-import com.ca.mfaas.product.logging.LoggingConfiguration;
+import org.zowe.apiml.product.logging.LoggingConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 

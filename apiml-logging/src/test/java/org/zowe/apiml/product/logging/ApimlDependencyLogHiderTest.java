@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.product.logging;
+package org.zowe.apiml.product.logging;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 
 public class ApimlDependencyLogHiderTest {
 
-    private final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("com.ca.logger");
+    private final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.zowe.apiml.logger");
     private ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
 
     @Before

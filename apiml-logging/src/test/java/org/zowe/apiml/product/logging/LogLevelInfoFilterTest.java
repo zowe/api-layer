@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.product.logging;
+package org.zowe.apiml.product.logging;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.core.spi.FilterReply;
@@ -88,11 +88,11 @@ public class LogLevelInfoFilterTest {
     @Test
     public void packageFilterTest() {
         Map<String, Boolean> loggerMap = new HashMap<>();
-        loggerMap.put("com.ca.mfaas.product.logging.LogLevelFilterTest", true);
-        loggerMap.put("com.ca.apiml.security.common.config.AuthConfigurationProperties", true);
+        loggerMap.put("org.zowe.apiml.product.logging.LogLevelFilterTest", true);
+        loggerMap.put("org.zowe.apiml.security.common.config.AuthConfigurationProperties", true);
         loggerMap.put("com.amazonaws", false);
-        loggerMap.put("bucharest.com.ca.mfaas", false);
-        loggerMap.put("COM.CA.MFAAS.CRAZYPEOPLE", false);
+        loggerMap.put("bucharest.org.zowe.apiml", false);
+        loggerMap.put("ORG.ZOWE.APIML.CRAZYPEOPLE", false);
 
         loggerMap.forEach((loggerName, shouldFilter) -> {
             org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(loggerName);

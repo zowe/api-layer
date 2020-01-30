@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package com.ca.mfaas.product.logging;
+package org.zowe.apiml.product.logging;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -57,6 +57,6 @@ public class LogLevelInfoFilter extends TurboFilter {
 
     private boolean isInternalLogger(Logger logger) {
         String loggerName = logger.getName();
-        return (loggerName.startsWith("com.ca.mfaas") || loggerName.startsWith("com.ca.apiml"));
+        return loggerName.startsWith("org.zowe.apiml");
     }
 }
