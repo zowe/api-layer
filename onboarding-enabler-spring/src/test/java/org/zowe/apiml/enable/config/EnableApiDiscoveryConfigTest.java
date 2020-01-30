@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.enable.config;
+package org.zowe.apiml.enable.config;
 
-import com.ca.mfaas.message.core.Message;
-import com.ca.mfaas.message.core.MessageService;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

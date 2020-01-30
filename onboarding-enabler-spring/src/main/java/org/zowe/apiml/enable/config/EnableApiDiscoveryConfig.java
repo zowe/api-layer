@@ -7,13 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.enable.config;
+package org.zowe.apiml.enable.config;
 
-import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
-import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.eurekaservice.client.impl.ApiMediationClientImpl;
-import com.ca.mfaas.message.core.MessageService;
-import com.ca.mfaas.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
-@ComponentScan(value = {"com.ca.apiml.enable"})
+@ComponentScan(value = {"org.zowe.apiml.enable"})
 public class EnableApiDiscoveryConfig {
 
     @Bean

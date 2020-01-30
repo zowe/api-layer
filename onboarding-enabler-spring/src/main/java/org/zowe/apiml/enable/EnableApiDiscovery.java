@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.enable;
+package org.zowe.apiml.enable;
 
-import com.ca.apiml.enable.config.EnableApiDiscoveryConfig;
+import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;

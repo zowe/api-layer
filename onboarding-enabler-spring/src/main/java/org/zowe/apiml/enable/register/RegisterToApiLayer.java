@@ -7,14 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.enable.register;
+package org.zowe.apiml.enable.register;
 
-import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
-import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 
-import com.ca.mfaas.exception.ServiceDefinitionException;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextClosedEvent;

@@ -7,34 +7,32 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.apiml.enable.register;
+package org.zowe.apiml.enable.register;
 
-import com.ca.apiml.enable.EnableApiDiscovery;
-import com.ca.apiml.enable.config.EnableApiDiscoveryConfig;
-import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
-import com.ca.mfaas.eurekaservice.client.config.ApiMediationServiceConfig;
-import com.ca.mfaas.exception.ServiceDefinitionException;
+import org.zowe.apiml.enable.EnableApiDiscovery;
+import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @EnableApiDiscovery
-@ActiveProfiles("apiml-disabled")
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {RegisterToApiLayer.class, EnableApiDiscoveryConfig.class})
-public class ApimlDisabledRegisterToApiLayerTest {
+public class ApimlEnabledRegisterToApiLayerTest {
 
     @Autowired
     private RegisterToApiLayer registerToApiLayer;
@@ -47,10 +45,13 @@ public class ApimlDisabledRegisterToApiLayerTest {
 
     @Test
     public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
-
         assertNotNull("ApiMediationServiceConfig is null", apiMediationServiceConfig);
-        assertNotNull("Ssl is null", apiMediationServiceConfig.getSsl());
+        assertEquals("Service id is not equal", "discoverableclient2", apiMediationServiceConfig.getServiceId());
 
-        verify(apiMediationClient, never()).register(apiMediationServiceConfig);
+        assertNotNull("SslConfig is null", apiMediationServiceConfig.getSsl());
+        assertEquals("keystore is not equal", "keystore/localhost/localhost.keystore.p12", apiMediationServiceConfig.getSsl().getKeyStore());
+        assertEquals("truststore id is not equal", "keystore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore());
+
+        verify(apiMediationClient, times(1)).register(apiMediationServiceConfig);
     }
 }
