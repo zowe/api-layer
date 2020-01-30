@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.hellospring.listener;
+package org.zowe.apiml.hellospring.listener;
 
-import com.ca.mfaas.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 
