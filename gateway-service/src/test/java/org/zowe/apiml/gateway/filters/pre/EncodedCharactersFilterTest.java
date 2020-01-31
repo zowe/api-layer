@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway.filters.pre;
 
+import com.ca.mfaas.message.core.MessageService;
+import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,8 +30,8 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -45,13 +47,14 @@ public class EncodedCharactersFilterTest {
 
     private final DefaultServiceInstance serviceInstanceWithConfiguration = new DefaultServiceInstance("INSTANCE1", SERVICE_ID ,"",0,true, new HashMap<String, String>());
     private final DefaultServiceInstance serviceInstanceWithoutConfiguration = new DefaultServiceInstance("INSTANCE2", SERVICE_ID ,"",0,true, new HashMap<String, String>());
+    MessageService messageService = new YamlMessageService("/gateway-log-messages.yml");
 
     @Mock
     DiscoveryClient discoveryClient;
 
     @Before
     public void setup() {
-        filter = new EncodedCharactersFilter(discoveryClient);
+        filter = new EncodedCharactersFilter(discoveryClient, messageService);
         serviceInstanceWithConfiguration.getMetadata().put(METADATA_KEY, "true");
         serviceInstanceWithoutConfiguration.getMetadata().put(METADATA_KEY, "false");
         RequestContext ctx = RequestContext.getCurrentContext();
@@ -107,10 +110,9 @@ public class EncodedCharactersFilterTest {
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setRequestURI("/He%2f%2f0%2dwor%2fd");
         context.setRequest(mockRequest);
-
         this.filter.run();
-
-        assertEquals("Instance serviceid does not allow encoded characters in the URL.", context.getResponseBody());
+        assertTrue(context.getResponseBody().contains("Service 'serviceid' does not allow encoded characters used in request path '/He%2f%2f0%2dwor%2fd'."));
+        assertTrue(context.getResponseBody().contains("ZWEAG701D"));
         assertEquals(400, context.getResponse().getStatus());
     }
 
@@ -137,5 +139,4 @@ public class EncodedCharactersFilterTest {
 
         assertEquals(200, context.getResponse().getStatus());
     }
-
 }
