@@ -10,31 +10,30 @@
 package com.ca.mfaas.gateway.config;
 
 import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
+import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
+import org.springframework.cloud.netflix.zuul.filters.route.SimpleHostRoutingFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * This is the configuration class for gateway
- */
 @Configuration
 public class GatewayConfig {
 
-    /**
-     * Create gateway config Bean
-     *
-     * @param hostname gateway hostname
-     * @param port     gateway port
-     * @param scheme   gateway scheme
-     * @return
-     */
     @Bean
     public GatewayConfigProperties getGatewayConfigProperties(@Value("${apiml.gateway.hostname}") String hostname,
-                                                              @Value("${apiml.service.port}") String port,
-                                                              @Value("${apiml.service.scheme}") String scheme) {
-        return GatewayConfigProperties.builder()
-            .scheme(scheme)
-            .hostname(hostname + ":" + port)
-            .build();
+            @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
+        return GatewayConfigProperties.builder().scheme(scheme).hostname(hostname + ":" + port).build();
+    }
+
+    @Bean
+    @Autowired
+    public SimpleHostRoutingFilter simpleHostRoutingFilter2(ProxyRequestHelper helper, ZuulProperties zuulProperties,
+            @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore) {
+        return new SimpleHostRoutingFilter(helper, zuulProperties, secureHttpClientWithoutKeystore);
     }
 }

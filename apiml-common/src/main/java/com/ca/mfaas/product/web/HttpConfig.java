@@ -20,9 +20,11 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.Eure
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
@@ -73,6 +75,7 @@ public class HttpConfig {
     private String eurekaServerUrl;
 
     private CloseableHttpClient secureHttpClient;
+    private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
     private HostnameVerifier secureHostnameVerifier;
     private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
@@ -95,6 +98,13 @@ public class HttpConfig {
             secureSslContext = factory.createSslContext();
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
+
+            HttpsConfig httpsConfigWithoutKeystore = HttpsConfig.builder().protocol(protocol).trustStore(trustStore)
+                    .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
+                    .trustStoreRequired(trustStoreRequired)
+                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
+            HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
+            secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient();
 
             factory.setSystemSslProperties();
         }
@@ -136,8 +146,21 @@ public class HttpConfig {
     }
 
     @Bean
+    public RestTemplate restTemplateWithoutKeystore() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
+        return new RestTemplate(factory);
+    }
+
+    @Bean
+    @Primary
     public CloseableHttpClient secureHttpClient() {
         return secureHttpClient;
+    }
+
+    @Bean
+    @Qualifier("secureHttpClientWithoutKeystore")
+    public CloseableHttpClient secureHttpClientWithoutKeystore() {
+        return secureHttpClientWithoutKeystore;
     }
 
     @Bean
