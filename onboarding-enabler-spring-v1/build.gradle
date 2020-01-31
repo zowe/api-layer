@@ -29,7 +29,7 @@ jar {
 }
 
 dependencies {
-    compile project(':apiml-logging')
+    compile project(':apiml-utility')
     compile project(':onboarding-enabler-java')
 
     compile libraries.spring_boot_v1_starter_actuator

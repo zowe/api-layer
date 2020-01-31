@@ -11,6 +11,7 @@ ext.javaEnablers = [
 
 ext.javaLibraries = [
     'common-service-core',
+    'apml-utility',
     'apiml-common',
     'apiml-security-common',
     'security-service-client-spring'

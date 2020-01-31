@@ -24,11 +24,15 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':onboarding-enabler-spring')
+    compile project(':apiml-utility')
+    compile project(':onboarding-enabler-java')
+    compile libraries.springFox
 
-    compile libraries.spring_boot_starter_actuator
+    compileOnly project(':onboarding-enabler-spring')
 
-    compileOnly libraries.lombok
+    implementation libraries.lombok
+    implementation libraries.spring_boot_starter_actuator
+    implementation libraries.spring_boot_starter_web
 
     testCompile libraries.spring_boot_starter_test
     testCompile libraries.javax_servlet_api
@@ -39,8 +43,3 @@ dependencies {
     testCompile libraries.lombok
 }
 
-/*
-sonarqube {
-    skipProject = true
-}
-*/
