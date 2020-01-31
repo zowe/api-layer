@@ -37,7 +37,7 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    public EncodedCharactersFilter encodedCharactersFilterFilter(DiscoveryClient discovery) { return new EncodedCharactersFilter(discovery); }
+    public EncodedCharactersFilter encodedCharactersFilterFilter(DiscoveryClient discovery, MessageService messageService) { return new EncodedCharactersFilter(discovery, messageService); }
 
     @Bean
     public SlashFilter slashFilter() {
