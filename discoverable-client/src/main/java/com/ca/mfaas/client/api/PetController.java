@@ -123,7 +123,7 @@ public class PetController {
         @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
         @ApiResponse(code = 404, message = "The pet with id is not found.", response = ApiMessageView.class)
     })
-    public Pet getPetById(@ApiParam(value = "Pet id to return", required = true)
+    public Pet getPetById(@ApiParam(value = "Pet id to return", required = true, example = "1")
                           @PathVariable("id") Long id) {
         Pet pet = petService.getById(id);
         if (pet == null) {
@@ -156,7 +156,7 @@ public class PetController {
         @ApiResponse(code = 401, message = "Authentication is required", response = ApiMessageView.class),
         @ApiResponse(code = 404, message = "Pet not found", response = ApiMessageView.class)
     })
-    public Pet updatePetById(@ApiParam(value = "Pet id to update", required = true)
+    public Pet updatePetById(@ApiParam(value = "Pet id to update", required = true, example = "1")
                              @PathVariable("id") Long id,
                              @ApiParam(value = "Pet object that needs to be updated", required = true)
                              @Validated(value = {Existing.class})
@@ -193,7 +193,7 @@ public class PetController {
         @ApiResponse(code = 403, message = "Forbidden", response = ApiMessageView.class),
         @ApiResponse(code = 404, message = "Pet not found", response = ApiMessageView.class)
     })
-    public void deletePetById(@ApiParam(value = "Pet id to delete", required = true)
+    public void deletePetById(@ApiParam(value = "Pet id to delete", required = true, example = "1")
                               @PathVariable("id") Long id) {
         petService.deleteById(id);
     }

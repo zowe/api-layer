@@ -89,6 +89,7 @@ zuul:
     host:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
+    forceOriginalQueryStringEncoding: true
 
 ribbon:
     IsSecure: false

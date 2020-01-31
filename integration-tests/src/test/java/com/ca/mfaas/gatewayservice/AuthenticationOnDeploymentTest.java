@@ -11,7 +11,7 @@ package com.ca.mfaas.gatewayservice;
 
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
-import com.ca.apiml.security.common.service.PassTicketService;
+import com.ca.mfaas.passticket.PassTicketService;
 import com.ca.mfaas.util.categories.AdditionalLocalTest;
 import com.ca.mfaas.util.service.RequestVerifier;
 import com.ca.mfaas.util.service.VirtualService;

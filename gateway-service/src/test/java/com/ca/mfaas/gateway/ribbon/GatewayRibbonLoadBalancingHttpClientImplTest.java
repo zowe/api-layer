@@ -12,6 +12,7 @@ import com.ca.mfaas.gateway.config.CacheConfig;
 import com.ca.mfaas.gateway.security.service.AuthenticationException;
 import com.ca.mfaas.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
@@ -41,7 +42,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.ca.mfaas.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
@@ -150,15 +154,17 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
             fail();
         } catch (ExecutionListener.AbortExecutionException e) {
             assertTrue(e.getCause() instanceof AuthenticationException);
-            assertEquals("Test exception", ((AuthenticationException) e.getCause()).getMessage());
+            assertEquals("Test exception", e.getCause().getMessage());
         }
 
         // test command with header set
         requestContext.put(AUTHENTICATION_COMMAND_KEY, new TestAuthenticationCommand());
         listener.onStartWithServer(context, info);
         assertEquals(2, headers.size());
+        assertNotNull(headers.get("testkey"));
         assertEquals(1, headers.get("testkey").size());
         assertEquals("testValue", headers.get("testkey").get(0));
+        assertNotNull(headers.get("testinstanceid"));
         assertEquals(1, headers.get("testinstanceid").size());
         assertEquals("host:service3:1", headers.get("testinstanceid").get(0));
         verify(discoveryClient, times(1)).getApplication("service3");
@@ -167,10 +173,56 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
         verify(discoveryClient, times(1)).getApplication("service3");
     }
 
+    @Test
+    public void shouldReconstructURIWithServer_WhenUnsecurePortEnabled() throws URISyntaxException {
+        URI request = new URI("/apicatalog/");
+
+        Server server = createServer("localhost", 10014, false, true, "defaultZone");
+        URI reconstructedURI = bean.reconstructURIWithServer(server, request);
+        assertEquals("URI is not same with expected", "http://localhost:10014/apicatalog/", reconstructedURI.toString());
+    }
+
+    @Test
+    public void shouldReconstructURIWithServer_WhenSecurePortEnabled() throws URISyntaxException {
+        URI request = new URI("/apicatalog/");
+
+        Server server = createServer("localhost", 10014, true, false, "defaultZone");
+        URI reconstructedURI = bean.reconstructURIWithServer(server, request);
+        assertEquals("URI is not same with expected", "https://localhost:10014/apicatalog/", reconstructedURI.toString());
+    }
+
+    private DiscoveryEnabledServer createServer(String host,
+                                                int port,
+                                                boolean isSecureEnabled,
+                                                boolean isUnsecureEnabled,
+                                                String zone) {
+        InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
+        InstanceInfo info = builder
+            .setAppName("apicatalog")
+            .setInstanceId("apicatalog")
+            .setVIPAddress("apicatalog")
+            .setHostName(host)
+            .setPort(port)
+            .enablePort(InstanceInfo.PortType.SECURE, isSecureEnabled)
+            .enablePort(InstanceInfo.PortType.UNSECURE, isUnsecureEnabled)
+            .setSecurePort(port)
+            .build();
+        DiscoveryEnabledServer server = new DiscoveryEnabledServer(info, false, false);
+        server.setZone(zone);
+
+        Application application = mock(Application.class);
+        when(application.getInstances()).thenReturn(Collections.singletonList(info));
+        when(discoveryClient.getApplication("apicatalog")).thenReturn(application);
+
+        return server;
+    }
+
     class TestAuthenticationCommand extends AuthenticationCommand {
 
+        private static final long serialVersionUID = -2888552250075042413L;
+
         @Override
-        public void apply(InstanceInfo instanceInfo) throws AuthenticationException {
+        public void apply(InstanceInfo instanceInfo) {
             RequestContext.getCurrentContext().addZuulRequestHeader("testKey", "testValue");
             RequestContext.getCurrentContext().addZuulRequestHeader("testInstanceId", instanceInfo.getInstanceId());
         }
@@ -183,6 +235,8 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
     }
 
     class TestAuthenticationCommand2 extends AuthenticationCommand {
+
+        private static final long serialVersionUID = 3708128389148113917L;
 
         @Override
         public void apply(InstanceInfo instanceInfo) throws AuthenticationException {
@@ -203,9 +257,9 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
 
         public LoadBalancerCommand.Builder<RibbonApacheHttpResponse> getBuilder() {
             LoadBalancerCommand.Builder<RibbonApacheHttpResponse> builder = mock(LoadBalancerCommand.Builder.class);
-            doAnswer(new Answer() {
+            doAnswer(new Answer<Object>() {
                 @Override
-                public Object answer(InvocationOnMock invocation) throws Throwable {
+                public Object answer(InvocationOnMock invocation) {
                     List<ExecutionListener<Object, RibbonApacheHttpResponse>> listeners = invocation.getArgument(0);
                     assertNotNull(listeners);
                     assertEquals(1, listeners.size());
@@ -233,14 +287,12 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
 
         @Bean
         public IClientConfig getConfig() {
-            IClientConfig out = mock(IClientConfig.class);
-            doAnswer(new Answer() {
-                @Override
-                public Object answer(InvocationOnMock invocation) throws Throwable {
-                    return invocation.getArgument(1);
-                }
-            }).when(out).get(any(), any());
-            return out;
+            return  IClientConfig.Builder.newBuilder(DefaultClientConfigImpl.class, "apicatalog")
+                .withSecure(false)
+                .withFollowRedirects(false)
+                .withDeploymentContextBasedVipAddresses("apicatalog")
+                .withLoadBalancerEnabled(false)
+                .build();
         }
 
         @Bean
@@ -249,7 +301,7 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
         }
 
         @Bean
-        public GatewayRibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
+        public GatewayRibbonLoadBalancingHttpClientTest ribbonLoadBalancingHttpClient(
             CloseableHttpClient secureHttpClient,
             IClientConfig config,
             ServerIntrospector serverIntrospector,
@@ -276,7 +328,7 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
          * @param secureHttpClient   custom http client for our certificates
          * @param config             configuration details
          * @param serverIntrospector introspector
-         * @param discoveryClient
+         * @param discoveryClient    using discovery client
          */
         public GatewayRibbonLoadBalancingHttpClientImplTestBean(CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector, EurekaClient discoveryClient, CacheManager cacheManager, ApplicationContext applicationContext) {
             super(secureHttpClient, config, serverIntrospector, discoveryClient, cacheManager, applicationContext);

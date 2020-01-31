@@ -22,6 +22,7 @@ dependencies {
     compile libraries.jackson_databind
     compile libraries.json_path
     compile libraries.spring_boot_starter_websocket
+    compile libraries.spring_boot_starter_actuator
     compile libraries.json
     compile libraries.jjwt
     compile(project(':apiml-security-common'))
@@ -37,6 +38,9 @@ dependencies {
     testCompile libraries.lombok
     testCompile libraries.jsoup
     testCompile libraries.rest_assured
+    testCompile(libraries.jackson_core)
+    testCompile(libraries.jackson_databind)
+    testCompile libraries.jackson_dataformat_yaml
     testCompile libraries.javax_servlet_api
 }
 

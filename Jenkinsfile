@@ -161,13 +161,6 @@ pipeline {
                     }
                 }
 
-                stage('Test apiml_cm.sh') {
-                    steps {
-                        sh 'npm install'
-                        sh 'npm run test-scripts-ci'
-                    }
-                }
-
                 stage('Build and unit test with coverage') {
                     steps {
                         timeout(time: 20, unit: 'MINUTES') {
@@ -318,7 +311,6 @@ pipeline {
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'common-service-core/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'apiml-common/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'scripts/apiml_cm.sh'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
 
             withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {

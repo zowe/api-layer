@@ -34,6 +34,7 @@ Local CA:
 
 
 ## Generating own certificates for localhost
+**!!! Note that apiml_cm.sh script has been moved to [zowe/zowe-install-packaging repo](https://github.com/zowe/zowe-install-packaging) !!!** 
 
 Use following script:
 

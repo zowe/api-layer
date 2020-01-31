@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,6 +32,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 
 import java.util.Collections;
 
@@ -183,5 +185,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("gatewayClient", "", Collections.emptyList());
+    }
+
+    @Override
+    public void configure(WebSecurity web) {
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowBackSlash(true);
+        firewall.setAllowUrlEncodedPercent(true);
+        firewall.setAllowUrlEncodedPeriod(true);
+        firewall.setAllowSemicolon(true);
+        web.httpFirewall(firewall);
     }
 }

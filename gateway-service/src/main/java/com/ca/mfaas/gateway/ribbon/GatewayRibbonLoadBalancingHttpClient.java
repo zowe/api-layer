@@ -9,8 +9,12 @@
  */
 package com.ca.mfaas.gateway.ribbon;
 
+import java.net.URI;
+
 import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.loadbalancer.Server;
+
 import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 
 public interface GatewayRibbonLoadBalancingHttpClient extends ServiceInstanceChooser, ServiceCacheEvict {
@@ -19,4 +23,5 @@ public interface GatewayRibbonLoadBalancingHttpClient extends ServiceInstanceCho
 
     public InstanceInfo getInstanceInfo(String serviceId, String instanceId);
 
+    public URI reconstructURIWithServer(Server server, URI request);
 }

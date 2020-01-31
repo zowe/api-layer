@@ -18,7 +18,8 @@ repositories {
 }
 
 dependencies {
-    compile(project(':integration-enabler-java'))
+    compile(project(':onboarding-enabler-java'))
+    compile(project(':common-service-core'))
 
     compile libraries.spring4Mvc
     compile libraries.jackson_databind

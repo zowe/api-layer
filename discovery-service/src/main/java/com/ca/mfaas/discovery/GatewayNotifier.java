@@ -17,14 +17,12 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
 @Component
-@Slf4j
 public class GatewayNotifier {
 
     private final ApimlLogger logger;

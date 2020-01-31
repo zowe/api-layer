@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.ticket;
 
-import com.ca.apiml.security.common.service.PassTicketService;
+import com.ca.mfaas.passticket.PassTicketService;
 import com.ca.apiml.security.common.ticket.TicketRequest;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.message.core.MessageService;
@@ -25,8 +25,8 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.UnsupportedEncodingException;
 
-import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
-import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX;
+import static com.ca.mfaas.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
+import static com.ca.mfaas.passticket.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX;
 import static org.junit.Assert.*;
 
 public class SuccessfulTicketHandlerTest {
@@ -44,8 +44,6 @@ public class SuccessfulTicketHandlerTest {
 
     @Before
     public void setUp() {
-        passTicketService.init();
-
         httpServletResponse.setStatus(HttpStatus.EXPECTATION_FAILED.value());
         assertNotEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
     }

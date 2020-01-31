@@ -80,6 +80,7 @@ public class SuccessfulQueryHandlerTest {
         );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
 

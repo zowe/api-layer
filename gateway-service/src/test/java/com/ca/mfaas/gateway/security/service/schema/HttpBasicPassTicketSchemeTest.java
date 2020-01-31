@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gateway.security.service.schema;
 
-import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
+import static com.ca.mfaas.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.ca.apiml.security.common.auth.Authentication;
 import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.apiml.security.common.service.PassTicketService;
+import com.ca.mfaas.passticket.PassTicketService;
 import com.ca.apiml.security.common.token.QueryResponse;
 import com.ca.mfaas.gateway.security.service.AuthenticationException;
 import com.ca.mfaas.gateway.utils.CleanCurrentRequestContextTest;
@@ -45,7 +45,6 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     @Before
     public void init() {
         PassTicketService passTicketService = new PassTicketService();
-        passTicketService.init();
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
     }
 
