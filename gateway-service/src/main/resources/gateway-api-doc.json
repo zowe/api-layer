@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "description": "REST API for the API Gateway service, which is a component of the API\nMediation Layer. Use this API to perform tasks such as logging in with the\nmainframe credentials and checking authorization to mainframe resources.",
-        "version": "1.1.2",
+        "version": "1.3.0",
         "title": "API Gateway"
     },
     "tags": [
@@ -18,7 +18,7 @@
                     "Security"
                 ],
                 "summary": "Authenticate mainframe user credentials and return authentication token.",
-                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token.\n\nThe login request requires the user credentials in one of the following formats:  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n\n  \nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
+                "description": "Use the `/login` API to authenticate mainframe user credentials and return authentication token.\n\n**Request:**\n\nThe login request requires the user credentials in one of the following formats:\n  * Basic access authentication\n  * JSON body, which provides an object with the user credentials\n\n**Response:**\n\nThe response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\n",
                 "operationId": "loginUsingPOST",
                 "requestBody": {
                     "content": {
@@ -58,6 +58,9 @@
                     },
                     "405": {
                         "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
                     }
                 }
             }
@@ -68,7 +71,7 @@
                     "Security"
                 ],
                 "summary": "Validate the authentication token.",
-                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\nThe query request requires the token in one of the following formats:  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n    **Header example:** Authorization: Bearer *token*\n\n    \nThe response is a JSON object, which contains information associated with the token.\n",
+                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authenticatio\n  \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
                 "operationId": "validateUsingGET",
                 "security": [
                     {
@@ -97,6 +100,67 @@
                     },
                     "405": {
                         "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/ticket": {
+            "post": {
+                "tags": [
+                    "Security"
+                ],
+                "summary": "Generate a passticket for the user associated with a token.",
+                "description": "Use the `/ticket` API to request a passticket for the user associated with a token.\n\nThis endpoint is protect by a client certificate.\n\n**HTTP Headers:**\n\nThe ticket request requires the token in one of the following formats:  \n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication\n  \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request takes one parameter, the name of the application for which the passticket should be generated. This parameter must be supplied.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the ticket.\n",
+                "operationId": "GenerateTicketUsingPOST",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TicketRequest"
+                            }
+                        }
+                    },
+                    "description": "Specifies the name of the application for which the passticket should be generated."
+                },
+                "security": [
+                    {
+                        "CookieAuth": []
+                    },
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TicketResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Incorrect applicationName parameter. The parameter is not provided, is invalid or not defined to security."
+                    },
+                    "401": {
+                        "description": "Zowe token is not provided, is invalid or is expired."
+                    },
+                    "403": {
+                        "description": "A client certificate is not provided or is expired."
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "The external security manager failed to generate a PassTicket for the user and application specified."
                     }
                 }
             }
@@ -110,18 +174,18 @@
     "components": {
         "securitySchemes": {
             "LoginBasicAuth": {
-                "type": "HTTP",
-                "scheme": "BASIC"
+                "type": "http",
+                "scheme": "basic"
             },
             "Bearer": {
-                "type": "APIKEY",
+                "type": "apiKey",
                 "name": "Authorization",
-                "in": "HEADER"
+                "in": "header"
             },
             "CookieAuth": {
-                "type": "APIKEY",
+                "type": "apiKey",
                 "name": "apimlAuthenticationToken",
-                "in": "COOKIE"
+                "in": "cookie"
             }
         },
         "schemas": {
@@ -173,6 +237,49 @@
                     "domain": "SAFRealm",
                     "creation": "2019-05-13T12:47:04.000+0000",
                     "expiration": "2019-05-14T12:47:04.000+0000"
+                }
+            },
+            "TicketRequest": {
+                "type": "object",
+                "title": "Application name",
+                "properties": {
+                    "applicationName": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "applicationName"
+                ],
+                "example": {
+                    "applicationName": "ZOWEAPPL"
+                }
+            },
+            "TicketResponse": {
+                "type": "object",
+                "title": "PassTicket",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "description": "Specifies the token that was supplied in the header."
+                    },
+                    "userId": {
+                        "type": "string",
+                        "description": "Specifies the user associated with the token."
+                    },
+                    "applicationName": {
+                        "type": "string",
+                        "description": "Specifies the application name associated with the passticket. Note that the Gateway user must be authorized to generate passtickets for this application name."
+                    },
+                    "ticket": {
+                        "type": "string",
+                        "description": "Specifies a passticket for the pair, userId and applicationName."
+                    }
+                },
+                "example": {
+                    "token": "eyJhbGciOiJSUzI1N",
+                    "userId": "John",
+                    "applicationName": "ZOWEAPPL",
+                    "ticket": "LZTKEEDQ"
                 }
             }
         }

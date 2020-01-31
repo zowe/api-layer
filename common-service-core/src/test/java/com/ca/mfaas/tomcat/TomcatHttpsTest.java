@@ -49,7 +49,8 @@ public class TomcatHttpsTest {
         System.clearProperty("javax.net.ssl.trustStorePassword");
         System.clearProperty("javax.net.ssl.trustStoreType");
     }
-    @Test
+
+   @Test
     public void correctConfigurationShouldWork() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().build();
         startTomcatAndDoHttpsRequest(httpsConfig);

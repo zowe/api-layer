@@ -31,6 +31,7 @@ gitProperties {
 }
 
 dependencies {
+    implementation project(':common-service-core')
     implementation project(':onboarding-enabler-spring-v2')
 
     implementation libraries.spring_boot_starter

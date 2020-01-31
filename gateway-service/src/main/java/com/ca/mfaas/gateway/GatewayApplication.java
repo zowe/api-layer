@@ -37,14 +37,18 @@ import javax.annotation.Nonnull;
         "com.ca.mfaas.gateway",
         "com.ca.mfaas.product",
         "com.ca.mfaas.enable",
-        "com.ca.apiml.security.common"},
+        "com.ca.apiml.security.common"
+    },
     excludeFilters = {
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")})
+        @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")
+    }
+)
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
 @EnableEurekaClient
 @EnableWebSocket
 @EnableApiDiscovery
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
+
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(GatewayApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());

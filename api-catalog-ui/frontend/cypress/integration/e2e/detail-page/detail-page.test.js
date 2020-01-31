@@ -90,8 +90,6 @@ describe('>>> Detail page test', () => {
 
         cy.contains('Service Homepage').should('exist');
 
-        cy.get('pre.version').should('contain', '1.1.2');
-
         cy.get('pre.version').should('contain', 'OAS3');
 
         cy.contains('Swagger/OpenAPI JSON Document').should('exist');

@@ -17,6 +17,8 @@ import com.ca.mfaas.message.log.ApimlLogger;
 import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -61,7 +63,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                                        AuthenticationService authenticationService,
                                        DiscoveryClient discovery,
                                        ObjectMapper securityObjectMapper,
-                                       RestTemplate restTemplateWithoutKeystore) {
+                                       @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
         this.authConfigurationProperties = authConfigurationProperties;
         this.discovery = discovery;
         this.authenticationService = authenticationService;

@@ -20,6 +20,7 @@ public class EnvironmentConfiguration {
     private Credentials credentials;
     private GatewayServiceConfiguration gatewayServiceConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
+    private DiscoverableClientConfiguration discoverableClientConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
 }

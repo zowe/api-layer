@@ -17,25 +17,39 @@ Following platform is required to run the API Mediation Layer:
 
 Following tools are required to build and develop API Mediation Layer:
 
-Nodejs and npm are required to be installed globally to be able to build the API Catalog ui
+* Node.js and npm are required to be installed globally to be able to build the API Catalog UI
 
 ## Quick start
 
 1. Install the package manager `pnpm` globally in order to build the project:
-    
-        npm add -g pnpm
-    
-2. Install `concurrently` globally:
-   
-       npm install -g concurrently
-       
-3. Build all modules:
 
-       ./gradlew build
+    ```sh
+    npm add -g pnpm
+    ```
 
-4. Run all service on local machine:
+2. Install npm packages for the UI:
 
-       npm run api-layer
+    ```sh
+    cd api-catalog-ui/frontend/; pnpm install; cd ../..
+    ```
+
+3. Install `concurrently` globally:
+
+    ```sh
+    npm install -g concurrently
+    ```
+
+4. Build all modules:
+
+    ```sh
+    ./gradlew build
+    ```
+
+5. Run all service on local machine:
+
+    ```sh
+    npm run api-layer
+    ```
 
 ## Authentication service
 
@@ -44,12 +58,12 @@ The API Mediation Layer uses a dummy authentication provides as a default securi
 ### (Optional) z/OSMF Authentication
 
 Perform the following steps to use the real authentication service:
- 
+
 1. Configure a valid z/OSMF instance using the following sample configuration `config/local/api-defs/zosmf-sample.yml`.
 
 2. Modify [gateway-service.yml](config/local/gateway-service.yml) with a z/OSMF configuration
 
-```
+```yaml
 apiml:
     security:
         auth:
@@ -72,7 +86,9 @@ Unit tests for Java and TypeScript modules are executed as a part of the build p
 
 For the code coverage of all modules, run:
 
+```sh
     ./gradlew coverage
+```
 
 The code coverage for new code should be higher that 60% and should not be decreased for existing code.
 
@@ -80,11 +96,15 @@ The reports in HTML format are stored `build/reports/jacoco/test/html/index.html
 
 For the code coverage of a single Java module (for example `discovery-service`), run:
 
+```sh
     ./gradlew :discovery-service:jacocoTestReport
+```
 
 You can an individual test class by:
 
+```sh
     ./gradlew :discovery-service:test --tests com.ca.mfaas.discovery.staticdef.ServiceDefinitionProcessorTest
+```
 
 ## Run integration tests
 

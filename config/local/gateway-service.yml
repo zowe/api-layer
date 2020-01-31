@@ -9,6 +9,8 @@ apiml:
         auth:
             provider: dummy
             zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
+            passTicket:
+                timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
         ssl:
             verifySslCertificatesOfServices: true
     banner: console
@@ -17,6 +19,9 @@ spring:
     output:
         ansi:
             enabled: always
+    cache:
+        ehcache:
+            config: classpath:ehcache.xml
 
 server:
     ssl:

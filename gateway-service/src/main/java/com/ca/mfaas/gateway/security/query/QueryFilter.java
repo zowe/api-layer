@@ -10,6 +10,7 @@
 package com.ca.mfaas.gateway.security.query;
 
 import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
+import com.ca.apiml.security.common.error.InvalidCertificateException;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.apiml.security.common.token.TokenNotProvidedException;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
@@ -27,6 +28,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.cert.X509Certificate;
 
 /**
  * Filter for /query endpoint requests with JWT token.
@@ -35,17 +37,23 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final AuthenticationService authenticationService;
+    private final HttpMethod httpMethod;
+    private final boolean protectedByCertificate;
 
     public QueryFilter(
         String authEndpoint,
         AuthenticationSuccessHandler successHandler,
         AuthenticationFailureHandler failureHandler,
         AuthenticationService authenticationService,
+        HttpMethod httpMethod,
+        boolean protectedByCertificate,
         AuthenticationManager authenticationManager) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.authenticationService = authenticationService;
+        this.httpMethod = httpMethod;
+        this.protectedByCertificate = protectedByCertificate;
         this.setAuthenticationManager(authenticationManager);
     }
 
@@ -60,8 +68,16 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        if (!request.getMethod().equals(HttpMethod.GET.name())) {
+        if (!request.getMethod().equals(httpMethod.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
+        }
+
+        // Must be already authenticated by certificate
+        if (protectedByCertificate &&
+            (SecurityContextHolder.getContext().getAuthentication() == null ||
+                !(SecurityContextHolder.getContext().getAuthentication().getCredentials() instanceof X509Certificate) ||
+                !SecurityContextHolder.getContext().getAuthentication().isAuthenticated())) {
+            throw new InvalidCertificateException("Invalid certificate.");
         }
 
         String token = authenticationService.getJwtTokenFromRequest(request)

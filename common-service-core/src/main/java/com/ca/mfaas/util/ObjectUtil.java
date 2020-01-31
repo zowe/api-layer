@@ -11,7 +11,9 @@ package com.ca.mfaas.util;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 @Slf4j
@@ -27,6 +29,19 @@ public class ObjectUtil {
      */
     public static void requireNotNull(Object param, String message) {
         if (param == null) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    /**
+     * Check whether the specified object reference is not empty (null or empty string) and
+     * throws a {@link IllegalArgumentException} if it is.
+     *
+     * @param param   the object reference to check for empty
+     * @param message detail message to be used in the event
+     */
+    public static void requireNotEmpty(String param, String message) {
+        if (StringUtils.isEmpty(param)) {
             throw new IllegalArgumentException(message);
         }
     }
@@ -102,4 +117,24 @@ public class ObjectUtil {
         }
         return map1;
     }
+
+    /**
+     * Construct string describes name of method like <methodNames>(<types of arguments join with comma>)
+     * @param method Instance of method to make description
+     * @return String describing method with name and arguments types
+     */
+    public static String getMethodIdentifier(Method method) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(method.getName());
+        sb.append('(');
+
+        int i = 0;
+        for (final Class<?> clazz : method.getParameterTypes()) {
+            if (i++ > 0) sb.append(',');
+            sb.append(clazz);
+        }
+        sb.append(')');
+        return sb.toString();
+    }
+
 }

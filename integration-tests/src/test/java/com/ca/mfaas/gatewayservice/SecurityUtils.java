@@ -41,7 +41,7 @@ import static org.hamcrest.core.IsNot.not;
 public class SecurityUtils {
     final static String ZOSMF_TOKEN = "LtpaToken2";
 
-    private final static String GATEWAY_TOKEN = "apimlAuthenticationToken";
+    public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
     public final static String GATEWAY_LOGIN_ENDPOINT = "/auth/login";
     public final static String GATEWAY_BASE_PATH = "/api/v1/gateway";
     private final static String ZOSMF_LOGIN_ENDPOINT = "/zosmf/info";
@@ -57,7 +57,14 @@ public class SecurityUtils {
     private final static String zosmfHost = zosmfServiceConfiguration.getHost();
     private final static int zosmfPort = zosmfServiceConfiguration.getPort();
 
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+
     //@formatter:off
+    public static String gatewayToken() {
+        return gatewayToken(USERNAME, PASSWORD);
+    }
+
     public static String gatewayToken(String username, String password) {
         LoginRequest loginRequest = new LoginRequest(username, password);
 
@@ -68,8 +75,8 @@ public class SecurityUtils {
             .post(String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, GATEWAY_BASE_PATH, GATEWAY_LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_NO_CONTENT))
-            .cookie(GATEWAY_TOKEN, not(isEmptyString()))
-            .extract().cookie(GATEWAY_TOKEN);
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
+            .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
     }
 
     public static String zosmfToken(String username, String password) {

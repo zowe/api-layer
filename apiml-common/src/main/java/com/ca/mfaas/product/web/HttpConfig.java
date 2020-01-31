@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import java.util.function.Supplier;
 
 @Slf4j
 @Configuration
@@ -86,10 +87,18 @@ public class HttpConfig {
     @PostConstruct
     public void init() {
         try {
-            HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-                    .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
-                    .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
+            Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
+                HttpsConfig.builder()
+                    .protocol(protocol)
+                    .trustStore(trustStore).trustStoreType(trustStoreType).trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
+                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices);
+
+            HttpsConfig httpsConfig = httpsConfigSupplier.get()
+                .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
+                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).trustStore(trustStore)
+                .build();
+
+            HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();
 
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
@@ -99,10 +108,6 @@ public class HttpConfig {
             secureHostnameVerifier = factory.createHostnameVerifier();
             eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
 
-            HttpsConfig httpsConfigWithoutKeystore = HttpsConfig.builder().protocol(protocol).trustStore(trustStore)
-                    .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
-                    .trustStoreRequired(trustStoreRequired)
-                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient();
 
@@ -140,7 +145,9 @@ public class HttpConfig {
     }
 
     @Bean
-    public RestTemplate restTemplate() {
+    @Primary
+    @Qualifier("restTemplateWithKeystore")
+    public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
         return new RestTemplate(factory);
     }

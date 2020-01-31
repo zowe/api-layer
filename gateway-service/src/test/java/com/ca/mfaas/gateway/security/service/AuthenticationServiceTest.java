@@ -14,28 +14,44 @@ import com.ca.apiml.security.common.token.QueryResponse;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.apiml.security.common.token.TokenExpireException;
 import com.ca.apiml.security.common.token.TokenNotValidException;
+import com.ca.mfaas.gateway.config.CacheConfig;
 import com.ca.mfaas.security.SecurityUtils;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.Cookie;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {
+    CacheConfig.class,
+    AuthenticationServiceTest.Context.class
+})
 public class AuthenticationServiceTest {
 
     private static final String USER = "Me";
@@ -46,14 +62,22 @@ public class AuthenticationServiceTest {
     private Key privateKey;
     private PublicKey publicKey;
 
+    @Autowired
     private AuthenticationService authService;
+
+    @Autowired
     private AuthConfigurationProperties authConfigurationProperties;
 
-    @Mock
+    @Autowired
     private JwtSecurityInitializer jwtSecurityInitializer;
 
-    @Before
-    public void setUp() {
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private EurekaClient discoveryClient;
+
+    private void mockJwtSecurityInitializer() {
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         if (keyPair != null) {
             privateKey = keyPair.getPrivate();
@@ -62,9 +86,11 @@ public class AuthenticationServiceTest {
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
         when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+    }
 
-        authConfigurationProperties = new AuthConfigurationProperties();
-        authService = new AuthenticationService(authConfigurationProperties, jwtSecurityInitializer);
+    @Before
+    public void setUp() {
+        mockJwtSecurityInitializer();
     }
 
     @Test
@@ -109,7 +135,12 @@ public class AuthenticationServiceTest {
 
     @Test(expected = TokenNotValidException.class)
     public void shouldThrowExceptionWhenOccurUnexpectedException() {
-        authService.validateJwtToken(null);
+        authService.validateJwtToken((String) null);
+    }
+
+    @Test(expected = TokenNotValidException.class)
+    public void shouldThrowExceptionWhenOccurUnexpectedException2() {
+        authService.validateJwtToken((TokenAuthentication) null);
     }
 
     @Test
@@ -184,4 +215,112 @@ public class AuthenticationServiceTest {
             .signWith(ALGORITHM, secretKey)
             .compact();
     }
+
+    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int port, int securePort) {
+        InstanceInfo out = mock(InstanceInfo.class);
+        when(out.getInstanceId()).thenReturn(instanceId);
+        when(out.getHostName()).thenReturn(hostName);
+        when(out.getPort()).thenReturn(port);
+        when(out.getSecurePort()).thenReturn(securePort);
+        return out;
+    }
+
+    @Test
+    public void invalidateToken() {
+        TokenAuthentication tokenAuthentication;
+
+        reset(discoveryClient);
+        reset(restTemplate);
+
+        String jwt1 = authService.createJwtToken("user1", "domain1", "ltpa1");
+        assertFalse(authService.isInvalidated(jwt1));
+        tokenAuthentication = authService.validateJwtToken(jwt1);
+        assertTrue(tokenAuthentication.isAuthenticated());
+
+        InstanceInfo myInstance = mock(InstanceInfo.class);
+        when(myInstance.getInstanceId()).thenReturn("myInstance01");
+        ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
+        when(applicationInfoManager.getInfo()).thenReturn(myInstance);
+        when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
+
+        Application application = mock(Application.class);
+        List<InstanceInfo> instances = Arrays.asList(
+            createInstanceInfo("instance02", "hostname1", 10000, 10433),
+            createInstanceInfo("myInstance01", "localhost", 10000, 10433),
+            createInstanceInfo("instance03", "hostname2", 10001, 0)
+        );
+        when(application.getInstances()).thenReturn(instances);
+        when(discoveryClient.getApplication("gateway")).thenReturn(application);
+
+        authService.invalidateJwtToken(jwt1, true);
+        assertTrue(authService.isInvalidated(jwt1));
+        tokenAuthentication = authService.validateJwtToken(jwt1);
+        assertFalse(tokenAuthentication.isAuthenticated());
+        verify(restTemplate, times(2)).delete(anyString(), (Object[]) any());
+        verify(restTemplate).delete("https://hostname1:10433/auth/invalidate/{}", jwt1);
+        verify(restTemplate).delete("http://hostname2:10001/auth/invalidate/{}", jwt1);
+    }
+
+    @Test
+    public void invalidateTokenCache() {
+        reset(jwtSecurityInitializer);
+        mockJwtSecurityInitializer();
+
+        String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
+        String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
+
+        assertFalse(authService.isInvalidated(jwtToken01));
+        assertFalse(authService.isInvalidated(jwtToken02));
+
+        verify(jwtSecurityInitializer, never()).getJwtPublicKey();
+
+        assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
+        verify(jwtSecurityInitializer, times(1)).getJwtPublicKey();
+        assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
+        verify(jwtSecurityInitializer, times(1)).getJwtPublicKey();
+
+        assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
+        verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
+
+        authService.invalidateJwtToken(jwtToken01, false);
+        assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
+        verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
+
+        assertFalse(authService.validateJwtToken(jwtToken01).isAuthenticated());
+        verify(jwtSecurityInitializer, times(3)).getJwtPublicKey();
+    }
+
+    @Configuration
+    public static class Context {
+
+        @Autowired
+        private ApplicationContext applicationContext;
+
+        @Bean
+        public AuthConfigurationProperties getAuthConfigurationProperties() {
+            return new AuthConfigurationProperties();
+        }
+
+        @Bean
+        public JwtSecurityInitializer getJwtSecurityInitializer() {
+            return mock(JwtSecurityInitializer.class);
+        }
+
+        @Bean
+        public RestTemplate getRestTemplate() {
+            return mock(RestTemplate.class);
+        }
+
+        @Bean
+        public EurekaClient getDiscoveryClient() {
+            return mock(EurekaClient.class);
+        }
+
+        @Bean
+        public AuthenticationService getAuthenticationService() {
+            return new AuthenticationService(applicationContext, getAuthConfigurationProperties(), getJwtSecurityInitializer(), getDiscoveryClient(), getRestTemplate());
+        }
+
+    }
+
 }

@@ -12,6 +12,7 @@ package com.ca.mfaas.gateway.filters.pre;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
@@ -21,8 +22,11 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 /**
- * Extract LTPA token from JWT token and set it as a cookie when accessing zOSMF
+ * Extract LTPA token from JWT token and set it as a cookie when accessing z/OSMF
+ *
+ * @deprecated TODO: Remove after zowe-install-packaging is updated
  */
+@Deprecated
 public class ZosmfFilter extends ZuulFilter {
     private static final String ZOSMF = "zosmf";
 
@@ -40,7 +44,7 @@ public class ZosmfFilter extends ZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
 
         String serviceId = (String) context.get(SERVICE_ID_KEY);
-        return serviceId.toLowerCase().contains(ZOSMF);
+        return StringUtils.containsIgnoreCase(serviceId, ZOSMF);
     }
 
     @Override

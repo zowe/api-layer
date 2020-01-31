@@ -34,8 +34,7 @@ public class StaticApiRestController {
     }
 
     @PostMapping
-    public List<InstanceInfo> reload() {
-        registrationService.reloadServices();
-        return registrationService.getStaticInstances();
+    public StaticRegistrationResult reload() {
+        return registrationService.reloadServices();
     }
 }

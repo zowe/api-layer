@@ -34,6 +34,7 @@ import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
@@ -108,13 +109,24 @@ public class ApiDocV3ServiceTest {
     }
 
     @Test
-    public void givenInvalidJson_whenApiDocTransform_thenThrowExeption() throws IOException {
+    public void givenEmptyJson_whenApiDocTransform_thenThrowException() {
         String invalidJson = "";
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
         ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
 
         exceptionRule.expect(UnexpectedTypeException.class);
-        exceptionRule.expectMessage("Response is not an OpenAPI type object.");
+        exceptionRule.expectMessage("No swagger supplied");
+        apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+    }
+
+    @Test
+    public void givenInvalidJson_whenApiDocTransform_thenThrowException() {
+        String invalidJson = "nonsense";
+        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
+
+        exceptionRule.expect(UnexpectedTypeException.class);
+        exceptionRule.expectMessage("attribute openapi is not of type `object`");
         apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
     }
 
@@ -162,9 +174,8 @@ public class ApiDocV3ServiceTest {
             tag.setName(HIDDEN_TAG);
             openAPI.getTags().add(tag);
         }
-
-        openAPI.getPaths().put("/api1", new PathItem());
-        openAPI.getPaths().put("/api2", new PathItem());
+        openAPI.getPaths().put("/api1", new PathItem().$ref("test"));
+        openAPI.getPaths().put("/api2", new PathItem().$ref("test"));
         return openAPI;
     }
 

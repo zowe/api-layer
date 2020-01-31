@@ -9,81 +9,19 @@
  */
 package com.ca.mfaas.gateway.ribbon;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.client.config.CommonClientConfigKey;
-import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.Server;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
-import org.springframework.cloud.netflix.ribbon.apache.RibbonApacheHttpRequest;
-import org.springframework.cloud.netflix.ribbon.apache.RibbonApacheHttpResponse;
-import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URI;
 
-import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecureConnectionIfNeeded;
+import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.loadbalancer.Server;
 
-@Slf4j
-public class GatewayRibbonLoadBalancingHttpClient extends RibbonLoadBalancingHttpClient {
+import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 
-    private static final String HTTPS = "https";
-    private static final String HTTP = "http";
+public interface GatewayRibbonLoadBalancingHttpClient extends ServiceInstanceChooser, ServiceCacheEvict {
 
-    /**
-     * Ribbon load balancer
-     * @param secureHttpClient custom http client for our certificates
-     * @param config configuration details
-     * @param serverIntrospector introspector
-     */
-    public GatewayRibbonLoadBalancingHttpClient(CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector) {
-        super(secureHttpClient, config, serverIntrospector);
-    }
+    public InstanceInfo putInstanceInfo(String serviceId, String instanceId, InstanceInfo instanceInfo);
 
-    @Override
-    public URI reconstructURIWithServer(Server server, URI original) {
-        URI uriToSend;
-        URI updatedURI = updateToSecureConnectionIfNeeded(original, this.config, this.serverIntrospector,
-            server);
-        final URI uriWithServer = super.reconstructURIWithServer(server, updatedURI);
+    public InstanceInfo getInstanceInfo(String serviceId, String instanceId);
 
-        // if instance is not secure, override with http:
-        DiscoveryEnabledServer discoveryEnabledServer = (DiscoveryEnabledServer) server;
-        final InstanceInfo instanceInfo = discoveryEnabledServer.getInstanceInfo();
-        if (instanceInfo.isPortEnabled(InstanceInfo.PortType.UNSECURE)) {
-            log.debug("Resetting scheme to HTTP based on instance info of instance: " + instanceInfo.getId());
-            UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uriWithServer).scheme(HTTP);
-            uriToSend = uriComponentsBuilder.build(true).toUri();
-        } else {
-            uriToSend = uriWithServer;
-            if (uriWithServer.getScheme().equalsIgnoreCase("http")) {
-                uriToSend = UriComponentsBuilder.fromUri(uriWithServer).scheme(HTTPS).build(true).toUri();
-            }
-        }
-        return uriToSend;
-    }
-
-
-    @Override
-    public RibbonApacheHttpResponse execute(RibbonApacheHttpRequest request, IClientConfig configOverride) throws Exception {
-        configOverride.set(CommonClientConfigKey.IsSecure, HTTPS.equals(request.getURI().getScheme()));
-        final RequestConfig.Builder builder = RequestConfig.custom();
-        builder.setConnectTimeout(configOverride.get(
-            CommonClientConfigKey.ConnectTimeout, this.connectTimeout));
-        builder.setSocketTimeout(configOverride.get(
-            CommonClientConfigKey.ReadTimeout, this.readTimeout));
-        builder.setRedirectsEnabled(configOverride.get(
-            CommonClientConfigKey.FollowRedirects, this.followRedirects));
-        builder.setContentCompressionEnabled(false);
-
-        final RequestConfig requestConfig = builder.build();
-        final HttpUriRequest httpUriRequest = request.toRequest(requestConfig);
-        final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
-        return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
-    }
+    public URI reconstructURIWithServer(Server server, URI request);
 }

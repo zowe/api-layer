@@ -15,16 +15,19 @@ import com.ca.mfaas.gateway.security.service.AuthenticationService;
 import com.ca.mfaas.gateway.security.service.JwtSecurityInitializer;
 import com.ca.mfaas.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.discovery.EurekaClient;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.client.RestTemplate;
 
 import java.security.Key;
 import java.security.KeyPair;
@@ -45,7 +48,16 @@ public class SuccessfulQueryHandlerTest {
     private static final String LTPA = "ltpaToken";
 
     @Mock
+    private ApplicationContext applicationContext;
+
+    @Mock
     private JwtSecurityInitializer jwtSecurityInitializer;
+
+    @Mock
+    private RestTemplate restTemplate;
+
+    @Mock
+    private EurekaClient discoveryClient;
 
     @Before
     public void setup() {
@@ -61,7 +73,7 @@ public class SuccessfulQueryHandlerTest {
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
         }
-        AuthenticationService authenticationService = new AuthenticationService(authConfigurationProperties, jwtSecurityInitializer);
+        AuthenticationService authenticationService = new AuthenticationService(applicationContext, authConfigurationProperties, jwtSecurityInitializer, discoveryClient, restTemplate);
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
         when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
