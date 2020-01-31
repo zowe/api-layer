@@ -9,7 +9,7 @@
  */
 package com.ca.mfaas.gatewayservice;
 
-import static com.ca.apiml.security.common.service.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
+import static com.ca.mfaas.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static com.ca.mfaas.gatewayservice.SecurityUtils.*;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;

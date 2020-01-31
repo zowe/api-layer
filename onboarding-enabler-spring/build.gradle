@@ -1,0 +1,16 @@
+dependencies {
+    compile project(':apiml-logging')
+    compile project(':onboarding-enabler-java')
+
+    compile libraries.spring_boot_starter_actuator
+    compile libraries.springFox
+
+    implementation libraries.lombok
+
+    testImplementation libraries.spring_boot_starter_test
+    testImplementation libraries.mockito_core
+
+    annotationProcessor libraries.spring_boot_configuration_processor
+    annotationProcessor libraries.lombok
+    testCompile libraries.gson
+}

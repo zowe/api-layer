@@ -16,6 +16,7 @@ import com.netflix.loadbalancer.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClientName;
@@ -41,7 +42,7 @@ public class GatewayRibbonConfig {
     @Primary
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
-        CloseableHttpClient secureHttpClientWithoutKeystore,
+        @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
         EurekaClient discoveryClient,

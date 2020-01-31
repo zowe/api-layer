@@ -1,3 +1,34 @@
+# Following parameters must not be declared in this application.yml (in the artifact jar).
+#  On local installations they can be defined in externalized configuration provided by
+#    -Dspring.config.additional-location=additional_config_path
+#
+#    On MF they are provided by on command line with set of -Dkey=value system properties
+#    defined in startup script (read from parmlibs)
+#
+#    -Deureka.instance.metadata-map.discovery.service.title=\"${{PFX}}_DC_SERVICE_TITLE\"
+#    -Deureka.instance.metadata-map.discovery.service.description=\"${{PFX}}_DC_SERVICE_DESC\"
+#
+#    -Deureka.client.enabled=${{PFX}}_DC_DISC_ENABLED"
+#
+#    -Dapiml.service.id=${{PFX}}_DC_SERVICE_ID"
+#    -Dapiml.service.hostname=${{PFX}}_{{SYSN}}_HOSTNAME"
+#    -Dapiml.service.port=${{PFX}}_{{SRV}}_PORT"
+#    -Dapiml.service.discoveryServiceUrls=${{PFX}}_DS"
+#    -Dapiml.service.ipAddress=${{PFX}}_{{SYSN}}_IP_ADDRESS"
+#
+#    -DlogbackService={{procname}}"
+#
+# SSL/TLS configuration for Discoverable Client:
+#    -Dserver.ssl.enabled=true
+#    -Dserver.ssl.keyStore=${{PFX}}_SSL_KEY_STORE
+#    -Dserver.ssl.keyStoreType=${{PFX}}_SSL_KEY_STORE_TYPE
+#    -Dserver.ssl.keyStorePassword=${{PFX}}_SSL_KEY_STORE_PASSWORD
+#    -Dserver.ssl.keyAlias=${{PFX}}_SSL_KEY_ALIAS
+#    -Dserver.ssl.keyPassword=${{PFX}}_SSL_KEY_PASSWORD
+#    -Dserver.ssl.trustStore=${{PFX}}_SSL_TRUST_STORE
+#    -Dserver.ssl.trustStoreType=${{PFX}}_SSL_TRUST_STORE_TYPE
+#    -Dserver.ssl.trustStorePassword=${{PFX}}_SSL_TRUST_STORE_PASSWORD
+
 logging:
     level:
         ROOT: INFO
@@ -11,107 +42,95 @@ logging:
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
 
-apiml:
-    security:
-        ssl:
-            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-    # The `apiml` node contains API Mediation Layer specific configuration
-    service:
-        # The `apiml.service` node contains information required by any APIML service
-        id: discoverableclient  # Service ID of this service
-        hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
-        port: 10012  # Default port name for discoverable-clinet service
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        preferIpAddress: false
-
 spring:
     application:
-        name: ${apiml.service.id}
-    cloud:
-        client:
-            hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
+        name: ${apiml.service.id} # discoverableclient
     mvc:
         throw-exception-if-no-handler-found: true
     output:
         ansi:
             enabled: detect
 
+apiml:
+    enabled: ${eureka.client.enabled}
+    enableUrlEncodedCharacters: true
+    service:
+        serviceId: ${apiml.service.id}
+        title: ${eureka.instance.metadata-map.discovery.service.title} # Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
+        description:  ${eureka.instance.metadata-map.discovery.service.description} # Sample API services to demonstrate Spring Integration Enabler
+
+        scheme: https
+        # Will be defined by -D on MF: hostname: ${server.hostname}
+        # Will be defined by -D on MF: port: ${server.port}
+        serviceIpAddress: ${apiml.service.ipAddress}
+
+        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+        contextPath: /${apiml.service.id}
+
+        homePageRelativeUrl: ${apiml.service.contextPath}
+        statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
+        healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
+
+        # Will be defined by -D on MF: discoveryServiceUrls: ${apiml.service.discoveryServiceUrls} # https://localhost:10011/eureka/
+
+        routes:
+            -   gateway-url: "ui/v1"
+                service-url: ${apiml.service.contextPath}
+            -   gateway-url: "api/v1"
+                service-url: ${apiml.service.contextPath}/api/v1
+            -   gateway-url: "ws/v1"
+                service-url: ${apiml.service.contextPath}/ws
+        apiInfo:
+            -   apiId: org.zowe.discoverableclient
+                version: 1.0.0
+                gatewayUrl: api/v1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                documentationUrl: https://www.zowe.org
+        catalog:
+            tile:
+                id: cademoapps
+                title: Sample API Mediation Layer Applications
+                description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+                version: 1.0.1
+        ssl:
+            enabled: ${server.ssl.enabled}
+            verifySslCertificatesOfServices: true
+            ciphers: ${server.ssl.ciphers}
+            protocol: ${server.ssl.protocol}
+            enabled-protocols: ${server.ssl.protocol}
+            keyStoreType: ${server.ssl.keyStoreType}
+            trustStoreType: ${server.ssl.trustStoreType}
+
+            ### DEFINE FOLLOWING PROPERTIES IN EXTERNAL CONFIGURATION
+            keyAlias: ${server.ssl.keyAlias} #localhost-blah
+            keyPassword: ${server.ssl.keyPassword} #password-blah
+            keyStore: ${server.ssl.keyStore} #keystore/localhost/localhost.keystore.p12-blah
+            keyStorePassword: ${server.ssl.keyStorePassword} #password-blah
+            trustStore: ${server.ssl.trustStore} #keystore/localhost/localhost.truststore.p12-blah
+            trustStorePassword: ${server.ssl.trustStorePassword} #password-blah
+
 server:
-    address: ${apiml.service.ipAddress}
-    port: ${apiml.service.port}
+    scheme: ${apiml.service.scheme}
+    hostname: ${apiml.service.hostname} #localhost # Hostname that is advertised in Eureka. Default is valid only for localhost
+    port: ${apiml.service.port} #10012         # Default port name for discoverable-client service
+    address: ${apiml.service.ipAddress} #127.0.0.1
+
     servlet:
-        contextPath: /discoverableclient
+        contextPath: /${apiml.service.id}
+
     ssl:
         enabled: true
         protocol: TLSv1.2
         enabled-protocols: TLSv1.2
-        ciphers: ${apiml.security.ssl.ciphers}
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
         keyStoreType: PKCS12
         trustStoreType: PKCS12
+
     compression:
         mime-types: image/png
         enabled: true
         min-response-size: 500
 
-eureka:
-    instance:
-        hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
-        port: ${server.port}
-        securePort: ${server.port}
-        nonSecurePortEnabled: false
-        securePortEnabled: true
-        preferIpAddress: ${apiml.service.preferIpAddress}
-        homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}
-        statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/info
-        healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${server.servlet.contextPath}/application/health
-        metadata-map:
-            routed-services:
-                ui_v1:
-                    gateway-url: "ui/v1"
-                    service-url: ${server.servlet.contextPath}
-                api_v1:
-                    gateway-url: "api/v1"
-                    service-url: ${server.servlet.contextPath}/api/v1
-                ws_v1:
-                    gateway-url: "ws/v1"
-                    service-url: ${server.servlet.contextPath}/ws
-            apiml:
-                enableUrlEncodedCharacters: true
-                apiInfo:
-                    - apiId: org.zowe.discoverableclient
-                      gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/api-doc
-                      documentationUrl: https://www.zowe.org
-            mfaas:
-                api-info:
-                    apiVersionProperties:
-                        v1:
-                            title: Service Integration Enabler V2 Sample Application API © #Copyright is for UTF8 encoding check
-                            description: API of sample API service showing how to integrate a Spring Boot v2.x application
-                            version: 1.0.0
-                            basePackage: com.ca.mfaas.client.api
-                discovery:
-                    catalogUiTile:
-                        id: cademoapps
-                        title: Sample API Mediation Layer Applications
-                        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
-                        version: 1.0.1
-                    enableApiDoc: true
-                    service:
-                        title: Service Integration Enabler V2 Sample Application (Spring Boot 2.x) © #Copyright is for UTF8 encoding check
-                        description: Sample API service showing how to integrate a Spring Boot v2.x application
-    client:
-        fetchRegistry: true
-        registerWithEureka: true
-        region: default
-        serviceUrl:
-            defaultZone: ${apiml.service.discoveryServiceUrls}
-        healthcheck:
-            enabled: true
-
-##############################################################################################
 management:
     endpoints:
         web:

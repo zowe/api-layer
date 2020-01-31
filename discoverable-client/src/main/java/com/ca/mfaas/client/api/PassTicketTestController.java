@@ -9,8 +9,8 @@
  */
 package com.ca.mfaas.client.api;
 
-import com.ca.apiml.security.common.service.IRRPassTicketEvaluationException;
-import com.ca.apiml.security.common.service.PassTicketService;
+import com.ca.mfaas.passticket.IRRPassTicketEvaluationException;
+import com.ca.mfaas.passticket.PassTicketService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;

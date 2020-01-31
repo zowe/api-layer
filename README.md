@@ -74,6 +74,7 @@ apiml:
 Ensure that the z/OSMF certificate is trusted by APIML. You have two options:
 
 1. Import the certificate to the APIML keystore using `scripts/apiml_cm.sh --action trust` as described at [Trust certificates of other services](/keystore/README.md#Trust-certificates-of-other-services)
+   **The apiml_cm.sh script has been moved to [zowe-install-packaging repository](https://github.com/zowe/zowe-install-packaging/blob/staging/bin/apiml_cm.sh)**
 
 2. Disable certificate validation. For more information, see [Disabling certificate validation on localhost](/keystore/README.md#Disabling-certificate-validation-on-localhost)
 

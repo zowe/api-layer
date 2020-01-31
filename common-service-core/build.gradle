@@ -4,6 +4,7 @@ dependencies {
     compile(libraries.http_core)
     compile(libraries.jackson_annotations)
     compile(libraries.jackson_databind)
+    compile libraries.logback_classic
     compile(libraries.slf4j_api)
     compile(libraries.snakeyaml)
 

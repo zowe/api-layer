@@ -1,0 +1,64 @@
+server:
+    port: 10043
+    ssl:
+        enabled: true
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        verifySslCertificatesOfServices: true
+        protocol: TLSv1.2
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+apiml:
+    enabled: true
+    service:
+        hostname: localhost
+        ipAddress: 127.0.0.1
+        discoveryServiceUrls: https://localhost:10011/eureka/
+        # Following values are default values that can be changed by user:
+        serviceId: discoverableclient2
+        title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
+        description:  Sample API services to demonstrate Spring Integration Enabler
+        serviceIpAddress: 127.0.0.2
+        catalog:
+          tile:
+            id: cademoapps
+            title: Sample API Mediation Layer Applications
+            description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+            version: 1.0.0
+        # Following values are provided by the developer:
+        scheme: https
+        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${server.port}
+        homePageRelativeUrl: ${server.servlet.contextPath}
+        statusPageRelativeUrl: actuator/info
+        healthCheckRelativeUrl: actuator/health
+        routes:
+            -   gatewayUrl: ui/v1
+                serviceUrl: ${server.servlet.contextPath}
+            -   gatewayUrl: api/v1
+                serviceUrl: ${server.servlet.contextPath}/api/v1
+            -   gatewayUrl: ws/v1
+                serviceUrl: ${server.servlet.contextPath}/ws
+        apiInfo:
+            -   apiId: org.zowe.discoverableclient
+                gatewayUrl: api/v1
+                version: 1.0.0
+                swaggerUrl: https://${apiml.service.hostname}:${server.port}${server.servlet.contextPath}/v1/api-docs
+                documentationUrl: https://www.zowe.org
+        ssl:
+            enabled: true
+            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+            verifySslCertificatesOfServices: true
+            protocol: TLSv1.2
+            keyAlias: localhost
+            keyPassword: password
+            keyStore: keystore/localhost/localhost.keystore.p12
+            keyStorePassword: password
+            keyStoreType: PKCS12
+            trustStore: keystore/localhost/localhost.truststore.p12
+            trustStorePassword: password
+            trustStoreType: PKCS12
