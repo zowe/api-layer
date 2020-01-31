@@ -79,9 +79,9 @@ public class ZosmfAuthenticationProviderTest {
         restTemplate = mock(RestTemplate.class);
         zosmfInstance = createInstanceInfo(SERVICE_ID, HOST, PORT);
 
-        doAnswer(new Answer() {
+        doAnswer(new Answer<TokenAuthentication>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public TokenAuthentication answer(InvocationOnMock invocation) {
                 return TokenAuthentication.createAuthenticated(invocation.getArgument(0), invocation.getArgument(1));
             }
         }).when(authenticationService).createTokenAuthentication(anyString(), anyString());
@@ -120,7 +120,7 @@ public class ZosmfAuthenticationProviderTest {
 
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         Authentication tokenAuthentication
             = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
@@ -145,7 +145,7 @@ public class ZosmfAuthenticationProviderTest {
 
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Username or password are invalid.");
@@ -162,7 +162,7 @@ public class ZosmfAuthenticationProviderTest {
 
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         exception.expect(ServiceNotAccessibleException.class);
         exception.expectMessage("z/OSMF instance not found or incorrectly configured.");
@@ -174,7 +174,7 @@ public class ZosmfAuthenticationProviderTest {
     public void noZosmfServiceId() {
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("The parameter 'zosmfServiceId' is not configured.");
@@ -200,7 +200,7 @@ public class ZosmfAuthenticationProviderTest {
 
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("z/OSMF domain cannot be read.");
@@ -228,7 +228,7 @@ public class ZosmfAuthenticationProviderTest {
 
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("z/OSMF domain cannot be read.");
@@ -255,7 +255,7 @@ public class ZosmfAuthenticationProviderTest {
 
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         exception.expect(BadCredentialsException.class);
         exception.expectMessage("Username or password are invalid.");
@@ -282,7 +282,7 @@ public class ZosmfAuthenticationProviderTest {
 
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         Authentication tokenAuthentication
             = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
@@ -304,7 +304,7 @@ public class ZosmfAuthenticationProviderTest {
             .thenThrow(RestClientException.class);
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         exception.expect(AuthenticationServiceException.class);
         exception.expectMessage("A failure occurred when authenticating.");
@@ -326,7 +326,7 @@ public class ZosmfAuthenticationProviderTest {
             .thenThrow(ResourceAccessException.class);
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         exception.expect(ServiceNotAccessibleException.class);
         exception.expectMessage("Could not get an access to z/OSMF service.");
@@ -343,7 +343,7 @@ public class ZosmfAuthenticationProviderTest {
         when(discovery.getApplication(ZOSMF)).thenReturn(application);
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
-            new ZosmfAuthenticationProvider(authenticationService, zosmfService, mapper);
+            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
         boolean supports = zosmfAuthenticationProvider.supports(usernamePasswordAuthentication.getClass());
         assertTrue(supports);

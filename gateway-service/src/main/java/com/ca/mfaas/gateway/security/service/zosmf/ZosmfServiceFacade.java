@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
@@ -54,7 +55,7 @@ public class ZosmfServiceFacade extends AbstractZosmfService {
     public ZosmfServiceFacade(
         final AuthConfigurationProperties authConfigurationProperties,
         final DiscoveryClient discovery,
-        final RestTemplate restTemplate,
+        final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         final ObjectMapper securityObjectMapper,
         final ApplicationContext applicationContext,
         final List<ZosmfService> implementations
@@ -62,7 +63,7 @@ public class ZosmfServiceFacade extends AbstractZosmfService {
         super(
             authConfigurationProperties,
             discovery,
-            restTemplate,
+            restTemplateWithoutKeystore,
             securityObjectMapper
         );
         this.applicationContext = applicationContext;
@@ -86,10 +87,12 @@ public class ZosmfServiceFacade extends AbstractZosmfService {
         headers.add(ZOSMF_CSRF_HEADER, "");
 
         try {
-            final ResponseEntity<ZosmfInfo> info = restTemplate.exchange(
+            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(headers), ZosmfInfo.class
             );
-            return info.getBody().getVersion();
+            final ZosmfInfo body = info.getBody();
+            if (body == null) return 0;
+            return body.getVersion();
         } catch (RuntimeException re) {
             meProxy.evictCaches();
             throw handleExceptionOnCall(url, re);

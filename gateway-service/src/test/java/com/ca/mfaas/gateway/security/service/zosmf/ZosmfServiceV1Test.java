@@ -196,7 +196,7 @@ public class ZosmfServiceV1Test {
     public void testInvalidate() {
         ZosmfServiceV1 service = new ZosmfServiceV1(null, null, null, null);
         service.invalidate(null, null);
-        assertNull(service.restTemplate);
+        assertNull(service.restTemplateWithoutKeystore);
     }
 
     @Test

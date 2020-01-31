@@ -42,18 +42,18 @@ public abstract class AbstractZosmfService implements ZosmfService {
 
     protected final AuthConfigurationProperties authConfigurationProperties;
     protected final DiscoveryClient discovery;
-    protected final RestTemplate restTemplate;
+    protected final RestTemplate restTemplateWithoutKeystore;
     protected final ObjectMapper securityObjectMapper;
 
     public AbstractZosmfService(
         AuthConfigurationProperties authConfigurationProperties,
         DiscoveryClient discovery,
-        RestTemplate restTemplate,
+        RestTemplate restTemplateWithoutKeystore,
         ObjectMapper securityObjectMapper
     ) {
         this.authConfigurationProperties = authConfigurationProperties;
         this.discovery = discovery;
-        this.restTemplate = restTemplate;
+        this.restTemplateWithoutKeystore = restTemplateWithoutKeystore;
         this.securityObjectMapper = securityObjectMapper;
     }
 

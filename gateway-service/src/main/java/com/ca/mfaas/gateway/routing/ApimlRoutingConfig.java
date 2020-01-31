@@ -39,16 +39,13 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    public EncodedCharactersFilter encodedCharactersFilterFilter(DiscoveryClient discovery) { return new EncodedCharactersFilter(discovery); }
+    public EncodedCharactersFilter encodedCharactersFilterFilter(DiscoveryClient discovery) {
+        return new EncodedCharactersFilter(discovery);
+    }
 
     @Bean
     public SlashFilter slashFilter() {
         return new SlashFilter();
-    }
-
-    @Bean
-    public ServiceAuthenticationFilter serviceAuthenticationFilter() {
-        return new ServiceAuthenticationFilter();
     }
 
     @Bean

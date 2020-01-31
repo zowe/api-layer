@@ -42,7 +42,7 @@ public class ZosmfServiceV1 extends AbstractZosmfService {
         headers.add(ZOSMF_CSRF_HEADER, "");
 
         try {
-            final ResponseEntity<String> responseEntity = restTemplate.exchange(
+            final ResponseEntity<String> responseEntity = restTemplateWithoutKeystore.exchange(
                 url,
                 HttpMethod.GET,
                 new HttpEntity<>(null, headers),
@@ -62,7 +62,7 @@ public class ZosmfServiceV1 extends AbstractZosmfService {
         headers.add(HttpHeaders.COOKIE, type.getCookieName() + "=" + token);
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(
+            ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(
                 url,
                 HttpMethod.GET,
                 new HttpEntity<>(null, headers),

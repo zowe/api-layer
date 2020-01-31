@@ -61,8 +61,8 @@ public interface ZosmfService {
     @Getter
     public enum TokenType {
 
-        JWT("jwtToken"),
-        LTPA("LtpaToken2")
+            JWT("jwtToken"),
+            LTPA("LtpaToken2")
 
         ;
 

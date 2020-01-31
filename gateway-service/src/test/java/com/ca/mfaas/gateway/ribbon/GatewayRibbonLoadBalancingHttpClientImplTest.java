@@ -21,6 +21,7 @@ import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.loadbalancer.reactive.ExecutionInfo;
 import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.loadbalancer.reactive.LoadBalancerCommand;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
 import lombok.Getter;
 import org.apache.http.impl.client.CloseableHttpClient;
