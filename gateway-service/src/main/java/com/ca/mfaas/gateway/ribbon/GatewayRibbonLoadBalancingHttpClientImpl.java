@@ -22,7 +22,6 @@ import com.netflix.loadbalancer.reactive.ExecutionContext;
 import com.netflix.loadbalancer.reactive.ExecutionInfo;
 import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.loadbalancer.reactive.LoadBalancerCommand;
-import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -94,13 +93,12 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
     @Override
     public URI reconstructURIWithServer(Server server, URI original) {
         URI uriToSend;
-        URI updatedURI = updateToSecureConnectionIfNeeded(original, this.config, this.serverIntrospector,
-            server);
+        URI updatedURI = updateToSecureConnectionIfNeeded(original, this.config, this.serverIntrospector, server);
         final URI uriWithServer = super.reconstructURIWithServer(server, updatedURI);
 
         // if instance is not secure, override with http:
-        DiscoveryEnabledServer discoveryEnabledServer = (DiscoveryEnabledServer) server;
-        final InstanceInfo instanceInfo = discoveryEnabledServer.getInstanceInfo();
+        final Server.MetaInfo metaInfo = server.getMetaInfo();
+        final InstanceInfo instanceInfo = getInstanceInfo(metaInfo.getServiceIdForDiscovery(), metaInfo.getInstanceId());
         if (instanceInfo.isPortEnabled(InstanceInfo.PortType.UNSECURE)) {
             log.debug("Resetting scheme to HTTP based on instance info of instance: " + instanceInfo.getId());
             UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromUri(uriWithServer).scheme(HTTP);
@@ -114,10 +112,8 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
         return uriToSend;
     }
 
-
     @Override
     public RibbonApacheHttpResponse execute(RibbonApacheHttpRequest request, IClientConfig configOverride) throws Exception {
-        RibbonApacheHttpRequest sendRequest = null;
         configOverride.set(CommonClientConfigKey.IsSecure, HTTPS.equals(request.getURI().getScheme()));
         final RequestConfig.Builder builder = RequestConfig.custom();
         builder.setConnectTimeout(configOverride.get(
@@ -129,14 +125,6 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
         builder.setContentCompressionEnabled(false);
 
         final RequestConfig requestConfig = builder.build();
-        if (HTTPS.equals(request.getURI().getScheme())) {
-            final URI secureUri = UriComponentsBuilder.fromUri(request.getUri())
-                .scheme(HTTPS).build().toUri();
-            sendRequest = request.withNewUri(secureUri);
-        }
-        if (sendRequest == null) {
-            sendRequest = request;
-        }
         final HttpUriRequest httpUriRequest = request.toRequest(requestConfig);
         final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
         return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
@@ -214,7 +202,7 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
              *
              * Now it updates only headers, but could be extended for another values in future.
              *
-             * @param context
+             * @param context context of treated call
              */
             private void updateRequestByZuulChanges(ExecutionContext<Object> context) {
                 final Map<String, String> newHeaders = RequestContext.getCurrentContext().getZuulRequestHeaders();
