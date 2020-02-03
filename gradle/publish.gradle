@@ -47,7 +47,7 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
     publishing {
         publications {
             mavenJava(MavenPublication) {
-                groupId 'com.ca.mfaas.sdk'
+                groupId 'org.zowe.apiml.sdk'
                 version rootProject.version
                 if (project.name in springBootEnablers) {
                     if (project.name.contains("spring-v1")) {
@@ -81,7 +81,7 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
             attributes "Implementation-Title": project.name
             attributes "Implementation-Version": rootProject.version
             attributes "Implementation-Vendor": "CA, Inc."
-            attributes "Implementation-Vendor-Id": "com.ca.mfaas.sdk"
+            attributes "Implementation-Vendor-Id": "org.zowe.apiml.sdk"
         }
     }
 

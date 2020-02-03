@@ -62,7 +62,7 @@ task startUpCheck(type: Test) {
 
     systemProperties System.properties
     useJUnit {
-        includeCategories 'com.ca.mfaas.util.categories.StartupCheck'
+        includeCategories 'org.zowe.apiml.util.categories.StartupCheck'
     }
     outputs.upToDateWhen { false }
 }
@@ -73,7 +73,7 @@ task runWebsocketTests(type: Test) {
 
     systemProperties System.properties
     useJUnit {
-        includeCategories 'com.ca.mfaas.util.categories.WebsocketTest'
+        includeCategories 'org.zowe.apiml.util.categories.WebsocketTest'
     }
     outputs.upToDateWhen { false }
 }
@@ -86,9 +86,9 @@ task runIntegrationTests(type: Test) {
     systemProperties System.properties
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.util.categories.StartupCheck',
-            'com.ca.mfaas.util.categories.SlowTests',
-            'com.ca.mfaas.util.categories.AdditionalLocalTest'
+            'org.zowe.apiml.util.categories.StartupCheck',
+            'org.zowe.apiml.util.categories.SlowTests',
+            'org.zowe.apiml.util.categories.AdditionalLocalTest'
         )
     }
 }
@@ -101,10 +101,10 @@ task runLocalIntegrationTests(type: Test) {
     systemProperties System.getProperties()
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.util.categories.StartupCheck',
-            'com.ca.mfaas.util.categories.SlowTests',
-            'com.ca.mfaas.util.categories.MainframeDependentTests',
-            'com.ca.mfaas.util.categories.AdditionalLocalTest'
+            'org.zowe.apiml.util.categories.StartupCheck',
+            'org.zowe.apiml.util.categories.SlowTests',
+            'org.zowe.apiml.util.categories.MainframeDependentTests',
+            'org.zowe.apiml.util.categories.AdditionalLocalTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -118,9 +118,9 @@ task runAllLocalIntegrationTests(type: Test) {
     systemProperties System.getProperties()
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.util.categories.StartupCheck',
-            'com.ca.mfaas.util.categories.SlowTests',
-            'com.ca.mfaas.util.categories.MainframeDependentTests'
+            'org.zowe.apiml.util.categories.StartupCheck',
+            'org.zowe.apiml.util.categories.SlowTests',
+            'org.zowe.apiml.util.categories.MainframeDependentTests'
         )
     }
     outputs.upToDateWhen { false }
@@ -134,8 +134,8 @@ task runAllIntegrationTests(type: Test) {
     systemProperties System.properties
     useJUnit {
         excludeCategories(
-            'com.ca.mfaas.util.categories.StartupCheck',
-            'com.ca.mfaas.util.categories.AdditionalLocalTest'
+            'org.zowe.apiml.util.categories.StartupCheck',
+            'org.zowe.apiml.util.categories.AdditionalLocalTest'
         )
     }
     outputs.upToDateWhen { false }

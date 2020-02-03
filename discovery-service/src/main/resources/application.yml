@@ -1,8 +1,8 @@
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: INFO
-        com.ca.mfaas.discovery.GatewayNotifier: OFF
+        org.zowe.apiml: INFO
+        org.zowe.apiml.discovery.GatewayNotifier: OFF
         org.springframework: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
@@ -129,8 +129,8 @@ management:
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: DEBUG
-        com.ca.mfaas.discovery.GatewayNotifier: INFO
+        org.zowe.apiml: DEBUG
+        org.zowe.apiml.discovery.GatewayNotifier: INFO
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
