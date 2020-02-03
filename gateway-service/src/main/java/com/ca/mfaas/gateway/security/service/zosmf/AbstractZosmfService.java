@@ -18,10 +18,13 @@ import com.ca.mfaas.util.EurekaUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.netflix.discovery.DiscoveryClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -48,7 +51,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
     public AbstractZosmfService(
         AuthConfigurationProperties authConfigurationProperties,
         DiscoveryClient discovery,
-        RestTemplate restTemplateWithoutKeystore,
+        @Qualifier("restTemplateWithKeystore") RestTemplate restTemplateWithoutKeystore,
         ObjectMapper securityObjectMapper
     ) {
         this.authConfigurationProperties = authConfigurationProperties;
@@ -97,6 +100,10 @@ public abstract class AbstractZosmfService implements ZosmfService {
             return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         }
 
+        if (re instanceof HttpClientErrorException.Unauthorized) {
+            return new BadCredentialsException("Username or password are invalid.");
+        }
+
         if (re instanceof RestClientException) {
             apimlLog.log("apiml.security.generic", re.getMessage(), url);
             return new AuthenticationServiceException("A failure occurred when authenticating.", re);
@@ -114,6 +121,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
      */
     protected String readDomain(String content) {
         try {
+            if (content == null) return null;
             ObjectNode zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);
 
             return Optional.ofNullable(zosmfNode)
@@ -152,9 +160,11 @@ public abstract class AbstractZosmfService implements ZosmfService {
     protected AuthenticationResponse getAuthenticationResponse(ResponseEntity<String> responseEntity) {
         final List<String> cookies = responseEntity.getHeaders().get(HttpHeaders.SET_COOKIE);
         final EnumMap<TokenType, String> tokens = new EnumMap<>(TokenType.class);
-        for (final TokenType tokenType : TokenType.values()) {
-            final String token = readTokenFromCookie(cookies, tokenType.getCookieName());
-            if (token != null) tokens.put(tokenType, token);
+        if (cookies != null) {
+            for (final TokenType tokenType : TokenType.values()) {
+                final String token = readTokenFromCookie(cookies, tokenType.getCookieName());
+                if (token != null) tokens.put(tokenType, token);
+            }
         }
         final String domain = readDomain(responseEntity.getBody());
         return new AuthenticationResponse(domain, tokens);

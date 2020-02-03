@@ -15,6 +15,7 @@ import com.ca.apiml.security.common.token.TokenNotValidException;
 import com.ca.mfaas.gateway.security.service.ZosmfService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,10 +33,10 @@ public class ZosmfServiceV2 extends AbstractZosmfService {
     public ZosmfServiceV2(
         AuthConfigurationProperties authConfigurationProperties,
         DiscoveryClient discovery,
-        RestTemplate restTemplate,
+        @Qualifier("restTemplateWithKeystore") RestTemplate restTemplateWithKeystore,
         ObjectMapper securityObjectMapper
     ) {
-        super(authConfigurationProperties, discovery, restTemplate, securityObjectMapper);
+        super(authConfigurationProperties, discovery, restTemplateWithKeystore, securityObjectMapper);
     }
 
     @Override

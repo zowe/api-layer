@@ -10,12 +10,14 @@
 package com.ca.mfaas.gateway.security.service.zosmf;
 
 import com.ca.apiml.security.common.config.AuthConfigurationProperties;
+import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
 import com.ca.mfaas.gateway.security.service.ZosmfService;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -45,7 +47,7 @@ import java.util.List;
  */
 @Primary
 @Service
-public class ZosmfServiceFacade extends AbstractZosmfService {
+public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceCacheEvict {
 
     protected final ApplicationContext applicationContext;
     protected final List<ZosmfService> implementations;
@@ -132,6 +134,18 @@ public class ZosmfServiceFacade extends AbstractZosmfService {
     @Override
     public boolean matchesVersion(int version) {
         return false;
+    }
+
+    @Override
+    public void evictCacheAllService() {
+        meProxy.evictCaches();
+    }
+
+    @Override
+    public void evictCacheService(String serviceId) {
+        if (StringUtils.equalsIgnoreCase(getZosmfServiceId(), serviceId)) {
+            meProxy.evictCaches();
+        }
     }
 
     @Data

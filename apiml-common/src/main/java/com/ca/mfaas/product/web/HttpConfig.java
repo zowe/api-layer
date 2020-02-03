@@ -153,6 +153,7 @@ public class HttpConfig {
     }
 
     @Bean
+    @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
         return new RestTemplate(factory);
