@@ -10,6 +10,10 @@
 
 package org.zowe.apiml.gateway.filters.pre;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import com.netflix.zuul.ZuulFilter;
@@ -94,15 +98,16 @@ public class EncodedCharactersFilter extends ZuulFilter {
     }
 
     private void rejectRequest(RequestContext ctx) {
+        String response;
         Message message = messageService.createMessage("apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
         apimlLog.log("apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
         ctx.setSendZuulResponse(false);
         ctx.addZuulResponseHeader("Content-Type", "application/json");
         ctx.setResponseStatusCode(HttpStatus.BAD_REQUEST.value());
-        String response = null;
         try {
             response = new ObjectMapper().writeValueAsString(message.mapToView());
         } catch (JsonProcessingException e) {
+            response = message.mapToReadableText();
             log.debug("Could not convert response to JSON", e);
         }
         ctx.setResponseBody(response);

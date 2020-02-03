@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway.filters.pre;
 
-import com.ca.mfaas.message.core.MessageService;
-import com.ca.mfaas.message.yaml.YamlMessageService;
 import com.netflix.zuul.context.RequestContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +21,8 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
