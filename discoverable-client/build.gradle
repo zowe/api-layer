@@ -2,12 +2,10 @@ buildscript {
     repositories mavenRepositories
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gradleGitPropertiesVersion}")
     }
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'com.gorylenko.gradle-git-properties'
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file
@@ -26,26 +24,17 @@ springBoot {
     }
 }
 
-gitProperties {
-    gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
-}
-
 dependencies {
     implementation project(':onboarding-enabler-spring-v2')
 
+    implementation libraries.springFox
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
 
-    implementation libraries.bootstrap
-    implementation libraries.jquery
-
     implementation libraries.gson
-
-    compileOnly libraries.lombok
+    implementation libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
 }
-
-bootJar.archiveName = "${bootJar.baseName}.jar"

@@ -1,5 +1,6 @@
 buildscript {
-       repositories mavenRepositories
+    repositories mavenRepositories
+
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
@@ -24,23 +25,11 @@ sourceSets {
 }
 
 dependencies {
-    compile project(':onboarding-enabler-spring')
+    compile project(':apiml-utility')
+    compile project(':onboarding-enabler-java')
 
-    compile libraries.spring_boot_starter_actuator
-
-    compileOnly libraries.lombok
+    implementation libraries.lombok
 
     testCompile libraries.spring_boot_starter_test
-    testCompile libraries.javax_servlet_api
-    testCompile libraries.gson
-    testCompile libraries.powermock_api_mockito2
-    testCompile libraries.power_mock_junit4
-    testCompile libraries.power_mock_junit4_rule
-    testCompile libraries.lombok
 }
 
-/*
-sonarqube {
-    skipProject = true
-}
-*/
