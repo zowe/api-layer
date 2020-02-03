@@ -12,8 +12,6 @@ package org.zowe.apiml.discoveryservice;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
-import org.zowe.apiml.util.config.TlsConfiguration;
-import com.netflix.discovery.shared.transport.jersey.SSLSocketFactoryAdapter;
 import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
@@ -27,7 +25,7 @@ import org.junit.Test;
 import java.net.URI;
 import java.util.*;
 
-import static com.ca.mfaas.gatewayservice.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;

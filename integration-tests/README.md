@@ -87,5 +87,5 @@ Start the suite of slow tests by executing the following shell script:
 ## Running a Specific Test
 
 ```sh
-./gradlew :integration-tests:runIntegrationTests --tests com.ca.mfaas.gatewayservice.PassTicketTest
+./gradlew :integration-tests:runIntegrationTests --tests org.zowe.apiml.gatewayservice.PassTicketTest
 ```

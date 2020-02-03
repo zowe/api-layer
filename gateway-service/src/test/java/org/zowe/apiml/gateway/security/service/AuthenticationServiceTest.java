@@ -7,15 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.service;
+package org.zowe.apiml.gateway.security.service;
 
-import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.apiml.security.common.token.QueryResponse;
-import com.ca.apiml.security.common.token.TokenAuthentication;
-import com.ca.apiml.security.common.token.TokenExpireException;
-import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.gateway.config.CacheConfig;
-import com.ca.mfaas.security.SecurityUtils;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.security.SecurityUtils;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -150,7 +150,7 @@ public class AuthenticationServiceTest {
         String dateNow = new Date().toString().substring(0, 16);
         QueryResponse parsedToken = authService.parseJwtToken(jwtToken);
 
-        assertEquals("com.ca.apiml.security.common.token.QueryResponse", parsedToken.getClass().getTypeName());
+        assertEquals("org.zowe.apiml.security.common.token.QueryResponse", parsedToken.getClass().getTypeName());
         assertEquals(DOMAIN, parsedToken.getDomain());
         assertEquals(USER, parsedToken.getUserId());
         assertEquals(parsedToken.getCreation().toString().substring(0, 16), dateNow);

@@ -7,15 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.service;
+package org.zowe.apiml.gateway.security.service;
 
-import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.apiml.security.common.token.QueryResponse;
-import com.ca.apiml.security.common.token.TokenAuthentication;
-import com.ca.apiml.security.common.token.TokenExpireException;
-import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.constants.ApimlConstants;
-import com.ca.mfaas.util.EurekaUtils;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.util.EurekaUtils;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;

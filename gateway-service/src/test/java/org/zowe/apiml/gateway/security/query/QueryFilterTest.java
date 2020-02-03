@@ -7,13 +7,13 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.query;
+package org.zowe.apiml.gateway.security.query;
 
-import com.ca.apiml.security.common.error.AuthMethodNotSupportedException;
-import com.ca.apiml.security.common.error.InvalidCertificateException;
-import com.ca.apiml.security.common.token.TokenAuthentication;
-import com.ca.apiml.security.common.token.TokenNotProvidedException;
-import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.security.common.token;
 
-import com.ca.mfaas.cache.EntryExpiration;
+import org.zowe.apiml.cache.EntryExpiration;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

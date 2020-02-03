@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.discovery.staticdef;
 
-import com.ca.mfaas.discovery.DiscoveryServiceApplication;
-import com.ca.mfaas.discovery.config.EurekaConfig;
+import org.zowe.apiml.discovery.DiscoveryServiceApplication;
+import org.zowe.apiml.discovery.config.EurekaConfig;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;

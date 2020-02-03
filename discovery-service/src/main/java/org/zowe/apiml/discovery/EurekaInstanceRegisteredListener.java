@@ -9,11 +9,14 @@
  */
 package org.zowe.apiml.discovery;
 
+import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.util.EurekaUtils;
 
 import java.util.Map;
 

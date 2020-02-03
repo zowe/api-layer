@@ -11,11 +11,11 @@ package org.zowe.apiml.gateway.ribbon;
 
 import java.net.URI;
 
-import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.Server;
 
 import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
+import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 public interface GatewayRibbonLoadBalancingHttpClient extends ServiceInstanceChooser, ServiceCacheEvict {
 

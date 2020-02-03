@@ -46,7 +46,7 @@ spring:
 
 logging:
     level:
-        com.ca.mfaas.security: DEBUG
+        org.zowe.apiml.security: DEBUG
         # org.apache.http: DEBUG
 
 

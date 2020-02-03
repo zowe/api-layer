@@ -7,18 +7,18 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.staticdef;
+package org.zowe.apiml.discovery.staticdef;
 
-import com.ca.apiml.security.common.auth.Authentication;
-import com.ca.apiml.security.common.auth.AuthenticationScheme;
-import com.ca.mfaas.config.ApiInfo;
-import com.ca.mfaas.eurekaservice.client.util.EurekaMetadataParser;
-import com.ca.mfaas.exception.MetadataValidationException;
-import com.ca.mfaas.exception.ServiceDefinitionException;
-import com.ca.mfaas.message.core.Message;
-import com.ca.mfaas.message.log.ApimlLogger;
-import com.ca.mfaas.product.logging.annotations.InjectApimlLogger;
-import com.ca.mfaas.util.UrlUtils;
+import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.util.UrlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -39,7 +39,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.ca.mfaas.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
  * Processes static definition files and creates service instances

@@ -9,13 +9,10 @@
  */
 package org.zowe.apiml.gateway.routing;
 
+import org.zowe.apiml.gateway.filters.pre.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
-import org.zowe.apiml.gateway.filters.pre.EncodedCharactersFilter;
-import org.zowe.apiml.gateway.filters.pre.LocationFilter;
-import org.zowe.apiml.gateway.filters.pre.SlashFilter;
-import org.zowe.apiml.gateway.filters.pre.ZosmfFilter;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;

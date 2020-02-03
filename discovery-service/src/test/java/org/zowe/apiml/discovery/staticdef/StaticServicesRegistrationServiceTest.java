@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.discovery.staticdef;
 
-import com.ca.mfaas.discovery.metadata.MetadataDefaultsService;
+import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;

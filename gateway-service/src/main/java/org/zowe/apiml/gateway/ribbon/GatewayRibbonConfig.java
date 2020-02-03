@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
-import com.ca.mfaas.gateway.cache.ServiceCacheEvictor;
+import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.loadbalancer.*;

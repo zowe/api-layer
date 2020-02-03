@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.config;
+package org.zowe.apiml.gateway.config;
 
-import com.ca.mfaas.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;

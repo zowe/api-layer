@@ -7,17 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.config;
+package org.zowe.apiml.gateway.security.config;
 
-import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.apiml.security.common.config.HandlerInitializer;
-import com.ca.apiml.security.common.content.BasicContentFilter;
-import com.ca.apiml.security.common.content.CookieContentFilter;
-import com.ca.apiml.security.common.login.LoginFilter;
-import com.ca.mfaas.gateway.security.query.QueryFilter;
-import com.ca.mfaas.gateway.security.query.SuccessfulQueryHandler;
-import com.ca.mfaas.gateway.security.service.AuthenticationService;
-import com.ca.mfaas.gateway.security.ticket.SuccessfulTicketHandler;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.gateway.security.query.QueryFilter;
+import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

@@ -7,10 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.discovery.staticdef;
+package org.zowe.apiml.discovery.staticdef;
 
-import com.ca.mfaas.discovery.EurekaRegistryAvailableListener;
-import com.ca.mfaas.discovery.metadata.MetadataDefaultsService;
+import org.zowe.apiml.discovery.EurekaRegistryAvailableListener;
+import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.eureka.EurekaServerContext;

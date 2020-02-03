@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.discovery;
 
-import com.ca.mfaas.discovery.config.EurekaConfig;
+import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
