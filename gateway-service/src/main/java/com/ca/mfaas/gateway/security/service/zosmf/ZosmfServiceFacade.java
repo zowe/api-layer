@@ -47,8 +47,8 @@ import java.util.List;
 @Service
 public class ZosmfServiceFacade extends AbstractZosmfService {
 
-    private final ApplicationContext applicationContext;
-    private final List<ZosmfService> implementations;
+    protected final ApplicationContext applicationContext;
+    protected final List<ZosmfService> implementations;
 
     private ZosmfServiceFacade meProxy;
 

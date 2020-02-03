@@ -14,6 +14,7 @@ import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.apiml.security.common.error.ServiceNotAccessibleException;
 import com.ca.apiml.security.common.token.TokenAuthentication;
 import com.ca.mfaas.gateway.security.service.AuthenticationService;
+import com.ca.mfaas.gateway.security.service.ZosmfService;
 import com.ca.mfaas.gateway.security.service.zosmf.ZosmfServiceV2;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
@@ -24,24 +25,26 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.jaas.JaasAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class ZosmfAuthenticationProviderTest {
@@ -79,12 +82,7 @@ public class ZosmfAuthenticationProviderTest {
         restTemplate = mock(RestTemplate.class);
         zosmfInstance = createInstanceInfo(SERVICE_ID, HOST, PORT);
 
-        doAnswer(new Answer<TokenAuthentication>() {
-            @Override
-            public TokenAuthentication answer(InvocationOnMock invocation) {
-                return TokenAuthentication.createAuthenticated(invocation.getArgument(0), invocation.getArgument(1));
-            }
-        }).when(authenticationService).createTokenAuthentication(anyString(), anyString());
+        doAnswer((Answer<TokenAuthentication>) invocation -> TokenAuthentication.createAuthenticated(invocation.getArgument(0), invocation.getArgument(1))).when(authenticationService).createTokenAuthentication(anyString(), anyString());
         when(authenticationService.createJwtToken(anyString(), anyString(), anyString())).thenReturn("someJwtToken");
     }
 
@@ -347,7 +345,35 @@ public class ZosmfAuthenticationProviderTest {
 
         boolean supports = zosmfAuthenticationProvider.supports(usernamePasswordAuthentication.getClass());
         assertTrue(supports);
+    }
 
+    @Test
+    public void testSupports() {
+        ZosmfAuthenticationProvider mock = new ZosmfAuthenticationProvider(null, null);
+
+        assertTrue(mock.supports(UsernamePasswordAuthenticationToken.class));
+        assertFalse(mock.supports(Object.class));
+        assertFalse(mock.supports(AbstractAuthenticationToken.class));
+        assertFalse(mock.supports(JaasAuthenticationToken.class));
+        assertFalse(mock.supports(null));
+    }
+
+    @Test
+    public void testAuthenticateJwt() {
+        AuthenticationService authenticationService = mock(AuthenticationService.class);
+        ZosmfService zosmfService = mock(ZosmfService.class);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn("user1");
+        TokenAuthentication authentication2 = mock(TokenAuthentication.class);
+
+        when(zosmfService.authenticate(authentication)).thenReturn(new ZosmfService.AuthenticationResponse(
+            "domain1",
+            Collections.singletonMap(ZosmfService.TokenType.JWT, "jwtToken1")
+        ));
+        when(authenticationService.createTokenAuthentication("user1", "jwtToken1")).thenReturn(authentication2);
+
+        assertSame(authentication2, zosmfAuthenticationProvider.authenticate(authentication));
     }
 
 }

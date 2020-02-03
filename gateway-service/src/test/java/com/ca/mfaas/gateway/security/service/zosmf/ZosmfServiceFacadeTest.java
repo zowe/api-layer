@@ -10,6 +10,8 @@ package com.ca.mfaas.gateway.security.service.zosmf;/*
 
 import com.ca.apiml.security.common.config.AuthConfigurationProperties;
 import com.ca.mfaas.gateway.security.service.ZosmfService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.discovery.DiscoveryClient;
 import lombok.AllArgsConstructor;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +27,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -34,18 +37,18 @@ import static org.mockito.Mockito.*;
 public class ZosmfServiceFacadeTest {
 
     private RestTemplate restTemplate = mock(RestTemplate.class);
-    private ZosmfServiceFacade zosmfService;
+    private ZosmfServiceFacadeTestExt zosmfService;
 
     @Before
     public void setUp() {
         zosmfService = getZosmfServiceFacade();
     }
 
-    public ZosmfServiceFacade getZosmfServiceFacade() {
+    public ZosmfServiceFacadeTestExt getZosmfServiceFacade() {
         AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
         ApplicationContext applicationContext = mock(ApplicationContext.class);
 
-        ZosmfServiceFacade out = new ZosmfServiceFacade(
+        ZosmfServiceFacadeTestExt out = new ZosmfServiceFacadeTestExt(
             authConfigurationProperties,
             null,
             restTemplate,
@@ -53,7 +56,8 @@ public class ZosmfServiceFacadeTest {
             applicationContext,
             Arrays.asList(
                 new ZosmfServiceTest(1),
-                new ZosmfServiceTest(2)
+                new ZosmfServiceTest(2),
+                spy(new ZosmfServiceTest2(3))
             )
         ) {
             @Override
@@ -75,7 +79,7 @@ public class ZosmfServiceFacadeTest {
         when(restTemplate.exchange(
             eq("http://zosmf:1433/zosmf/info"),
             eq(HttpMethod.GET),
-            (HttpEntity<?>) any(),
+            any(),
             eq(ZosmfServiceFacade.ZosmfInfo.class)
         )).thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
     }
@@ -102,6 +106,11 @@ public class ZosmfServiceFacadeTest {
         } catch (TestException te) {
             assertEquals(2, te.version);
         }
+
+        mockVersion(3);
+
+        zosmfService.validate(ZosmfService.TokenType.LTPA, "lpta");
+        verify(zosmfService.getService(3), times(1)).validate(ZosmfService.TokenType.LTPA, "lpta");
     }
 
     @Test
@@ -126,6 +135,11 @@ public class ZosmfServiceFacadeTest {
         } catch (TestException te) {
             assertEquals(2, te.version);
         }
+
+        mockVersion(3);
+
+        zosmfService.invalidate(ZosmfService.TokenType.LTPA, "lpta");
+        verify(zosmfService.getService(3), times(1)).invalidate(ZosmfService.TokenType.LTPA, "lpta");
     }
 
     @Test
@@ -151,6 +165,11 @@ public class ZosmfServiceFacadeTest {
         } catch (TestException te) {
             assertEquals(2, te.version);
         }
+
+        mockVersion(3);
+
+        zosmfService.authenticate(authentication);
+        verify(zosmfService.getService(3), times(1)).authenticate(authentication);
     }
 
     @Test
@@ -166,6 +185,7 @@ public class ZosmfServiceFacadeTest {
             zosmfService.validate(ZosmfService.TokenType.JWT, "jwt");
             fail();
         } catch (IllegalArgumentException te) {
+            // IllegalArgumentException is expected
         }
         verify(zosmfService, times(1)).evictCaches();
     }
@@ -187,6 +207,15 @@ public class ZosmfServiceFacadeTest {
     public void testMatchesVersion() {
         assertFalse(zosmfService.matchesVersion(1));
         assertFalse(zosmfService.matchesVersion(25));
+    }
+
+    @Test
+    public void testNoBody() {
+        when(restTemplate.exchange(
+            anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()
+        )).thenReturn(new ResponseEntity<>(null, HttpStatus.NO_CONTENT));
+
+        assertEquals(0, zosmfService.getVersion("zosmf"));
     }
 
     @AllArgsConstructor
@@ -223,6 +252,48 @@ public class ZosmfServiceFacadeTest {
         @Override
         public boolean matchesVersion(int version) {
             return this.version == version;
+        }
+
+    }
+
+    @AllArgsConstructor
+    private static class ZosmfServiceTest2 implements ZosmfService {
+
+        private int version;
+
+        @Override
+        public AuthenticationResponse authenticate(Authentication authentication) {
+            return null;
+        }
+
+        @Override
+        public void validate(TokenType type, String token) {
+
+        }
+
+        @Override
+        public void invalidate(TokenType type, String token) {
+
+        }
+
+        @Override
+        public boolean matchesVersion(int version) {
+            return this.version == version;
+        }
+
+    }
+
+    private static class ZosmfServiceFacadeTestExt extends ZosmfServiceFacade {
+
+        public ZosmfServiceFacadeTestExt(AuthConfigurationProperties authConfigurationProperties, DiscoveryClient discovery, RestTemplate restTemplateWithoutKeystore, ObjectMapper securityObjectMapper, ApplicationContext applicationContext, List<ZosmfService> implementations) {
+            super(authConfigurationProperties, discovery, restTemplateWithoutKeystore, securityObjectMapper, applicationContext, implementations);
+        }
+
+        public ZosmfService getService(int version) {
+            for (final ZosmfService zosmfService : implementations) {
+                if (zosmfService.matchesVersion(version)) return zosmfService;
+            }
+            return null;
         }
 
     }
