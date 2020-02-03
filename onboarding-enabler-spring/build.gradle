@@ -2,10 +2,7 @@ dependencies {
     compile project(':apiml-utility')
     compile project(':onboarding-enabler-java')
 
-    compile libraries.spring_boot_starter_actuator
-    compile libraries.springFox
-
-    implementation libraries.lombok
+    compile libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
     testImplementation libraries.mockito_core

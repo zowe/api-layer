@@ -1,7 +1,8 @@
 buildscript {
     repositories mavenRepositories
+
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersionV1}")
     }
 }
 
@@ -23,32 +24,11 @@ sourceSets {
     }
 }
 
-jar {
-    baseName = "enabler-springboot-${springBootVersionV1}"
-    archiveName = "${baseName}.jar"
-}
-
 dependencies {
     compile project(':apiml-utility')
     compile project(':onboarding-enabler-java')
 
-    compile libraries.spring_boot_v1_starter_actuator
+    implementation libraries.lombok
 
-    compileOnly libraries.lombok
-
-    compileOnly libraries.javax_servlet_api
-
-    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
-    testCompile libraries.javax_servlet_api
-    testCompile libraries.gson
-    testCompile libraries.powermock_api_mockito2
-    testCompile libraries.power_mock_junit4
-    testCompile libraries.power_mock_junit4_rule
-    testCompile libraries.lombok
+    testCompile libraries.spring_boot_v1_starter_test
 }
-
-/*
-sonarqube {
-    skipProject = true
-}
-*/

@@ -1,5 +1,6 @@
 buildscript {
-       repositories mavenRepositories
+    repositories mavenRepositories
+
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
@@ -26,20 +27,9 @@ sourceSets {
 dependencies {
     compile project(':apiml-utility')
     compile project(':onboarding-enabler-java')
-    compile libraries.springFox
-
-    compileOnly project(':onboarding-enabler-spring')
 
     implementation libraries.lombok
-    implementation libraries.spring_boot_starter_actuator
-    implementation libraries.spring_boot_starter_web
 
     testCompile libraries.spring_boot_starter_test
-    testCompile libraries.javax_servlet_api
-    testCompile libraries.gson
-    testCompile libraries.powermock_api_mockito2
-    testCompile libraries.power_mock_junit4
-    testCompile libraries.power_mock_junit4_rule
-    testCompile libraries.lombok
 }
 
