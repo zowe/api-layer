@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.routing;
 
 import org.zowe.apiml.gateway.filters.pre.*;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
@@ -37,7 +38,7 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    public EncodedCharactersFilter encodedCharactersFilterFilter(DiscoveryClient discovery) { return new EncodedCharactersFilter(discovery); }
+    public EncodedCharactersFilter encodedCharactersFilterFilter(DiscoveryClient discovery, MessageService messageService) { return new EncodedCharactersFilter(discovery, messageService); }
 
     @Bean
     public SlashFilter slashFilter() {
