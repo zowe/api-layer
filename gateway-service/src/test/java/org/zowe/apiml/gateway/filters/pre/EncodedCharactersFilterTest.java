@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -21,6 +22,8 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +31,8 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -46,12 +49,19 @@ public class EncodedCharactersFilterTest {
     private final DefaultServiceInstance serviceInstanceWithConfiguration = new DefaultServiceInstance("INSTANCE1", SERVICE_ID ,"",0,true, new HashMap<String, String>());
     private final DefaultServiceInstance serviceInstanceWithoutConfiguration = new DefaultServiceInstance("INSTANCE2", SERVICE_ID ,"",0,true, new HashMap<String, String>());
 
+    private static MessageService messageService;
+
     @Mock
     DiscoveryClient discoveryClient;
 
+    @BeforeClass
+    public static void initMessageService() {
+        messageService = new YamlMessageService("/gateway-log-messages.yml");
+    }
+
     @Before
     public void setup() {
-        filter = new EncodedCharactersFilter(discoveryClient);
+        filter = new EncodedCharactersFilter(discoveryClient, messageService);
         serviceInstanceWithConfiguration.getMetadata().put(METADATA_KEY, "true");
         serviceInstanceWithoutConfiguration.getMetadata().put(METADATA_KEY, "false");
         RequestContext ctx = RequestContext.getCurrentContext();
@@ -107,10 +117,9 @@ public class EncodedCharactersFilterTest {
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setRequestURI("/He%2f%2f0%2dwor%2fd");
         context.setRequest(mockRequest);
-
         this.filter.run();
-
-        assertEquals("Instance serviceid does not allow encoded characters in the URL.", context.getResponseBody());
+        assertTrue(context.getResponseBody().contains("Service 'serviceid' does not allow encoded characters used in request path: '/He%2f%2f0%2dwor%2fd'."));
+        assertTrue(context.getResponseBody().contains("ZWEAG701D"));
         assertEquals(400, context.getResponse().getStatus());
     }
 
@@ -137,5 +146,4 @@ public class EncodedCharactersFilterTest {
 
         assertEquals(200, context.getResponse().getStatus());
     }
-
 }
