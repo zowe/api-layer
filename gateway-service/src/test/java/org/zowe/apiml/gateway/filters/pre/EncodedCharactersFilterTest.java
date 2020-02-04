@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -47,10 +48,16 @@ public class EncodedCharactersFilterTest {
 
     private final DefaultServiceInstance serviceInstanceWithConfiguration = new DefaultServiceInstance("INSTANCE1", SERVICE_ID ,"",0,true, new HashMap<String, String>());
     private final DefaultServiceInstance serviceInstanceWithoutConfiguration = new DefaultServiceInstance("INSTANCE2", SERVICE_ID ,"",0,true, new HashMap<String, String>());
-    MessageService messageService = new YamlMessageService("/gateway-log-messages.yml");
+
+    private static MessageService messageService;
 
     @Mock
     DiscoveryClient discoveryClient;
+
+    @BeforeClass
+    public static void initMessageService() {
+        messageService = new YamlMessageService("/gateway-log-messages.yml");
+    }
 
     @Before
     public void setup() {

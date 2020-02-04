@@ -98,19 +98,26 @@ public class EncodedCharactersFilter extends ZuulFilter {
     }
 
     private void rejectRequest(RequestContext ctx) {
-        String response;
         Message message = messageService.createMessage("apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
         apimlLog.log("apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
+
         ctx.setSendZuulResponse(false);
         ctx.addZuulResponseHeader("Content-Type", "application/json");
         ctx.setResponseStatusCode(HttpStatus.BAD_REQUEST.value());
+
+        String response = getMessageString(message);
+        ctx.setResponseBody(response);
+    }
+
+    private String getMessageString(Message message) {
+        String response;
         try {
             response = new ObjectMapper().writeValueAsString(message.mapToView());
         } catch (JsonProcessingException e) {
             response = message.mapToReadableText();
             log.debug("Could not convert response to JSON", e);
         }
-        ctx.setResponseBody(response);
+        return response;
     }
 
     private static boolean pathContains(String path, String character) {
