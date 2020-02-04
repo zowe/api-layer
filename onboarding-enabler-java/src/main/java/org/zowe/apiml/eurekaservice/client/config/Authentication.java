@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.eurekaservice.client.config;
+package org.zowe.apiml.eurekaservice.client.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

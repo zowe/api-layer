@@ -9,9 +9,10 @@
  */
 package org.zowe.apiml.hellospring.listener;
 
-import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;

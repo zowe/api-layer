@@ -9,9 +9,9 @@
  */
 package org.zowe.apiml.hwsjersey.resource.listener;
 
+import org.junit.Ignore;
 import org.zowe.apiml.hwsjersey.listener.ApiDiscoveryListener;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 
