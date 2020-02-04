@@ -60,7 +60,7 @@ messages:
       - An I/O error occurred while attempting to read the static API definition directory."
       action: "Review the static API definition directory definition and its contents on the storage. The static definition directories are specified as a parameter to launch a Discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
 
-    - key: apiml.discovery.errorNotifyingGateway
+    - key: org.zowe.apiml.discovery.errorNotifyingGateway
       number: ZWEAD704
       type: ERROR
       text: "Gateway Service is not available so it cannot be notified about changes in Discovery Service"

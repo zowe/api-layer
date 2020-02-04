@@ -15,7 +15,7 @@ messages:
       reason: "The HTTP request method is not supported for the URL."
       action: "Use the correct HTTP request method that is supported for the URL."
 
-    - key: apiml.security.gatewayNotAvailable
+    - key: org.zowe.apiml.security.gatewayNotAvailable
       number: ZWEAS103
       type: ERROR
       text: "API Gateway Service is not available by URL '%s' (API Gateway is required because it provides the authentication functionality)"
