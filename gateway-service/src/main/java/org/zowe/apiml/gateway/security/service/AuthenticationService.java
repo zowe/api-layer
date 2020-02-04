@@ -9,13 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.util.EurekaUtils;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
@@ -36,6 +29,13 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.EurekaUtils;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
@@ -45,8 +45,8 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.ca.mfaas.gateway.security.service.ZosmfService.TokenType.JWT;
-import static com.ca.mfaas.gateway.security.service.ZosmfService.TokenType.LTPA;
+import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.JWT;
+import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.LTPA;
 
 /**
  * Service for the JWT and LTPA tokens operations
@@ -201,8 +201,8 @@ public class AuthenticationService {
      * Method construct {@link TokenAuthentication} marked as valid. It also store JWT token on the cache to
      * speed up next call to validate token.
      *
-     * @param user
-     * @param jwtToken
+     * @param user username to login
+     * @param jwtToken token of user
      * @return {@link TokenAuthentication}, as authenticated use information about invalidating of token
      */
     @CachePut(value = "validationJwtToken", key = "#jwtToken", condition = "#jwtToken != null")

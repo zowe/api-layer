@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.service;
+package org.zowe.apiml.gateway.security.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * Common interface for z/OSMF operations about authentication. This interface is implemented with each bean for
- * authentication to z/OSMF and also in {@link com.ca.mfaas.gateway.security.service.zosmf.ZosmfServiceFacade}, which
+ * authentication to z/OSMF and also in {@link org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceFacade}, which
  * provides calls by version of z/OSMF.
  */
 public interface ZosmfService {
@@ -48,7 +48,7 @@ public interface ZosmfService {
 
     /**
      * Method is to decide which version of z/OSMF are supported by implementation. If bean is not real implementation
-     * but delegate it has to return false (see {@link com.ca.mfaas.gateway.security.service.zosmf.ZosmfServiceFacade}).
+     * but delegate it has to return false (see {@link org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceFacade}).
      * @param version version of z/OSMF
      * @return if bean provides implementation for specific version of z/OSMF
      */

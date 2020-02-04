@@ -7,11 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gatewayservice;
+package org.zowe.apiml.gatewayservice;
 
-import com.ca.mfaas.util.categories.AdditionalLocalTest;
-import com.ca.mfaas.util.service.DiscoveryUtils;
-import com.ca.mfaas.util.service.VirtualService;
 import io.restassured.RestAssured;
 import lombok.AllArgsConstructor;
 import org.junit.Before;
@@ -22,16 +19,18 @@ import org.junit.runners.JUnit4;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.zowe.apiml.util.categories.AdditionalLocalTest;
+import org.zowe.apiml.util.service.DiscoveryUtils;
+import org.zowe.apiml.util.service.VirtualService;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Base64;
 
-import static com.ca.mfaas.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 import static io.restassured.RestAssured.given;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 /**
  * Those tests simulate different version of z/OSMF.
@@ -187,6 +186,8 @@ public class ZosmfAuthenticationTest {
     @AllArgsConstructor
     private static class AuthServlet extends HttpServlet {
 
+        private static final long serialVersionUID = 376774806451036298L;
+
         protected final String bodyOnSuccess;
         protected final String bodyOnError;
         protected final String cookiesOnSuccess;
@@ -224,12 +225,14 @@ public class ZosmfAuthenticationTest {
 
     private static class AuthServletGet extends AuthServlet {
 
+        private static final long serialVersionUID = 1148934437865771827L;
+
         public AuthServletGet(String bodyOnSuccess, String bodyOnError, String cookiesOnSuccess, HttpStatus unauthorizedStatus) {
             super(bodyOnSuccess, bodyOnError, cookiesOnSuccess, unauthorizedStatus);
         }
 
         @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             if (req.getHeader("X-CSRF-ZOSMF-HEADER") == null) {
                 resp.setStatus(HttpStatus.BAD_REQUEST.value());
                 return;
@@ -250,12 +253,14 @@ public class ZosmfAuthenticationTest {
 
     private static class AuthServletPost extends AuthServlet {
 
+        private static final long serialVersionUID = -693089744639154436L;
+
         public AuthServletPost(String bodyOnSuccess, String bodyOnError, String cookiesOnSuccess, HttpStatus unauthorizedStatus) {
             super(bodyOnSuccess, bodyOnError, cookiesOnSuccess, unauthorizedStatus);
         }
 
         @Override
-        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
             if (req.getHeader("X-CSRF-ZOSMF-HEADER") == null) {
                 resp.setStatus(HttpStatus.BAD_REQUEST.value());
                 return;

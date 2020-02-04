@@ -7,11 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.security.service.zosmf;
+package org.zowe.apiml.gateway.security.service.zosmf;
 
-import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.mfaas.gateway.security.service.ServiceCacheEvict;
-import com.ca.mfaas.gateway.security.service.ZosmfService;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +27,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
+import org.zowe.apiml.gateway.security.service.ZosmfService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import javax.annotation.PostConstruct;
 import java.util.List;

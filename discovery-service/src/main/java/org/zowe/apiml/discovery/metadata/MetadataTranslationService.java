@@ -9,9 +9,9 @@
  */
 package org.zowe.apiml.discovery.metadata;
 
-import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 
 import java.util.Map;
 import java.util.stream.Collectors;

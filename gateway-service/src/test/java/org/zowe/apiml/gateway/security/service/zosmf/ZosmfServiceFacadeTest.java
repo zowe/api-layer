@@ -1,4 +1,4 @@
-package com.ca.mfaas.gateway.security.service.zosmf;/*
+package org.zowe.apiml.gateway.security.service.zosmf;/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -8,8 +8,8 @@ package com.ca.mfaas.gateway.security.service.zosmf;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.mfaas.gateway.security.service.ZosmfService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.gateway.security.service.ZosmfService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import lombok.AllArgsConstructor;

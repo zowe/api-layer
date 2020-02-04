@@ -9,23 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-import com.ca.apiml.security.common.config.AuthConfigurationProperties;
-import com.ca.apiml.security.common.token.QueryResponse;
-import com.ca.apiml.security.common.token.TokenAuthentication;
-import com.ca.apiml.security.common.token.TokenExpireException;
-import com.ca.apiml.security.common.token.TokenNotValidException;
-import com.ca.mfaas.gateway.config.CacheConfig;
-import com.ca.mfaas.gateway.security.service.zosmf.ZosmfServiceV2;
-import com.ca.mfaas.security.SecurityUtils;
-import com.ca.mfaas.util.EurekaUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.security.SecurityUtils;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
@@ -35,7 +19,6 @@ import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -47,15 +30,21 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
+import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.EurekaUtils;
 
 import javax.servlet.http.Cookie;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.junit.Assert.*;
@@ -122,7 +111,7 @@ public class AuthenticationServiceTest {
         when(instanceInfo.getPort()).thenReturn(ZOSMF_PORT);
 
         final Application application = mock(Application.class);
-        when(application.getInstances()).thenReturn(Arrays.asList(instanceInfo));
+        when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo));
         when(discoveryClient.getApplication(ZOSMF)).thenReturn(application);
 
         return EurekaUtils.getUrl(instanceInfo);
@@ -280,7 +269,7 @@ public class AuthenticationServiceTest {
         when(applicationInfoManager.getInfo()).thenReturn(myInstance);
         when(discoveryClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
         when(restTemplate.exchange(eq(zosmfUrl + "/zosmf/services/authenticate"), eq(HttpMethod.DELETE), any(), eq(String.class)))
-            .thenReturn(new ResponseEntity(HttpStatus.OK));
+            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         Application application = mock(Application.class);
         List<InstanceInfo> instances = Arrays.asList(
@@ -321,7 +310,7 @@ public class AuthenticationServiceTest {
         verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
 
         when(restTemplate.exchange(eq(zosmfUrl + "/zosmf/services/authenticate"), eq(HttpMethod.DELETE), any(), eq(String.class)))
-            .thenReturn(new ResponseEntity(HttpStatus.OK));
+            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         authService.invalidateJwtToken(jwtToken01, false);
         assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
         verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
@@ -407,16 +396,13 @@ public class AuthenticationServiceTest {
         final ZosmfServiceV2 zosmfService = getSpiedZosmfService();
         final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                assertEquals(jwtToken, invocation.getArgument(0));
-                return queryResponse;
-            }
+        doAnswer((Answer<Object>) invocation -> {
+            assertEquals(jwtToken, invocation.getArgument(0));
+            return queryResponse;
         }).when(authService).parseJwtToken(jwtToken);
 
         when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
-            .thenReturn(new ResponseEntity(HttpStatus.OK));
+            .thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
         TokenAuthentication tokenAuthentication = authService.validateJwtToken(jwtToken);
         assertTrue(tokenAuthentication.isAuthenticated());

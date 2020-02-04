@@ -9,17 +9,17 @@
  */
 package org.zowe.apiml.discovery.metadata;
 
-import com.ca.apiml.security.common.auth.AuthenticationScheme;
 import org.junit.Test;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class MetadataTranslationServiceTest {
 
