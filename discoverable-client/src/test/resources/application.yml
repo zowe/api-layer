@@ -1,7 +1,7 @@
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: INFO
+        org.zowe.apiml: INFO
         org.springframework: WARN
         org.apache.catalina: WARN
         com.netflix: WARN
@@ -83,7 +83,7 @@ eureka:
                             title: Service Integration Enabler V2 Sample Application API
                             description: API of sample API service showing how to integrate a Spring Boot v2.x application
                             version: 1.0.0
-                            basePackage: com.ca.mfaas.client.api
+                            basePackage: org.zowe.apiml.client.api
                 discovery:
                     catalogUiTile:
                         id: cademoapps
@@ -134,7 +134,7 @@ spring:
 logging:
     level:
         ROOT: INFO
-        com.ca.mfaas: DEBUG
+        org.zowe.apiml: DEBUG
         org.springframework: INFO
         org.apache.catalina: INFO
         com.netflix: INFO

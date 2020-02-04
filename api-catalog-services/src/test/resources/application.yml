@@ -9,7 +9,7 @@ logging:
     level:
         ROOT: INFO
         org.springframework: INFO
-        com.ca.mfaas: DEBUG
+        org.zowe.apiml: DEBUG
 
 ##############################################################################################
 # MFAAS configuration section
@@ -89,7 +89,7 @@ eureka:
                             title: API Catalog REST API
                             description: REST endpoints exposing available functions in the API Catalog
                             version: 1.0.0
-                            basePackage: com.ca.mfaas.apicatalog.controllers.api
+                            basePackage: org.zowe.apiml.apicatalog.controllers.api
 
                 discovery:
                     catalogUiTile:

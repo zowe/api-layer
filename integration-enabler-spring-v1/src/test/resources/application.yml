@@ -9,7 +9,7 @@ logging:
     level:
         ROOT: INFO
         org.springframework: INFO
-        com.ca.mfaas: DEBUG
+        org.zowe.apiml: DEBUG
 
 ##############################################################################################
 # MFAAS configuration section
@@ -66,7 +66,7 @@ eureka:
                             title: Service Integration Enabler V1 Sample App (spring boot 1.x)
                             description: Sample micro-service showing how to enable a Spring Boot v1.5.9 application
                             version: 1.0.0
-                            basePackage: com.ca.mfaas.sample.enable.v1.controller
+                            basePackage: org.zowe.apiml.sample.enable.v1.controller
                 discovery:
                     catalogUiTile:
                         id: ${mfaas.catalog-ui-tile.id}
