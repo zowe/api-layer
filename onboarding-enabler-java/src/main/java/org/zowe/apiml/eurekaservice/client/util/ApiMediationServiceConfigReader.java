@@ -16,6 +16,7 @@ import org.zowe.apiml.util.ObjectUtil;
 import org.zowe.apiml.util.StringUtils;
 import org.zowe.apiml.util.UrlUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
@@ -88,19 +89,20 @@ public class ApiMediationServiceConfigReader {
     /**
      * Instance object mapper. Initialized in constructor.
      */
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     /**
      * Instance member of ThreadLocal holding a Map<String, String> of configuration properties.
      */
-    private ThreadLocal<Map<String, String>> threadConfigurationContext = ThreadLocal.withInitial(HashMap::new);
+    private final ThreadLocal<Map<String, String>> threadConfigurationContext = ThreadLocal.withInitial(HashMap::new);
 
 
     /**
      * Default constructor.
      */
     public ApiMediationServiceConfigReader() {
-        objectMapper = new ObjectMapper(new YAMLFactory());
+        objectMapper = new ObjectMapper(new YAMLFactory())
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.setDefaultMergeable(true);
         objectMapper.setDefaultPropertyInclusion(JsonInclude.Value.construct(NON_NULL, NON_ABSENT));
     }

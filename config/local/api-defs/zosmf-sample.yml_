@@ -20,6 +20,8 @@ services:
       catalogUiTileId: zosmf                                      # ID of the API Catalog UI tile for z/OSMF services
       instanceBaseUrls:                                           # list of base URLs for each instance
         -                                                         # scheme://hostname:port/contextPath
+      authentication:
+          scheme: zosmf                                           # This service expects z/OSMF LTPA token
       homePageRelativeUrl:                                        # Home page of the z/OSMF service
       routes:
         - gatewayUrl: api                                         # [api/ui/ws]/v{majorVersion}

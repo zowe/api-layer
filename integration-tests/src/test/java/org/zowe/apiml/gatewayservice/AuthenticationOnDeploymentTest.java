@@ -18,6 +18,7 @@ import org.zowe.apiml.util.service.VirtualService;
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -36,6 +37,7 @@ import static org.junit.Assert.assertEquals;
  * This test requires to allow endpoint routes on gateway (ie profile dev)
  */
 @RunWith(JUnit4.class)
+@Ignore
 @Category(AdditionalLocalTest.class)
 public class AuthenticationOnDeploymentTest {
 

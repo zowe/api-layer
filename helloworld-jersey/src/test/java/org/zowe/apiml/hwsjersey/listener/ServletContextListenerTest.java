@@ -11,6 +11,7 @@ package org.zowe.apiml.hwsjersey.resource.listener;
 
 import org.zowe.apiml.hwsjersey.listener.ApiDiscoveryListener;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 
@@ -53,6 +54,7 @@ public class ServletContextListenerTest {
      *  -> Can't register -> apimlClient is NULL
      */
     @Test
+    @Ignore
     public void testContextEmpty() {
         ServletContext context = new MockServletContext();
 

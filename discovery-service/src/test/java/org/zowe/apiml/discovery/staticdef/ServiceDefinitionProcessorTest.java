@@ -595,7 +595,7 @@ public class ServiceDefinitionProcessorTest {
 
         assertEquals(11, md.size());
 
-        assertEquals("2.0.0", md.get(VERSION));
+        assertEquals(CURRENT_VERSION, md.get(VERSION));
         assertEquals("testServiceTitle", md.get(SERVICE_TITLE));
         assertEquals("testServiceDescription", md.get(SERVICE_DESCRIPTION));
 

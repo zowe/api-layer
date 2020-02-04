@@ -48,6 +48,7 @@ public class ServletContextListenerTest {
     }
 
     @Test
+    @Ignore
     public void testContextEmpty() {
         ServletContext context = new MockServletContext();
 

@@ -67,6 +67,10 @@ apiml:
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
         contextPath: /${apiml.service.id}
 
+        authentication:
+            scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
+            applid: TSTAPPL  # APPLID to generate PassTickets for this service
+
         homePageRelativeUrl: ${apiml.service.contextPath}
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health

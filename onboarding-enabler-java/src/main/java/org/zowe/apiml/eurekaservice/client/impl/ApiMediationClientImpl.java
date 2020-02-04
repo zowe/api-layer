@@ -48,7 +48,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     private EurekaClient eurekaClient;
 
     /**
-     * Rregisters this service with Eureka server using EurekaClient which is initialized with the provided {@link ApiMediationServiceConfig} methods parameter.
+     * Registers this service with Eureka server using EurekaClient which is initialized with the provided {@link ApiMediationServiceConfig} methods parameter.
      * Successive calls to {@link #register} method without intermediate call to {@linl #unregister} will be rejected with exception.
      *
      * This method catches all RuntimeException, and rethrows {@link ServiceDefinitionException} checked exception.
@@ -189,6 +189,13 @@ public class ApiMediationClientImpl implements ApiMediationClient {
 
     private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
         Map<String, String> metadata = new HashMap<>();
+
+        // fill authentication metadata
+        Authentication authentication = config.getAuthentication();
+        if (authentication != null) {
+            metadata.put(AUTHENTICATION_SCHEME, authentication.getScheme());
+            metadata.put(AUTHENTICATION_APPLID, authentication.getApplid());
+        }
 
         // fill routing metadata
         for (Route route : config.getRoutes()) {

@@ -15,7 +15,7 @@ public final class EurekaMetadataDefinition {
         throw new IllegalStateException("Eureka metadata constant class");
     }
 
-    public static final String CURRENT_VERSION = "2.0.0";
+    public static final String CURRENT_VERSION = "2.1.0";
 
     //v2
     public static final String VERSION = "version";

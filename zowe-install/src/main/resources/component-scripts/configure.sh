@@ -24,9 +24,11 @@ services:
       catalogUiTileId: zosmf
       instanceBaseUrls:
         - https://${ZOSMF_HOST}:${ZOSMF_PORT}/zosmf/
+      authentication:
+          scheme: zosmf
       homePageRelativeUrl:  # Home page is at the same URL
       routedServices:
-        - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+        - gatewayUrl: api/v1
           serviceRelativeUrl:
       apiInfo:
         - apiId: com.ibm.zosmf

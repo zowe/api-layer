@@ -34,6 +34,7 @@ public class ApiMediationClientImplTest {
     public void startEurekaClient() throws ServiceDefinitionException {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
+        Authentication authentication = new Authentication("bypass", null);
         Ssl ssl = new Ssl(false, false, "TLSv1.2", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
             "localhost", "password",
             "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
@@ -47,6 +48,7 @@ public class ApiMediationClientImplTest {
         ApiMediationServiceConfig config = new ApiMediationServiceConfig();
         config.setApiInfo(Collections.singletonList(apiInfo));
         config.setCatalog(catalogUiTile);
+        config.setAuthentication(authentication);
         config.setRoutes(routes);
         config.setDescription("Example for exposing a Spring REST API");
         config.setTitle("Hello Spring REST API");
@@ -63,6 +65,8 @@ public class ApiMediationClientImplTest {
         assertNotNull(client.getEurekaClient());
         assertEquals("SERVICE", client.getEurekaClient().getApplicationInfoManager().getInfo().getAppName());
         assertEquals(InstanceInfo.InstanceStatus.UP, client.getEurekaClient().getApplicationInfoManager().getInfo().getStatus());
+        assertTrue(client.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().containsKey("apiml.authentication.scheme"));
+        assertFalse(client.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().containsKey("apiml.authentication.applid"));
         // ...
         client.unregister();
     }
