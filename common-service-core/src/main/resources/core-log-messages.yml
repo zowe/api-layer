@@ -7,35 +7,35 @@ messages:
     # General messages
     # 100-199
 
-    - key: apiml.common.buildInfoPropertiesNotFound
+    - key: org.zowe.apiml.common.buildInfoPropertiesNotFound
       number: ZWEAM100
       type: ERROR
       text: "Could not read properties from: '%s'"
       reason: "The Build Info properties file is empty or null."
       action: "The jar file is not packaged correctly. Please submit an issue."
 
-    - key: apiml.common.buildInfoPropertiesIOError
+    - key: org.zowe.apiml.common.buildInfoPropertiesIOError
       number: ZWEAM101
       type: ERROR
       text: "I/O Error reading properties from: '%s' Details: '%s'"
       reason: "I/O error reading `META-INF/build-info.properties` or `META-INF/git.properties`"
       action: "The jar file is not packaged correctly. Please submit an issue."
 
-    - key: apiml.common.invalidMessageKey
+    - key: org.zowe.apiml.common.invalidMessageKey
       number: ZWEAM102
       type: ERROR
       text: "Internal error: Invalid message key '%s' is provided. Please create an issue with this message."
       reason: "Message service is requested to create message with an invalid key."
       action: "Create an issue with this message."
 
-    - key: apiml.common.invalidMessageTextFormat
+    - key: org.zowe.apiml.common.invalidMessageTextFormat
       number: ZWEAM103
       type: ERROR
       text: "Internal error: Invalid message text format. Please create an issue with this message."
       reason: "Message service is requested to create a message with an invalid text format."
       action: "Create an issue with this message."
 
-    - key: apiml.common.endPointNotFound
+    - key: org.zowe.apiml.common.endPointNotFound
       number: ZWEAM104
       type: ERROR
       text: "The endpoint you are looking for '%s' could not be located"
@@ -45,7 +45,7 @@ messages:
     # HTTP, Protocol messages
     # 400-499
 
-    - key: apiml.common.sslContextInitializationError
+    - key: org.zowe.apiml.common.sslContextInitializationError
       number: ZWEAM400
       type: ERROR
       text: "Error initializing SSL Context: '%s'"
@@ -60,28 +60,28 @@ messages:
     # TLS, Certificate messages
     # 500-599
 
-    - key: apiml.common.ignoringSsl
+    - key: org.zowe.apiml.common.ignoringSsl
       number: ZWEAM500
       type: WARNING
       text: "The service is not verifying the TLS/SSL certificates of the services"
       reason: "This is a warning that the SSL Context will be created without verifying certificates."
       action: "Stop the service and set the verifySslCertificatesOfServices parameter to `true`. Then restart the service. Do not use this option in a production environment."
 
-    - key: apiml.common.insecureHttpWarning
+    - key: org.zowe.apiml.common.insecureHttpWarning
       number: ZWEAM501
       type: WARNING
       text: "Service is connecting to Discovery service using insecure HTTP protocol."
       reason: "The service is connecting to the Discovery Service using the non-secure HTTP protocol."
       action: "For production use, start the Discovery Service in HTTPS mode and configure the services accordingly."
 
-    - key: apiml.common.errorReadingSecretKey
+    - key: org.zowe.apiml.common.errorReadingSecretKey
       number: ZWEAM502
       type: ERROR
       text: "Error reading secret key: '%s'"
       reason: "A key with the specified alias cannot be loaded from the keystore."
       action: "Ensure that the configured key is present, in the correct format, and not corrupt."
 
-    - key: apiml.common.errorLoadingSecretKey
+    - key: org.zowe.apiml.common.errorLoadingSecretKey
       number: ZWEAM503
       type: ERROR
       text: "Error reading secret key: '%s'"
@@ -92,7 +92,7 @@ messages:
       - The keystore is invalid or corrupted\n
       - The certificate is invalid or corrupted"
 
-    - key: apiml.common.errorLoadingPublicKey
+    - key: org.zowe.apiml.common.errorLoadingPublicKey
       number: ZWEAM504
       type: ERROR
       text: "Error reading public key: '%s'"
@@ -103,7 +103,7 @@ messages:
       - The keystore is invalid or corrupted\n
       - The certificate is invalid or corrupted"
 
-    - key: apiml.common.errorInitSsl
+    - key: org.zowe.apiml.common.errorInitSsl
       number: ZWEAM505
       type: ERROR
       text: "Error initializing SSL/TLS context: '%s'"
@@ -114,42 +114,42 @@ messages:
       - The keystore is invalid or corrupted\n
       - The certificate is invalid or corrupted"
 
-    - key: apiml.common.truststorePasswordNotDefined
+    - key: org.zowe.apiml.common.truststorePasswordNotDefined
       number: ZWEAM506
       type: ERROR
       text: "Truststore Password configuration parameter is not defined"
       reason: "Your truststore password was not set in the configuration."
       action: "Ensure that the parameter server.ssl.trustStorePassword contains the correct password for your truststore."
 
-    - key: apiml.common.truststoreNotDefined
+    - key: org.zowe.apiml.common.truststoreNotDefined
       number: ZWEAM507
       type: ERROR
       text: "Truststore configuration parameter is not defined but it is required"
       reason: "The truststore usage is mandatory, but the truststore location is not provided."
       action: "If a truststore is required, define the truststore configuration parameter by editing the server.ssl.truststore, server.ssl.truststorePassword and server.ssl.truststoreType parameters with valid data. If you do not require a truststore, change the trustStoreRequired boolean parameter to `false`."
 
-    - key: apiml.common.keystoreNotDefined
+    - key: org.zowe.apiml.common.keystoreNotDefined
       number: ZWEAM508
       type: ERROR
       text: "Keystore not found, server.ssl.keyStore configuration parameter is not defined"
       reason: "Your keystore path was not set in the configuration."
       action: "Ensure that the correct path to your keystore is contained in the parameter server.ssl.keyStore in the properties or yaml file of your service."
 
-    - key: apiml.common.keystorePasswordNotDefined
+    - key: org.zowe.apiml.common.keystorePasswordNotDefined
       number: ZWEAM509
       type: ERROR
       text: "Keystore password not found, server.ssl.keyStorePassword configuration parameter is not defined"
       reason: "Your keystore password was not set in the configuration."
       action: "Ensure that the correct password to your keystore in the parameter server.ssl.keyStorePassword is contained in the properties or yaml file of your service."
 
-    - key: apiml.common.invalidKeyAlias
+    - key: org.zowe.apiml.common.invalidKeyAlias
       number: ZWEAM510
       type: ERROR
       text: "Invalid key alias '%s'"
       reason: "The key alias was not found."
       action: "Ensure that the key alias provided for the key exists in the provided keystore."
 
-    - key: apiml.common.tlsError
+    - key: org.zowe.apiml.common.tlsError
       number: ZWEAM511
       type: ERROR
       text: "The certificate of the service accessed using URL '%s' is not trusted by the API Gateway: %s"
@@ -159,7 +159,7 @@ messages:
     # Various messages
     # 600-699
 
-    - key: apiml.common.apiInfoParsingError
+    - key: org.zowe.apiml.common.apiInfoParsingError
       number: ZWEAM600
       type: WARNING
       text: "Invalid parameter in metadata: '%s'"
@@ -169,14 +169,14 @@ messages:
     # Service specific messages
     # 700-999
 
-    - key: apiml.common.serviceTimeout
+    - key: org.zowe.apiml.common.serviceTimeout
       number: ZWEAM700
       type: ERROR
       text: "No response received within the allowed time: %s"
       reason: "No response was received within the allowed time."
       action: "Verify that the URL you are trying to reach is correct and all services are running."
 
-    - key: apiml.common.internalRequestError
+    - key: org.zowe.apiml.common.internalRequestError
       number: ZWEAM701
       type: ERROR
       text: "The request to the URL '%s' has failed: %s caused by: %s"

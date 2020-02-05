@@ -23,11 +23,11 @@ public class YamlMessageServiceTest {
     @Test
     public void testLoadMessages() {
         MessageService messageService = new YamlMessageService("/test-messages.yml");
-        Message message = messageService.createMessage("apiml.common.serviceTimeout", "3000");
-        assertEquals("Keys are different", "apiml.common.serviceTimeout", message.getMessageTemplate().getKey());
+        Message message = messageService.createMessage("org.zowe.apiml.common.serviceTimeout", "3000");
+        assertEquals("Keys are different", "org.zowe.apiml.common.serviceTimeout", message.getMessageTemplate().getKey());
 
-        message = messageService.createMessage("com.ca.mfaas.test.noArguments");
-        assertEquals("Keys are different", "com.ca.mfaas.test.noArguments", message.getMessageTemplate().getKey());
+        message = messageService.createMessage("org.zowe.apiml.test.noArguments");
+        assertEquals("Keys are different", "org.zowe.apiml.test.noArguments", message.getMessageTemplate().getKey());
     }
 
 

@@ -14,16 +14,16 @@ package org.zowe.apiml.security.common.error;
  * binding error keys and default error messages
  */
 public enum ErrorType {
-    BAD_CREDENTIALS("apiml.security.login.invalidCredentials", "Username or password are invalid."),
-    TOKEN_NOT_VALID("apiml.security.query.invalidToken", "Token is not valid."),
-    TOKEN_NOT_PROVIDED("apiml.security.query.tokenNotProvided", "No authorization token provided."),
-    TOKEN_EXPIRED("apiml.security.expiredToken", "Token is expired."),
-    AUTH_CREDENTIALS_NOT_FOUND("apiml.security.login.invalidInput", "Authorization header is missing, or request body is missing or invalid."),
-    AUTH_METHOD_NOT_SUPPORTED("apiml.security.invalidMethod", "Authentication method is not supported."),
-    AUTH_REQUIRED("apiml.security.authRequired", "Authentication is required."),
-    AUTH_GENERAL("apiml.security.generic", "A failure occurred when authenticating."),
-    SERVICE_UNAVAILABLE("apiml.security.serviceUnavailable", "Authentication service not available."),
-    GATEWAY_NOT_AVAILABLE("apiml.security.gatewayNotAvailable", "API Gateway Service not available.");
+    BAD_CREDENTIALS("org.zowe.apiml.security.login.invalidCredentials", "Username or password are invalid."),
+    TOKEN_NOT_VALID("org.zowe.apiml.security.query.invalidToken", "Token is not valid."),
+    TOKEN_NOT_PROVIDED("org.zowe.apiml.security.query.tokenNotProvided", "No authorization token provided."),
+    TOKEN_EXPIRED("org.zowe.apiml.security.expiredToken", "Token is expired."),
+    AUTH_CREDENTIALS_NOT_FOUND("org.zowe.apiml.security.login.invalidInput", "Authorization header is missing, or request body is missing or invalid."),
+    AUTH_METHOD_NOT_SUPPORTED("org.zowe.apiml.security.invalidMethod", "Authentication method is not supported."),
+    AUTH_REQUIRED("org.zowe.apiml.security.authRequired", "Authentication is required."),
+    AUTH_GENERAL("org.zowe.apiml.security.generic", "A failure occurred when authenticating."),
+    SERVICE_UNAVAILABLE("org.zowe.apiml.security.serviceUnavailable", "Authentication service not available."),
+    GATEWAY_NOT_AVAILABLE("org.zowe.apiml.security.gatewayNotAvailable", "API Gateway Service not available.");
 
     private final String errorMessageKey;
     private final String defaultMessage;

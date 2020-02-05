@@ -74,7 +74,7 @@ public class ServiceDefinitionProcessor {
                 if (isDir) {
                     log.debug("Found directory {}", directory.getPath());
                 } else {
-                    final Message msg = apimlLog.log("apiml.discovery.staticDefinitionsDirectoryNotValid", directory.getPath());
+                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionsDirectoryNotValid", directory.getPath());
                     context.getErrors().add(msg);
                 }
                 return isDir;
@@ -97,7 +97,7 @@ public class ServiceDefinitionProcessor {
             final File[] files = directory.listFiles((dir, name) -> name.endsWith(".yml"));
 
             if (files == null) {
-                final Message msg = apimlLog.log("apiml.discovery.errorReadingStaticDefinitionFolder", directory.getAbsolutePath());
+                final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorReadingStaticDefinitionFolder", directory.getAbsolutePath());
                 context.getErrors().add(msg);
                 continue;
             }
@@ -125,7 +125,7 @@ public class ServiceDefinitionProcessor {
         try {
             content = new String(Files.readAllBytes(Paths.get(fileName)));
         } catch (IOException e) {
-            final Message msg = apimlLog.log("apiml.discovery.errorParsingStaticDefinitionFile", fileName);
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionFile", fileName);
             context.getErrors().add(msg);
             return null;
         }

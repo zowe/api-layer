@@ -42,9 +42,9 @@ public class SecurityTokenErrorCheck implements ErrorCheck {
             ApiMessageView messageView = null;
             Throwable cause = exc.getCause();
             if (cause instanceof TokenExpireException) {
-                messageView = messageService.createMessage("apiml.gateway.security.expiredToken").mapToView();
+                messageView = messageService.createMessage("org.zowe.apiml.gateway.security.expiredToken").mapToView();
             } else if (cause instanceof TokenNotValidException) {
-                messageView = messageService.createMessage("apiml.gateway.security.invalidToken").mapToView();
+                messageView = messageService.createMessage("org.zowe.apiml.gateway.security.invalidToken").mapToView();
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(MediaType.APPLICATION_JSON_UTF8).body(messageView);
         }

@@ -59,7 +59,7 @@ public class TimeoutErrorCheck implements ErrorCheck {
     }
 
     private ResponseEntity<ApiMessageView> gatewayTimeoutResponse(String messageText) {
-        Message message = messageService.createMessage("apiml.common.serviceTimeout", messageText);
+        Message message = messageService.createMessage("org.zowe.apiml.common.serviceTimeout", messageText);
         return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(message.mapToView());
     }
 }

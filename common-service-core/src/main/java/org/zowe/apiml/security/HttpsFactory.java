@@ -71,7 +71,7 @@ public class HttpsFactory {
         if (config.isVerifySslCertificatesOfServices()) {
             return createSecureSslSocketFactory();
         } else {
-            apimlLog.log("apiml.common.ignoringSsl");
+            apimlLog.log("org.zowe.apiml.common.ignoringSsl");
             return createIgnoringSslSocketFactory();
         }
     }
@@ -84,7 +84,7 @@ public class HttpsFactory {
         try {
             return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).setProtocol(config.getProtocol()).build();
         } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
-            apimlLog.log("apiml.common.errorInitSsl", e.getMessage());
+            apimlLog.log("org.zowe.apiml.common.errorInitSsl", e.getMessage());
             throw new HttpsConfigError("Error initializing SSL/TLS context: " + e.getMessage(), e,
                     ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
         }
@@ -97,7 +97,7 @@ public class HttpsFactory {
 
             if (!config.getTrustStore().startsWith(SecurityUtils.SAFKEYRING)) {
                 if (config.getTrustStorePassword() == null) {
-                    apimlLog.log("apiml.common.truststorePasswordNotDefined");
+                    apimlLog.log("org.zowe.apiml.common.truststorePasswordNotDefined");
                     throw new HttpsConfigError("server.ssl.trustStorePassword configuration parameter is not defined",
                             ErrorCode.TRUSTSTORE_PASSWORD_NOT_DEFINED, config);
                 }
@@ -113,7 +113,7 @@ public class HttpsFactory {
             }
         } else {
             if (config.isTrustStoreRequired()) {
-                apimlLog.log("apiml.common.truststoreNotDefined");
+                apimlLog.log("org.zowe.apiml.common.truststoreNotDefined");
                 throw new HttpsConfigError(
                         "server.ssl.trustStore configuration parameter is not defined but trust store is required",
                         ErrorCode.TRUSTSTORE_NOT_DEFINED, config);
@@ -148,12 +148,12 @@ public class HttpsFactory {
     private void loadKeystoreMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         if (config.getKeyStore() == null) {
-            apimlLog.log("apiml.common.keystoreNotDefined");
+            apimlLog.log("org.zowe.apiml.common.keystoreNotDefined");
             throw new HttpsConfigError("server.ssl.keyStore configuration parameter is not defined",
                     ErrorCode.KEYSTORE_NOT_DEFINED, config);
         }
         if (config.getKeyStorePassword() == null) {
-            apimlLog.log("apiml.common.keystorePasswordNotDefined");
+            apimlLog.log("org.zowe.apiml.common.keystorePasswordNotDefined");
             throw new HttpsConfigError("server.ssl.keyStorePassword configuration parameter is not defined",
                     ErrorCode.KEYSTORE_PASSWORD_NOT_DEFINED, config);
         }
@@ -184,7 +184,7 @@ public class HttpsFactory {
                 return secureSslContext;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                     | UnrecoverableKeyException | KeyManagementException e) {
-                apimlLog.log("apiml.common.sslContextInitializationError", e.getMessage());
+                apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
                 throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
                         ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -197,7 +197,7 @@ public class HttpsFactory {
         if (config.getKeyAlias() != null) {
             KeyStore ks = SecurityUtils.loadKeyStore(config);
             if (!ks.containsAlias(config.getKeyAlias())) {
-                apimlLog.log("apiml.common.invalidKeyAlias", config.getKeyAlias());
+                apimlLog.log("org.zowe.apiml.common.invalidKeyAlias", config.getKeyAlias());
                 throw new HttpsConfigError(String.format("Invalid key alias '%s'", config.getKeyAlias()), ErrorCode.WRONG_KEY_ALIAS, config);
             }
         }
@@ -251,7 +251,7 @@ public class HttpsFactory {
         // See:
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("apiml.common.insecureHttpWarning");
+            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
             System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
             setSystemSslProperties();

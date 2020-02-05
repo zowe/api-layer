@@ -98,8 +98,8 @@ public class EncodedCharactersFilter extends ZuulFilter {
     }
 
     private void rejectRequest(RequestContext ctx) {
-        Message message = messageService.createMessage("apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
-        apimlLog.log("apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
+        Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
+        apimlLog.log(message);
 
         ctx.setSendZuulResponse(false);
         ctx.addZuulResponseHeader("Content-Type", "application/json");

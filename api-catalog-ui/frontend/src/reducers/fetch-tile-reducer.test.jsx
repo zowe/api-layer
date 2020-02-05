@@ -21,7 +21,7 @@ describe('>>> Tile reducer tests', () => {
                 serviceId: 'apicatalog',
                 title: 'API Catalog',
                 description:
-                    'MFaaS Microservice to locate and display API documentation for MFaaS discovered microservices',
+                    'API ML Microservice to locate and display API documentation for API ML discovered microservices',
                 status: 'UP',
                 secured: false,
                 homePageUrl: '/ui/v1/apicatalog',

@@ -53,7 +53,7 @@ public class RegisterToApiLayer {
 
             if (apiMediationClient.getEurekaClient() != null) {
                 if (config != null) {
-                    logger.log("apiml.enabler.registration.renew"
+                    logger.log( "org.zowe.apiml.enabler.registration.renew"
                         , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls()
                         , newConfig.getBaseUrl(), newConfig.getServiceIpAddress(), newConfig.getDiscoveryServiceUrls()
                     );
@@ -61,7 +61,7 @@ public class RegisterToApiLayer {
 
                 unregister();
             } else {
-                logger.log("apiml.enabler.registration.initial"
+                logger .log("org.zowe.apiml.enabler.registration.initial"
                     , newConfig.getBaseUrl(), newConfig.getServiceIpAddress(), newConfig.getDiscoveryServiceUrls()
                 );
             }
@@ -88,11 +88,11 @@ public class RegisterToApiLayer {
         try {
             apiMediationClient.register(config);
 
-            logger.log("apiml.enabler.registration.successful",
+            logger .log("org.zowe.apiml.enabler.registration.successful",
                 config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
             log.debug("Registering to API Mediation Layer with settings: {}", config.toString());
         } catch (ServiceDefinitionException e) {
-            logger.log("apiml.enabler.registration.fail"
+            logger .log("org.zowe.apiml.enabler.registration.fail"
                 , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls(), e.toString());
             log.debug(String.format("Service %s registration to API ML failed: ", config.getBaseUrl()), e);
         }

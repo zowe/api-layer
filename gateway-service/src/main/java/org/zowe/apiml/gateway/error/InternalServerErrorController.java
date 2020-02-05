@@ -84,7 +84,7 @@ public class InternalServerErrorController implements ErrorController {
 
     private ResponseEntity<ApiMessageView> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
-        Message message = messageService.createMessage("apiml.common.internalRequestError",
+        Message message = messageService.createMessage("org.zowe.apiml.common.internalRequestError",
             ErrorUtils.getGatewayUri(request),
             ExceptionUtils.getMessage(exc),
             ExceptionUtils.getRootCauseMessage(exc));

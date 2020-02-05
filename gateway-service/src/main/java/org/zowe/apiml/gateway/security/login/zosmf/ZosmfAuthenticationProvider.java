@@ -110,10 +110,10 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
 
             return tokenAuthentication;
         } catch (ResourceAccessException e) {
-            apimlLog.log("apiml.security.serviceUnavailable", uri, e.getMessage());
+            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", uri, e.getMessage());
             throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         } catch (RestClientException e) {
-            apimlLog.log("apiml.security.generic", e.getMessage(), uri);
+            apimlLog.log("org.zowe.apiml.security.generic", e.getMessage(), uri);
             throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
         }
     }
@@ -126,7 +126,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
      */
     private String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
-            apimlLog.log("apiml.security.zosmfInstanceNotFound", zosmf);
+            apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmf);
             return new ServiceNotAccessibleException("z/OSMF instance not found or incorrectly configured.");
         };
 
@@ -178,11 +178,11 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
                 .filter(zn -> zn.has(ZOSMF_DOMAIN))
                 .map(zn -> zn.get(ZOSMF_DOMAIN).asText())
                 .orElseThrow(() -> {
-                    apimlLog.log("apiml.security.zosmfDomainIsEmpty", ZOSMF_DOMAIN);
+                    apimlLog.log("org.zowe.apiml.security.zosmfDomainIsEmpty", ZOSMF_DOMAIN);
                     return new AuthenticationServiceException("z/OSMF domain cannot be read.");
                 });
         } catch (IOException e) {
-            apimlLog.log("apiml.security.errorParsingZosmfResponse", e.getMessage());
+            apimlLog.log("org.zowe.apiml.security.errorParsingZosmfResponse", e.getMessage());
             throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
         }
     }

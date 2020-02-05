@@ -46,7 +46,7 @@ public class TlsErrorCheck implements ErrorCheck {
     }
 
     private ResponseEntity<ApiMessageView> tlsErrorResponse(HttpServletRequest request, String message) {
-        ApiMessageView apiMessage = messageService.createMessage("apiml.common.tlsError", ErrorUtils.getGatewayUri(request),
+        ApiMessageView apiMessage = messageService.createMessage("org.zowe.apiml.common.tlsError", ErrorUtils.getGatewayUri(request),
                 message).mapToView();
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(apiMessage);
     }

@@ -1,5 +1,5 @@
 messages:
-    - key: com.ca.mfaas.test.noArguments
+    - key: org.zowe.apiml.test.noArguments
       number: CSC0001
       level: ERROR
       text: "No argument message"

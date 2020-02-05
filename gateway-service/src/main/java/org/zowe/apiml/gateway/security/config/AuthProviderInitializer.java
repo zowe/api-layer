@@ -57,7 +57,7 @@ public class AuthProviderInitializer {
         if (provider.equals(LoginProvider.ZOSMF)) {
             auth.authenticationProvider(zosmfAuthenticationProvider);
         } else if (provider.equals(LoginProvider.DUMMY)) {
-            apimlLog.log("apiml.security.loginEndpointInDummyMode");
+            apimlLog.log("org.zowe.apiml.security.loginEndpointInDummyMode");
             auth.authenticationProvider(dummyAuthenticationProvider);
         }
         auth.authenticationProvider(tokenAuthenticationProvider);
@@ -73,7 +73,7 @@ public class AuthProviderInitializer {
         try {
             provider = LoginProvider.getLoginProvider(authProvider);
         } catch (IllegalArgumentException ex) {
-            apimlLog.log("apiml.security.invalidAuthenticationProvider", authProvider);
+            apimlLog.log("org.zowe.apiml.security.invalidAuthenticationProvider", authProvider);
         }
         return provider;
     }

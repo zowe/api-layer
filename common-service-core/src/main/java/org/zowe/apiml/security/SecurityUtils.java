@@ -52,7 +52,7 @@ public class SecurityUtils {
                 }
                 return Base64.getEncoder().encodeToString(key.getEncoded());
             } catch (UnrecoverableKeyException e) {
-                apimlLog.log("apiml.common.errorReadingSecretKey", e.getMessage());
+                apimlLog.log("org.zowe.apiml.common.errorReadingSecretKey", e.getMessage());
                 throw new HttpsConfigError("Error reading secret key: " + e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -80,7 +80,7 @@ public class SecurityUtils {
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
                 | UnrecoverableKeyException e) {
-                apimlLog.log("apiml.common.errorLoadingSecretKey", e.getMessage());
+                apimlLog.log("org.zowe.apiml.common.errorLoadingSecretKey", e.getMessage());
                 throw new HttpsConfigError(e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -130,7 +130,7 @@ public class SecurityUtils {
                     return cert.getPublicKey();
                 }
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
-                apimlLog.log("apiml.common.errorLoadingPublicKey", e.getMessage());
+                apimlLog.log("org.zowe.apiml.common.errorLoadingPublicKey", e.getMessage());
                 throw new HttpsConfigError(e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }
@@ -163,7 +163,7 @@ public class SecurityUtils {
                 }
                 return key;
             } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException | UnrecoverableKeyException e) {
-                apimlLog.log("apiml.common.errorLoadingSecretKey", e.getMessage());
+                apimlLog.log("org.zowe.apiml.common.errorLoadingSecretKey", e.getMessage());
                 throw new HttpsConfigError("Error loading secret key: " + e.getMessage(), e,
                     HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
             }

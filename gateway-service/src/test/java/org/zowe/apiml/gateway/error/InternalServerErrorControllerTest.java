@@ -36,7 +36,7 @@ public class InternalServerErrorControllerTest {
         ResponseEntity<ApiMessageView> response = errorController.error(request);
 
         assertEquals(523,  response.getStatusCodeValue());
-        assertEquals("apiml.common.internalRequestError",  response.getBody().getMessages().get(0).getMessageKey());
+        assertEquals("org.zowe.apiml.common.internalRequestError",  response.getBody().getMessages().get(0).getMessageKey());
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains("Hello"));
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains("/uri"));
     }

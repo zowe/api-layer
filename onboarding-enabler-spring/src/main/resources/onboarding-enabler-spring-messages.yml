@@ -1,22 +1,22 @@
 messages:
 
-    - key: apiml.enabler.registration.successful
+    - key: org.zowe.apiml.enabler.registration.successful
       number: ZWEA001
       type: INFO
       text: "Registering to API Mediation Layer: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
 
-    - key: apiml.enabler.registration.initial
+    - key: org.zowe.apiml.enabler.registration.initial
       number: ZWEA002
       type: INFO
       text: "Registering to API Mediation Layer: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
 
-    - key: apiml.enabler.registration.renew
+    - key: org.zowe.apiml.enabler.registration.renew
       number: ZWEA003
       type: INFO
       text: "Already registered to API Mediation Layer. Will Unregister then register with actual settings: Old values:\
    {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}; New values: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
 
-    - key: apiml.enabler.registration.fail
+    - key: org.zowe.apiml.enabler.registration.fail
       number: ZWEA004
       type: ERROR
       text: "Registering to API Mediation Layer failed: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}\
