@@ -10,22 +10,19 @@
 
 package org.zowe.apiml.discoverableclient;
 
-import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.equalTo;
 
 import java.io.File;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 
-@Category(AdditionalLocalTest.class)
 public class MultipartPutIntegrationTest {
     private static final String MULTIPART_PATH = "/api/v1/discoverableclient/multipart";
     private final String configFileName = "example.txt";
@@ -40,14 +37,14 @@ public class MultipartPutIntegrationTest {
     @Test
     public void shouldDoPutRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
-        String expectedResponseBody = "{\"fileName\":\"example.txt\",\"fileType\":\"application/octet-stream\",\"size\":40}";
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
         given().
             contentType("multipart/form-data").
             multiPart(new File(classLoader.getResource(configFileName).getFile())).
         expect().
             statusCode(200).
-            body(is(expectedResponseBody)).
+            body("fileName", equalTo("example.txt")).
+            body("fileType", equalTo("application/octet-stream")).
         when().
             put(uri);
     }
@@ -55,14 +52,14 @@ public class MultipartPutIntegrationTest {
     @Test
     public void shouldDoPostRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
-        String expectedResponseBody = "{\"fileName\":\"example.txt\",\"fileType\":\"application/octet-stream\",\"size\":40}";
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
         given().
             contentType("multipart/form-data").
             multiPart(new File(classLoader.getResource(configFileName).getFile())).
         expect().
             statusCode(200).
-            body(is(expectedResponseBody)).
+            body("fileName", equalTo("example.txt")).
+            body("fileType", equalTo("application/octet-stream")).
         when().
             post(uri);
     }
