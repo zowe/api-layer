@@ -38,30 +38,33 @@ public class ApiMediationClientImplTest {
         Ssl ssl = new Ssl(false, false, "TLSv1.2", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
             "localhost", "password",
             "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
-            "../keystore/localhost/localhost.truststore.p12","password", "PKCS12");
-        List<Route> routes = new ArrayList<Route>();
+            "../keystore/localhost/localhost.truststore.p12", "password", "PKCS12");
+        List<Route> routes = new ArrayList<>();
         Route apiRoute = new Route("api/v1", "/hellospring/api/v1");
         Route apiDocRoute = new Route("api/v1/api-doc", "/hellospring/api-doc");
         routes.add(apiRoute);
         routes.add(apiDocRoute);
-        ApiMediationClient client = new ApiMediationClientImpl();
-        ApiMediationServiceConfig config = new ApiMediationServiceConfig();
-        config.setApiInfo(Collections.singletonList(apiInfo));
-        config.setCatalog(catalogUiTile);
-        config.setAuthentication(authentication);
-        config.setRoutes(routes);
-        config.setDescription("Example for exposing a Spring REST API");
-        config.setTitle("Hello Spring REST API");
-        config.setServiceId("service");
-        config.setBaseUrl("http://host:1000/service");
-        config.setHealthCheckRelativeUrl("");
-        config.setHomePageRelativeUrl("");
-        config.setStatusPageRelativeUrl("");
-        config.setDiscoveryServiceUrls(Arrays.asList("https://localhost:10011/eureka"));
-        config.setSsl(ssl);
-        config.setServiceIpAddress("127.0.0.1");
 
+        ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
+            .apiInfo(Collections.singletonList(apiInfo))
+            .catalog(catalogUiTile)
+            .authentication(authentication)
+            .routes(routes)
+            .description("Example for exposing a Spring REST API")
+            .title("Hello Spring REST API")
+            .serviceId("service")
+            .baseUrl("http://host:1000/service")
+            .healthCheckRelativeUrl("")
+            .homePageRelativeUrl("")
+            .statusPageRelativeUrl("")
+            .discoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka"))
+            .ssl(ssl)
+            .serviceIpAddress("127.0.0.1")
+            .build();
+
+        ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
+
         assertNotNull(client.getEurekaClient());
         assertEquals("SERVICE", client.getEurekaClient().getApplicationInfoManager().getInfo().getAppName());
         assertEquals(InstanceInfo.InstanceStatus.UP, client.getEurekaClient().getApplicationInfoManager().getInfo().getStatus());
@@ -119,8 +122,8 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badProtocolForBaseUrl() throws ServiceDefinitionException  {
-        exceptionRule.expect( ServiceDefinitionException.class);
+    public void badProtocolForBaseUrl() throws ServiceDefinitionException {
+        exceptionRule.expect(ServiceDefinitionException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -133,7 +136,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void testMultipleSubsequentRegistrations() throws ServiceDefinitionException {
-        exceptionRule.expect( ServiceDefinitionException.class);
+        exceptionRule.expect(ServiceDefinitionException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -152,7 +155,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void testInitializationServiceDefinitionException() throws ServiceDefinitionException {
-        exceptionRule.expect( ServiceDefinitionException.class);
+        exceptionRule.expect(ServiceDefinitionException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -168,7 +171,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void testInitializationRuntimeException() throws ServiceDefinitionException {
-        exceptionRule.expect( ServiceDefinitionException.class);
+        exceptionRule.expect(ServiceDefinitionException.class);
         exceptionRule.expectCause(isA(NullPointerException.class));
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
@@ -185,7 +188,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void testInitialization_InvalidDocumentationUrl() throws ServiceDefinitionException {
-        exceptionRule.expect( ServiceDefinitionException.class);
+        exceptionRule.expect(ServiceDefinitionException.class);
         exceptionRule.expectCause(isA(MetadataValidationException.class));
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
