@@ -28,9 +28,6 @@ services:
           swaggerUrl: https://localhost:10012/discoverableclient/v2/api-docs
 
     - serviceId: staticclient2  # unique lowercase ID of the service
-      authentication:
-        scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
-        applid: TSTAPPL  # APPLID to generate PassTickets for this service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Staticaly Defined Service 2  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition  # Description of the service in the API catalog
@@ -46,6 +43,9 @@ services:
           serviceRelativeUrl: /
         - gatewayUrl: ws/v1
           serviceRelativeUrl: /ws
+      authentication:
+          scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
+          applid: TSTAPPL  # APPLID to generate PassTickets for this service
       # List of APIs provided by the service (currently only one is supported):
       apiInfo:
         - apiId: org.zowe.discoverableclient
