@@ -3,7 +3,7 @@ messages:
     # Info messages
     # 000-099
 
-    - key: apiml.common.serviceStarted
+    - key: org.zowe.apiml.common.serviceStarted
       number: ZWEAM000
       type: INFO
       text: "%s has been started in %s seconds"
@@ -13,14 +13,14 @@ messages:
     # General messages
     # 100-199
 
-    - key: apiml.common.gatewayNotFoundForTransformRequest
+    - key: org.zowe.apiml.common.gatewayNotFoundForTransformRequest
       number: ZWEAO102
       type: ERROR
       text: "Gateway not found yet, transform service cannot perform the request"
       reason: "The Transform service was requested to transform a url, but the Gateway instance was not discovered."
       action: "Do not begin performing requests until the API Mediation Layer fully initializes after startup. Check that your Discovery service is running and that all services (especially the Gateway) are discovered correctly."
 
-    - key: apiml.common.gatewayInstanceInitializerStopped
+    - key: org.zowe.apiml.common.gatewayInstanceInitializerStopped
       number: ZWEAO104
       type: WARNING
       text: "GatewayInstanceInitializer has been stopped due to exception: %s"
@@ -30,7 +30,7 @@ messages:
     # HTTP,Protocol messages
     # 400-499
 
-    - key: apiml.common.unknownHttpsConfigError
+    - key: org.zowe.apiml.common.unknownHttpsConfigError
       number: ZWEAO401
       type: ERROR
       text: "Unknown error in HTTPS configuration: '%s'"

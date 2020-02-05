@@ -4,7 +4,7 @@
             "messageType": "ERROR",
             "messageNumber": "ZWEAS120E",
             "messageContent": "Invalid username or password",
-            "messageKey": "com.ca.mfaas.security.invalidUsername"
+            "messageKey": "org.zowe.apiml.security.invalidUsername"
         }
     ]
 }

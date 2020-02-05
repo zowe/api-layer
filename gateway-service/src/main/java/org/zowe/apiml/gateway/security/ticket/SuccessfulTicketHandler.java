@@ -57,11 +57,11 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
             mapper.writeValue(response.getWriter(), getTicketResponse(request, authentication));
         } catch (ApplicationNameNotFoundException e) {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
-            ApiMessageView messageView = messageService.createMessage("apiml.security.ticket.invalidApplicationName").mapToView();
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
             mapper.writeValue(response.getWriter(), messageView);
         } catch (IRRPassTicketGenerationException e) {
             response.setStatus(e.getHttpStatus());
-            ApiMessageView messageView = messageService.createMessage("apiml.security.ticket.generateFailed",
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
                 e.getErrorCode().getMessage()).mapToView();
             mapper.writeValue(response.getWriter(), messageView);
         }

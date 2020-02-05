@@ -73,7 +73,7 @@ describe('>>> Login page component tests', () => {
             messageNumber: 'ZWEAS120E',
             messageContent:
                 "Authentication problem: 'Username or password are invalid.' for URL '/apicatalog/auth/login'",
-            messageKey: 'com.ca.mfaas.security.invalidUsername',
+            messageKey: 'org.zowe.apiml.security.invalidUsername',
         });
         expect(messageText).toEqual('(ZWEAS120E) Invalid username or password');
     });
@@ -86,7 +86,7 @@ describe('>>> Login page component tests', () => {
             messageNumber: 'ZWEAS104E',
             messageContent:
                 "Authentication service is not available by URL",
-            messageKey: 'com.ca.mfaas.security.authenticationRequired',
+            messageKey: 'org.zowe.apiml.security.authenticationRequired',
         });
         expect(messageText).toEqual('(ZWEAS104E) Authentication service not available, please try again later');
     });
@@ -99,7 +99,7 @@ describe('>>> Login page component tests', () => {
             messageNumber: 'ZWEAS102E',
             messageContent:
                 "Token is expired for URL",
-            messageKey: 'apiml.security.expiredToken',
+            messageKey: 'org.zowe.apiml.security.expiredToken',
         });
         expect(messageText).toEqual('(ZWEAS102E) Session has expired, please login again');
     });
@@ -112,7 +112,7 @@ describe('>>> Login page component tests', () => {
             messageNumber: 'ZWEAS100E',
             messageContent:
                 "Authentication exception for URL",
-            messageKey: 'apiml.security.generic',
+            messageKey: 'org.zowe.apiml.security.generic',
         });
         expect(messageText).toEqual('(ZWEAS100E) A generic failure occurred while authenticating');
     });
@@ -125,7 +125,7 @@ describe('>>> Login page component tests', () => {
             messageNumber: 'ZWEAM700E',
             messageContent:
                 "No response received within the allowed time",
-            messageKey: 'apiml.common.serviceTimeout',
+            messageKey: 'org.zowe.apiml.common.serviceTimeout',
         });
         expect(messageText).toEqual(`(ZWEAM700E) Request timeout, please try again later`);
     });

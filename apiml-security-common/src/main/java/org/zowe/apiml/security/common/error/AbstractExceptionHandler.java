@@ -78,8 +78,8 @@ public abstract class AbstractExceptionHandler {
         try {
             mapper.writeValue(response.getWriter(), message);
         } catch (IOException e) {
-            apimlLog.log("apiml.security.errorWritingResponse", e.getMessage());
-            throw new ServletException("Error writing response", e);
+            apimlLog.log("org.zowe.apiml.security.errorWrittingResponse", e.getMessage());
+            throw new ServletException("Error writting response", e);
         }
     }
 }

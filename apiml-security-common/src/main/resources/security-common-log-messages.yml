@@ -5,14 +5,14 @@ messages:
 
     # General messages
     # 100-199
-    - key: apiml.security.expiredToken
+    - key: org.zowe.apiml.security.expiredToken
       number: ZWEAT100
       type: ERROR
       text: "Token is expired for URL '%s'"
       reason: "The validity of the token is expired."
       action: "Obtain new token by performing an authentication request."
 
-    - key: apiml.security.errorWritingResponse
+    - key: org.zowe.apiml.security.errorWrittingResponse
       number: ZWEAT103
       type: ERROR
       text: "Could not write response: %s"
@@ -28,7 +28,7 @@ messages:
     # Various messages
     # 600-699
 
-    - key: apiml.security.zosmfNotFound
+    - key: org.zowe.apiml.security.zosmfNotFound
       number: ZWEAT601
       type: ERROR
       text: "z/OSMF service name not found. Set parameter apiml.security.auth.zosmfServiceId to your service ID."

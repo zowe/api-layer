@@ -37,7 +37,7 @@ public class CatalogApiDocControllerExceptionHandler {
      */
     @ExceptionHandler(ApiDocNotFoundException.class)
     public ResponseEntity<ApiMessageView> handleApiDocNotFoundException(ApiDocNotFoundException exception) {
-        Message message = messageService.createMessage("apiml.apicatalog.apiDocNotFound", exception.getMessage());
+        Message message = messageService.createMessage("org.zowe.apiml.apicatalog.apiDocNotFound", exception.getMessage());
 
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -53,7 +53,7 @@ public class CatalogApiDocControllerExceptionHandler {
     @ExceptionHandler(ServiceNotFoundException.class)
     public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ServiceNotFoundException exception) {
 
-        Message message = messageService.createMessage("apiml.apicatalog.serviceNotFound", exception.getMessage());
+        Message message = messageService.createMessage("org.zowe.apiml.apicatalog.serviceNotFound", exception.getMessage());
 
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)

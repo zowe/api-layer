@@ -28,7 +28,7 @@ public class EnableApiDiscoveryConfigTest {
             baseUrl, ipAddress, discovery);
 
         MessageService messageService = new EnableApiDiscoveryConfig().messageServiceDiscovery();
-        Message message = messageService.createMessage("apiml.enabler.registration.successful",
+        Message message = messageService.createMessage("org.zowe.apiml.enabler.registration.successful",
             baseUrl, ipAddress, discovery);
 
         assertTrue(message.mapToLogMessage().contains(correctMessage));

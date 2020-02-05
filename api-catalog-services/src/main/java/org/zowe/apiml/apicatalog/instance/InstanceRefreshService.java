@@ -100,7 +100,7 @@ public class InstanceRefreshService {
             log.debug("Failed to update cache with discovered services: {}", e.getMessage());
             Thread.currentThread().interrupt();
         } catch (ExecutionException | TimeoutException e) {
-            apimlLog.log("apiml.apicatalog.cacheUpdateError", e.getMessage());
+            apimlLog.log("org.zowe.apiml.apicatalog.cacheUpdateError", e.getMessage());
         }
     }
 
