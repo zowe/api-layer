@@ -1,11 +1,41 @@
+buildscript {
+    repositories mavenRepositories
+
+    ext {
+        if (project.hasProperty('enabler')) {
+            if(enabler.contains('v1')) {
+                springBootVersion = rootProject.ext.springBootVersionV1
+            } else {
+                springBootVersion = rootProject.ext.springBootVersion
+            }
+        } else {
+            springBootVersion = rootProject.ext.springBootVersion
+        }
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+publish {
+    outputs.upToDateWhen { false }
+    doLast {
+        println "onboarded-enabler-spring-${springBootVersion} has been successfully published"
+    }
+}
+
 dependencies {
     compile project(':apiml-utility')
     compile project(':onboarding-enabler-java')
+    compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
 
     compile libraries.lombok
 
-    testImplementation libraries.spring_boot_starter_test
-    testImplementation libraries.mockito_core
+    testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testCompile libraries.mockito_core
 
     annotationProcessor libraries.spring_boot_configuration_processor
     annotationProcessor libraries.lombok

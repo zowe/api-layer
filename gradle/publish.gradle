@@ -1,8 +1,5 @@
 ext.springBootEnablers= [
-    'integration-enabler-spring-v1',
-    'integration-enabler-spring-v2',
-    'onboarding-enabler-spring-v1',
-    'onboarding-enabler-spring-v2'
+    'onboarding-enabler-spring'
 ]
 
 ext.javaEnablers = [
@@ -11,7 +8,7 @@ ext.javaEnablers = [
 
 ext.javaLibraries = [
     'common-service-core',
-    'apml-utility',
+    'apiml-utility',
     'apiml-common',
     'apiml-security-common',
     'security-service-client-spring'
@@ -22,10 +19,6 @@ ext.enablers = ext.springBootEnablers + ext.javaEnablers
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
 
 ext.publishTasksList = projectsToPublish.collect { ":" + it + ":publish" }
-ext.externalServiceDependencies = ext.enablers + ext.javaLibraries
-
-ext.publishExternalServiceDependenciesList = externalServiceDependencies.collect { ":" + it + ":publish" }
-
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
     apply plugin: "maven"
@@ -51,13 +44,10 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
                 groupId 'org.zowe.apiml.sdk'
                 version rootProject.version
                 if (project.name in springBootEnablers) {
-                    if (project.name.contains("spring-v1")) {
-                        artifactId "mfaas-${project.name}-springboot-${springBootVersionV1}"
-                    } else {
-                        artifactId "mfaas-${project.name}-springboot-${springBootVersion}"
-                    }
+                    def enablerPrefix = project.hasProperty("enabler") ? project.getProperty("enabler") : "v2"
+                    artifactId "test2-${project.name}-" + enablerPrefix + "-springboot-${springBootVersion}"
                 } else {
-                    artifactId "mfaas-${project.name}"
+                    artifactId "test2-${project.name}"
                 }
 
                 from components.java
@@ -90,15 +80,19 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
 
 //noinspection GroovyAssignabilityCheck
 task publishSdkArtifacts {
-    group 'Zoe Publishing'
-    description 'Publish SDK libraries for main version of Spring Boot to Zoe Artifactory'
+    group 'Zowe Publishing'
+    description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
     doLast {
-        println 'Published SDK libraries for main version of Spring Boot to Zoe Artifactory'
+        println 'Published SDK libraries for main version of Spring Boot to Zowe Artifactory'
     }
 }
 
 task publishExternalServiceDependencies {
     group 'External dependencies Publishing'
 }
+
+task publishEnabler {
+    dependsOn "onboarding-enabler-spring:publish"
+}
+
 publishSdkArtifacts.dependsOn publishTasksList
-publishExternalServiceDependencies.dependsOn publishExternalServiceDependenciesList

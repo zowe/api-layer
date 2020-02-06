@@ -26,7 +26,7 @@ springBoot {
 
 dependencies {
     implementation project(':common-service-core')
-    implementation project(':onboarding-enabler-spring-v2')
+    implementation project(':onboarding-enabler-spring')
 
     implementation libraries.springFox
     implementation libraries.spring_boot_starter

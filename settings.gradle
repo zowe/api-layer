@@ -20,5 +20,3 @@ include 'security-service-client-spring'
 
 include 'onboarding-enabler-java'
 include 'onboarding-enabler-spring'
-include 'onboarding-enabler-spring-v1'
-include 'onboarding-enabler-spring-v2'
