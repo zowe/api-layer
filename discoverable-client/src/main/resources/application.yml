@@ -33,6 +33,7 @@ logging:
     level:
         ROOT: INFO
         org.zowe.apiml: INFO
+        #org.apache.http.wire: DEBUG
         org.springframework: WARN
         org.apache.catalina: WARN
         com.netflix: WARN
@@ -44,7 +45,7 @@ logging:
 
 spring:
     application:
-        name: ${apiml.service.id} # discoverableclient
+        name: discoverableclient
     mvc:
         throw-exception-if-no-handler-found: true
     output:
@@ -52,20 +53,24 @@ spring:
             enabled: detect
 
 apiml:
-    enabled: ${eureka.client.enabled}
-    enableUrlEncodedCharacters: true
+    enabled: true
     service:
-        serviceId: ${apiml.service.id}
-        title: ${eureka.instance.metadata-map.discovery.service.title} # Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
-        description:  ${eureka.instance.metadata-map.discovery.service.description} # Sample API services to demonstrate Spring Integration Enabler
+        serviceId: discoverableclient
+        title: Service Spring Integration Enabler sample application API
+        description:  Sample API services to demonstrate Spring Integration Enabler
+
+        discoveryServiceUrls: https://localhost:10011/eureka/
 
         scheme: https
         # Will be defined by -D on MF: hostname: ${server.hostname}
         # Will be defined by -D on MF: port: ${server.port}
         serviceIpAddress: ${apiml.service.ipAddress}
+        hostname: localhost
 
+        ipAddress: 127.0.0.1
+        port: 10012
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
-        contextPath: /${apiml.service.id}
+        contextPath: /${apiml.service.serviceId}
 
         homePageRelativeUrl: ${apiml.service.contextPath}
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
@@ -104,13 +109,12 @@ apiml:
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}
 
-            ### DEFINE FOLLOWING PROPERTIES IN EXTERNAL CONFIGURATION
-            keyAlias: ${server.ssl.keyAlias} #localhost-blah
-            keyPassword: ${server.ssl.keyPassword} #password-blah
-            keyStore: ${server.ssl.keyStore} #keystore/localhost/localhost.keystore.p12-blah
-            keyStorePassword: ${server.ssl.keyStorePassword} #password-blah
-            trustStore: ${server.ssl.trustStore} #keystore/localhost/localhost.truststore.p12-blah
-            trustStorePassword: ${server.ssl.trustStorePassword} #password-blah
+            keyAlias: ${server.ssl.keyAlias}
+            keyPassword: ${server.ssl.keyPassword}
+            keyStore: ${server.ssl.keyStore}
+            keyStorePassword: ${server.ssl.keyStorePassword}
+            trustStore: ${server.ssl.trustStore}
+            trustStorePassword: ${server.ssl.trustStorePassword}
 
 server:
     scheme: ${apiml.service.scheme}
@@ -119,7 +123,7 @@ server:
     address: ${apiml.service.ipAddress} #127.0.0.1
 
     servlet:
-        contextPath: /${apiml.service.id}
+        contextPath: /${apiml.service.serviceId}
 
     ssl:
         enabled: true
@@ -128,6 +132,13 @@ server:
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
         keyStoreType: PKCS12
         trustStoreType: PKCS12
+
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
 
     compression:
         mime-types: image/png
