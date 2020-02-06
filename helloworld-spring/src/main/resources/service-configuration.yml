@@ -12,9 +12,6 @@ healthCheckRelativeUrl: /application/health
 discoveryServiceUrls:
     - https://localhost:10011/eureka
 
-authentication:
-    scheme: bypass
-
 routes:
     - gatewayUrl: api
       serviceUrl: /hellospring
@@ -22,6 +19,9 @@ routes:
       serviceUrl: /hellospring/api/v1
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellospring/api-doc
+
+authentication:
+    scheme: bypass
 
 apiInfo:
     - apiId: org.zowe.hellospring
