@@ -20,16 +20,28 @@ logging:
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
 
 apiml:
+    enabled: ${eureka.client.enabled}
     # The `apiml` node contains API Mediation Layer specific configuration
     service:
         # The `apiml.service` node contains information required by any APIML service
-        id: gateway  # Service ID of this service. It is fixed for APIML API Gateway
+        serviceId: ${apiml.service.id}  # Service ID of this service. It is fixed for APIML API Gateway
         hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
                              # Default is valid only for localhost
         port: 10010  # Default port name for gateway service
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        serviceIpAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
         scheme: https  # "https" or "http"
         preferIpAddress: false
+        title: ${eureka.instance.metadata-map.discovery.service.title}
+        description:  ${eureka.instance.metadata-map.discovery.service.description}
+
+        apiInfo:
+            -   apiId: org.zowe.apiml.gateway
+                gatewayUrl: api/v1
+                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                documentationUrl: https://zowe.github.io/docs-site/
+                version: 1.0.0
+
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
@@ -47,11 +59,11 @@ apiml:
 
 spring:
     application:
-        name: ${apiml.service.id}
+        name: ${apiml.service.serviceId}
     cloud:
         client:
             hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
+            ipAddress: ${apiml.service.serviceIpAddress}
     mvc:
         throw-exception-if-no-handler-found: true
         favicon:

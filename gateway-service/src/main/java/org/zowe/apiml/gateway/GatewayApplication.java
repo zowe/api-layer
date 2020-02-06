@@ -36,7 +36,6 @@ import javax.annotation.Nonnull;
     value = {
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product",
-        "org.zowe.apiml.enable",
         "org.zowe.apiml.security.common"},
     excludeFilters = {
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")
