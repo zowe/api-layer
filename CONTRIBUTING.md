@@ -86,7 +86,7 @@ Pull Request Guidelines
 Before you submit a pull request, check that it meets these guidelines:
 
 1.  Review guidelines and advices [How to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request)
-    and [Good Commits](http://vry.cz/post/good-commits/). 
+    and [Good Commits](https://chris.beams.io/posts/git-commit/). 
     The information that you provide helps reviewer to understand the code and review your pull request faster. 
     It is helpful for understanding the code in future.
 2.  The pull request should include tests and code coverage for new code should be at least 60%. 
