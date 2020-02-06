@@ -35,6 +35,10 @@ apiml:
         title: ${eureka.instance.metadata-map.discovery.service.title}
         description:  ${eureka.instance.metadata-map.discovery.service.description}
 
+        routes:
+            -   gateway-url: "api/v1"
+                service-url: /
+
         apiInfo:
             -   apiId: org.zowe.apiml.gateway
                 gatewayUrl: api/v1
