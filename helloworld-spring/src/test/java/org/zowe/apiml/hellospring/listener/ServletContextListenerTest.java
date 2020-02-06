@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.hellospring.listener;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
@@ -46,16 +45,6 @@ public class ServletContextListenerTest {
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager());
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo());
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata());
-    }
-
-    @Test
-    @Ignore
-    public void testContextEmpty() {
-        ServletContext context = new MockServletContext();
-
-        ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
-        contextListener.contextInitialized(new ServletContextEvent(context));
-        assertNull(contextListener.getApiMediationClient().getEurekaClient());
     }
 
     @Test
