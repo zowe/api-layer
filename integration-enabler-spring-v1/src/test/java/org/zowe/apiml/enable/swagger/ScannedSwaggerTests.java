@@ -38,6 +38,7 @@ public class ScannedSwaggerTests {
 
     @Test
     public void contextLoads() {
+        Assert.assertNotNull(apiDocController);
     }
 
     @SuppressWarnings("Duplicates")
