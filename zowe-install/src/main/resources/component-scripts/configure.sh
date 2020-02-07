@@ -26,8 +26,10 @@ services:
         - https://${ZOSMF_HOST}:${ZOSMF_PORT}/zosmf/
       homePageRelativeUrl:  # Home page is at the same URL
       routedServices:
-        - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+        - gatewayUrl: api/v1
           serviceRelativeUrl:
+      authentication:
+          scheme: zosmf
       apiInfo:
         - apiId: com.ibm.zosmf
           gatewayUrl: api/v1

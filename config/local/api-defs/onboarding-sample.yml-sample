@@ -8,6 +8,8 @@ services:
       routes:
         - gatewayUrl: api/v2
           serviceRelativeUrl: /v2
+      authentication:
+          scheme: bypass
       apiInfo:
         - apiId: swagger.io.petstore
           gatewayUrl: api/v2

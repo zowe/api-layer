@@ -26,6 +26,8 @@ services:
           serviceRelativeUrl: /                                   # relativePath that is added to baseUrl of an instance
         - gatewayUrl: ui
           serviceRelativeUrl: /
+      authentication:
+          scheme: zosmf                                           # This service expects z/OSMF LTPA token
       apiInfo:                                                    # List of APIs provided by the z/OSMF service (currenly only one is supported):
         - apiId: com.ibm.zosmf
           gatewayUrl: api
