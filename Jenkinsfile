@@ -202,7 +202,7 @@ pipeline {
                 *
                 * DESCRIPTION
                 * -----------
-                * Runs the sonar-scanner analysis tool, which submits the source, test resutls,
+                * Runs the sonar-scanner analysis tool, which submits the source, test results,
                 *  and coverage results for analysis in our SonarQube server.
                 * TODO: This step does not yet support branch or PR submissions properly.
                 ***********************************************************************/
@@ -307,9 +307,12 @@ pipeline {
 
         success {
             archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'api-catalog-services/build/pom.xml'
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'discovery-service/build/pom.xml'
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'gateway-service/build/pom.xml'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v2/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'

@@ -1,0 +1,22 @@
+allprojects {
+    apply plugin: 'java'
+
+    task generatePom {
+        doLast {
+            pom {
+                project {
+                    inceptionYear '2020'
+                    licenses {
+                        license {
+                            name 'Eclipse Public License, v2.0'
+                            url 'https://www.eclipse.org/legal/epl-2.0/'
+                            distribution 'repo'
+                        }
+                    }
+                }
+            }.writeTo("$buildDir/pom.xml")
+        }
+    }
+
+    build.dependsOn generatePom
+}
