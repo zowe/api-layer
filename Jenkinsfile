@@ -202,7 +202,7 @@ pipeline {
                 *
                 * DESCRIPTION
                 * -----------
-                * Runs the sonar-scanner analysis tool, which submits the source, test resutls,
+                * Runs the sonar-scanner analysis tool, which submits the source, test results,
                 *  and coverage results for analysis in our SonarQube server.
                 * TODO: This step does not yet support branch or PR submissions properly.
                 ***********************************************************************/
@@ -236,7 +236,10 @@ pipeline {
                     }
                     steps {
                         withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                        sh "./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD"
+                         sh '''
+                         ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
+                         ./gradlew publishEnabler '-Penabler=v1' -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
+                         '''
                         }
                     }
                 }
@@ -252,6 +255,7 @@ pipeline {
                             sh '''
                             sudo sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
                             ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -PpullRequest=$env.BRANCH_NAME
+                            ./gradlew publishEnabler '-Penabler=v1' -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -PpullRequest=$env.BRANCH_NAME
                             '''
                         }
                     }
@@ -303,9 +307,12 @@ pipeline {
 
         success {
             archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'api-catalog-services/build/pom.xml'
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'discovery-service/build/pom.xml'
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'gateway-service/build/pom.xml'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v2/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'

@@ -156,8 +156,18 @@ public class CachedProductFamilyTest {
     }
 
     @Test
-    public void testUpdateOfContainerFromInstance() {
-        service.createContainerFromInstance("demoapp", createApp("service", "demoapp"));
+    public void givenInstanceIsIsInContainer_WhenNewVersionIsProvided_ThenContainerMetadataIsUpdated() {
+        // Create the initial container
+        String serviceId = "apptoupdate",
+            catalogId = "demoapp";
+        APIContainer container =
+            service.createContainerFromInstance(serviceId, createApp(serviceId, catalogId));
+
+        String newTitle = "New Title";
+        service.updateContainerFromInstance(serviceId, createApp(serviceId, catalogId,
+            "1.0.1", newTitle));
+
+        Assert.assertEquals(container.getTitle(), newTitle);
     }
 
     @Test
@@ -341,14 +351,15 @@ public class CachedProductFamilyTest {
     private InstanceInfo createApp(String serviceId, String catalogId) {
         return createApp(serviceId,
             catalogId,
-            "Title",
-            "Description",
-            "1.0.0",
             InstanceInfo.InstanceStatus.UP);
     }
 
     private InstanceInfo createApp(String serviceId, String catalogId, InstanceInfo.InstanceStatus status) {
         return createApp(serviceId, catalogId, "Title", "Description", "1.0.0", status);
+    }
+
+    private InstanceInfo createApp(String serviceId, String catalogId, String catalogVersion, String title) {
+        return createApp(serviceId, catalogId, title, "Description", catalogVersion, InstanceInfo.InstanceStatus.UP);
     }
 
     private InstanceInfo createApp(String serviceId,
