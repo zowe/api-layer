@@ -1,4 +1,6 @@
 allprojects {
+    apply plugin: 'java'
+
     task generatePom {
         doLast {
             pom {
@@ -15,4 +17,6 @@ allprojects {
             }.writeTo("$buildDir/pom.xml")
         }
     }
+
+    build.dependsOn generatePom
 }
