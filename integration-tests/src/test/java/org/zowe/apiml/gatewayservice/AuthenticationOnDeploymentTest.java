@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
 @Category(AdditionalLocalTest.class)
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 10;
+    private static final int TIMEOUT = 100;
 
     private RequestVerifier verifier;
 

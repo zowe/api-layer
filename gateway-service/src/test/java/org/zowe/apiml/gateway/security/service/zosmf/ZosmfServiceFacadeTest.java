@@ -8,8 +8,6 @@ package org.zowe.apiml.gateway.security.service.zosmf;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.gateway.security.service.ZosmfService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import lombok.AllArgsConstructor;
@@ -17,14 +15,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.ZosmfService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.util.Arrays;
 import java.util.List;
@@ -75,11 +72,15 @@ public class ZosmfServiceFacadeTest {
     private void mockVersion(int version) {
         ZosmfServiceFacade.ZosmfInfo response = new ZosmfServiceFacade.ZosmfInfo();
         response.setVersion(version);
+        response.setSafRealm("domain");
+
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add("X-CSRF-ZOSMF-HEADER", "");
 
         when(restTemplate.exchange(
             eq("http://zosmf:1433/zosmf/info"),
             eq(HttpMethod.GET),
-            any(),
+            eq(new HttpEntity<>(headers)),
             eq(ZosmfServiceFacade.ZosmfInfo.class)
         )).thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
     }
@@ -215,7 +216,12 @@ public class ZosmfServiceFacadeTest {
             anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()
         )).thenReturn(new ResponseEntity<>(null, HttpStatus.NO_CONTENT));
 
-        assertEquals(0, zosmfService.getVersion("zosmf"));
+        try {
+            zosmfService.getImplementation();
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertEquals("Unknown version of z/OSMF : 0", e.getMessage());
+        }
     }
 
     @AllArgsConstructor
@@ -263,7 +269,7 @@ public class ZosmfServiceFacadeTest {
 
         @Override
         public AuthenticationResponse authenticate(Authentication authentication) {
-            return null;
+            return mock(AuthenticationResponse.class);
         }
 
         @Override

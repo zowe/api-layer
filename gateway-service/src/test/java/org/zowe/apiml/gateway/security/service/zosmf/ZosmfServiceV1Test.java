@@ -97,7 +97,8 @@ public class ZosmfServiceV1Test {
         assertNotNull(response.getTokens());
         assertEquals(1, response.getTokens().size());
         assertEquals("lt", response.getTokens().get(ZosmfService.TokenType.LTPA));
-        assertEquals("domain", response.getDomain());
+        //provided via Facade
+        assertNull(response.getDomain());
     }
 
     @Test(expected = AuthenticationServiceException.class)

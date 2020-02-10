@@ -59,7 +59,7 @@ public class ZosmfAuthenticationTest {
     }
 
     @Test
-    public void testNoResponse() throws Exception {
+    public void testNoContent() throws Exception {
         try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
@@ -73,6 +73,8 @@ public class ZosmfAuthenticationTest {
                 .auth().preemptive().basic(USER_ID, PASSWORD)
                 .post(DiscoveryUtils.getGatewayUrls().get(0) + LOGIN_ENDPOINT)
             .then().statusCode(HttpStatus.NO_CONTENT.value());
+
+            zosmf.unregister().waitForGatewayUnregistering(1, TIMEOUT_REGISTRATION);
         }
     }
 
@@ -92,6 +94,8 @@ public class ZosmfAuthenticationTest {
                 .auth().preemptive().basic(USER_ID, PASSWORD)
                 .post(DiscoveryUtils.getGatewayUrls().get(0) + LOGIN_ENDPOINT)
                 .then().statusCode(HttpStatus.NO_CONTENT.value()).cookie("apimlAuthenticationToken");
+
+            zosmf.unregister().waitForGatewayUnregistering(1, TIMEOUT_REGISTRATION);
         }
     }
 
@@ -111,6 +115,8 @@ public class ZosmfAuthenticationTest {
                 .auth().preemptive().basic(USER_ID, WRONG_PASSWORD)
                 .post(DiscoveryUtils.getGatewayUrls().get(0) + LOGIN_ENDPOINT)
                 .then().statusCode(HttpStatus.UNAUTHORIZED.value());
+
+            zosmf.unregister().waitForGatewayUnregistering(1, TIMEOUT_REGISTRATION);
         }
     }
 
@@ -123,7 +129,7 @@ public class ZosmfAuthenticationTest {
                     null, null, HttpStatus.OK
                 ))
                 .addServlet("auth", "/zosmf/services/authenticate", new AuthServletPost(
-                    null,
+                    "{}",
                     null, "LtpaToken2=ltpaToken", HttpStatus.UNAUTHORIZED
                 ))
                 .addRoute("/api", "/")
@@ -134,6 +140,8 @@ public class ZosmfAuthenticationTest {
                 .auth().preemptive().basic(USER_ID, PASSWORD)
                 .post(DiscoveryUtils.getGatewayUrls().get(0) + LOGIN_ENDPOINT)
                 .then().statusCode(HttpStatus.NO_CONTENT.value()).cookie("apimlAuthenticationToken");
+
+            zosmf.unregister().waitForGatewayUnregistering(1, TIMEOUT_REGISTRATION);
         }
     }
 
@@ -146,7 +154,7 @@ public class ZosmfAuthenticationTest {
                     null, null, HttpStatus.OK
                 ))
                 .addServlet("auth", "/zosmf/services/authenticate", new AuthServletPost(
-                    null,
+                    "{}",
                     null, "jwtToken=jwtToken", HttpStatus.UNAUTHORIZED
                 ))
                 .addRoute("/api", "/")
@@ -157,6 +165,8 @@ public class ZosmfAuthenticationTest {
                 .auth().preemptive().basic(USER_ID, PASSWORD)
                 .post(DiscoveryUtils.getGatewayUrls().get(0) + LOGIN_ENDPOINT)
                 .then().statusCode(HttpStatus.NO_CONTENT.value()).cookie("apimlAuthenticationToken", "jwtToken");
+
+            zosmf.unregister().waitForGatewayUnregistering(1, TIMEOUT_REGISTRATION);
         }
     }
 
@@ -169,7 +179,7 @@ public class ZosmfAuthenticationTest {
                     null, null, HttpStatus.OK
                 ))
                 .addServlet("auth", "/zosmf/services/authenticate", new AuthServletPost(
-                    null,
+                    "{}",
                     null, "jwtToken=jwtToken", HttpStatus.UNAUTHORIZED
                 ))
                 .addRoute("/api", "/")
@@ -180,6 +190,8 @@ public class ZosmfAuthenticationTest {
                 .auth().preemptive().basic(USER_ID, WRONG_PASSWORD)
                 .post(DiscoveryUtils.getGatewayUrls().get(0) + LOGIN_ENDPOINT)
                 .then().statusCode(HttpStatus.UNAUTHORIZED.value());
+
+            zosmf.unregister().waitForGatewayUnregistering(1, TIMEOUT_REGISTRATION);
         }
     }
 

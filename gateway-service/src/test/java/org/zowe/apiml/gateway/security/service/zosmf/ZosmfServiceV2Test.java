@@ -117,7 +117,7 @@ public class ZosmfServiceV2Test {
     @Test
     public void testInvalidateError500() {
         mockZosmfService("zosmf", 1433);
-        when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity) any(), (Class<?>) any()))
+        when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
             .thenReturn(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
 
         try {
@@ -219,7 +219,7 @@ public class ZosmfServiceV2Test {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.add(HttpHeaders.SET_COOKIE, "jwtToken=jt");
         responseHeaders.add(HttpHeaders.SET_COOKIE, "LtpaToken2=lt");
-        ResponseEntity<String> responseEntity = new ResponseEntity<>("{\"zosmf_saf_realm\":\"domain\"}", responseHeaders, HttpStatus.OK);
+        ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", responseHeaders, HttpStatus.OK);
 
         when(restTemplate.exchange(
             "http://zosmf:1433/zosmf/services/authenticate",
@@ -236,7 +236,8 @@ public class ZosmfServiceV2Test {
         assertEquals(2, response.getTokens().size());
         assertEquals("lt", response.getTokens().get(ZosmfService.TokenType.LTPA));
         assertEquals("jt", response.getTokens().get(ZosmfService.TokenType.JWT));
-        assertEquals("domain", response.getDomain());
+        // provided via Facade
+        assertNull(response.getDomain());
     }
 
     @Test

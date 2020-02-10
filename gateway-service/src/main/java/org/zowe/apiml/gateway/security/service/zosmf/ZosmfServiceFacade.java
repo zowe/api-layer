@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import lombok.Data;
+import lombok.Value;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -77,13 +79,13 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
         meProxy = applicationContext.getBean(ZosmfServiceFacade.class);
     }
 
-    @CacheEvict(value = {"zosmfVersion", "zosmfServiceImplementation"}, allEntries = true)
+    @CacheEvict(value = {"zosmfInfo", "zosmfServiceImplementation"}, allEntries = true)
     public void evictCaches() {
         // evict all caches
     }
 
-    @Cacheable("zosmfVersion")
-    public int getVersion(String zosmfServiceId) {
+    @Cacheable("zosmfInfo")
+    public ZosmfInfo getZosmfInfo(String zosmfServiceId) {
         final String url = getURI(zosmfServiceId) + ZOSMF_INFO_END_POINT;
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
@@ -92,43 +94,60 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
             final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(headers), ZosmfInfo.class
             );
-            final ZosmfInfo body = info.getBody();
-            if (body == null) return 0;
-            return body.getVersion();
+
+            ZosmfInfo zosmfInfo = info.getBody();
+            if ((zosmfInfo != null) && StringUtils.isEmpty(zosmfInfo.getSafRealm())) {
+                apimlLog.log("apiml.security.zosmfDomainIsEmpty", ZOSMF_DOMAIN);
+                throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
+            }
+
+            return zosmfInfo;
         } catch (RuntimeException re) {
             meProxy.evictCaches();
             throw handleExceptionOnCall(url, re);
         }
     }
 
+    protected int getVersion(ZosmfInfo zosmfInfo) {
+        if (zosmfInfo == null) return 0;
+        return zosmfInfo.getVersion();
+    }
+
     @Cacheable("zosmfServiceImplementation")
-    public ZosmfService getImplementation(String zosmfServiceId) {
-        final int version = meProxy.getVersion(zosmfServiceId);
+    public ImplementationWrapper getImplementation(String zosmfServiceId) {
+        final ZosmfInfo zosmfInfo = meProxy.getZosmfInfo(zosmfServiceId);
+        final int version = getVersion(zosmfInfo);
         for (final ZosmfService zosmfService : implementations) {
-            if (zosmfService.matchesVersion(version)) return zosmfService;
+            if (zosmfService.matchesVersion(version)) return new ImplementationWrapper(zosmfInfo, zosmfService);
         }
 
         meProxy.evictCaches();
         throw new IllegalArgumentException("Unknown version of z/OSMF : " + version);
     }
 
-    protected ZosmfService getImplementation() {
+    protected ImplementationWrapper getImplementation() {
         return meProxy.getImplementation(getZosmfServiceId());
     }
 
     @Override
     public AuthenticationResponse authenticate(Authentication authentication) {
-        return getImplementation().authenticate(authentication);
+        final ImplementationWrapper implementation = getImplementation();
+        final ZosmfInfo zosmfInfo = implementation.getZosmfInfo();
+        final AuthenticationResponse output = implementation.getZosmfService().authenticate(authentication);
+        if (zosmfInfo != null) {
+            output.setDomain(zosmfInfo.getSafRealm());
+        }
+        return output;
     }
 
     @Override
     public void validate(TokenType type, String token) {
-        getImplementation().validate(type, token);
+        getImplementation().getZosmfService().validate(type, token);
     }
 
     @Override
     public void invalidate(TokenType type, String token) {
-        getImplementation().invalidate(type, token);
+        getImplementation().getZosmfService().invalidate(type, token);
     }
 
     @Override
@@ -157,6 +176,18 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
 
         @JsonProperty("zosmf_full_version")
         private String fullVersion;
+
+        @JsonProperty(ZOSMF_DOMAIN)
+        private String safRealm;
+
+    }
+
+    @Value
+    public static class ImplementationWrapper {
+
+        private final ZosmfInfo zosmfInfo;
+
+        private final ZosmfService zosmfService;
 
     }
 

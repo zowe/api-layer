@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.security.service.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.netflix.discovery.DiscoveryClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +28,6 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.util.EurekaUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -113,31 +111,6 @@ public abstract class AbstractZosmfService implements ZosmfService {
     }
 
     /**
-     * Read the z/OSMF domain from the content in the response
-     *
-     * @param content the response body
-     * @return the z/OSMF domain
-     * @throws AuthenticationServiceException if the zosmf domain cannot be read
-     */
-    protected String readDomain(String content) {
-        try {
-            if (content == null) return null;
-            ObjectNode zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);
-
-            return Optional.ofNullable(zosmfNode)
-                .filter(zn -> zn.has(ZOSMF_DOMAIN))
-                .map(zn -> zn.get(ZOSMF_DOMAIN).asText())
-                .orElseThrow(() -> {
-                    apimlLog.log("apiml.security.zosmfDomainIsEmpty", ZOSMF_DOMAIN);
-                    return new AuthenticationServiceException("z/OSMF domain cannot be read.");
-                });
-        } catch (IOException e) {
-            apimlLog.log("apiml.security.errorParsingZosmfResponse", e.getMessage());
-            throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
-        }
-    }
-
-    /**
      * Read the token with name cookieName from the cookies
      *
      * @param cookies the cookies
@@ -166,8 +139,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
                 if (token != null) tokens.put(tokenType, token);
             }
         }
-        final String domain = readDomain(responseEntity.getBody());
-        return new AuthenticationResponse(domain, tokens);
+        return new AuthenticationResponse(tokens);
     }
 
 }

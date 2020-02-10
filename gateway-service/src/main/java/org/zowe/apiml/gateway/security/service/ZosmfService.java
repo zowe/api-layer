@@ -10,8 +10,9 @@
 package org.zowe.apiml.gateway.security.service;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
-import lombok.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 
 import java.util.Map;
@@ -73,10 +74,12 @@ public interface ZosmfService {
     /**
      * Response of authentication, contains all data to next processing
      */
-    @Value
+    @Data
+    @AllArgsConstructor
+    @RequiredArgsConstructor
     public static class AuthenticationResponse {
 
-        private final String domain;
+        private String domain;
         private final Map<TokenType, String> tokens;
 
     }
