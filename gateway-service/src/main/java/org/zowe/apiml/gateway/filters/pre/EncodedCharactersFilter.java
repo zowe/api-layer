@@ -63,23 +63,24 @@ public class EncodedCharactersFilter extends ZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-        boolean shouldFilter = true;
-
-        RequestContext context = RequestContext.getCurrentContext();
-        final String serviceId = (String) context.get(SERVICE_ID_KEY);
-
-        List<ServiceInstance> instanceList = discoveryClient.getInstances(serviceId);
-
-        List<Map<String, String>> enabledList = instanceList.stream()
-            .map(ServiceInstance::getMetadata)
-            .filter( metadata -> String.valueOf(true).equalsIgnoreCase(metadata.get(METADATA_KEY)) )
-            .collect(Collectors.toList());
-
-        if (enabledList.size() == instanceList.size()) {
-            shouldFilter = false;
-        }
-
-        return shouldFilter;
+//        boolean shouldFilter = true;
+//
+//        RequestContext context = RequestContext.getCurrentContext();
+//        final String serviceId = (String) context.get(SERVICE_ID_KEY);
+//
+//        List<ServiceInstance> instanceList = discoveryClient.getInstances(serviceId);
+//
+//        List<Map<String, String>> enabledList = instanceList.stream()
+//            .map(ServiceInstance::getMetadata)
+//            .filter( metadata -> String.valueOf(true).equalsIgnoreCase(metadata.get(METADATA_KEY)) )
+//            .collect(Collectors.toList());
+//
+//        if (enabledList.size() == instanceList.size()) {
+//            shouldFilter = false;
+//        }
+//
+//        return shouldFilter;
+        return false;
     }
 
     @Override

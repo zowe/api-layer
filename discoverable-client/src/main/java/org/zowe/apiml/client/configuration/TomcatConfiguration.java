@@ -7,9 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package com.ca.mfaas.gateway.config;
+package org.zowe.apiml.client.configuration;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
@@ -20,20 +19,12 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class TomcatConfiguration {
-
-    @Value("${apiml.service.allowEncodedCharacters}")
-    Boolean allowEncodedCharacters;
-
     @Bean
     public ServletWebServerFactory servletContainer() {
-        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", getAllowEncodedCharacters());
-        System.setProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", getAllowEncodedCharacters());
+        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
+        System.setProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", "true");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         return tomcat;
-    }
-
-    private String getAllowEncodedCharacters() {
-        return allowEncodedCharacters != null ? allowEncodedCharacters.toString() : "false";
     }
 }
