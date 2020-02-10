@@ -73,7 +73,7 @@ public class ZosmfServiceV1 extends AbstractZosmfService {
             if (response.getStatusCodeValue() == 401) {
                 throw new TokenNotValidException("Token is not valid.");
             }
-            apimlLog.log("apiml.security.serviceUnavailable", url, response.getStatusCodeValue());
+            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, response.getStatusCodeValue());
             throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);

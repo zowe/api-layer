@@ -78,7 +78,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
      */
     protected String getURI(String zosmf) {
         Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
-            apimlLog.log("apiml.security.zosmfInstanceNotFound", zosmf);
+            apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmf);
             return new ServiceNotAccessibleException("z/OSMF instance not found or incorrectly configured.");
         };
 
@@ -94,7 +94,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
 
     protected RuntimeException handleExceptionOnCall(String url, RuntimeException re) {
         if (re instanceof ResourceAccessException) {
-            apimlLog.log("apiml.security.serviceUnavailable", url, re.getMessage());
+            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
             return new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
         }
 
@@ -103,7 +103,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
         }
 
         if (re instanceof RestClientException) {
-            apimlLog.log("apiml.security.generic", re.getMessage(), url);
+            apimlLog.log("org.zowe.apiml.security.generic", re.getMessage(), url);
             return new AuthenticationServiceException("A failure occurred when authenticating.", re);
         }
 
