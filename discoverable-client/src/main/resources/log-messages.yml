@@ -1,7 +1,7 @@
 messages:
     # Security messages (100 - 199)
     # General messages (100 - 120)
-    - key: com.ca.mfaas.sampleservice.log.registeringWebSocket
+    - key: org.zowe.apiml.sampleservice.log.registeringWebSocket
       number: CSR0001
       type: DEBUG
       text: "Registering WebSocket handler to %s"

@@ -126,6 +126,12 @@ public class ApiMediationServiceConfig {
     private String baseUrl;
 
     /**
+     *    {@link Authentication} defines authentication scheme and application id. This parameters are optional. The default scheme is BYPASS.
+     */
+    private Authentication authentication;
+
+
+    /**
      * *  **serviceIpAddress** (_Optional_)
      *     The IP address of the service. Can be provided by system administrator in the externalized service configuration.
      *     If not present in the YAML/XML configuration file or not set as service context parameter, will be resolved from the hostname part of the baseUrl property using java.net.InetAddress capabilities.

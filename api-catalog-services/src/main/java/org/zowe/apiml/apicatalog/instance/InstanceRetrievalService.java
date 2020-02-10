@@ -116,7 +116,7 @@ public class InstanceRetrievalService {
     private Applications extractApplications(Pair<String, Pair<String, String>> requestInfo, ResponseEntity<String> response) {
         Applications applications = null;
         if (!HttpStatus.OK.equals(response.getStatusCode()) || response.getBody() == null) {
-            apimlLog.log("apiml.apicatalog.serviceRetrievalRequestFailed", response.getStatusCode(), response.getStatusCode().getReasonPhrase(), requestInfo.getLeft());
+            apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed", response.getStatusCode(), response.getStatusCode().getReasonPhrase(), requestInfo.getLeft());
         } else {
             ObjectMapper mapper = new EurekaJsonJacksonCodec().getObjectMapper(Applications.class);
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -124,7 +124,7 @@ public class InstanceRetrievalService {
             try {
                 applications = mapper.readValue(response.getBody(), Applications.class);
             } catch (IOException e) {
-                apimlLog.log("apiml.apicatalog.serviceRetrievalParsingFailed", e.getMessage());
+                apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalParsingFailed", e.getMessage());
             }
         }
         return applications;

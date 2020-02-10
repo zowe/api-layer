@@ -48,19 +48,6 @@ public class ServletContextListenerTest {
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata());
     }
 
-    /*
-     * Context map is empty. Internal config has wrong paths for ssl config - trust/key store
-     *  -> Can't register -> apimlClient is NULL
-     */
-    @Test
-    public void testContextEmpty() {
-        ServletContext context = new MockServletContext();
-
-        ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
-        contextListener.contextInitialized(new ServletContextEvent(context));
-        assertNull(contextListener.getApiMediationClient().getEurekaClient());
-    }
-
     @Test
     public void testContextMissingSubstituteParameters() {
         ServletContext context = new MockServletContext();

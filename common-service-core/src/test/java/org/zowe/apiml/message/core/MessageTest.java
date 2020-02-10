@@ -33,7 +33,7 @@ public class MessageTest {
 
     @Before
     public void init() {
-        message = Message.of("apiml.common.serviceTimeout",
+        message = Message.of("org.zowe.apiml.common.serviceTimeout",
             createMessageTemplate("No response received within the allowed time: %s"),
             new Object[]{"3000"});
     }
@@ -64,7 +64,7 @@ public class MessageTest {
 
     @Test(expected = MissingFormatArgumentException.class)
     public void testCheckConvertValidation_whenThereAreMoreParamThanRequested() {
-        Message.of("apiml.common.serviceTimeout",
+        Message.of("org.zowe.apiml.common.serviceTimeout",
             createMessageTemplate("No response received within the allowed time: %s %s"),
             new Object[]{"3000"});
     }
@@ -72,7 +72,7 @@ public class MessageTest {
 
     @Test(expected = IllegalFormatConversionException.class)
     public void testCheckConvertValidation_whenThereIsWrongFormatThanRequested() {
-        Message.of("apiml.common.serviceTimeout",
+        Message.of("org.zowe.apiml.common.serviceTimeout",
             createMessageTemplate("No response received within the allowed time: %d"),
             new Object[]{"3000"});
     }
@@ -87,7 +87,7 @@ public class MessageTest {
 
     @Test
     public void testGetConvertedText_whenTextContainsHTMLEntities() {
-        message = Message.of("apiml.common.serviceTimeout",
+        message = Message.of("org.zowe.apiml.common.serviceTimeout",
             createMessageTemplate("No response  <b>received</b> within the allowed time: %s"),
             new Object[]{"3000"});
 
@@ -111,7 +111,7 @@ public class MessageTest {
 
         String expectedReadableText = "No response received within the allowed time: 3000";
         ApiMessageView expectedApiMessageView = new ApiMessageView(Collections.singletonList(
-            new ApiMessage("apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText)
+            new ApiMessage("org.zowe.apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText)
         ));
 
         assertEquals("ApiMessageView is different", expectedApiMessageView, actualApiMessageView);
@@ -123,7 +123,7 @@ public class MessageTest {
         ApiMessage actualApiMessage = message.mapToApiMessage();
 
         String expectedReadableText = "No response received within the allowed time: 3000";
-        ApiMessage expectedApiMessage = new ApiMessage("apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText);
+        ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.common.serviceTimeout", MessageType.ERROR, "ZWEAM700E", expectedReadableText);
 
         assertEquals("ApiMessage is different", expectedApiMessage, actualApiMessage);
     }
@@ -139,7 +139,7 @@ public class MessageTest {
 
     private MessageTemplate createMessageTemplate(String messageText) {
         MessageTemplate messageTemplate = new MessageTemplate();
-        messageTemplate.setKey("apiml.common.serviceTimeout");
+        messageTemplate.setKey("org.zowe.apiml.common.serviceTimeout");
         messageTemplate.setNumber("ZWEAM700");
         messageTemplate.setType(MessageType.ERROR);
         messageTemplate.setText(messageText);

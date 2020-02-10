@@ -1,5 +1,5 @@
 dependencies {
-    compile project(':apiml-logging')
+    compile project(':apiml-utility')
     //compile project(':common-service-core')
 
     compile libraries.spring_boot_starter_web

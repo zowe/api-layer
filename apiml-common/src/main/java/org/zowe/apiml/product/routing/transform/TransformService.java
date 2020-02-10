@@ -52,7 +52,7 @@ public class TransformService {
                                RoutedServices routes) throws URLTransformationException {
 
         if (!gatewayClient.isInitialized()) {
-            apimlLog.log("apiml.common.gatewayNotFoundForTransformRequest");
+            apimlLog.log("org.zowe.apiml.common.gatewayNotFoundForTransformRequest");
             throw new URLTransformationException("Gateway not found yet, transform service cannot perform the request");
         }
 

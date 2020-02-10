@@ -81,14 +81,14 @@ public class InstanceInitializeService {
             throw new RetryException(e.getMessage());
         } catch (Exception e) {
             String msg = "An unexpected exception occurred when trying to retrieve API Catalog instance from Discovery service";
-            apimlLog.log("apiml.apicatalog.initializeAborted", e.getMessage());
+            apimlLog.log("org.zowe.apiml.apicatalog.initializeAborted", e.getMessage());
             throw new CannotRegisterServiceException(msg, e);
         }
     }
 
     @Recover
     public void recover(RetryException e) {
-        apimlLog.log("apiml.apicatalog.initializeFailed");
+        apimlLog.log("org.zowe.apiml.apicatalog.initializeFailed");
     }
 
     /**

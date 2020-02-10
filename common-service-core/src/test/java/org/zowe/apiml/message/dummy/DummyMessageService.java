@@ -27,27 +27,27 @@ public class DummyMessageService extends AbstractMessageService {
         MessageTemplates messageTemplates = new MessageTemplates();
 
         MessageTemplate message = new MessageTemplate();
-        message.setKey("apiml.common.serviceTimeout");
+        message.setKey("org.zowe.apiml.common.serviceTimeout");
         message.setNumber("ZWEAM700");
         message.setText("No response received within the allowed time: %s");
 
         MessageTemplate message2 = new MessageTemplate();
-        message2.setKey("apiml.common.serviceTimeout.illegalFormat");
+        message2.setKey("org.zowe.apiml.common.serviceTimeout.illegalFormat");
         message2.setNumber("ZWEAM700F");
         message2.setText("No response received within the allowed time: %d");
 
         MessageTemplate message3 = new MessageTemplate();
-        message3.setKey("apiml.common.serviceTimeout.missingFormat");
+        message3.setKey("org.zowe.apiml.common.serviceTimeout.missingFormat");
         message3.setNumber("ZWEAM700M");
         message3.setText("No response received within the allowed time: %s %s");
 
         MessageTemplate message4 = new MessageTemplate();
-        message4.setKey("apiml.common.invalidMessageTextFormat");
+        message4.setKey("org.zowe.apiml.common.invalidMessageTextFormat");
         message4.setNumber("ZWEAM103");
         message4.setText("Internal error: Invalid message text format. Please contact support for further assistance.");
 
         MessageTemplate message5 = new MessageTemplate();
-        message5.setKey("apiml.common.stringParamMessage");
+        message5.setKey("org.zowe.apiml.common.stringParamMessage");
         message5.setNumber("MFS0005");
         message5.setText("This message has one param: %s");
 

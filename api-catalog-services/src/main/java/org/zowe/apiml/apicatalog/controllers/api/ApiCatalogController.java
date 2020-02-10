@@ -84,7 +84,7 @@ public class ApiCatalogController {
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
         } catch (Exception e) {
-            apimlLog.log("apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
+            apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
         }
     }
@@ -117,7 +117,7 @@ public class ApiCatalogController {
                 return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
         } catch (Exception e) {
-            apimlLog.log("apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
+            apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
         }
     }

@@ -77,7 +77,7 @@ public class GatewayNotifierTest {
 
     @Test
     public void testMissingGateway() {
-        final String messageKey = "apiml.discovery.errorNotifyingGateway";
+        final String messageKey = "org.zowe.apiml.discovery.errorNotifyingGateway";
         final MessageTemplate mt = new MessageTemplate();
         mt.setKey(messageKey);
         mt.setText("message");

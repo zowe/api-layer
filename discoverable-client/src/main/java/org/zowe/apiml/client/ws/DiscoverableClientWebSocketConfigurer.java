@@ -26,7 +26,7 @@ public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigure
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         String webSocketEndpoint = "/ws/uppercase";
 
-        logger.log("com.ca.mfaas.sampleservice.log.registeringWebSocket", webSocketEndpoint);
+        logger.log("org.zowe.apiml.sampleservice.log.registeringWebSocket", webSocketEndpoint);
 
         registry.addHandler(new WebSocketServerHandler(), webSocketEndpoint).setAllowedOrigins("*");
 

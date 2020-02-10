@@ -57,7 +57,7 @@ public class CachedApiDocService {
         } catch (Exception e) {
             //if there's not apiDoc in cache
             if (apiDoc == null) {
-                apimlLog.log("apiml.apicatalog.apidocRetrievalProblem", serviceId, e.getMessage());
+                apimlLog.log("org.zowe.apiml.apicatalog.apidocRetrievalProblem", serviceId, e.getMessage());
             }
         }
         return apiDoc;

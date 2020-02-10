@@ -117,7 +117,7 @@ public class HttpConfig {
             System.exit(1); // NOSONAR
         }
         catch (Exception e) {
-            apimlLog.log("apiml.common.unknownHttpsConfigError", e.getMessage());
+            apimlLog.log("org.zowe.apiml.common.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
     }

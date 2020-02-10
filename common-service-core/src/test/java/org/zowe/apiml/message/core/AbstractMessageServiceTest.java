@@ -32,7 +32,7 @@ public class AbstractMessageServiceTest {
 
     @Test
     public void shouldCreateMessage() {
-        Message message = abstractMessageService.createMessage("apiml.common.serviceTimeout", "3000");
+        Message message = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout", "3000");
         assertEquals("Message texts are different",
             "No response received within the allowed time: 3000", message.getConvertedText());
     }
@@ -46,17 +46,17 @@ public class AbstractMessageServiceTest {
 
     @Test
     public void shouldReturnInvalidMessageTextFormat_IfTheFormatIsIllegal() {
-        Message message = abstractMessageService.createMessage("apiml.common.serviceTimeout.illegalFormat", "3000");
+        Message message = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout.illegalFormat", "3000");
         String expectedMessageText = "Internal error: Invalid message text format. Please contact support for further assistance.";
         assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
 
-        message = abstractMessageService.createMessage("apiml.common.serviceTimeout.missingFormat", "3000");
+        message = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout.missingFormat", "3000");
         assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
     }
 
     @Test
     public void shouldReturnInvalidMessageTextFormat_IfTheParamIsMissing() {
-        Message message = abstractMessageService.createMessage("apiml.common.serviceTimeout.missingFormat", "3000");
+        Message message = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout.missingFormat", "3000");
         String expectedMessageText = "Internal error: Invalid message text format. Please contact support for further assistance.";
         assertEquals("Message texts are different", expectedMessageText, message.getConvertedText());
     }
@@ -66,7 +66,7 @@ public class AbstractMessageServiceTest {
         List<Object[]> parameters = new ArrayList<>();
         parameters.add(new Object[]{"2000"});
         parameters.add(new Object[]{"3000"});
-        List<Message> messages = abstractMessageService.createMessage("apiml.common.serviceTimeout", parameters);
+        List<Message> messages = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout", parameters);
         assertEquals("Message texts are different", "No response received within the allowed time: 2000", messages.get(0).getConvertedText());
         assertEquals("Message texts are different", "No response received within the allowed time: 3000", messages.get(1).getConvertedText());
     }
@@ -74,24 +74,24 @@ public class AbstractMessageServiceTest {
     @Test
     public void shouldNotCreateMessages_IfEmptyParametersArePassed() {
         List<Object[]> parameters = new ArrayList<>();
-        List<Message> messages = abstractMessageService.createMessage("apiml.common.serviceTimeout", parameters);
+        List<Message> messages = abstractMessageService.createMessage("org.zowe.apiml.common.serviceTimeout", parameters);
         assertEquals("Generated different number of messages than expected", 0, messages.size());
     }
 
     @Test
     public void shouldNotCreateMessages_IfEmptyParameterListIsPassed() {
-        Message messages = abstractMessageService.createMessage("apiml.common.stringParamMessage", new ArrayList<String>());
+        Message messages = abstractMessageService.createMessage("org.zowe.apiml.common.stringParamMessage", new ArrayList<String>());
         assertEquals("Unexpected message format for empty parameters list", "This message has one param: []", messages.getConvertedText());
     }
 
     @Test
     public void shouldThrowException_IfThereAreDuplicatedMessageNumbers() {
         MessageTemplate message = new MessageTemplate();
-        message.setKey("apiml.common.serviceTimeout");
+        message.setKey("org.zowe.apiml.common.serviceTimeout");
         message.setNumber("ZWEAM700");
 
         MessageTemplate message2 = new MessageTemplate();
-        message2.setKey("apiml.common.serviceTimeout.illegalFormat");
+        message2.setKey("org.zowe.apiml.common.serviceTimeout.illegalFormat");
         message2.setNumber("ZWEAM700");
 
         MessageTemplates messages = new MessageTemplates();

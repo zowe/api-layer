@@ -27,5 +27,5 @@ tlsConfiguration:
     trustStorePassword: password
 zosmfServiceConfiguration:
     scheme: https
-    host: usilca32.ca.com
-    port: 1443
+    host: river.zowe.org
+    port: 10443

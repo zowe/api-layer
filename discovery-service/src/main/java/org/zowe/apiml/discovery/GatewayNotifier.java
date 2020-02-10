@@ -46,7 +46,7 @@ public class GatewayNotifier {
         final PeerAwareInstanceRegistry registry = getRegistry();
         final Application application = registry.getApplication("GATEWAY");
         if (application == null) {
-            logger.log("apiml.discovery.errorNotifyingGateway");
+            logger .log("org.zowe.apiml.discovery.errorNotifyingGateway");
             return;
         }
 

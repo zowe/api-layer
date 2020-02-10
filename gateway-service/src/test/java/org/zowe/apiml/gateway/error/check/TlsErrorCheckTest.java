@@ -50,7 +50,7 @@ public class TlsErrorCheckTest {
         ResponseEntity<ApiMessageView> response = errorController.error(request);
 
         assertEquals(HttpStatus.BAD_GATEWAY.value(), response.getStatusCodeValue());
-        assertEquals("apiml.common.tlsError", response.getBody().getMessages().get(0).getMessageKey());
+        assertEquals("org.zowe.apiml.common.tlsError", response.getBody().getMessages().get(0).getMessageKey());
         assertTrue(response.getBody().getMessages().get(0).getMessageContent().contains(TEST_MESSAGE));
     }
 }
