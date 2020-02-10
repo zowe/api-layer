@@ -49,7 +49,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
     public AbstractZosmfService(
         AuthConfigurationProperties authConfigurationProperties,
         DiscoveryClient discovery,
-        @Qualifier("restTemplateWithKeystore") RestTemplate restTemplateWithoutKeystore,
+        @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         ObjectMapper securityObjectMapper
     ) {
         this.authConfigurationProperties = authConfigurationProperties;

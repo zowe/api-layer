@@ -28,10 +28,10 @@ public class ZosmfServiceV1 extends AbstractZosmfService {
     public ZosmfServiceV1(
         AuthConfigurationProperties authConfigurationProperties,
         DiscoveryClient discovery,
-        @Qualifier("restTemplateWithKeystore") RestTemplate restTemplateWithKeystore,
+        @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
         ObjectMapper securityObjectMapper
     ) {
-        super(authConfigurationProperties, discovery, restTemplateWithKeystore, securityObjectMapper);
+        super(authConfigurationProperties, discovery, restTemplateWithoutKeystore, securityObjectMapper);
     }
 
     @Override
