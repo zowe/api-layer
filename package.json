@@ -45,8 +45,8 @@
     "homepage": "https://github.com/zowe/api-layer#readme",
     "dependencies": {},
     "devDependencies": {
-        "concurrently": "^4.1.0",
-        "diff": "^4.0.1",
+        "concurrently": "4.1.0",
+        "diff": "4.0.1",
         "jenkins-mocha": "8.0.0",
         "mocha": "6.2.2",
         "nixt": "^0.5.1"
