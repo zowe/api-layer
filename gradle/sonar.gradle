@@ -50,18 +50,6 @@ project(":api-catalog-ui") {
     }
 }
 
-project(":onboarding-enabler-spring-v1") {
-    sonarqube {
-        skipProject = true
-    }
-}
-
-project(":onboarding-enabler-spring-v2") {
-    sonarqube {
-        skipProject = true
-    }
-}
-
 // Packaging project; sonar does not apply
 project(":zowe-install") {
     sonarqube {

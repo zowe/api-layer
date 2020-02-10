@@ -60,7 +60,6 @@ ext {
         spring_boot_gradle_plugin          : "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}",
         spring_boot_starter                : "org.springframework.boot:spring-boot-starter:${springBootVersion}",
         spring_boot_starter_actuator       : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}",
-        spring_boot_v1_starter_actuator    : "org.springframework.boot:spring-boot-starter-actuator:${springBootVersionV1}",
         spring_boot_starter_security       : "org.springframework.boot:spring-boot-starter-security:${springBootVersion}",
         spring_boot_starter_web            : "org.springframework.boot:spring-boot-starter-web:${springBootVersion}",
         spring_boot_starter_websocket      : "org.springframework.boot:spring-boot-starter-websocket:${springBootVersion}",
