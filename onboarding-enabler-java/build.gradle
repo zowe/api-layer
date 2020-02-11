@@ -15,4 +15,5 @@ dependencies {
     testCompile libraries.logback_classic
     testCompile libraries.lombok
     testCompile libraries.javax_servlet_api
+    testCompile libraries.hamcrest
 }
