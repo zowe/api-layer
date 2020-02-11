@@ -18,9 +18,9 @@ case $RELEASE_TYPE in
    ;;
    "MINOR_RELEASE")
    echo "Make MINOR release"
-#   ./gradlew --continue release -Prelease.useAutomaticVersion=true -Prelease.scope=minor $AUTH
-   ./gradlew --continue publishEnabler '-Penabler=v1' $AUTH
-#   git archive --format tar.gz -9 --output api-layer.tar.gz HEAD~1
+   ./gradlew release -Prelease.useAutomaticVersion=true -Prelease.scope=minor $AUTH
+  ## ./gradlew --continue publishEnabler '-Penabler=v1' $AUTH
+   git archive --format tar.gz -9 --output api-layer.tar.gz HEAD~1
    ;;
    "MAJOR_RELEASE")
    echo "Make MAJOR release"
