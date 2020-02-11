@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import io.jsonwebtoken.JwtException;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -23,6 +24,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
@@ -42,8 +44,18 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     @Mock
     private AuthenticationService authenticationService;
 
+    @Mock
+    private AuthConfigurationProperties authConfigurationProperties;
+
     @InjectMocks
     private ZosmfScheme zosmfScheme;
+
+    @Before
+    public void setUp() {
+        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+        when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
+        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
+    }
 
     @Test
     public void testCreateCommand() throws Exception {
@@ -69,7 +81,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         when(authenticationService.parseJwtToken("jwtToken1")).thenReturn(queryResponse);
         requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, null);
         zosmfScheme.createCommand(authentication, queryResponse).apply(null);
-        assertEquals("ltpa1", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
+        assertEquals("LtpaToken2=ltpa1", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
 
         // a cookies is set now
         reset(authenticationService);
@@ -78,7 +90,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         when(authenticationService.parseJwtToken("jwtToken2")).thenReturn(queryResponse);
         requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, "cookie1=1");
         zosmfScheme.createCommand(authentication, queryResponse).apply(null);
-        assertEquals("cookie1=1; ltpa2", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
+        assertEquals("cookie1=1;LtpaToken2=ltpa2", requestContext.getZuulRequestHeaders().get(COOKIE_HEADER));
 
         // JWT token is not valid anymore - TokenNotValidException
         try {
@@ -107,13 +119,13 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     public void testScheme() {
-        ZosmfScheme scheme = new ZosmfScheme(authenticationService);
+        ZosmfScheme scheme = new ZosmfScheme(authenticationService, authConfigurationProperties);
         assertEquals(AuthenticationScheme.ZOSMF, scheme.getScheme());
     }
 
     @Test
     public void testExpiration() {
-        ZosmfScheme scheme = new ZosmfScheme(authenticationService);
+        ZosmfScheme scheme = new ZosmfScheme(authenticationService, authConfigurationProperties);
 
         AuthenticationCommand command;
         QueryResponse queryResponse = new QueryResponse();
@@ -151,7 +163,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Test
     public void testZosmfToken() throws AuthenticationException {
-        ZosmfScheme scheme = new ZosmfScheme(authenticationService);
+        ZosmfScheme scheme = new ZosmfScheme(authenticationService, authConfigurationProperties);
         QueryResponse queryResponse = new QueryResponse("domain", "username", new Date(), new Date(), QueryResponse.Source.ZOSMF);
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.of("jwtTokenZosmf"));
         when(authenticationService.parseJwtToken("jwtTokenZosmf")).thenReturn(queryResponse);
