@@ -177,7 +177,7 @@ release {
 
     git {
         requireBranch = 'private/khavs01/release'
-        pushToRemote = 'origin'
+        pushToRemote = 'origin'K
         pushToBranchPrefix = ''
         commitVersionFileOnly = false
         signTag = false
