@@ -176,7 +176,7 @@ release {
     ]
 
     git {
-        requireBranch = 'master'
+        requireBranch = 'private/khavs01/release'
         pushToRemote = 'origin'
         pushToBranchPrefix = ''
         commitVersionFileOnly = false
