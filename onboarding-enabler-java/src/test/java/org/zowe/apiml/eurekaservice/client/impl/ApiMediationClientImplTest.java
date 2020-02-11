@@ -9,18 +9,24 @@
  */
 package org.zowe.apiml.eurekaservice.client.impl;
 
-import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
-import org.zowe.apiml.eurekaservice.client.config.*;
-import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.exception.MetadataValidationException;
-import org.zowe.apiml.exception.ServiceDefinitionException;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.config.Catalog;
+import org.zowe.apiml.eurekaservice.client.config.Route;
+import org.zowe.apiml.eurekaservice.client.config.Ssl;
+import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
+import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.exception.ServiceDefinitionException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.*;
@@ -83,7 +89,6 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void sslDisabledNoTrustStoreNoKeyStoreNeeded() throws ServiceDefinitionException {
-        //exceptionRule.expect(ServiceDefinitionException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -91,7 +96,6 @@ public class ApiMediationClientImplTest {
 
         // Try register the services - expecting to throw ServiceDefinitionException
         ApiMediationClient client = new ApiMediationClientImpl();
-        //client.getEurekaClient().getEurekaClientConfig()
         client.register(config);
         client.unregister();
 

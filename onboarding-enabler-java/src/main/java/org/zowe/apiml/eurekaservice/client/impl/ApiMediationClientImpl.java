@@ -9,16 +9,6 @@
  */
 package org.zowe.apiml.eurekaservice.client.impl;
 
-import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
-import org.zowe.apiml.eurekaservice.client.config.*;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.exception.MetadataValidationException;
-import org.zowe.apiml.exception.ServiceDefinitionException;
-import org.zowe.apiml.util.UrlUtils;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsFactory;
-
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
@@ -28,13 +18,14 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.config.EurekaClientConfiguration;
+import org.zowe.apiml.eurekaservice.client.config.Ssl;
+import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
+import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsFactory;
 
 /**
  *  Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
@@ -46,6 +37,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 public class ApiMediationClientImpl implements ApiMediationClient {
 
     private EurekaClient eurekaClient;
+    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
 
     /**
      * Rregisters this service with Eureka server using EurekaClient which is initialized with the provided {@link ApiMediationServiceConfig} methods parameter.
@@ -61,7 +53,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         if (eurekaClient != null) {
             throw new ServiceDefinitionException("EurekaClient was previously registered for this instance of ApiMediationClient. Call your ApiMediationClient unregister() method before attempting other registration.");
         }
-
         EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
         try {
             ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
@@ -126,100 +117,9 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     }
 
     private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException {
-        EurekaInstanceConfig eurekaInstanceConfig = createEurekaInstanceConfig(config);
+        EurekaInstanceConfig eurekaInstanceConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(config);
         InstanceInfo instanceInformation = new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get();
         return new ApplicationInfoManager(eurekaInstanceConfig, instanceInformation);
-    }
-
-    private EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException {
-        ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
-
-        String hostname;
-        int port;
-        URL baseUrl;
-
-        try {
-            baseUrl = new URL(config.getBaseUrl());
-            hostname = baseUrl.getHost();
-            port = baseUrl.getPort();
-        } catch (MalformedURLException e) {
-            String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
-            throw new ServiceDefinitionException(message, e);
-        }
-
-        result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
-        result.setAppname(config.getServiceId());
-        result.setAppGroupName(config.getServiceId());
-        result.setHostName(hostname);
-        result.setIpAddress(config.getServiceIpAddress());
-        result.setInstanceEnabledOnit(true);
-        result.setSecureVirtualHostName(config.getServiceId());
-        result.setVirtualHostName(config.getServiceId());
-        result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
-
-        if ((config.getHomePageRelativeUrl() != null) && !config.getHomePageRelativeUrl().isEmpty()) {
-            result.setHomePageUrl(config.getBaseUrl() + config.getHomePageRelativeUrl());
-        }
-
-        String protocol = baseUrl.getProtocol();
-        result.setNonSecurePort(port);
-        result.setSecurePort(port);
-
-        switch (protocol) {
-            case "http":
-                result.setNonSecurePortEnabled(true);
-                result.setHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
-                break;
-            case "https":
-                result.setSecurePortEnabled(true);
-                result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
-                break;
-            default:
-                throw new ServiceDefinitionException(String.format("'%s' is not valid protocol for baseUrl property", protocol));
-        }
-
-        try {
-            result.setMetadataMap(createMetadata(config));
-        } catch (MetadataValidationException e) {
-            throw new ServiceDefinitionException("Service configuration failed: ", e);
-        }
-
-        return result;
-    }
-
-    private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
-        Map<String, String> metadata = new HashMap<>();
-
-        // fill routing metadata
-        for (Route route : config.getRoutes()) {
-            String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
-            String serviceUrl = route.getServiceUrl();
-            String key = gatewayUrl.replace("/", "-");
-            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
-            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
-        }
-
-        // fill tile metadata
-        if (config.getCatalog() != null) {
-            Catalog.Tile tile = config.getCatalog().getTile();
-            if (tile != null) {
-                metadata.put(CATALOG_ID, tile.getId());
-                metadata.put(CATALOG_VERSION, tile.getVersion());
-                metadata.put(CATALOG_TITLE, tile.getTitle());
-                metadata.put(CATALOG_DESCRIPTION, tile.getDescription());
-            }
-        }
-
-        // fill service metadata
-        metadata.put(SERVICE_TITLE, config.getTitle());
-        metadata.put(SERVICE_DESCRIPTION, config.getDescription());
-
-        // fill api-doc info
-        for (ApiInfo apiInfo : config.getApiInfo()) {
-            metadata.putAll(EurekaMetadataParser.generateMetadata(config.getServiceId(), apiInfo));
-        }
-
-        return metadata;
     }
 
     /**

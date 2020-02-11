@@ -9,10 +9,10 @@
  */
 package org.zowe.apiml.hwsjersey.resource.listener;
 
-import org.zowe.apiml.hwsjersey.listener.ApiDiscoveryListener;
-import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.junit.Test;
 import org.springframework.mock.web.MockServletContext;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.hwsjersey.listener.ApiDiscoveryListener;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -46,19 +46,6 @@ public class ServletContextListenerTest {
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager());
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo());
         assertNotNull(apimlClient.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata());
-    }
-
-    /*
-     * Context map is empty. Internal config has wrong paths for ssl config - trust/key store
-     *  -> Can't register -> apimlClient is NULL
-     */
-    @Test
-    public void testContextEmpty() {
-        ServletContext context = new MockServletContext();
-
-        ApiDiscoveryListener contextListener = new ApiDiscoveryListener();
-        contextListener.contextInitialized(new ServletContextEvent(context));
-        assertNull(contextListener.getApiMediationClient().getEurekaClient());
     }
 
     @Test

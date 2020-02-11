@@ -9,10 +9,11 @@
  */
 package org.zowe.apiml.eurekaservice.client.config;
 
-import org.zowe.apiml.config.ApiInfo;
 import lombok.*;
+import org.zowe.apiml.config.ApiInfo;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -209,4 +210,10 @@ public class ApiMediationServiceConfig {
      *  {@link Ssl} provides configuration parameters for SSL / TLS security of the service.
      */
     private Ssl ssl;
+
+    /**
+     *  Generic attribute for adding arbitrary metadata to either configure Api Mediation Layer or for consumption by other
+     *  services or service instances
+     */
+    private Map<String, Object> customMetadata;
 }
