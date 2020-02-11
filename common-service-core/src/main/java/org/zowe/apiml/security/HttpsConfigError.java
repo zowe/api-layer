@@ -18,7 +18,7 @@ public class HttpsConfigError extends RuntimeException {
     }
 
     private final ErrorCode code;
-    private final HttpsConfig config;
+    private final transient HttpsConfig config;
 
     public HttpsConfigError(ErrorCode code, HttpsConfig config) {
         super();

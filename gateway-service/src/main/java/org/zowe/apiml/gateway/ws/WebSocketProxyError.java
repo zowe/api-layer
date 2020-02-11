@@ -14,7 +14,7 @@ import org.springframework.web.socket.WebSocketSession;
 public class WebSocketProxyError extends RuntimeException {
     private static final long serialVersionUID = 6522624579669891882L;
 
-    private final WebSocketSession session;
+    private final transient WebSocketSession session;
 
     public WebSocketProxyError(String message, Throwable cause, WebSocketSession session) {
         super(message, cause);
