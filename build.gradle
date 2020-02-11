@@ -184,7 +184,7 @@ release {
     }
 }
 
-//afterReleaseBuild.dependsOn publishAllVersions
+afterReleaseBuild.dependsOn publishAllVersions
 //-----------Release part end
 
 
