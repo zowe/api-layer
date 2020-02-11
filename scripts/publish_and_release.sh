@@ -19,7 +19,6 @@ case $RELEASE_TYPE in
    "MINOR_RELEASE")
    echo "Make MINOR release"
    ./gradlew --continue release -Prelease.useAutomaticVersion=true -Prelease.scope=minor $AUTH
-  ## ./gradlew --continue publishEnabler '-Penabler=v1' $AUTH
    git archive --format tar.gz -9 --output api-layer.tar.gz HEAD~1
    ;;
    "MAJOR_RELEASE")
@@ -30,9 +29,8 @@ case $RELEASE_TYPE in
    "SPECIFIC_RELEASE")
    echo "Make specific release"
    ./gradlew --continue release -Prelease.useAutomaticVersion=true -Prelease.releaseVersion=$RELEASE_VERSION -Prelease.newVersion=$NEW_VERSION $AUTH
-    echo 'Published minor'
    git archive --format tar.gz -9 --output api-layer.tar.gz "v$RELEASE_VERSION"
-    echo 'DADA Published minor'
+   echo "Finished"
 esac
 
 echo "End of publish and release"

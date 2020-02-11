@@ -144,7 +144,7 @@ ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('r
 
 release {
     failOnCommitNeeded = true
-    failOnPublishNeeded = true
+    failOnPublishNeeded = false
     failOnSnapshotDependencies = true
     failOnUnversionedFiles = true
     failOnUpdateNeeded = true
