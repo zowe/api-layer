@@ -33,7 +33,6 @@ logging:
     level:
         ROOT: INFO
         org.zowe.apiml: INFO
-        #org.apache.http.wire: DEBUG
         org.springframework: WARN
         org.apache.catalina: WARN
         com.netflix: WARN
@@ -62,12 +61,8 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
 
         scheme: https
-        # Will be defined by -D on MF: hostname: ${server.hostname}
-        # Will be defined by -D on MF: port: ${server.port}
-        serviceIpAddress: ${apiml.service.ipAddress}
+        serviceIpAddress: 127.0.0.1
         hostname: localhost
-
-        ipAddress: 127.0.0.1
         port: 10012
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
         contextPath: /${apiml.service.serviceId}
@@ -75,8 +70,6 @@ apiml:
         homePageRelativeUrl: ${apiml.service.contextPath}
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
-
-        # Will be defined by -D on MF: discoveryServiceUrls: ${apiml.service.discoveryServiceUrls} # https://localhost:10011/eureka/
 
         routes:
             -   gateway-url: "ui/v1"
@@ -115,9 +108,9 @@ apiml:
 
 server:
     scheme: ${apiml.service.scheme}
-    hostname: ${apiml.service.hostname} #localhost # Hostname that is advertised in Eureka. Default is valid only for localhost
-    port: ${apiml.service.port} #10012         # Default port name for discoverable-client service
-    address: ${apiml.service.ipAddress} #127.0.0.1
+    #hostname: ${apiml.service.hostname}
+    port: ${apiml.service.port} #10012
+    #address: ${apiml.service.ipAddress} #127.0.0.1
 
     servlet:
         contextPath: /${apiml.service.serviceId}
