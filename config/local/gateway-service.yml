@@ -1,11 +1,9 @@
 spring.profiles.include: diag
 apiml:
     service:
-        id: gateway
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10010
-        serviceIpAddress: ${apiml.service.ipAddress}
         discoveryServiceUrls: https://localhost:10011/eureka/
 
         ssl:
@@ -38,15 +36,3 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
-
-eureka:
-    client:
-        enabled: true
-        serviceUrl:
-            defaultZone: ${apiml.service.discoveryServiceUrls}
-    instance:
-        metadata-map:
-            discovery:
-                service:
-                    title: API Gateway
-                    description: REST API for the API Gateway service, which is a component of the API Mediation Layer. Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.

@@ -46,8 +46,6 @@ configurations.all {
 
 dependencies {
     compile(project(':apiml-security-common'))
-//    compile(project(':integration-enabler-spring-v2'))
-    compile(project(':onboarding-enabler-spring-v2'))
     compile libraries.spring_cloud_starter_zuul
     compile libraries.spring_boot_starter_actuator
     compile libraries.spring_boot_starter_web
@@ -66,7 +64,7 @@ dependencies {
     compile libraries.eh_cache
 
     compileOnly libraries.lombok
-
+    implementation libraries.springFox
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
     testRuntime libraries.http_client

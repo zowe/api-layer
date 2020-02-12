@@ -22,8 +22,8 @@ import java.util.Map;
  * Retrieve information about this service from application.yml, used to send information to the apiDoc discovery service
  */
 @Component
-@ConditionalOnProperty(prefix = "eureka.instance.metadata-map.mfaas.discovery", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
-@ConfigurationProperties("eureka.instance.metadata-map.mfaas.api-info")
+@ConditionalOnProperty(prefix = "eureka.instance.metadata-map.apiml.service.catalog", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
+@ConfigurationProperties("eureka.instance.metadata-map.apiml.service")
 @Data
 public class ApiPropertiesContainer {
 
