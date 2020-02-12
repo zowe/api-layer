@@ -6,6 +6,13 @@ buildscript {
     }
 }
 
+normalization {
+    runtimeClasspath {
+        ignore("**/*git.properties*")
+        ignore("**/*build-info.properties*")
+    }
+}
+
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'com.gorylenko.gradle-git-properties'
