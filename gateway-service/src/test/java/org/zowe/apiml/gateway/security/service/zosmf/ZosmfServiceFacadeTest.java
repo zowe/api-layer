@@ -33,6 +33,8 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ZosmfServiceFacadeTest {
 
+    private static final String SERVICE_ID = "zosmfca32";
+
     private RestTemplate restTemplate = mock(RestTemplate.class);
     private ZosmfServiceFacadeTestExt zosmfService;
 
@@ -43,6 +45,8 @@ public class ZosmfServiceFacadeTest {
 
     public ZosmfServiceFacadeTestExt getZosmfServiceFacade() {
         AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
+        when(authConfigurationProperties.getZosmfServiceId()).thenReturn(SERVICE_ID);
+        when(authConfigurationProperties.validatedZosmfServiceId()).thenReturn(SERVICE_ID);
         ApplicationContext applicationContext = mock(ApplicationContext.class);
 
         ZosmfServiceFacadeTestExt out = new ZosmfServiceFacadeTestExt(
@@ -224,6 +228,50 @@ public class ZosmfServiceFacadeTest {
         }
     }
 
+    @Test
+    public void testEvictCacheAllService() {
+        zosmfService.evictCacheAllService();
+        verify(zosmfService, times(1)).evictCaches();
+    }
+
+    @Test
+    public void testEvictCacheService() {
+        ZosmfServiceFacade zosmfServiceFacade = getZosmfServiceFacade();
+        zosmfServiceFacade.evictCacheService(null);
+        zosmfServiceFacade.evictCacheService("anyService");
+        verify(zosmfServiceFacade, never()).evictCaches();
+        zosmfServiceFacade.evictCacheService(SERVICE_ID);
+        verify(zosmfServiceFacade, times(1)).evictCaches();
+    }
+
+    @Test
+    public void testSetDomain() {
+        ZosmfService.AuthenticationResponse authenticationResponse = mock(ZosmfService.AuthenticationResponse.class);
+
+        ZosmfService zosmfService = mock(ZosmfService.class);
+        when(zosmfService.authenticate(any())).thenReturn(authenticationResponse);
+
+        ZosmfServiceFacade zosmfServiceFacade = getZosmfServiceFacade();
+        doReturn(new ZosmfServiceFacade.ImplementationWrapper(null, zosmfService))
+            .when(zosmfServiceFacade).getImplementation();
+
+        zosmfServiceFacade.authenticate(null);
+        verify(authenticationResponse, never()).setDomain(any());
+
+        ZosmfServiceFacade.ZosmfInfo zosmfInfo = new ZosmfServiceFacade.ZosmfInfo();
+        zosmfInfo.setSafRealm("realm");
+        doReturn(new ZosmfServiceFacade.ImplementationWrapper(zosmfInfo, zosmfService))
+            .when(zosmfServiceFacade).getImplementation();
+
+        zosmfServiceFacade.authenticate(null);
+        verify(authenticationResponse, times(1)).setDomain("realm");
+    }
+
+    @Test
+    public void testReadTokenFromCookie() {
+        assertNull(new ZosmfServiceFacadeTestExt(null, null, null, null, null, null).readTokenFromCookie(null, null));
+    }
+
     @AllArgsConstructor
     private static class TestException extends RuntimeException {
 
@@ -302,6 +350,10 @@ public class ZosmfServiceFacadeTest {
             return null;
         }
 
+        @Override
+        protected String readTokenFromCookie(List<String> cookies, String cookieName) {
+            return super.readTokenFromCookie(cookies, cookieName);
+        }
     }
 
 }

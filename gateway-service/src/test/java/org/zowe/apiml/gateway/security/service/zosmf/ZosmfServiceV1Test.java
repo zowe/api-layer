@@ -111,7 +111,7 @@ public class ZosmfServiceV1Test {
             (Class<?>) any()
         )).thenThrow(new RestClientException("any exception"));
 
-        zosmfService.validate(ZosmfService.TokenType.LTPA, "anyLtpaToken");
+        zosmfService.authenticate(new UsernamePasswordAuthenticationToken("user", "pass"));
     }
 
     @Test

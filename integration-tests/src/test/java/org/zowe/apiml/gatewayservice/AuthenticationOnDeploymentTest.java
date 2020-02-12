@@ -9,34 +9,31 @@
  */
 package org.zowe.apiml.gatewayservice;
 
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.util.categories.AdditionalLocalTest;
-import org.zowe.apiml.util.service.RequestVerifier;
-import org.zowe.apiml.util.service.VirtualService;
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.util.service.RequestVerifier;
+import org.zowe.apiml.util.service.VirtualService;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
  * This test requires to allow endpoint routes on gateway (ie profile dev)
  */
 @RunWith(JUnit4.class)
-@Category(AdditionalLocalTest.class)
 public class AuthenticationOnDeploymentTest {
 
     private static final int TIMEOUT = 100;

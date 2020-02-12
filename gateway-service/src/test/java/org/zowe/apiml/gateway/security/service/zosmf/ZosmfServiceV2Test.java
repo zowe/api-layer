@@ -21,7 +21,9 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -30,10 +32,12 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZosmfServiceV2Test {
@@ -191,7 +195,7 @@ public class ZosmfServiceV2Test {
 
         // response 401
         when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
-            .thenReturn(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+            .thenReturn(new ResponseEntity<>(UNAUTHORIZED));
         try {
             zosmfService.validate(ZosmfServiceV2.TokenType.LTPA, "token");
         } catch (TokenNotValidException e) {
@@ -248,7 +252,7 @@ public class ZosmfServiceV2Test {
         when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
             .thenThrow(new IllegalArgumentException("msg"));
         try {
-            zosmfService.validate(ZosmfServiceV2.TokenType.LTPA, "token");
+            zosmfService.authenticate(new UsernamePasswordAuthenticationToken("user", "pass"));
         } catch (IllegalArgumentException e) {
             assertEquals("msg", e.getMessage());
         }
@@ -272,6 +276,16 @@ public class ZosmfServiceV2Test {
         } catch (AuthenticationServiceException e) {
             assertEquals("A failure occurred when authenticating.", e.getMessage());
             assertTrue(e.getCause() instanceof RestClientException);
+        }
+
+        // HttpClientErrorException.Unauthorized
+        reset(restTemplate);
+        when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
+            .thenThrow(HttpClientErrorException.create(UNAUTHORIZED, "msg", new HttpHeaders(), new byte[0], Charset.defaultCharset()));
+        try {
+            zosmfService.validate(ZosmfServiceV2.TokenType.LTPA, "token");
+        } catch (BadCredentialsException e) {
+            assertEquals("Username or password are invalid.", e.getMessage());
         }
     }
 
