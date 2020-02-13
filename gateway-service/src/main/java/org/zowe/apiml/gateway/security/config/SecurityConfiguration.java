@@ -94,7 +94,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // logout endpoint
             .and()
             .logout()
-            .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
+            .logoutUrl(authConfigurationProperties.getGatewayLogoutEndpoint())
             .addLogoutHandler(logoutHandler())
 
             // endpoint protection

@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.security.common.config;
 
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 
 /**
@@ -30,11 +30,11 @@ public class AuthConfigurationProperties {
 
     // General properties
     private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
+    private String gatewayLogoutEndpoint = "/api/v1/gateway/auth/logout";
     private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
     private String gatewayTicketEndpoint = "/api/v1/gateway/auth/ticket";
 
     private String serviceLoginEndpoint = "/auth/login";
-    private String serviceLogoutEndpoint = "/auth/logout";
 
     private AuthConfigurationProperties.TokenProperties tokenProperties;
     private AuthConfigurationProperties.CookieProperties cookieProperties;

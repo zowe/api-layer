@@ -14,11 +14,13 @@ import lombok.AllArgsConstructor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 import org.zowe.apiml.util.service.VirtualService;
 
@@ -40,6 +42,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  *  - start discovery service and gateway locally
  */
 @RunWith(JUnit4.class)
+@Category(AdditionalLocalTest.class)
 public class ZosmfAuthenticationTest {
 
     private static final String ZOSMF_ID = "zosmfca32";
