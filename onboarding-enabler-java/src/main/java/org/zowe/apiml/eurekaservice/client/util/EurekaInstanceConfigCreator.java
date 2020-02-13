@@ -12,11 +12,7 @@ package org.zowe.apiml.eurekaservice.client.util;
 
 import com.netflix.appinfo.EurekaInstanceConfig;
 import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.constants.EurekaMetadataDefinition;
-import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
-import org.zowe.apiml.eurekaservice.client.config.ApimlEurekaInstanceConfig;
-import org.zowe.apiml.eurekaservice.client.config.Catalog;
-import org.zowe.apiml.eurekaservice.client.config.Route;
+import org.zowe.apiml.eurekaservice.client.config.*;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.util.UrlUtils;
@@ -27,6 +23,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaInstanceConfigCreator {
 
@@ -89,29 +87,36 @@ public class EurekaInstanceConfigCreator {
     private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
         Map<String, String> metadata = new HashMap<>();
 
+        // fill authentication metadata
+        Authentication authentication = config.getAuthentication();
+        if (authentication != null) {
+            metadata.put(AUTHENTICATION_SCHEME, authentication.getScheme());
+            metadata.put(AUTHENTICATION_APPLID, authentication.getApplid());
+        }
+
         // fill routing metadata
         for (Route route : config.getRoutes()) {
             String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
             String serviceUrl = route.getServiceUrl();
             String key = gatewayUrl.replace("/", "-");
-            metadata.put(String.format("%s.%s.%s", EurekaMetadataDefinition.ROUTES, key, EurekaMetadataDefinition.ROUTES_GATEWAY_URL), gatewayUrl);
-            metadata.put(String.format("%s.%s.%s", EurekaMetadataDefinition.ROUTES, key, EurekaMetadataDefinition.ROUTES_SERVICE_URL), serviceUrl);
+            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
+            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
         }
 
         // fill tile metadata
         if (config.getCatalog() != null) {
             Catalog.Tile tile = config.getCatalog().getTile();
             if (tile != null) {
-                metadata.put(EurekaMetadataDefinition.CATALOG_ID, tile.getId());
-                metadata.put(EurekaMetadataDefinition.CATALOG_VERSION, tile.getVersion());
-                metadata.put(EurekaMetadataDefinition.CATALOG_TITLE, tile.getTitle());
-                metadata.put(EurekaMetadataDefinition.CATALOG_DESCRIPTION, tile.getDescription());
+                metadata.put(CATALOG_ID, tile.getId());
+                metadata.put(CATALOG_VERSION, tile.getVersion());
+                metadata.put(CATALOG_TITLE, tile.getTitle());
+                metadata.put(CATALOG_DESCRIPTION, tile.getDescription());
             }
         }
 
         // fill service metadata
-        metadata.put(EurekaMetadataDefinition.SERVICE_TITLE, config.getTitle());
-        metadata.put(EurekaMetadataDefinition.SERVICE_DESCRIPTION, config.getDescription());
+        metadata.put(SERVICE_TITLE, config.getTitle());
+        metadata.put(SERVICE_DESCRIPTION, config.getDescription());
 
         metadata.putAll(flattenMetadata(config.getCustomMetadata()));
 
