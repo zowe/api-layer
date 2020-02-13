@@ -12,7 +12,6 @@ package org.zowe.apiml.apicatalog.apidoc.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,21 +30,16 @@ import java.io.IOException;
 @RequestMapping("/")
 public class ApiDocController {
 
-    private final boolean apiDocEnabled;
-    private String swaggerLocation;
     private LocalApiDocService localApiDocService;
 
     /**
      * API Doc retrieval controller
      * Autowire in dependencies to controller
-     * @param apiDocEnabled does the service have API Documentation
      * @param localApiDocService retrieve the API doc locally and not through the gateway
      */
     @Autowired
     public ApiDocController(
-        @Value("${eureka.instance.metadata-map.apiml.service.catalog.enableApiDoc:true}") boolean apiDocEnabled,
         LocalApiDocService localApiDocService)  {
-        this.apiDocEnabled = apiDocEnabled;
         this.localApiDocService = localApiDocService;
     }
 
@@ -60,12 +54,4 @@ public class ApiDocController {
             return this.localApiDocService.getApiDoc(apiDocGroup);
     }
 
-    /**
-     * Is API Doc enabled for the implementing service
-     * @return true if enabled
-     */
-    @GetMapping(value = "/api-doc/enabled", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public boolean isApiDocEnabled()  {
-        return this.apiDocEnabled;
-    }
 }

@@ -10,7 +10,6 @@
 package org.zowe.apiml.apicatalog.apidoc.model;
 
 import lombok.Data;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +21,6 @@ import java.util.Map;
  * Retrieve information about this service from application.yml, used to send information to the apiDoc discovery service
  */
 @Component
-@ConditionalOnProperty(prefix = "eureka.instance.metadata-map.apiml.service.catalog", value = "enableApiDoc", havingValue = "true", matchIfMissing = true)
 @ConfigurationProperties("eureka.instance.metadata-map.apiml.service")
 @Data
 public class ApiPropertiesContainer {

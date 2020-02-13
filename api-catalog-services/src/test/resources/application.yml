@@ -32,7 +32,6 @@ apiml:
         info:
             serviceTitle: API Catalog
             description: Service to locate and display API documentation for discovered services
-            enableApiDoc: true
         enabled: ${environment.discoveryEnabled:true}
 
     catalog-ui-tile:
@@ -96,7 +95,6 @@ eureka:
                         title:  ${apiml.catalog-ui-tile.title}
                         description: ${apiml.catalog-ui-tile.description}
                         version: ${apiml.catalog-ui-tile.version}
-                    enableApiDoc: ${apiml.service.info.enableApiDoc}
                     service:
                         title: ${apiml.service.info.serviceTitle}
                         description: ${apiml.service.info.description}
