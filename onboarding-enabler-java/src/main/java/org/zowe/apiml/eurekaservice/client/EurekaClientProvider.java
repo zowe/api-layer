@@ -5,6 +5,9 @@ import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 
+/**
+ * Hide the actual code for obtaining the Eureka Client behind interface to simplify testing.
+ */
 public interface EurekaClientProvider {
     /**
      * Provide a Eureka Client based on the provided configuration parameters.
