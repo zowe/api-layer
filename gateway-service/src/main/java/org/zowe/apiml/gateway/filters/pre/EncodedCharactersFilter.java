@@ -46,7 +46,8 @@ public class EncodedCharactersFilter extends ZuulFilter {
     private final DiscoveryClient discoveryClient;
     private final MessageService messageService;
     public static final String METADATA_KEY = "apiml.enableUrlEncodedCharacters";
-    private static final List<String> PROHIBITED_CHARACTERS = Arrays.asList("%2e", "%2E", ";", "%3b", "%3B", "%2f", "%2F", "\\", "%5c", "%5C", "%25", "%");
+    private static final List<String> PROHIBITED_CHARACTERS =
+        Arrays.asList("%2e", "%2E", ";", "%3b", "%3B", "%2f", "%2F", "\\", "%5c", "%5C", "%25", "%");
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -63,24 +64,23 @@ public class EncodedCharactersFilter extends ZuulFilter {
 
     @Override
     public boolean shouldFilter() {
-//        boolean shouldFilter = true;
-//
-//        RequestContext context = RequestContext.getCurrentContext();
-//        final String serviceId = (String) context.get(SERVICE_ID_KEY);
-//
-//        List<ServiceInstance> instanceList = discoveryClient.getInstances(serviceId);
-//
-//        List<Map<String, String>> enabledList = instanceList.stream()
-//            .map(ServiceInstance::getMetadata)
-//            .filter( metadata -> String.valueOf(true).equalsIgnoreCase(metadata.get(METADATA_KEY)) )
-//            .collect(Collectors.toList());
-//
-//        if (enabledList.size() == instanceList.size()) {
-//            shouldFilter = false;
-//        }
-//
-//        return shouldFilter;
-        return false;
+        boolean shouldFilter = true;
+
+        RequestContext context = RequestContext.getCurrentContext();
+        final String serviceId = (String) context.get(SERVICE_ID_KEY);
+
+        List<ServiceInstance> instanceList = discoveryClient.getInstances(serviceId);
+
+        List<Map<String, String>> enabledList = instanceList.stream()
+            .map(ServiceInstance::getMetadata)
+            .filter( metadata -> String.valueOf(true).equalsIgnoreCase(metadata.get(METADATA_KEY)) )
+            .collect(Collectors.toList());
+
+        if (enabledList.size() == instanceList.size()) {
+            shouldFilter = false;
+        }
+
+        return shouldFilter;
     }
 
     @Override
@@ -99,7 +99,8 @@ public class EncodedCharactersFilter extends ZuulFilter {
     }
 
     private void rejectRequest(RequestContext ctx) {
-        Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
+        Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedCharacter",
+            ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
         apimlLog.log(message);
 
         ctx.setSendZuulResponse(false);

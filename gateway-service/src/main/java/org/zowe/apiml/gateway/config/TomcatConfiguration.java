@@ -15,21 +15,25 @@ import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.error.ApimlErrorReportValve;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 /**
  * Configuration of Tomcat
  */
 @Configuration
 public class TomcatConfiguration {
-    final ApimlErrorReportValve valve = new ApimlErrorReportValve();
+    private final MessageService messageService = new YamlMessageService("/gateway-log-messages.yml");
+
+    final ApimlErrorReportValve valve = new ApimlErrorReportValve(messageService);
 
     @Value("${apiml.service.allowEncodedSlashes}")
     Boolean allowEncodedSlashes;
 
     @Bean
     public ServletWebServerFactory servletContainer() {
-        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "false");
-//            allowEncodedSlashes != null ? allowEncodedSlashes.toString() : "false");
+        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH",
+            allowEncodedSlashes != null ? allowEncodedSlashes.toString() : "false");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         tomcat.addEngineValves(valve);

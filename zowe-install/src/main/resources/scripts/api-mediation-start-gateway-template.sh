@@ -1,11 +1,12 @@
 # Variables to be replaced:
-# - JAVA_SETUP -- sets JAVA_HOME by ZOWE_JAVA_HOME
+# - JAVA_SETUP - Sets JAVA_HOME by ZOWE_JAVA_HOME
 # - IPADDRESS   -  The IP Address of the system running API Mediation
 # - HOSTNAME   -  The hostname of the system running API Mediation (defaults to localhost)
 # - DISCOVERY_PORT - The port the discovery service will use
 # - CATALOG_PORT - The port the catalog service will use
 # - GATEWAY_PORT - The port the gateway service will use
 # - VERIFY_CERTIFICATES - true/false - Validation of TLS/SSL certitificates for services
+# - ALLOW_SLASHES - true/false - Allows or prohibits the usage of encoded slashes in URL
 
 **JAVA_SETUP**
 if [[ ":$PATH:" == *":$JAVA_HOME/bin:"* ]]; then
@@ -32,6 +33,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.discoveryServiceUrls=https://**HOSTNAME**:**DISCOVERY_PORT**/eureka/ \
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.service.ipAddress=**IPADDRESS** \
+    -Dapiml.service.allowEncodedSlashes=**ALLOW_URL_SLASHES** \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
