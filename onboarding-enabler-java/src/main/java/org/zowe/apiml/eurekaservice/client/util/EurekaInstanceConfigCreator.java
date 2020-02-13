@@ -118,6 +118,7 @@ public class EurekaInstanceConfigCreator {
         metadata.put(SERVICE_TITLE, config.getTitle());
         metadata.put(SERVICE_DESCRIPTION, config.getDescription());
 
+        // fill custom metadata
         metadata.putAll(flattenMetadata(config.getCustomMetadata()));
 
         // fill api-doc info
@@ -128,7 +129,7 @@ public class EurekaInstanceConfigCreator {
         return metadata;
     }
 
-    public Map<String, String> flattenMetadata(Map<java.lang.String, Object> configurationMetadata) {
+    public Map<String, String> flattenMetadata(Map<String, Object> configurationMetadata) {
         return flattenMap(null, configurationMetadata);
     }
 
@@ -152,7 +153,11 @@ public class EurekaInstanceConfigCreator {
                 continue;
             }
 
-            if (entry.getValue() instanceof String ) {
+            if (entry.getValue() instanceof String ||
+                entry.getValue() instanceof Boolean ||
+                entry.getValue() instanceof Integer ||
+                entry.getValue() instanceof Double ||
+                entry.getValue() instanceof Float) {
                 result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString());
                 continue;
             }
@@ -163,6 +168,7 @@ public class EurekaInstanceConfigCreator {
             if (entry.getValue().getClass().isArray()) {
                 throw new IllegalArgumentException("Array parsing is not supported");
             }
+            throw new IllegalArgumentException(String.format("Cannot parse key: %1 with value %2", entry.getKey(), entry.getValue().toString()));
         }
 
         return result;

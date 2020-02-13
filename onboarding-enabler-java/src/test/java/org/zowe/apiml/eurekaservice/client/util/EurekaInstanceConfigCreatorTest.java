@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,20 @@ public class EurekaInstanceConfigCreatorTest {
         testMap.put("key", null);
         Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
         assertThat(resultMap, hasEntry("key", ""));
+    }
+
+    @Test
+    public void givenMetadataWithPrimitiveValues_whenConverted_shouldReturnCorrectValues() {
+        Map<String, Object> testMap = new HashMap<>();
+        testMap.put("key1", true);
+        testMap.put("key2", 23);
+        testMap.put("key3", 23.0d);
+        testMap.put("key4", 23.0f);
+        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
+        assertThat(resultMap, hasEntry("key1", "true"));
+        assertThat(resultMap, hasEntry("key2", "23"));
+        assertThat(resultMap, hasEntry("key3", "23.0"));
+        assertThat(resultMap, hasEntry("key4", "23.0"));
     }
 
     @Test
@@ -82,6 +97,13 @@ public class EurekaInstanceConfigCreatorTest {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("masterKey", nested);
 
+        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void givenMetadataWithAnythingElseThanExpected_whenConverted_shouldReturnException() {
+        Map<String, Object> testMap = new HashMap<>();
+        testMap.put("key1", new BigDecimal(0));
         Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
     }
 

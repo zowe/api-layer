@@ -108,6 +108,9 @@ apiml:
             keyStorePassword: ${server.ssl.keyStorePassword}
             trustStore: ${server.ssl.trustStore}
             trustStorePassword: ${server.ssl.trustStorePassword}
+        customMetadata:
+            apiml:
+                enableUrlEncodedCharacters: true
 
 server:
     scheme: ${apiml.service.scheme}
