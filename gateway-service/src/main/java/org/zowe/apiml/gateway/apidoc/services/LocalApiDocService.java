@@ -47,7 +47,7 @@ public class LocalApiDocService {
 
     /**
      * Retrieve the API doc for this service
-     * @param apiDocGroup the API doc group to retrieve (can be null, the apply default)
+     * @param apiDocGroup the API doc group to retrieve (can be null, then apply default)
      * @return the swagger as a string
      */
     public String getApiDoc(String apiDocGroup)  {

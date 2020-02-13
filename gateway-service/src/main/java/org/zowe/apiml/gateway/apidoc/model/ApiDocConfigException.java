@@ -11,10 +11,6 @@ package org.zowe.apiml.gateway.apidoc.model;
 
 public class ApiDocConfigException extends RuntimeException {
 
-    public ApiDocConfigException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
     public ApiDocConfigException(String msg) {
         super(msg);
     }

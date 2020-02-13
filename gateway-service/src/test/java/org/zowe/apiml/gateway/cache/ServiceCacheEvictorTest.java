@@ -1,4 +1,4 @@
-package org.zowe.apiml.gateway.cache;/*
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -7,6 +7,8 @@ package org.zowe.apiml.gateway.cache;/*
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+package org.zowe.apiml.gateway.cache;
 
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
