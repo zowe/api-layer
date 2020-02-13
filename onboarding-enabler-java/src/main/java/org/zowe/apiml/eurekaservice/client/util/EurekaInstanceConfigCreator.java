@@ -168,7 +168,7 @@ public class EurekaInstanceConfigCreator {
             if (entry.getValue().getClass().isArray()) {
                 throw new IllegalArgumentException("Array parsing is not supported");
             }
-            throw new IllegalArgumentException(String.format("Cannot parse key: %1 with value %2", entry.getKey(), entry.getValue().toString()));
+            throw new IllegalArgumentException(String.format("Cannot parse key: %s with value %s", entry.getKey(), entry.getValue().toString()));
         }
 
         return result;
