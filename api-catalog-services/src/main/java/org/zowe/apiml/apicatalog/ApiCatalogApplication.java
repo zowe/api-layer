@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.apicatalog;
 
-import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.version.BuildInfo;
@@ -24,9 +23,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(exclude = HystrixAutoConfiguration.class)
 @EnableEurekaClient
-@EnableApiDiscovery
 @ComponentScan({
-    "org.zowe.apiml.enable",
     "org.zowe.apiml.apicatalog",
     "org.zowe.apiml.product.security",
     "org.zowe.apiml.product.web",

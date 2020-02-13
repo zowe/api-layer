@@ -62,7 +62,7 @@ public class InstanceInitializeService {
         value = {RetryException.class},
         exclude = CannotRegisterServiceException.class,
         maxAttempts = 5,
-        backoff = @Backoff(delayExpression = "#{${mfaas.service-registry.serviceFetchDelayInMillis}}"))
+        backoff = @Backoff(delayExpression = "#{${apiml.service-registry.serviceFetchDelayInMillis}}"))
     public void retrieveAndRegisterAllInstancesWithCatalog() throws CannotRegisterServiceException {
         log.info("Initialising API Catalog with Discovery services.");
         try {

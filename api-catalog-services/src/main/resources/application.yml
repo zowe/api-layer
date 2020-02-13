@@ -1,7 +1,3 @@
-apiml:
-    security:
-        ssl:
-            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
 
 spring:
     application:
@@ -39,9 +35,11 @@ logging:
 ##############################################################################################
 # APIML configuration section
 ##############################################################################################
-mfaas:
-    discovery:
-        serviceId: ${spring.application.name}
+apiml:
+    service:
+        id: ${spring.application.name}
+        hostname: ${environment.hostname}
+        ipAddress: ${environment.ipAddress}
         locations: ${environment.discoveryLocations}
         fetchRegistry: true
         registerWithEureka: true
@@ -51,16 +49,22 @@ mfaas:
         eurekaUserName: ${environment.eurekaUserId}
         eurekaUserPassword: ${environment.eurekaPassword}
         endpoints:
-            homePage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}
-            statusPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/info
-            healthPage: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}${mfaas.server.contextPath}/application/health
+            homePage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}
+            statusPage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}/application/info
+            healthPage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}/application/health
         info:
             serviceTitle: API Catalog
             description: API Catalog service to display service details and API documentation for discovered API services.
-            enableApiDoc: true
-    service:
-        hostname: ${environment.hostname}
-        ipAddress: ${environment.ipAddress}
+
+        ssl:
+            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+            esmEnabled: ${environment.esmEnabled:false}
+            sslEnabled: true
+            protocol: TLSv1.2
+            trustStore: ${environment.truststore}
+            trustStoreType: ${environment.truststoreType}
+            trustStorePassword: ${environment.truststorePassword}
+
     catalog-ui-tile:
         id: apimediationlayer
         title: API Mediation Layer API
@@ -70,14 +74,7 @@ mfaas:
         port: ${environment.port}
         contextPath: /apicatalog
         scheme: https
-    security:
-        esmEnabled: ${environment.esmEnabled:false}
-        sslEnabled: true
-        protocol: TLSv1.2
-        ciphers: ${apiml.security.ssl.ciphers}
-        trustStore: ${environment.truststore}
-        trustStoreType: ${environment.truststoreType}
-        trustStorePassword: ${environment.truststorePassword}
+
     service-registry:
         serviceFetchDelayInMillis:  30000
         cacheRefreshUpdateThresholdInMillis: 60000
@@ -87,32 +84,32 @@ mfaas:
 ##############################################################################################
 
 server:
-    address: ${mfaas.service.ipAddress}
-    port: ${mfaas.server.port}
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.server.port}
     servlet:
-        contextPath: ${mfaas.server.contextPath}
+        contextPath: ${apiml.server.contextPath}
     ssl:
-        enabled: ${mfaas.security.sslEnabled}
-        protocol: ${mfaas.security.protocol}
+        enabled: ${apiml.service.ssl.sslEnabled}
+        protocol: ${apiml.service.ssl.protocol}
         enabled-protocols: TLSv1.2
-        ciphers:  ${mfaas.security.ciphers}
-        trustStore: ${mfaas.security.trustStore}
-        trustStoreType: ${mfaas.security.trustStoreType}
-        trustStorePassword: ${mfaas.security.trustStorePassword}
+        ciphers:  ${apiml.service.ssl.ciphers}
+        trustStore: ${apiml.service.ssl.trustStore}
+        trustStoreType: ${apiml.service.ssl.trustStoreType}
+        trustStorePassword: ${apiml.service.ssl.trustStorePassword}
     error:
         whitelabel:
             enabled: false
 
 eureka:
     instance:
-        hostname: ${mfaas.service.hostname}
-        statusPageUrlPath: ${mfaas.discovery.endpoints.statusPage}
-        healthCheckUrl: ${mfaas.discovery.endpoints.healthPage}
-        homePageUrl: ${mfaas.discovery.endpoints.homePage}
-        port: ${mfaas.server.port}
-        securePort: ${mfaas.server.port}
-        nonSecurePortEnabled: ${mfaas.discovery.nonSecurePortEnabled}
-        securePortEnabled: ${mfaas.discovery.securePortEnabled}
+        hostname: ${apiml.service.hostname}
+        statusPageUrlPath: ${apiml.service.endpoints.statusPage}
+        healthCheckUrl: ${apiml.service.endpoints.healthPage}
+        homePageUrl: ${apiml.service.endpoints.homePage}
+        port: ${apiml.server.port}
+        securePort: ${apiml.server.port}
+        nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+        securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             routed-services:
                 ui_v1:
@@ -127,32 +124,31 @@ eureka:
                     - apiId: org.zowe.apicatalog
                       gatewayUrl: api/v1
                       swaggerUrl: https://${environment.hostname}:${server.port}${server.servlet.contextPath}/api-doc
-            mfaas:
-                api-info:
+
+                service:
+                    catalog:
+                        tile:
+                            id: ${apiml.catalog-ui-tile.id}
+                            title: ${apiml.catalog-ui-tile.title}
+                            description: ${apiml.catalog-ui-tile.description}
+                            version: ${apiml.catalog-ui-tile.version}
+
+                    title: ${apiml.service.info.serviceTitle}
+                    description: ${apiml.service.info.description}
+
                     apiVersionProperties:
                         v1:
                             title: API Catalog
                             description: REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.
                             version: 1.0.0
                             basePackage: org.zowe.apiml.apicatalog.controllers.api
-
-                discovery:
-                    catalogUiTile:
-                        id: ${mfaas.catalog-ui-tile.id}
-                        title: ${mfaas.catalog-ui-tile.title}
-                        description: ${mfaas.catalog-ui-tile.description}
-                        version: ${mfaas.catalog-ui-tile.version}
-                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:false}
-                    service:
-                        title: ${mfaas.discovery.info.serviceTitle}
-                        description: ${mfaas.discovery.info.description}
     client:
         healthcheck:
             enabled: true
         serviceUrl:
-            defaultZone: ${mfaas.discovery.locations}
-        fetchRegistry:  ${mfaas.discovery.fetchRegistry}
-        region: ${mfaas.discovery.region}
+            defaultZone: ${apiml.service.locations}
+        fetchRegistry:  ${apiml.service.fetchRegistry}
+        region: ${apiml.service.region}
 
 management:
     endpoints:

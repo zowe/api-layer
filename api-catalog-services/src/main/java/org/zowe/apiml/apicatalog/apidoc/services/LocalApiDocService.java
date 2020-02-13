@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.apidoc.services;
+package org.zowe.apiml.apicatalog.apidoc.services;
 
 import io.swagger.models.Swagger;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -7,15 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.apidoc;
+package org.zowe.apiml.apicatalog.apidoc;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.gateway.apidoc.model.ApiDocConfigException;
-import org.zowe.apiml.gateway.apidoc.model.ApiPropertiesContainer;
+import org.zowe.apiml.apicatalog.apidoc.model.ApiDocConfigException;
+import org.zowe.apiml.apicatalog.apidoc.model.ApiPropertiesContainer;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.spi.DocumentationType;

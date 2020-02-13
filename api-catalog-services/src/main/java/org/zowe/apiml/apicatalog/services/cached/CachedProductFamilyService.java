@@ -67,7 +67,7 @@ public class CachedProductFamilyService {
     @Autowired
     public CachedProductFamilyService(GatewayClient gatewayClient,
                                       CachedServicesService cachedServicesService,
-                                      @Value("${mfaas.service-registry.cacheRefreshUpdateThresholdInMillis}")
+                                      @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}")
                                           Integer cacheRefreshUpdateThresholdInMillis) {
         this.cachedServicesService = cachedServicesService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;

@@ -55,7 +55,7 @@ public final class EurekaMetadataDefinition {
     public static final String SERVICE_DESCRIPTION_V1 = "apiml.service.description";
     public static final String ENABLE_APIDOC_V1 = "apiml.service.catalog.enableApiDoc";
 
-    public static final String API_VERSION_PROPERTIES_BASE_PACKAGE_V1 = "mfaas.api-info.apiVersionProperties.v1.basePackage";
+    public static final String API_VERSION_PROPERTIES_BASE_PACKAGE_V1 = "apiml.service.apiVersionProperties.v1.basePackage";
     public static final String API_VERSION_PROPERTIES_TITLE_V1 = "apiml.service.apiVersionProperties.v1.title";
     public static final String API_VERSION_PROPERTIES_VERSION_V1 = "apiml.service.apiVersionProperties.v1.version";
     public static final String API_VERSION_PROPERTIES_DESCRIPTION_V1 = "apiml.service.apiVersionProperties.v1.description";

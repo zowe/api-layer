@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.gateway.apidoc.services.LocalApiDocService;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,23 +39,19 @@ import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 @RequestMapping("/")
 public class ApiDocController {
 
-    private final boolean apiDocEnabled;
     private String swaggerLocation;
     private LocalApiDocService localApiDocService;
 
     /**
      * API Doc retrieval controller
      * Autowire in dependencies to controller
-     * @param apiDocEnabled does the service have API Documentation
      * @param swaggerLocation optional parameter to tell the controller where to load a static swagger file
      * @param localApiDocService retrieve the API doc locally and not through the gateway
      */
     @Autowired
     public ApiDocController(
-        @Value("${eureka.instance.metadata-map.apiml.service.catalog.enableApiDoc:true}") boolean apiDocEnabled,
         @Value("${eureka.instance.metadata-map.apiml.service.location:}") String swaggerLocation,
-        @Nullable LocalApiDocService localApiDocService)  {
-        this.apiDocEnabled = apiDocEnabled;
+        LocalApiDocService localApiDocService)  {
         this.swaggerLocation = swaggerLocation;
         this.localApiDocService = localApiDocService;
     }
@@ -120,12 +115,4 @@ public class ApiDocController {
         }
     }
 
-    /**
-     * Is API Doc enabled for the implementing service
-     * @return true if enabled
-     */
-    @GetMapping(value = "/api-doc/enabled", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public boolean isApiDocEnabled()  {
-        return this.apiDocEnabled;
-    }
 }

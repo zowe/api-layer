@@ -68,8 +68,8 @@ public class InstanceRefreshService {
      * Depends on the GatewayClient: no refreshes happen when it's not initialized
      */
     @Scheduled(
-        initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
-        fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
+        initialDelayString = "${apiml.service-registry.cacheRefreshInitialDelayInMillis}",
+        fixedDelayString = "${apiml.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
         if (!isStarted) {
             log.debug("InstanceRefreshService is stopped. Skip refresh.");
