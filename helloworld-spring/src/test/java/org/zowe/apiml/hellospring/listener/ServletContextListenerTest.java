@@ -18,8 +18,6 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
