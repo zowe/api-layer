@@ -29,7 +29,7 @@ server:
         keyStore: keystore/localhost/localhost.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-mfaas:
+apiml:
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000

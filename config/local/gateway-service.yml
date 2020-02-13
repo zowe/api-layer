@@ -5,17 +5,14 @@ apiml:
         ipAddress: 127.0.0.1
         port: 10010
         discoveryServiceUrls: https://localhost:10011/eureka/
-
-        ssl:
-            verifySslCertificatesOfServices: true
-
     security:
         auth:
             provider: dummy
             zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
             passTicket:
                 timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
-
+        ssl:
+            verifySslCertificatesOfServices: true
     banner: console
 
 spring:

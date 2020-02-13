@@ -56,6 +56,7 @@ apiml:
             serviceTitle: API Catalog
             description: API Catalog service to display service details and API documentation for discovered API services.
 
+    security:
         ssl:
             ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
             esmEnabled: ${environment.esmEnabled:false}
@@ -89,13 +90,13 @@ server:
     servlet:
         contextPath: ${apiml.server.contextPath}
     ssl:
-        enabled: ${apiml.service.ssl.sslEnabled}
-        protocol: ${apiml.service.ssl.protocol}
+        enabled: ${apiml.security.ssl.sslEnabled}
+        protocol: ${apiml.security.ssl.protocol}
         enabled-protocols: TLSv1.2
-        ciphers:  ${apiml.service.ssl.ciphers}
-        trustStore: ${apiml.service.ssl.trustStore}
-        trustStoreType: ${apiml.service.ssl.trustStoreType}
-        trustStorePassword: ${apiml.service.ssl.trustStorePassword}
+        ciphers:  ${apiml.security.ssl.ciphers}
+        trustStore: ${apiml.security.ssl.trustStore}
+        trustStoreType: ${apiml.security.ssl.trustStoreType}
+        trustStorePassword: ${apiml.security.ssl.trustStorePassword}
     error:
         whitelabel:
             enabled: false

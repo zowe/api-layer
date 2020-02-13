@@ -32,14 +32,12 @@ server:
         keyStorePassword: password
         keyStoreType: PKCS12
 
-mfaas:
+apiml:
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000
         cacheRefreshUpdateThresholdInMillis: 120000
         serviceFetchDelayInMillis: 10000
-
-apiml:
     banner: console
 
 spring:

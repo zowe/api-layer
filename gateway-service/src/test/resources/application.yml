@@ -129,10 +129,9 @@ eureka:
         healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
         secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
         metadata-map:
-            mfaas:
-                discovery:
-                    enableApiDoc: false
-                    serviceTitle: API Gateway
+            apiml:
+                service:
+                    title: API Gateway
                     description: API Gateway to access REST APIs of registered services
     client:
         fetchRegistry: true

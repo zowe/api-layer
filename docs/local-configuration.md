@@ -122,10 +122,10 @@ Increase the service cache frequency rate which updates the Catalog UI with disc
 These settings are for development purposes only, it may result in false positive or unexpected behaviour.
 
 ```
--Dmfaas.service-registry.serviceFetchDelayInMillis=10000 
--Dmfaas.service-registry.cacheRefreshUpdateThresholdInMillis=10000 
--Dmfaas.service-registry.cacheRefreshInitialDelayInMillis=10000 
--Dmfaas.service-registry.cacheRefreshRetryDelayInMillis=10000
+-Dapiml.service-registry.serviceFetchDelayInMillis=10000 
+-Dapiml.service-registry.cacheRefreshUpdateThresholdInMillis=10000 
+-Dapiml.service-registry.cacheRefreshInitialDelayInMillis=10000 
+-Dapiml.service-registry.cacheRefreshRetryDelayInMillis=10000
 ```
 
 
