@@ -26,3 +26,11 @@ ssl:
     trustStore: ../keystore/localhost/localhost.truststore.p12
     trustStorePassword: password2
     trustStoreType: PKCS12
+customMetadata:
+    key: anotherValue
+    customService:
+        key10: value10
+        evenmorelevels:
+            key5:
+                key6:
+                    key7: anothervalue7
