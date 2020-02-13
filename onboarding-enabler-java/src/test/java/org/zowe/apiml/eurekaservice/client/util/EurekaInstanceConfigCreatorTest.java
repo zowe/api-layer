@@ -14,102 +14,18 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import org.junit.Test;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.zowe.apiml.util.MapUtils;
 
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class EurekaInstanceConfigCreatorTest {
 
     private ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
-    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
+    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator(new MapUtils());
 
     @Test
-    public void givenNullMetadata_whenConverted_shouldReturnEmptyMap() {
-        Map<String, Object> testMap = new HashMap<>();
-        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
-        assertTrue(resultMap.isEmpty());
-    }
-
-    @Test
-    public void givenMetadataWithNullValue_whenConverted_shouldReturnEmptyValue() {
-        Map<String, Object> testMap = new HashMap<>();
-        testMap.put("key", null);
-        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
-        assertThat(resultMap, hasEntry("key", ""));
-    }
-
-    @Test
-    public void givenMetadataWithPrimitiveValues_whenConverted_shouldReturnCorrectValues() {
-        Map<String, Object> testMap = new HashMap<>();
-        testMap.put("key1", true);
-        testMap.put("key2", 23);
-        testMap.put("key3", 23.0d);
-        testMap.put("key4", 23.0f);
-        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
-        assertThat(resultMap, hasEntry("key1", "true"));
-        assertThat(resultMap, hasEntry("key2", "23"));
-        assertThat(resultMap, hasEntry("key3", "23.0"));
-        assertThat(resultMap, hasEntry("key4", "23.0"));
-    }
-
-    @Test
-    public void givenMetadataWithNestedMap_whenConverted_shouldReturnFlattened() {
-        Map<String, Object> nestedLvl2 = new HashMap<>();
-        nestedLvl2.put("keyzzz", "valuezzz");
-
-        Map<String, Object> nested = new HashMap<>();
-        nested.put("key1", "value1");
-        nested.put("key2", "value2");
-        nested.put("key3", nestedLvl2);
-
-        Map<String, Object> testMap = new HashMap<>();
-        testMap.put("masterKey", nested);
-
-        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
-        assertThat(resultMap, hasEntry("masterKey.key1", "value1"));
-        assertThat(resultMap, hasEntry("masterKey.key2", "value2"));
-        assertThat(resultMap, hasEntry("masterKey.key3.keyzzz", "valuezzz"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void givenMetadataWithNestedList_whenConverted_shouldReturnException() {
-        List<Object> nested = new ArrayList<>();
-        nested.add("value1");
-        nested.add("value2");
-
-        Map<String, Object> testMap = new HashMap<>();
-        testMap.put("masterKey", nested);
-
-        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void givenMetadataWithNestedArray_whenConverted_shouldReturnException() {
-        String[] nested = {"value1", "value2"};
-
-        Map<String, Object> testMap = new HashMap<>();
-        testMap.put("masterKey", nested);
-
-        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void givenMetadataWithAnythingElseThanExpected_whenConverted_shouldReturnException() {
-        Map<String, Object> testMap = new HashMap<>();
-        testMap.put("key1", new BigDecimal(0));
-        Map<String, String> resultMap = eurekaInstanceConfigCreator.flattenMetadata(testMap);
-    }
-
-
-    @Test
-    public void givenYamlMetadata_whenParsedByJackson_shouldFlattenMetadataCorrect() throws ServiceDefinitionException {
+    public void givenYamlMetadata_whenParsedByJackson_shouldFlattenMetadataCorrectly() throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("service-configuration.yml");
         EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(testConfig);
 
@@ -119,7 +35,6 @@ public class EurekaInstanceConfigCreatorTest {
         assertThat(translatedConfig.getMetadataMap(), hasEntry("customService.key3", "value3"));
         assertThat(translatedConfig.getMetadataMap(), hasEntry("customService.key4", "value4"));
         assertThat(translatedConfig.getMetadataMap(), hasEntry("customService.evenmorelevels.key5.key6.key7", "value7"));
-
     }
 
 

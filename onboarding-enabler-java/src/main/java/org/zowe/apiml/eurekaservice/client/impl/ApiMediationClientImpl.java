@@ -52,6 +52,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 public class ApiMediationClientImpl implements ApiMediationClient {
     private EurekaClientProvider eurekaClientProvider;
     private EurekaClient eurekaClient;
+    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator(new MapUtils());
 
     public ApiMediationClientImpl() {
         eurekaClientProvider = new DiscoveryClientProvider();
