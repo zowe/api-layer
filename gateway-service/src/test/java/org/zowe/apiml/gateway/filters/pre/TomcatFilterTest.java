@@ -7,43 +7,49 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.error;
+package org.zowe.apiml.gateway.filters.pre;
 
-import org.apache.catalina.Valve;
-import org.apache.catalina.connector.Request;
-import org.apache.catalina.connector.Response;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-
 @RunWith(MockitoJUnitRunner.class)
-public class ApimlErrorReportValveTest {
+public class TomcatFilterTest {
+
+    private TomcatFilter filter;
+
     private static MessageService messageService;
-    private ApimlErrorReportValve logValve;
-    private Request req;
-    private Response resp;
-    private Valve nextValve;
+    private static ObjectMapper mapper;
+
+    private MockHttpServletRequest request;
+    private MockHttpServletResponse response;
+    private FilterChain filterChain;
     private Message mockedMessage;
 
     @Before
     public void setup() {
-        req = mock(Request.class);
-        resp = mock(Response.class);
-        nextValve = mock(Valve.class);
+        request = new MockHttpServletRequest();
+        response = new MockHttpServletResponse();
         messageService = mock(YamlMessageService.class);
+        mapper = mock(ObjectMapper.class);
         mockedMessage = mock(Message.class);
+        filterChain = mock(FilterChain.class);
     }
 
     @Test
@@ -51,44 +57,41 @@ public class ApimlErrorReportValveTest {
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "false");
         when(messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", "/api/v1/encoded%2fslash"))
             .thenReturn(Message.of("org.zowe.apiml.key", createMessageTemplate("text"), new Object[]{"parameter"}));
-        logValve = new ApimlErrorReportValve(messageService);
+        when(request.getRequestURI()).thenReturn("/api/v1/encoded%2fslash");
+        filter = new TomcatFilter(messageService, mapper);
 
-        when(req.getRequestURI()).thenReturn("/api/v1/encoded%2fslash");
-
-        logValve.invoke(req,resp);
-        verify(resp).setContentType("application/json");
-        verify(resp).setAppCommitted(true);
+        filter.doFilter(request, response, filterChain);
+        verify(response).setContentType("application/json");
     }
 
     @Test
-    public void shouldAllowNonEncodedSlashRequestsAndMoveToNextValveWhenConfiguredToReject() throws IOException, ServletException {
+    public void shouldAllowNonEncodedSlashRequestsAndMoveToNextFilterWhenConfiguredToReject() throws IOException, ServletException {
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "false");
         when(messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", "/api/v1/normal"))
             .thenReturn(Message.of("org.zowe.apiml.key", createMessageTemplate("text"), new Object[]{"parameter"}));
-        logValve = new ApimlErrorReportValve(messageService);
-        logValve.setNext(nextValve);
-        when(req.getRequestURI()).thenReturn("/api/v1/normal");
+        filter = new TomcatFilter(messageService, mapper);
 
-        logValve.invoke(req,resp);
-        verify(nextValve).invoke(req,resp);
+        when(request.getRequestURI()).thenReturn("/api/v1/normal");
+
+        filter.doFilter(request, response, filterChain);
+        //verify(response).
     }
 
     @Test
-    public void shouldAllowAnyRequestAndMoveToNextValveWhenConfiguredToAllow() throws IOException, ServletException {
+    public void shouldAllowAnyRequestAndMoveToNextFilterWhenConfiguredToAllow() throws IOException, ServletException {
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         when(messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", anyString()))
             .thenReturn(Message.of("org.zowe.apiml.key", createMessageTemplate("text"), new Object[]{"parameter"}));
-        logValve = new ApimlErrorReportValve(messageService);
-        logValve.setNext(nextValve);
+        filter = new TomcatFilter(messageService, mapper);
 
-        when(req.getRequestURI()).thenReturn("/api/v1/normal");
-        logValve.invoke(req,resp);
+        when(request.getRequestURI()).thenReturn("/api/v1/normal");
+        filter.doFilter(request, response, filterChain);
 
-        reset(req);
-        when(req.getRequestURI()).thenReturn("/api/v1/encoded%2fslash");
-        logValve.invoke(req,resp);
+        reset(request);
+        when(request.getRequestURI()).thenReturn("/api/v1/encoded%2fslash");
+        filter.doFilter(request, response, filterChain);
 
-        verify(nextValve, times(2)).invoke(req,resp);
+        //verify(nextValve, times(2)).invoke(request,response);
     }
 
     private MessageTemplate createMessageTemplate(String messageText) {
