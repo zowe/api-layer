@@ -52,9 +52,8 @@ apiml:
             homePage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}
             statusPage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}/application/info
             healthPage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}/application/health
-        info:
-            serviceTitle: API Catalog
-            description: API Catalog service to display service details and API documentation for discovered API services.
+        title: API Catalog
+        description: API Catalog service to display service details and API documentation for discovered API services.
 
     security:
         ssl:
@@ -124,7 +123,7 @@ eureka:
                 apiInfo:
                     - apiId: org.zowe.apicatalog
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${environment.hostname}:${server.port}${server.servlet.contextPath}/api-doc
+                      swaggerUrl: https://${environment.hostname}:${server.port}${server.servlet.contextPath}/v2/api-docs
 
                 service:
                     catalog:
@@ -134,8 +133,8 @@ eureka:
                             description: ${apiml.catalog-ui-tile.description}
                             version: ${apiml.catalog-ui-tile.version}
 
-                    title: ${apiml.service.info.serviceTitle}
-                    description: ${apiml.service.info.description}
+                    title: ${apiml.service.title}
+                    description: ${apiml.service.description}
 
                     apiVersionProperties:
                         v1:

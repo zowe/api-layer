@@ -159,7 +159,6 @@ eureka:
                       documentationUrl: https://zowe.github.io/docs-site/
 
                 service:
-                    location: gateway-api-doc.json
 
                     catalog:
                         tile:

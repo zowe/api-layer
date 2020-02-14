@@ -29,10 +29,8 @@ apiml:
             statusPage: ${apiml.server.contextPath}/application/info
             healthPage: ${apiml.server.contextPath}/application/health
             homePage: ${apiml.server.contextPath}
-        info:
-            serviceTitle: API Catalog
-            description: Service to locate and display API documentation for discovered services
-        enabled: ${environment.discoveryEnabled:true}
+        title: API Catalog
+        description: Service to locate and display API documentation for discovered services
 
     catalog-ui-tile:
         id: apimediationlayer
@@ -96,8 +94,8 @@ eureka:
                         description: ${apiml.catalog-ui-tile.description}
                         version: ${apiml.catalog-ui-tile.version}
                     service:
-                        title: ${apiml.service.info.serviceTitle}
-                        description: ${apiml.service.info.description}
+                        title: ${apiml.service.title}
+                        description: ${apiml.service.description}
     client:
         healthcheck:
             enabled: true
