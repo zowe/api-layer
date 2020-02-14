@@ -36,7 +36,7 @@ public class TomcatFilter implements Filter {
     private final ObjectMapper mapper;
 
     @Value("${apiml.service.allowEncodedSlashes:#{false}}")
-    private boolean allowEncodedSlashes;
+    private Boolean allowEncodedSlashes;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -50,17 +50,18 @@ public class TomcatFilter implements Filter {
         String decodedUri = URLDecoder.decode(uri, "UTF-8");
         final boolean isRequestEncoded = !uri.equals(decodedUri);
 
-        Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", req.getRequestURI());
-        if (!allowEncodedSlashes && isRequestEncoded) {
+        Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", uri);
+        boolean allowEncoded = allowEncodedSlashes != null && allowEncodedSlashes;
+        if (!allowEncoded && isRequestEncoded) {
             res.setStatus(HttpStatus.BAD_REQUEST.value());
             res.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
             try {
-                mapper.writeValue(res.getWriter(), message);
+                mapper.writeValue(res.getWriter(), message.mapToView());
             } catch (IOException e) {
                 apimlLog.log("org.zowe.apiml.security.errorWrittingResponse", e.getMessage());
                 throw new ServletException("Error writing response", e);
             }
-            apimlLog.log("org.zowe.apiml.gateway.requestContainEncodedSlash", req.getRequestURI());
+            apimlLog.log("org.zowe.apiml.gateway.requestContainEncodedSlash", uri);
         } else {
             chain.doFilter(request, response);
         }
