@@ -1,34 +1,3 @@
-# Following parameters must not be declared in this application.yml (in the artifact jar).
-#  On local installations they can be defined in externalized configuration provided by
-#    -Dspring.config.additional-location=additional_config_path
-#
-#    On MF they are provided by on command line with set of -Dkey=value system properties
-#    defined in startup script (read from parmlibs)
-#
-#    -Deureka.instance.metadata-map.discovery.service.title=\"${{PFX}}_DC_SERVICE_TITLE\"
-#    -Deureka.instance.metadata-map.discovery.service.description=\"${{PFX}}_DC_SERVICE_DESC\"
-#
-#    -Deureka.client.enabled=${{PFX}}_DC_DISC_ENABLED"
-#
-#    -Dapiml.service.id=${{PFX}}_DC_SERVICE_ID"
-#    -Dapiml.service.hostname=${{PFX}}_{{SYSN}}_HOSTNAME"
-#    -Dapiml.service.port=${{PFX}}_{{SRV}}_PORT"
-#    -Dapiml.service.discoveryServiceUrls=${{PFX}}_DS"
-#    -Dapiml.service.ipAddress=${{PFX}}_{{SYSN}}_IP_ADDRESS"
-#
-#    -DlogbackService={{procname}}"
-#
-# SSL/TLS configuration for Discoverable Client:
-#    -Dserver.ssl.enabled=true
-#    -Dserver.ssl.keyStore=${{PFX}}_SSL_KEY_STORE
-#    -Dserver.ssl.keyStoreType=${{PFX}}_SSL_KEY_STORE_TYPE
-#    -Dserver.ssl.keyStorePassword=${{PFX}}_SSL_KEY_STORE_PASSWORD
-#    -Dserver.ssl.keyAlias=${{PFX}}_SSL_KEY_ALIAS
-#    -Dserver.ssl.keyPassword=${{PFX}}_SSL_KEY_PASSWORD
-#    -Dserver.ssl.trustStore=${{PFX}}_SSL_TRUST_STORE
-#    -Dserver.ssl.trustStoreType=${{PFX}}_SSL_TRUST_STORE_TYPE
-#    -Dserver.ssl.trustStorePassword=${{PFX}}_SSL_TRUST_STORE_PASSWORD
-
 logging:
     level:
         ROOT: INFO
@@ -114,9 +83,7 @@ apiml:
 
 server:
     scheme: ${apiml.service.scheme}
-    #hostname: ${apiml.service.hostname}
-    port: ${apiml.service.port} #10012
-    #address: ${apiml.service.ipAddress} #127.0.0.1
+    port: ${apiml.service.port}
 
     servlet:
         contextPath: /${apiml.service.serviceId}
