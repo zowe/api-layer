@@ -32,12 +32,6 @@ server:
         keyStorePassword: password
         keyStoreType: PKCS12
 
-mfaas:
-    service-registry:
-        cacheRefreshInitialDelayInMillis: 10000
-        cacheRefreshRetryDelayInMillis: 10000
-        cacheRefreshUpdateThresholdInMillis: 120000
-        serviceFetchDelayInMillis: 10000
 
 spring:
     output:
@@ -52,6 +46,11 @@ logging:
 
 # use this option to turn off https validation for UI testing (when running dev mode UI)
 apiml:
+    service-registry:
+        cacheRefreshInitialDelayInMillis: 10000
+        cacheRefreshRetryDelayInMillis: 10000
+        cacheRefreshUpdateThresholdInMillis: 120000
+        serviceFetchDelayInMillis: 10000
     security:
         cookieProperties:
             cookieSecure: "false"

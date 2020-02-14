@@ -6,12 +6,12 @@ function apiLayerServiceModule() {
             "apiml.apiInfo.0.apiId": options.apiInfo[0].apiId,
             "apiml.apiInfo.0.gatewayUrl": options.apiInfo[0].gatewayUrl,
             "apiml.apiInfo.0.swaggerUrl": options.apiInfo[0].swaggerUrl,
-            "mfaas.discovery.catalogUiTile.description": options.catalogUiTile.description,
-            "mfaas.discovery.catalogUiTile.id": options.catalogUiTile.tileId,
-            "mfaas.discovery.catalogUiTile.title": options.catalogUiTile.title,
-            "mfaas.discovery.catalogUiTile.version": options.catalogUiTile.version,
-            "mfaas.discovery.service.title": options.title,
-            "mfaas.discovery.service.description": options.description,
+            "apiml.discovery.catalogUiTile.description": options.catalogUiTile.description,
+            "apiml.discovery.catalogUiTile.id": options.catalogUiTile.tileId,
+            "apiml.discovery.catalogUiTile.title": options.catalogUiTile.title,
+            "apiml.discovery.catalogUiTile.version": options.catalogUiTile.version,
+            "apiml.discovery.service.title": options.title,
+            "apiml.discovery.service.description": options.description,
             "routed-services.0.gateway-url": options.routes[0].gatewayUrl,
             "routed-services.0.service-url": options.routes[0].serviceRelativeUrl
         };

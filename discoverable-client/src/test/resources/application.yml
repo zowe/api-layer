@@ -76,7 +76,7 @@ eureka:
                 api-doc:
                     gateway-url: "api/v1/api-doc"
                     service-url: ${server.servlet.contextPath}/api-doc
-            mfaas:
+            apiml:
                 api-info:
                     apiVersionProperties:
                         v1:
