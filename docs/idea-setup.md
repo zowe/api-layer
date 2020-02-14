@@ -7,6 +7,21 @@ Guidelines relevant for development of the API Mediation Layer in the IntelliJ I
 - Enable _Annotations processing_ if you haven't done so already (Just go to settings and search for 'annotation')
 - Install Lombok plugin. Go to the plugins in the setting and look for the lombok plugin. 
 - Make sure that the Gradle JVM is set to the JDK 1.8. To set it go to the Settings->Build,Execution,Deployment->Build Tools->Gradle
+- Add the EPL License information to the code templates. To set it go to the Settings->Editor->File and Code Templates. 
+  Update the Class, Interface, Enum, AnnotationType, package-info, module-info and templates by providing the following license information 
+  to the beginning.
+
+```
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+```
 
 ## Running of the services
 
