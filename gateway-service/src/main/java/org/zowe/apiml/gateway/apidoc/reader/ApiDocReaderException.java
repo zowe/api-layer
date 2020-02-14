@@ -7,11 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.apidoc.model;
+package org.zowe.apiml.gateway.apidoc.reader;
 
-public class ApiDocConfigException extends RuntimeException {
+public class ApiDocReaderException extends RuntimeException {
 
-    public ApiDocConfigException(String msg) {
-        super(msg);
+    public ApiDocReaderException(String message) {
+        super(message);
     }
 }

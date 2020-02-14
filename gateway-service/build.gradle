@@ -54,6 +54,9 @@ dependencies {
     compile libraries.spring_boot_starter_cache
     compile libraries.spring_security_web
     compile libraries.spring_security_config
+    compile libraries.swagger3_core
+    compile libraries.swagger3_parser
+    compile libraries.jackson_core
     compile libraries.tomcat_coyote
     compile libraries.tomcat_embed_core
     compile libraries.spring_cloud_starter_eureka
