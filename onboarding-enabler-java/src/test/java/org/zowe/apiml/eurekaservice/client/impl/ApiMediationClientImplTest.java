@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.eurekaservice.client.impl;
 
+import org.mockito.Mockito;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.config.*;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.config.ApiInfo;
@@ -24,6 +26,8 @@ import java.util.*;
 
 import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 
 public class ApiMediationClientImplTest {
@@ -89,36 +93,17 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void sslDisabledNoTrustStoreNoKeyStoreNeeded() throws ServiceDefinitionException {
-        //exceptionRule.expect(ServiceDefinitionException.class);
-
-        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-disabled-service-configuration.yml");
-
-        // Try register the services - expecting to throw ServiceDefinitionException
-        ApiMediationClient client = new ApiMediationClientImpl();
-        //client.getEurekaClient().getEurekaClientConfig()
-        client.register(config);
-        client.unregister();
-
-        config.getSsl().setVerifySslCertificatesOfServices(false);
-        client.register(config);
-        client.unregister();
-    }
-
-    @Test
+    // It just tests that the https base configuration won't throw any exception.
     public void httpsBaseUrlFormat() throws ServiceDefinitionException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-service-configuration.yml");
 
-        ApiMediationClient client = new ApiMediationClientImpl();
+        EurekaClientProvider provider = Mockito.mock(EurekaClientProvider.class);
+        ApiMediationClient client = new ApiMediationClientImpl(provider);
         client.register(config);
-        assertNotNull(client.getEurekaClient());
 
-        client.unregister();
-        assertNull(client.getEurekaClient());
+        verify(provider).client(any(), any(), any());
     }
 
     @Test
@@ -131,25 +116,6 @@ public class ApiMediationClientImplTest {
 
         ApiMediationClient client = new ApiMediationClientImpl();
         client.register(config);
-        client.unregister();
-    }
-
-    @Test
-    public void testMultipleSubsequentRegistrations() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
-
-        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
-
-        ApiMediationClient client = new ApiMediationClientImpl();
-
-        // First registration attempt
-        client.register(config);
-
-        // Second registration attempt
-        client.register(config);
-
         client.unregister();
     }
 

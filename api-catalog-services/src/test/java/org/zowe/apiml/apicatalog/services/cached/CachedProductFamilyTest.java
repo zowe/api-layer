@@ -53,9 +53,15 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeOldUpdate() throws InterruptedException {
+        // To speed up the test, create instance which consider even 5 miliseconds as old.
+        service = new CachedProductFamilyService(
+            null,
+            null,
+            5);
+        // This is considered as old update.
         service.getContainer("demoapp", createApp("service1", "demoapp"));
 
-        Thread.sleep(4000);
+        Thread.sleep(10);
 
         service.getContainer("demoapp2", createApp("service2", "demoapp2"));
 
@@ -65,10 +71,15 @@ public class CachedProductFamilyTest {
 
     @Test
     public void testRetrievalOfRecentlyUpdatedContainersExcludeAll() throws InterruptedException {
+        // To speed up the test, create instance which consider even 5 miliseconds as old.
+        service = new CachedProductFamilyService(
+            null,
+            null,
+            5);
         service.getContainer("demoapp", createApp("service1", "demoapp"));
         service.getContainer("demoapp2", createApp("service2", "demoapp2"));
 
-        Thread.sleep(3000);
+        Thread.sleep(10);
 
         Collection<APIContainer> containers = service.getRecentlyUpdatedContainers();
         Assert.assertTrue(containers.isEmpty());
