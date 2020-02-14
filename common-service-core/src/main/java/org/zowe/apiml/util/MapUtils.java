@@ -10,10 +10,8 @@
 
 package org.zowe.apiml.util;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Consumer;
 
 public class MapUtils {
 
@@ -24,40 +22,35 @@ public class MapUtils {
 
         Map<String, String> result = new HashMap<>();
 
-        for (Map.Entry<String, Object> entry : collection.entrySet()) {
+        Map<Class, Consumer<Map.Entry<String, Object>>> actionMap = new LinkedHashMap<>();
+        actionMap.put(Map.class, entry -> result.putAll(flattenMap(mergeKey(rootKey, entry.getKey()), (Map<String, Object>)entry.getValue())));
+        actionMap.put(String.class, entry -> result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString()));
+        actionMap.put(Boolean.class, entry -> result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString()));
+        actionMap.put(Integer.class, entry -> result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString()));
+        actionMap.put(Double.class, entry -> result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString()));
+        actionMap.put(Float.class, entry -> result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString()));
+        actionMap.put(List.class, entry -> {throw new IllegalArgumentException("List parsing is not supported");} );
+        actionMap.put(Object[].class, entry -> {throw new IllegalArgumentException("Array parsing is not supported");} );
+        actionMap.put(Object.class, entry -> {throw new IllegalArgumentException(String.format("Cannot parse key: %s with value %s", entry.getKey(), entry.getValue().toString()));} );
 
+        for (Map.Entry<String, Object> entry : collection.entrySet()) {
             if (entry.getValue() == null) {
                 result.put( mergeKey(rootKey, entry.getKey()), "");
                 continue;
             }
-
-
-            if (entry.getValue() instanceof Map) {
-                result.putAll(flattenMap(mergeKey(rootKey, entry.getKey()), (Map<String, Object>)entry.getValue()));
-                continue;
-            }
-
-            if (entry.getValue() instanceof String ||
-                entry.getValue() instanceof Boolean ||
-                entry.getValue() instanceof Integer ||
-                entry.getValue() instanceof Double ||
-                entry.getValue() instanceof Float) {
-                result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString());
-                continue;
-            }
-
-            if (entry.getValue() instanceof List) {
-                throw new IllegalArgumentException("List parsing is not supported");
-            }
-            if (entry.getValue().getClass().isArray()) {
-                throw new IllegalArgumentException("Array parsing is not supported");
-            }
-            throw new IllegalArgumentException(String.format("Cannot parse key: %s with value %s", entry.getKey(), entry.getValue().toString()));
+            executeAction(entry,actionMap);
         }
-
         return result;
     }
 
+    private void executeAction(Map.Entry<String, Object> switchSubject, Map<Class, Consumer<Map.Entry<String, Object>>> actionMap) {
+        for (Map.Entry<Class, Consumer<Map.Entry<String, Object>>> action : actionMap.entrySet()) {
+            if (action.getKey().isInstance(switchSubject.getValue())) {
+                action.getValue().accept(switchSubject);
+                break;
+            }
+        }
+    }
 
     private String mergeKey(String rootKey, String newKey) {
         return rootKey != null ? rootKey + "." + newKey : newKey;
