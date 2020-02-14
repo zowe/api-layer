@@ -9,17 +9,6 @@
  */
 package org.zowe.apiml.eurekaservice.client.impl;
 
-import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
-import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
-import org.zowe.apiml.eurekaservice.client.config.*;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.exception.MetadataValidationException;
-import org.zowe.apiml.exception.ServiceDefinitionException;
-import org.zowe.apiml.util.UrlUtils;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsFactory;
-
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.InstanceInfo;
@@ -29,14 +18,16 @@ import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.config.EurekaClientConfiguration;
+import org.zowe.apiml.eurekaservice.client.config.Ssl;
 import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.util.MapUtils;
 
 /**
  *  Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with

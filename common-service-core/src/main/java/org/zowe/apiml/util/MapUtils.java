@@ -29,9 +29,9 @@ public class MapUtils {
         actionMap.put(Integer.class, entry -> result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString()));
         actionMap.put(Double.class, entry -> result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString()));
         actionMap.put(Float.class, entry -> result.put(mergeKey(rootKey, entry.getKey()), entry.getValue().toString()));
-        actionMap.put(List.class, entry -> {throw new IllegalArgumentException("List parsing is not supported");} );
-        actionMap.put(Object[].class, entry -> {throw new IllegalArgumentException("Array parsing is not supported");} );
-        actionMap.put(Object.class, entry -> {throw new IllegalArgumentException(String.format("Cannot parse key: %s with value %s", entry.getKey(), entry.getValue().toString()));} );
+        actionMap.put(List.class, entry -> { throw new IllegalArgumentException("List parsing is not supported"); } );
+        actionMap.put(Object[].class, entry -> { throw new IllegalArgumentException("Array parsing is not supported"); } );
+        actionMap.put(Object.class, entry -> { throw new IllegalArgumentException(String.format("Cannot parse key: %s with value %s", entry.getKey(), entry.getValue().toString())); } );
 
         for (Map.Entry<String, Object> entry : collection.entrySet()) {
             if (entry.getValue() == null) {
