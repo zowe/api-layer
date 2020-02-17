@@ -62,9 +62,7 @@ public class ApiDocReader {
         try {
             return ResourceUtils.getFile(location);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            //read message from yaml
-            log.error("File not found", e);
+            log.error("OpenAPI file does not exist", e);
             throw new ApiDocReaderException("OpenAPI file does not exist");
         }
     }
