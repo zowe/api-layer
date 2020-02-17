@@ -24,13 +24,20 @@ import javax.servlet.ServletContextListener;
 public class ApiDiscoveryListener implements ServletContextListener {
     private ApiMediationClient apiMediationClient;
 
+    public ApiDiscoveryListener() {
+        this.apiMediationClient = new ApiMediationClientImpl();
+    }
+
+    public ApiDiscoveryListener(ApiMediationClient apiMediationClient) {
+        this.apiMediationClient = apiMediationClient;
+    }
+
     @Override
     public void contextInitialized(ServletContextEvent sce) {
 
         try {
             ApiMediationServiceConfig config = new ApiMediationServiceConfigReader().loadConfiguration(sce.getServletContext());
             if (config != null) {
-                apiMediationClient = new ApiMediationClientImpl();
                 apiMediationClient.register(config);
             }
         } catch (ServiceDefinitionException e) {

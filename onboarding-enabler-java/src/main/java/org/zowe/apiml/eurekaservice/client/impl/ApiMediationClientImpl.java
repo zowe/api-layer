@@ -10,6 +10,7 @@
 package org.zowe.apiml.eurekaservice.client.impl;
 
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.config.*;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.exception.MetadataValidationException;
@@ -41,11 +42,23 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  *  API Mediation Layer Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient}, which is
  *  stored in a member variable for later use. The client instance is internally used during unregistering.
  *  A getter method is provided for accessing the instance by the owning object.
+ *  Basically it gathers the configuration and provides it to the DiscoveryClient.
+ *  So here we may want to test whether we properly gather the configuration.
+ *  And verify internal issues if something is wrong.
  *
+ *  The issue with DiscoveryService and its behavior is tested in the Eureka.
  */
 public class ApiMediationClientImpl implements ApiMediationClient {
-
+    private EurekaClientProvider eurekaClientProvider;
     private EurekaClient eurekaClient;
+
+    public ApiMediationClientImpl() {
+        eurekaClientProvider = new DiscoveryClientProvider();
+    }
+
+    public ApiMediationClientImpl(EurekaClientProvider eurekaClientProvider) {
+        this.eurekaClientProvider = eurekaClientProvider;
+    }
 
     /**
      * Registers this service with Eureka server using EurekaClient which is initialized with the provided {@link ApiMediationServiceConfig} methods parameter.
@@ -122,7 +135,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         AbstractDiscoveryClientOptionalArgs args = new DiscoveryClient.DiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(eurekaJerseyClient);
         applicationInfoManager.setInstanceStatus(InstanceInfo.InstanceStatus.UP);
-        return new DiscoveryClient(applicationInfoManager, clientConfig, args);
+        return this.eurekaClientProvider.client(applicationInfoManager, clientConfig, args);
     }
 
     private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException {
