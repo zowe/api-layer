@@ -83,7 +83,7 @@ public class MapUtilsTest {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("masterKey", nested);
 
-        Map<String, String> resultMap = mapUtils.flattenMap(null, testMap);
+        mapUtils.flattenMap(null, testMap);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -93,14 +93,14 @@ public class MapUtilsTest {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("masterKey", nested);
 
-        Map<String, String> resultMap = mapUtils.flattenMap(null, testMap);
+        mapUtils.flattenMap(null, testMap);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void givenMapWithAnythingElseThanExpected_whenFlattened_shouldReturnException() {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("key1", new BigDecimal(0));
-        Map<String, String> resultMap = mapUtils.flattenMap(null, testMap);
+        mapUtils.flattenMap(null, testMap);
     }
 
 }
