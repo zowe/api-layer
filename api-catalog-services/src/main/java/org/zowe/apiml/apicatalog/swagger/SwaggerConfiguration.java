@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.apicatalog.apidoc;
+package org.zowe.apiml.apicatalog.swagger;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,13 +25,13 @@ import java.util.Collections;
 @EnableSwagger2
 public class SwaggerConfiguration {
 
-    @Value("${eureka.instance.metadata-map.apiml.service.apiVersionProperties.v1.title}")
+    @Value("${apiml.service.title}")
     private String apiTitle;
 
-    @Value("${eureka.instance.metadata-map.apiml.service.apiVersionProperties.v1.version}")
+    @Value("${eureka.instance.metadata-map.apiml.apiInfo[0].version}")
     private String apiVersion;
 
-    @Value("${eureka.instance.metadata-map.apiml.service.apiVersionProperties.v1.description}")
+    @Value("${apiml.service.description}")
     private String apiDescription;
 
     @Bean

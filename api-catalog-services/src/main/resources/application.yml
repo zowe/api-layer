@@ -37,43 +37,35 @@ logging:
 ##############################################################################################
 apiml:
     service:
-        id: ${spring.application.name}
         hostname: ${environment.hostname}
         ipAddress: ${environment.ipAddress}
+        port: ${environment.port}
+        contextPath: /apicatalog
+        scheme: https
+
         locations: ${environment.discoveryLocations}
-        fetchRegistry: true
-        registerWithEureka: true
-        region: default
         nonSecurePortEnabled: false
         securePortEnabled: true
         eurekaUserName: ${environment.eurekaUserId}
         eurekaUserPassword: ${environment.eurekaPassword}
-        endpoints:
-            homePage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}
-            statusPage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}/application/info
-            healthPage: ${apiml.server.scheme}://${apiml.service.hostname}:${apiml.server.port}${apiml.server.contextPath}/application/health
+
         title: API Catalog
         description: API Catalog service to display service details and API documentation for discovered API services.
 
     security:
         ssl:
             ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-            esmEnabled: ${environment.esmEnabled:false}
             sslEnabled: true
             protocol: TLSv1.2
             trustStore: ${environment.truststore}
             trustStoreType: ${environment.truststoreType}
             trustStorePassword: ${environment.truststorePassword}
 
-    catalog-ui-tile:
+    catalog:
         id: apimediationlayer
         title: API Mediation Layer API
         description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
         version:  1.0.0
-    server:
-        port: ${environment.port}
-        contextPath: /apicatalog
-        scheme: https
 
     service-registry:
         serviceFetchDelayInMillis:  30000
@@ -85,9 +77,9 @@ apiml:
 
 server:
     address: ${apiml.service.ipAddress}
-    port: ${apiml.server.port}
+    port: ${apiml.service.port}
     servlet:
-        contextPath: ${apiml.server.contextPath}
+        contextPath: ${apiml.service.contextPath}
     ssl:
         enabled: ${apiml.security.ssl.sslEnabled}
         protocol: ${apiml.security.ssl.protocol}
@@ -103,52 +95,48 @@ server:
 eureka:
     instance:
         hostname: ${apiml.service.hostname}
-        statusPageUrlPath: ${apiml.service.endpoints.statusPage}
-        healthCheckUrl: ${apiml.service.endpoints.healthPage}
-        homePageUrl: ${apiml.service.endpoints.homePage}
-        port: ${apiml.server.port}
-        securePort: ${apiml.server.port}
+        statusPageUrlPath: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}
+        port: ${apiml.service.port}
+        securePort: ${apiml.service.port}
         nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
         securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
-            routed-services:
-                ui_v1:
-                    gateway-url: "ui/v1"
-                    service-url: /apicatalog
-                api_v1:
-                    gateway-url: "api/v1"
-                    service-url: /apicatalog
             apiml:
                 enableUrlEncodedCharacters: false
+
+                catalog:
+                    tile:
+                        id: ${apiml.catalog.id}
+                        title: ${apiml.catalog.title}
+                        description: ${apiml.catalog.description}
+                        version: ${apiml.catalog.version}
+
+                routes:
+                    ui_v1:
+                        gatewayUrl: "ui/v1"
+                        serviceUrl: /apicatalog
+                    api_v1:
+                        gatewayUrl: "api/v1"
+                        serviceUrl: /apicatalog
+
                 apiInfo:
                     - apiId: org.zowe.apicatalog
+                      version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${environment.hostname}:${server.port}${server.servlet.contextPath}/v2/api-docs
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
 
                 service:
-                    catalog:
-                        tile:
-                            id: ${apiml.catalog-ui-tile.id}
-                            title: ${apiml.catalog-ui-tile.title}
-                            description: ${apiml.catalog-ui-tile.description}
-                            version: ${apiml.catalog-ui-tile.version}
-
                     title: ${apiml.service.title}
                     description: ${apiml.service.description}
 
-                    apiVersionProperties:
-                        v1:
-                            title: API Catalog
-                            description: REST API for the API Catalog service which is a component of the API Mediation Layer. Use this API to retrieve information regarding catalog dashboard tiles, tile contents and its status, API documentation and status for the registered services.
-                            version: 1.0.0
-                            basePackage: org.zowe.apiml.apicatalog.controllers.api
     client:
         healthcheck:
             enabled: true
         serviceUrl:
             defaultZone: ${apiml.service.locations}
-        fetchRegistry:  ${apiml.service.fetchRegistry}
-        region: ${apiml.service.region}
+        region: default
 
 management:
     endpoints:
