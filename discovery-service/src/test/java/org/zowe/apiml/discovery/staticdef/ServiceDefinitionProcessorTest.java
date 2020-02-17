@@ -19,9 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class ServiceDefinitionProcessorTest {
 
@@ -240,6 +241,70 @@ public class ServiceDefinitionProcessorTest {
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(7, result.getInstances().get(0).getMetadata().size());
+    }
+
+    @Test
+    public void testServiceWithCustomMetadata() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+            "    - serviceId: casamplerestapiservice\n" +
+            "      title: Title\n" +
+            "      description: Description\n" +
+            "      catalogUiTileId: tileid\n" +
+            "      instanceBaseUrls:\n" +
+            "        - https://localhost:10019/casamplerestapiservice/\n" +
+            "      customMetadata:\n" +
+            "          key: value\n" +
+            "          customService.key1: value1\n" +
+            "          customService.key2: value2\n" +
+            "          customService:\n" +
+            "              key3: value3\n" +
+            "              key4: value4\n" +
+            "              evenmorelevels:\n" +
+            "                  key5:\n" +
+            "                      key6:\n" +
+            "                          key7: value7\n" +
+            "catalogUiTiles:\n" +
+            "    tileid:\n" +
+            "        title: Tile Title\n" +
+            "        description: Tile Description\n";
+
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
+        List<InstanceInfo> instances = result.getInstances();
+        assertEquals(1, instances.size());
+        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("key", "value"));
+        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key1", "value1"));
+        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key2", "value2"));
+        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key3", "value3"));
+        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key4", "value4"));
+        assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.evenmorelevels.key5.key6.key7", "value7"));
+    }
+
+    @Test
+    public void testServiceWithWrongCustomMetadata() {
+        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+        String yaml =
+            "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "        - https://localhost:10019/casamplerestapiservice/\n" +
+                "      customMetadata:\n" +
+                "          key:\n" +
+                "           - value1\n" +
+                "           - value2\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+
+        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
+        final String errorMsg = (String) result.getErrors().get(0);
+        assertTrue(errorMsg.contains("List parsing is not supported"));
+
     }
 
     @Test

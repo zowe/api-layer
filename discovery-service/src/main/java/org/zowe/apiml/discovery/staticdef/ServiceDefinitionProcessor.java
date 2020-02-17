@@ -9,16 +9,6 @@
  */
 package org.zowe.apiml.discovery.staticdef;
 
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.exception.MetadataValidationException;
-import org.zowe.apiml.exception.ServiceDefinitionException;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.util.UrlUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
@@ -27,6 +17,17 @@ import com.netflix.appinfo.LeaseInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.util.MapUtils;
+import org.zowe.apiml.util.UrlUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +59,8 @@ public class ServiceDefinitionProcessor {
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
 
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
+
+    private static final MapUtils mapUtils = new MapUtils();
 
     protected List<File> getFiles(StaticRegistrationResult context, String staticApiDefinitionsDirectories) {
         if (StringUtils.isEmpty(staticApiDefinitionsDirectories)) {
@@ -159,7 +162,12 @@ public class ServiceDefinitionProcessor {
         // process additional info (to override metadata of services)
         if (definition.getAdditionalServiceMetadata() != null) {
             for (final ServiceOverride so : definition.getAdditionalServiceMetadata()) {
-                final Map<String, String> metadata = createMetadata(so, null, null);
+                Map<String, String> metadata = null;
+                try {
+                    metadata = createMetadata(so, null, null);
+                } catch (ServiceDefinitionException e) {
+                    context.getErrors().add(String.format("Additional service metadata of %s in processing file %s could not be created: %s", so.getServiceId(), ymlFileName, e.getMessage()));
+                }
                 final ServiceOverride.Mode mode = Optional.ofNullable(so.getMode()).orElse(ServiceOverride.Mode.UPDATE);
                 final ServiceOverrideData sod = new ServiceOverrideData(mode, metadata);
                 if (context.getAdditionalServiceMetadata().put(so.getServiceId(), sod) != null) {
@@ -257,7 +265,7 @@ public class ServiceDefinitionProcessor {
                                        String instanceId, String instanceBaseUrl,
                                        URL url,
                                        String ipAddress,
-                                       CatalogUiTile tile) {
+                                       CatalogUiTile tile) throws ServiceDefinitionException {
         String serviceId = service.getServiceId();
 
         builder.setAppName(serviceId).setInstanceId(instanceId).setHostName(url.getHost()).setIPAddr(ipAddress)
@@ -347,7 +355,17 @@ public class ServiceDefinitionProcessor {
         }
     }
 
-    private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) {
+    private void setCustomMetadata(Map<String, String> metadata, Map<String, Object> customMetadata) throws ServiceDefinitionException {
+        if (customMetadata != null) {
+            try {
+                metadata.putAll(mapUtils.flattenMap(null, customMetadata));
+            } catch (IllegalArgumentException e) {
+                throw new ServiceDefinitionException(e.getMessage());
+            }
+        }
+    }
+
+    private Map<String, String> createMetadata(Service service, URL url, CatalogUiTile tile) throws ServiceDefinitionException {
         final Map<String, String> metadata = new HashMap<>();
 
         metadata.put(VERSION, CURRENT_VERSION);
@@ -358,6 +376,7 @@ public class ServiceDefinitionProcessor {
         setMetadataTile(metadata, tile);
         setMetadataAppInfo(metadata, service.getApiInfo(), service.getServiceId());
         setMetadataAuthentication(metadata, service.getAuthentication());
+        setCustomMetadata(metadata, service.getCustomMetadata());
 
         return metadata;
     }
