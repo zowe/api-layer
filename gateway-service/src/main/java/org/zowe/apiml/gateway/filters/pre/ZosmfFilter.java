@@ -20,6 +20,7 @@ import java.util.Optional;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 /**
  * Extract LTPA token from JWT token and set it as a cookie when accessing z/OSMF
@@ -72,6 +73,7 @@ public class ZosmfFilter extends ZuulFilter {
                 cookie = ltpaToken;
             }
 
+            context.addZuulRequestHeader(AUTHORIZATION, null);
             context.addZuulRequestHeader(COOKIE_HEADER, cookie);
         });
 
