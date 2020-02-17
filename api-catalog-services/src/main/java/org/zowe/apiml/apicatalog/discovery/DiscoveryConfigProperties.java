@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DiscoveryConfigProperties {
 
-    @Value("${apiml.service.locations}")
+    @Value("${apiml.service.discoveryServiceUrls}")
     private String locations;
 
     @Value("${apiml.service.eurekaUserName:eureka}")

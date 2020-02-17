@@ -25,13 +25,13 @@ import java.util.Collections;
 @EnableSwagger2
 public class SwaggerConfiguration {
 
-    @Value("${apiml.service.title}")
+    @Value("${eureka.instance.metadata-map.apiml.service.title}")
     private String apiTitle;
 
     @Value("${eureka.instance.metadata-map.apiml.apiInfo[0].version}")
     private String apiVersion;
 
-    @Value("${apiml.service.description}")
+    @Value("${eureka.instance.metadata-map.apiml.service.description}")
     private String apiDescription;
 
     @Bean

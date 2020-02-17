@@ -43,15 +43,11 @@ apiml:
         contextPath: /apicatalog
         scheme: https
 
-        locations: ${environment.discoveryLocations}
+        discoveryServiceUrls: ${environment.discoveryLocations}
         nonSecurePortEnabled: false
         securePortEnabled: true
         eurekaUserName: ${environment.eurekaUserId}
         eurekaUserPassword: ${environment.eurekaPassword}
-
-        title: API Catalog
-        description: API Catalog service to display service details and API documentation for discovered API services.
-
     security:
         ssl:
             ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
@@ -104,8 +100,6 @@ eureka:
         securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
-                enableUrlEncodedCharacters: false
-
                 catalog:
                     tile:
                         id: ${apiml.catalog.id}
@@ -128,14 +122,14 @@ eureka:
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
 
                 service:
-                    title: ${apiml.service.title}
-                    description: ${apiml.service.description}
+                    title: API Catalog
+                    description: API Catalog service to display service details and API documentation for discovered API services.
 
     client:
         healthcheck:
             enabled: true
         serviceUrl:
-            defaultZone: ${apiml.service.locations}
+            defaultZone: ${apiml.service.discoveryServiceUrls}
         region: default
 
 management:
