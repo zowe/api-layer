@@ -27,12 +27,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaInstanceConfigCreator {
 
-    private final MapUtils mapUtils;
-
-    public EurekaInstanceConfigCreator(MapUtils mapUtils) {
-        this.mapUtils = mapUtils;
-    }
-
     public EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
@@ -135,7 +129,7 @@ public class EurekaInstanceConfigCreator {
     }
 
     public Map<String, String> flattenMetadata(Map<String, Object> configurationMetadata) {
-        return mapUtils.flattenMap(null, configurationMetadata);
+        return MapUtils.flattenMap(null, configurationMetadata);
     }
 
 }

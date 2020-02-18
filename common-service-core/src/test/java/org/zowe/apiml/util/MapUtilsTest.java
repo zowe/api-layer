@@ -23,13 +23,11 @@ import static org.junit.Assert.assertThat;
 
 public class MapUtilsTest {
 
-    private MapUtils mapUtils = new MapUtils();
-
     @Test
     public void givenMap_whenFlattenedWithRootKey_shouldReturnMapKeysWithRootKey() {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("key", null);
-        Map<String, String> resultMap = mapUtils.flattenMap("apiml", testMap);
+        Map<String, String> resultMap = MapUtils.flattenMap("apiml", testMap);
         assertThat(resultMap, hasEntry("apiml.key", ""));
     }
 
@@ -37,7 +35,7 @@ public class MapUtilsTest {
     public void givenMapWithNullValue_whenFlattened_shouldReturnValueEmptyString() {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("key", null);
-        Map<String, String> resultMap = mapUtils.flattenMap(null, testMap);
+        Map<String, String> resultMap = MapUtils.flattenMap(null, testMap);
         assertThat(resultMap, hasEntry("key", ""));
     }
 
@@ -48,7 +46,7 @@ public class MapUtilsTest {
         testMap.put("key2", 23);
         testMap.put("key3", 23.0d);
         testMap.put("key4", 23.0f);
-        Map<String, String> resultMap = mapUtils.flattenMap(null, testMap);
+        Map<String, String> resultMap = MapUtils.flattenMap(null, testMap);
         assertThat(resultMap, hasEntry("key1", "true"));
         assertThat(resultMap, hasEntry("key2", "23"));
         assertThat(resultMap, hasEntry("key3", "23.0"));
@@ -68,7 +66,7 @@ public class MapUtilsTest {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("masterKey", nested);
 
-        Map<String, String> resultMap = mapUtils.flattenMap(null, testMap);
+        Map<String, String> resultMap = MapUtils.flattenMap(null, testMap);
         assertThat(resultMap, hasEntry("masterKey.key1", "value1"));
         assertThat(resultMap, hasEntry("masterKey.key2", "value2"));
         assertThat(resultMap, hasEntry("masterKey.key3.keyzzz", "valuezzz"));
@@ -83,7 +81,7 @@ public class MapUtilsTest {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("masterKey", nested);
 
-        mapUtils.flattenMap(null, testMap);
+        MapUtils.flattenMap(null, testMap);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -93,14 +91,14 @@ public class MapUtilsTest {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("masterKey", nested);
 
-        mapUtils.flattenMap(null, testMap);
+        MapUtils.flattenMap(null, testMap);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void givenMapWithAnythingElseThanExpected_whenFlattened_shouldReturnException() {
         Map<String, Object> testMap = new HashMap<>();
         testMap.put("key1", new BigDecimal(0));
-        mapUtils.flattenMap(null, testMap);
+        MapUtils.flattenMap(null, testMap);
     }
 
 }

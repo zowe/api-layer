@@ -27,7 +27,6 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.util.MapUtils;
 
 /**
  *  Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
@@ -43,7 +42,7 @@ import org.zowe.apiml.util.MapUtils;
 public class ApiMediationClientImpl implements ApiMediationClient {
     private EurekaClientProvider eurekaClientProvider;
     private EurekaClient eurekaClient;
-    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator(new MapUtils());
+    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
 
     public ApiMediationClientImpl() {
         eurekaClientProvider = new DiscoveryClientProvider();

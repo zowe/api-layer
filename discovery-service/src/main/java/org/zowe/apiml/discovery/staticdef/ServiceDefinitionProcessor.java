@@ -60,8 +60,6 @@ public class ServiceDefinitionProcessor {
 
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
 
-    private static final MapUtils mapUtils = new MapUtils();
-
     protected List<File> getFiles(StaticRegistrationResult context, String staticApiDefinitionsDirectories) {
         if (StringUtils.isEmpty(staticApiDefinitionsDirectories)) {
             log.info("No static definition directory defined");
@@ -358,7 +356,7 @@ public class ServiceDefinitionProcessor {
     private void setCustomMetadata(Map<String, String> metadata, Map<String, Object> customMetadata) throws ServiceDefinitionException {
         if (customMetadata != null) {
             try {
-                metadata.putAll(mapUtils.flattenMap(null, customMetadata));
+                metadata.putAll(MapUtils.flattenMap(null, customMetadata));
             } catch (IllegalArgumentException e) {
                 throw new ServiceDefinitionException(e.getMessage());
             }

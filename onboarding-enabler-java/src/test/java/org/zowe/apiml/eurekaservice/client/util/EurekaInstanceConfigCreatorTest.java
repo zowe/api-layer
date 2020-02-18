@@ -14,7 +14,6 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import org.junit.Test;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
-import org.zowe.apiml.util.MapUtils;
 
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
@@ -22,7 +21,7 @@ import static org.junit.Assert.assertThat;
 public class EurekaInstanceConfigCreatorTest {
 
     private ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
-    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator(new MapUtils());
+    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
 
     @Test
     public void givenYamlMetadata_whenParsedByJackson_shouldFlattenMetadataCorrectly() throws ServiceDefinitionException {
