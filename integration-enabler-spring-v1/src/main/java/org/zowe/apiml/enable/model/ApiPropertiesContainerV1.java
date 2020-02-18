@@ -34,7 +34,7 @@ public class ApiPropertiesContainerV1 {
 
     @PostConstruct
     public void displayConfiguredInformation() {
-        String toString = apiVersionProperties.toString().replaceAll(",", ",\n");
+        String toString = apiVersionProperties.toString().replace(",", ",\n");
 
         log.trace("===========================================");
         log.trace("=    CONFIGURED API HEADER INFORMATION ");
