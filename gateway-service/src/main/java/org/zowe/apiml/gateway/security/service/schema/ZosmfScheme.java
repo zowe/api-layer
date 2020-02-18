@@ -100,7 +100,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
                 }
 
                 // remove authentication part
-                context.getZuulRequestHeaders().remove(HttpHeaders.AUTHORIZATION);
+                context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, null);
             });
         }
 

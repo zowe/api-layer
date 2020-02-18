@@ -9,19 +9,11 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.HandlerInitializer;
-import org.zowe.apiml.security.common.content.BasicContentFilter;
-import org.zowe.apiml.security.common.content.CookieContentFilter;
-import org.zowe.apiml.security.common.login.LoginFilter;
-import org.zowe.apiml.gateway.security.query.QueryFilter;
-import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -31,8 +23,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.zowe.apiml.gateway.security.query.QueryFilter;
+import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.login.LoginFilter;
 
 import java.util.Collections;
 
@@ -94,8 +97,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // logout endpoint
             .and()
             .logout()
-            .logoutUrl(authConfigurationProperties.getGatewayLogoutEndpoint())
+            .logoutRequestMatcher(new AntPathRequestMatcher(authConfigurationProperties.getGatewayLogoutEndpoint(), HttpMethod.POST.name()))
             .addLogoutHandler(logoutHandler())
+            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+            .permitAll()
 
             // endpoint protection
             .and()
