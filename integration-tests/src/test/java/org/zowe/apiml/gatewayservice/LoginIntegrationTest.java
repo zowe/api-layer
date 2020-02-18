@@ -37,7 +37,7 @@ public class LoginIntegrationTest {
     private final static String BASE_PATH = "/api/v1/gateway";
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final static String ISSUER = "APIML";
+    private final static String ISSUER = "zOSMF";
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
