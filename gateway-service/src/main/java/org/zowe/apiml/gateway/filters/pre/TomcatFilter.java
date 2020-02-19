@@ -60,7 +60,7 @@ public class TomcatFilter implements Filter {
                 apimlLog.log("org.zowe.apiml.security.errorWrittingResponse", e.getMessage());
                 throw new ServletException("Error writing response", e);
             }
-            apimlLog.log("org.zowe.apiml.gateway.requestContainEncodedSlash", uri);
+            apimlLog.log(message);
         } else {
             chain.doFilter(request, response);
         }
