@@ -14,12 +14,15 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
@@ -37,8 +40,7 @@ public class ApiDocReader {
             location = CLASSPATH_URL_PREFIX + location.trim();
         }
 
-        File file = getFileFromLocation(location);
-        String openAPIJsonContent = getOpenAPIJsonContent(file);
+        String openAPIJsonContent = getOpenAPIJsonContent(location);
 
         SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(openAPIJsonContent);
         OpenAPI openAPI = parseResult.getOpenAPI();
@@ -50,19 +52,41 @@ public class ApiDocReader {
         return openAPI;
     }
 
-    private String getOpenAPIJsonContent(File file) {
+    private String getOpenAPIJsonContent(String location) {
+        String openAPIJsonContent;
         try {
-            return new String(Files.readAllBytes(file.toPath()));
+            File file = ResourceUtils.getFile(location);
+            if (!file.exists()) {
+                openAPIJsonContent =  getDocumentationAsFileInJar(location);
+            } else {
+                openAPIJsonContent = getOpenAPIJsonContent2(file);
+            }
+        } catch (FileNotFoundException e) {
+            openAPIJsonContent = getDocumentationAsFileInJar(location);
+        }
+        return openAPIJsonContent;
+    }
+
+    /**
+     * Load the swagger as a file system file in a jar
+     * @return the swagger as a string
+     * @throws ApiDocReaderException if something bad happened
+     */
+    private String getDocumentationAsFileInJar(String swaggerLocation) {
+        log.debug("Loading Api Documentation from jar resource: " + swaggerLocation);
+        ClassPathResource cpr = new ClassPathResource(swaggerLocation);
+        try {
+            byte[] bytes = FileCopyUtils.copyToByteArray(cpr.getInputStream());
+            return new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new ApiDocReaderException("OpenAPI file does not exist");
+            throw new ApiDocReaderException("OpenAPI file does not exist: " + swaggerLocation);
         }
     }
 
-    private File getFileFromLocation(String location) {
+    private String getOpenAPIJsonContent2(File file) {
         try {
-            return ResourceUtils.getFile(location);
-        } catch (FileNotFoundException e) {
-            log.error("OpenAPI file does not exist", e);
+            return new String(Files.readAllBytes(file.toPath()));
+        } catch (IOException e) {
             throw new ApiDocReaderException("OpenAPI file does not exist");
         }
     }
