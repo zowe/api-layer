@@ -37,6 +37,9 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class TomcatFilterTest {
 
+    private static final String ALLOW_ENCODED_SLASHES_FIELD = "allowEncodedSlashes";
+    private static final String ENCODED_REQUEST_URI = "/api/v1/encoded%2fslash";
+    private static final String NORMAL_REQUEST_URI = "/api/v1/normal";
     private static MessageService messageService;
     @Mock
     private ObjectMapper objectMapper;
@@ -61,9 +64,9 @@ public class TomcatFilterTest {
     @Test
     public void shouldRejectEncodedSlashRequestsWhenConfiguredToReject() throws IOException, ServletException {
         filter = new TomcatFilter(messageService, objectMapper);
-        ReflectionTestUtils.setField(filter, "allowEncodedSlashes", Boolean.FALSE);
+        ReflectionTestUtils.setField(filter, ALLOW_ENCODED_SLASHES_FIELD, false);
 
-        request.setRequestURI("/api/v1/encoded%2fslash");
+        request.setRequestURI(ENCODED_REQUEST_URI);
         filter.doFilter(request, response, filterChain);
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatus());
@@ -76,9 +79,9 @@ public class TomcatFilterTest {
     @Test
     public void shouldAllowNonEncodedSlashRequestsAndMoveToNextFilterWhenConfiguredToReject() throws IOException, ServletException {
         filter = new TomcatFilter(messageService, objectMapper);
-        ReflectionTestUtils.setField(filter, "allowEncodedSlashes", Boolean.FALSE);
+        ReflectionTestUtils.setField(filter, ALLOW_ENCODED_SLASHES_FIELD, false);
 
-        request.setRequestURI("/api/v1/normal");
+        request.setRequestURI(NORMAL_REQUEST_URI);
         filter.doFilter(request, response, filterChain);
 
         assertEquals(HttpStatus.OK.value(), response.getStatus());
@@ -88,9 +91,9 @@ public class TomcatFilterTest {
     @Test
     public void shouldAllowAnyRequestAndMoveToNextFilterWhenConfiguredToAllow() throws IOException, ServletException {
         filter = new TomcatFilter(messageService, objectMapper);
-        ReflectionTestUtils.setField(filter, "allowEncodedSlashes", Boolean.TRUE);
+        ReflectionTestUtils.setField(filter, ALLOW_ENCODED_SLASHES_FIELD, true);
 
-        request.setRequestURI("/api/v1/normal");
+        request.setRequestURI(NORMAL_REQUEST_URI);
         filter.doFilter(request, response, filterChain);
 
         assertEquals(HttpStatus.OK.value(), response.getStatus());
@@ -99,7 +102,7 @@ public class TomcatFilterTest {
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
 
-        request.setRequestURI("/api/v1/encoded%2fslash");
+        request.setRequestURI(ENCODED_REQUEST_URI);
         filter.doFilter(request, response, filterChain);
 
         assertEquals(HttpStatus.OK.value(), response.getStatus());
@@ -108,14 +111,14 @@ public class TomcatFilterTest {
 
     @Test(expected = ServletException.class)
     public void shouldThrowServletExceptionOnIOExceptionWhenWritingResponse() throws IOException, ServletException {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
+        HttpServletRequest mockedRequest = mock(HttpServletRequest.class);
+        HttpServletResponse mockedResponse = mock(HttpServletResponse.class);
 
         filter = new TomcatFilter(messageService, objectMapper);
-        ReflectionTestUtils.setField(filter, "allowEncodedSlashes", Boolean.FALSE);
+        ReflectionTestUtils.setField(filter, ALLOW_ENCODED_SLASHES_FIELD, false);
 
-        when(request.getRequestURI()).thenReturn("/api/v1/encoded%2fslash");
-        when(response.getWriter()).thenThrow(new IOException());
-        filter.doFilter(request, response, filterChain);
+        when(mockedRequest.getRequestURI()).thenReturn(ENCODED_REQUEST_URI);
+        when(mockedResponse.getWriter()).thenThrow(new IOException());
+        filter.doFilter(mockedRequest, mockedResponse, filterChain);
     }
 }

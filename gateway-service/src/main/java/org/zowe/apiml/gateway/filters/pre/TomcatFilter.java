@@ -36,7 +36,7 @@ public class TomcatFilter implements Filter {
     private final ObjectMapper mapper;
 
     @Value("${apiml.service.allowEncodedSlashes:#{false}}")
-    private Boolean allowEncodedSlashes;
+    private boolean allowEncodedSlashes;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -51,8 +51,7 @@ public class TomcatFilter implements Filter {
         final boolean isRequestEncoded = !uri.equals(decodedUri);
 
         Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedSlash", uri);
-        boolean allowEncoded = allowEncodedSlashes != null && allowEncodedSlashes;
-        if (!allowEncoded && isRequestEncoded) {
+        if (!allowEncodedSlashes && isRequestEncoded) {
             res.setStatus(HttpStatus.BAD_REQUEST.value());
             res.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
             try {
