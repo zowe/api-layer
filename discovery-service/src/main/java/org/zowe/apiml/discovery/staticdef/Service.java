@@ -9,12 +9,13 @@
  */
 package org.zowe.apiml.discovery.staticdef;
 
-import org.zowe.apiml.config.ApiInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
+import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.security.common.auth.Authentication;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents one services with multiple instances.
@@ -35,4 +36,5 @@ import java.util.List;
     private List<Route> routes;
     private List<ApiInfo> apiInfo;
     private Authentication authentication;
+    private Map<String, Object> customMetadata;
 }
