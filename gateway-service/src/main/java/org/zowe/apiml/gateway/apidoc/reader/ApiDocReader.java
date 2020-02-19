@@ -27,10 +27,19 @@ import java.nio.file.Files;
 
 import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 
+/**
+ * Service class for loading Gateway API doc from a resource file
+ */
 @Slf4j
 @Service
 public class ApiDocReader {
 
+    /**
+     * Load the swagger/api doc info from a local resource file
+     * @param location the location of the local resource file
+     * @return the Swagger as a OpenAPI object
+     * @throws ApiDocReaderException when the conversion to an OpenAPI object fails
+     */
     public OpenAPI load(String location) {
         if (location == null || location.isEmpty()) {
             throw new ApiDocReaderException("API doc location can't be null or empty");
@@ -59,7 +68,7 @@ public class ApiDocReader {
             if (!file.exists()) {
                 openAPIJsonContent =  getDocumentationAsFileInJar(location);
             } else {
-                openAPIJsonContent = getOpenAPIJsonContent2(file);
+                openAPIJsonContent = getDocumentationFromPath(file);
             }
         } catch (FileNotFoundException e) {
             openAPIJsonContent = getDocumentationAsFileInJar(location);
@@ -67,11 +76,6 @@ public class ApiDocReader {
         return openAPIJsonContent;
     }
 
-    /**
-     * Load the swagger as a file system file in a jar
-     * @return the swagger as a string
-     * @throws ApiDocReaderException if something bad happened
-     */
     private String getDocumentationAsFileInJar(String swaggerLocation) {
         log.debug("Loading Api Documentation from jar resource: " + swaggerLocation);
         ClassPathResource cpr = new ClassPathResource(swaggerLocation);
@@ -83,7 +87,7 @@ public class ApiDocReader {
         }
     }
 
-    private String getOpenAPIJsonContent2(File file) {
+    private String getDocumentationFromPath(File file) {
         try {
             return new String(Files.readAllBytes(file.toPath()));
         } catch (IOException e) {
