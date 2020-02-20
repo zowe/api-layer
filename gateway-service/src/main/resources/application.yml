@@ -30,7 +30,7 @@ apiml:
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
         preferIpAddress: false
-        allowEncodedSlashes: true
+        allowEncodedSlashes: false
     gateway:
         # The `apiml.gateway` node contains gateway-service only configuration
         hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses

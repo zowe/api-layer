@@ -1,6 +1,7 @@
 spring.profiles.include: diag
 apiml:
     service:
+        allowEncodedSlashes: true
         hostname: localhost
         ipAddress: 127.0.0.1
         port: 10010
