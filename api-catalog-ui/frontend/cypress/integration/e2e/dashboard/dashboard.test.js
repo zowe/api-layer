@@ -21,7 +21,6 @@ describe('>>> Dashboard test', () => {
     it('dashboard test', () => {
         login();
 
-        cy.url().should('contain', '/dashboard');
         cy.get('.header').should('exist');
 
         cy.url().should('contain', '/dashboard');

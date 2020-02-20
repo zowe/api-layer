@@ -3,7 +3,6 @@ spring.profiles.include: diag
 environment:
     discoveryLocations: https://localhost:10011/eureka/
     dsIpAddress: 0.0.0.0
-    esmEnabled: false
     eurekaPassword: password
     eurekaUserId: eureka
     gatewayHostname: https://localhost:10010
@@ -32,14 +31,12 @@ server:
         keyStorePassword: password
         keyStoreType: PKCS12
 
-mfaas:
+apiml:
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000
         cacheRefreshUpdateThresholdInMillis: 120000
         serviceFetchDelayInMillis: 10000
-
-apiml:
     banner: console
 
 spring:

@@ -20,7 +20,6 @@ ext {
     powerMockVersion = "2.0.4"
     jacksonCoreVersion = "2.10.1"
     javaxValidationApiVersion = "2.0.1.Final"
-    esmClientVersion = '2.0.0-SNAPSHOT'
     gsonVersion = '2.8.2'
     mockitoCoreVersion = '2.15.0'
     zsslVersion = '1.0.0'
@@ -113,7 +112,6 @@ ext {
         jackson_core                       : "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
         jackson_databind                   : "com.fasterxml.jackson.core:jackson-databind:${jacksonCoreVersion}",
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
-        esm_client                         : "dbm:esm-client:${esmClientVersion}",
         javax_validation                   : "javax.validation:validation-api:${javaxValidationApiVersion}",
         gson                               : "com.google.code.gson:gson:${gsonVersion}",
         mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",

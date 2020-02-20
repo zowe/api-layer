@@ -22,12 +22,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class DiscoveryConfigProperties {
 
-    @Value("${mfaas.discovery.locations}")
+    @Value("${apiml.service.discoveryServiceUrls}")
     private String locations;
 
-    @Value("${mfaas.discovery.eurekaUserName:eureka}")
+    @Value("${apiml.service.eurekaUserName:eureka}")
     private String eurekaUserName;
 
-    @Value("${mfaas.discovery.eurekaUserPassword:password}")
+    @Value("${apiml.service.eurekaUserPassword:password}")
     private String eurekaUserPassword;
 }

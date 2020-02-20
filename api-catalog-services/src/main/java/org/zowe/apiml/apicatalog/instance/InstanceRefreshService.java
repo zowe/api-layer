@@ -13,7 +13,6 @@ import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
@@ -46,7 +45,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
 public class InstanceRefreshService {
 
     // until versioning is implemented, only v1 API docs are supported
-    private final GatewayClient gatewayClient;
     private final CachedProductFamilyService cachedProductFamilyService;
     private final CachedServicesService cachedServicesService;
     private final InstanceRetrievalService instanceRetrievalService;
@@ -68,8 +66,8 @@ public class InstanceRefreshService {
      * Depends on the GatewayClient: no refreshes happen when it's not initialized
      */
     @Scheduled(
-        initialDelayString = "${mfaas.service-registry.cacheRefreshInitialDelayInMillis}",
-        fixedDelayString = "${mfaas.service-registry.cacheRefreshRetryDelayInMillis}")
+        initialDelayString = "${apiml.service-registry.cacheRefreshInitialDelayInMillis}",
+        fixedDelayString = "${apiml.service-registry.cacheRefreshRetryDelayInMillis}")
     public void refreshCacheFromDiscovery() {
         if (!isStarted) {
             log.debug("InstanceRefreshService is stopped. Skip refresh.");
