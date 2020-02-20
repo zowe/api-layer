@@ -14,8 +14,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
@@ -46,10 +44,8 @@ public class EncodedCharactersFilter extends ZuulFilter {
     private final DiscoveryClient discoveryClient;
     private final MessageService messageService;
     public static final String METADATA_KEY = "apiml.enableUrlEncodedCharacters";
-    private static final List<String> PROHIBITED_CHARACTERS = Arrays.asList("%2e", "%2E", ";", "%3b", "%3B", "%2f", "%2F", "\\", "%5c", "%5C", "%25", "%");
-
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
+    private static final List<String> PROHIBITED_CHARACTERS =
+        Arrays.asList("%2e", "%2E", ";", "%3b", "%3B", "%2f", "%2F", "\\", "%5c", "%5C", "%25", "%");
 
     @Override
     public String filterType() {
@@ -98,8 +94,8 @@ public class EncodedCharactersFilter extends ZuulFilter {
     }
 
     private void rejectRequest(RequestContext ctx) {
-        Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedCharacter", ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
-        apimlLog.log(message);
+        Message message = messageService.createMessage("org.zowe.apiml.gateway.requestContainEncodedCharacter",
+            ctx.get(SERVICE_ID_KEY), ctx.getRequest().getRequestURI());
 
         ctx.setSendZuulResponse(false);
         ctx.addZuulResponseHeader("Content-Type", "application/json");

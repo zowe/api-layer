@@ -23,7 +23,6 @@ public class LatencyUtilsConfigInitializer implements ApplicationContextInitiali
     private static final String PROPERTY_KEY = "LatencyUtils.useActualTime";
     @Override
     public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
-        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         if (System.getProperties().getProperty(PROPERTY_KEY) == null) {
             System.getProperties().setProperty(PROPERTY_KEY, "false");
         }

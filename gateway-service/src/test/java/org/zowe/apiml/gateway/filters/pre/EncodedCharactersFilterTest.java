@@ -119,7 +119,7 @@ public class EncodedCharactersFilterTest {
         context.setRequest(mockRequest);
         this.filter.run();
         assertTrue(context.getResponseBody().contains("Service 'serviceid' does not allow encoded characters used in request path: '/He%2f%2f0%2dwor%2fd'."));
-        assertTrue(context.getResponseBody().contains("ZWEAG701D"));
+        assertTrue(context.getResponseBody().contains("ZWEAG701E"));
         assertEquals(400, context.getResponse().getStatus());
     }
 

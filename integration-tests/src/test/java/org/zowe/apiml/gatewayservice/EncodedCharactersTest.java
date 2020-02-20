@@ -67,4 +67,17 @@ public class EncodedCharactersTest {
             .then()
             .statusCode(is(SC_BAD_REQUEST));
     }
+
+    @Test
+    public void shouldCallServiceWithGatewayNotAllowingAndReject() {
+        final String encodedURI = "/api/v1/apicatalog/gf%2fd/testcall";
+
+        given()
+            .contentType(ContentType.JSON)
+            .urlEncodingEnabled(false)
+            .when()
+            .get(String.format("%s://%s:%s%s", scheme, host, port, encodedURI))
+            .then()
+            .statusCode(is(SC_BAD_REQUEST));
+    }
 }
