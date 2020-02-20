@@ -50,7 +50,6 @@ public class RegisterToApiLayer {
     @EventListener(ContextRefreshedEvent.class)
     public void onContextRefreshedEventEvent() {
         if (apimlEnabled) {
-
             if (apiMediationClient.getEurekaClient() != null) {
                 if (config != null) {
                     logger.log( "org.zowe.apiml.enabler.registration.renew"
