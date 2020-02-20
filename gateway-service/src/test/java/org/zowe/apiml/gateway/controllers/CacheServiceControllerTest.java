@@ -39,11 +39,9 @@ public class CacheServiceControllerTest {
     @Mock
     private ApimlDiscoveryClient discoveryClient;
 
-    private CacheServiceController cacheServiceController;
-
     @Before
     public void setUp() {
-        cacheServiceController = new CacheServiceController(Arrays.asList(service1, service2), discoveryClient);
+        CacheServiceController cacheServiceController = new CacheServiceController(Arrays.asList(service1, service2), discoveryClient);
         mockMvc = MockMvcBuilders.standaloneSetup(cacheServiceController).build();
     }
 

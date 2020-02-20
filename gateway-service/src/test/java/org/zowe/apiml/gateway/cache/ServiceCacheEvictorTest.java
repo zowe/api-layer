@@ -31,7 +31,7 @@ public class ServiceCacheEvictorTest {
 
     private ApimlDiscoveryClient apimlDiscoveryClient = mock(ApimlDiscoveryClient.class);
 
-    private ApimlZoneAwareLoadBalancer apimlZoneAwareLoadBalancer = mock(ApimlZoneAwareLoadBalancer.class);
+    private ApimlZoneAwareLoadBalancer<?> apimlZoneAwareLoadBalancer = mock(ApimlZoneAwareLoadBalancer.class);
 
     private List<ServiceCacheEvict> serviceCacheEvicts = Arrays.asList(
         mock(ServiceCacheEvict.class),

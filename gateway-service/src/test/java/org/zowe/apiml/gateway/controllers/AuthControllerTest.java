@@ -32,11 +32,9 @@ public class AuthControllerTest {
     @Mock
     private AuthenticationService authenticationService;
 
-    private AuthController authController;
-
     @Before
     public void setUp() {
-        authController = new AuthController(authenticationService);
+        AuthController authController = new AuthController(authenticationService);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
     }
 
