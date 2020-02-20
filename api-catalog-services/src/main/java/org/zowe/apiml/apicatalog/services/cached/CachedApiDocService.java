@@ -55,7 +55,6 @@ public class CachedApiDocService {
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             //if there's not apiDoc in cache
             if (apiDoc == null) {
                 apimlLog.log("org.zowe.apiml.apicatalog.apidocRetrievalProblem", serviceId, e.getMessage());
