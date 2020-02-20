@@ -51,7 +51,7 @@ apiml:
             -   apiId: org.zowe.discoverableclient
                 version: 1.0.0
                 gatewayUrl: api/v1
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v1/api-docs
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
