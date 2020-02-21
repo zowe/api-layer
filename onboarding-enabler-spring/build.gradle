@@ -8,8 +8,6 @@ buildscript {
             } else {
                 springBootVersion = rootProject.ext.springBootVersion
             }
-        } else {
-            springBootVersion = rootProject.ext.springBootVersion
         }
     }
 
@@ -41,3 +39,5 @@ dependencies {
     annotationProcessor libraries.lombok
     testCompile libraries.gson
 }
+
+jar.baseName = "${jar.baseName}-${springBootVersion}"

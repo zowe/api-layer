@@ -14,15 +14,16 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 
 
 @Configuration
 @ComponentScan(value = {"org.zowe.apiml.enable"})
+@EnableApimlLogger
 public class EnableApiDiscoveryConfig {
 
     @Bean
@@ -42,13 +43,5 @@ public class EnableApiDiscoveryConfig {
     @Bean
     public ApiMediationServiceConfig apiMediationServiceConfig() {
         return new ApiMediationServiceConfig();
-    }
-
-    @Value("${apiml.enabled:false}")
-    private boolean enabled;
-
-    @Bean
-    public Boolean apimlEnabled() {
-        return enabled;
     }
 }
