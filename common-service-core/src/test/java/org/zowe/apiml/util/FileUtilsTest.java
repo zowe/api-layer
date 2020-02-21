@@ -162,14 +162,14 @@ public class FileUtilsTest {
 
         // 1) Existing file
         String internalFileName = "/service-configuration.yml";
-        String result = FileUtils.readConfigurationFile(internalFileName);
+        String result = FileUtils.readFile(internalFileName);
         assertNotNull(result);
         assertNotEquals(result.length(),  -1);
     }
 
     @Test
     public void readNotExistingConfiguration() throws IOException {
-        String fileData = FileUtils.readConfigurationFile("no-existing-file");
+        String fileData = FileUtils.readFile("no-existing-file");
         assertNull(fileData);
     }
 }
