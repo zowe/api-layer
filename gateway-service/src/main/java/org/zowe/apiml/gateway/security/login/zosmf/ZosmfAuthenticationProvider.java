@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.login.zosmf;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,8 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ZosmfService;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.LTPA;
@@ -26,21 +25,11 @@ import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.LTP
  * Authentication provider that verifies credentials against z/OSMF service
  */
 @Component
+@RequiredArgsConstructor
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
-
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     private final AuthenticationService authenticationService;
     private final ZosmfService zosmfService;
-
-    public ZosmfAuthenticationProvider(
-        AuthenticationService authenticationService,
-        ZosmfService zosmfService
-    ) {
-        this.authenticationService = authenticationService;
-        this.zosmfService = zosmfService;
-    }
 
     /**
      * Authenticate the credentials with the z/OSMF service

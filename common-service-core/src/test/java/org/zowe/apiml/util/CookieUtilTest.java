@@ -1,4 +1,4 @@
-package org.zowe.apiml.util;/*
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -7,12 +7,15 @@ package org.zowe.apiml.util;/*
  *
  * Copyright Contributors to the Zowe Project.
  */
+package org.zowe.apiml.util;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import static org.junit.Assert.*;
+
+
 @RunWith(JUnit4.class)
 public class CookieUtilTest {
 

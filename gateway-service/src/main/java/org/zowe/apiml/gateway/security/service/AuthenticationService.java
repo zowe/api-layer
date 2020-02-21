@@ -140,6 +140,8 @@ public class AuthenticationService {
             case ZOSMF:
                 zosmfService.invalidate(JWT, jwtToken);
                 break;
+            default:
+                throw new TokenNotValidException("Unknown token type.");
         }
 
         return Boolean.TRUE;
@@ -187,6 +189,8 @@ public class AuthenticationService {
             case ZOSMF:
                 zosmfService.validate(JWT, jwtToken);
                 break;
+            default:
+                throw new TokenNotValidException("Unknown token type.");
         }
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken);
@@ -198,12 +202,12 @@ public class AuthenticationService {
     }
 
     /**
-     * Method construct {@link TokenAuthentication} marked as valid. It also store JWT token on the cache to
-     * speed up next call to validate token.
+     * Method constructs {@link TokenAuthentication} marked as valid. It also stores JWT token to the cache to
+     * speed up next validation call.
      *
-     * @param user username to login
+     * @param user     username to login
      * @param jwtToken token of user
-     * @return {@link TokenAuthentication}, as authenticated use information about invalidating of token
+     * @return authenticated {@link TokenAuthentication} using information about invalidating of token
      */
     @CachePut(value = "validationJwtToken", key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication createTokenAuthentication(String user, String jwtToken) {
@@ -227,9 +231,10 @@ public class AuthenticationService {
     }
 
     /**
-     * This method is for removing if sign. Each JWT token is concatenation of three parts (header, body, sign) joined
-     * with ".". JWT library required on parse also validation step. For validation is needed defined public key, but
-     * we use also JWT tokens from another application (z/OSMF) and we don't have it.
+     * This method removes the token signature. Each JWT token is concatenated of three parts (header, body, sign) joined
+     * with ".". JWT library used for parsing contains also validation. A public key is needed for validation, but
+     * we are also using JWT tokens from another application (z/OSMF) and we don't have it.
+     *
      * @param jwtToken token to modify
      * @return jwt token without sign part
      */
@@ -244,18 +249,18 @@ public class AuthenticationService {
     }
 
     /**
-     * Parse the JWT token and return a {@link QueryResponse} object containing the domain, user id, type (Zowe / z/OSMF),
+     * Parses the JWT token and return a {@link QueryResponse} object containing the domain, user id, type (Zowe / z/OSMF),
      * date of creation and date of expiration
      *
      * @param jwtToken the JWT token
      * @return the query response
      */
     public QueryResponse parseJwtToken(String jwtToken) {
-        /**
-         * Remove signature, because fo z/OSMF we dont have key to verify certificate and
+        /*
+         * Removes signature, because of z/OSMF we don't have key to verify certificate and
          * we just need to read claim. Verification is realized via REST call to z/OSMF.
          * JWT library doesn't parse signed key without verification.
-          */
+         */
         final String withoutSign = removeSign(jwtToken);
 
         // parse to claims and construct QueryResponse
@@ -299,8 +304,9 @@ public class AuthenticationService {
     }
 
     /**
-     * This method validate if JWT token is valid and if yes, then get claim with LTPA token.
-     * For purpose, where is not needed validation, you can use method {@link #getLtpaToken(String)}
+     * This method validates if JWT token is valid and if yes, then get claim from LTPA token.
+     * For purpose, when is not needed validation, you can use method {@link #getLtpaToken(String)}
+     *
      * @param jwtToken the JWT token
      * @return LTPA token extracted from JWT
      */

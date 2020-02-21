@@ -37,15 +37,15 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 /**
- * This bean is default implementation of access to z/OSMF authentication. It collect all other implementation and
- * select right implementation by z/OSMF version. This bean is facade for those implementation and all its own methods
- * are delegates to implementation based of z/OSMF version.
- *
+ * This bean is default implementation of access to z/OSMF authentication. It collects all other implementation and
+ * select right implementation by z/OSMF version. This bean is facade for those implementations and all its own methods
+ * are delegated to implementation based of z/OSMF version.
+ * <p>
  * see also:
- *  - {@link ZosmfServiceV2}
- *      - new version supporting https://www.ibm.com/support/knowledgecenter/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/izuprog_API_WebTokenAuthServices.htm
- *  - {@link ZosmfServiceV1}
- *      - old version using endpoint /zosmf/info
+ * - {@link ZosmfServiceV2}
+ * - new version supporting https://www.ibm.com/support/knowledgecenter/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/izuprog_API_WebTokenAuthServices.htm
+ * - {@link ZosmfServiceV1}
+ * - old version using endpoint /zosmf/info
  */
 @Primary
 @Service

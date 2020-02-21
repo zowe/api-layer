@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ZosmfServiceFacadeTest {
 
-    private static final String SERVICE_ID = "zosmfca32";
+    private static final String SERVICE_ID = "zosmf";
 
     private RestTemplate restTemplate = mock(RestTemplate.class);
     private ZosmfServiceFacadeTestExt zosmfService;

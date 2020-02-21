@@ -9,15 +9,14 @@
  */
 package org.zowe.apiml.util;
 
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * This utilities allowe base work with cookies and its string representation.
+ * A utility class for Cookies administration
  */
+@UtilityClass
 public final class CookieUtil {
-
-    private CookieUtil() {
-    }
 
     public static String setCookie(String cookieHeader, String name, String value) {
         StringBuilder sb = new StringBuilder();
@@ -33,9 +32,9 @@ public final class CookieUtil {
             }
         }
 
-
         if (counter > 0) sb.append(';');
         sb.append(name).append('=').append(value);
+
         return sb.toString();
     }
 
