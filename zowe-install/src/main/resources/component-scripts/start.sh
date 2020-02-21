@@ -100,6 +100,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.port=${GATEWAY_PORT} \
     -Dapiml.service.discoveryServiceUrls=https://${ZOWE_EXPLORER_HOST}:${DISCOVERY_PORT}/eureka/ \
     -Dapiml.service.preferIpAddress=true \
+    -Dapiml.cache.storage.location=${WORKSPACE_DIR}/api-mediation/ \
     -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
