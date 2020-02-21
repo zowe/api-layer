@@ -237,7 +237,7 @@ public class ApiMediationServiceConfigReader {
 
         String configData = null;
         try {
-            configData = FileUtils.readConfigurationFile(fileName);
+            configData = FileUtils.readFile(fileName);
         } catch (IOException e) {
             throw new ServiceDefinitionException(String.format("Configuration data can't be read from file %s.", fileName), e);
         }
