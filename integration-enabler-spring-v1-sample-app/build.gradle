@@ -52,5 +52,3 @@ bootRun {
     }
     systemProperties = System.properties
 }
-
-//build.dependsOn
