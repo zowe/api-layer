@@ -38,7 +38,6 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':common-service-core')
     implementation project(':onboarding-enabler-spring')
 
     implementation libraries.springFox

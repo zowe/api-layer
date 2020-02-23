@@ -1,98 +1,97 @@
 spring:
     application:
-        name: enablerv1sampleapp
-    cloud:
-        client:
-            hostname: ${environment.hostname}
-            ipAddress: ${environment.ipAddress}
+        name: ${apiml.service.serviceId}
+
     output:
         ansi:
             enabled: always
+
 
 logging:
     level:
         ROOT: INFO
         org.springframework: INFO
+        org.apache: DEBUG
         org.zowe.apiml: DEBUG
 
 ##############################################################################################
-# MFAAS configuration section
+# APIML configuration section
 ##############################################################################################
-mfaas:
-    discovery:
-        serviceId: ${environment.serviceId}
-        locations: ${environment.discoveryLocations}
-        enabled: ${environment.discoveryEnabled:true}
-        info:
-            serviceTitle: ${environment.serviceTitle}
-            description:  ${environment.serviceDescription}
-            swaggerLocation: # populate this value with a json file from the resources folder to load a static swagger definition
-        fetchRegistry: false
-        region: default
+apiml:
+    enabled: true
     service:
-        hostname: ${environment.hostname}
-        ipAddress: ${environment.ipAddress}
-    catalog-ui-tile:
-        id: cademoapps
-        title: Sample API Mediation Layer Applications
-        description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
-        version:  1.0.0
-    server:
-        port: ${environment.port}
-        contextPath: /${spring.application.name}
+        serviceId: enablerv1sampleapp
+        title: Service Integration Enabler V1 Sample App (Spring Boot 1.x) # Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
+        description:  Sample Spring Boot 1.x REST API Application using the APIML Integration Enabler for Spring Boot 1.x # Sample API services to demonstrate Spring Integration Enabler
+
+        discoveryServiceUrls: https://localhost:10011/eureka/
+
         scheme: http
+        serviceIpAddress: 127.0.0.1
+        hostname: localhost
+        port: 10015
 
-eureka:
-    instance:
-        appName: ${mfaas.discovery.serviceId}
-        hostname: ${mfaas.service.hostname}
-        statusPageUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/info
-        healthCheckUrl: ${mfaas.server.scheme}://${mfaas.service.hostname}:${mfaas.server.port}/${mfaas.server.contextPath}/application/health
-        homePageUrl:
-        metadata-map:
-            routed-services:
-                api_v1:
-                    gateway-url: "api/v1"
-                    service-url: ${mfaas.server.contextPath}/api/v1
-                api-doc: # Intentionally using old format to retrieve Api-doc for testing purposes
-                    gateway-url: "api/v1/api-doc"
-                    service-url: ${mfaas.server.contextPath}/api-doc
-            mfaas:
-                api-info:
-                    swagger:
-                        location: ${mfaas.discovery.info.swaggerLocation:}
-                    apiVersionProperties:
-                        v1:
-                            title: Service Integration Enabler V1 Sample App (spring boot 1.x)
-                            description: Sample micro-service showing how to enable a Spring Boot v1.x application
-                            version: 1.0.0
-                            basePackage: org.zowe.apiml.sample.enable.v1.controller
+        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+        contextPath: /${apiml.service.serviceId}
 
-                discovery:
-                    catalogUiTile:
-                        id: ${mfaas.catalog-ui-tile.id}
-                        title:  ${mfaas.catalog-ui-tile.title}
-                        description: ${mfaas.catalog-ui-tile.description}
-                        version: ${mfaas.catalog-ui-tile.version}
-                    enableApiDoc: ${mfaas.discovery.info.enableApiDoc:true}
-                    service:
-                        title: ${mfaas.discovery.info.serviceTitle}
-                        description: ${mfaas.discovery.info.description}
-    client:
-        healthcheck:
+        homePageRelativeUrl: ${apiml.service.contextPath}
+        statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
+        healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
+
+        routes:
+            -   gateway-url: "api/v1"
+                service-url: ${apiml.service.contextPath}/api/v1
+            -   gateway-url: "api/v1/api-doc" # Intentionally using old format to retrieve Api-doc for testing purposes
+                service-url: ${apiml.service.contextPath}/api-doc
+        apiInfo:
+            -   apiId: org.zowe.discoverableclient
+                version: 1.0.0
+                gatewayUrl: api/v1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                documentationUrl: https://www.zowe.org
+        catalog:
+            tile:
+                id: cademoapps
+                title: Sample API Mediation Layer Applications
+                description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+                version: 1.0.1
+        authentication:
+            scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
+            applid: TSTAPPL  # APPLID to generate PassTickets for this service
+        ssl:
             enabled: true
-        serviceUrl:
-            defaultZone: ${mfaas.discovery.locations}
-        fetchRegistry:  ${mfaas.discovery.fetchRegistry}
-        region: ${mfaas.discovery.region}
-        enabled: ${mfaas.discovery.enabled}
+            verifySslCertificatesOfServices: true
+            protocol: ${server.ssl.protocol}
+            keyStoreType: ${server.ssl.keyStoreType}
+            trustStoreType: ${server.ssl.trustStoreType}
+
+            ### DEFINE FOLLOWING PROPERTIES IN EXTERNAL CONFIGURATION
+            keyAlias: ${server.ssl.keyAlias} #localhost-blah
+            keyPassword: ${server.ssl.keyPassword} #password-blah
+            keyStore: ${server.ssl.keyStore} #keystore/localhost/localhost.keystore.p12-blah
+            keyStorePassword: ${server.ssl.keyStorePassword} #password-blah
+            trustStore: ${server.ssl.trustStore} #keystore/localhost/localhost.truststore.p12-blah
+            trustStorePassword: ${server.ssl.trustStorePassword} #password-blah
 
 ##############################################################################################
 management:
     context-path: /application
 
 server:
-    address: ${mfaas.service.hostname}
-    port: ${mfaas.server.port}
-    context-path: ${mfaas.server.contextPath}
+    port: ${apiml.service.port}
+    context-path: ${apiml.service.contextPath}
 
+    ssl:
+        enabled: false
+        protocol: TLSv1.2
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password

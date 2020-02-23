@@ -63,11 +63,10 @@ apiml:
             scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
             applid: TSTAPPL  # APPLID to generate PassTickets for this service
         ssl:
-            enabled: ${server.ssl.enabled}
+            enabled: true
             verifySslCertificatesOfServices: true
             ciphers: ${server.ssl.ciphers}
             protocol: ${server.ssl.protocol}
-            enabled-protocols: ${server.ssl.protocol}
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}
 
@@ -82,7 +81,6 @@ apiml:
                 enableUrlEncodedCharacters: true
 
 server:
-    scheme: ${apiml.service.scheme}
     port: ${apiml.service.port}
 
     servlet:
