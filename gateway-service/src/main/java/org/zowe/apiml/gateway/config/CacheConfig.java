@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.gateway.config;
 
-import org.zowe.apiml.cache.CompositeKeyGenerator;
-import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
@@ -19,6 +17,10 @@ import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.zowe.apiml.cache.CompositeKeyGenerator;
+import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Spring configuration to use EhCache. This context is using from application and also from tests.
@@ -29,6 +31,19 @@ public class CacheConfig {
 
     public static final String COMPOSITE_KEY_GENERATOR = "compositeKeyGenerator";
     public static final String COMPOSITE_KEY_GENERATOR_WITHOUT_LAST = "compositeKeyGeneratorWithoutLast";
+
+    private static final String EHCACHE_STORAGE_ENV_PARAM_NAME = "ehcache.disk.store.dir";
+    private static final String APIML_CACHE_STORAGE_LOCATION_ENV_PARAM_NAME = "apiml.cache.storage.location";
+
+    @PostConstruct
+    public void afterPropertiesSet() {
+        if (System.getProperty(EHCACHE_STORAGE_ENV_PARAM_NAME) == null) {
+            String location = System.getProperty(APIML_CACHE_STORAGE_LOCATION_ENV_PARAM_NAME);
+            if (location == null) location = System.getProperty("user.dir");
+
+            System.setProperty(EHCACHE_STORAGE_ENV_PARAM_NAME, location);
+        }
+    }
 
     @Bean
     public CacheManager cacheManager() {
