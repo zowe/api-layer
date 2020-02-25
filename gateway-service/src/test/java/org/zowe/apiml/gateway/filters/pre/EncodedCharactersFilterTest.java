@@ -11,12 +11,12 @@
 package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -29,16 +29,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class EncodedCharactersFilterTest {
 
     private EncodedCharactersFilter filter;
@@ -54,12 +55,12 @@ public class EncodedCharactersFilterTest {
     @Mock
     DiscoveryClient discoveryClient;
 
-    @BeforeClass
+    @BeforeAll
     public static void initMessageService() {
         messageService = new YamlMessageService("/gateway-log-messages.yml");
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         filter = new EncodedCharactersFilter(discoveryClient, messageService);
         serviceInstanceWithConfiguration.getMetadata().put(METADATA_KEY, "true");
