@@ -21,14 +21,16 @@ ext {
     jacksonCoreVersion = "2.10.1"
     javaxValidationApiVersion = "2.0.1.Final"
     gsonVersion = '2.8.2'
-    mockitoCoreVersion = '2.15.0'
+    mockitoCoreVersion = '2.23.4'
     zsslVersion = '1.0.0'
     tomcatVersion = '9.0.13' //8.5.33
     commonsLang3Version = '3.7'
     gradleGitPropertiesVersion = '1.5.1'
     jettyWebSocketClientVersion = '9.4.11.v20180605'
-    eurekaClientVersion = '1.9.13'
+    eurekaClientVersion = '1.8.6'
     junitVersion = '4.12'
+    junitVintageVersion = '5.5.2'
+    eurekaClientVersion = '1.9.13'
     logbackVersion = '1.2.3'
     spring4Version = '4.3.7.RELEASE'
     awaitilityVersion = '3.0.0'
@@ -114,14 +116,19 @@ ext {
         jackson_annotations                : "com.fasterxml.jackson.core:jackson-annotations:${jacksonCoreVersion}",
         javax_validation                   : "javax.validation:validation-api:${javaxValidationApiVersion}",
         gson                               : "com.google.code.gson:gson:${gsonVersion}",
-        mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
         tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
         jetty_util                         : "org.eclipse.jetty:jetty-util:${jettyWebSocketClientVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
+
         junit                              : "junit:junit:${junitVersion}",
+        junitVintage                       : "org.junit.vintage:junit-vintage-engine:${junitVintageVersion}",
+        junitJupiter                       : "org.junit.jupiter:junit-jupiter:${junitVintageVersion}",
+        mockito_core                       : "org.mockito:mockito-core:${mockitoCoreVersion}",
+        mockito_jupiter                    : "org.mockito:mockito-junit-jupiter:${mockitoCoreVersion}",
+
         logback_classic                    : "ch.qos.logback:logback-classic:${logbackVersion}",
         spring4Mvc                         : "org.springframework:spring-webmvc:${spring4Version}",
         spring4Test                        : "org.springframework:spring-test:${spring4Version}",
