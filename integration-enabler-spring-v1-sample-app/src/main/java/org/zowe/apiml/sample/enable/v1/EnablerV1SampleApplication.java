@@ -12,13 +12,9 @@ package org.zowe.apiml.sample.enable.v1;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan({"org.zowe.apiml.sample.enable","org.zowe.apiml.enable"})
 @EnableApiDiscovery
-@EnableConfigurationProperties
 public class EnablerV1SampleApplication {
 
     public static void main(String[] args) {

@@ -1,7 +1,6 @@
 environment:
     discoveryLocations: https://localhost2:10021/eureka/,https://localhost3:10031/eureka/
     dsIpAddress: 0.0.0.0
-    esmEnabled: false
     eurekaPassword: password
     eurekaUserId: eureka
     gatewayHostname: https://localhost:10010
@@ -29,7 +28,7 @@ server:
         keyStore: keystore/localhost/localhost.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-mfaas:
+apiml:
     service-registry:
         cacheRefreshInitialDelayInMillis: 10000
         cacheRefreshRetryDelayInMillis: 10000

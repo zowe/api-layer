@@ -27,7 +27,7 @@ catalog:
     tile:
         id: helloworld-spring
         title: HelloWorld Spring REST API
-        description: Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem
+        description: Proof of Concept application to demonstrate exposing a REST API in the API Mediation Layer ecosystem
         version: 1.0.0
 
 ssl:

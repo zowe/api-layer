@@ -39,7 +39,6 @@ gitProperties {
 }
 
 dependencies {
-    compile(project(':integration-enabler-spring-v2'))
     compile(project(':security-service-client-spring'))
 
     compileOnly libraries.lombok
@@ -57,6 +56,8 @@ dependencies {
     compile libraries.apache_commons_lang3
     compile libraries.spring_boot_starter_thymeleaf
     compile libraries.apache_velocity
+
+    implementation libraries.springFox
 
     testCompile libraries.rest_assured
     testCompile libraries.spring_mock_mvc

@@ -9,20 +9,19 @@
  */
 package org.zowe.apiml.gatewayservice;
 
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
-@Ignore
+
 public class EncodedCharactersTest {
 
 
@@ -58,6 +57,19 @@ public class EncodedCharactersTest {
 
     @Test
     public void shouldCallCatalogServiceWithEncodedCharacterAndReject() {
+        final String encodedURI = "/api/v1/apicatalog/gf%2fd/testcall";
+
+        given()
+            .contentType(ContentType.JSON)
+            .urlEncodingEnabled(false)
+            .when()
+            .get(String.format("%s://%s:%s%s", scheme, host, port, encodedURI))
+            .then()
+            .statusCode(is(SC_BAD_REQUEST));
+    }
+
+    @Test
+    public void shouldCallServiceWithGatewayNotAllowingAndReject() {
         final String encodedURI = "/api/v1/apicatalog/gf%2fd/testcall";
 
         given()

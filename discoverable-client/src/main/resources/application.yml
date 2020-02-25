@@ -1,34 +1,3 @@
-# Following parameters must not be declared in this application.yml (in the artifact jar).
-#  On local installations they can be defined in externalized configuration provided by
-#    -Dspring.config.additional-location=additional_config_path
-#
-#    On MF they are provided by on command line with set of -Dkey=value system properties
-#    defined in startup script (read from parmlibs)
-#
-#    -Deureka.instance.metadata-map.discovery.service.title=\"${{PFX}}_DC_SERVICE_TITLE\"
-#    -Deureka.instance.metadata-map.discovery.service.description=\"${{PFX}}_DC_SERVICE_DESC\"
-#
-#    -Deureka.client.enabled=${{PFX}}_DC_DISC_ENABLED"
-#
-#    -Dapiml.service.id=${{PFX}}_DC_SERVICE_ID"
-#    -Dapiml.service.hostname=${{PFX}}_{{SYSN}}_HOSTNAME"
-#    -Dapiml.service.port=${{PFX}}_{{SRV}}_PORT"
-#    -Dapiml.service.discoveryServiceUrls=${{PFX}}_DS"
-#    -Dapiml.service.ipAddress=${{PFX}}_{{SYSN}}_IP_ADDRESS"
-#
-#    -DlogbackService={{procname}}"
-#
-# SSL/TLS configuration for Discoverable Client:
-#    -Dserver.ssl.enabled=true
-#    -Dserver.ssl.keyStore=${{PFX}}_SSL_KEY_STORE
-#    -Dserver.ssl.keyStoreType=${{PFX}}_SSL_KEY_STORE_TYPE
-#    -Dserver.ssl.keyStorePassword=${{PFX}}_SSL_KEY_STORE_PASSWORD
-#    -Dserver.ssl.keyAlias=${{PFX}}_SSL_KEY_ALIAS
-#    -Dserver.ssl.keyPassword=${{PFX}}_SSL_KEY_PASSWORD
-#    -Dserver.ssl.trustStore=${{PFX}}_SSL_TRUST_STORE
-#    -Dserver.ssl.trustStoreType=${{PFX}}_SSL_TRUST_STORE_TYPE
-#    -Dserver.ssl.trustStorePassword=${{PFX}}_SSL_TRUST_STORE_PASSWORD
-
 logging:
     level:
         ROOT: INFO
@@ -44,7 +13,7 @@ logging:
 
 spring:
     application:
-        name: ${apiml.service.id} # discoverableclient
+        name: ${apiml.service.serviceId}
     mvc:
         throw-exception-if-no-handler-found: true
     output:
@@ -52,26 +21,24 @@ spring:
             enabled: detect
 
 apiml:
-    enabled: ${eureka.client.enabled}
-    enableUrlEncodedCharacters: true
+    enabled: true
     service:
-        serviceId: ${apiml.service.id}
-        title: ${eureka.instance.metadata-map.discovery.service.title} # Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
-        description:  ${eureka.instance.metadata-map.discovery.service.description} # Sample API services to demonstrate Spring Integration Enabler
+        serviceId: discoverableclient
+        title: Service Spring Integration Enabler sample application API
+        description:  Sample API services to demonstrate Spring Integration Enabler
+
+        discoveryServiceUrls: https://localhost:10011/eureka/
 
         scheme: https
-        # Will be defined by -D on MF: hostname: ${server.hostname}
-        # Will be defined by -D on MF: port: ${server.port}
-        serviceIpAddress: ${apiml.service.ipAddress}
-
+        serviceIpAddress: 127.0.0.1
+        hostname: localhost
+        port: 10012
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
-        contextPath: /${apiml.service.id}
+        contextPath: /${apiml.service.serviceId}
 
         homePageRelativeUrl: ${apiml.service.contextPath}
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
-
-        # Will be defined by -D on MF: discoveryServiceUrls: ${apiml.service.discoveryServiceUrls} # https://localhost:10011/eureka/
 
         routes:
             -   gateway-url: "ui/v1"
@@ -96,30 +63,28 @@ apiml:
             scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
             applid: TSTAPPL  # APPLID to generate PassTickets for this service
         ssl:
-            enabled: ${server.ssl.enabled}
+            enabled: true
             verifySslCertificatesOfServices: true
             ciphers: ${server.ssl.ciphers}
             protocol: ${server.ssl.protocol}
-            enabled-protocols: ${server.ssl.protocol}
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}
 
-            ### DEFINE FOLLOWING PROPERTIES IN EXTERNAL CONFIGURATION
-            keyAlias: ${server.ssl.keyAlias} #localhost-blah
-            keyPassword: ${server.ssl.keyPassword} #password-blah
-            keyStore: ${server.ssl.keyStore} #keystore/localhost/localhost.keystore.p12-blah
-            keyStorePassword: ${server.ssl.keyStorePassword} #password-blah
-            trustStore: ${server.ssl.trustStore} #keystore/localhost/localhost.truststore.p12-blah
-            trustStorePassword: ${server.ssl.trustStorePassword} #password-blah
+            keyAlias: ${server.ssl.keyAlias}
+            keyPassword: ${server.ssl.keyPassword}
+            keyStore: ${server.ssl.keyStore}
+            keyStorePassword: ${server.ssl.keyStorePassword}
+            trustStore: ${server.ssl.trustStore}
+            trustStorePassword: ${server.ssl.trustStorePassword}
+        customMetadata:
+            apiml:
+                enableUrlEncodedCharacters: true
 
 server:
-    scheme: ${apiml.service.scheme}
-    hostname: ${apiml.service.hostname} #localhost # Hostname that is advertised in Eureka. Default is valid only for localhost
-    port: ${apiml.service.port} #10012         # Default port name for discoverable-client service
-    address: ${apiml.service.ipAddress} #127.0.0.1
+    port: ${apiml.service.port}
 
     servlet:
-        contextPath: /${apiml.service.id}
+        contextPath: /${apiml.service.serviceId}
 
     ssl:
         enabled: true
@@ -128,6 +93,13 @@ server:
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
         keyStoreType: PKCS12
         trustStoreType: PKCS12
+
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
 
     compression:
         mime-types: image/png

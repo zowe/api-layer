@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway;
 
-import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.gateway.ribbon.GatewayRibbonConfig;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
@@ -36,7 +35,6 @@ import javax.annotation.Nonnull;
     value = {
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product",
-        "org.zowe.apiml.enable",
         "org.zowe.apiml.security.common"},
     excludeFilters = {
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*RibbonConfig")
@@ -45,7 +43,6 @@ import javax.annotation.Nonnull;
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
 @EnableEurekaClient
 @EnableWebSocket
-@EnableApiDiscovery
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {

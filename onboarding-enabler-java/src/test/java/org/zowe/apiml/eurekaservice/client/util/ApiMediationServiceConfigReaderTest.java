@@ -9,21 +9,23 @@
  */
 package org.zowe.apiml.eurekaservice.client.util;
 
-import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
-import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.springframework.mock.web.MockServletContext;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import javax.servlet.ServletContext;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class ApiMediationServiceConfigReaderTest {
 
@@ -41,6 +43,9 @@ public class ApiMediationServiceConfigReaderTest {
 
         assertNotNull(result);
         assertEquals("hellopje", result.getServiceId());
+
+        //The metadata deserializes into map, so it creates this structure. It is expected, it is flattened later by ApiMediationClient before sending to Eureka
+        assertEquals("{key=anotherValue, customService.key1=value1, customService.key2=value2, customService={key3=value3, key4=value4, evenmorelevels={key5={key6={key7=anothervalue7}}}, key10=value10}}", result.getCustomMetadata().toString());
 
         // Use default internal file name
         result = apiMediationServiceConfigReader.loadConfiguration(null, additionalFileName);

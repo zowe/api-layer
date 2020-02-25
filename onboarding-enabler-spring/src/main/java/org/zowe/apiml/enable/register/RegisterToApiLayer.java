@@ -22,7 +22,10 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RegisterToApiLayer {
@@ -47,7 +50,6 @@ public class RegisterToApiLayer {
     @EventListener(ContextRefreshedEvent.class)
     public void onContextRefreshedEventEvent() {
         if (apimlEnabled) {
-
             if (apiMediationClient.getEurekaClient() != null) {
                 if (config != null) {
                     logger.log( "org.zowe.apiml.enabler.registration.renew"
@@ -58,7 +60,7 @@ public class RegisterToApiLayer {
 
                 unregister();
             } else {
-                logger .log("org.zowe.apiml.enabler.registration.initial"
+                logger.log("org.zowe.apiml.enabler.registration.initial"
                     , newConfig.getBaseUrl(), newConfig.getServiceIpAddress(), newConfig.getDiscoveryServiceUrls()
                 );
             }
@@ -85,11 +87,13 @@ public class RegisterToApiLayer {
         try {
             apiMediationClient.register(config);
 
-            logger .log("org.zowe.apiml.enabler.registration.successful",
+            logger.log("org.zowe.apiml.enabler.registration.successful",
                 config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
+            log.debug("Registering to API Mediation Layer with settings: {}", config.toString());
         } catch (ServiceDefinitionException e) {
-            logger .log("org.zowe.apiml.enabler.registration.fail"
+            logger.log("org.zowe.apiml.enabler.registration.fail"
                 , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls(), e.toString());
+            log.debug(String.format("Service %s registration to API ML failed: ", config.getBaseUrl()), e);
         }
     }
 }

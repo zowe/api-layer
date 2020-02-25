@@ -21,6 +21,7 @@
 # - KEYSTORE - The keystore to use for SSL certificates
 # - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
 # - KEY_ALIAS - The alias of the key within the keystore
+# - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
 
 # API Mediation Layer Debug Mode
 # To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
@@ -100,6 +101,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.service.port=${GATEWAY_PORT} \
     -Dapiml.service.discoveryServiceUrls=https://${ZOWE_EXPLORER_HOST}:${DISCOVERY_PORT}/eureka/ \
     -Dapiml.service.preferIpAddress=true \
+    -Dapiml.service.allowEncodedSlashes=false \
+    -Dapiml.cache.storage.location=${WORKSPACE_DIR}/api-mediation/ \
     -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \

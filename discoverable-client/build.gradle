@@ -38,7 +38,6 @@ gitProperties {
 }
 
 dependencies {
-    implementation project(':common-service-core')
     implementation project(':onboarding-enabler-spring')
 
     implementation libraries.springFox
@@ -47,8 +46,11 @@ dependencies {
     implementation libraries.spring_boot_starter_web
     implementation libraries.spring_boot_starter_websocket
 
+    implementation libraries.bootstrap
+    implementation libraries.jquery
+
     implementation libraries.gson
-    implementation libraries.lombok
+    compileOnly libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
 }
