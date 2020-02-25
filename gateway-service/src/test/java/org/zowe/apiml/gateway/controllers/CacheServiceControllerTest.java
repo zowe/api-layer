@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 public class CacheServiceControllerTest {
 
     private MockMvc mockMvc;
@@ -39,7 +39,7 @@ public class CacheServiceControllerTest {
     @Mock
     private ApimlDiscoveryClient discoveryClient;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         CacheServiceController cacheServiceController = new CacheServiceController(Arrays.asList(service1, service2), discoveryClient);
         mockMvc = MockMvcBuilders.standaloneSetup(cacheServiceController).build();
