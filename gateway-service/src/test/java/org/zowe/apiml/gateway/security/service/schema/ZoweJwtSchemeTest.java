@@ -1,4 +1,4 @@
-package org.zowe.apiml.gateway.security.service.schema;/*
+/*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v20.html
@@ -8,14 +8,14 @@ package org.zowe.apiml.gateway.security.service.schema;/*
  * Copyright Contributors to the Zowe Project.
  */
 
+package org.zowe.apiml.gateway.security.service.schema;
+
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(JUnit4.class)
+
 public class ZoweJwtSchemeTest {
 
     @Test

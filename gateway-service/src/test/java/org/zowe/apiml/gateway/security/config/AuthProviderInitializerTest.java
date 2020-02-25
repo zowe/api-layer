@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
-import org.junit.Before;
-import org.junit.Test;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 
 import static org.mockito.Mockito.*;
@@ -25,7 +25,7 @@ public class AuthProviderInitializerTest {
     private TokenAuthenticationProvider tokenAuthenticationProvider;
     private ZosmfAuthenticationProvider zosmfAuthenticationProvider;
 
-    @Before
+    @BeforeEach
     public void setup() {
         dummyAuthenticationProvider = mock(DummyAuthenticationProvider.class);
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);

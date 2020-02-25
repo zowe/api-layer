@@ -9,16 +9,17 @@
  */
 package org.zowe.apiml.gateway.security.query;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,9 +31,10 @@ import org.springframework.http.HttpMethod;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class QueryFilterTest {
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
@@ -52,7 +54,7 @@ public class QueryFilterTest {
     @Mock
     private AuthenticationService authenticationService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         queryFilter = new QueryFilter("TEST_ENDPOINT",
             authenticationSuccessHandler,
@@ -78,28 +80,35 @@ public class QueryFilterTest {
         verify(authenticationManager).authenticate(any());
     }
 
-    @Test(expected = AuthMethodNotSupportedException.class)
+    @Test
     public void shouldRejectHttpMethods() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
-        queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        assertThrows(AuthMethodNotSupportedException.class, () -> {
+            queryFilter.attemptAuthentication(httpServletRequest,
+                httpServletResponse);
+        });
     }
 
-    @Test(expected = TokenNotProvidedException.class)
+    @Test
     public void shouldRejectIfTokenIsNotPresent() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
-        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
+        assertThrows(TokenNotProvidedException.class, () -> {
+            queryFilter.attemptAuthentication(httpServletRequest,
+                httpServletResponse);
+        });
+
+        Mockito.lenient().when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
             Optional.empty()
         );
 
-        queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
 
-    @Test(expected = InvalidCertificateException.class)
+    @Test
     public void shouldRejectIfNotAuthenticatedByCertficate() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
@@ -115,7 +124,9 @@ public class QueryFilterTest {
             HttpMethod.GET,
             true,
             authenticationManager);
-
-        protectedQueryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        assertThrows(InvalidCertificateException.class, () -> {
+            protectedQueryFilter.attemptAuthentication(httpServletRequest,
+                httpServletResponse);
+        });
     }
 }
