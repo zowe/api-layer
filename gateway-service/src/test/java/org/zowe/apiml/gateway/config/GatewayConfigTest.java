@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.gateway.config;
 
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
