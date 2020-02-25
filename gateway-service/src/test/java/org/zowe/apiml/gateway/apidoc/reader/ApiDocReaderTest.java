@@ -20,10 +20,9 @@ public class ApiDocReaderTest {
     @Test
     public void givenFileLocationAsANull_whenLoadIsCalled_thenThrowApiDocReaderException() {
         ApiDocReader apiDocReader = new ApiDocReader();
-        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
-            apiDocReader.load(null);
-
-        });
+        Exception exception = assertThrows(ApiDocReaderException.class,
+            () -> apiDocReader.load(null),
+            "Expected exception is not ApiDocReaderException");
 
         assertEquals("API doc location can't be null or empty", exception.getMessage());
     }
@@ -32,10 +31,9 @@ public class ApiDocReaderTest {
     @Test
     public void givenEmptyFileLocation_whenLoadIsCalled_thenThrowApiDocReaderException() {
         ApiDocReader apiDocReader = new ApiDocReader();
-        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
-            apiDocReader.load("");
-
-        });
+        Exception exception = assertThrows(ApiDocReaderException.class,
+            () -> apiDocReader.load(""),
+            "Expected exception is not ApiDocReaderException");
 
         assertEquals("API doc location can't be null or empty", exception.getMessage());
     }
@@ -44,10 +42,9 @@ public class ApiDocReaderTest {
     @Test
     public void givenFileLocation_whenFileIsNotExist_thenThrowApiDocReaderException() {
         ApiDocReader apiDocReader = new ApiDocReader();
-        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
-            apiDocReader.load("classpath:invalid-path.json");
-
-        });
+        Exception exception = assertThrows(ApiDocReaderException.class,
+            () -> apiDocReader.load("classpath:invalid-path.json"),
+            "Expected exception is not ApiDocReaderException");
 
         assertEquals("OpenAPI file does not exist: classpath:invalid-path.json", exception.getMessage());
     }
@@ -56,10 +53,9 @@ public class ApiDocReaderTest {
     @Test
     public void givenFileLocationWithoutClassPathPrefix_whenFileIsNotExist_thenThrowApiDocReaderException() {
         ApiDocReader apiDocReader = new ApiDocReader();
-        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
-            apiDocReader.load("invalid-path.json");
-
-        });
+        Exception exception = assertThrows(ApiDocReaderException.class,
+            () -> apiDocReader.load("invalid-path.json"),
+            "Expected exception is not ApiDocReaderException");
 
         assertEquals("OpenAPI file does not exist: classpath:invalid-path.json", exception.getMessage());
     }
@@ -68,10 +64,9 @@ public class ApiDocReaderTest {
     @Test
     public void givenFileLocationWithInvalidJsonContent_whenLoadIsCalled_thenThrowApiDocReaderException() {
         ApiDocReader apiDocReader = new ApiDocReader();
-        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
-            apiDocReader.load("api-doc-invalid-content.json");
-
-        });
+        Exception exception = assertThrows(ApiDocReaderException.class,
+            () -> apiDocReader.load("api-doc-invalid-content.json"),
+            "Expected exception is not ApiDocReaderException");
 
         assertEquals("OpenAPI content is not valid", exception.getMessage());
     }
