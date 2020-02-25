@@ -9,14 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.security;
 
-import org.zowe.apiml.security.client.EnableApimlAuth;
-import org.zowe.apiml.security.client.login.GatewayLoginProvider;
-import org.zowe.apiml.security.client.token.GatewayTokenProvider;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.HandlerInitializer;
-import org.zowe.apiml.security.common.content.BasicContentFilter;
-import org.zowe.apiml.security.common.content.CookieContentFilter;
-import org.zowe.apiml.security.common.login.LoginFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +23,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.zowe.apiml.security.client.EnableApimlAuth;
+import org.zowe.apiml.security.client.login.GatewayLoginProvider;
+import org.zowe.apiml.security.client.token.GatewayTokenProvider;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.HandlerInitializer;
+import org.zowe.apiml.security.common.content.BasicContentFilter;
+import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.login.LoginFilter;
 
 /**
  * Main configuration class of Spring web security for Api Catalog
@@ -106,7 +106,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // logout endpoint
             .and()
             .logout()
-            .logoutUrl(authConfigurationProperties.getGatewayQueryEndpoint())
+            .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
             .logoutSuccessHandler(logoutSuccessHandler())
 
             // endpoints protection

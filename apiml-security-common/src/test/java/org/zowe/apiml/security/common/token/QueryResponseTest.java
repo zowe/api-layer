@@ -34,8 +34,20 @@ public class QueryResponseTest {
     public void testSource() {
         assertEquals(QueryResponse.Source.ZOSMF, QueryResponse.Source.valueByIssuer("zosmf"));
         assertEquals(QueryResponse.Source.ZOSMF, QueryResponse.Source.valueByIssuer("zOSMF"));
-        assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("zosmfX"));
-        assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer(null));
+        assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("apiml"));
+        assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("APIML"));
+        try {
+            assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer(null));
+            fail();
+        } catch (TokenNotValidException tnve) {
+            assertEquals("Unknown token type : null", tnve.getMessage());
+        }
+        try {
+            assertEquals(QueryResponse.Source.ZOWE, QueryResponse.Source.valueByIssuer("unknown"));
+            fail();
+        } catch (TokenNotValidException tnve) {
+            assertEquals("Unknown token type : unknown", tnve.getMessage());
+        }
     }
 
 }

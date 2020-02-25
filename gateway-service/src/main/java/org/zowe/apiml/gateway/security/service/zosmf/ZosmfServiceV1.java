@@ -23,6 +23,12 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+/**
+ * This implementation is used for version z/OSMF which don't support authentication endpoint. Instant this endpoint
+ * it use info endpoint for authentication and verification. This implementation doesn't support invalidation (logout).
+ *
+ * Bean could be served via {@link ZosmfServiceFacade}
+ */
 @Service
 public class ZosmfServiceV1 extends AbstractZosmfService {
 

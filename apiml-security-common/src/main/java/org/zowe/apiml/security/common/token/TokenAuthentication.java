@@ -54,6 +54,12 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         return username;
     }
 
+    /**
+     * Creates the TokenAuthentication with fulfilled username (principal), token and marked as authenticated.
+     * @param username Username, who is authenticated
+     * @param token Token, which authenticate the user
+     * @return TokenAuthentication marked as authenticated with username, token
+     */
     public static TokenAuthentication createAuthenticated(String username, String token) {
         final TokenAuthentication out = new TokenAuthentication(username, token);
         out.setAuthenticated(true);

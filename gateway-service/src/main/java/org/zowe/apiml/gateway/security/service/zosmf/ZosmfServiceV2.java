@@ -25,7 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
+ * This implementation is used for version z/OSMF which support authentication endpoint. This endpoint allows to
+ * generate new token, verify using token and also deactivation of token. Token could be LTPA or JWT (depends on
+ * z/OSMF's configuration)
  *
+ * Bean could be served via {@link ZosmfServiceFacade}
  */
 @Service
 public class ZosmfServiceV2 extends AbstractZosmfService {

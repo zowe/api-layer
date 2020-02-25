@@ -35,6 +35,7 @@ public class AuthConfigurationProperties {
     private String gatewayTicketEndpoint = "/api/v1/gateway/auth/ticket";
 
     private String serviceLoginEndpoint = "/auth/login";
+    private String serviceLogoutEndpoint = "/auth/logout";
 
     private AuthConfigurationProperties.TokenProperties tokenProperties;
     private AuthConfigurationProperties.CookieProperties cookieProperties;

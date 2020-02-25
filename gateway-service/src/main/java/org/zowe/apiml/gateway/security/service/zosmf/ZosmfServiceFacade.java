@@ -54,6 +54,10 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
     protected final ApplicationContext applicationContext;
     protected final List<ZosmfService> implementations;
 
+    /**
+     * This attribute is used for calling of methods in the bean, which are covered by AOP (cache). Direct call will
+     * bypass those AOP.
+     */
     private ZosmfServiceFacade meProxy;
 
     public ZosmfServiceFacade(
@@ -79,11 +83,21 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
         meProxy = applicationContext.getBean(ZosmfServiceFacade.class);
     }
 
+    /**
+     * It evicts all records in caches used for z/OSMF (information about version, domain and current used
+     * implementation).
+     */
     @CacheEvict(value = {"zosmfInfo", "zosmfServiceImplementation"}, allEntries = true)
     public void evictCaches() {
         // evict all caches
     }
 
+    /**
+     * Method return base information about z/OSMF which is currently in use. Method use cache to reduce amount of calls.
+     *
+     * @param zosmfServiceId id of z/OSMF service (see static definition)
+     * @return ZosmfInfo, which contains version of z/OSMF, domain and realm (domain)
+     */
     @Cacheable("zosmfInfo")
     public ZosmfInfo getZosmfInfo(String zosmfServiceId) {
         final String url = getURI(zosmfServiceId) + ZOSMF_INFO_END_POINT;
@@ -108,11 +122,24 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
         }
     }
 
+    /**
+     * Method returns version of current z/OSMF. It uses information from {@link #getZosmfInfo(String)}. If version
+     * is not available return 0 (as version which doesn't support method to get this information)
+     * @param zosmfInfo value which can be get with {@link #getZosmfInfo(String)} to extract version
+     * @return version of z/OSMF or 0 as default
+     */
     protected int getVersion(ZosmfInfo zosmfInfo) {
         if (zosmfInfo == null) return 0;
         return zosmfInfo.getVersion();
     }
 
+    /**
+     * It return implementation which should be used with current version of z/OSMF. It is determined by version of
+     * z/OSMF (see {@link #getZosmfInfo(String)}).
+     * Method use cache to fast response.
+     * @param zosmfServiceId id of z/OSMF's service (see static definition)
+     * @return ImplementationWrapper, which contains implementation and ZosmfInfo (version and realm/domain)
+     */
     @Cacheable("zosmfServiceImplementation")
     public ImplementationWrapper getImplementation(String zosmfServiceId) {
         final ZosmfInfo zosmfInfo = meProxy.getZosmfInfo(zosmfServiceId);
@@ -125,6 +152,9 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
         throw new IllegalArgumentException("Unknown version of z/OSMF : " + version);
     }
 
+    /**
+     * @return implementation for current version of z/OSMF defined in configuration.
+     */
     protected ImplementationWrapper getImplementation() {
         return meProxy.getImplementation(getZosmfServiceId());
     }
@@ -167,6 +197,9 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
         }
     }
 
+    /**
+     * DTO with base information about z/OSMF (version and realm/domain)
+     */
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ZosmfInfo {
@@ -182,6 +215,10 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
 
     }
 
+    /**
+     * DTO about implementation. It contains instance of bean implements ZosmfService and base information about
+     * z/OSMF (version and realm/domain). DTO is using to specify current z/OSMF and implementation, which support it.
+     */
     @Value
     public static class ImplementationWrapper {
 

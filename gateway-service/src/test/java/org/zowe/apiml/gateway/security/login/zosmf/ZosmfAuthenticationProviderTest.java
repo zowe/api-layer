@@ -117,19 +117,6 @@ public class ZosmfAuthenticationProviderTest {
         output = spy(output);
         when(applicationContext.getBean(ZosmfServiceFacade.class)).thenReturn(output);
         output.afterPropertiesSet();
-
-        /*ZosmfServiceFacade.ZosmfInfo zosmfInfo = new ZosmfServiceFacade.ZosmfInfo();
-        zosmfInfo.setVersion(27);
-        zosmfInfo.setFullVersion("27.0");
-        zosmfInfo.setSafRealm(DOMAIN);
-        doReturn(zosmfInfo).when(output).getZosmfInfo(ZOSMF);
-
-        when(restTemplate.exchange(Mockito.anyString(),
-            Mockito.eq(HttpMethod.GET),
-            Mockito.any(),
-            Mockito.<Class<Object>>any()))
-            .thenReturn(new ResponseEntity<>(infoAnswer, new HttpHeaders(), HttpStatus.OK));*/
-
         return output;
     }
 

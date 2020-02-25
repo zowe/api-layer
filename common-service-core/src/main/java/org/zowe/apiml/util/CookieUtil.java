@@ -18,6 +18,14 @@ import org.apache.commons.lang.StringUtils;
 @UtilityClass
 public final class CookieUtil {
 
+    /**
+     * It replace or add cookie into header string value (see header with name "Cookie").
+     *
+     * @param cookieHeader original header string value
+     * @param name name of cookie to add or replace
+     * @param value value of cookie to add or replace
+     * @return new header string, which contains a new cookie
+     */
     public static String setCookie(String cookieHeader, String name, String value) {
         StringBuilder sb = new StringBuilder();
 
@@ -38,6 +46,14 @@ public final class CookieUtil {
         return sb.toString();
     }
 
+    /**
+     * It remove cookie from header value string (see header with name "Cookie") if exists. In case of missing
+     * cookie, it return original header value string.
+     *
+     * @param cookieHeader original header string value
+     * @param name name of cookie to remove
+     * @return new header string, without a specified cookie
+     */
     public static String removeCookie(String cookieHeader, String name) {
         StringBuilder sb = new StringBuilder();
 

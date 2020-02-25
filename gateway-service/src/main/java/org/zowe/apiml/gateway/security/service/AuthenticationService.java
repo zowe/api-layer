@@ -147,11 +147,23 @@ public class AuthenticationService {
         return Boolean.TRUE;
     }
 
+    /**
+     * Checks if jwtToken is in the list of invalidated tokens.
+     *
+     * @param jwtToken token to check
+     * @return true - token is invalidated, otherwise token is still valid
+     */
     @Cacheable(value = "invalidatedJwtTokens", unless = "true", key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean isInvalidated(String jwtToken) {
         return Boolean.FALSE;
     }
 
+    /**
+     * Method to translate original exception to internal one. It is used in case of parsing and verifying of JWT tokens.
+     *
+     * @param exception original exception
+     * @return translated exception (better messaging and allow subsequent handling)
+     */
     protected RuntimeException handleJwtParserException(RuntimeException exception) {
         if (exception instanceof ExpiredJwtException) {
             final ExpiredJwtException expiredJwtException = (ExpiredJwtException) exception;
@@ -178,6 +190,21 @@ public class AuthenticationService {
         }
     }
 
+    /**
+     * Method validate if jwtToken is valid or not. This method contains two types of verification:
+     * - Zowe
+     *   - it checks validity of signature
+     *   - it checks if token is not expired
+     *   - it checks if token was not removed (see logout)
+     * - z/OSMF
+     *   - it uses validation via REST directly in z/OSMF
+     *
+     * Method uses cache to speedup validation. In case of invalidating jwtToken in z/OSMF without Zowe, method
+     * can return still true until cache will expired or be evicted.
+     *
+     * @param jwtToken token to verification
+     * @return true if token is still valid, otherwise false
+     */
     @Cacheable(value = "validationJwtToken", key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
         QueryResponse queryResponse = parseJwtToken(jwtToken);

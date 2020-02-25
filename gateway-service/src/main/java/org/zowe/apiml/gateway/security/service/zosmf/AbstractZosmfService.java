@@ -58,10 +58,18 @@ public abstract class AbstractZosmfService implements ZosmfService {
         this.securityObjectMapper = securityObjectMapper;
     }
 
+    /**
+     * @return serviceId of z/OSMF service from configuration, which is used
+     */
     protected String getZosmfServiceId() {
         return authConfigurationProperties.validatedZosmfServiceId();
     }
 
+    /**
+     * Methods construct the value of authentication header by credentials
+     * @param authentication credentials to generates header value
+     * @return prepared header value (see header Authentication)
+     */
     protected String getAuthenticationValue(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
         final String password = authentication.getCredentials().toString();
@@ -92,6 +100,14 @@ public abstract class AbstractZosmfService implements ZosmfService {
             .orElseThrow(authenticationServiceExceptionSupplier);
     }
 
+    /**
+     * Method handles exception from REST call to z/OSMF into internal exception. It convert original exception into
+     * custom one with better messages and types for subsequent treatment.
+     *
+     * @param url URL of invoked REST endpoint
+     * @param re original exception
+     * @return translated exception
+     */
     protected RuntimeException handleExceptionOnCall(String url, RuntimeException re) {
         if (re instanceof ResourceAccessException) {
             apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getMessage());
@@ -130,6 +146,13 @@ public abstract class AbstractZosmfService implements ZosmfService {
             .orElse(null);
     }
 
+    /**
+     * Method reads authentication values from answer of REST call. It read all supported tokens, which are returned
+     * from z/OSMF.
+     *
+     * @param responseEntity answer of REST call
+     * @return AuthenticationResponse with all supported tokens from responseEntity
+     */
     protected AuthenticationResponse getAuthenticationResponse(ResponseEntity<String> responseEntity) {
         final List<String> cookies = responseEntity.getHeaders().get(HttpHeaders.SET_COOKIE);
         final EnumMap<TokenType, String> tokens = new EnumMap<>(TokenType.class);
