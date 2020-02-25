@@ -17,13 +17,11 @@ import org.zowe.apiml.product.version.BuildInfo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 @SpringBootApplication
 @EnableApiDiscovery
-@EnableConfigurationProperties
 @EnableWebSocket
 @EnableApimlLogger
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {

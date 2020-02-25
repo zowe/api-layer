@@ -1,10 +1,5 @@
-ext.springBootEnablers= [
-    'onboarding-enabler-spring'
-]
-
-ext.javaEnablers = [
-    'onboarding-enabler-java'
-]
+ext.springBootEnabler = 'onboarding-enabler-spring'
+ext.javaEnabler = 'onboarding-enabler-java'
 
 ext.javaLibraries = [
     'common-service-core',
@@ -15,10 +10,13 @@ ext.javaLibraries = [
 ]
 
 ext.serviceJars = [ 'zowe-install' ]
-ext.enablers = ext.springBootEnablers + ext.javaEnablers
+
+ext.enablers = [ext.javaEnabler, ext.springBootEnabler]
 ext.projectsToPublish = ext.serviceJars + ext.javaLibraries + ext.enablers
 
-ext.publishTasksList = projectsToPublish.collect { ":" + it + ":publish" }
+ext.publishTasksList = projectsToPublish.collect {
+    it.equals(springBootEnabler) ? "publishEnablers" : ":" + it + ":publish"
+}
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
     apply plugin: "maven"
@@ -43,7 +41,7 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
             mavenJava(MavenPublication) {
                 groupId 'org.zowe.apiml.sdk'
                 version rootProject.version
-                if (project.name in springBootEnablers) {
+                if (project.name.equals(springBootEnabler)) {
                     def enablerPrefix = project.hasProperty("enabler") ? project.getProperty("enabler") : "v2"
                     artifactId "${project.name}-" + enablerPrefix + "-springboot-${springBootVersion}"
                 } else {
@@ -80,19 +78,27 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
 
 //noinspection GroovyAssignabilityCheck
 task publishSdkArtifacts {
-    group 'Zowe Publishing'
-    description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
     doLast {
         println 'Published SDK libraries for main version of Spring Boot to Zowe Artifactory'
     }
+
+    group 'Zowe Publishing'
+    description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
+    dependsOn publishTasksList
 }
 
-task publishExternalServiceDependencies {
-    group 'External dependencies Publishing'
+task publishEnablerV1(type: Exec) {
+    def username  = project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
+    def password = project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
+
+    commandLine './gradlew', springBootEnabler + ':publish', '-Penabler=v1', '-Pzowe.deploy.username=' + username, '-Pzowe.deploy.password=' + password
+    mustRunAfter 'publishEnablerV2'
 }
 
-task publishEnabler {
-    dependsOn "onboarding-enabler-spring:publish"
+task publishEnablerV2 {
+    dependsOn springBootEnabler + ':publish'
 }
 
-publishSdkArtifacts.dependsOn publishTasksList
+task publishEnablers {
+    dependsOn 'publishEnablerV1', 'publishEnablerV2'
+}
