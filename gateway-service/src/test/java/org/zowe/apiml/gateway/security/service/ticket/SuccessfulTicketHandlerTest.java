@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.ticket;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.security.common.ticket.TicketRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -17,8 +19,6 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.PassTicketService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -26,9 +26,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.UnsupportedEncodingException;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX;
-import static org.junit.Assert.*;
+
 
 public class SuccessfulTicketHandlerTest {
     private static final String TOKEN = "token";
@@ -43,7 +44,7 @@ public class SuccessfulTicketHandlerTest {
     private final SuccessfulTicketHandler successfulTicketHandlerHandler = new SuccessfulTicketHandler(mapper, passTicketService, messageService);
     private final TokenAuthentication tokenAuthentication = new TokenAuthentication(USER, TOKEN);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         httpServletResponse.setStatus(HttpStatus.EXPECTATION_FAILED.value());
         assertNotEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
