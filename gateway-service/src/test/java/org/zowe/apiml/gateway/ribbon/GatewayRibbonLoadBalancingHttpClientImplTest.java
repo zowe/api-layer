@@ -8,6 +8,9 @@ package org.zowe.apiml.gateway.ribbon;/*
  * Copyright Contributors to the Zowe Project.
  */
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
@@ -25,8 +28,6 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
 import lombok.Getter;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -49,11 +49,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
     GatewayRibbonLoadBalancingHttpClientImplTest.Context.class,
     CacheConfig.class
@@ -180,7 +180,7 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
 
         Server server = createServer("localhost", 10014, false, true, "defaultZone");
         URI reconstructedURI = bean.reconstructURIWithServer(server, request);
-        assertEquals("URI is not same with expected", "http://localhost:10014/apicatalog/", reconstructedURI.toString());
+        assertEquals("http://localhost:10014/apicatalog/", reconstructedURI.toString(),"URI is not same with expected");
     }
 
     @Test
@@ -189,7 +189,7 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
 
         Server server = createServer("localhost", 10014, true, false, "defaultZone");
         URI reconstructedURI = bean.reconstructURIWithServer(server, request);
-        assertEquals("URI is not same with expected", "https://localhost:10014/apicatalog/", reconstructedURI.toString());
+        assertEquals("https://localhost:10014/apicatalog/", reconstructedURI.toString(),"URI is not same with expected");
     }
 
     private DiscoveryEnabledServer createServer(String host,
