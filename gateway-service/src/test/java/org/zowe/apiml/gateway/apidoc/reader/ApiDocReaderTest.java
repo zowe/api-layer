@@ -11,64 +11,69 @@ package org.zowe.apiml.gateway.apidoc.reader;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ApiDocReaderTest {
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void givenFileLocationAsANull_whenLoadIsCalled_thenThrowApiDocReaderException() {
-        expectedException.expectMessage("API doc location can't be null or empty");
-        expectedException.expect(ApiDocReaderException.class);
-
         ApiDocReader apiDocReader = new ApiDocReader();
-        apiDocReader.load(null);
+        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
+            apiDocReader.load(null);
+
+        });
+
+        assertEquals("API doc location can't be null or empty", exception.getMessage());
     }
 
 
     @Test
     public void givenEmptyFileLocation_whenLoadIsCalled_thenThrowApiDocReaderException() {
-        expectedException.expectMessage("API doc location can't be null or empty");
-        expectedException.expect(ApiDocReaderException.class);
-
         ApiDocReader apiDocReader = new ApiDocReader();
-        apiDocReader.load("");
+        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
+            apiDocReader.load("");
+
+        });
+
+        assertEquals("API doc location can't be null or empty", exception.getMessage());
     }
 
 
     @Test
     public void givenFileLocation_whenFileIsNotExist_thenThrowApiDocReaderException() {
-        expectedException.expectMessage("OpenAPI file does not exist");
-        expectedException.expect(ApiDocReaderException.class);
-
         ApiDocReader apiDocReader = new ApiDocReader();
-        apiDocReader.load("classpath:invalid-path.json");
+        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
+            apiDocReader.load("classpath:invalid-path.json");
+
+        });
+
+        assertEquals("OpenAPI file does not exist: classpath:invalid-path.json", exception.getMessage());
     }
 
 
     @Test
     public void givenFileLocationWithoutClassPathPrefix_whenFileIsNotExist_thenThrowApiDocReaderException() {
-        expectedException.expectMessage("OpenAPI file does not exist");
-        expectedException.expect(ApiDocReaderException.class);
-
         ApiDocReader apiDocReader = new ApiDocReader();
-        apiDocReader.load("invalid-path.json");
+        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
+            apiDocReader.load("invalid-path.json");
+
+        });
+
+        assertEquals("OpenAPI file does not exist: classpath:invalid-path.json", exception.getMessage());
     }
 
 
     @Test
     public void givenFileLocationWithInvalidJsonContent_whenLoadIsCalled_thenThrowApiDocReaderException() {
-        expectedException.expectMessage("OpenAPI content is not valid");
-        expectedException.expect(ApiDocReaderException.class);
-
         ApiDocReader apiDocReader = new ApiDocReader();
-        apiDocReader.load("api-doc-invalid-content.json");
+        Exception exception = assertThrows(ApiDocReaderException.class, () -> {
+            apiDocReader.load("api-doc-invalid-content.json");
+
+        });
+
+        assertEquals("OpenAPI content is not valid", exception.getMessage());
     }
 
     @Test
@@ -77,8 +82,8 @@ public class ApiDocReaderTest {
         OpenAPI actualOpenApi = apiDocReader.load("api-doc.json");
         OpenAPI expectedOpenApi = new OpenAPIV3Parser().read("api-doc.json");
 
-        assertNotNull("Open api object is null", actualOpenApi);
-        assertEquals("Open api object is not equal with expected", expectedOpenApi, actualOpenApi);
+        assertNotNull(actualOpenApi,"Open api object is null");
+        assertEquals(expectedOpenApi, actualOpenApi, "Open api object is not equal with expected");
     }
 
     @Test
@@ -87,7 +92,7 @@ public class ApiDocReaderTest {
         OpenAPI actualOpenApi = apiDocReader.load(" api-doc.json ");
         OpenAPI expectedOpenApi = new OpenAPIV3Parser().read("api-doc.json");
 
-        assertNotNull("Open api object is null", actualOpenApi);
-        assertEquals("Open api object is not equal with expected", expectedOpenApi, actualOpenApi);
+        assertNotNull(actualOpenApi, "Open api object is null");
+        assertEquals(expectedOpenApi, actualOpenApi, "Open api object is not equal with expected");
     }
 }
