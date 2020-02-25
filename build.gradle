@@ -93,6 +93,12 @@ subprojects {
        testImplementation libraries.mockito_jupiter
        testCompileOnly libraries.junit
        testRuntimeOnly libraries.junitVintage
+
+       testImplementation  'org.junit.platform:junit-platform-launcher:1.6.0'
+
+       //For Idea
+       testImplementation  'org.junit.platform:junit-platform-commons:1.6.0'
+       testImplementation  'org.junit.platform:junit-platform-engine:1.6.0'
    }
 }
 
