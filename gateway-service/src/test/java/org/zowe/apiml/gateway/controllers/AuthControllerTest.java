@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 public class AuthControllerTest {
 
     private MockMvc mockMvc;
@@ -32,7 +32,7 @@ public class AuthControllerTest {
     @Mock
     private AuthenticationService authenticationService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         AuthController authController = new AuthController(authenticationService);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();

@@ -9,6 +9,10 @@
 */
 package org.zowe.apiml.gateway.filters.pre;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
@@ -16,23 +20,19 @@ import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.CounterFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @Mock
@@ -47,11 +47,6 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     @Mock
     private AuthenticationService authenticationService;
 
-    @Before
-    public void init() throws Exception {
-        when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
-    }
-
     @Test
     public void testConfig() {
         assertEquals("pre", serviceAuthenticationFilter.filterType());
@@ -61,6 +56,8 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
 
     @Test
     public void testRun() throws Exception {
+        Mockito.when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
+
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         RequestContext requestContext = mock(RequestContext.class);

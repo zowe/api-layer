@@ -12,12 +12,10 @@ package org.zowe.apiml.gateway.security.login.dummy;
 
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,10 +23,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DummyAuthenticationProviderTest {
 
     private static final String PRINCIPAL = "user";
@@ -36,7 +34,7 @@ public class DummyAuthenticationProviderTest {
 
     private static DummyAuthenticationProvider dummyAuthenticationProvider;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         MonitoringHelper.initMocks();
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
@@ -45,8 +43,6 @@ public class DummyAuthenticationProviderTest {
         dummyAuthenticationProvider = new DummyAuthenticationProvider(encoder, userDetailsService, authenticationService);
     }
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
 
     @Test
     public void shouldReturnDummyToken() {
@@ -61,20 +57,19 @@ public class DummyAuthenticationProviderTest {
 
     @Test
     public void shouldThrowExceptionIfTokenNotValid() {
-        exception.expect(AuthenticationServiceException.class);
-        exception.expectMessage("A failure occurred when authenticating.");
-
-        dummyAuthenticationProvider.authenticate(null);
+        Exception exception = assertThrows(AuthenticationServiceException.class,
+            () -> dummyAuthenticationProvider.authenticate(null),
+            "Expected exception is not AuthenticationServiceException");
+        assertEquals("A failure occurred when authenticating.", exception.getMessage());
     }
 
     @Test
     public void shouldThrowExceptionIfCredentialsAreNull() {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, "sdsd");
 
-        exception.expect(BadCredentialsException.class);
-        exception.expectMessage("Username or password are invalid.");
-
-        dummyAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-
+        Exception exception = assertThrows(BadCredentialsException.class,
+            () -> dummyAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+        "Expected exception is not BadCredentialsException");
+        assertEquals("Username or password are invalid.", exception.getMessage());
     }
 }
