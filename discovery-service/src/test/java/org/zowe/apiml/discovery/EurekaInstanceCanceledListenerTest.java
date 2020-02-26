@@ -28,9 +28,9 @@ public class EurekaInstanceCanceledListenerTest {
         EurekaInstanceCanceledListener listener = new EurekaInstanceCanceledListener(notifier);
 
         listener.listen(createEvent("host:service:instance"));
-        verify(notifier, times(1)).serviceUpdated("service");
+        verify(notifier, times(1)).serviceUpdated("service", null);
         listener.listen(createEvent("unknown format"));
-        verify(notifier, times(1)).serviceUpdated(null);
+        verify(notifier, times(1)).serviceUpdated(null, null);
     }
 
 }
