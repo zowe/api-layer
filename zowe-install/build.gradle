@@ -7,7 +7,6 @@ configurations {
     catalogServiceJar
     discoveryServiceJar
     gatewayServiceJar
-    enablerSpringBootJar
     discoverableClientJar
     zip
 }
@@ -16,7 +15,6 @@ dependencies {
     catalogServiceJar(project(path: ":api-catalog-services", configuration: "bootArchives"))
     discoveryServiceJar(project(path: ":discovery-service", configuration: "bootArchives"))
     gatewayServiceJar(project(path: ":gateway-service", configuration: "bootArchives"))
-    enablerSpringBootJar(project(path: ":integration-enabler-spring-v1", configuration: "archives"))
     discoverableClientJar(project(path: ":discoverable-client", configuration: "bootArchives"))
 }
 
@@ -28,7 +26,6 @@ task packageApiMediationZowe(type: Zip) {
         from configurations.catalogServiceJar
         from configurations.discoveryServiceJar
         from configurations.gatewayServiceJar
-        from configurations.enablerSpringBootJar
         from configurations.discoverableClientJar
     }
 
