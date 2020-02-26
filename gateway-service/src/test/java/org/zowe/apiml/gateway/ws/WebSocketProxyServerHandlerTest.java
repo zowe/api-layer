@@ -10,83 +10,84 @@
 
 package org.zowe.apiml.gateway.ws;
 
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.ssl.SSLContexts;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.cloud.client.DefaultServiceInstance;
+import org.junit.jupiter.api.Test;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.WebSocketSession;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
-import javax.net.ssl.SSLContext;
 import java.net.URI;
-import java.security.cert.X509Certificate;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class WebSocketProxyServerHandlerTest {
-    private WebSocketSession session;
-    private WebSocketProxyServerHandler webSocketProxyServerHandler;
-    private SslContextFactory jettySslContextFactory;
-    private final DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-
+    private WebSocketProxyServerHandler underTest;
+    private DiscoveryClient discoveryClient;
+    private SslContextFactoryProvider sslContextFactoryProvider;
+    private WebSocketRoutedSessionFactory webSocketRoutedSessionFactory;
+    private Map<String, WebSocketRoutedSession> routedSessions;
 
     @BeforeEach
     public void setup() {
-        session = mock(WebSocketSession.class);
-//        session = new StandardWebSocketSession();
-//        jettySslContextFactory = mock(SslContextFactory.class);
-        jettySslContextFactory = new SslContextFactory();
-        webSocketProxyServerHandler = new WebSocketProxyServerHandler(discoveryClient, jettySslContextFactory);
+        discoveryClient = mock(DiscoveryClient.class);
+        sslContextFactoryProvider = mock(SslContextFactoryProvider.class);
+        routedSessions = new HashMap<>();
+        webSocketRoutedSessionFactory = mock(WebSocketRoutedSessionFactory.class);
+
+        underTest = new WebSocketProxyServerHandler(
+            discoveryClient,
+            sslContextFactoryProvider,
+            routedSessions,
+            webSocketRoutedSessionFactory
+        );
     }
 
-//    @Test
-    public void should() throws Exception {
-        jettySslContextFactory.setKeyStoreType("PKCS12");
-        jettySslContextFactory.setCertAlias("localhost");
-        jettySslContextFactory.setTrustStoreType("type");
-        jettySslContextFactory.setProtocol("SSL");
-        jettySslContextFactory.setKeyStorePath("src/test/resources/certs/keystore.jks");
-        jettySslContextFactory.setTrustStorePath("src/test/resources/certs/truststore.jks");
-        jettySslContextFactory.setKeyManagerFactoryAlgorithm("SunX509");
-        jettySslContextFactory.setTrustManagerFactoryAlgorithm("PKIX");
-        jettySslContextFactory.setKeyStorePassword("pass");
-        jettySslContextFactory.setTrustStorePassword("pass");
-        TrustStrategy acceptingTrustStrategy = new TrustStrategy() {
-            public boolean isTrusted(X509Certificate[] certificate, String authType) {
-                return true;
-            }
-        };
-        SSLContext sslContext = SSLContexts.custom()
-            .loadTrustMaterial(null, acceptingTrustStrategy).build();
-//        SSLContext sslContext = SSLContext.getInstance("SSL");
+    /**
+     * Happy Path
+     *
+     * The Handler is properly created
+     * Specified Route is added to the list
+     * The connection is established
+     * The URI contains the valid service Id
+     * The service associated with given URI is retrieved
+     * Proper WebSocketSession is stored.
+     */
+    @Test
+    public void givenValidRoute_whenTheConnectionIsEstablished_thenTheValidSessionIsStoredInternally() throws Exception {
+        RoutedServices routesForSpecificValidService = mock(RoutedServices.class);
+        when(routesForSpecificValidService.findServiceByGatewayUrl("ws/1"))
+            .thenReturn(new RoutedService("api-v1", "api/v1", "/api-v1/api/v1"));
+        ServiceInstance foundService = validServiceInstance();
+        when(webSocketRoutedSessionFactory.session(any(), any(), any())).thenReturn(mock(WebSocketRoutedSession.class));
+        when(discoveryClient.getInstances("api-v1")).thenReturn(Collections.singletonList(foundService));
+        underTest.addRoutedServices("api-v1", routesForSpecificValidService);
 
-        jettySslContextFactory.setSslContext(sslContext);
-//        when(session.isOpen()).thenReturn(true);
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(
-            new RoutedService("api-v1", "api/v1", "/service/api/v1"));
-        routedServices.addRoutedService(
-            new RoutedService("ui-v1", "ui/v1", "/service"));
-        routedServices.addRoutedService(
-            new RoutedService("ws-v1", "ws/v1", "/service/ws"));
-        WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+        WebSocketSession establishedSession = mock(WebSocketSession.class);
+        String establishedSessionId = "validAndUniqueId";
+        when(establishedSession.getId()).thenReturn(establishedSessionId);
+        when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/gateway/1/api-v1/api/v1"));
+        underTest.afterConnectionEstablished(establishedSession);
 
-        headers.add("X-Test", "value");
-        when(session.getUri()).thenReturn(new URI("/ws/v1/service/uppercase"));
-        when(discoveryClient.getInstances("service")).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, null)));
-        when(session.getHandshakeHeaders()).thenReturn(headers);
-        webSocketProxyServerHandler.addRoutedServices("service", routedServices);
-        webSocketProxyServerHandler.afterConnectionEstablished(session);
-        assertTrue(session.isOpen());
-
+        verify(webSocketRoutedSessionFactory, times(1)).session(any(), any(), any());
+        WebSocketRoutedSession preparedSession = routedSessions.get(establishedSessionId);
+        assertThat(preparedSession, is(notNullValue()));
     }
 
+    private ServiceInstance validServiceInstance() {
+        ServiceInstance validService = mock(ServiceInstance.class);
+        when(validService.getHost()).thenReturn("gatewayHost");
+        when(validService.isSecure()).thenReturn(true);
+        when(validService.getPort()).thenReturn(1443);
 
+        return validService;
+    }
 }
