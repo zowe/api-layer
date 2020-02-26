@@ -28,7 +28,7 @@ public class EurekaInstanceCanceledListener {
      */
     @EventListener
     public void listen(EurekaInstanceCanceledEvent event) {
-        gatewayNotifier.serviceUpdated(EurekaUtils.getServiceIdFromInstanceId(event.getServerId()));
+        gatewayNotifier.serviceUpdated(EurekaUtils.getServiceIdFromInstanceId(event.getServerId()), null);
     }
 
 }

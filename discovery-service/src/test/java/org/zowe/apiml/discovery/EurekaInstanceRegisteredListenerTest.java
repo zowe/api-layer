@@ -63,9 +63,9 @@ public class EurekaInstanceRegisteredListenerTest {
         EurekaInstanceRegisteredListener listener = new EurekaInstanceRegisteredListener(Mockito.mock(MetadataTranslationService.class), Mockito.mock(MetadataDefaultsService.class), notifier);
 
         listener.listen(createEvent("host:service:instance"));
-        verify(notifier, times(1)).serviceUpdated("service");
+        verify(notifier, times(1)).serviceUpdated("service", "host:service:instance");
         listener.listen(createEvent("unknown format"));
-        verify(notifier, times(1)).serviceUpdated(null);
+        verify(notifier, times(1)).serviceUpdated(null, "unknown format");
     }
 
 }

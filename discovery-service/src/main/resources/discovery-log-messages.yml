@@ -8,6 +8,16 @@ messages:
 
     # HTTP,Protocol messages
     # 400-499
+    - key: org.zowe.apiml.discovery.registration.gateway.notify
+      number: ZWEAD400
+      type: ERROR
+      text: "Cannot notify gateway on '%s' about new instance '%s'"
+      reason: "The discovery service tried to notify a gateway about instance updates, but REST call failed. It is used for update caches on gateway's side. Gateway might be down or a network problem happened."
+      action: "If gateway was restarted this message is expected, it doesn't require any other action, otherwise check
+      - if gateway is at the specified address.
+      - if URL is well-formed.
+      - if gateway is accessible from discovery's location.
+      Instance 'null' means any change (there is not specified instance)"
 
     # TLS,Certificate messages
     # 500-599
