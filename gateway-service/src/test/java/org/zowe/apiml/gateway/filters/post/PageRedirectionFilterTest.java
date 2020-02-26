@@ -65,14 +65,14 @@ public class PageRedirectionFilterTest {
         this.filter = new PageRedirectionFilter(this.discoveryClient, gatewayConfigProperties);
     }
 
-    /**
-     * <ul>Test the Location url which
-     * <li>contains the same host and port with current service</li>
-     * <li>can be matched to gateway url</li>
-     * </ul>
-     *
-     * @throws Exception
-     */
+    @Test
+    public void givenStatusCode302_whenShouldFilterCalled_thenPassFromFilter() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.setResponseStatusCode(302);
+        assertTrue(filter.shouldFilter());
+    }
+
+
     @Test
     public void sameServerAndUrlMatched() throws Exception {
         RoutedService currentService = new RoutedService("ui", "ui", "/");
@@ -100,12 +100,7 @@ public class PageRedirectionFilterTest {
             "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
     }
 
-    /**
-     * <ul>Test the Location url which
-     * <li>contains the same host and port with current service</li>
-     * <li>can not be matched to gateway url</li>
-     * </ul>
-     */
+
     @Test
     public void sameServerAndUrlNotMatched() {
         String serviceUrl = "/discoverableclient/api/v1";
@@ -134,15 +129,7 @@ public class PageRedirectionFilterTest {
         verifyLocationNotUpdated(locationHeader.map(Pair::second).orElse(null), location);
     }
 
-    /**
-     * <ul>Test the Location url which
-     * <li>does not contain the same host and port with current service</li>
-     * <li>host and port are registered in Discovery Service</li>
-     * <li>can be matched to gateway url</li>
-     * </ul>
-     *
-     * @throws Exception
-     */
+
     @Test
     public void hostRegisteredAndUrlMatched() throws Exception {
         //route for current service
@@ -182,13 +169,7 @@ public class PageRedirectionFilterTest {
             "/" + otherService.getGatewayUrl() + "/" + OTHER_SERVICE_ID + relativePath);
     }
 
-    /**
-     * <ul>Test the Location url which
-     * <li>does not contain the same host and port with current service</li>
-     * <li>host and port are NOT registered in Discovery Service</li>
-     * <li>can be matched to gateway url</li>
-     * </ul>
-     */
+
     @Test
     public void differentServerAndHostPortNotInDSAndLocationContainsGatewayURL() {
         //route for current service
@@ -227,13 +208,7 @@ public class PageRedirectionFilterTest {
         this.verifyLocationNotUpdated(locationHeader.map(Pair::second).orElse(null), location);
     }
 
-    /**
-     * <ul>Test the Location url which
-     * <li>ends with slash, such as: /discoverableclient/</li>
-     * </ul>
-     *
-     * @throws Exception
-     */
+
     @Test
     public void serviceUrlEndWithSlash() throws Exception {
         String serviceUrl = "/discoverableclient";
@@ -262,11 +237,7 @@ public class PageRedirectionFilterTest {
             "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
     }
 
-    /**
-     * Test matched url is cached
-     *
-     * @throws Exception
-     */
+
     @Test
     public void shouldUrlCached() throws Exception {
         //run filter the first time to put url to cache
@@ -310,16 +281,6 @@ public class PageRedirectionFilterTest {
 
         verifyLocationUpdatedSameServer(locationHeader.map(Pair::second).orElse(null), location,
             "/" + currentService.getGatewayUrl() + "/" + SERVICE_ID + relativePath);
-    }
-
-    @Test
-    public void shouldFilterIfStatusCodeIs3xx() {
-        String relativePath = "/some/path/login.html";
-        String location = mockLocationSameServer(relativePath);
-        final RequestContext ctx = RequestContext.getCurrentContext();
-        ctx.setResponseStatusCode(302);
-        ctx.addZuulResponseHeader(LOCATION, location);
-        assertTrue(filter.shouldFilter());
     }
 
     private String mockLocationSameServer(String relativeUrl) {

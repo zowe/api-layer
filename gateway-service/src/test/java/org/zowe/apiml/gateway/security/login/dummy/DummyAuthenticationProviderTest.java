@@ -57,9 +57,9 @@ public class DummyAuthenticationProviderTest {
 
     @Test
     public void shouldThrowExceptionIfTokenNotValid() {
-        Exception exception = assertThrows(AuthenticationServiceException.class, () -> {
-            dummyAuthenticationProvider.authenticate(null);
-        });
+        Exception exception = assertThrows(AuthenticationServiceException.class,
+            () -> dummyAuthenticationProvider.authenticate(null),
+            "Expected exception is not AuthenticationServiceException");
         assertEquals("A failure occurred when authenticating.", exception.getMessage());
     }
 
@@ -67,9 +67,9 @@ public class DummyAuthenticationProviderTest {
     public void shouldThrowExceptionIfCredentialsAreNull() {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, "sdsd");
 
-        Exception exception = assertThrows(BadCredentialsException.class, () -> {
-            dummyAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(BadCredentialsException.class,
+            () -> dummyAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+        "Expected exception is not BadCredentialsException");
         assertEquals("Username or password are invalid.", exception.getMessage());
     }
 }

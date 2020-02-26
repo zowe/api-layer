@@ -9,7 +9,6 @@
 */
 package org.zowe.apiml.gateway.filters.pre;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -48,11 +47,6 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     @Mock
     private AuthenticationService authenticationService;
 
-    @BeforeEach
-    public void init() throws Exception {
-        Mockito.lenient().when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
-    }
-
     @Test
     public void testConfig() {
         assertEquals("pre", serviceAuthenticationFilter.filterType());
@@ -62,6 +56,8 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
 
     @Test
     public void testRun() throws Exception {
+        Mockito.when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
+
         HttpServletRequest request = mock(HttpServletRequest.class);
 
         RequestContext requestContext = mock(RequestContext.class);

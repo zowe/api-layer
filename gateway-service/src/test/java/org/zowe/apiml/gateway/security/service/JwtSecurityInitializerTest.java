@@ -48,9 +48,10 @@ public class JwtSecurityInitializerTest {
     @Test
     public void shouldThrowExceptionIfTheKeysAreNull() {
         jwtSecurityInitializer = new JwtSecurityInitializer();
-        Exception exception = assertThrows(HttpsConfigError.class, () -> {
-            jwtSecurityInitializer.init();
-        });
+        Exception exception = assertThrows(HttpsConfigError.class,
+            () -> jwtSecurityInitializer.init(),
+            "Expected exception is not HttpsConfigError");
+
         assertEquals("Not found 'null' key alias in the keystore 'null'.", exception.getMessage());
     }
 

@@ -85,15 +85,15 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     }
 
     @Test
-    public void getExceptionWhenUserIdNotValid() throws AuthenticationException {
+    public void getExceptionWhenUserIdNotValid() {
         String applId = "applId";
 
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, applId);
         QueryResponse queryResponse = new QueryResponse("domain", UNKNOWN_USER, calendar.getTime(), calendar.getTime());
-        Exception exception = assertThrows(AuthenticationException.class, () -> {
-            httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
-        });
+        Exception exception = assertThrows(AuthenticationException.class,
+            () -> httpBasicPassTicketScheme.createCommand(authentication, queryResponse),
+            "Expected exception is not AuthenticationException");
         assertEquals((String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId)), exception.getMessage());
     }
 }

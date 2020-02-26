@@ -114,9 +114,9 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Exception exception = assertThrows(BadCredentialsException.class, () -> {
-            zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(BadCredentialsException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not BadCredentialsException");
         assertEquals("Username or password are invalid.", exception.getMessage());
 
     }
@@ -130,9 +130,9 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Exception exception = assertThrows(ServiceNotAccessibleException.class, () -> {
-            zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(ServiceNotAccessibleException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not ServiceNotAccessibleException");
         assertEquals("z/OSMF instance not found or incorrectly configured.", exception.getMessage());
 
     }
@@ -142,9 +142,9 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Exception exception = assertThrows(AuthenticationServiceException.class, () -> {
-            zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(AuthenticationServiceException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not AuthenticationServiceException");
         assertEquals("The parameter 'zosmfServiceId' is not configured.", exception.getMessage());
 
     }
@@ -168,9 +168,9 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Exception exception = assertThrows(AuthenticationServiceException.class, () -> {
-            zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(AuthenticationServiceException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not AuthenticationServiceException");
         assertEquals("z/OSMF domain cannot be read.", exception.getMessage());
 
     }
@@ -196,9 +196,9 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Exception exception = assertThrows(AuthenticationServiceException.class, () -> {
-            zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(AuthenticationServiceException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not AuthenticationServiceException");
         assertEquals("z/OSMF domain cannot be read.", exception.getMessage());
 
     }
@@ -223,9 +223,9 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Exception exception = assertThrows(BadCredentialsException.class, () -> {
-            zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(BadCredentialsException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not BadCredentialsException");
         assertEquals("Username or password are invalid.", exception.getMessage());
 
     }
@@ -250,8 +250,7 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Authentication tokenAuthentication
-            = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
+        Authentication tokenAuthentication = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
 
         assertTrue(tokenAuthentication.isAuthenticated());
         assertEquals(USERNAME, tokenAuthentication.getPrincipal());
@@ -271,9 +270,9 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Exception exception = assertThrows(AuthenticationServiceException.class, () -> {
-            zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(AuthenticationServiceException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not AuthenticationServiceException");
         assertEquals("A failure occurred when authenticating.", exception.getMessage());
 
 
@@ -293,9 +292,9 @@ public class ZosmfAuthenticationProviderTest {
         ZosmfAuthenticationProvider zosmfAuthenticationProvider
             = new ZosmfAuthenticationProvider(authConfigurationProperties, authenticationService, discovery, mapper, restTemplate);
 
-        Exception exception = assertThrows(ServiceNotAccessibleException.class, () -> {
-            zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
-        });
+        Exception exception = assertThrows(ServiceNotAccessibleException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not ServiceNotAccessibleException");
         assertEquals("Could not get an access to z/OSMF service.", exception.getMessage());
 
 

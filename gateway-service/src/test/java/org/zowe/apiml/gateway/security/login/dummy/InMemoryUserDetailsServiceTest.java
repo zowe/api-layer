@@ -49,9 +49,9 @@ public class InMemoryUserDetailsServiceTest {
 
     @Test
     public void shouldThrowExceptionIfUsernameNotFound() {
-        Exception exception = assertThrows(UsernameNotFoundException.class, () -> {
-            inMemoryUserDetailsService.loadUserByUsername("andrea");
-        });
+        Exception exception = assertThrows(UsernameNotFoundException.class,
+            () -> inMemoryUserDetailsService.loadUserByUsername("andrea"),
+            "Expected exception is not UsernameNotFoundException");
         assertEquals("Username: andrea not found.", exception.getMessage());
 
 

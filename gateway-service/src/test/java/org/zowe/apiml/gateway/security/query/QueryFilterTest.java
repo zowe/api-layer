@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.query;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
@@ -86,10 +85,9 @@ public class QueryFilterTest {
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
-        assertThrows(AuthMethodNotSupportedException.class, () -> {
-            queryFilter.attemptAuthentication(httpServletRequest,
-                httpServletResponse);
-        });
+        assertThrows(AuthMethodNotSupportedException.class,
+            () -> queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse),
+            "Expected exception is not AuthMethodNotSupportedException");
     }
 
     @Test
@@ -97,15 +95,9 @@ public class QueryFilterTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
-        assertThrows(TokenNotProvidedException.class, () -> {
-            queryFilter.attemptAuthentication(httpServletRequest,
-                httpServletResponse);
-        });
-
-        Mockito.lenient().when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
-            Optional.empty()
-        );
-
+        assertThrows(TokenNotProvidedException.class,
+            () -> queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse),
+            "Expected exception is not TokenNotProvidedException");
     }
 
     @Test
@@ -124,9 +116,9 @@ public class QueryFilterTest {
             HttpMethod.GET,
             true,
             authenticationManager);
-        assertThrows(InvalidCertificateException.class, () -> {
-            protectedQueryFilter.attemptAuthentication(httpServletRequest,
-                httpServletResponse);
-        });
+
+        assertThrows(InvalidCertificateException.class,
+            () -> protectedQueryFilter.attemptAuthentication(httpServletRequest, httpServletResponse),
+            "Expected exception is not InvalidCertificateException");
     }
 }
