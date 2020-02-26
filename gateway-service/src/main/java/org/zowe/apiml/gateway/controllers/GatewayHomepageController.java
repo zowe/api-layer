@@ -9,18 +9,17 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
-import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -29,7 +28,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  * Main page for Gateway, displaying status of Apiml services and build version information
  */
 @Controller
-@RequiredArgsConstructor
 public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
@@ -37,13 +35,24 @@ public class GatewayHomepageController {
     private final DiscoveryClient discoveryClient;
     private final AuthConfigurationProperties authConfigurationProperties;
 
+    private BuildInfo buildInfo;
     private String buildString;
 
-    @PostConstruct
-    private void init() {
-        initializeBuildInfos();
+    @Autowired
+    public GatewayHomepageController(DiscoveryClient discoveryClient,
+                                     AuthConfigurationProperties authConfigurationProperties) {
+       this(discoveryClient, authConfigurationProperties, new BuildInfo());
     }
 
+    public GatewayHomepageController(DiscoveryClient discoveryClient,
+                                     AuthConfigurationProperties authConfigurationProperties,
+                                     BuildInfo buildInfo) {
+        this.discoveryClient = discoveryClient;
+        this.authConfigurationProperties = authConfigurationProperties;
+        this.buildInfo = buildInfo;
+
+        initializeBuildInfos();
+    }
 
     @GetMapping("/")
     public String home(Model model) {
@@ -56,32 +65,34 @@ public class GatewayHomepageController {
     }
 
     private void initializeBuildInfos() {
-        BuildInfoDetails buildInfo = new BuildInfo().getBuildInfoDetails();
+        BuildInfoDetails buildInfoDetails = buildInfo.getBuildInfoDetails();
         buildString = "Build information is not available";
-        if (!buildInfo.getVersion().equalsIgnoreCase("unknown")) {
-            buildString = String.format("Version %s build # %s", buildInfo.getVersion(), buildInfo.getNumber());
+        if (!buildInfoDetails.getVersion().equalsIgnoreCase("unknown")) {
+            buildString = String.format("Version %s build # %s", buildInfoDetails.getVersion(), buildInfoDetails.getNumber());
         }
     }
 
     private void initializeDiscoveryAttributes(Model model) {
-        String discoveryStatusText;
-        String discoveryIconName;
+        String discoveryStatusText = null;
+        String discoveryIconName = null;
 
-        List<ServiceInstance> discoveryInstances = getInstancesById("discovery");
-        int discoveryCount = discoveryInstances.size();
-        switch (discoveryCount) {
-            case 0:
-                discoveryStatusText = "The Discovery Service is not running";
-                discoveryIconName = "danger";
-                break;
-            case 1:
-                discoveryStatusText = "The Discovery Service is running";
-                discoveryIconName = SUCCESS_ICON_NAME;
-                break;
-            default:
-                discoveryStatusText = discoveryCount + " Discovery Service instances are running";
-                discoveryIconName = SUCCESS_ICON_NAME;
-                break;
+        List<ServiceInstance> serviceInstances = discoveryClient.getInstances("discovery");
+        if (serviceInstances != null) {
+            int discoveryCount = serviceInstances.size();
+            switch (discoveryCount) {
+                case 0:
+                    discoveryStatusText = "The Discovery Service is not running";
+                    discoveryIconName = "danger";
+                    break;
+                case 1:
+                    discoveryStatusText = "The Discovery Service is running";
+                    discoveryIconName = SUCCESS_ICON_NAME;
+                    break;
+                default:
+                    discoveryStatusText = discoveryCount + " Discovery Service instances are running";
+                    discoveryIconName = SUCCESS_ICON_NAME;
+                    break;
+            }
         }
 
         model.addAttribute("discoveryStatusText", discoveryStatusText);
@@ -112,23 +123,21 @@ public class GatewayHomepageController {
         String catalogIconName = "warning";
         boolean linkEnabled = false;
 
-        List<ServiceInstance> catalogInstances = getInstancesById("apicatalog");
-        int catalogCount = catalogInstances.size();
-        if (catalogCount == 1) {
-            linkEnabled = true;
-            catalogIconName = SUCCESS_ICON_NAME;
-            catalogStatusText = "The API Catalog is running";
-            catalogLink = getCatalogLink(catalogInstances.get(0));
+        List<ServiceInstance> serviceInstances = discoveryClient.getInstances("apicatalog");
+        if (serviceInstances != null) {
+            long catalogCount = serviceInstances.size();
+            if (catalogCount == 1) {
+                linkEnabled = true;
+                catalogIconName = SUCCESS_ICON_NAME;
+                catalogStatusText = "The API Catalog is running";
+                catalogLink = getCatalogLink(serviceInstances.get(0));
+            }
         }
 
         model.addAttribute("catalogLink", catalogLink);
         model.addAttribute("catalogIconName", catalogIconName);
         model.addAttribute("linkEnabled", linkEnabled);
         model.addAttribute("catalogStatusText", catalogStatusText);
-    }
-
-    private List<ServiceInstance> getInstancesById(String serviceId) {
-        return this.discoveryClient.getInstances(serviceId);
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {

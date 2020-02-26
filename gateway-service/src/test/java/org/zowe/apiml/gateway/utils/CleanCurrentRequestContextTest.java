@@ -9,20 +9,20 @@
  */
 package org.zowe.apiml.gateway.utils;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Makes sure that only one test class derived from this class is using
  * RequestContext.getCurrentContext at a time.
  */
 public abstract class CleanCurrentRequestContextTest extends CurrentRequestContextTest {
-    @Before
+    @BeforeEach
     public void setup() {
         this.lockAndClearRequestContext();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.unlockRequestContext();
     }

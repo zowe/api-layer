@@ -9,6 +9,10 @@
  */
 package org.zowe.apiml.gateway.security.query;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -17,11 +21,7 @@ import org.zowe.apiml.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.EurekaClient;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,10 +33,10 @@ import java.security.Key;
 import java.security.KeyPair;
 import java.security.PublicKey;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class SuccessfulQueryHandlerTest {
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
@@ -59,7 +59,7 @@ public class SuccessfulQueryHandlerTest {
     @Mock
     private EurekaClient discoveryClient;
 
-    @Before
+    @BeforeEach
     public void setup() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();

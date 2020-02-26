@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.security.service.AuthenticationException;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
@@ -17,27 +19,21 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.passticket.PassTicketService;
 import com.netflix.zuul.context.RequestContext;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Calendar;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private HttpBasicPassTicketScheme httpBasicPassTicketScheme;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
-    @Before
+    @BeforeEach
     public void init() {
         PassTicketService passTicketService = new PassTicketService();
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
@@ -89,16 +85,15 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     }
 
     @Test
-    public void getExceptionWhenUserIdNotValid() throws AuthenticationException {
+    public void getExceptionWhenUserIdNotValid() {
         String applId = "applId";
 
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, applId);
         QueryResponse queryResponse = new QueryResponse("domain", UNKNOWN_USER, calendar.getTime(), calendar.getTime());
-
-        exceptionRule.expect(AuthenticationException.class);
-        exceptionRule.expectMessage(String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId));
-
-        httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
+        Exception exception = assertThrows(AuthenticationException.class,
+            () -> httpBasicPassTicketScheme.createCommand(authentication, queryResponse),
+            "Expected exception is not AuthenticationException");
+        assertEquals((String.format("Could not generate PassTicket for user ID %s and APPLID %s", UNKNOWN_USER, applId)), exception.getMessage());
     }
 }
