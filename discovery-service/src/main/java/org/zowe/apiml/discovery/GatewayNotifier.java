@@ -57,7 +57,7 @@ public class GatewayNotifier {
         final List<InstanceInfo> gatewayInstances = application.getInstances();
 
         for (final InstanceInfo instanceInfo : gatewayInstances) {
-            // dont notify service itself, it is not required
+            // don't notify service itself, it is not required
             if (StringUtils.equalsIgnoreCase(instanceId, instanceInfo.getInstanceId())) continue;
 
             final StringBuilder url = new StringBuilder();
@@ -67,7 +67,7 @@ public class GatewayNotifier {
             try {
                 restTemplate.delete(url.toString());
             } catch (Exception e) {
-                log.debug("Cannot notify gateway {} about {}", url.toString(), instanceId, e);
+                log.debug("Cannot notify the Gateway {} about {}", url.toString(), instanceId, e);
                 logger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
             }
         }
