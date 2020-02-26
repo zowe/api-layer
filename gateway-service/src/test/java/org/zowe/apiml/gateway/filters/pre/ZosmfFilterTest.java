@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
@@ -17,8 +17,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.context.RequestContext;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.Optional;
@@ -32,7 +32,7 @@ public class ZosmfFilterTest {
     private ZosmfFilter filter;
     private AuthenticationService authenticationService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.authenticationService = mock(AuthenticationService.class);
         this.filter = new ZosmfFilter(authenticationService);
