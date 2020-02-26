@@ -23,6 +23,7 @@ import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -39,12 +40,17 @@ public class GatewayNotifierTest {
         EurekaServerContextHolder.initialize(context);
     }
 
-    private InstanceInfo createInstanceInfo(String hostName, int port, int securePort) {
+    private InstanceInfo createInstanceInfo(String serviceId, String hostName, int port, int securePort) {
         InstanceInfo out = mock(InstanceInfo.class);
         when(out.getHostName()).thenReturn(hostName);
         when(out.getPort()).thenReturn(port);
         when(out.getSecurePort()).thenReturn(securePort);
+        when(out.getInstanceId()).thenReturn(hostName + ":" + serviceId + ":" + (securePort == 0 ? port : securePort));
         return out;
+    }
+
+    private InstanceInfo createInstanceInfo(String hostName, int port, int securePort) {
+        return createInstanceInfo("service", hostName, port, securePort);
     }
 
     @Test
@@ -64,11 +70,11 @@ public class GatewayNotifierTest {
         when(application.getInstances()).thenReturn(instances);
         when(registry.getApplication("GATEWAY")).thenReturn(application);
 
-        gatewayNotifier.serviceUpdated("testService");
+        gatewayNotifier.serviceUpdated("testService", null);
         verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services/testService");
         verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services/testService");
 
-        gatewayNotifier.serviceUpdated(null);
+        gatewayNotifier.serviceUpdated(null, null);
         verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services");
         verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services");
 
@@ -90,9 +96,42 @@ public class GatewayNotifierTest {
         when(registry.getApplication(anyString())).thenReturn(null);
         when(messageService.createMessage(messageKey)).thenReturn(m);
 
-        gatewayNotifier.serviceUpdated("serviceX");
+        gatewayNotifier.serviceUpdated("serviceX", null);
 
         verify(messageService, times(1)).createMessage(messageKey);
+    }
+
+    @Test
+    public void testNotificationFailed() {
+        RestTemplate restTemplate = mock(RestTemplate.class);
+        MessageService messageService = mock(MessageService.class);
+        MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
+        Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
+        when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
+        GatewayNotifier gatewayNotifier = new GatewayNotifier(restTemplate, messageService);
+        doThrow(new RuntimeException("any exception")).when(restTemplate).delete(anyString());
+        List<InstanceInfo> instances = new LinkedList<>();
+        Application application = mock(Application.class);
+        when(application.getInstances()).thenReturn(instances);
+        when(registry.getApplication("GATEWAY")).thenReturn(application);
+
+        // no gateway is registred
+        gatewayNotifier.serviceUpdated("service", "host:service:1433");
+        verify(restTemplate, never()).delete(anyString());
+
+        // notify gateway itself
+        instances.add(createInstanceInfo("GATEWAY","host", 1000, 1433));
+        gatewayNotifier.serviceUpdated("GATEWAY", "host:GATEWAY:1433");
+        verify(restTemplate, never()).delete(anyString());
+
+        // notify gateway and restTemplate failed
+        gatewayNotifier.serviceUpdated("service", "host2:service:123");
+        verify(restTemplate, times(1)).delete(anyString());
+        verify(messageService).createMessage(
+            "org.zowe.apiml.discovery.registration.gateway.notify",
+            "https://host:1433/cache/services/service",
+            "host2:service:123"
+        );
     }
 
 }
