@@ -8,6 +8,12 @@ messages:
 
     # HTTP,Protocol messages
     # 400-499
+    - key: org.zowe.apiml.discovery.registration.gateway.notify
+      number: ZWEAD400
+      type: ERROR
+      text: "Cannot notify Gateway on '%s' about new instance '%s'"
+      reason: "The Discovery Service tried to notify the Gateway about instance update, but the REST call failed. The purpose of this call is to update the Gateway caches. The Gateway might be down or a network problem occured."
+      action: "Ensure there are no network issues and the Gateway was not restarted. If the problem reoccurs, contact Broadcom support. "
 
     # TLS,Certificate messages
     # 500-599
