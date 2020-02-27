@@ -12,10 +12,10 @@ package org.zowe.apiml.gateway.ws;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -164,11 +164,25 @@ class WebSocketProxyServerHandlerTest {
         WebSocketSession establishedSession = mock(WebSocketSession.class);
         String validSessionId = "123";
         when(establishedSession.getId()).thenReturn(validSessionId);
-        routedSessions.put(validSessionId, Mockito.mock(WebSocketRoutedSession.class));
+        routedSessions.put(validSessionId, mock(WebSocketRoutedSession.class));
 
         underTest.afterConnectionClosed(establishedSession, normalClose);
 
         verify(establishedSession).close(normalClose);
         assertThat(routedSessions.entrySet(), hasSize(0));
+    }
+
+    @Test
+    public void givenValidSession_whenTheMessageIsReceived_thenTheMessageIsPassedToTheSession() throws Exception {
+        WebSocketSession establishedSession = mock(WebSocketSession.class);
+        String validSessionId = "123";
+        when(establishedSession.getId()).thenReturn(validSessionId);
+        WebSocketRoutedSession internallyStoredSession = mock(WebSocketRoutedSession.class);
+        routedSessions.put(validSessionId, internallyStoredSession);
+        WebSocketMessage<String> passedMessage = mock(WebSocketMessage.class);
+
+        underTest.handleMessage(establishedSession, passedMessage);
+
+        verify(internallyStoredSession).sendMessageToServer(passedMessage);
     }
 }
