@@ -1,18 +1,18 @@
 /* eslint-disable no-undef */
 
-import * as actions from './selected-service-actions'
 import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-constants';
+import {selectService, clearService} from "./selected-service-actions";
 
 describe('>>> Selected Service actions tests', () => {
     it('should return selected service', () => {
         const selectedService = {id: 'service'};
         const selectedTile = 'Tile';
         const expectedAction = {
-            type: 'SELECT_SERVICE',
+            type: SELECT_SERVICE,
             selectedService: {id: 'service'},
             selectedTile: 'Tile'
         };
-        expect(actions.selectService(selectedService, selectedTile)).toEqual(expectedAction);
+        expect(selectService(selectedService, selectedTile)).toEqual(expectedAction);
     });
 
     it('should return clear service', () => {
@@ -21,6 +21,6 @@ describe('>>> Selected Service actions tests', () => {
             selectedService: {},
             selectedTile: ""
         };
-        expect(actions.clearService()).toEqual(expectedAction);
+        expect(clearService()).toEqual(expectedAction);
     });
 });

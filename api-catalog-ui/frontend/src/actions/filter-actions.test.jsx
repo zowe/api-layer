@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 
-import * as actions from './filter-actions'
 import {CLEAR_FILTER, FILTER_TEXT} from "../constants/filter-constants";
+import {filterText, clear} from "./filter-actions";
 
 describe('>>> Selected Service actions tests', () => {
     it('should create actions to clear text', () => {
@@ -10,16 +10,16 @@ describe('>>> Selected Service actions tests', () => {
             defaultFilter: '',
         };
 
-        expect(actions.clear()).toEqual(expectedAction);
+        expect(clear()).toEqual(expectedAction);
     });
 
     it('should create actions to filter text', () => {
-        const expectedText = "sampleText"
+        const expectedText = "sampleText";
         const expectedAction = {
             type: FILTER_TEXT,
             text: expectedText,
         };
 
-        expect(actions.filterText(expectedText)).toEqual(expectedAction);
+        expect(filterText(expectedText)).toEqual(expectedAction);
     });
 });

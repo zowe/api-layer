@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-import { clear, filterText } from '../actions/filter-actions';
 import { CLEAR_FILTER, FILTER_TEXT } from '../constants/filter-constants';
 import filtersReducer from './filter-reducer';
 
