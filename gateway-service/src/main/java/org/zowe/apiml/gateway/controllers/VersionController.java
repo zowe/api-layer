@@ -20,6 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.product.version.VersionInfo;
 import org.zowe.apiml.product.version.VersionService;
 
+/**
+ * API for providing information about Zowe and API ML versions
+ */
+
 @Slf4j
 @AllArgsConstructor
 @RestController
