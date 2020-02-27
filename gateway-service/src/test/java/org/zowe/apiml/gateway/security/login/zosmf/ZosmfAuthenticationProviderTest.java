@@ -14,10 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -48,12 +44,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ZosmfAuthenticationProviderTest {
 
@@ -349,8 +341,6 @@ public class ZosmfAuthenticationProviderTest {
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
             "Expected exception is not ServiceNotAccessibleException");
         assertEquals("Could not get an access to z/OSMF service.", exception.getMessage());
-
-        zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
     }
 
     @Test

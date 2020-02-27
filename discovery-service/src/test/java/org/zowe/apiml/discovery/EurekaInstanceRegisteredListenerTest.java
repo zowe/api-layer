@@ -55,7 +55,7 @@ public class EurekaInstanceRegisteredListenerTest {
 
         verify(metadataTranslationService, times(1)).translateMetadata("serviceName", metadata);
         verify(metadataDefaultsService, times(1)).updateMetadata("serviceName", metadata);
-        verify(gatewayNotifier, times(1)).serviceUpdated("serviceName");
+        verify(gatewayNotifier, times(1)).serviceUpdated("serviceName", "1:serviceName:2");
     }
 
     private EurekaInstanceRegisteredEvent createEvent(String instanceId) {
