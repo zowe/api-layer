@@ -102,4 +102,20 @@ public class WebSocketRoutedSession {
             webSocketClientSession.close(status);
         }
     }
+
+    public String getServerRemoteAddress() {
+        return getWebSocketServerSession().getRemoteAddress().toString();
+    }
+
+    public String getServerUri() {
+        return getWebSocketServerSession().getUri().toString();
+    }
+
+    public String getClientUri() {
+        return getWebSocketClientSession().getUri().toString();
+    }
+
+    public String getClientId() {
+        return getWebSocketClientSession().getId();
+    }
 }

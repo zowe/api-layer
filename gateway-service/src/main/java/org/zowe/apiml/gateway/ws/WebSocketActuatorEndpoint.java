@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketSession;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,13 +36,16 @@ public class WebSocketActuatorEndpoint {
         List<Map<String, String>> result = new ArrayList<>();
 
         for (Entry<String, WebSocketRoutedSession> entry : webSocketProxyServerHandler.getRoutedSessions().entrySet()) {
+            WebSocketRoutedSession currentSession = entry.getValue();
+
             Map<String, String> map = new LinkedHashMap<>();
 
             map.put("sessionId", entry.getKey());
-            map.put("clientAddress", entry.getValue().getWebSocketServerSession().getRemoteAddress().toString());
-            map.put("gatewayPath", entry.getValue().getWebSocketServerSession().getUri().toString());
-            map.put("serviceUrl", entry.getValue().getWebSocketClientSession().getUri().toString());
-            map.put("serviceSessionId", entry.getValue().getWebSocketClientSession().getId());
+            map.put("clientAddress", currentSession.getServerRemoteAddress());
+            map.put("gatewayPath", currentSession.getServerUri());
+
+            map.put("serviceUrl", currentSession.getClientUri());
+            map.put("serviceSessionId", currentSession.getClientId());
 
             result.add(map);
         }
