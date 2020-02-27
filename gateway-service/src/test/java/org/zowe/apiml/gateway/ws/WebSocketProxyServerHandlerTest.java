@@ -12,8 +12,10 @@ package org.zowe.apiml.gateway.ws;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatcher;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -77,9 +79,47 @@ class WebSocketProxyServerHandlerTest {
         when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/gateway/1/api-v1/api/v1"));
         underTest.afterConnectionEstablished(establishedSession);
 
-        verify(webSocketRoutedSessionFactory, times(1)).session(any(), any(), any());
+        verify(webSocketRoutedSessionFactory).session(any(), any(), any());
         WebSocketRoutedSession preparedSession = routedSessions.get(establishedSessionId);
         assertThat(preparedSession, is(notNullValue()));
+    }
+
+    /**
+     * Error Path
+     *
+     * The Handler is properly created
+     * The connection is established
+     * The URI doesn't contain all needed parts
+     * The WebSocketSession is closed
+     */
+    @Test
+    public void givenInvalidURI_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsNotAcceptable() throws Exception {
+        WebSocketSession establishedSession = mock(WebSocketSession.class);
+        when(establishedSession.isOpen()).thenReturn(true);
+        when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/invalidUrl"));
+
+        underTest.afterConnectionEstablished(establishedSession);
+
+        verify(establishedSession).close(new CloseStatus(CloseStatus.NOT_ACCEPTABLE.getCode(), "Invalid URL format"));
+    }
+
+    /**
+     * Error Path
+     *
+     * The Handler is properly created
+     * The connection is established
+     * The URI contains the service Id for which there is no service
+     * The WebSocketSession is closed
+     */
+    @Test
+    public void givenInvalidRoute_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsNotAcceptable() throws Exception {
+        WebSocketSession establishedSession = mock(WebSocketSession.class);
+        when(establishedSession.isOpen()).thenReturn(true);
+        when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/api/v1/non_existent_service/api/v1"));
+
+        underTest.afterConnectionEstablished(establishedSession);
+
+        verify(establishedSession).close(new CloseStatus(CloseStatus.NOT_ACCEPTABLE.getCode(), "Requested service non_existent_service is not known by the gateway"));
     }
 
     private ServiceInstance validServiceInstance() {
