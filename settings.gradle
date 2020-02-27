@@ -2,7 +2,6 @@ rootProject.name = 'api-layer'
 
 include 'helloworld-jersey'
 include 'discovery-service'
-include 'integration-enabler-spring-v2'
 include 'apiml-utility'
 include 'apiml-common'
 include 'apiml-security-common'

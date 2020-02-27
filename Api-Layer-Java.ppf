@@ -32,8 +32,6 @@
 	<Source exclude="false" path="./helloworld-spring/src/test/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1-sample-app/src/main/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1-sample-app/src/test/java" web="false"/>
-	<Source exclude="false" path="./integration-enabler-spring-v2/src/main/java" web="false"/>
-	<Source exclude="false" path="./integration-enabler-spring-v2/src/test/java" web="false"/>
 	<Source exclude="false" path="./integration-tests/src/test/java" web="false"/>
 	<Source exclude="false" path="./security-service-client-spring/src/main/java" web="false"/>
 	<Source exclude="false" path="./security-service-client-spring/src/test/java" web="false"/>
