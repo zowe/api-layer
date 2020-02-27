@@ -51,7 +51,7 @@ public class ConfigReader {
                             .trustStorePassword("password")
                             .build();
 
-                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);
+                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
                         configuration = new EnvironmentConfiguration(
                             credentials,
                             gatewayServiceConfiguration,
