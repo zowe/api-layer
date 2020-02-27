@@ -26,7 +26,8 @@ import static org.hamcrest.core.Is.is;
 public class ZosmfSsoIntegrationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String BASE_PATH = "/api/zosmfca32";
+    private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
+    private final static String BASE_PATH = "/api/" + ZOSMF_SERVICE_ID;
     private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
 
     private String token;
