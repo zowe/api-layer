@@ -69,9 +69,9 @@ class WebSocketProxyServerHandlerTest {
         when(routesForSpecificValidService.findServiceByGatewayUrl("ws/1"))
             .thenReturn(new RoutedService("api-v1", "api/v1", "/api-v1/api/v1"));
         ServiceInstance foundService = validServiceInstance();
-        when(webSocketRoutedSessionFactory.session(any(), any(), any())).thenReturn(mock(WebSocketRoutedSession.class));
         when(discoveryClient.getInstances("api-v1")).thenReturn(Collections.singletonList(foundService));
         underTest.addRoutedServices("api-v1", routesForSpecificValidService);
+        when(webSocketRoutedSessionFactory.session(any(), any(), any())).thenReturn(mock(WebSocketRoutedSession.class));
 
         WebSocketSession establishedSession = mock(WebSocketSession.class);
         String establishedSessionId = "validAndUniqueId";
@@ -82,6 +82,15 @@ class WebSocketProxyServerHandlerTest {
         verify(webSocketRoutedSessionFactory).session(any(), any(), any());
         WebSocketRoutedSession preparedSession = routedSessions.get(establishedSessionId);
         assertThat(preparedSession, is(notNullValue()));
+    }
+
+    private ServiceInstance validServiceInstance() {
+        ServiceInstance validService = mock(ServiceInstance.class);
+        when(validService.getHost()).thenReturn("gatewayHost");
+        when(validService.isSecure()).thenReturn(true);
+        when(validService.getPort()).thenReturn(1443);
+
+        return validService;
     }
 
     /**
@@ -122,12 +131,29 @@ class WebSocketProxyServerHandlerTest {
         verify(establishedSession).close(new CloseStatus(CloseStatus.NOT_ACCEPTABLE.getCode(), "Requested service non_existent_service is not known by the gateway"));
     }
 
-    private ServiceInstance validServiceInstance() {
-        ServiceInstance validService = mock(ServiceInstance.class);
-        when(validService.getHost()).thenReturn("gatewayHost");
-        when(validService.isSecure()).thenReturn(true);
-        when(validService.getPort()).thenReturn(1443);
+    /**
+     * Error Path
+     *
+     * The Handler is properly created
+     * Specified Route is added to the list
+     * The connection is established
+     * The URI contains the valid service Id
+     * The service associated with given URI is retrieved
+     * The service isn't available in the Discovery Service
+     * Proper WebSocketSession is stored.
+     */
+    @Test
+    public void givenNoInstanceOfTheServiceIsInTheRepository_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsServiceRestarted() throws Exception {
+        WebSocketSession establishedSession = mock(WebSocketSession.class);
+        when(establishedSession.isOpen()).thenReturn(true);
+        when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/api/v1/api-v1/api/v1"));
+        RoutedServices routesForSpecificValidService = mock(RoutedServices.class);
+        when(routesForSpecificValidService.findServiceByGatewayUrl("ws/v1"))
+            .thenReturn(new RoutedService("api-v1", "api/v1", "/api-v1/api/v1"));
+        underTest.addRoutedServices("api-v1", routesForSpecificValidService);
 
-        return validService;
+        underTest.afterConnectionEstablished(establishedSession);
+
+        verify(establishedSession).close(new CloseStatus(CloseStatus.SERVICE_RESTARTED.getCode(), "Requested service api-v1 does not have available instance"));
     }
 }
