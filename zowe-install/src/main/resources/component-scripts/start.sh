@@ -19,6 +19,7 @@
 # - DISCOVERY_PORT - The port the data sets server will use
 # - KEY_ALIAS
 # - KEYSTORE - The keystore to use for SSL certificates
+# - KEYSTORE_TYPE - The keystore type to use for SSL certificates
 # - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
 # - KEY_ALIAS - The alias of the key within the keystore
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
@@ -53,12 +54,12 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
-    -Dserver.ssl.keyStoreType=PKCS12 \
+    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
     -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
-    -Dserver.ssl.trustStoreType=PKCS12 \
+    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/discovery-service.jar" &
@@ -81,12 +82,12 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
-    -Dserver.ssl.keyStoreType=PKCS12 \
+    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
     -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
-    -Dserver.ssl.trustStoreType=PKCS12 \
+    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/api-catalog-services.jar" &
@@ -110,12 +111,12 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
-    -Dserver.ssl.keyStoreType=PKCS12 \
+    -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.keyStorePassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.keyAlias=${KEY_ALIAS} \
     -Dserver.ssl.keyPassword=${KEYSTORE_PASSWORD} \
     -Dserver.ssl.trustStore=${TRUSTSTORE} \
-    -Dserver.ssl.trustStoreType=PKCS12 \
+    -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -jar ${ROOT_DIR}"/components/api-mediation/gateway-service.jar" &
