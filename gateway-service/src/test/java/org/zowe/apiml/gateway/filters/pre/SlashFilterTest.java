@@ -11,14 +11,14 @@ package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.util.Pair;
 import com.netflix.zuul.context.RequestContext;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PROXY_KEY;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
@@ -26,7 +26,7 @@ public class SlashFilterTest {
 
     private SlashFilter filter;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         this.filter = new SlashFilter();
         RequestContext ctx = RequestContext.getCurrentContext();

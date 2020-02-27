@@ -20,10 +20,10 @@ import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 
 import java.util.List;
@@ -41,7 +41,7 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 public class SecurityTokenErrorCheckTest {
 
     private static SecurityTokenErrorCheck securityTokenErrorCheck;
@@ -49,12 +49,12 @@ public class SecurityTokenErrorCheckTest {
     @Autowired
     private MessageService messageService;
 
-    @BeforeClass
+    @BeforeAll
     public static void initMocks() {
         MonitoringHelper.initMocks();
     }
 
-    @Before
+    @BeforeEach
     public void setup() {
         securityTokenErrorCheck = new SecurityTokenErrorCheck(messageService);
     }

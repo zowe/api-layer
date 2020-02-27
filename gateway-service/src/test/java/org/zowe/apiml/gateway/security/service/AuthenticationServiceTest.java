@@ -10,6 +10,18 @@
 package org.zowe.apiml.gateway.security.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.security.SecurityUtils;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
@@ -47,10 +59,10 @@ import java.security.PublicKey;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
     CacheConfig.class,
     AuthenticationServiceTest.Context.class
@@ -117,7 +129,7 @@ public class AuthenticationServiceTest {
         return EurekaUtils.getUrl(instanceInfo);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         mockJwtSecurityInitializer();
     }
@@ -130,10 +142,12 @@ public class AuthenticationServiceTest {
         assertEquals("java.lang.String", jwtToken.getClass().getName());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldThrowExceptionWithNullSecret() {
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(null);
-        authService.createJwtToken(USER, DOMAIN, LTPA);
+        assertThrows(IllegalArgumentException.class, () -> {
+            authService.createJwtToken(USER, DOMAIN, LTPA);
+        });
     }
 
     @Test
@@ -148,28 +162,36 @@ public class AuthenticationServiceTest {
         assertTrue(jwtValidation.isAuthenticated());
     }
 
-    @Test(expected = TokenNotValidException.class)
+    @Test
     public void shouldThrowExceptionWhenTokenIsInvalid() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         String brokenToken = jwtToken + "not";
         TokenAuthentication token = new TokenAuthentication(brokenToken);
-        authService.validateJwtToken(token);
+        assertThrows(TokenNotValidException.class, () -> {
+            authService.validateJwtToken(token);
+        });
     }
 
-    @Test(expected = TokenExpireException.class)
+    @Test
     public void shouldThrowExceptionWhenTokenIsExpired() {
         TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
-        authService.validateJwtToken(token);
+        assertThrows(TokenExpireException.class, () -> {
+            authService.validateJwtToken(token);
+        });
     }
 
-    @Test(expected = TokenNotValidException.class)
+    @Test
     public void shouldThrowExceptionWhenOccurUnexpectedException() {
-        authService.validateJwtToken((String) null);
+        assertThrows(TokenNotValidException.class, () -> {
+            authService.validateJwtToken((String) null);
+        });
     }
 
-    @Test(expected = TokenNotValidException.class)
+    @Test
     public void shouldThrowExceptionWhenOccurUnexpectedException2() {
-        authService.validateJwtToken((TokenAuthentication) null);
+        assertThrows(TokenNotValidException.class, () -> {
+            authService.validateJwtToken((TokenAuthentication) null);
+        });
     }
 
     @Test
@@ -223,16 +245,20 @@ public class AuthenticationServiceTest {
         assertEquals(LTPA, authService.getLtpaTokenWithValidation(jwtToken));
     }
 
-    @Test(expected = TokenNotValidException.class)
+    @Test
     public void shouldThrowExceptionWhenTokenIsInvalidWhileExtractingLtpa() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         String brokenToken = jwtToken + "not";
-        authService.getLtpaTokenWithValidation(brokenToken);
+        assertThrows(TokenNotValidException.class, () -> {
+            authService.getLtpaTokenWithValidation(brokenToken);
+        });
     }
 
-    @Test(expected = TokenExpireException.class)
+    @Test
     public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
-        authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey));
+        assertThrows(TokenExpireException.class, () -> {
+            authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey));
+        });
     }
 
     private String createExpiredJwtToken(Key secretKey) {

@@ -9,18 +9,17 @@
  */
 package org.zowe.apiml.gateway.filters.post;
 
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContextTest {

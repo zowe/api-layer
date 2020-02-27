@@ -15,8 +15,6 @@ import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
 import com.netflix.discovery.CacheRefreshedEvent;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.Arrays;
@@ -24,7 +22,6 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(JUnit4.class)
 public class ServiceCacheEvictorTest {
 
     private ServiceCacheEvictor serviceCacheEvictor;

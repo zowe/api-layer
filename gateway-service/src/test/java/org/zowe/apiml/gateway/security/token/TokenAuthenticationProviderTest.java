@@ -10,23 +10,25 @@
 
 package org.zowe.apiml.gateway.security.token;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.junit.Before;
-import org.junit.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class TokenAuthenticationProviderTest {
     private AuthenticationService tokenService;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         tokenService = mock(AuthenticationService.class);
     }

@@ -8,10 +8,11 @@ package org.zowe.apiml.gateway.security.service.schema;/*
  * Copyright Contributors to the Zowe Project.
  */
 
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class ByPassSchemeTest {
 

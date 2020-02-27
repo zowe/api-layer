@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.security;
 
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
-import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +24,9 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -82,8 +82,13 @@ public class HttpsFactory {
 
     private SSLContext createIgnoringSslContext() {
         try {
-            return new SSLContextBuilder().loadTrustMaterial(null, (certificate, authType) -> true).setProtocol(config.getProtocol()).build();
-        } catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+            KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            emptyKeystore.load(null, null);
+            return new SSLContextBuilder()
+                .loadTrustMaterial(null, (certificate, authType) -> true)
+                .loadKeyMaterial(emptyKeystore, null)
+                .setProtocol(config.getProtocol()).build();
+        } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.common.errorInitSsl", e.getMessage());
             throw new HttpsConfigError("Error initializing SSL/TLS context: " + e.getMessage(), e,
                     ErrorCode.SSL_CONTEXT_INITIALIZATION_FAILED, config);
