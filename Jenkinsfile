@@ -305,17 +305,10 @@ pipeline {
 
         success {
             archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'api-catalog-services/build/pom.xml'
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'discovery-service/build/pom.xml'
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'gateway-service/build/pom.xml'
-            archiveArtifacts artifacts: 'integration-enabler-spring-v1/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'integration-enabler-spring-v2/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'common-service-core/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'apiml-common/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
 
             withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {
