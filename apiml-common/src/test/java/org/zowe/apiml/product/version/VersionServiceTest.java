@@ -16,6 +16,7 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -27,31 +28,40 @@ public class VersionServiceTest {
     private static final String NO_VERSION = "Build information is not available";
     private static final String ZOWE_MANIFEST_FIELD = "zoweManifest";
 
-    private BuildInfoDetails buildInfo;
     private VersionService versionService;
 
     @Before
     public void setup() {
-        buildInfo = mock(BuildInfoDetails.class);
+        BuildInfo buildInfo = mock(BuildInfo.class);
+        BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
+        when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
         versionService = new VersionService(buildInfo);
         versionService.clearVersionInfo();
     }
 
     @Test
     public void shouldReturnApimlVersion() {
-        when(buildInfo.getVersion()).thenReturn("1.4.0-SNAPSHOT");
-        when(buildInfo.getNumber()).thenReturn("n/a");
-        when(buildInfo.getCommitId()).thenReturn("953f26e");
+        BuildInfo buildInfo = mock(BuildInfo.class);
+
+        Properties buildProperties = new Properties();
+        buildProperties.setProperty("build.version", "0.0.0");
+        buildProperties.setProperty("build.number", "000");
+
+        Properties gitProperties = new Properties();
+        gitProperties.setProperty("git.commit.id.abbrev", "1a3b5c7");
+
+        BuildInfoDetails buildInfoDetails = new BuildInfoDetails(buildProperties, gitProperties);
+        when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
+
+        VersionService versionService = new VersionService(buildInfo);
 
         VersionInfo version = versionService.getVersion();
         assertNotNull(version.getApimlVersion());
-        assertEquals("1.4.0-SNAPSHOT build #n/a (953f26e)", version.getApimlVersion());
+        assertEquals("0.0.0 build #000 (1a3b5c7)", version.getApimlVersion());
     }
 
     @Test
     public void shouldReturnBuildUnavailableInApimlVersionWhenNoVersion() {
-        when(buildInfo.getVersion()).thenReturn("unknown");
-
         VersionInfo version = versionService.getVersion();
         assertNotNull(version.getApimlVersion());
         assertEquals(NO_VERSION, version.getApimlVersion());
@@ -64,7 +74,6 @@ public class VersionServiceTest {
             fail();
         }
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
-        when(buildInfo.getVersion()).thenReturn("unknown");
 
         VersionInfo version = versionService.getVersion();
         assertNotNull(version.getZoweVersion());
@@ -78,7 +87,6 @@ public class VersionServiceTest {
             fail();
         }
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
-        when(buildInfo.getVersion()).thenReturn("unknown");
 
         VersionInfo version = versionService.getVersion();
         assertNotNull(version.getZoweVersion());
@@ -92,7 +100,6 @@ public class VersionServiceTest {
             fail();
         }
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
-        when(buildInfo.getVersion()).thenReturn("unknown");
 
         VersionInfo version = versionService.getVersion();
         assertNotNull(version.getZoweVersion());
@@ -102,7 +109,6 @@ public class VersionServiceTest {
     @Test
     public void shouldReturnBuildUnavailableInZoweVersionWhenFileNotFound() {
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, "zowe-manifesto.json");
-        when(buildInfo.getVersion()).thenReturn("unknown");
 
         VersionInfo version = versionService.getVersion();
         assertNotNull(version.getZoweVersion());

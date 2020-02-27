@@ -10,6 +10,7 @@
 package org.zowe.apiml.product.version;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,16 +33,16 @@ public class VersionService {
     private static final String NO_VERSION = "Build information is not available";
     private static final VersionInfo version = new VersionInfo();
 
-    private final BuildInfoDetails buildInfo;
+    private final BuildInfo buildInfo;
 
     @Value("${apiml.zoweManifest:#{null}}")
     private String zoweManifest;
 
     public VersionService() {
-        buildInfo = new BuildInfo().getBuildInfoDetails();
+        buildInfo = new BuildInfo();
     }
 
-    public VersionService(BuildInfoDetails buildInfo) {
+    public VersionService(BuildInfo buildInfo) {
         this.buildInfo = buildInfo;
     }
 
@@ -72,9 +73,10 @@ public class VersionService {
      * @return the version, build and commit numbers in one string
      */
     private String getApimlVersion() {
+        BuildInfoDetails buildInfoDetails = buildInfo.getBuildInfoDetails();
         String apimlVersion = NO_VERSION;
-        if (!buildInfo.getVersion().equalsIgnoreCase("unknown")) {
-            apimlVersion = String.format("%s build #%s (%s)", buildInfo.getVersion(), buildInfo.getNumber(), buildInfo.getCommitId());
+        if (!buildInfoDetails.getVersion().equalsIgnoreCase("unknown")) {
+            apimlVersion = String.format("%s build #%s (%s)", buildInfoDetails.getVersion(), buildInfoDetails.getNumber(), buildInfoDetails.getCommitId());
         }
         return apimlVersion;
     }
@@ -85,28 +87,10 @@ public class VersionService {
      * @return the version and build numbers in one string
      */
     private String getZoweVersion(String manifestJsonFile) {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         try {
             String manifestJson = FileUtils.readFile(manifestJsonFile);
             if (manifestJson != null) {
-                ObjectNode objectNode = mapper.readValue(manifestJson, ObjectNode.class);
-                JsonNode versionNode = objectNode.get("version");
-                if (versionNode != null && !versionNode.asText().isEmpty()) {
-                    StringBuilder zoweVersion = new StringBuilder();
-                    zoweVersion.append(versionNode.asText());
-                    String buildNumber = "n/a";
-                    JsonNode buildNode = objectNode.get("build");
-                    if (buildNode != null) {
-                        JsonNode buildNumberNode = buildNode.get("number");
-                        if (buildNumberNode != null && StringUtils.isNotEmpty(buildNumberNode.asText())) {
-                            buildNumber = buildNumberNode.asText();
-                        }
-                    }
-                    zoweVersion.append(" build #");
-                    zoweVersion.append(buildNumber);
-                    return zoweVersion.toString();
-                }
+                return retrieveZoweVersionFromJson(manifestJson);
             } else {
                 log.debug("File have not found in provided location: {}", manifestJsonFile);
             }
@@ -114,6 +98,35 @@ public class VersionService {
             log.debug("Error in reading the file {}: {}", manifestJsonFile, e.getMessage());
         }
         return NO_VERSION;
+    }
+
+    private String retrieveZoweVersionFromJson(String manifestJson) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        try {
+            ObjectNode manifestNode = mapper.readValue(manifestJson, ObjectNode.class);
+            JsonNode versionNode = manifestNode.get("version");
+            if (versionNode != null && !versionNode.asText().isEmpty()) {
+                return versionNode.asText() +
+                    " build #" +
+                    retrieveZoweBuildNumber(manifestNode);
+            }
+        } catch (JsonProcessingException e) {
+            log.debug("Error in parsing Zowe build manifest.json file: {}", e.getMessage());
+        }
+        return NO_VERSION;
+    }
+
+    private String retrieveZoweBuildNumber(ObjectNode manifestNode) {
+        String buildNumber = "n/a";
+        JsonNode buildNode = manifestNode.get("build");
+        if (buildNode != null) {
+            JsonNode buildNumberNode = buildNode.get("number");
+            if (buildNumberNode != null && StringUtils.isNotEmpty(buildNumberNode.asText())) {
+                buildNumber = buildNumberNode.asText();
+            }
+        }
+        return buildNumber;
     }
 
     public void clearVersionInfo() {

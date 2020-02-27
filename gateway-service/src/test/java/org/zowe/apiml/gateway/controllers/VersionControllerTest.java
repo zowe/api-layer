@@ -39,7 +39,7 @@ public class VersionControllerTest {
     }
 
     @Test
-    public void callVersionEndpoint() throws Exception {
+    public void givenSpecificVersions_whenVersionEndpointCalled_thenVersionInfoShouldBeGivenInSuccessfulResponse() throws Exception {
         Mockito.when(versionService.getVersion()).thenReturn(getDummyVersionInfo());
         this.mockMvc.perform(get("/version"))
             .andExpect(status().isOk())
