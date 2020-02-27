@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.ws;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.web.socket.CloseStatus;
@@ -27,6 +28,7 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -154,5 +156,19 @@ class WebSocketProxyServerHandlerTest {
         underTest.afterConnectionEstablished(establishedSession);
 
         verify(establishedSession).close(new CloseStatus(CloseStatus.SERVICE_RESTARTED.getCode(), "Requested service api-v1 does not have available instance"));
+    }
+
+    @Test
+    public void givenValidSession_whenTheConnectionIsClosed_thenTheSessionIsClosedAndRemovedFromRepository() throws Exception {
+        CloseStatus normalClose = CloseStatus.NORMAL;
+        WebSocketSession establishedSession = mock(WebSocketSession.class);
+        String validSessionId = "123";
+        when(establishedSession.getId()).thenReturn(validSessionId);
+        routedSessions.put(validSessionId, Mockito.mock(WebSocketRoutedSession.class));
+
+        underTest.afterConnectionClosed(establishedSession, normalClose);
+
+        verify(establishedSession).close(normalClose);
+        assertThat(routedSessions.entrySet(), hasSize(0));
     }
 }
