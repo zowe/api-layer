@@ -2,9 +2,9 @@ import userConstants from '../constants/user-constants';
 
 const sessionDefaultState = {
     sessionOn: false,
-}
+};
 
-function authenticationReducer(state=sessionDefaultState, action) {
+function authenticationReducer(action, state=sessionDefaultState) {
     switch (action.type) {
         case userConstants.USERS_LOGIN_REQUEST:
             return {

@@ -56,8 +56,8 @@ function logout() {
 }
 
 function authenticationFailure(error) {
-    function failure(error) {
-        return { type: userConstants.AUTHENTICATION_FAILURE, error };
+    function failure(err) {
+        return { type: userConstants.AUTHENTICATION_FAILURE, err };
     }
     return dispatch => {
         dispatch(failure(error));
