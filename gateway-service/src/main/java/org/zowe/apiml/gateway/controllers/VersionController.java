@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.product.version.VersionInfo;
-import org.zowe.apiml.product.version.VersionService;
+import org.zowe.apiml.product.version.Versions;
 
 /**
  * API for providing information about Zowe and API ML versions
@@ -30,10 +30,10 @@ import org.zowe.apiml.product.version.VersionService;
 @RequestMapping("/")
 public class VersionController {
 
-    private VersionService versionService;
+    private Versions versions;
 
     @GetMapping(value = "/version", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<VersionInfo> getVersion() {
-        return new ResponseEntity<>(versionService.getVersion(), HttpStatus.OK);
+        return new ResponseEntity<>(versions.getVersion(), HttpStatus.OK);
     }
 }

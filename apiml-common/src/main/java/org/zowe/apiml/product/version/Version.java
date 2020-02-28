@@ -18,7 +18,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class VersionInfo {
-    private Version zowe;
-    private Version apiMl;
+public class Version {
+    String version;
+    String buildNumber;
+    String commitHash;
 }

@@ -9,16 +9,34 @@
  */
 package org.zowe.apiml.product.version;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class VersionInfo {
-    private Version zowe;
-    private Version apiMl;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ZoweManifestBuildInfo {
+    String name;
+    String version;
+    String license;
+    Build build;
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+class Build {
+    String branch;
+    String number;
+    String commitHash;
+    Long timestamp;
 }

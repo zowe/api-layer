@@ -9,16 +9,10 @@
  */
 package org.zowe.apiml.product.version;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class VersionInfo {
-    private Version zowe;
-    private Version apiMl;
+public interface VersionProducer {
+    /**
+     * Produce version usable for further usage by the automation.
+     * @return Relevant Version.
+     */
+    Version version();
 }
