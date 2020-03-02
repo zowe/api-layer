@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.hwsjersey.listener;
+package org.zowe.apiml.hwsjersey;
 
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
@@ -18,16 +18,18 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
 @Slf4j
-public class ApiDiscoveryListener implements ServletContextListener {
+@WebListener
+public class HelloJerseyListener implements ServletContextListener {
     private ApiMediationClient apiMediationClient;
 
-    public ApiDiscoveryListener() {
+    public HelloJerseyListener() {
         this.apiMediationClient = new ApiMediationClientImpl();
     }
 
-    public ApiDiscoveryListener(ApiMediationClient apiMediationClient) {
+    public HelloJerseyListener(ApiMediationClient apiMediationClient) {
         this.apiMediationClient = apiMediationClient;
     }
 
@@ -46,15 +48,10 @@ public class ApiDiscoveryListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-
         if (apiMediationClient != null) {
             apiMediationClient.unregister();
         }
+
         apiMediationClient = null;
     }
-
-    public ApiMediationClient getApiMediationClient() {
-        return apiMediationClient;
-    }
-
 }

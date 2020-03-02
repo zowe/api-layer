@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.hwsjersey.resource;
+package org.zowe.apiml.hwsjersey.greeting;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,14 +25,14 @@ import javax.ws.rs.core.Response;
 
 import java.util.Date;
 
-@Path("/api/v1")
+@Path("/api/v1/greeting")
 @Tag(name = "Greeting", description = "Greeting Controller")
 public class GreetingController {
 
     private static final String TEMPLATE = "Hello, %s!";
 
     @GET
-    @Path("/greeting/{name}")
+    @Path("/{name}")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Send a greeting",
@@ -57,7 +57,6 @@ public class GreetingController {
     }
 
     @GET
-    @Path("/greeting")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(
         summary = "Send the default greeting",

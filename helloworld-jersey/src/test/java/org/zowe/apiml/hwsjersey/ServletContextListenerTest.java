@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.hwsjersey.listener;
+package org.zowe.apiml.hwsjersey;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -30,7 +30,7 @@ public class ServletContextListenerTest {
             new MockServletContext()
         );
 
-        ApiDiscoveryListener registrator = new ApiDiscoveryListener(mock);
+        HelloJerseyListener registrator = new HelloJerseyListener(mock);
         registrator.contextInitialized(new ServletContextEvent(context));
 
         // Verify that the mock register is called.
@@ -44,7 +44,7 @@ public class ServletContextListenerTest {
             new MockServletContext()
         );
 
-        ApiDiscoveryListener registrator = new ApiDiscoveryListener(mock);
+        HelloJerseyListener registrator = new HelloJerseyListener(mock);
         registrator.contextDestroyed(null);
 
         // Verify that the mock unregister is called.
