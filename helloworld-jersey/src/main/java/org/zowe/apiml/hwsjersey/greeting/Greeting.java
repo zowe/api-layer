@@ -7,15 +7,21 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.hellospring.model;
+package org.zowe.apiml.hwsjersey.greeting;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import java.util.Date;
 
+@JsonTypeName(value = "greeting")
 public class Greeting {
     private final Date date;
     private final String content;
 
-    public Greeting(Date date, String content) {
+    @JsonCreator
+    public Greeting(@JsonProperty("date") Date date, @JsonProperty("content") String content) {
         this.date = date;
         this.content = content;
     }

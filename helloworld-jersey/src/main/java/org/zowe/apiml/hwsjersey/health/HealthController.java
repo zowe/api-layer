@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.hwsjersey.resource;
+package org.zowe.apiml.hwsjersey.health;
 
 import org.zowe.apiml.eurekaservice.model.Health;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -19,8 +19,8 @@ import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 
 @Hidden
-@Path("/api/v1/application")
-public class DiscoveryController {
+@Path("/application")
+public class HealthController {
 
     @GET
     @Path("/info")

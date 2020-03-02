@@ -11,6 +11,7 @@ ext.projectsNeedLicense = [
     'integration-tests',
     'security-module',
     'security-service-client-spring',
+    'helloworld-jersey',
     'zowe-install',
     'onboarding-enabler-java',
     'onboarding-enabler-spring'

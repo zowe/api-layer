@@ -18,9 +18,9 @@ routes:
       serviceUrl: /
 
 apiInfo:
-    - apiId: org.zowe.hellojersey
+    - apiId: org.zowe.apiml.hellojersey
       gatewayUrl: api/v1
-      swaggerUrl: https://localhost:10016/hellojersey/swagger.json
+      swaggerUrl: https://localhost:10016/hellojersey/openapi.json
 
 catalog:
     tile:
