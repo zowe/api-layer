@@ -12,22 +12,16 @@ package org.zowe.apiml.gateway.filters.pre;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gateway.error.NotFound;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
+@RequiredArgsConstructor
 public class ServiceNotFoundFilter extends ZuulFilter {
-    RequestContextProvider contextProvider;
-
-    public ServiceNotFoundFilter() {
-        this.contextProvider = new RequestContextProviderThreadLocal();
-    }
-
-    public ServiceNotFoundFilter(RequestContextProvider contextProvider) {
-        this.contextProvider = contextProvider;
-    }
+    private final RequestContextProvider contextProvider;
 
     @Override
     public String filterType() {

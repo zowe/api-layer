@@ -22,7 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 class ServiceNotFoundFilterTest {
     private ZuulFilter underTest;
@@ -56,5 +56,11 @@ class ServiceNotFoundFilterTest {
 
         Boolean ignoreThisFilter = underTest.shouldFilter();
         assertThat(ignoreThisFilter, is(false));
+    }
+
+    @Test
+    public void givenValidSetup_whenTheFilterIsCreated_thenTheCorrectConfigurationParametersAreProvided() {
+        assertThat(underTest.filterOrder(), is(PRE_DECORATION_FILTER_ORDER + 1));
+        assertThat(underTest.filterType(), is(PRE_TYPE));
     }
 }
