@@ -27,7 +27,7 @@ public class ServiceNotFoundCheck implements ErrorCheck {
     public ResponseEntity<ApiMessageView> checkError(HttpServletRequest request, Throwable exc) {
         if (exc instanceof ZuulException) {
             ZuulException exception = (ZuulException) exc;
-            if(exception.nStatusCode == HttpStatus.NOT_FOUND.value()) {
+            if (exception.nStatusCode == HttpStatus.NOT_FOUND.value()) {
                 ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.endPointNotFound", exception.errorCause).mapToView();
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON_UTF8)
