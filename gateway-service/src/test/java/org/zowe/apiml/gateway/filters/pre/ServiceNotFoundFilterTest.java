@@ -4,7 +4,6 @@ package org.zowe.apiml.gateway.filters.pre;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
-import com.netflix.zuul.monitoring.CounterFactory;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
