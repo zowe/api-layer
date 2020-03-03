@@ -5,6 +5,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.CounterFactory;
+import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,11 +24,11 @@ class ServiceNotFoundFilterTest {
     public void prepareFilterUnderTest() {
         provider = Mockito.mock(RequestContextProvider.class);
         underTest = new ServiceNotFoundFilter(provider);
+        MonitoringHelper.initMocks();
     }
 
     @Test
     public void givenThereIsNoServiceId_whenTheUserRequestsThePath_then404IsProperlyReturned() {
-        initializeCounterFactory();
         when(provider.context()).thenReturn(new RequestContext());
 
         Boolean ignoreThisFilter = underTest.shouldFilter();
@@ -47,16 +48,5 @@ class ServiceNotFoundFilterTest {
 
         Boolean ignoreThisFilter = underTest.shouldFilter();
         assertThat(ignoreThisFilter, is(false));
-    }
-
-    /**
-     * Zuul Exception requires this to be properly set.
-     */
-    public void initializeCounterFactory() {
-        CounterFactory.initialize(new CounterFactory() {
-            @Override
-            public void increment(String name) {
-            }
-        });
     }
 }
