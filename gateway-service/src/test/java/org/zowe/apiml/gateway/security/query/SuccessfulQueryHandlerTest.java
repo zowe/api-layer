@@ -9,25 +9,26 @@
  */
 package org.zowe.apiml.gateway.security.query;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
-import org.zowe.apiml.security.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.EurekaClient;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.security.Key;
 import java.security.KeyPair;
@@ -59,6 +60,9 @@ public class SuccessfulQueryHandlerTest {
     @Mock
     private EurekaClient discoveryClient;
 
+    @Mock
+    private CacheManager cacheManager;
+
     @BeforeEach
     public void setup() {
         httpServletRequest = new MockHttpServletRequest();
@@ -73,7 +77,10 @@ public class SuccessfulQueryHandlerTest {
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
         }
-        AuthenticationService authenticationService = new AuthenticationService(applicationContext, authConfigurationProperties, jwtSecurityInitializer, discoveryClient, restTemplate);
+        AuthenticationService authenticationService = new AuthenticationService(
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer,
+            discoveryClient, restTemplate, cacheManager
+        );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
         when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);

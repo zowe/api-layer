@@ -9,41 +9,46 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.security.SecurityUtils;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import net.sf.ehcache.Element;
 import org.apache.commons.lang.time.DateUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.EurekaUtils;
 
 import javax.servlet.http.Cookie;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -53,6 +58,8 @@ import static org.mockito.Mockito.*;
     CacheConfig.class,
     AuthenticationServiceTest.Context.class
 })
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(net.sf.ehcache.Cache.class)
 public class AuthenticationServiceTest {
 
     private static final String USER = "Me";
@@ -305,6 +312,57 @@ public class AuthenticationServiceTest {
         verify(jwtSecurityInitializer, times(3)).getJwtPublicKey();
     }
 
+    @Test
+    public void testDistributeInvalidateNotFoundApplication() {
+        when(discoveryClient.getApplication("gateway")).thenReturn(null);
+        assertFalse(authService.distributeInvalidate("instanceId"));
+    }
+
+    @Test
+    public void testDistributeInvalidateNotFoundInstance() {
+        Application application = mock(Application.class);
+        when(application.getByInstanceId("instanceId")).thenReturn(null);
+
+        when(discoveryClient.getApplication("gateway")).thenReturn(application);
+        assertFalse(authService.distributeInvalidate("instanceId"));
+    }
+
+    @Test
+    public void testDistributeInvalidateSuccess() {
+        reset(restTemplate);
+
+        InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433);
+
+        Application application = mock(Application.class);
+        when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
+        when(discoveryClient.getApplication("gateway")).thenReturn(application);
+
+        Map<Object, Element> mapCache = new HashMap<>();
+        mapCache.put("a", new Element("a", "a"));
+        mapCache.put("b", new Element("b", "b"));
+
+        ApplicationContext applicationContext = mock(ApplicationContext.class);
+        CacheManager cacheManager = mock(CacheManager.class);
+        Cache cache = mock(Cache.class);
+        net.sf.ehcache.Cache ehCache = PowerMockito.mock(net.sf.ehcache.Cache.class);
+        when(ehCache.getAll(any())).thenReturn(mapCache);
+        when(cache.getNativeCache()).thenReturn(ehCache);
+        when(cacheManager.getCache(anyString())).thenReturn(cache);
+
+        AuthenticationService authenticationService = new AuthenticationService(
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer,
+            discoveryClient, restTemplate, cacheManager
+        );
+
+        when(applicationContext.getBean(AuthenticationService.class)).thenReturn(authenticationService);
+
+        authenticationService.distributeInvalidate(instanceInfo.getInstanceId());
+
+        verify(restTemplate, times(2)).delete(anyString(), anyString());
+        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}", "a");
+        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}", "a");
+    }
+
     @Configuration
     public static class Context {
 
@@ -332,8 +390,8 @@ public class AuthenticationServiceTest {
         }
 
         @Bean
-        public AuthenticationService getAuthenticationService() {
-            return new AuthenticationService(applicationContext, getAuthConfigurationProperties(), getJwtSecurityInitializer(), getDiscoveryClient(), getRestTemplate());
+        public AuthenticationService getAuthenticationService(CacheManager cacheManager) {
+            return new AuthenticationService(applicationContext, getAuthConfigurationProperties(), getJwtSecurityInitializer(), getDiscoveryClient(), getRestTemplate(), cacheManager);
         }
 
     }

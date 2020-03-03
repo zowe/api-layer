@@ -63,7 +63,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
                 String ltpaToken = authenticationService.getLtpaTokenFromJwtToken(token);
 
                 String cookie = context.getZuulRequestHeaders().get(COOKIE_HEADER);
-                if (cookie != null) {
+                if (cookie != null)  {
                     cookie += "; " + ltpaToken;
                 } else {
                     cookie = ltpaToken;

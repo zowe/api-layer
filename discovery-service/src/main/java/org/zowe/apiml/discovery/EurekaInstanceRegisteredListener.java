@@ -10,6 +10,7 @@
 package org.zowe.apiml.discovery;
 
 import com.netflix.appinfo.InstanceInfo;
+import org.apache.commons.lang.StringUtils;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,14 @@ public class EurekaInstanceRegisteredListener {
 
         metadataTranslationService.translateMetadata(metadata);
         metadataDefaultsService.updateMetadata(serviceId, metadata);
+
+        if (StringUtils.equalsIgnoreCase(GatewayNotifier.GATEWAY_SERVICE_ID, serviceId)) {
+            /**
+             * meanwhile gateway was down, another Gateway could receive logout, those invalidated credentials should
+             * be distributed to this new Gateway
+              */
+            gatewayNotifier.distributeInvalidatedCredentials(instanceInfo.getInstanceId());
+        }
         // ie. new instance can have different authentication (than other one), this is reason to evict caches on gateway
         gatewayNotifier.serviceUpdated(serviceId, instanceInfo.getInstanceId());
     }

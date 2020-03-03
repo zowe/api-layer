@@ -9,11 +9,14 @@
  */
 package org.zowe.apiml.util;
 
-import org.zowe.apiml.cache.CompositeKey;
+import net.sf.ehcache.Element;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.zowe.apiml.cache.CompositeKey;
 
+import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * This utils offer base operation with cache, which can be shared to multiple codes.
@@ -74,6 +77,28 @@ public final class CacheUtils {
         } else {
             // in case of using different cache manager, evict all records for sure
             cache.clear();
+        }
+    }
+
+    /**
+     * This method read all stored records in the cache. It supports only EhCache, for other cache managers it throws
+     * an exception.
+     *
+     * @param cacheManager manager collecting the cache
+     * @param cacheName name of cache
+     * @param <T> type of stored elements
+     * @return collection with all stored records
+     */
+    public static <T> List<T> getAllRecords(CacheManager cacheManager, String cacheName) {
+        final Cache cache = cacheManager.getCache(cacheName);
+        if (cache == null) throw new IllegalArgumentException("Unknown cache " + cacheName);
+
+        final Object nativeCache = cache.getNativeCache();
+        if (nativeCache instanceof net.sf.ehcache.Cache) {
+            final net.sf.ehcache.Cache ehCache = (net.sf.ehcache.Cache) nativeCache;
+            return (List<T>) ehCache.getAll(ehCache.getKeys()).values().stream().map(Element::getObjectValue).collect(Collectors.toList());
+        } else {
+            throw new IllegalArgumentException("Unsupported type of cache : " + (nativeCache == null ? null : nativeCache.getClass()));
         }
     }
 
