@@ -117,7 +117,7 @@ public class FileUtils {
     }
 
     /**
-     * Reads data form a file as a text.
+     * Reads data from a file as text.
      *
      * @param fileName - file name string to look for.
      * @return the file contents as String
