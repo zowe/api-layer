@@ -190,44 +190,6 @@ pipeline {
                     }
                 }
 
-                /************************************************************************
-                * STAGE
-                * -----
-                * SonarQube Scanner
-                *
-                * EXECUTION CONDITIONS
-                * --------------------
-                * - SHOULD_BUILD is true
-                * - The build is still successful and not unstable
-                *
-                * DESCRIPTION
-                * -----------
-                * Runs the sonar-scanner analysis tool, which submits the source, test results,
-                *  and coverage results for analysis in our SonarQube server.
-                * TODO: This step does not yet support branch or PR submissions properly.
-                ***********************************************************************/
-                stage('sonar') {
-                    steps {
-                        withSonarQubeEnv('sonarcloud-server') {
-                            // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                            sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
-                        }
-                    }
-                }
-
-                stage('Publish UI test results') {
-                    steps {
-                        publishHTML(target: [
-                            allowMissing         : false,
-                            alwaysLinkToLastBuild: false,
-                            keepAll              : true,
-                            reportDir            : 'api-catalog-ui/frontend/test-results',
-                            reportFiles          : 'test-report-unit.html',
-                            reportName           : "UI Unit Test Results"
-                        ])
-                    }
-                }
-
                 stage('Publish snapshot version to Artifactory for master') {
                     when {
                         expression {
@@ -262,6 +224,43 @@ pipeline {
             }
         }
 
+        /************************************************************************
+         * STAGE
+         * -----
+         * SonarQube Scanner
+         *
+         * EXECUTION CONDITIONS
+         * --------------------
+         * - SHOULD_BUILD is true
+         * - The build is still successful and not unstable
+         *
+         * DESCRIPTION
+         * -----------
+         * Runs the sonar-scanner analysis tool, which submits the source, test results,
+         *  and coverage results for analysis in our SonarQube server.
+         * TODO: This step does not yet support branch or PR submissions properly.
+         ***********************************************************************/
+        stage('sonar') {
+            steps {
+                withSonarQubeEnv('sonarcloud-server') {
+                    // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
+                    sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
+                }
+            }
+        }
+
+        stage('Publish UI test results') {
+            steps {
+                publishHTML(target: [
+                    allowMissing         : false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll              : true,
+                    reportDir            : 'api-catalog-ui/frontend/test-results',
+                    reportFiles          : 'test-report-unit.html',
+                    reportName           : "UI Unit Test Results"
+                ])
+            }
+        }
 
         stage ('Codecov') {
             when { expression { changeClass in ['full', 'api-catalog'] } }

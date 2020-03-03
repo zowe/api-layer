@@ -1,4 +1,4 @@
-import userConstants from '../constants/user.constants';
+import userConstants from '../constants/user-constants';
 import { userService } from '../services';
 import history from '../helpers/history';
 
@@ -56,8 +56,8 @@ function logout() {
 }
 
 function authenticationFailure(error) {
-    function failure(error) {
-        return { type: userConstants.AUTHENTICATION_FAILURE, error };
+    function failure(err) {
+        return { type: userConstants.AUTHENTICATION_FAILURE, err };
     }
     return dispatch => {
         dispatch(failure(error));

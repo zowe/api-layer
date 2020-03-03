@@ -1,8 +1,8 @@
-import userConstants from '../constants/user.constants';
+import userConstants from '../constants/user-constants';
 
 const sessionDefaultState = {
     sessionOn: false,
-}
+};
 
 function authenticationReducer(state=sessionDefaultState, action) {
     switch (action.type) {

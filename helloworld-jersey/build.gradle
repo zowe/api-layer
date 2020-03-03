@@ -16,13 +16,13 @@ repositories {
 }
 
 dependencies {
-
     compile(project(':onboarding-enabler-java'))
 
     compile 'io.swagger.core.v3:swagger-jaxrs2:2.0.0'
+
+    compileOnly libraries.javax_servlet_api
     compile libraries.jackson_dataformat_yaml
     compileOnly libraries.lombok
-    compile libraries.logback_classic
     compile libraries.jersey_server
     compile libraries.jersey_hk2
     compile libraries.jersey_container_servlet_core
@@ -38,6 +38,7 @@ dependencies {
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
+        "org.apache.tomcat.embed:tomcat-servlet-api:${tomcatVersion}"
 }
 
 tomcat {

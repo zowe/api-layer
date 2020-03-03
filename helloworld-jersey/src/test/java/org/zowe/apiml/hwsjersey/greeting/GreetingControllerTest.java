@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.hwsjersey.resource;
+package org.zowe.apiml.hwsjersey.greeting;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -18,7 +18,8 @@ import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
 
-public class GreetingControllerRoutingTest extends JerseyTest {
+
+public class GreetingControllerTest extends JerseyTest {
 
     @Override
     protected Application configure() {
@@ -26,7 +27,7 @@ public class GreetingControllerRoutingTest extends JerseyTest {
     }
 
     @Test
-    public void whenSendRequest_sendDefaultGreeting() {
+    public void givenUrlGreeting_whenSendRequest_thenReceiveGreeting() {
         Response response = target("api/v1/greeting").request().get();
         assertEquals(200, response.getStatus());
         Greeting greeting = response.readEntity(Greeting.class);
@@ -34,7 +35,7 @@ public class GreetingControllerRoutingTest extends JerseyTest {
     }
 
     @Test
-    public void whenSendRequest_GivenAName_sendGreeting() {
+    public void givenUrlGreetingWithName_whenSendRequest_thenReceiveGreetingwithName() {
         final String name = "Andrea";
         Response response = target("api/v1/greeting/" + name).request().get();
         assertEquals(200, response.getStatus());

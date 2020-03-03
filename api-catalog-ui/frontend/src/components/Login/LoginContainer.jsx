@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import Login from './Login';
-import { userActions } from '../../actions/user.actions';
+import { userActions } from '../../actions/user-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
 
 const loadingSelector = createLoadingSelector(['USERS_LOGIN']);

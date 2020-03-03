@@ -9,8 +9,7 @@
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
             <param-value>
-                org.zowe.apiml.eurekaservice,
-                org.zowe.apiml.hwsjersey.resource,
+                org.zowe.apiml.hwsjersey,
                 io.swagger.v3.jaxrs2.integration.resources
             </param-value>
         </init-param>
@@ -25,20 +24,5 @@
         <servlet-name>jersey</servlet-name>
         <url-pattern>/hellojersey/*</url-pattern>
     </servlet-mapping>
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Protected resource</web-resource-name>
-            <url-pattern>/*</url-pattern>
-            <http-method>GET</http-method>
-            <http-method>POST</http-method>
-        </web-resource-collection>
-        <user-data-constraint>
-            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint>
-
-    <listener>
-        <listener-class>org.zowe.apiml.hwsjersey.listener.ApiDiscoveryListener</listener-class>
-    </listener>
 
 </web-app>
