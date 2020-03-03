@@ -54,7 +54,7 @@ public class EncodedCharactersFilter extends ZuulFilter {
 
     @Override
     public int filterOrder() {
-        return PRE_DECORATION_FILTER_ORDER + 1;
+        return PRE_DECORATION_FILTER_ORDER + 2;
     }
 
     @Override

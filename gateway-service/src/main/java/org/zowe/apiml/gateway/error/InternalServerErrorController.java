@@ -9,10 +9,7 @@
  */
 package org.zowe.apiml.gateway.error;
 
-import org.zowe.apiml.gateway.error.check.ErrorCheck;
-import org.zowe.apiml.gateway.error.check.SecurityTokenErrorCheck;
-import org.zowe.apiml.gateway.error.check.TimeoutErrorCheck;
-import org.zowe.apiml.gateway.error.check.TlsErrorCheck;
+import org.zowe.apiml.gateway.error.check.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -54,6 +51,7 @@ public class InternalServerErrorController implements ErrorController {
         errorChecks.add(new TlsErrorCheck(messageService));
         errorChecks.add(new TimeoutErrorCheck(messageService));
         errorChecks.add(new SecurityTokenErrorCheck(messageService));
+        errorChecks.add(new ServiceNotFoundCheck(messageService));
     }
 
     @Override
