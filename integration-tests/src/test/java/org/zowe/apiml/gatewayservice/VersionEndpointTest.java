@@ -45,7 +45,7 @@ public class VersionEndpointTest {
             .when()
             .get(requestString)
             .then()
-            .body(containsString("apimlVersion"))
+            .body(containsString("apiml"))
             .statusCode(is(SC_OK));
     }
 }

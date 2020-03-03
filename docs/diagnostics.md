@@ -35,6 +35,8 @@ It is also printed to the log as the very first messsage:
 It is also possible to know the version of API ML and Zowe (if API ML used as part of Zowe), using `/version` endpoint in API Gateway service. E.g.:
 
     https://localhost:10010/version
+
+To see Zowe version it needs to set up the launch parameter of API Gateway - `apiml.zoweManifest` with a path to Zowe build manifest.json file, which usually located in the root folder of Zowe build.
     
 Example of response:
 

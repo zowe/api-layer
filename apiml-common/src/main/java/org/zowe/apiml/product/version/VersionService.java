@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.util.FileUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Class for retrieving information about Zowe version from Zowe's manifest.json
@@ -30,20 +31,20 @@ import java.io.IOException;
 @Slf4j
 @Service
 public class VersionService {
-    private static final String NO_VERSION = "Build information is not available";
-    private static final VersionInfo version = new VersionInfo();
-
+    private final VersionInfo version;
     private final BuildInfo buildInfo;
 
     @Value("${apiml.zoweManifest:#{null}}")
     private String zoweManifest;
 
     public VersionService() {
-        buildInfo = new BuildInfo();
+        this.buildInfo = new BuildInfo();
+        this.version = new VersionInfo();
     }
 
     public VersionService(BuildInfo buildInfo) {
         this.buildInfo = buildInfo;
+        this.version = new VersionInfo();
     }
 
     /**
@@ -51,7 +52,7 @@ public class VersionService {
      * @return filled VersionInfo object
      */
     public VersionInfo getVersion() {
-        if (version.getApimlVersion() == null) {
+        if (version.getApiml() == null) {
             updateVersionInfo();
         }
         return version;
@@ -63,22 +64,18 @@ public class VersionService {
      */
     public void updateVersionInfo() {
         if (StringUtils.isNotEmpty(zoweManifest)) {
-            version.setZoweVersion(getZoweVersion(zoweManifest));
+            version.setZowe(getZoweVersion(zoweManifest));
         }
-        version.setApimlVersion(getApimlVersion());
+        version.setApiml(getApimlVersion());
     }
 
     /**
      * Retrieving the information about API ML version from build-info.properties and git.properties files
      * @return the version, build and commit numbers in one string
      */
-    private String getApimlVersion() {
+    private VersionInfoDetails getApimlVersion() {
         BuildInfoDetails buildInfoDetails = buildInfo.getBuildInfoDetails();
-        String apimlVersion = NO_VERSION;
-        if (!buildInfoDetails.getVersion().equalsIgnoreCase("unknown")) {
-            apimlVersion = String.format("%s build #%s (%s)", buildInfoDetails.getVersion(), buildInfoDetails.getNumber(), buildInfoDetails.getCommitId());
-        }
-        return apimlVersion;
+        return new VersionInfoDetails(buildInfoDetails.getVersion(), buildInfoDetails.getNumber(), buildInfoDetails.getCommitId());
     }
 
     /**
@@ -86,51 +83,59 @@ public class VersionService {
      * @param manifestJsonFile the path to Zowe's manifest.json file
      * @return the version and build numbers in one string
      */
-    private String getZoweVersion(String manifestJsonFile) {
+    private VersionInfoDetails getZoweVersion(String manifestJsonFile) {
         try {
             String manifestJson = FileUtils.readFile(manifestJsonFile);
             if (manifestJson != null) {
-                return retrieveZoweVersionFromJson(manifestJson);
+                return readManifestJson(manifestJson);
             } else {
                 log.debug("File have not found in provided location: {}", manifestJsonFile);
             }
         } catch (IOException e) {
             log.debug("Error in reading the file {}: {}", manifestJsonFile, e.getMessage());
         }
-        return NO_VERSION;
+        return null;
     }
 
-    private String retrieveZoweVersionFromJson(String manifestJson) {
+    private VersionInfoDetails readManifestJson(String manifestJson) throws UnsupportedEncodingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         try {
-            ObjectNode manifestNode = mapper.readValue(manifestJson, ObjectNode.class);
-            JsonNode versionNode = manifestNode.get("version");
-            if (versionNode != null && !versionNode.asText().isEmpty()) {
-                return versionNode.asText() +
-                    " build #" +
-                    retrieveZoweBuildNumber(manifestNode);
-            }
+            return retrieveZoweVersion(manifestJson, mapper);
         } catch (JsonProcessingException e) {
             log.debug("Error in parsing Zowe build manifest.json file: {}", e.getMessage());
         }
-        return NO_VERSION;
+        return null;
     }
 
-    private String retrieveZoweBuildNumber(ObjectNode manifestNode) {
-        String buildNumber = "n/a";
+    private VersionInfoDetails retrieveZoweVersion(String manifestJson, ObjectMapper mapper) throws JsonProcessingException {
+        VersionInfoDetails zoweVersion = new VersionInfoDetails();
+        ObjectNode manifestNode = mapper.readValue(manifestJson, ObjectNode.class);
+        JsonNode versionNode = manifestNode.get("version");
+        if (versionNode != null && !versionNode.asText().isEmpty()) {
+            zoweVersion.setVersion(versionNode.asText());
+        } else {
+            zoweVersion.setVersion("Unknown");
+        }
+        retrieveZoweBuildNumber(manifestNode, zoweVersion);
+        return zoweVersion;
+    }
+
+    private void retrieveZoweBuildNumber(ObjectNode manifestNode, VersionInfoDetails zoweVersion) {
+        String buildNumber = "null";
+        String commitHash = "Unknown";
         JsonNode buildNode = manifestNode.get("build");
         if (buildNode != null) {
             JsonNode buildNumberNode = buildNode.get("number");
             if (buildNumberNode != null && StringUtils.isNotEmpty(buildNumberNode.asText())) {
                 buildNumber = buildNumberNode.asText();
             }
+            JsonNode commitIdNode = buildNode.get("commitHash");
+            if (commitIdNode != null && StringUtils.isNotEmpty(commitIdNode.asText())) {
+                commitHash = commitIdNode.asText();
+            }
         }
-        return buildNumber;
-    }
-
-    public void clearVersionInfo() {
-        version.setApimlVersion(null);
-        version.setZoweVersion(null);
+        zoweVersion.setBuildNumber(buildNumber);
+        zoweVersion.setCommitHash(commitHash);
     }
 }

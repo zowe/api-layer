@@ -25,7 +25,6 @@ import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 
 
 public class VersionServiceTest {
-    private static final String NO_VERSION = "Build information is not available";
     private static final String ZOWE_MANIFEST_FIELD = "zoweManifest";
 
     private VersionService versionService;
@@ -36,11 +35,10 @@ public class VersionServiceTest {
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
         versionService = new VersionService(buildInfo);
-        versionService.clearVersionInfo();
     }
 
     @Test
-    public void shouldReturnApimlVersion() {
+    public void shouldReturnSpecificApimlVersion() {
         BuildInfo buildInfo = mock(BuildInfo.class);
 
         Properties buildProperties = new Properties();
@@ -56,62 +54,59 @@ public class VersionServiceTest {
         VersionService versionService = new VersionService(buildInfo);
 
         VersionInfo version = versionService.getVersion();
-        assertNotNull(version.getApimlVersion());
-        assertEquals("0.0.0 build #000 (1a3b5c7)", version.getApimlVersion());
+        assertNotNull(version.getApiml());
+        assertEquals("0.0.0", version.getApiml().getVersion());
+        assertEquals("000", version.getApiml().getBuildNumber());
+        assertEquals("1a3b5c7", version.getApiml().getCommitHash());
     }
 
     @Test
-    public void shouldReturnBuildUnavailableInApimlVersionWhenNoVersion() {
+    public void shouldReturnUnknownInApimlVersionWhenNoVersion() {
         VersionInfo version = versionService.getVersion();
-        assertNotNull(version.getApimlVersion());
-        assertEquals(NO_VERSION, version.getApimlVersion());
+        assertNotNull(version.getApiml());
+        assertEquals("Unknown", version.getApiml().getVersion());
+        assertEquals("null", version.getApiml().getBuildNumber());
+        assertEquals("Unknown", version.getApiml().getCommitHash());
     }
 
     @Test
-    public void shouldReturnZoweVersion() throws FileNotFoundException {
+    public void shouldReturnSpecificZoweVersion() throws FileNotFoundException {
         File file = ResourceUtils.getFile(CLASSPATH_URL_PREFIX + "zowe-manifest.json");
-        if (!file.exists()) {
-            fail();
-        }
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
 
         VersionInfo version = versionService.getVersion();
-        assertNotNull(version.getZoweVersion());
-        assertEquals("1.8.0 build #802", version.getZoweVersion());
+        assertNotNull(version.getZowe());
+        assertEquals("1.8.0", version.getZowe().getVersion());
+        assertEquals("802", version.getZowe().getBuildNumber());
+        assertEquals("397a4365056685d639810a077a58b736db9f018b", version.getZowe().getCommitHash());
     }
 
     @Test
-    public void shouldReturnZoweVersionWithoutBuild() throws FileNotFoundException {
+    public void shouldReturnUnknownZoweVersionWhenNoBuildAndVersion() throws FileNotFoundException {
         File file = ResourceUtils.getFile(CLASSPATH_URL_PREFIX + "zowe-manifest-no-build-info.json");
-        if (!file.exists()) {
-            fail();
-        }
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
 
         VersionInfo version = versionService.getVersion();
-        assertNotNull(version.getZoweVersion());
-        assertEquals("1.8.0 build #n/a", version.getZoweVersion());
+        assertNotNull(version.getZowe());
+        assertEquals("Unknown", version.getZowe().getVersion());
+        assertEquals("null", version.getZowe().getBuildNumber());
+        assertEquals("Unknown", version.getZowe().getCommitHash());
     }
 
     @Test
-    public void shouldReturnBuildUnavailableInZoweVersionWhenInvalidJson() throws FileNotFoundException {
+    public void shouldReturnNullInZoweVersionWhenInvalidJson() throws FileNotFoundException {
         File file = ResourceUtils.getFile(CLASSPATH_URL_PREFIX + "zowe-manifest-invalid.json");
-        if (!file.exists()) {
-            fail();
-        }
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, file.getAbsolutePath());
 
         VersionInfo version = versionService.getVersion();
-        assertNotNull(version.getZoweVersion());
-        assertEquals(NO_VERSION, version.getZoweVersion());
+        assertNull(version.getZowe());
     }
 
     @Test
-    public void shouldReturnBuildUnavailableInZoweVersionWhenFileNotFound() {
+    public void shouldReturnNullInZoweVersionWhenFileNotFound() {
         ReflectionTestUtils.setField(versionService, ZOWE_MANIFEST_FIELD, "zowe-manifesto.json");
 
         VersionInfo version = versionService.getVersion();
-        assertNotNull(version.getZoweVersion());
-        assertEquals(NO_VERSION, version.getZoweVersion());
+        assertNull(version.getZowe());
     }
 }

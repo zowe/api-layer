@@ -19,8 +19,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonPropertyOrder({"zowe", "apiml"})
-public class VersionInfo {
-    private VersionInfoDetails zowe;
-    private VersionInfoDetails apiml;
+@JsonPropertyOrder({"version", "buildNumber", "commitHash"})
+public class VersionInfoDetails {
+    String version;
+    String buildNumber;
+    String commitHash;
 }
+
