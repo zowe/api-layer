@@ -20,7 +20,7 @@ import org.zowe.apiml.message.core.MessageService;
 import javax.servlet.http.HttpServletRequest;
 
 @RequiredArgsConstructor
-public class NotExistentServiceCheck implements ErrorCheck {
+public class ServiceNotFoundCheck implements ErrorCheck {
     private final MessageService messageService;
 
     @Override

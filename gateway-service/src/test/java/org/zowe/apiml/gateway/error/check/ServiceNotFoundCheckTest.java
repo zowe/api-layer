@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.zowe.apiml.gateway.error.ErrorUtils;
-import org.zowe.apiml.gateway.error.NotFoundError;
+import org.zowe.apiml.gateway.error.NotFound;
 import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageType;
@@ -30,19 +30,19 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class NotExistentServiceCheckTest {
+public class ServiceNotFoundCheckTest {
     private ErrorCheck underTest;
 
     @BeforeEach
     public void prepareCheckUnderTest() {
         MonitoringHelper.initMocks();
-        underTest = new NotExistentServiceCheck(new YamlMessageService());
+        underTest = new ServiceNotFoundCheck(new YamlMessageService());
     }
 
     @Test
     public void givenNotFoundZuulException_whenTheRequestIsProcessed_then404IsReturned() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        ZuulException exc = new ZuulException(new NotFoundError(), HttpStatus.NOT_FOUND.value(), "serviceId");
+        ZuulException exc = new ZuulException(new NotFound(), HttpStatus.NOT_FOUND.value(), "serviceId");
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
         ResponseEntity<ApiMessageView> actualResponse = underTest.checkError(request, exc);

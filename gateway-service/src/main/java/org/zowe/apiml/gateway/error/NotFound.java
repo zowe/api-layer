@@ -9,5 +9,5 @@
  */
 package org.zowe.apiml.gateway.error;
 
-public class NotFoundError extends Exception {
+public class NotFound extends Exception {
 }

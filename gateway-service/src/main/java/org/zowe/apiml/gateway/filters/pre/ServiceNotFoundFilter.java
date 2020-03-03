@@ -14,7 +14,7 @@ import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.http.HttpStatus;
-import org.zowe.apiml.gateway.error.NotFoundError;
+import org.zowe.apiml.gateway.error.NotFound;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
@@ -50,6 +50,6 @@ public class ServiceNotFoundFilter extends ZuulFilter {
     public Object run() throws ZuulException {
         RequestContext currentContext = contextProvider.context();
         String pathToTheDownstreamService = (String) currentContext.get(FORWARD_TO_KEY);
-        throw new ZuulException(new NotFoundError(), HttpStatus.NOT_FOUND.value(), pathToTheDownstreamService);
+        throw new ZuulException(new NotFound(), HttpStatus.NOT_FOUND.value(), pathToTheDownstreamService);
     }
 }
