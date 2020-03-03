@@ -93,9 +93,4 @@ public class StaticApiRestControllerTest {
 
         verify(registrationService, times(1)).reloadServices();
     }
-
-    @Test
-    public void givenExistingService_whenTheServiceIdInTheDefinitionChanges_thenThePreviousBehaviorStillRemains() {
-
-    }
 }

@@ -108,7 +108,6 @@ public class StaticServicesRegistrationServiceTest {
         verify(serviceDefinitionProcessor, times(1)).findStaticServicesData(directory);
     }
 
-    // This test should handle the error case.
     @Test
     public void testReloadServicesWithUnregisteringService() {
         String service = "service";
@@ -127,19 +126,6 @@ public class StaticServicesRegistrationServiceTest {
         verify(serviceDefinitionProcessor, times(2)).findStaticServicesData(null);
         verify(mockRegistry, times(1)).cancel(instance.getAppName(), instance.getId(), false);
     }
-
-    // The full path is to register one valid service
-    // Change the definition in file
-    // Refresh the static definitions
-    // Make sure only the new definition is available and not the old one
-
-    // How do I find out what it means to process the static data.
-    // Is it just in the discovery service or is it going also through other places.
-
-    // Static instances are stored in the memory. In the InstanceInfo that I guess is obtained from Eureka
-    // Clear all of them.
-    // registerServices
-    //   This means loading the definitions from the directory
 
     @Test
     public void testReloadServicesWithAddingNewService() {

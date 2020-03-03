@@ -52,7 +52,6 @@ class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     @Override
     @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S1075", "squid:S3776"})
     protected LinkedHashMap<String, ZuulProperties.ZuulRoute> locateRoutes() {
-        // This bug seems to be linked to this area. So the important question is how do we cache?
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>(super.locateRoutes());
         if (this.discovery != null) {
             Map<String, ZuulProperties.ZuulRoute> staticServices = new LinkedHashMap<>();
