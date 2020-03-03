@@ -45,6 +45,7 @@ public class HttpsFactory {
 
     private HttpsConfig config;
     private SSLContext secureSslContext;
+    private KeyStore usedKeyStore = null;
     private ApimlLogger apimlLog;
 
     public HttpsFactory(HttpsConfig httpsConfig) {
@@ -76,6 +77,10 @@ public class HttpsFactory {
         }
     }
 
+    KeyStore getUsedStore() {
+        return usedKeyStore;
+    }
+
     private ConnectionSocketFactory createIgnoringSslSocketFactory() {
         return new SSLConnectionSocketFactory(createIgnoringSslContext(), new NoopHostnameVerifier());
     }
@@ -84,6 +89,7 @@ public class HttpsFactory {
         try {
             KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
+            usedKeyStore = emptyKeystore;
             return new SSLContextBuilder()
                 .loadTrustMaterial(null, (certificate, authType) -> true)
                 .loadKeyMaterial(emptyKeystore, null)
@@ -146,6 +152,7 @@ public class HttpsFactory {
             log.info("No key store is defined");
             KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
+            usedKeyStore = emptyKeystore;
             sslContextBuilder.loadKeyMaterial(emptyKeystore, null);
         }
     }
@@ -169,7 +176,8 @@ public class HttpsFactory {
                 config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray());
     }
 
-    private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
+    private void
+    loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         log.info("Loading trust key ring: " + config.getKeyStore());
         sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()),
