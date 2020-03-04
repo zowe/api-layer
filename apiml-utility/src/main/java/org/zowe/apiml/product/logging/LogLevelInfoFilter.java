@@ -35,7 +35,7 @@ public class LogLevelInfoFilter extends TurboFilter {
 
     public LogLevelInfoFilter() {
         String profiles = System.getProperties().getProperty("spring.profiles.include");
-        isFilterActive = profiles == null || !profiles.toLowerCase().contains("debug");
+        isFilterActive = profiles == null || !(profiles.toLowerCase().contains("debug") || profiles.toLowerCase().contains("dev"));
     }
 
     @Override
