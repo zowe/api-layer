@@ -15,6 +15,7 @@ import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -195,6 +196,7 @@ public class GatewayNotifier implements Runnable {
      */
     @AllArgsConstructor
     @Getter
+    @EqualsAndHashCode
     protected class Notification {
 
         private final String serviceId;
