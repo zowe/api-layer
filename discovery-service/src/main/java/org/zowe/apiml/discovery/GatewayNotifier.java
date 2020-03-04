@@ -50,7 +50,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class GatewayNotifier implements Runnable {
 
-    public static final String GATEWAY_SERVICE_ID = CoreService.GATEWAY.name().toUpperCase();
+    public static final String GATEWAY_SERVICE_ID = CoreService.GATEWAY.getServiceId().toUpperCase();
 
     private final ApimlLogger logger;
 

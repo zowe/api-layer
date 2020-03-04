@@ -30,6 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -114,7 +115,7 @@ public class AuthenticationService {
          * until ehCache is not distributed, send to other instances invalidation request
          */
         if (distribute) {
-            final Application application = discoveryClient.getApplication("gateway");
+            final Application application = discoveryClient.getApplication(CoreService.GATEWAY.getServiceId());
             // wrong state, gateway have to exists (at least this current instance), return false like unsuccessful
             if (application == null) return Boolean.FALSE;
 
@@ -154,7 +155,7 @@ public class AuthenticationService {
      * @return true if all token were sent, otherwise false
      */
     public boolean distributeInvalidate(String toInstanceId) {
-        final Application application = discoveryClient.getApplication("gateway");
+        final Application application = discoveryClient.getApplication(CoreService.GATEWAY.getServiceId());
         if (application == null) return false;
 
         final InstanceInfo instanceInfo = application.getByInstanceId(toInstanceId);
