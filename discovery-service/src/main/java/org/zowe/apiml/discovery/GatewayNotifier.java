@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.annotation.PostConstruct;
@@ -48,7 +49,7 @@ import java.util.function.Consumer;
 @Slf4j
 public class GatewayNotifier implements Runnable {
 
-    public static final String GATEWAY_SERVICE_ID = "GATEWAY";
+    public static final String GATEWAY_SERVICE_ID = CoreService.GATEWAY.name().toUpperCase();
 
     private final ApimlLogger logger;
 
