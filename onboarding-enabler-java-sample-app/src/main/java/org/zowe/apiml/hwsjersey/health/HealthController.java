@@ -9,8 +9,8 @@
  */
 package org.zowe.apiml.hwsjersey.health;
 
-import org.zowe.apiml.eurekaservice.model.Health;
 import io.swagger.v3.oas.annotations.Hidden;
+import org.zowe.apiml.eurekaservice.model.Health;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
