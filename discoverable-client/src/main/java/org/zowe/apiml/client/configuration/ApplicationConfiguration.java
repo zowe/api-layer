@@ -19,7 +19,7 @@ public class ApplicationConfiguration {
     @Bean
     public MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
-        messageService.loadMessages("/common-log-messages.yml");
+        messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/api-messages.yml");
         messageService.loadMessages("/log-messages.yml");
         return messageService;
