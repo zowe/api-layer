@@ -7,14 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.helloworldjersey;
+package org.zowe.apiml.enablejavasampleapp;
 
-import org.zowe.apiml.util.categories.AdditionalLocalTest;
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.AdditionalLocalTest;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 
@@ -23,12 +23,12 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
 @Category(AdditionalLocalTest.class)
-public class HelloWorldJerseyEndpointTest {
-    private static final String UI_V1_PATH = "/ui/v1/hellojersey/";
-    private static final String APP_INFO_PATH = "/api/v1/hellojersey/application/info/";
-    private static final String APP_INFO_HEALTH = "/api/v1/hellojersey/application/health/";
-    private static final String GREETING_PATH = "/api/v1/hellojersey/greeting";
-    private static final String GREETING_WITH_NAME_PATH = "/api/v1/hellojersey/greeting/Petr";
+public class EnablerJavaSampleAppEndpointTest {
+    private static final String UI_V1_PATH = "/ui/v1/enablerJavaSampleApp/";
+    private static final String APP_INFO_PATH = "/api/v1/enablerJavaSampleApp/application/info/";
+    private static final String APP_INFO_HEALTH = "/api/v1/enablerJavaSampleApp/application/health/";
+    private static final String GREETING_PATH = "/api/v1/enablerJavaSampleApp/greeting";
+    private static final String GREETING_WITH_NAME_PATH = "/api/v1/enablerJavaSampleApp/greeting/Petr";
     private static final String JSON_CONTENT_TYPE = "application/json";
 
     @BeforeClass

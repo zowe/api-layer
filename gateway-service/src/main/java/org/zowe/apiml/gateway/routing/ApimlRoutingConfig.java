@@ -59,6 +59,13 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
+    public ServiceNotFoundFilter serviceNotFoundFilter() {
+        return new ServiceNotFoundFilter(
+            new RequestContextProviderThreadLocal()
+        );
+    }
+
+    @Bean
     @Autowired
     public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery,
                                                        GatewayConfigProperties gatewayConfigProperties) {

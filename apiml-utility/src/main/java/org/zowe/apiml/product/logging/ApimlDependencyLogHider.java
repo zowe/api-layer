@@ -41,7 +41,8 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "Request execution error",
         "The Hystrix timeout",
         ".*Error during filtering.*Token is not valid.*",
-        ".*Endpoint ID .* contains invalid characters.*");
+        ".*Endpoint ID .* contains invalid characters.*",
+        "org.zowe.apiml.gateway.error.NotFound");
 
     private boolean isFilterActive;
 
