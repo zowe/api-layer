@@ -9,7 +9,6 @@ ext.javaProjectsWithUnitTests = [
     'onboarding-enabler-java',
     'onboarding-enabler-spring',
     'onboarding-enabler-java-sample-app',
-    'integration-enabler-spring-v1-sample-app',
     'security-module',
     'security-service-client-spring',
     'apiml-security-common'
