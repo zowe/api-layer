@@ -36,11 +36,20 @@ It is also possible to know the version of API ML and Zowe (if API ML used as pa
 
     https://localhost:10010/version
 
-To view the Zowe version requires setting up the launch parameter of API Gateway - `apiml.zoweManifest` with a path to the Zowe build manifest.json file, which is usually located in the root folder of Zowe build.
+To view the Zowe version requires setting up the launch parameter of API Gateway - `apiml.zoweManifest` with a path to the Zowe build manifest.json file, which is usually located in the root folder of Zowe build. 
+If the encoding of manifest.json file is different from UTF-8 and IBM1047 it requires setting up the launch parameter of API Gateway - `apiml.zoweManifestEncoding` with correct encoding.
     
 Example of response:
 
-    {                                                         
-        "apimlVersion": "1.3.3-SNAPSHOT build #2 (8d984be)",
-        "zoweVersion": "1.8.0 build #802"                     
+    {
+        "apiml": {
+            "version": "1.3.3-SNAPSHOT",
+            "buildNumber": "n/a",
+            "commitHash": "91a66c4"
+        },
+        "zowe": {
+            "version": "1.8.0",
+            "buildNumber": "437",
+            "commitHash": "8dd9f512a2723bc07840c193d78e5d5ff5751e92"
+        }
     }                                                         

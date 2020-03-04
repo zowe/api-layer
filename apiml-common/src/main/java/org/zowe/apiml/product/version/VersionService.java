@@ -18,10 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.util.FileUtils;
+import org.springframework.util.ResourceUtils;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 
 /**
  * Class for retrieving information about Zowe version from Zowe's manifest.json
@@ -36,6 +38,8 @@ public class VersionService {
 
     @Value("${apiml.zoweManifest:#{null}}")
     private String zoweManifest;
+    @Value("${apiml.zoweManifestEncoding:IBM1047}")
+    private String zoweManifestEncoding;
 
     public VersionService() {
         this.buildInfo = new BuildInfo();
@@ -85,25 +89,28 @@ public class VersionService {
      */
     private VersionInfoDetails getZoweVersion(String manifestJsonFile) {
         try {
-            String manifestJson = FileUtils.readFile(manifestJsonFile);
-            if (manifestJson != null) {
-                return readManifestJson(manifestJson);
-            } else {
-                log.debug("File have not found in provided location: {}", manifestJsonFile);
-            }
+            File file = ResourceUtils.getFile(manifestJsonFile);
+            return readManifestJson(Files.readAllBytes(file.toPath()));
         } catch (IOException e) {
             log.debug("Error in reading the file {}: {}", manifestJsonFile, e.getMessage());
         }
         return null;
     }
 
-    private VersionInfoDetails readManifestJson(String manifestJson) throws UnsupportedEncodingException {
+    private VersionInfoDetails readManifestJson(byte[] jsonInBytes) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String manifestJson = new String(jsonInBytes);
         try {
             return retrieveZoweVersion(manifestJson, mapper);
         } catch (JsonProcessingException e) {
-            log.debug("Error in parsing Zowe build manifest.json file: {}", e.getMessage());
+            try {
+                //try mainframe encoding
+                manifestJson = new String(jsonInBytes, Charset.forName(zoweManifestEncoding));
+                return retrieveZoweVersion(manifestJson, mapper);
+            } catch (JsonProcessingException ex) {
+                log.debug("Error in parsing Zowe build manifest.json file: {}", e.getMessage());
+            }
         }
         return null;
     }
