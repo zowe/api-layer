@@ -59,6 +59,14 @@ public class HttpsFactoryTest {
     }
 
     @Test
+    public void shouldCreateSecureSslContextWithEmptyKeystoreWhenNoKeystoreIsProvided() throws KeyStoreException {
+        HttpsConfig httpsConfig = HttpsConfig.builder().protocol("TLSv1.2").verifySslCertificatesOfServices(true).build();
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        httpsFactory.createSslContext();
+        assertFalse(httpsFactory.getUsedKeyStore().aliases().hasMoreElements());
+    }
+
+    @Test
     public void shouldCreateSecureHttpClient() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);

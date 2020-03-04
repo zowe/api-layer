@@ -77,6 +77,9 @@ public class HttpsFactory {
         }
     }
 
+    /**
+     * Method is only for testing purpose. It is stored only in case of empty keystore (not if keystore is provided).
+     */
     KeyStore getUsedStore() {
         return usedKeyStore;
     }
@@ -176,8 +179,7 @@ public class HttpsFactory {
                 config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray());
     }
 
-    private void
-    loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
+    private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         log.info("Loading trust key ring: " + config.getKeyStore());
         sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()),
