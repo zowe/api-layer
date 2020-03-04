@@ -16,10 +16,10 @@ import org.zowe.apiml.eurekaservice.model.Health;
 
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Response;
-
 import java.util.HashMap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class HealthControllerTest extends JerseyTest {
 

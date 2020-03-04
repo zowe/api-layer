@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:web="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-    <display-name>Hello World Jersey</display-name>
+    <display-name>Enabler Java Sample App</display-name>
     <servlet>
-        <servlet-name>jersey</servlet-name>
+        <servlet-name>enablerJavaSampleApp</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>jersey.config.server.provider.packages</param-name>
@@ -21,8 +21,8 @@
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>jersey</servlet-name>
-        <url-pattern>/hellojersey/*</url-pattern>
+        <servlet-name>enablerJavaSampleApp</servlet-name>
+        <url-pattern>/enablerJavaSampleApp/*</url-pattern>
     </servlet-mapping>
 
 </web-app>

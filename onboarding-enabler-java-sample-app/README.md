@@ -1,12 +1,12 @@
-# Sample Java Jersey service
+# Onboarding Enabler Java Sample App
 
 This is a sample Hello World application using Java Jersey that uses the 'onboarding-enabler-java' enabler.
 
-# How to Run 
+# How to Run with gradle
 
-You can start the service using the following command:
+You can start the service using the following command from the onboarding-enabler-java-sample-app directory:
 
-    ./gradlew helloworld-jersey:tomcatRun
+    ../gradlew tomcatRun
 
 For more information, see [docs/local-configuration.md](docs/local-configuration.md).
 
