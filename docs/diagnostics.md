@@ -42,14 +42,14 @@ If the encoding of manifest.json file is different from UTF-8 and IBM1047 it req
 Example of response:
 
     {
-        "apiml": {
-            "version": "1.3.3-SNAPSHOT",
-            "buildNumber": "n/a",
-            "commitHash": "91a66c4"
-        },
         "zowe": {
             "version": "1.8.0",
             "buildNumber": "437",
             "commitHash": "8dd9f512a2723bc07840c193d78e5d5ff5751e92"
+        },
+        "apiml": {
+            "version": "1.3.3-SNAPSHOT",
+            "buildNumber": "10",
+            "commitHash": "c50d0b5"
         }
-    }                                                         
+    }                                                  
