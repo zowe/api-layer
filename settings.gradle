@@ -17,3 +17,5 @@ include 'security-service-client-spring'
 
 include 'onboarding-enabler-java'
 include 'onboarding-enabler-spring'
+include 'zaas-client'
+
