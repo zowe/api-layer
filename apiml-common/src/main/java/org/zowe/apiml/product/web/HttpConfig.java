@@ -173,7 +173,7 @@ public class HttpConfig {
     }
 
     /**
-     * @return HttpCLient, which doesn't use certificate to authenticate
+     * @return HttpClient which doesn't use a certificate to authenticate
      */
     @Bean
     @Primary
@@ -182,7 +182,7 @@ public class HttpConfig {
     }
 
     /**
-     * @return HttpCLient, which doesn't use certificate to authenticate
+     * @return HttpClient, which doesn't use a certificate to authenticate
      */
     @Bean
     @Qualifier("secureHttpClientWithoutKeystore")
