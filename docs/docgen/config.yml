@@ -1,5 +1,8 @@
 messageFiles:
 
+  - title: "API mediation utility messages"
+    file: ../../apiml-utility/src/main/resources/utility-log-messages.yml
+
   - title: "API mediation common messages"
     file: ../../apiml-common/src/main/resources/common-log-messages.yml
 
