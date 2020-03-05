@@ -17,3 +17,10 @@ dependencies {
     testCompile libraries.javax_servlet_api
     testCompile libraries.hamcrest
 }
+
+
+test {
+    jacoco {
+        append = false
+    }
+}
