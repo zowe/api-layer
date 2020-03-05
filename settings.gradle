@@ -1,5 +1,15 @@
 rootProject.name = 'api-layer'
 
+buildCache {
+    local {
+        enabled = false
+    }
+    remote(HttpBuildCache) {
+        url = 'http://18.195.20.86/cache/'
+        push = true
+    }
+}
+
 include 'discovery-service'
 include 'apiml-utility'
 include 'apiml-common'
