@@ -26,6 +26,7 @@ public class BeanConfig {
     @Primary
     public MessageService messageServiceDiscovery() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
+        messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
         messageService.loadMessages("/security-common-log-messages.yml");
         messageService.loadMessages("/discovery-log-messages.yml");
