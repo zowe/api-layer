@@ -49,7 +49,8 @@ task runTests(type: NpmTask) {
 task pnpmInstall(type: Exec) {
     def operativeSystem = System.properties['os.name']
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
-    outputs.dir('frontend/build')
+
+    outputs.dir('frontend/node_modules')
     outputs.cacheIf { true }
     if (operativeSystem.contains("Windows"))
         commandLine "pnpm.cmd", "--prefix", "${project.projectDir}/frontend/", "install"
