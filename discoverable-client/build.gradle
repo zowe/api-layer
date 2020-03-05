@@ -57,3 +57,10 @@ dependencies {
 
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
+
+
+test {
+    jacoco {
+        append = false
+    }
+}

@@ -91,3 +91,9 @@ bootRun {
     }
     systemProperties = System.properties
 }
+
+test {
+    jacoco {
+        append = false
+    }
+}
