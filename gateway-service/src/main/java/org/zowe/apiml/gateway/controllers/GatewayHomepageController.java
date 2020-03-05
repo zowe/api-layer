@@ -122,9 +122,10 @@ public class GatewayHomepageController {
         String catalogStatusText = "The API Catalog is not running";
         String catalogIconName = "warning";
         boolean linkEnabled = false;
+        boolean authServiceEnabled = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances("apicatalog");
-        if (serviceInstances != null) {
+        if (serviceInstances != null && authServiceEnabled) {
             long catalogCount = serviceInstances.size();
             if (catalogCount == 1) {
                 linkEnabled = true;
