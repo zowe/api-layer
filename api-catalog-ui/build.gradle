@@ -48,8 +48,9 @@ task runTests(type: NpmTask) {
 
 task pnpmInstall(type: Exec) {
     def operativeSystem = System.properties['os.name']
-    inputs.file('frontend/package.json')
+    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.dir('frontend/build')
+    outputs.cacheIf { true }
     if (operativeSystem.contains("Windows"))
         commandLine "pnpm.cmd", "--prefix", "${project.projectDir}/frontend/", "install"
     else
@@ -58,13 +59,14 @@ task pnpmInstall(type: Exec) {
 
 
 task bundle(type: NpmTask) {
-    inputs.dir('frontend/src')
-    inputs.dir('frontend/public')
-    inputs.files('frontend/.env*')
-    inputs.file('frontend/eslintrc.json')
-    inputs.file('frontend/package.json')
+    inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/eslintrc.json').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('frontend/build')
+    outputs.cacheIf { true }
 
     dependsOn pnpmInstall
     args = ['run', 'build']
