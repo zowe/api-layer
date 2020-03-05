@@ -185,6 +185,9 @@ public class GatewayNotifier implements Runnable {
                     notification.process();
                 }
             } catch (InterruptedException e) {
+                log.warn("Thread for Gateway notification was interrupted", e);
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
                 log.debug("Unexpected exception on gateway notifier", e);
             }
         }

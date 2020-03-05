@@ -98,7 +98,7 @@ public final class CacheUtils {
             final net.sf.ehcache.Cache ehCache = (net.sf.ehcache.Cache) nativeCache;
             return (List<T>) ehCache.getAll(ehCache.getKeys()).values().stream().map(Element::getObjectValue).collect(Collectors.toList());
         } else {
-            throw new IllegalArgumentException("Unsupported type of cache : " + (nativeCache == null ? null : nativeCache.getClass()));
+            throw new IllegalArgumentException("Unsupported type of cache : " + nativeCache.getClass());
         }
     }
 
