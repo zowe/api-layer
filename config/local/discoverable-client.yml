@@ -9,11 +9,10 @@ spring:
 apiml:
     service:
         # The `apiml.service` node contains information required by any APIML service
-        id: discoverableclient  # Service ID of this service
+        serviceId: discoverableclient  # Service ID of this service
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
-        port: 10012  # Default port name for discoverable-client service
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        preferIpAddress: false
+        port: 10012  # Default port for discoverable-client service
+        serviceIpAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         discoveryServiceUrls: https://localhost:10011/eureka/
 
 server:
@@ -24,15 +23,3 @@ server:
         keyStorePassword: password
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
-
-eureka:
-    client:
-        enabled: true
-        serviceUrl:
-            defaultZone: ${apiml.service.discoveryServiceUrls}
-    instance:
-        metadata-map:
-            discovery:
-                service:
-                    title: Service Spring Integration Enabler sample application API
-                    description:  Sample API services to demonstrate Spring Integration Enabler
