@@ -93,7 +93,7 @@ public class CacheUtilsTest {
     }
 
     @Test
-    public void testGetAllRecords_MissingCache() {
+    public void givenUnknownCacheName_whenGetAllRecords_thenThrowsException() {
         CacheManager cacheManager = mock(CacheManager.class);
         IllegalArgumentException iae = Assertions.assertThrows(IllegalArgumentException.class, () -> {
             CacheUtils.getAllRecords(cacheManager, "unknownCacheName");
@@ -102,7 +102,7 @@ public class CacheUtilsTest {
     }
 
     @Test
-    public void testGetAllRecords_UnsupportedCacheManager() {
+    public void givenUnsupportedCacheManager_whenGetAllRecords_thenThrowsException() {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
         when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
@@ -121,7 +121,7 @@ public class CacheUtilsTest {
     }
 
     @Test
-    public void testGetAllRecords_Success() {
+    public void givenValidCacheManager_whenGetAllRecords_thenReadAllStoredRecords() {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
         net.sf.ehcache.Cache ehCache = PowerMockito.mock(net.sf.ehcache.Cache.class);

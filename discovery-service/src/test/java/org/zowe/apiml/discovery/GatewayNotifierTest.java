@@ -39,12 +39,20 @@ public class GatewayNotifierTest {
 
     private PeerAwareInstanceRegistry registry;
 
+    private RestTemplate restTemplate;
+    private MessageService messageService;
+    private GatewayNotifier gatewayNotifierSync;
+
     @Before
     public void setUp() {
         EurekaServerContext context = mock(EurekaServerContext.class);
         registry = mock(AwsInstanceRegistry.class);
         when(context.getRegistry()).thenReturn(registry);
         EurekaServerContextHolder.initialize(context);
+
+        restTemplate = mock(RestTemplate.class);
+        messageService = mock(MessageService.class);
+        gatewayNotifierSync = new GatewayNotifierSync(restTemplate, messageService);
     }
 
     private InstanceInfo createInstanceInfo(String serviceId, String hostName, int port, int securePort) {
@@ -70,10 +78,6 @@ public class GatewayNotifierTest {
 
     @Test
     public void testServiceUpdated() {
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        MessageService messageService = mock(MessageService.class);
-        GatewayNotifier gatewayNotifier = new GatewayNotifierSync(restTemplate, messageService);
-
         verify(restTemplate, never()).delete(anyString());
 
         List<InstanceInfo> instances = Arrays.asList(
@@ -85,11 +89,11 @@ public class GatewayNotifierTest {
         when(application.getInstances()).thenReturn(instances);
         when(registry.getApplication("GATEWAY")).thenReturn(application);
 
-        gatewayNotifier.serviceUpdated("testService", null);
+        gatewayNotifierSync.serviceUpdated("testService", null);
         verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services/testService");
         verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services/testService");
 
-        gatewayNotifier.serviceUpdated(null, null);
+        gatewayNotifierSync.serviceUpdated(null, null);
         verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services");
         verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services");
 
@@ -100,25 +104,19 @@ public class GatewayNotifierTest {
     public void testMissingGateway() {
         final String messageKey = "org.zowe.apiml.discovery.errorNotifyingGateway";
 
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        MessageService messageService = mock(MessageService.class);
-        GatewayNotifier gatewayNotifier = new GatewayNotifierSync(restTemplate, messageService);
         when(registry.getApplication(anyString())).thenReturn(null);
         when(messageService.createMessage(messageKey)).thenReturn(createMessage(messageKey));
 
-        gatewayNotifier.serviceUpdated("serviceX", null);
+        gatewayNotifierSync.serviceUpdated("serviceX", null);
 
         verify(messageService, times(1)).createMessage(messageKey);
     }
 
     @Test
     public void testNotificationFailed() {
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        MessageService messageService = mock(MessageService.class);
         MessageTemplate messageTemplate = new MessageTemplate("key", "number", MessageType.ERROR, "text");
         Message message = Message.of("requestedKey", messageTemplate, new Object[0]);
         when(messageService.createMessage(anyString(), (Object[]) any())).thenReturn(message);
-        GatewayNotifier gatewayNotifier = new GatewayNotifierSync(restTemplate, messageService);
         doThrow(new RuntimeException("any exception")).when(restTemplate).delete(anyString());
         List<InstanceInfo> instances = new LinkedList<>();
         Application application = mock(Application.class);
@@ -126,16 +124,16 @@ public class GatewayNotifierTest {
         when(registry.getApplication("GATEWAY")).thenReturn(application);
 
         // no gateway is registred
-        gatewayNotifier.serviceUpdated("service", "host:service:1433");
+        gatewayNotifierSync.serviceUpdated("service", "host:service:1433");
         verify(restTemplate, never()).delete(anyString());
 
         // notify gateway itself
         instances.add(createInstanceInfo("GATEWAY","host", 1000, 1433));
-        gatewayNotifier.serviceUpdated("GATEWAY", "host:GATEWAY:1433");
+        gatewayNotifierSync.serviceUpdated("GATEWAY", "host:GATEWAY:1433");
         verify(restTemplate, never()).delete(anyString());
 
         // notify gateway and restTemplate failed
-        gatewayNotifier.serviceUpdated("service", "host2:service:123");
+        gatewayNotifierSync.serviceUpdated("service", "host2:service:123");
         verify(restTemplate, times(1)).delete(anyString());
         verify(messageService).createMessage(
             "org.zowe.apiml.discovery.registration.gateway.notify",
@@ -152,9 +150,6 @@ public class GatewayNotifierTest {
         InstanceInfo gatewayInstance = createInstanceInfo("gateway", 111, 123);
         String gatewayUrl = "https://gateway:123/auth/distribute/" + targetInstanceId;
 
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        MessageService messageService = mock(MessageService.class);
-        GatewayNotifier gatewayNotifier = new GatewayNotifierSync(restTemplate, messageService);
         Application application = mock(Application.class);
         when(application.getInstances()).thenReturn(Collections.singletonList(gatewayInstance));
         when(registry.getApplication("GATEWAY")).thenReturn(application);
@@ -166,21 +161,18 @@ public class GatewayNotifierTest {
         when(messageService.createMessage(messageKey, gatewayUrl, targetInstanceId)).thenReturn(msg);
 
         // succeed notified
-        gatewayNotifier.distributeInvalidatedCredentials(targetInstanceId);
+        gatewayNotifierSync.distributeInvalidatedCredentials(targetInstanceId);
         verify(restTemplate, times(1)).getForEntity(eq(gatewayUrl), any(), (Exception) any());
 
         // error on notification
         when(restTemplate.getForEntity(anyString(), any())).thenThrow(new RuntimeException());
-        gatewayNotifier.distributeInvalidatedCredentials(targetInstanceId);
+        gatewayNotifierSync.distributeInvalidatedCredentials(targetInstanceId);
         verify(messageService, times(1)).createMessage(messageKey, gatewayUrl, targetInstanceId);
     }
 
     @Test
     public void testAsynchronousTreatment() {
-        RestTemplate restTemplate = mock(RestTemplate.class);
-        MessageService messageService = mock(MessageService.class);
         GatewayNotifierHandler gatewayNotifier = new GatewayNotifierHandler(restTemplate, messageService);
-
         gatewayNotifier.afterPropertiesSet();
 
         gatewayNotifier.serviceUpdated("serviceId", "instanceId");
