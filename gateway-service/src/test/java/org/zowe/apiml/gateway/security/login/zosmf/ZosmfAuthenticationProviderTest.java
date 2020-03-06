@@ -29,6 +29,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.jaas.JaasAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -41,8 +42,7 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -373,6 +373,7 @@ public class ZosmfAuthenticationProviderTest {
         AuthenticationService authenticationService = mock(AuthenticationService.class);
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+        ReflectionTestUtils.setField(zosmfAuthenticationProvider, "useJwtToken", Boolean.TRUE);
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn("user1");
         TokenAuthentication authentication2 = mock(TokenAuthentication.class);
@@ -384,6 +385,23 @@ public class ZosmfAuthenticationProviderTest {
         when(authenticationService.createTokenAuthentication("user1", "jwtToken1")).thenReturn(authentication2);
 
         assertSame(authentication2, zosmfAuthenticationProvider.authenticate(authentication));
+    }
+
+    @Test
+    public void testJwt_givenZosmfJwt_whenItIsIgnoring_thenCreateZoweJwt() {
+        AuthenticationService authenticationService = mock(AuthenticationService.class);
+        ZosmfService zosmfService = mock(ZosmfService.class);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+        ReflectionTestUtils.setField(zosmfAuthenticationProvider, "useJwtToken", Boolean.FALSE);
+
+        EnumMap<ZosmfService.TokenType, String> tokens = new EnumMap<>(ZosmfService.TokenType.class);
+        tokens.put(ZosmfService.TokenType.JWT, "jwtToken");
+        tokens.put(ZosmfService.TokenType.LTPA, "ltpaToken");
+        when(zosmfService.authenticate(any())).thenReturn(new ZosmfService.AuthenticationResponse("domain", tokens));
+
+        zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken("userId", "password"));
+
+        verify(authenticationService, times(1)).createJwtToken("userId", "domain", "ltpaToken");
     }
 
 }
