@@ -1,21 +1,14 @@
 import Loadable from 'react-loadable';
+import React, { lazy } from 'react';
 
 export const AsyncAppContainer = Loadable({
     loader: () => import('../App/AppContainer'),
     loading: () => null,
 });
 
-export const AsyncLoginContainer = Loadable({
-    loader: () => import('../Login/LoginContainer'),
-    loading: () => null,
-});
+export const AsyncLoginContainer = lazy(() => import('../Login/LoginContainer'));
 
-export const AsyncDashboardContainer = Loadable({
-    loader: () => import('../Dashboard/DashboardContainer'),
-    loading: () => null,
-});
+export const AsyncDashboardContainer = lazy(()  => import('../Dashboard/DashboardContainer'));
 
-export const AsyncDetailPageContainer = Loadable({
-    loader: () => import('../DetailPage/DetailPageContainer'),
-    loading: () => null,
-});
+export const AsyncDetailPageContainer = lazy(() => import('../DetailPage/DetailPageContainer'));
+
