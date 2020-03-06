@@ -1,0 +1,11 @@
+resourcePackages:
+    - org.zowe.apiml.hwsjersey
+prettyPrint: true
+cacheTTL: 0
+openAPI:
+    info:
+        version: '1.0.0'
+        title: Onboarding Enabler Java Sample App
+        description: 'REST API for a Jersey Application using Onboarding Enabler Java'
+    servers:
+        - url: https://localhost:10016/enablerJavaSampleApp

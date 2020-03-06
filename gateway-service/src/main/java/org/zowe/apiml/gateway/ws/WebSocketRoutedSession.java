@@ -36,13 +36,17 @@ public class WebSocketRoutedSession {
 
     private final WebSocketSession webSocketClientSession;
     private final WebSocketSession webSocketServerSession;
-    private final SslContextFactory jettySslContextFactory;
 
     public WebSocketRoutedSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory jettySslContextFactory) {
         log.debug("Creating WebSocketRoutedSession jettySslContextFactory={}", jettySslContextFactory);
         this.webSocketServerSession = webSocketServerSession;
-        this.jettySslContextFactory = jettySslContextFactory;
-        this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl);
+        this.webSocketClientSession = createWebSocketClientSession(webSocketServerSession, targetUrl, jettySslContextFactory);
+    }
+
+    public WebSocketRoutedSession(WebSocketSession webSocketServerSession, WebSocketSession webSocketClientSession) {
+        log.debug("Creating WebSocketRoutedSession with provided server and client session.");
+        this.webSocketClientSession = webSocketClientSession;
+        this.webSocketServerSession = webSocketServerSession;
     }
 
     private WebSocketHttpHeaders getWebSocketHttpHeaders(WebSocketSession webSocketServerSession) {
@@ -64,11 +68,11 @@ public class WebSocketRoutedSession {
         return webSocketServerSession;
     }
 
-    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl) {
+    private WebSocketSession createWebSocketClientSession(WebSocketSession webSocketServerSession, String targetUrl, SslContextFactory sslContextFactory) {
         try {
             log.debug("createWebSocketClientSession(session={},targetUrl={},jettySslContextFactory={})",
-                    webSocketClientSession, targetUrl, jettySslContextFactory);
-            JettyWebSocketClient client = new JettyWebSocketClient(new WebSocketClient(jettySslContextFactory));
+                    webSocketClientSession, targetUrl, sslContextFactory);
+            JettyWebSocketClient client = new JettyWebSocketClient(new WebSocketClient(sslContextFactory));
             client.start();
             URI targetURI = new URI(targetUrl);
             WebSocketHttpHeaders headers = getWebSocketHttpHeaders(webSocketServerSession);
@@ -101,5 +105,21 @@ public class WebSocketRoutedSession {
         if (webSocketClientSession.isOpen()) {
             webSocketClientSession.close(status);
         }
+    }
+
+    public String getServerRemoteAddress() {
+        return getWebSocketServerSession().getRemoteAddress().toString();
+    }
+
+    public String getServerUri() {
+        return getWebSocketServerSession().getUri().toString();
+    }
+
+    public String getClientUri() {
+        return getWebSocketClientSession().getUri().toString();
+    }
+
+    public String getClientId() {
+        return getWebSocketClientSession().getId();
     }
 }

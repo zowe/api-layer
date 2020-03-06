@@ -148,7 +148,7 @@ public class LocationFilterTest {
     @Test
     public void shouldReturnFilterOrder() {
         int filterOrder = this.filter.filterOrder();
-        assertEquals(7, filterOrder);
+        assertEquals(8, filterOrder);
     }
 
     @Test

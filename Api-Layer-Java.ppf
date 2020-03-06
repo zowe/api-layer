@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
   This program and the accompanying materials are made available under the terms of the
   Eclipse Public License v2.0 which accompanies this distribution, and is available at
   https://www.eclipse.org/legal/epl-v20.html
@@ -26,16 +26,10 @@
 	<Source exclude="false" path="./apiml-security-common/src/test/java" web="false"/>
 	<Source exclude="false" path="./gateway-service/src/main/java" web="false"/>
 	<Source exclude="false" path="./gateway-service/src/test/java" web="false"/>
-	<Source exclude="false" path="./helloworld-jersey/src/main/java" web="false"/>
-	<Source exclude="false" path="./helloworld-jersey/src/test/java" web="false"/>
-	<Source exclude="false" path="./helloworld-spring/src/main/java" web="false"/>
-	<Source exclude="false" path="./helloworld-spring/src/test/java" web="false"/>
+	<Source exclude="false" path="./onboarding-enabler-java-sample-app/src/main/java" web="false"/>
+	<Source exclude="false" path="./onboarding-enabler-java-sample-app/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1-sample-app/src/main/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1-sample-app/src/test/java" web="false"/>
-	<Source exclude="false" path="./integration-enabler-spring-v1/src/main/java" web="false"/>
-	<Source exclude="false" path="./integration-enabler-spring-v1/src/test/java" web="false"/>
-	<Source exclude="false" path="./integration-enabler-spring-v2/src/main/java" web="false"/>
-	<Source exclude="false" path="./integration-enabler-spring-v2/src/test/java" web="false"/>
 	<Source exclude="false" path="./integration-tests/src/test/java" web="false"/>
 	<Source exclude="false" path="./security-service-client-spring/src/main/java" web="false"/>
 	<Source exclude="false" path="./security-service-client-spring/src/test/java" web="false"/>
