@@ -9,13 +9,13 @@
  */
 package org.zowe.apiml.apicatalog.services.cached;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.SemanticVersion;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
@@ -25,8 +25,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -55,23 +53,26 @@ import static java.util.stream.Collectors.toList;
 @Service
 @CacheConfig(cacheNames = {"products"})
 public class CachedProductFamilyService {
-    private final Map<String, APIContainer> products = new HashMap<>();
 
-    private final CachedServicesService cachedServicesService;
-    private final Integer cacheRefreshUpdateThresholdInMillis;
-    private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
-    private final TransformService transformService;
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
-    @Autowired
-    public CachedProductFamilyService(GatewayClient gatewayClient,
-                                      CachedServicesService cachedServicesService,
+    private final Integer cacheRefreshUpdateThresholdInMillis;
+
+    private final CachedServicesService cachedServicesService;
+    private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
+    private final TransformService transformService;
+
+    private final Map<String, APIContainer> products = new HashMap<>();
+
+
+    public CachedProductFamilyService(CachedServicesService cachedServicesService,
+                                      TransformService transformService,
                                       @Value("${apiml.service-registry.cacheRefreshUpdateThresholdInMillis}")
                                           Integer cacheRefreshUpdateThresholdInMillis) {
         this.cachedServicesService = cachedServicesService;
+        this.transformService = transformService;
         this.cacheRefreshUpdateThresholdInMillis = cacheRefreshUpdateThresholdInMillis;
-        this.transformService = new TransformService(gatewayClient);
     }
 
     /**
