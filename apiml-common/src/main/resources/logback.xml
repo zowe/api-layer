@@ -6,7 +6,7 @@
     <turboFilter class="org.zowe.apiml.product.logging.ApimlDependencyLogHider"/>
     <turboFilter class="org.zowe.apiml.product.logging.LogLevelInfoFilter"/>
     <turboFilter class="ch.qos.logback.classic.turbo.DuplicateMessageFilter">
-        <AllowedRepetitions>1</AllowedRepetitions>
+        <AllowedRepetitions>0</AllowedRepetitions>
     </turboFilter>
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
