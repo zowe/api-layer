@@ -431,22 +431,4 @@ public class AuthenticationService {
         return expiration;
     }
 
-    Claims getClaims(String jwtToken) {
-        try {
-            return Jwts.parser()
-                .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
-                .parseClaimsJws(jwtToken)
-                .getBody();
-        } catch (ExpiredJwtException exception) {
-            log.debug("Token with id '{}' for user '{}' is expired.", exception.getClaims().getId(), exception.getClaims().getSubject());
-            throw new TokenExpireException("Token is expired.");
-        } catch (JwtException exception) {
-            log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
-            throw new TokenNotValidException("Token is not valid.");
-        } catch (Exception exception) {
-            log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
-            throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid.");
-        }
-    }
-
 }
