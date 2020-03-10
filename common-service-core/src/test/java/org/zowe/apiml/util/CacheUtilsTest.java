@@ -95,9 +95,10 @@ public class CacheUtilsTest {
     @Test
     public void givenUnknownCacheName_whenGetAllRecords_thenThrowsException() {
         CacheManager cacheManager = mock(CacheManager.class);
-        IllegalArgumentException iae = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            CacheUtils.getAllRecords(cacheManager, "unknownCacheName");
-        });
+        IllegalArgumentException iae = Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> CacheUtils.getAllRecords(cacheManager, "unknownCacheName")
+        );
         assertEquals("Unknown cache unknownCacheName", iae.getMessage());
     }
 
@@ -106,9 +107,11 @@ public class CacheUtilsTest {
         CacheManager cacheManager = mock(CacheManager.class);
         Cache cache = mock(Cache.class);
         when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
-        IllegalArgumentException iae = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            CacheUtils.getAllRecords(cacheManager, "knownCacheName");
-        });
+        when(cache.getNativeCache()).thenReturn(new Object());
+        IllegalArgumentException iae = Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> CacheUtils.getAllRecords(cacheManager, "knownCacheName")
+        );
         assertTrue(iae.getMessage().startsWith("Unsupported type of cache : "));
     }
 
