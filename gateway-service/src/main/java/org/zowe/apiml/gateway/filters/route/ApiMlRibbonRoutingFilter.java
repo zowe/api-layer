@@ -54,13 +54,13 @@ public class ApiMlRibbonRoutingFilter extends RibbonRoutingFilter {
     private void addOriginAndRefererIfNotPresent(RequestContext context, MultiValueMap<String, String> headers) {
         HttpServletRequest request = context.getRequest();
 
-        String theAddressTheRequestComesFrom = request.getRemoteHost() != null ? request.getRemoteHost(): request.getRemoteAddr();
+        String theAddressTheRequestComesFrom = request.getRemoteHost() != null ? request.getRemoteHost() : request.getRemoteAddr();
         theAddressTheRequestComesFrom += ":" + request.getRemotePort();
 
-        if(headers.get("Origin") == null) {
+        if (headers.get("Origin") == null) {
             headers.set("Origin", theAddressTheRequestComesFrom);
         }
-        if(headers.get("Referer") == null) {
+        if (headers.get("Referer") == null) {
             headers.add("Referer", theAddressTheRequestComesFrom);
         }
     }
