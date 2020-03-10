@@ -26,10 +26,8 @@
 	<Source exclude="false" path="./apiml-security-common/src/test/java" web="false"/>
 	<Source exclude="false" path="./gateway-service/src/main/java" web="false"/>
 	<Source exclude="false" path="./gateway-service/src/test/java" web="false"/>
-	<Source exclude="false" path="./helloworld-jersey/src/main/java" web="false"/>
-	<Source exclude="false" path="./helloworld-jersey/src/test/java" web="false"/>
-	<Source exclude="false" path="./helloworld-spring/src/main/java" web="false"/>
-	<Source exclude="false" path="./helloworld-spring/src/test/java" web="false"/>
+	<Source exclude="false" path="./onboarding-enabler-java-sample-app/src/main/java" web="false"/>
+	<Source exclude="false" path="./onboarding-enabler-java-sample-app/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1-sample-app/src/main/java" web="false"/>
 	<Source exclude="false" path="./integration-enabler-spring-v1-sample-app/src/test/java" web="false"/>
 	<Source exclude="false" path="./integration-tests/src/test/java" web="false"/>

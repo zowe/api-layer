@@ -31,3 +31,9 @@ dependencies {
 
     testCompileOnly(libraries.lombok)
 }
+
+test {
+    jacoco {
+        append = false
+    }
+}

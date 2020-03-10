@@ -218,13 +218,13 @@ public class GatewayNotifier implements Runnable {
     @AllArgsConstructor
     private enum Type {
 
-            SERVICE_UPDATED( (gatewayNotifier, notification) ->
-                gatewayNotifier.serviceUpdatedProcess(notification.serviceId, notification.instanceId)
-            ),
+        SERVICE_UPDATED( (gatewayNotifier, notification) ->
+            gatewayNotifier.serviceUpdatedProcess(notification.serviceId, notification.instanceId)
+        ),
 
-            DISTRIBUTE_INVALIDATED_CREDENTIALS( (gatewayNotifier, notification) ->
-                gatewayNotifier.distributeInvalidatedCredentialsProcess(notification.instanceId)
-            )
+        DISTRIBUTE_INVALIDATED_CREDENTIALS( (gatewayNotifier, notification) ->
+            gatewayNotifier.distributeInvalidatedCredentialsProcess(notification.instanceId)
+        )
 
         ;
 

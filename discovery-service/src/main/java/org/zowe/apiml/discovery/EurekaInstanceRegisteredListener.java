@@ -41,7 +41,7 @@ public class EurekaInstanceRegisteredListener {
         final Map<String, String> metadata = instanceInfo.getMetadata();
         final String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceInfo.getInstanceId());
 
-        metadataTranslationService.translateMetadata(metadata);
+        metadataTranslationService.translateMetadata(serviceId, metadata);
         metadataDefaultsService.updateMetadata(serviceId, metadata);
 
         if (StringUtils.equalsIgnoreCase(GatewayNotifier.GATEWAY_SERVICE_ID, serviceId)) {

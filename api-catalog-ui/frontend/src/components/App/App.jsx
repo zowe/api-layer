@@ -9,10 +9,8 @@ import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
-import DetailPageContainer from '../DetailPage/DetailPageContainer';
-import DashboardContainer from '../Dashboard/DashboardContainer';
-import LoginContainer from '../Login/LoginContainer';
 import Footer from '../Footer/Footer';
+import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from "./AsyncModules";
 
 class App extends Component {
     render() {
@@ -33,14 +31,14 @@ class App extends Component {
                                         <Route
                                             path="/login"
                                             exact
-                                            render={(props, state) => <LoginContainer {...props} {...state} />}
+                                            render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
                                         />
                                         <Route
                                             exact
                                             path="/dashboard"
                                             render={(props, state) => (
                                                 <BigShield>
-                                                    <DashboardContainer {...props} {...state} />
+                                                    <AsyncDashboardContainer {...props} {...state} />
                                                 </BigShield>
                                             )}
                                         />
@@ -48,7 +46,7 @@ class App extends Component {
                                             path="/tile/:tileID"
                                             render={(props, state) => (
                                                 <BigShield history={history}>
-                                                    <DetailPageContainer {...props} {...state} />
+                                                    <AsyncDetailPageContainer {...props} {...state} />
                                                 </BigShield>
                                             )}
                                         />

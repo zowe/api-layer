@@ -9,13 +9,16 @@
  */
 package org.zowe.apiml.eurekaservice.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 @JsonTypeName(value = "health")
 public class Health {
     private String status;
 
-    public Health(String status) {
+    @JsonCreator
+    public Health(@JsonProperty("status") String status) {
         this.status = status;
     }
 

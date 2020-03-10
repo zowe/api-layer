@@ -11,24 +11,31 @@ package org.zowe.apiml.discovery;
 
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@RunWith(JUnit4.class)
 public class EurekaInstanceRegisteredListenerTest {
 
     @Test
     public void getServiceId() {
         MetadataTranslationService metadataTranslationService = Mockito.mock(MetadataTranslationService.class);
         MetadataDefaultsService metadataDefaultsService = Mockito.mock(MetadataDefaultsService.class);
+        GatewayNotifier gatewayNotifier = mock(GatewayNotifier.class);
 
-        EurekaInstanceRegisteredListener eirl = new EurekaInstanceRegisteredListener(metadataTranslationService, metadataDefaultsService, mock(GatewayNotifier.class));
+        EurekaInstanceRegisteredListener eirl = new EurekaInstanceRegisteredListener(metadataTranslationService, metadataDefaultsService, gatewayNotifier);
 
         doAnswer(
             x -> {
@@ -37,6 +44,8 @@ public class EurekaInstanceRegisteredListenerTest {
             }
         ).when(metadataDefaultsService).updateMetadata(anyString(), any());
 
+        final Map<String, String> metadata = new HashMap<>();
+
         InstanceInfo instanceInfo = mock(InstanceInfo.class);
         when(instanceInfo.getInstanceId()).thenReturn("1:serviceName:2");
         EurekaInstanceRegisteredEvent event = mock(EurekaInstanceRegisteredEvent.class);
@@ -44,7 +53,9 @@ public class EurekaInstanceRegisteredListenerTest {
 
         eirl.listen(event);
 
-        verify(metadataDefaultsService, times(1)).updateMetadata(anyString(), any());
+        verify(metadataTranslationService, times(1)).translateMetadata("serviceName", metadata);
+        verify(metadataDefaultsService, times(1)).updateMetadata("serviceName", metadata);
+        verify(gatewayNotifier, times(1)).serviceUpdated("serviceName", "1:serviceName:2");
     }
 
     private EurekaInstanceRegisteredEvent createEvent(String instanceId) {

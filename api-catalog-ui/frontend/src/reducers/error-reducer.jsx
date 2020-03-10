@@ -1,4 +1,4 @@
-import { SEND_ERROR, CLEAR_ALL_ERRORS, GATEWAY_DOWN, GATEWAY_UP } from '../constants/error-constants';
+import { SEND_ERROR, CLEAR_ALL_ERRORS } from '../constants/error-constants';
 
 const errorReducer = (state = { errors: [] }, action) => {
     switch (action.type) {
@@ -7,10 +7,6 @@ const errorReducer = (state = { errors: [] }, action) => {
 
         case CLEAR_ALL_ERRORS:
             return { ...state, errors: [] };
-
-        case GATEWAY_DOWN:
-        case GATEWAY_UP:
-            return { ...state, gatewayActive: action.payload };
 
         default:
             return state;

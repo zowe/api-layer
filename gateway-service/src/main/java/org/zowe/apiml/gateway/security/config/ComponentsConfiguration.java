@@ -28,8 +28,14 @@ public class ComponentsConfiguration {
         return new BCryptPasswordEncoder(10);
     }
 
+    /**
+     * Service to call generating and validating of passTickets. If JVM contains mainframe's class, it uses it,
+     * otherwise method returns dummy implementation
+     * @return mainframe / dummy implementation of passTicket's generation and validation
+     */
     @Bean
     public PassTicketService passTicketService() {
         return new PassTicketService();
     }
+
 }

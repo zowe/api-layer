@@ -9,15 +9,6 @@
  */
 package org.zowe.apiml.gateway.routing;
 
-import org.zowe.apiml.gateway.filters.pre.*;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
-import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.RoutedServicesUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -25,6 +16,14 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
+import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
+import org.zowe.apiml.gateway.filters.pre.*;
+import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.RoutedServicesUser;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,13 +48,15 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    public ZosmfFilter zosmfFilter(AuthenticationService authenticationService) {
-        return new ZosmfFilter(authenticationService);
+    public ServiceAuthenticationFilter serviceAuthenticationFilter() {
+        return new ServiceAuthenticationFilter();
     }
 
     @Bean
-    public ServiceAuthenticationFilter serviceAuthenticationFilter() {
-        return new ServiceAuthenticationFilter();
+    public ServiceNotFoundFilter serviceNotFoundFilter() {
+        return new ServiceNotFoundFilter(
+            new RequestContextProviderThreadLocal()
+        );
     }
 
     @Bean

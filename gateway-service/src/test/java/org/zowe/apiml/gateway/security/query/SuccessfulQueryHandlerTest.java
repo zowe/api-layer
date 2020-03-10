@@ -10,7 +10,7 @@
 package org.zowe.apiml.gateway.security.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.DiscoveryClient;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,13 +26,13 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.security.Key;
 import java.security.KeyPair;
-import java.security.PublicKey;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -58,7 +58,7 @@ public class SuccessfulQueryHandlerTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private EurekaClient discoveryClient;
+    private DiscoveryClient discoveryClient;
 
     @Mock
     private CacheManager cacheManager;
@@ -77,8 +77,9 @@ public class SuccessfulQueryHandlerTest {
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
         }
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
         AuthenticationService authenticationService = new AuthenticationService(
-            applicationContext, authConfigurationProperties, jwtSecurityInitializer,
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager
         );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
@@ -120,4 +121,5 @@ public class SuccessfulQueryHandlerTest {
         assertTrue(response.contains("\"creation\":"));
         assertTrue(response.contains("\"expiration\":"));
     }
+
 }
