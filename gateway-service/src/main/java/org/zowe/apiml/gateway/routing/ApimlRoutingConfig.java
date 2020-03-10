@@ -11,14 +11,18 @@ package org.zowe.apiml.gateway.routing;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.ribbon.support.RibbonRequestCustomizer;
+import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
+import org.springframework.cloud.netflix.zuul.filters.route.RibbonCommandFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
 import org.zowe.apiml.gateway.filters.pre.*;
+import org.zowe.apiml.gateway.filters.route.ApiMlRibbonRoutingFilter;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
@@ -45,6 +49,14 @@ public class ApimlRoutingConfig {
     @Bean
     public SlashFilter slashFilter() {
         return new SlashFilter();
+    }
+
+    @Bean
+    @Autowired
+    public ApiMlRibbonRoutingFilter apiMlRibbonRoutingFilter(ProxyRequestHelper helper,
+                                                             RibbonCommandFactory<?> ribbonCommandFactory,
+                                                             List<RibbonRequestCustomizer> requestCustomizers) {
+        return new ApiMlRibbonRoutingFilter(helper, ribbonCommandFactory, requestCustomizers);
     }
 
     @Bean
