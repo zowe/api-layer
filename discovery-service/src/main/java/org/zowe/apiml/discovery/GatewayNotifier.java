@@ -25,6 +25,11 @@ import org.zowe.apiml.util.EurekaUtils;
 
 import java.util.List;
 
+/**
+ * This component is responsible for notifying all gateways about service changes. It is the easiest way how discovery
+ * service sends information about a change to all gateways to make a delay between registration and stoping of service
+ * and using or releasing on gateways sides the shortest.
+ */
 @Component
 @Slf4j
 public class GatewayNotifier {
@@ -46,6 +51,13 @@ public class GatewayNotifier {
         return getServerContext().getRegistry();
     }
 
+    /**
+     * Method notify all gateways about any change of service serviceId. This method should be call immediately after
+     * any modification of service instance happened.
+     *
+     * @param serviceId id of modified service
+     * @param instanceId is of modified instance, if it is available
+     */
     public void serviceUpdated(String serviceId, String instanceId) {
         final PeerAwareInstanceRegistry registry = getRegistry();
         final Application application = registry.getApplication("GATEWAY");
