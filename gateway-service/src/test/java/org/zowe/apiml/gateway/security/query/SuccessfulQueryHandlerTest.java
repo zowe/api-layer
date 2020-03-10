@@ -72,10 +72,8 @@ public class SuccessfulQueryHandlerTest {
         SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         Key privateKey = null;
-        PublicKey publicKey = null;
         if (keyPair != null) {
             privateKey = keyPair.getPrivate();
-            publicKey = keyPair.getPublic();
         }
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
         AuthenticationService authenticationService = new AuthenticationService(
@@ -84,7 +82,6 @@ public class SuccessfulQueryHandlerTest {
         );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
-        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
 

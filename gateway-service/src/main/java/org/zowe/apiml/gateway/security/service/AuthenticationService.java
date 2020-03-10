@@ -43,10 +43,7 @@ import org.zowe.apiml.util.EurekaUtils;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.LTPA;
@@ -65,6 +62,8 @@ public class AuthenticationService {
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String CACHE_VALIDATION_JWT_TOKEN = "validationJwtToken";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
+
+    private static final String TOKEN_IS_NOT_VALID_DUE_TO = "Token is not valid due to: {}.";
 
     private final ApplicationContext applicationContext;
     private final AuthConfigurationProperties authConfigurationProperties;
@@ -177,11 +176,11 @@ public class AuthenticationService {
             return new TokenExpireException("Token is expired.");
         }
         if (exception instanceof JwtException) {
-            log.debug("Token is not valid due to: {}.", exception.getMessage());
+            log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
             return new TokenNotValidException("Token is not valid.");
         }
 
-        log.debug("Token is not valid due to: {}.", exception.getMessage());
+        log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
         return new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid.");
     }
 
@@ -432,7 +431,7 @@ public class AuthenticationService {
         return expiration;
     }
 
-    private Claims getClaims(String jwtToken) {
+    Claims getClaims(String jwtToken) {
         try {
             return Jwts.parser()
                 .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
@@ -442,10 +441,10 @@ public class AuthenticationService {
             log.debug("Token with id '{}' for user '{}' is expired.", exception.getClaims().getId(), exception.getClaims().getSubject());
             throw new TokenExpireException("Token is expired.");
         } catch (JwtException exception) {
-            log.debug("Token is not valid due to: {}.", exception.getMessage());
+            log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
             throw new TokenNotValidException("Token is not valid.");
         } catch (Exception exception) {
-            log.debug("Token is not valid due to: {}.", exception.getMessage());
+            log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
             throw new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid.");
         }
     }

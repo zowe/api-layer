@@ -143,9 +143,10 @@ public class AuthenticationServiceTest {
     @Test
     public void shouldThrowExceptionWithNullSecret() {
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(null);
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.createJwtToken(USER, DOMAIN, LTPA);
-        });
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> authService.createJwtToken(USER, DOMAIN, LTPA)
+        );
     }
 
     @Test
@@ -165,31 +166,35 @@ public class AuthenticationServiceTest {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         String brokenToken = jwtToken + "not";
         TokenAuthentication token = new TokenAuthentication(brokenToken);
-        assertThrows(TokenNotValidException.class, () -> {
-            authService.validateJwtToken(token);
-        });
+        assertThrows(
+            TokenNotValidException.class,
+            () -> authService.validateJwtToken(token)
+        );
     }
 
     @Test
     public void shouldThrowExceptionWhenTokenIsExpired() {
         TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
-        assertThrows(TokenExpireException.class, () -> {
-            authService.validateJwtToken(token);
-        });
+        assertThrows(
+            TokenExpireException.class,
+            () -> authService.validateJwtToken(token)
+        );
     }
 
     @Test
     public void shouldThrowExceptionWhenOccurUnexpectedException() {
-        assertThrows(TokenNotValidException.class, () -> {
-            authService.validateJwtToken((String) null);
-        });
+        assertThrows(
+            TokenNotValidException.class,
+            () -> authService.validateJwtToken((String) null)
+        );
     }
 
     @Test
     public void shouldThrowExceptionWhenOccurUnexpectedException2() {
-        assertThrows(TokenNotValidException.class, () -> {
-            authService.validateJwtToken((TokenAuthentication) null);
-        });
+        assertThrows(
+            TokenNotValidException.class,
+            () -> authService.validateJwtToken((TokenAuthentication) null)
+        );
     }
 
     @Test
@@ -247,16 +252,18 @@ public class AuthenticationServiceTest {
     public void shouldThrowExceptionWhenTokenIsInvalidWhileExtractingLtpa() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         String brokenToken = jwtToken + "not";
-        assertThrows(TokenNotValidException.class, () -> {
-            authService.getLtpaTokenWithValidation(brokenToken);
-        });
+        assertThrows(
+            TokenNotValidException.class,
+            () -> authService.getLtpaTokenWithValidation(brokenToken)
+        );
     }
 
     @Test
     public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
-        assertThrows(TokenExpireException.class, () -> {
-            authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey));
-        });
+        assertThrows(
+            TokenExpireException.class,
+            () -> authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey))
+        );
     }
 
     private String createExpiredJwtToken(Key secretKey) {
@@ -359,7 +366,7 @@ public class AuthenticationServiceTest {
     private AuthenticationService getSpiedAuthenticationService(ZosmfServiceV2 spiedZosmfService) {
         AuthenticationService out = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
-            spiedZosmfService, discoveryClient, restTemplate
+            spiedZosmfService, discoveryClient, restTemplate, mock(CacheManager.class)
         );
         ReflectionTestUtils.setField(out, "meAsProxy", out);
         return spy(out);
@@ -484,7 +491,7 @@ public class AuthenticationServiceTest {
         class AuthenticationServiceExceptionHanlderTest extends AuthenticationService {
 
             AuthenticationServiceExceptionHanlderTest() {
-                super(null, null, null, null, null, null);
+                super(null, null, null, null, null, null, null);
             }
 
             @Override
@@ -548,7 +555,7 @@ public class AuthenticationServiceTest {
         when(cacheManager.getCache(anyString())).thenReturn(cache);
 
         AuthenticationService authenticationService = new AuthenticationService(
-            applicationContext, authConfigurationProperties, jwtSecurityInitializer,
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer, getSpiedZosmfService(),
             discoveryClient, restTemplate, cacheManager
         );
 
