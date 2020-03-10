@@ -42,7 +42,7 @@ public class VersionControllerTest {
     @Test
     public void givenSpecificVersions_whenVersionEndpointCalled_thenVersionInfoShouldBeGivenInSuccessfulResponse() throws Exception {
         Mockito.when(versionService.getVersion()).thenReturn(getDummyVersionInfo());
-        this.mockMvc.perform(get("/version"))
+        this.mockMvc.perform(get("/api/v1/gateway/version"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.zowe.version", is("0.0.0")))
             .andExpect(jsonPath("$.zowe.buildNumber", is("000")))

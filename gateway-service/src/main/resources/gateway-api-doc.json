@@ -9,10 +9,14 @@
         {
             "name": "Security",
             "description": "Mainframe authentication and authorization operations"
+        },
+        {
+            "name": "Diagnostic",
+            "description": "Operations which showing diagnostic information"
         }
     ],
     "paths": {
-        "/login": {
+        "/auth/login": {
             "post": {
                 "tags": [
                     "Security"
@@ -65,7 +69,7 @@
                 }
             }
         },
-        "/query": {
+        "/auth/query": {
             "get": {
                 "tags": [
                     "Security"
@@ -107,7 +111,7 @@
                 }
             }
         },
-        "/ticket": {
+        "/auth/ticket": {
             "post": {
                 "tags": [
                     "Security"
@@ -164,11 +168,33 @@
                     }
                 }
             }
+        },
+        "/version": {
+            "get": {
+                "tags": [
+                    "Diagnostic"
+                ],
+                "summary": "Return version information of API Mediation Layer and Zowe",
+                "description": "Use the `/version` API to get the version information of API Mediation Layer and Zowe.\nThe version information includes version, build number and commit hash.\nIn the response can be only API ML version information or API ML and Zowe version information, this depends on API ML installed as part of Zowe build or as standalone application.",
+                "operationId": "VersionInfoUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VersionInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "servers": [
         {
-            "url": "/api/v1/gateway/auth"
+            "url": "/api/v1/gateway"
         }
     ],
     "components": {
@@ -280,6 +306,35 @@
                     "userId": "John",
                     "applicationName": "ZOWEAPPL",
                     "ticket": "LZTKEEDQ"
+                }
+            },
+            "VersionInfoDetails": {
+                "description": "Version information",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    },
+                    "buildNumber": {
+                        "type": "string"
+                    },
+                    "commitHash": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "version": "1.4.0",
+                    "buildNumber": "123",
+                    "commitHash": "1a3b5c7"
+                }
+            },
+            "VersionInfo": {
+                "properties": {
+                    "zowe": {
+                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    },
+                    "apiml": {
+                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    }
                 }
             }
         }

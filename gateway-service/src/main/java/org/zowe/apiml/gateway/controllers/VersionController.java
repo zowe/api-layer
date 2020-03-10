@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.controllers;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +23,9 @@ import org.zowe.apiml.product.version.VersionService;
  * API for providing information about Zowe and API ML versions
  */
 
-@Slf4j
 @AllArgsConstructor
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api/v1/gateway")
 public class VersionController {
 
     private VersionService versionService;
