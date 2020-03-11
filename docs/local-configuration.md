@@ -48,55 +48,28 @@ java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.conf
 java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
 ```
 
-### Sample Application -EnablerV1Sample 
+### Sample Application - integration-enabler-spring-v1-sample-app
 
 ```shell
 java -jar integration-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.location=file:./config/local/integration-enabler-spring-v1-sample-app.yml
 ```
 
-### Helloworld Jersey
+### Sample Application - onboarding-enabler-java-sample-app
 
-To run Helloworld Jersey, you need to have Apache Tomcat installed in your computer. Follow the steps below:
+To run onboarding-enabler-java-sample-app, follow the steps below:
 
-1.  Download Apache Tomcat 8.0.39 and install it. 
-2.  Build Helloworld Jersey through IntelliJ or by running `gradlew helloworld-jersey:build` in the terminal. 
+1. Run `../gradlew tomcatRun` from the `onboarding-enabler-java-sample-app` project directory
+  **Optional** : You can override the keystore and truststore location with these additional parameters: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
+If you need debug information about SSL configuration while deploying, use this parameter `-Djavax.net.debug=SSL`.
 
-3.  Enable HTTPS for Apache Tomcat. In order to do that, there are few additional steps that are needed to be done:
-    * Go to `apache-tomcat-8.0.39-windows-x64\conf` directory (the full path depends on where you decided to install Tomcat) and open `server.xml` file with some text editor as Administrator. Add the xml block below:
-        ```xml
-               <Connector port="8080" protocol="org.apache.coyote.http11.Http11NioProtocol"
-                              maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
-                              clientAuth="false" sslProtocol="TLS"
-                              keystoreFile="{your-project-directory}\api-layer\keystore\localhost\localhost.keystore.p12"
-                              keystorePass="password"
-                                                    />
-        ```
-        Be also sure to comment the HTTP connector which uses the same port.
-    * Navigate to the `WEB-INF/` located in `helloworld-jersey` module and add the following xml block to the `web.xml` file, right below the `<servlet-mapping>` tag:
-        ```xml
-        <security-constraint>
-                <web-resource-collection>
-                    <web-resource-name>Protected resource</web-resource-name>
-                    <url-pattern>/*</url-pattern>
-                    <http-method>GET</http-method>
-                    <http-method>POST</http-method>
-                </web-resource-collection>
-                <user-data-constraint>
-                    <transport-guarantee>CONFIDENTIAL</transport-guarantee>
-                </user-data-constraint>
-            </security-constraint>
-        ```
-4. Run `gradlew tomcatRun` with these additional parameters: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
-If you need some more information about SSL configuration status while deploying, use this parameter `-Djavax.net.debug=SSL`.
+2. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service `ENABLERJAVASAMPLEAPP` is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:
 
-5. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:
-
-    * [https://localhost:10011/eureka/apps/HELLOJERSEY/localhost:hellojersey:10016](https://localhost:10011/eureka/apps/HELLOJERSEY/localhost:hellojersey:10016) for metadata and service information
-    * [https://localhost:10016/hellojersey/api-doc](https://localhost:10016/hellojersey/api-doc) which contains the API documentation
-    * [https://localhost:10016/hellojersey/application/health](https://localhost:10016/hellojersey/application/health) for the health check endpoint containing the status of the application
+    * [https://localhost:10016/enablerJavaSampleApp/openapi.json](https://localhost:10016/enablerJavaSampleApp/openapi.json) which contains the API documentation
+    * [https://localhost:10016/enablerJavaSampleApp/application/health](https://localhost:10016/enablerJavaSampleApp/application/health) for the health check endpoint containing the status of the application
+    * [https://localhost:10016/enablerJavaSampleApp/application/info](https://localhost:10016/enablerJavaSampleApp/application/info) for the service information such as hostname, port etc
     * [https://localhost:10016](https://localhost:10016) for the homepage 
-    * [https://localhost:10016/hellojersey/application/info](https://localhost:10016/hellojersey/application/info) for the service information such as hostname, port etc
-    * [https://localhost:10016/hellojersey/v1/greeting](https://localhost:10016/hellojersey/v1/greeting) for the greeting endpoint
+    * [https://localhost:10016/enablerJavaSampleApp/api/v1/greeting](https://localhost:10016/enablerJavaSampleApp/api/v1/greeting) for the greeting endpoint
+    * [https://localhost:10010/api/v1/enablerjavasampleapp/greeting](https://localhost:10010/api/v1/enablerjavasampleapp/greeting) for the greeting endpoint, routed through API Gateway
     
     Go to the [API Catalog](https://localhost:10010/ui/v1/apicatalog) and check if the API documentation of the service is retrieved.
 
@@ -236,6 +209,5 @@ If your editor of choice happens to be Idea and you want to use its 'Run Dashboa
 |   Discovery Service    | 10011 |
 |  Discoverable client   | 10012 |
 |      API Catalog       | 10014 |
-|   Helloworld (Jersey)  | 10016 |
-| Helloworld (ExpressJs) | 10020 |
-|   Helloworld (Spring)  | 10021 |
+|  EnablerJavaSampleApp  | 10016 |
+

@@ -37,6 +37,7 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
+    -Dapiml.security.zosmf.useJwtToken=false \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=$DIR/../keystore/localhost/localhost.keystore.p12 \

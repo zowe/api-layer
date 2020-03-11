@@ -50,7 +50,7 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     @Test
     public void testConfig() {
         assertEquals("pre", serviceAuthenticationFilter.filterType());
-        assertEquals(9, serviceAuthenticationFilter.filterOrder());
+        assertEquals(10, serviceAuthenticationFilter.filterOrder());
         assertTrue(serviceAuthenticationFilter.shouldFilter());
     }
 

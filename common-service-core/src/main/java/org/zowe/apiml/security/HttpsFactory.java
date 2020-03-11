@@ -45,6 +45,7 @@ public class HttpsFactory {
 
     private HttpsConfig config;
     private SSLContext secureSslContext;
+    private KeyStore usedKeyStore = null;
     private ApimlLogger apimlLog;
 
     public HttpsFactory(HttpsConfig httpsConfig) {
@@ -76,6 +77,13 @@ public class HttpsFactory {
         }
     }
 
+    /**
+     * Method is only for testing purpose. It is stored only in case of empty keystore (not if keystore is provided).
+     */
+    KeyStore getUsedStore() {
+        return usedKeyStore;
+    }
+
     private ConnectionSocketFactory createIgnoringSslSocketFactory() {
         return new SSLConnectionSocketFactory(createIgnoringSslContext(), new NoopHostnameVerifier());
     }
@@ -84,6 +92,7 @@ public class HttpsFactory {
         try {
             KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
+            usedKeyStore = emptyKeystore;
             return new SSLContextBuilder()
                 .loadTrustMaterial(null, (certificate, authType) -> true)
                 .loadKeyMaterial(emptyKeystore, null)
@@ -146,6 +155,7 @@ public class HttpsFactory {
             log.info("No key store is defined");
             KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
+            usedKeyStore = emptyKeystore;
             sslContextBuilder.loadKeyMaterial(emptyKeystore, null);
         }
     }

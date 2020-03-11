@@ -64,7 +64,7 @@ public class SlashFilterTest {
     @Test
     public void shouldReturnFilterOrder() {
         int filterOrder = this.filter.filterOrder();
-        assertEquals(8, filterOrder);
+        assertEquals(9, filterOrder);
     }
 
     @Test

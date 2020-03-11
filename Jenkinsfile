@@ -190,44 +190,6 @@ pipeline {
                     }
                 }
 
-                /************************************************************************
-                * STAGE
-                * -----
-                * SonarQube Scanner
-                *
-                * EXECUTION CONDITIONS
-                * --------------------
-                * - SHOULD_BUILD is true
-                * - The build is still successful and not unstable
-                *
-                * DESCRIPTION
-                * -----------
-                * Runs the sonar-scanner analysis tool, which submits the source, test results,
-                *  and coverage results for analysis in our SonarQube server.
-                * TODO: This step does not yet support branch or PR submissions properly.
-                ***********************************************************************/
-                stage('sonar') {
-                    steps {
-                        withSonarQubeEnv('sonarcloud-server') {
-                            // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                            sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
-                        }
-                    }
-                }
-
-                stage('Publish UI test results') {
-                    steps {
-                        publishHTML(target: [
-                            allowMissing         : false,
-                            alwaysLinkToLastBuild: false,
-                            keepAll              : true,
-                            reportDir            : 'api-catalog-ui/frontend/test-results',
-                            reportFiles          : 'test-report-unit.html',
-                            reportName           : "UI Unit Test Results"
-                        ])
-                    }
-                }
-
                 stage('Publish snapshot version to Artifactory for master') {
                     when {
                         expression {
@@ -262,6 +224,43 @@ pipeline {
             }
         }
 
+        /************************************************************************
+         * STAGE
+         * -----
+         * SonarQube Scanner
+         *
+         * EXECUTION CONDITIONS
+         * --------------------
+         * - SHOULD_BUILD is true
+         * - The build is still successful and not unstable
+         *
+         * DESCRIPTION
+         * -----------
+         * Runs the sonar-scanner analysis tool, which submits the source, test results,
+         *  and coverage results for analysis in our SonarQube server.
+         * TODO: This step does not yet support branch or PR submissions properly.
+         ***********************************************************************/
+        stage('sonar') {
+            steps {
+                withSonarQubeEnv('sonarcloud-server') {
+                    // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
+                    sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
+                }
+            }
+        }
+
+        stage('Publish UI test results') {
+            steps {
+                publishHTML(target: [
+                    allowMissing         : false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll              : true,
+                    reportDir            : 'api-catalog-ui/frontend/test-results',
+                    reportFiles          : 'test-report-unit.html',
+                    reportName           : "UI Unit Test Results"
+                ])
+            }
+        }
 
         stage ('Codecov') {
             when { expression { changeClass in ['full', 'api-catalog'] } }
@@ -305,17 +304,10 @@ pipeline {
 
         success {
             archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'api-catalog-services/build/pom.xml'
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'discovery-service/build/pom.xml'
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'gateway-service/build/pom.xml'
-            archiveArtifacts artifacts: 'integration-enabler-spring-v1/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'integration-enabler-spring-v2/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'common-service-core/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'apiml-common/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
 
             withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {

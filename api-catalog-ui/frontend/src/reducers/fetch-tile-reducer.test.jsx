@@ -33,40 +33,6 @@ describe('>>> Tile reducer tests', () => {
         createdTimestamp: '2018-08-22T08:31:22.948+0000',
     };
 
-    it('should create actions fetch tile success', () => {
-        const expectedAction = {
-            type: FETCH_TILES_SUCCESS,
-            payload: [],
-        };
-
-        expect(fetchTilesSuccess([])).toEqual(expectedAction);
-    });
-
-    it('should create actions fetch tile failed', () => {
-        const expectedAction = {
-            type: FETCH_TILES_FAILED,
-        };
-
-        expect(fetchTilesFailed()).toEqual(expectedAction);
-    });
-
-    it('should create actions fetch tile start', () => {
-        const expectedAction = {
-            type: FETCH_TILES_REQUEST,
-            payload: '',
-        };
-
-        expect(fetchTilesStart('')).toEqual(expectedAction);
-    });
-
-    it('should create actions fetch tile stop', () => {
-        const expectedAction = {
-            type: FETCH_TILES_STOP,
-        };
-
-        expect(fetchTilesStop()).toEqual(expectedAction);
-    });
-
     it('should handle FETCH_TILES_REQUEST', () => {
         const expectedState = {
             id: '',
