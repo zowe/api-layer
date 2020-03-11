@@ -13,7 +13,9 @@ import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import static io.restassured.RestAssured.given;
@@ -21,6 +23,7 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
+@Category(MainframeDependentTests.class)
 public class LogoutTest {
 
     private final static String BASE_PATH = "/api/v1/gateway";
