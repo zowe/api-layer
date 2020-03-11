@@ -52,14 +52,6 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    @Autowired
-    public ApiMlRibbonRoutingFilter apiMlRibbonRoutingFilter(ProxyRequestHelper helper,
-                                                             RibbonCommandFactory<?> ribbonCommandFactory,
-                                                             List<RibbonRequestCustomizer> requestCustomizers) {
-        return new ApiMlRibbonRoutingFilter(helper, ribbonCommandFactory, requestCustomizers);
-    }
-
-    @Bean
     public ServiceAuthenticationFilter serviceAuthenticationFilter() {
         return new ServiceAuthenticationFilter();
     }
