@@ -75,7 +75,7 @@
                     "Security"
                 ],
                 "summary": "Validate the authentication token.",
-                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authenticatio\n  \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
+                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
                 "operationId": "validateUsingGET",
                 "security": [
                     {
