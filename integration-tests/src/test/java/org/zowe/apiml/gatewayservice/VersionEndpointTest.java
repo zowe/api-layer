@@ -36,7 +36,7 @@ public class VersionEndpointTest {
         String scheme = serviceConfiguration.getScheme();
         String host = serviceConfiguration.getHost();
         int port = serviceConfiguration.getPort();
-        requestString = String.format("%s://%s:%s%s", scheme, host, port, "/version");
+        requestString = String.format("%s://%s:%s%s", scheme, host, port, "/api/v1/gateway/version");
     }
 
     @Test
