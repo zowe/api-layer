@@ -21,6 +21,7 @@ ext.publishTasksList = projectsToPublish.collect {
 configure(subprojects.findAll { it.name in projectsToPublish }) {
     apply plugin: "maven"
     apply plugin: 'maven-publish'
+    apply plugin: 'java'
 
     publishing {
         repositories.maven {
