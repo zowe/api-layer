@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -59,6 +60,9 @@ public class SuccessfulQueryHandlerTest {
     @Mock
     private DiscoveryClient discoveryClient;
 
+    @Mock
+    private CacheManager cacheManager;
+
     @BeforeEach
     public void setup() {
         httpServletRequest = new MockHttpServletRequest();
@@ -73,7 +77,8 @@ public class SuccessfulQueryHandlerTest {
         }
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
         AuthenticationService authenticationService = new AuthenticationService(
-            applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService, discoveryClient, restTemplate
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
+            discoveryClient, restTemplate, cacheManager
         );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);

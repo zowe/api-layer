@@ -73,6 +73,9 @@ dependencies {
     testRuntime libraries.http_client
     testCompile libraries.rest_assured
     testCompile libraries.lombok
+    testCompile libraries.powermock_api_mockito2
+    testCompile libraries.power_mock_junit4
+    testCompile libraries.power_mock_junit4_rule
 }
 
 bootJar.archiveName = "${bootJar.baseName}.jar"

@@ -12,16 +12,16 @@ package org.zowe.apiml.gateway.controllers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -50,6 +50,15 @@ public class AuthControllerTest {
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
+    }
+
+    @Test
+    public void distributeInvalidate() throws Exception {
+        when(authenticationService.distributeInvalidate("instance/1")).thenReturn(true);
+        this.mockMvc.perform(get("/auth/distribute/instance/1")).andExpect(status().is(SC_OK));
+
+        when(authenticationService.distributeInvalidate("instance2")).thenReturn(false);
+        this.mockMvc.perform(get("/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
     }
 
 }

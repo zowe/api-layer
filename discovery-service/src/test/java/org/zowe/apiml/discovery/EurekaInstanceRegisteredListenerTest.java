@@ -77,6 +77,10 @@ public class EurekaInstanceRegisteredListenerTest {
         verify(notifier, times(1)).serviceUpdated("service", "host:service:instance");
         listener.listen(createEvent("unknown format"));
         verify(notifier, times(1)).serviceUpdated(null, "unknown format");
+
+        verify(notifier, never()).distributeInvalidatedCredentials(anyString());
+        listener.listen(createEvent("host:GATEWAY:instance"));
+        verify(notifier, times(1)).distributeInvalidatedCredentials("host:GATEWAY:instance");
     }
 
 }
