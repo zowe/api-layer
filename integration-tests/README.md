@@ -13,7 +13,15 @@ The integration test suite detects when services are started up and are ready to
 
 ## General Quick start
 
+Setup of the tests and services - environment-configuration.yml
+
 Perform a general quick start to execute tests within the pipeline.
+- Is there any difference between the starting via npm and in services?
+- Also does it matter whether the gradle is started from Idea?
+
+via npm run api-layer
+
+Even for local the certificate needs to be imported. 
 
 **Follow these steps:**
 
@@ -45,7 +53,7 @@ Perform a Localhost Quick start when you need to run the tests on your local mac
     ./gradlew runLocalIntegrationTests
     ```
 
-3. (Optional) Run all local tests including all sample services with the following shell script:
+3. (Optional) Run all local tests including all sample services with the following shell script. Run the onboard-enabler-java-sample-app before:
 
     ```shell
     ./gradlew runAllLocalIntegrationTests
