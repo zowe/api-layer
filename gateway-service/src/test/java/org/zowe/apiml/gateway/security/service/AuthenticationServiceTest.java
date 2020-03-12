@@ -15,12 +15,20 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.*;
+import net.sf.ehcache.Element;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,6 +63,8 @@ import static org.mockito.Mockito.*;
     CacheConfig.class,
     AuthenticationServiceTest.Context.class
 })
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(net.sf.ehcache.Cache.class)
 public class AuthenticationServiceTest {
 
     private static final String ZOSMF = "zosmf";
@@ -99,9 +109,9 @@ public class AuthenticationServiceTest {
             privateKey = keyPair.getPrivate();
             publicKey = keyPair.getPublic();
         }
-        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
-        when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
-        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+        Mockito.lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+        Mockito.lenient().when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+        Mockito.lenient().when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
         zosmfUrl = mockZosmfUrl(discoveryClient);
     }
 
@@ -133,9 +143,10 @@ public class AuthenticationServiceTest {
     @Test
     public void shouldThrowExceptionWithNullSecret() {
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(null);
-        assertThrows(IllegalArgumentException.class, () -> {
-            authService.createJwtToken(USER, DOMAIN, LTPA);
-        });
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> authService.createJwtToken(USER, DOMAIN, LTPA)
+        );
     }
 
     @Test
@@ -155,31 +166,35 @@ public class AuthenticationServiceTest {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         String brokenToken = jwtToken + "not";
         TokenAuthentication token = new TokenAuthentication(brokenToken);
-        assertThrows(TokenNotValidException.class, () -> {
-            authService.validateJwtToken(token);
-        });
+        assertThrows(
+            TokenNotValidException.class,
+            () -> authService.validateJwtToken(token)
+        );
     }
 
     @Test
     public void shouldThrowExceptionWhenTokenIsExpired() {
         TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
-        assertThrows(TokenExpireException.class, () -> {
-            authService.validateJwtToken(token);
-        });
+        assertThrows(
+            TokenExpireException.class,
+            () -> authService.validateJwtToken(token)
+        );
     }
 
     @Test
     public void shouldThrowExceptionWhenOccurUnexpectedException() {
-        assertThrows(TokenNotValidException.class, () -> {
-            authService.validateJwtToken((String) null);
-        });
+        assertThrows(
+            TokenNotValidException.class,
+            () -> authService.validateJwtToken((String) null)
+        );
     }
 
     @Test
     public void shouldThrowExceptionWhenOccurUnexpectedException2() {
-        assertThrows(TokenNotValidException.class, () -> {
-            authService.validateJwtToken((TokenAuthentication) null);
-        });
+        assertThrows(
+            TokenNotValidException.class,
+            () -> authService.validateJwtToken((TokenAuthentication) null)
+        );
     }
 
     @Test
@@ -237,16 +252,18 @@ public class AuthenticationServiceTest {
     public void shouldThrowExceptionWhenTokenIsInvalidWhileExtractingLtpa() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         String brokenToken = jwtToken + "not";
-        assertThrows(TokenNotValidException.class, () -> {
-            authService.getLtpaTokenWithValidation(brokenToken);
-        });
+        assertThrows(
+            TokenNotValidException.class,
+            () -> authService.getLtpaTokenWithValidation(brokenToken)
+        );
     }
 
     @Test
     public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
-        assertThrows(TokenExpireException.class, () -> {
-            authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey));
-        });
+        assertThrows(
+            TokenExpireException.class,
+            () -> authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey))
+        );
     }
 
     private String createExpiredJwtToken(Key secretKey) {
@@ -349,7 +366,7 @@ public class AuthenticationServiceTest {
     private AuthenticationService getSpiedAuthenticationService(ZosmfServiceV2 spiedZosmfService) {
         AuthenticationService out = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
-            spiedZosmfService, discoveryClient, restTemplate
+            spiedZosmfService, discoveryClient, restTemplate, mock(CacheManager.class)
         );
         ReflectionTestUtils.setField(out, "meAsProxy", out);
         return spy(out);
@@ -474,7 +491,7 @@ public class AuthenticationServiceTest {
         class AuthenticationServiceExceptionHanlderTest extends AuthenticationService {
 
             AuthenticationServiceExceptionHanlderTest() {
-                super(null, null, null, null, null, null);
+                super(null, null, null, null, null, null, null);
             }
 
             @Override
@@ -498,6 +515,57 @@ public class AuthenticationServiceTest {
         exception = as.handleJwtParserException(new RuntimeException("msg"));
         assertTrue(exception instanceof TokenNotValidException);
         assertEquals("An internal error occurred while validating the token therefor the token is no longer valid.", exception.getMessage());
+    }
+
+    @Test
+    public void testDistributeInvalidateNotFoundApplication() {
+        when(discoveryClient.getApplication("gateway")).thenReturn(null);
+        assertFalse(authService.distributeInvalidate("instanceId"));
+    }
+
+    @Test
+    public void testDistributeInvalidateNotFoundInstance() {
+        Application application = mock(Application.class);
+        when(application.getByInstanceId("instanceId")).thenReturn(null);
+
+        when(discoveryClient.getApplication("gateway")).thenReturn(application);
+        assertFalse(authService.distributeInvalidate("instanceId"));
+    }
+
+    @Test
+    public void testDistributeInvalidateSuccess() {
+        reset(restTemplate);
+
+        InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433);
+
+        Application application = mock(Application.class);
+        when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
+        when(discoveryClient.getApplication("gateway")).thenReturn(application);
+
+        Map<Object, Element> mapCache = new HashMap<>();
+        mapCache.put("a", new Element("a", "a"));
+        mapCache.put("b", new Element("b", "b"));
+
+        ApplicationContext applicationContext = mock(ApplicationContext.class);
+        CacheManager cacheManager = mock(CacheManager.class);
+        Cache cache = mock(Cache.class);
+        net.sf.ehcache.Cache ehCache = PowerMockito.mock(net.sf.ehcache.Cache.class);
+        when(ehCache.getAll(any())).thenReturn(mapCache);
+        when(cache.getNativeCache()).thenReturn(ehCache);
+        when(cacheManager.getCache(anyString())).thenReturn(cache);
+
+        AuthenticationService authenticationService = new AuthenticationService(
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer, getSpiedZosmfService(),
+            discoveryClient, restTemplate, cacheManager
+        );
+
+        when(applicationContext.getBean(AuthenticationService.class)).thenReturn(authenticationService);
+
+        authenticationService.distributeInvalidate(instanceInfo.getInstanceId());
+
+        verify(restTemplate, times(2)).delete(anyString(), anyString());
+        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}", "a");
+        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}", "a");
     }
 
     @Configuration
@@ -539,10 +607,10 @@ public class AuthenticationServiceTest {
         }
 
         @Bean
-        public AuthenticationService getAuthenticationService() {
+        public AuthenticationService getAuthenticationService(CacheManager cacheManager) {
             return new AuthenticationService(
                 applicationContext, getAuthConfigurationProperties(), getJwtSecurityInitializer(),
-                getZosmfService(), getDiscoveryClient(), getRestTemplate()
+                getZosmfService(), getDiscoveryClient(), getRestTemplate(), cacheManager
             );
         }
 

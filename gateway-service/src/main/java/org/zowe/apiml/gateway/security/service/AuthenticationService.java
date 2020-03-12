@@ -19,6 +19,7 @@ import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -30,20 +31,19 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.LTPA;
@@ -60,6 +60,10 @@ public class AuthenticationService {
 
     private static final String LTPA_CLAIM_NAME = "ltpa";
     private static final String DOMAIN_CLAIM_NAME = "dom";
+    private static final String CACHE_VALIDATION_JWT_TOKEN = "validationJwtToken";
+    private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
+
+    private static final String TOKEN_IS_NOT_VALID_DUE_TO = "Token is not valid due to: {}.";
 
     private final ApplicationContext applicationContext;
     private final AuthConfigurationProperties authConfigurationProperties;
@@ -67,6 +71,7 @@ public class AuthenticationService {
     private final ZosmfService zosmfService;
     private final EurekaClient discoveryClient;
     private final RestTemplate restTemplate;
+    private final CacheManager cacheManager;
 
     // to force calling inside methods with aspects - ie. ehCache aspect
     private AuthenticationService meAsProxy;
@@ -110,14 +115,14 @@ public class AuthenticationService {
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
-    @CacheEvict(value = "validationJwtToken", key = "#jwtToken")
-    @Cacheable(value = "invalidatedJwtTokens", key = "#jwtToken", condition = "#jwtToken != null")
+    @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
+    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */
         if (distribute) {
-            final Application application = discoveryClient.getApplication("gateway");
+            final Application application = discoveryClient.getApplication(CoreService.GATEWAY.getServiceId());
             // wrong state, gateway have to exists (at least this current instance), return false like unsuccessful
             if (application == null) return Boolean.FALSE;
 
@@ -153,7 +158,7 @@ public class AuthenticationService {
      * @param jwtToken token to check
      * @return true - token is invalidated, otherwise token is still valid
      */
-    @Cacheable(value = "invalidatedJwtTokens", unless = "true", key = "#jwtToken", condition = "#jwtToken != null")
+    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, unless = "true", key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean isInvalidated(String jwtToken) {
         return Boolean.FALSE;
     }
@@ -171,11 +176,11 @@ public class AuthenticationService {
             return new TokenExpireException("Token is expired.");
         }
         if (exception instanceof JwtException) {
-            log.debug("Token is not valid due to: {}.", exception.getMessage());
+            log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
             return new TokenNotValidException("Token is not valid.");
         }
 
-        log.debug("Token is not valid due to: {}.", exception.getMessage());
+        log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
         return new TokenNotValidException("An internal error occurred while validating the token therefor the token is no longer valid.");
     }
 
@@ -205,7 +210,7 @@ public class AuthenticationService {
      * @param jwtToken token to verification
      * @return true if token is still valid, otherwise false
      */
-    @Cacheable(value = "validationJwtToken", key = "#jwtToken", condition = "#jwtToken != null")
+    @Cacheable(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
         QueryResponse queryResponse = parseJwtToken(jwtToken);
 
@@ -243,6 +248,31 @@ public class AuthenticationService {
         final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
         out.setAuthenticated(authenticated);
         return out;
+    }
+
+    /**
+     * This method get all invalidated JWT token in the cache and distributes them to instance of Gateway with name
+     * in argument toInstanceId. If instance cannot be find it return false. A notification can throw an runtime
+     * exception. In all other cases all invalidated token are distributed and method returns true.
+     *
+     * @param toInstanceId instanceId of Gateway where invalidated JWT token should be sent
+     * @return true if all token were sent, otherwise false
+     */
+    public boolean distributeInvalidate(String toInstanceId) {
+        final Application application = discoveryClient.getApplication(CoreService.GATEWAY.getServiceId());
+        if (application == null) return false;
+
+        final InstanceInfo instanceInfo = application.getByInstanceId(toInstanceId);
+        if (instanceInfo == null) return false;
+
+        final String url = EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}";
+
+        final Collection<String> invalidated = CacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
+        for (final String invalidatedToken : invalidated) {
+            restTemplate.delete(url, invalidatedToken);
+        }
+
+        return true;
     }
 
     /**

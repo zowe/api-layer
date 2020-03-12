@@ -9,17 +9,17 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.*;
 
 /**
  * Controller offer method to control security. It can contains method for user and also method for calling services
@@ -42,6 +42,18 @@ public class AuthController {
         final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
 
         response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
+    }
+
+    @GetMapping(path = "/distribute/**")
+    public void distributeInvalidate(HttpServletRequest request, HttpServletResponse response) {
+        final String endpoint = "/auth/distribute/";
+        final String uri = request.getRequestURI();
+        final int index = uri.indexOf(endpoint);
+
+        final String toInstanceId = uri.substring(index + endpoint.length());
+        final boolean distributed = authenticationService.distributeInvalidate(toInstanceId);
+
+        response.setStatus(distributed ? SC_OK : SC_NO_CONTENT);
     }
 
 }
