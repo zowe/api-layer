@@ -23,6 +23,7 @@
 # - KEYSTORE_PASSWORD - The password to access the keystore supplied by KEYSTORE
 # - KEY_ALIAS - The alias of the key within the keystore
 # - ALLOW_SLASHES - Allows encoded slashes on on URLs through gateway
+# - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
 # API Mediation Layer Debug Mode
 # To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
@@ -108,6 +109,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
+    -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
