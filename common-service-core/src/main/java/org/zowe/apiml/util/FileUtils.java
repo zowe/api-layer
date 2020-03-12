@@ -117,13 +117,13 @@ public class FileUtils {
     }
 
     /**
-     * Reads test data form a file.
+     * Reads data from a file as text.
      *
      * @param fileName - file name string to look for.
      * @return the file contents as String
      * @throws IOException - if file can't be read.
      */
-    public static String readConfigurationFile(String fileName) throws IOException {
+    public static String readFile(String fileName) throws IOException {
         String fileData = null;
 
         File file = FileUtils.locateFile(fileName);

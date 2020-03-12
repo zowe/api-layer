@@ -9,10 +9,14 @@
         {
             "name": "Security",
             "description": "Mainframe authentication and authorization operations"
+        },
+        {
+            "name": "Diagnostic",
+            "description": "Operations which showing diagnostic information"
         }
     ],
     "paths": {
-        "/login": {
+        "/auth/login": {
             "post": {
                 "tags": [
                     "Security"
@@ -65,13 +69,13 @@
                 }
             }
         },
-        "/query": {
+        "/auth/query": {
             "get": {
                 "tags": [
                     "Security"
                 ],
                 "summary": "Validate the authentication token.",
-                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authenticatio\n  \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
+                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
                 "operationId": "validateUsingGET",
                 "security": [
                     {
@@ -107,7 +111,7 @@
                 }
             }
         },
-        "/ticket": {
+        "/auth/ticket": {
             "post": {
                 "tags": [
                     "Security"
@@ -164,11 +168,33 @@
                     }
                 }
             }
+        },
+        "/version": {
+            "get": {
+                "tags": [
+                    "Diagnostic"
+                ],
+                "summary": "Return version information of API Mediation Layer and Zowe",
+                "description": "Use the `/version` API to get the version information of API Mediation Layer and Zowe.\nThe version information includes version, build number and commit hash.\nIn the response can be only API ML version information or API ML and Zowe version information, this depends on API ML installed as part of Zowe build or as standalone application.",
+                "operationId": "VersionInfoUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VersionInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "servers": [
         {
-            "url": "/api/v1/gateway/auth"
+            "url": "/gateway"
         }
     ],
     "components": {
@@ -280,6 +306,35 @@
                     "userId": "John",
                     "applicationName": "ZOWEAPPL",
                     "ticket": "LZTKEEDQ"
+                }
+            },
+            "VersionInfoDetails": {
+                "description": "Version information",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    },
+                    "buildNumber": {
+                        "type": "string"
+                    },
+                    "commitHash": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "version": "1.4.0",
+                    "buildNumber": "123",
+                    "commitHash": "1a3b5c7"
+                }
+            },
+            "VersionInfo": {
+                "properties": {
+                    "zowe": {
+                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    },
+                    "apiml": {
+                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    }
                 }
             }
         }
