@@ -18,9 +18,6 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-
-import java.util.Map;
 
 /**
  * Api Catalog health information (/application/health)
@@ -31,19 +28,25 @@ import java.util.Map;
 public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
     private static String AUTHENTICATION_SERVICE_ID = "apiml.authorizationService.zosmfServiceId";
     private static String AUTHENTICATION_SERVICE_PROVIDER = "apiml.authorizationService.provider";
+    private static String ZOSMF = "zosmf";
 
     private final DiscoveryClient discoveryClient;
-    private final AuthConfigurationProperties authConfigurationProperties;
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
         String gatewayServiceId = CoreService.GATEWAY.getServiceId();
-        String authServiceId = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_ID);
-        String authServiceProvider = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_PROVIDER);
+        String authServiceId = ZOSMF;
+        String authServiceProvider = ZOSMF;
+        if (!this.discoveryClient.getInstances(gatewayServiceId).isEmpty()){
+            authServiceId = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_ID);
+            authServiceProvider = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_PROVIDER);
+        }
         boolean authServiceUp = false;
         try {
-            if (authServiceProvider.equalsIgnoreCase("zosmf")) {
+            if (authServiceProvider.equalsIgnoreCase(ZOSMF)) {
                 authServiceUp = !this.discoveryClient.getInstances(authServiceId).isEmpty();
+            } else if (authServiceProvider.equalsIgnoreCase("dummy")) {
+                authServiceUp = true;
             }
         } catch (AuthenticationServiceException ex) {
             log.debug("The parameter 'zosmfServiceId' is not configured.", ex);
@@ -54,6 +57,7 @@ public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
 
         builder
             .status(healthStatus)
-            .withDetail(gatewayServiceId, healthStatus.getCode());
+            .withDetail(gatewayServiceId, healthStatus.getCode())
+            .withDetail(authServiceId, healthStatus.getCode());
     }
 }
