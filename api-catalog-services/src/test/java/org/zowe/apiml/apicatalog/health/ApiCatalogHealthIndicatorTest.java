@@ -9,18 +9,20 @@
  */
 package org.zowe.apiml.apicatalog.health;
 
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.zowe.apiml.product.constants.CoreService;
 import org.junit.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,94 +37,93 @@ public class ApiCatalogHealthIndicatorTest {
     private final Health.Builder builder = new Health.Builder();
 
     @Test
-    public void testStatusIsUpWhenGatewayIsAvailableAndProviderIsAvailable() {
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(AUTHENTICATION_SERVICE_ID, ZOSMF);
-        metadata.put(AUTHENTICATION_SERVICE_PROVIDER, ZOSMF);
-        when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(
-                GATEWAY_SERVICE_ID, GATEWAY_SERVICE_ID, "host", 10010, true, metadata)));
-        when(discoveryClient.getInstances(ZOSMF)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(
-                ZOSMF, ZOSMF, "host", 1443, true)));
+    public void givenGatewayAndProviderIsAvailable_whenHealthIsChecked_thenUpStatusIsReturned() {
+        Map<String, String> zosmfMetadata = prepareZosmfMetadata();
+        discoveryReturnValidZosmf();
+        discoveryReturnValidGateway(zosmfMetadata);
+
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
-        assertEquals(Status.UP, builder.build().getStatus());
+        assertThat(builder.build().getStatus(), is(Status.UP));
     }
 
     @Test
-    public void testStatusIsUpWhenGatewayIsAvailableAndProviderIsDummy() {
+    public void givenGatewayIsAvailableAndProviderIsDummy_whenHealthIsChecked_thenUpStatusIsReturned() {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(AUTHENTICATION_SERVICE_ID, "");
         metadata.put(AUTHENTICATION_SERVICE_PROVIDER, "dummy");
-        when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(
-                GATEWAY_SERVICE_ID, GATEWAY_SERVICE_ID, "host", 10010, true, metadata)));
-        when(discoveryClient.getInstances(ZOSMF)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(
-                ZOSMF, ZOSMF, "host", 1443, true)));
+        discoveryReturnValidZosmf();
+        discoveryReturnValidGateway(metadata);
+
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
-        assertEquals(Status.UP, builder.build().getStatus());
+        assertThat(builder.build().getStatus(), is(Status.UP));
     }
 
     @Test
-    public void testStatusIsDownWhenGatewayIsAvailableAndProviderIsWrong() {
+    public void givenGatewayIsAvailableButProviderIsWrong_whenHealthIsChecked_thenDownStatusIsReturned() {
         HashMap<String, String> metadata = new HashMap<>();
         metadata.put(AUTHENTICATION_SERVICE_ID, "notzosmf");
         metadata.put(AUTHENTICATION_SERVICE_PROVIDER, ZOSMF);
-        when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(
-                GATEWAY_SERVICE_ID, GATEWAY_SERVICE_ID, "host", 10010, true, metadata)));
-        when(discoveryClient.getInstances(ZOSMF)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(
-                ZOSMF, ZOSMF, "host", 1443, true)));
+        discoveryReturnValidZosmf();
+        discoveryReturnValidGateway(metadata);
+
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
-        assertEquals(Status.DOWN, builder.build().getStatus());
+        assertThat(builder.build().getStatus(), is(Status.DOWN));
     }
 
     @Test
-    public void testStatusIsDownWhenGatewayIsAvailableAndProviderIsEmpty() {
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(AUTHENTICATION_SERVICE_ID, ZOSMF);
-        metadata.put(AUTHENTICATION_SERVICE_PROVIDER, ZOSMF);
-        when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(
-                GATEWAY_SERVICE_ID, GATEWAY_SERVICE_ID, "host", 10010, true, metadata)));
+    public void givenGatewayIsAvailableAndNoProvider_whenHealthIsChecked_thenDownStatusIsReturned() {
+        Map<String, String> zosmfMetadata = prepareZosmfMetadata();
+        discoveryReturnValidGateway(zosmfMetadata);
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(
             Collections.emptyList());
+
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
-        assertEquals(Status.DOWN, builder.build().getStatus());
+        assertThat(builder.build().getStatus(), is(Status.DOWN));
     }
 
     @Test
-    public void testStatusIsDownWhenGatewayIsUnavailableAndProviderIsAvailable() {
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(AUTHENTICATION_SERVICE_ID, ZOSMF);
-        metadata.put(AUTHENTICATION_SERVICE_PROVIDER, ZOSMF);
+    public void givenProviderIsAvailableButGatewayIsDown_whenHealthIsChecked_theDownStatusIsReturned() {
         when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
             Collections.emptyList());
-        when(discoveryClient.getInstances(ZOSMF)).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance(
-                ZOSMF, ZOSMF, "host", 1443, true)));
+        discoveryReturnValidZosmf();
+
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
-        assertEquals(Status.DOWN, builder.build().getStatus());
+        assertThat(builder.build().getStatus(), is(Status.DOWN));
     }
 
     @Test
-    public void testStatusIsDownWhenGatewayIsUnavailableAndProviderIsMissingMetadata() {
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(AUTHENTICATION_SERVICE_ID, ZOSMF);
-        metadata.put(AUTHENTICATION_SERVICE_PROVIDER, ZOSMF);
+    public void givenGatewayIsUnavailableAndProviderIsMissingMetadata_whenHealthIsChecked_thenDownStatusIsReturned() {
         when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
             Collections.emptyList());
         when(discoveryClient.getInstances(ZOSMF)).thenThrow(
             AuthenticationServiceException.class);
+
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
-        assertEquals(Status.DOWN, builder.build().getStatus());
+        assertThat(builder.build().getStatus(), is(Status.DOWN));
+    }
+
+    private void discoveryReturnValidZosmf(){
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(
+            Collections.singletonList(new DefaultServiceInstance(
+                ZOSMF, ZOSMF, "host", 1443, true)));
+    }
+
+    private void discoveryReturnValidGateway(Map<String, String> metadata) {
+        when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
+            Collections.singletonList(new DefaultServiceInstance(
+                GATEWAY_SERVICE_ID, GATEWAY_SERVICE_ID, "host", 10010, true, metadata)));
+    }
+
+    private Map<String, String> prepareZosmfMetadata() {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(AUTHENTICATION_SERVICE_ID, ZOSMF);
+        metadata.put(AUTHENTICATION_SERVICE_PROVIDER, ZOSMF);
+        return metadata;
     }
 }

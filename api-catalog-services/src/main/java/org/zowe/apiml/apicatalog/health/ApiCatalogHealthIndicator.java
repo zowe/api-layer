@@ -10,6 +10,7 @@
 package org.zowe.apiml.apicatalog.health;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.product.constants.CoreService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,8 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * Api Catalog health information (/application/health)
@@ -56,8 +59,10 @@ public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
         String gatewayServiceId = CoreService.GATEWAY.getServiceId();
         boolean authServiceUp = false;
 
-        authServiceId = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_ID);
-        authServiceProvider = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_PROVIDER);
+        ServiceInstance firstInstanceOfGateway = this.discoveryClient.getInstances(gatewayServiceId).get(0);
+        Map<String, String> gatewayServiceMetadata = firstInstanceOfGateway.getMetadata();
+        authServiceId = gatewayServiceMetadata.get(AUTHENTICATION_SERVICE_ID);
+        authServiceProvider = gatewayServiceMetadata.get(AUTHENTICATION_SERVICE_PROVIDER);
 
         if (authServiceProvider.equalsIgnoreCase(ZOSMF)) {
             authServiceUp = !this.discoveryClient.getInstances(authServiceId).isEmpty();
