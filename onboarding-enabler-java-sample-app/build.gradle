@@ -22,7 +22,10 @@ dependencies {
 
     compileOnly libraries.javax_servlet_api
     compile libraries.jackson_dataformat_yaml
+
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
+
     compile libraries.jersey_server
     compile libraries.jersey_hk2
     compile libraries.jersey_container_servlet_core
@@ -51,10 +54,4 @@ tomcat {
     tomcatRun.truststoreFile = file("${project.rootDir}/keystore/localhost/localhost.truststore.p12")
     tomcatRun.keystorePass = "password"
     tomcatRun.truststorePass = "password"
-}
-
-test {
-    jacoco {
-        append = false
-    }
 }

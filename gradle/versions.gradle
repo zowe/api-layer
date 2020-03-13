@@ -25,12 +25,13 @@ ext {
     zsslVersion = '1.0.0'
     tomcatVersion = '9.0.13' //8.5.33
     commonsLang3Version = '3.7'
+    commonsTextVersion = '1.8'
     gradleGitPropertiesVersion = '1.5.1'
     jettyWebSocketClientVersion = '9.4.11.v20180605'
-    eurekaClientVersion = '1.8.6'
     junitVersion = '4.12'
     junitVintageVersion = '5.5.2'
     eurekaClientVersion = '1.9.13'
+    netflixServoVersion = '0.12.28'
     logbackVersion = '1.2.3'
     spring4Version = '4.3.7.RELEASE'
     awaitilityVersion = '3.0.0'
@@ -52,6 +53,8 @@ ext {
     ehCacheVersion = '2.10.6'
     bootstrapVersion = '4.3.1'
     jqueryVersion = '3.4.1'
+    jsr305Version = '3.0.1'
+    javaxInjectVersion = '1'
 
     libraries = [
         lombok                             : "org.projectlombok:lombok:${lombokVersion}",
@@ -119,9 +122,11 @@ ext {
         tomcat_coyote                      : "org.apache.tomcat:tomcat-coyote:${tomcatVersion}",
         tomcat_embed_core                  : "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         apache_commons_lang3               : "org.apache.commons:commons-lang3:${commonsLang3Version}",
+        apache_commons_text                : "org.apache.commons:commons-text:${commonsTextVersion}",
         jetty_websocket_client             : "org.eclipse.jetty.websocket:websocket-client:${jettyWebSocketClientVersion}",
         jetty_util                         : "org.eclipse.jetty:jetty-util:${jettyWebSocketClientVersion}",
         eureka_client                      : "com.netflix.eureka:eureka-client:${eurekaClientVersion}",
+        netflix_servo                      : "com.netflix.servo:servo-core:${netflixServoVersion}",
 
         junit                              : "junit:junit:${junitVersion}",
         junitVintage                       : "org.junit.vintage:junit-vintage-engine:${junitVintageVersion}",
@@ -145,6 +150,8 @@ ext {
         jersey_media_json_jackson          : "org.glassfish.jersey.media:jersey-media-json-jackson:${jerseyVersion}",
         jersey_test_provider_jdk_http      : "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-jdk-http:${jerseyVersion}",
         bootstrap                          : "org.webjars:bootstrap:${bootstrapVersion}",
-        jquery                             : "org.webjars:jquery:${jqueryVersion}"
+        jquery                             : "org.webjars:jquery:${jqueryVersion}",
+        jsr305                             : "com.google.code.findbugs:jsr305:${jsr305Version}",
+        javax_inject                       : "javax.inject:javax.inject:${javaxInjectVersion}"
     ]
 }

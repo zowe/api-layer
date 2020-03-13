@@ -4,22 +4,21 @@ dependencies {
     implementation libraries.jackson_annotations
     implementation libraries.jackson_dataformat_yaml
     implementation libraries.eureka_client
-    implementation libraries.lombok
+
+    compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     compileOnly libraries.javax_servlet_api
+    compileOnly libraries.javax_inject
 
     testCompile libraries.junit
     testCompile libraries.mockito_core
     testCompile libraries.spring4Mvc
     testCompile libraries.spring4Test
-    testCompile libraries.logback_classic
+
     testCompile libraries.lombok
+    testAnnotationProcessor libraries.lombok
+
     testCompile libraries.javax_servlet_api
     testCompile libraries.hamcrest
-}
-
-test {
-    jacoco {
-        append = false
-    }
 }

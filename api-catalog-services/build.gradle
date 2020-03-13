@@ -42,6 +42,7 @@ dependencies {
     compile(project(':security-service-client-spring'))
 
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     compile libraries.spring_boot_starter_web
     compile libraries.spring_boot_starter_actuator
@@ -61,7 +62,10 @@ dependencies {
 
     testCompile libraries.rest_assured
     testCompile libraries.spring_mock_mvc
+
     testCompile libraries.lombok
+    testAnnotationProcessor libraries.lombok
+
     testCompile libraries.spring_boot_starter_test
 }
 
@@ -90,10 +94,4 @@ bootRun {
              args project.args.split(',')
     }
     systemProperties = System.properties
-}
-
-test {
-    jacoco {
-        append = false
-    }
 }
