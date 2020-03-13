@@ -76,6 +76,7 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
+                    setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
 
                     instance = configuration;
@@ -84,6 +85,14 @@ public class ConfigReader {
         }
 
         return instance;
+    }
+
+    private static void setZosmfConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
+        ZosmfServiceConfiguration zosmfConfiguration = configuration.getZosmfServiceConfiguration();
+        zosmfConfiguration.setHost(System.getProperty("zosmf.host", zosmfConfiguration.getHost()));
+        String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
+        zosmfConfiguration.setPort(Integer.parseInt(port));
+        zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));
     }
 
     private static void setTlsConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
