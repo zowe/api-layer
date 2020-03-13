@@ -14,12 +14,12 @@
 #   http --verify=keystore/local_ca/localca.cer GET https://localhost:10010/api/{zosmf-service-id}/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
 #
 services:
-    - serviceId: zosmf                                   # unique lowercase ID of the service
+    - serviceId: zosmfserviceid                                   # unique lowercase ID of the service
       title: IBM z/OSMF                                           # Title of the z/OSMF service in the API catalog
       description: IBM z/OS Management Facility REST API service  # Description of the z/OSMF service in the API catalog
       catalogUiTileId: zosmf                                      # ID of the API Catalog UI tile for z/OSMF services
       instanceBaseUrls:                                           # list of base URLs for each instance
-        - https://usilca32.lvn.broadcom.net:1443/zosmf/           # scheme://hostname:port/contextPath
+        -                                                         # scheme://hostname:port/contextPath
       homePageRelativeUrl:                                        # Home page of the z/OSMF service
       routes:
         - gatewayUrl: api                                         # [api/ui/ws]/v{majorVersion}

@@ -36,28 +36,35 @@ public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
     protected void doHealthCheck(Health.Builder builder) {
         String gatewayServiceId = CoreService.GATEWAY.getServiceId();
         String authServiceId = ZOSMF;
-        String authServiceProvider = ZOSMF;
-        if (!this.discoveryClient.getInstances(gatewayServiceId).isEmpty()){
-            authServiceId = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_ID);
-            authServiceProvider = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_PROVIDER);
-        }
-        boolean authServiceUp = false;
-        try {
-            if (authServiceProvider.equalsIgnoreCase(ZOSMF)) {
-                authServiceUp = !this.discoveryClient.getInstances(authServiceId).isEmpty();
-            } else if (authServiceProvider.equalsIgnoreCase("dummy")) {
-                authServiceUp = true;
-            }
-        } catch (AuthenticationServiceException ex) {
-            log.debug("The parameter 'zosmfServiceId' is not configured.", ex);
-        }
+        Status healthStatus = Status.DOWN;
 
         boolean gatewayUp = !this.discoveryClient.getInstances(gatewayServiceId).isEmpty();
-        Status healthStatus = (gatewayUp && authServiceUp) ? Status.UP : Status.DOWN;
+
+        if (gatewayUp) {
+            healthStatus = authorizationServiceUp() ? Status.UP : Status.DOWN;
+        }
 
         builder
             .status(healthStatus)
             .withDetail(gatewayServiceId, healthStatus.getCode())
             .withDetail(authServiceId, healthStatus.getCode());
+    }
+
+    private boolean authorizationServiceUp() {
+        String authServiceProvider;
+        String authServiceId;
+        String gatewayServiceId = CoreService.GATEWAY.getServiceId();
+        boolean authServiceUp = false;
+
+        authServiceId = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_ID);
+        authServiceProvider = this.discoveryClient.getInstances(gatewayServiceId).get(0).getMetadata().get(AUTHENTICATION_SERVICE_PROVIDER);
+
+        if (authServiceProvider.equalsIgnoreCase(ZOSMF)) {
+            authServiceUp = !this.discoveryClient.getInstances(authServiceId).isEmpty();
+        } else if (authServiceProvider.equalsIgnoreCase("dummy")) {
+            authServiceUp = true;
+        }
+
+        return authServiceUp;
     }
 }
