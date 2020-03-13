@@ -13,7 +13,7 @@ import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import org.zowe.apiml.util.ObjectUtil;
 import lombok.AllArgsConstructor;
 import lombok.Value;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;

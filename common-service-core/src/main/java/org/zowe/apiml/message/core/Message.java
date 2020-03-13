@@ -13,7 +13,7 @@ import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.util.ObjectUtil;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.Collections;
 import java.util.IllegalFormatConversionException;
@@ -97,7 +97,7 @@ public final class Message {
      */
     public String getConvertedText() {
         String convertedText = validateMessageTextFormat(messageTemplate.getText(), messageParameters);
-        convertedText = StringEscapeUtils.escapeHtml(convertedText);
+        convertedText = StringEscapeUtils.escapeHtml4(convertedText);
         return convertedText;
     }
 
