@@ -14,7 +14,6 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
@@ -90,18 +89,6 @@ public class ApiCatalogHealthIndicatorTest {
         when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
             Collections.emptyList());
         discoveryReturnValidZosmf();
-
-        apiCatalogHealthIndicator.doHealthCheck(builder);
-
-        assertThat(builder.build().getStatus(), is(Status.DOWN));
-    }
-
-    @Test
-    public void givenGatewayIsUnavailableAndProviderIsMissingMetadata_whenHealthIsChecked_thenDownStatusIsReturned() {
-        when(discoveryClient.getInstances(GATEWAY_SERVICE_ID)).thenReturn(
-            Collections.emptyList());
-        when(discoveryClient.getInstances(ZOSMF)).thenThrow(
-            AuthenticationServiceException.class);
 
         apiCatalogHealthIndicator.doHealthCheck(builder);
 
