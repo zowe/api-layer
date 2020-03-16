@@ -102,11 +102,7 @@ public class GatewayHomepageController {
     private void initializeAuthenticationAttributes(Model model) {
         String authStatusText = "The Authentication service is not running";
         String authIconName = "warning";
-        boolean authUp = true;
-
-        if (!authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.DUMMY.toString())) {
-            authUp = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
-        }
+        boolean authUp = authorizationServiceUp();
 
         if (authUp) {
             authStatusText = "The Authentication service is running";
@@ -122,7 +118,7 @@ public class GatewayHomepageController {
         String catalogStatusText = "The API Catalog is not running";
         String catalogIconName = "warning";
         boolean linkEnabled = false;
-        boolean authServiceEnabled = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+        boolean authServiceEnabled = authorizationServiceUp();
 
         List<ServiceInstance> serviceInstances = discoveryClient.getInstances("apicatalog");
         if (serviceInstances != null && authServiceEnabled) {
@@ -145,5 +141,15 @@ public class GatewayHomepageController {
         String gatewayUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_GATEWAY_URL));
         String serviceUrl = catalogInstance.getMetadata().get(String.format("%s.ui_v1.%s", ROUTES, ROUTES_SERVICE_URL));
         return gatewayUrl + serviceUrl;
+    }
+
+    private boolean authorizationServiceUp() {
+        boolean authUp = true;
+
+        if (!authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.DUMMY.toString())) {
+            authUp = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+        }
+
+        return authUp;
     }
 }
