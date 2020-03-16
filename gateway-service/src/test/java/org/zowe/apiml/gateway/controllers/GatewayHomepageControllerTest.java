@@ -174,6 +174,7 @@ public class GatewayHomepageControllerTest {
         metadataMap.put("apiml.routes.ui_v1.serviceUrl", "/apicatalog");
         ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
             "host", 10000, true, metadataMap);
+        authConfigurationProperties.setProvider("zosmf");
 
         when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(
             Collections.singletonList(apiCatalogServiceInstance));
