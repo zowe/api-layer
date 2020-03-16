@@ -168,7 +168,7 @@ public class GatewayHomepageControllerTest {
         );
     }
 
-    private void discoveryReturnValidApiCatalog(){
+    private void discoveryReturnValidApiCatalog() {
         Map<String, String> metadataMap = new HashMap<>();
         metadataMap.put("apiml.routes.ui_v1.gatewayUrl", "ui/v1");
         metadataMap.put("apiml.routes.ui_v1.serviceUrl", "/apicatalog");

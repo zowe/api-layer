@@ -108,7 +108,7 @@ public class ApiCatalogHealthIndicatorTest {
         assertThat(builder.build().getStatus(), is(Status.DOWN));
     }
 
-    private void discoveryReturnValidZosmf(){
+    private void discoveryReturnValidZosmf() {
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(
                 ZOSMF, ZOSMF, "host", 1443, true)));

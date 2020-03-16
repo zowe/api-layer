@@ -11,7 +11,6 @@ package org.zowe.apiml.apicatalog.health;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.zowe.apiml.product.constants.CoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
