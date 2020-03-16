@@ -147,9 +147,9 @@ public class GatewayHomepageControllerTest {
     }
 
     private void assertCatalogIsDownMessageShown(Map<String, Object> preparedModelView) {
-        assertThat(preparedModelView, IsMapContaining.hasEntry("catalogIconName", "warning"));
-        assertThat(preparedModelView, IsMapContaining.hasEntry("catalogStatusText", "The API Catalog is not running"));
-        assertThat(preparedModelView, IsMapContaining.hasEntry("linkEnabled", false));
+        assertThat(preparedModelView, hasEntry("catalogIconName", "warning"));
+        assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is not running"));
+        assertThat(preparedModelView, hasEntry("linkEnabled", false));
         assertThat(preparedModelView, not(hasKey("catalogLink")));
     }
 
