@@ -7,6 +7,7 @@
 # - GATEWAY_PORT - The port the gateway service will use
 # - VERIFY_CERTIFICATES - true/false - Validation of TLS/SSL certitificates for services
 # - ALLOW_SLASHES - true/false - Allows or prohibits the usage of encoded slashes in URL
+# - ZOWE_MANIFEST - The full path to Zowe's manifest.json file
 
 **JAVA_SETUP**
 if [[ ":$PATH:" == *":$JAVA_HOME/bin:"* ]]; then
@@ -37,6 +38,8 @@ java -Xms32m -Xmx256m -Xquickstart \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=**VERIFY_CERTIFICATES** \
     -Dapiml.security.auth.zosmfServiceId=zosmf \
+    -Dapiml.security.zosmf.useJwtToken=false \
+    -Dapiml.zoweManifest=**ZOWE_MANIFEST** \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=$DIR/../keystore/localhost/localhost.keystore.p12 \

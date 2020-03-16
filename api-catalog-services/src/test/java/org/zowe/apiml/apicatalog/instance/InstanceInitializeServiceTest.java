@@ -10,12 +10,6 @@
 
 package org.zowe.apiml.apicatalog.instance;
 
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
-import org.zowe.apiml.product.registry.CannotRegisterServiceException;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -27,21 +21,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.retry.RetryException;
+import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
+import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
+import org.zowe.apiml.product.registry.CannotRegisterServiceException;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.isA;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InstanceInitializeServiceTest {
@@ -165,7 +160,6 @@ public class InstanceInitializeServiceTest {
             "https://localhost:9090/");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
-
         instanceInfo = getStandardInstance(
             "STATICCLIENT",
             InstanceInfo.InstanceStatus.UP,
@@ -173,7 +167,6 @@ public class InstanceInitializeServiceTest {
             "staticclient",
             "https://localhost:9090/discoverableclient");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
-
 
         instanceInfo = getStandardInstance(
             "STATICCLIENT2",
@@ -183,20 +176,19 @@ public class InstanceInitializeServiceTest {
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
-
         instanceInfo = getStandardInstance(
-            "ZOSMFTSO21",
+            "ZOSMF1",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf", "/zosmftso21"),
-            "zosmftso21",
+            getMetadataByCatalogUiTitleId("zosmf", "/zosmf1"),
+            "zosmf1",
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
         instanceInfo = getStandardInstance(
-            "ZOSMFCA32",
+            "ZOSMF2",
             InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf", "/zosmfca32"),
-            "zosmfca32",
+            getMetadataByCatalogUiTitleId("zosmf", "/zosmf2"),
+            "zosmf2",
             null);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 

@@ -41,6 +41,7 @@ dependencies {
     compile "io.springfox:springfox-spring-web:2.7.0"
 
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
 }

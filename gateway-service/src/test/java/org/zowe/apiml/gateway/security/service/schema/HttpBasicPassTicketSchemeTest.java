@@ -43,7 +43,7 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     public void testCreateCommand() throws Exception {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
-        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime());
+        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
 
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
         assertNotNull(ac);
@@ -59,18 +59,18 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
 
         // JWT token expired one minute ago (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, -1);
-        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime());
+        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
         ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
         assertTrue(ac.isExpired());
 
         // JWT token will expire in one minute (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, 2);
-        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime());
+        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
         ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
         assertFalse(ac.isExpired());
 
         calendar.add(Calendar.MINUTE, 100);
-        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime());
+        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
         ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
 
         calendar = Calendar.getInstance();
@@ -90,7 +90,7 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
 
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, applId);
-        QueryResponse queryResponse = new QueryResponse("domain", UNKNOWN_USER, calendar.getTime(), calendar.getTime());
+        QueryResponse queryResponse = new QueryResponse("domain", UNKNOWN_USER, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
         Exception exception = assertThrows(AuthenticationException.class,
             () -> httpBasicPassTicketScheme.createCommand(authentication, queryResponse),
             "Expected exception is not AuthenticationException");

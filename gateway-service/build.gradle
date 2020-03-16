@@ -66,13 +66,22 @@ dependencies {
     compile libraries.jjwt
     compile libraries.eh_cache
 
+    compileOnly libraries.javax_inject
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
+
     implementation libraries.springFox
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
     testRuntime libraries.http_client
     testCompile libraries.rest_assured
+
     testCompile libraries.lombok
+    testAnnotationProcessor libraries.lombok
+
+    testCompile libraries.powermock_api_mockito2
+    testCompile libraries.power_mock_junit4
+    testCompile libraries.power_mock_junit4_rule
 }
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
@@ -83,10 +92,4 @@ bootRun {
         args project.args.split(',')
     }
     systemProperties = System.properties
-}
-
-test {
-    jacoco {
-        append = false
-    }
 }

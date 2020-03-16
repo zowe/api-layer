@@ -51,16 +51,10 @@ dependencies {
 
     implementation libraries.gson
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
 }
 
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
-
-
-test {
-    jacoco {
-        append = false
-    }
-}

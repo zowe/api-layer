@@ -10,11 +10,6 @@
 
 package org.zowe.apiml.apicatalog.instance;
 
-import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
-import org.zowe.apiml.apicatalog.util.ApplicationsWrapper;
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
-import org.zowe.apiml.product.registry.ApplicationWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
@@ -36,6 +31,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
+import org.zowe.apiml.apicatalog.util.ApplicationsWrapper;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.instance.InstanceInitializationException;
+import org.zowe.apiml.product.registry.ApplicationWrapper;
 
 import java.util.*;
 
@@ -259,10 +259,10 @@ public class InstanceRetrievalServiceTest {
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
 
-        instanceInfo = getStandardInstance("ZOSMFTSO21", InstanceInfo.InstanceStatus.UP);
+        instanceInfo = getStandardInstance("ZOSMF1", InstanceInfo.InstanceStatus.UP);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
-        instanceInfo = getStandardInstance("ZOSMFCA32", InstanceInfo.InstanceStatus.UP);
+        instanceInfo = getStandardInstance("ZOSMF2", InstanceInfo.InstanceStatus.UP);
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
         return instanceInfoMap;

@@ -9,29 +9,30 @@
  */
 package org.zowe.apiml.gateway.security.query;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.discovery.DiscoveryClient;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
-import org.zowe.apiml.security.SecurityUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.EurekaClient;
-import io.jsonwebtoken.SignatureAlgorithm;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
+import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.security.Key;
 import java.security.KeyPair;
-import java.security.PublicKey;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -57,7 +58,10 @@ public class SuccessfulQueryHandlerTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private EurekaClient discoveryClient;
+    private DiscoveryClient discoveryClient;
+
+    @Mock
+    private CacheManager cacheManager;
 
     @BeforeEach
     public void setup() {
@@ -68,15 +72,16 @@ public class SuccessfulQueryHandlerTest {
         SignatureAlgorithm algorithm = SignatureAlgorithm.RS256;
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         Key privateKey = null;
-        PublicKey publicKey = null;
         if (keyPair != null) {
             privateKey = keyPair.getPrivate();
-            publicKey = keyPair.getPublic();
         }
-        AuthenticationService authenticationService = new AuthenticationService(applicationContext, authConfigurationProperties, jwtSecurityInitializer, discoveryClient, restTemplate);
+        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
+        AuthenticationService authenticationService = new AuthenticationService(
+            applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
+            discoveryClient, restTemplate, cacheManager
+        );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
-        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
 
         jwtToken = authenticationService.createJwtToken(USER, DOMAIN, LTPA);
 
@@ -113,4 +118,5 @@ public class SuccessfulQueryHandlerTest {
         assertTrue(response.contains("\"creation\":"));
         assertTrue(response.contains("\"expiration\":"));
     }
+
 }
