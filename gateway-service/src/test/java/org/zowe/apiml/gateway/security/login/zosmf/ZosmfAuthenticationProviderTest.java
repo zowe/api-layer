@@ -42,7 +42,9 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

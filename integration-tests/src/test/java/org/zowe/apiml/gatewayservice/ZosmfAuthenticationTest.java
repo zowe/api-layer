@@ -21,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.util.categories.AdditionalLocalTest;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 import org.zowe.apiml.util.service.VirtualService;
 
@@ -38,14 +39,14 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  * Those tests simulate different version of z/OSMF.
  *
  * For right execution is required:
- *  - set provider in gateway to zosmf with serviceId zosmfca32
+ *  - set provider in gateway to zosmf with using serviceId of z/OSMF
  *  - start discovery service and gateway locally
  */
 @RunWith(JUnit4.class)
 @Category(AdditionalLocalTest.class)
 public class ZosmfAuthenticationTest {
 
-    private static final String ZOSMF_ID = "zosmfca32";
+    private static final String ZOSMF_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
     private static final String LOGIN_ENDPOINT = "/api/v1/gateway/auth/login";
 
     private static final String USER_ID = "user";
