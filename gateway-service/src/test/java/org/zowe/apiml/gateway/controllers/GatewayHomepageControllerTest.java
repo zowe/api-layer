@@ -26,7 +26,7 @@ import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,11 +36,15 @@ public class GatewayHomepageControllerTest {
 
     private GatewayHomepageController gatewayHomepageController;
 
+    private final String API_CATALOG_ID = "apicatalog";
+    private final String AUTHORIZATION_SERVICE_ID = "zosmf";
+
     @BeforeEach
     public void setup() {
         discoveryClient = mock(DiscoveryClient.class);
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.setProvider("DUMMY");
+        authConfigurationProperties.setZosmfServiceId(AUTHORIZATION_SERVICE_ID); // Default based on the local configuration
 
         BuildInfo buildInfo = mock(BuildInfo.class);
 
@@ -95,50 +99,85 @@ public class GatewayHomepageControllerTest {
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
-        Map<String, Object> actualModelMap = model.asMap();
+        assertCatalogIsDownMessageShown(model.asMap());
+    }
 
-        assertThat(actualModelMap, IsMapContaining.hasEntry("catalogIconName", "warning"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("catalogStatusText", "The API Catalog is not running"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("linkEnabled", false));
-        assertThat(actualModelMap, not(hasKey("catalogLink")));
+    @Test
+    public void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
+        discoveryReturnValidApiCatalog();
+        when(discoveryClient.getInstances(AUTHORIZATION_SERVICE_ID)).thenReturn(Collections.EMPTY_LIST);
+
+        Model model = new ConcurrentModel();
+        gatewayHomepageController.home(model);
+
+        assertCatalogIsDownMessageShown(model.asMap());
+    }
+
+    @Test
+    public void givenApiCatalogWithEmptyInstancesWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
+        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(Collections.EMPTY_LIST);
+        when(discoveryClient.getInstances(AUTHORIZATION_SERVICE_ID)).thenReturn(Collections.EMPTY_LIST);
+
+        Model model = new ConcurrentModel();
+        gatewayHomepageController.home(model);
+
+        assertCatalogIsDownMessageShown(model.asMap());
     }
 
     @Test
     public void givenApiCatalogWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
-        when(discoveryClient.getInstances("apicatalog")).thenReturn(Collections.EMPTY_LIST);
+        discoveryReturnValidZosmfAuthorizationInstance();
+        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(Collections.EMPTY_LIST);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
-        Map<String, Object> actualModelMap = model.asMap();
-
-        assertThat(actualModelMap, IsMapContaining.hasEntry("catalogIconName", "warning"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("catalogStatusText", "The API Catalog is not running"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("linkEnabled", false));
-        assertThat(actualModelMap, not(hasKey("catalogLink")));
+        assertCatalogIsDownMessageShown(model.asMap());
     }
 
     @Test
     public void givenApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
-        Map<String, String> metadataMap = new HashMap<>();
-        metadataMap.put("apiml.routes.ui_v1.gatewayUrl", "ui/v1");
-        metadataMap.put("apiml.routes.ui_v1.serviceUrl", "/apicatalog");
-        ServiceInstance serviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
-            "host", 10000, true, metadataMap);
-
-        when(discoveryClient.getInstances("apicatalog")).thenReturn(
-            Arrays.asList(serviceInstance)
-        );
+        discoveryReturnValidZosmfAuthorizationInstance();
+        discoveryReturnValidApiCatalog();
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
-        Map<String, Object> actualModelMap = model.asMap();
+        assertCatalogIsUpMessageShown(model.asMap());
+    }
 
-        assertThat(actualModelMap, IsMapContaining.hasEntry("catalogIconName", "success"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("catalogStatusText", "The API Catalog is running"));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("linkEnabled", true));
-        assertThat(actualModelMap, IsMapContaining.hasEntry("catalogLink", "ui/v1/apicatalog"));
+    private void assertCatalogIsDownMessageShown(Map<String, Object> preparedModelView) {
+        assertThat(preparedModelView, hasEntry("catalogIconName", "warning"));
+        assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is not running"));
+        assertThat(preparedModelView, hasEntry("linkEnabled", false));
+        assertThat(preparedModelView, not(hasKey("catalogLink")));
+    }
+
+    private void assertCatalogIsUpMessageShown(Map<String, Object> preparedModelView) {
+        assertThat(preparedModelView, hasEntry("catalogIconName", "success"));
+        assertThat(preparedModelView, hasEntry("catalogStatusText", "The API Catalog is running"));
+        assertThat(preparedModelView, hasEntry("linkEnabled", true));
+        assertThat(preparedModelView, hasEntry("catalogLink", "ui/v1/apicatalog"));
+    }
+
+    private void discoveryReturnValidZosmfAuthorizationInstance() {
+        ServiceInstance authserviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
+            "host", 10000, true);
+        when(discoveryClient.getInstances("zosmf")).thenReturn(
+            Collections.singletonList(authserviceInstance)
+        );
+    }
+
+    private void discoveryReturnValidApiCatalog() {
+        Map<String, String> metadataMap = new HashMap<>();
+        metadataMap.put("apiml.routes.ui_v1.gatewayUrl", "ui/v1");
+        metadataMap.put("apiml.routes.ui_v1.serviceUrl", "/apicatalog");
+        ServiceInstance apiCatalogServiceInstance = new DefaultServiceInstance("instanceId", "serviceId",
+            "host", 10000, true, metadataMap);
+        authConfigurationProperties.setProvider("zosmf");
+
+        when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(
+            Collections.singletonList(apiCatalogServiceInstance));
     }
 
     @Test
