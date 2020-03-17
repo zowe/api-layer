@@ -93,6 +93,7 @@ public class ConfigReader {
         String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
         zosmfConfiguration.setPort(Integer.parseInt(port));
         zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));
+        zosmfConfiguration.setServiceId(System.getProperty("zosmf.serviceId", zosmfConfiguration.getServiceId()));
     }
 
     private static void setTlsConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
