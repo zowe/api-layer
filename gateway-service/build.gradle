@@ -64,6 +64,7 @@ dependencies {
     compile libraries.jetty_websocket_client
     compile libraries.jetty_util
     compile libraries.jjwt
+    compile libraries.nimbusJoseJwt
     compile libraries.eh_cache
 
     compileOnly libraries.javax_inject

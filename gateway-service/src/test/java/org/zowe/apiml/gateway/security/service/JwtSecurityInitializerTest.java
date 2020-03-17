@@ -61,6 +61,11 @@ public class JwtSecurityInitializerTest {
         assertEquals(SignatureAlgorithm.RS256, jwtSecurityInitializer.getSignatureAlgorithm());
     }
 
+    @Test
+    public void testGetJwkPublicKey() {
+        assertEquals("RSA", jwtSecurityInitializer.getJwkPublicKey().getKeyType().getValue());
+    }
+
     @SpringBootConfiguration
     public static class TestConfig {
 
@@ -70,5 +75,6 @@ public class JwtSecurityInitializerTest {
         }
 
     }
+
 }
 

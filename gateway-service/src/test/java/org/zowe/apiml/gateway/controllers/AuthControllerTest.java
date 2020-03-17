@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,25 +19,45 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceFacade;
+
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.apache.http.HttpStatus.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 public class AuthControllerTest {
 
+    private AuthControllerExt authController;
     private MockMvc mockMvc;
 
     @Mock
     private AuthenticationService authenticationService;
 
+    @Mock
+    private JwtSecurityInitializer jwtSecurityInitializer;
+
+    @Mock
+    private ZosmfServiceFacade zosmfServiceFacade;
+
+    private JWK jwk1, jwk2, jwk3;
+
     @BeforeEach
-    public void setUp() {
-        AuthController authController = new AuthController(authenticationService);
+    public void setUp() throws ParseException {
+        authController = new AuthControllerExt(authenticationService, jwtSecurityInitializer, zosmfServiceFacade);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+
+        jwk1 = getJwk(1);
+        jwk2 = getJwk(2);
+        jwk3 = getJwk(3);
     }
 
     @Test
@@ -59,6 +81,75 @@ public class AuthControllerTest {
 
         when(authenticationService.distributeInvalidate("instance2")).thenReturn(false);
         this.mockMvc.perform(get("/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
+    }
+
+    private JWK getJwk(int i) throws ParseException {
+        return JWK.parse("{" +
+            "\"e\":\"AQAB\"," +
+            "\"n\":\"kWp2zRA23Z3vTL4uoe8kTFptxBVFunIoP4t_8TDYJrOb7D1iZNDXVeEsYKp6ppmrTZDAgd-cNOTKLd4M39WJc5FN0maTAVKJc7NxklDeKc4dMe1BGvTZNG4MpWBo-taKULlYUu0ltYJuLzOjIrTHfarucrGoRWqM0sl3z2-fv9k\",\n" +
+            "\"kty\":\"RSA\",\n" +
+            "\"kid\":\"" + i + "\"" +
+        "}");
+    }
+
+    private void initPublicKeys(boolean zosmfKeys) {
+        JWKSet zosmf = mock(JWKSet.class);
+        when(zosmf.getKeys()).thenReturn(
+            zosmfKeys ? Arrays.asList(jwk1, jwk2) : Collections.emptyList()
+        );
+        when(zosmfServiceFacade.getPublicKeys()).thenReturn(zosmf);
+        when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(jwk3);
+    }
+
+    @Test
+    public void testGetAllPublicKeys() throws Exception {
+        initPublicKeys(true);
+        JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2, jwk3));
+        this.mockMvc.perform(get("/auth/keys/public/all"))
+            .andExpect(status().is(SC_OK))
+            .andExpect(content().json(jwkSet.toString()));
+    }
+
+    @Test
+    public void testGetActivePublicKeys_useZoweJwt() throws Exception {
+        initPublicKeys(true);
+        authController.setUseZosmfJwtToken(false);
+        JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
+        this.mockMvc.perform(get("/auth/keys/public/current"))
+            .andExpect(status().is(SC_OK))
+            .andExpect(content().json(jwkSet.toString()));
+    }
+
+    @Test
+    public void testGetActivePublicKeys_useBoth() throws Exception {
+        initPublicKeys(true);
+        authController.setUseZosmfJwtToken(true);
+        JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
+        this.mockMvc.perform(get("/auth/keys/public/current"))
+            .andExpect(status().is(SC_OK))
+            .andExpect(content().json(jwkSet.toString()));
+    }
+
+    @Test
+    public void testGetActivePublicKeys_missingZosmf() throws Exception {
+        initPublicKeys(false);
+        authController.setUseZosmfJwtToken(true);
+        JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
+        this.mockMvc.perform(get("/auth/keys/public/current"))
+            .andExpect(status().is(SC_OK))
+            .andExpect(content().json(jwkSet.toString()));
+    }
+
+    private class AuthControllerExt extends AuthController {
+
+        public AuthControllerExt(AuthenticationService authenticationService, JwtSecurityInitializer jwtSecurityInitializer, ZosmfServiceFacade zosmfServiceFacade) {
+            super(authenticationService, jwtSecurityInitializer, zosmfServiceFacade);
+        }
+
+        public void setUseZosmfJwtToken(boolean useZosmfJwtToken) {
+            super.useZosmfJwtToken = useZosmfJwtToken;
+        }
+
     }
 
 }

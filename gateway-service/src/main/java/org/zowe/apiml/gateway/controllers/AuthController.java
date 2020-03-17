@@ -9,15 +9,19 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import lombok.RequiredArgsConstructor;
+import net.minidev.json.JSONObject;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceFacade;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.apache.http.HttpStatus.*;
 
@@ -25,12 +29,18 @@ import static org.apache.http.HttpStatus.*;
  * Controller offer method to control security. It can contains method for user and also method for calling services
  * by gateway to distribute state of authentication between nodes.
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
+    @org.springframework.beans.factory.annotation.Value("${apiml.security.zosmf.useJwtToken:true}")
+    protected boolean useZosmfJwtToken;
+
     private final AuthenticationService authenticationService;
+
+    private final JwtSecurityInitializer jwtSecurityInitializer;
+    private final ZosmfServiceFacade zosmfServiceFacade;
 
     @DeleteMapping(path = "/invalidate/**")
     public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
@@ -54,6 +64,28 @@ public class AuthController {
         final boolean distributed = authenticationService.distributeInvalidate(toInstanceId);
 
         response.setStatus(distributed ? SC_OK : SC_NO_CONTENT);
+    }
+
+    @GetMapping(path = "/keys/public/all")
+    @ResponseBody
+    public JSONObject getAllPublicKeys() {
+        final List<JWK> keys = new LinkedList<>();
+        keys.addAll(zosmfServiceFacade.getPublicKeys().getKeys());
+        keys.add(jwtSecurityInitializer.getJwkPublicKey());
+        return new JWKSet(keys).toJSONObject(true);
+    }
+
+    @GetMapping(path = "/keys/public/current")
+    @ResponseBody
+    public JSONObject getCurrentPublicKeys() {
+        final List<JWK> keys = new LinkedList<>();
+        if (useZosmfJwtToken) {
+            keys.addAll(zosmfServiceFacade.getPublicKeys().getKeys());
+        }
+        if (keys.isEmpty()) {
+            keys.add(jwtSecurityInitializer.getJwkPublicKey());
+        }
+        return new JWKSet(keys).toJSONObject(true);
     }
 
 }
