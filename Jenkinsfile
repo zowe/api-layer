@@ -4,10 +4,6 @@
 def MASTER_BRANCH = "master"
 
 /**
-* Is this a release branch? Temporary workaround that won't break everything horribly if we merge.
-*/
-def RELEASE_BRANCH = false
-/**
  * The result string for a successful build
  */
 def BUILD_SUCCESS = 'SUCCESS'
@@ -70,9 +66,6 @@ if (BRANCH_NAME == MASTER_BRANCH) {
     // twice in quick succession
     opts.push(disableConcurrentBuilds())
 } else {
-    if (BRANCH_NAME.equals("1.0.0")){
-        RELEASE_BRANCH = true
-    }
     // Only keep 5 builds on other branches
     opts.push(buildDiscarder(logRotator(numToKeepStr: '5')))
 }
@@ -88,76 +81,15 @@ pipeline {
     }
 
     parameters {
-        string(name: 'CHANGE_CLASS', defaultValue: '', description: 'Override change class - for testing (empty, doc, full, api-catalog)', )
         booleanParam(name: 'PUBLISH_PR_ARTIFACTS', defaultValue: 'false', description: 'If true it will publish the pull requests artifacts', )
     }
 
     stages {
-        stage('Classify changes') {
-            steps {
-                script {
-                    if (params.CHANGE_CLASS != '') {
-                        changeClass = params.CHANGE_CLASS
-                    }
-                    else {
-                        ccOutput = sh(returnStdout: true, script: "python3 scripts/classify_changes.py")
-                        echo "${ccOutput}"
-                        changeClass = ccOutput.trim().tokenize().last()
-                    }
-                    allowEmptyArchive = changeClass in ['empty', 'doc'] && !BRANCH_NAME.equals(MASTER_BRANCH) && !RELEASE_BRANCH
-                }
-                echo "Change class: ${changeClass}"
-                sh "echo ${changeClass} > .change_class"
-            }
-        }
-
-        stage('Copy archives from last successful build') {
-            when { expression { changeClass != 'full' } }
-            steps {
-                script {
-                    try {
-                        copyArtifacts(projectName: JOB_NAME)
-                    }
-                    catch (error) {
-                        copyArtifacts(projectName: 'API_Mediation/master')
-                    }
-                }
-                sh "echo ${changeClass} > .change_class"
-            }
-        }
-
-        stage ('API Catalog build') {
-            when { expression { changeClass in ['api-catalog'] } }
-            stages {
-                stage('Package api-layer source code') {
-                    steps {
-                        sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
-                    }
-                }
-
-                stage ('Build API Catalog') {
-                    steps {
-                        timeout(time: 10, unit: 'MINUTES') {
-                            sh './gradlew :api-catalog-services:build'
-                        }
-                    }
-                }
-            }
-        }
-
         stage ('Full build') {
-            when { expression { changeClass in ['full'] } }
             stages {
                 stage('Clean') {
-                    when { expression { BRANCH_NAME.equals(MASTER_BRANCH) || RELEASE_BRANCH } }
                     steps {
                         sh "./gradlew clean"
-                    }
-                }
-
-                stage('Package api-layer source code') {
-                    steps {
-                        sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
                     }
                 }
 
@@ -169,31 +101,10 @@ pipeline {
                     }
                 }
 
-                stage('Publish coverage reports') {
-                    steps {
-                           publishHTML(target: [
-                               allowMissing         : false,
-                               alwaysLinkToLastBuild: false,
-                               keepAll              : true,
-                               reportDir            : 'build/reports/jacoco/jacocoFullReport/html',
-                               reportFiles          : 'index.html',
-                               reportName           : "Java Coverage Report"
-                           ])
-                            publishHTML(target: [
-                                allowMissing         : false,
-                                alwaysLinkToLastBuild: false,
-                                keepAll              : true,
-                                reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
-                                reportFiles          : 'index.html',
-                                reportName           : "UI JavaScript Test Coverage"
-                            ])
-                    }
-                }
-
                 stage('Publish snapshot version to Artifactory for master') {
                     when {
                         expression {
-                            return BRANCH_NAME.equals(MASTER_BRANCH) || RELEASE_BRANCH;
+                            return BRANCH_NAME.equals(MASTER_BRANCH);
                         }
                     }
                     steps {
@@ -249,21 +160,7 @@ pipeline {
             }
         }
 
-        stage('Publish UI test results') {
-            steps {
-                publishHTML(target: [
-                    allowMissing         : false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll              : true,
-                    reportDir            : 'api-catalog-ui/frontend/test-results',
-                    reportFiles          : 'test-report-unit.html',
-                    reportName           : "UI Unit Test Results"
-                ])
-            }
-        }
-
         stage ('Codecov') {
-            when { expression { changeClass in ['full', 'api-catalog'] } }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
                     sh 'curl -s https://codecov.io/bash | bash -s'
@@ -273,35 +170,6 @@ pipeline {
     }
 
     post {
-        always {
-            junit allowEmptyResults: true, testResults: '**/test-results/**/*.xml'
-            archiveArtifacts '.change_class'
-            publishHTML (target: [
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'gateway-service/build/reports/tests/test',
-                reportFiles: 'index.html',
-                reportName: "Unit Tests Report - gateway-service"
-            ])
-            publishHTML (target: [
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'discovery-service/build/reports/tests/test',
-                reportFiles: 'index.html',
-                reportName: "Unit Tests Report - discovery-service"
-            ])
-            publishHTML (target: [
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'api-catalog-services/build/reports/tests/test',
-                reportFiles: 'index.html',
-                reportName: "Unit Tests Report - api-catalog-services"
-            ])
-        }
-
         success {
             archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
