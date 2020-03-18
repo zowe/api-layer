@@ -149,9 +149,15 @@ pipeline {
             }
         }
 
+        stage ('Install dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
         stage ('Start the services') {
             steps {
-                sh 'npm install && npm run api-layer &'
+                sh 'npm run api-layer &'
             }
         }
 
