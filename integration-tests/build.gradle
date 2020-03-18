@@ -78,7 +78,8 @@ task runCITests(type: Test) {
         excludeCategories(
             'org.zowe.apiml.util.categories.StartupCheck',
             'org.zowe.apiml.util.categories.SlowTests',
-            'org.zowe.apiml.util.categories.AdditionalLocalTest'
+            'org.zowe.apiml.util.categories.AdditionalLocalTest',
+            'org.zowe.apiml.util.categories.MainframeDependentTests'
         )
     }
 }
