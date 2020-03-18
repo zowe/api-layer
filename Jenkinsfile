@@ -148,6 +148,18 @@ pipeline {
                 }
             }
         }
+
+        stage ('Start the services') {
+            steps {
+                sh 'npm run api-layer &'
+            }
+        }
+
+        stage ('Run Integration Tests') {
+            steps {
+                sh './gradlew runCITests'
+            }
+        }
     }
 
     post {

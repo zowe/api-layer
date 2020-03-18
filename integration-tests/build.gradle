@@ -68,6 +68,35 @@ task startUpCheck(type: Test) {
     outputs.upToDateWhen { false }
 }
 
+task runCITests(type: Test) {
+    group "Integration tests"
+    description "Run only tests without long tests"
+
+    dependsOn startUpWithCheck
+    systemProperties System.properties
+    useJUnit {
+        excludeCategories(
+            'org.zowe.apiml.util.categories.StartupCheck',
+            'org.zowe.apiml.util.categories.SlowTests',
+            'org.zowe.apiml.util.categories.AdditionalLocalTest'
+        )
+    }
+}
+
+task runMainFrameTests(type: Test) {
+    group "integration test"
+    description "Run tests that verify integration with MainFrame"
+
+    dependsOn startUpWithCheck
+    systemProperties System.getProperties()
+    useJUnit {
+        includeCategories(
+            'org.zowe.apiml.util.categories.MainframeDependentTests'
+        )
+    }
+    outputs.upToDateWhen { false }
+}
+
 task runWebsocketTests(type: Test) {
     group "integration test"
     description "Runs tests for WebSockets"
