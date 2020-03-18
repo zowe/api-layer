@@ -166,7 +166,7 @@ pipeline {
                     python3 -m pip install --user requests
                     python3 -m pip freeze
                     python3 -c 'import requests'
-                    python3 scripts/post_actions.py $env.BRANCH_NAME $ZOWE_GITHUB_APIKEY $changeClass
+                    python3 scripts/post_actions.py $env.BRANCH_NAME $ZOWE_GITHUB_APIKEY
                     """
             }
         }
