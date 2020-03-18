@@ -72,7 +72,7 @@ task runCITests(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
-    dependsOn startUpWithCheck
+    dependsOn startUpCheck
     systemProperties System.properties
     useJUnit {
         excludeCategories(
@@ -87,7 +87,7 @@ task runMainFrameTests(type: Test) {
     group "integration test"
     description "Run tests that verify integration with MainFrame"
 
-    dependsOn startUpWithCheck
+    dependsOn startUpCheck
     systemProperties System.getProperties()
     useJUnit {
         includeCategories(
