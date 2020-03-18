@@ -169,6 +169,10 @@ pipeline {
     }
 
     post {
+        always {
+            junit '**/build/reports/**/*.xml'
+        }
+
         success {
             archiveArtifacts artifacts: 'api-catalog-services/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
