@@ -37,12 +37,8 @@ def check_labels(all_labels):
 def main():
     """GitHub label checker main method"""
     branch = sys.argv[1]
-    change_class = sys.argv[3]
 
-    if change_class == 'doc':
-        log.info("Documentation change")
-
-    elif branch.startswith('PR-'):
+    if branch.startswith('PR-'):
         pr_number = branch.lstrip('PR-')
 
         pr = requests.get('{}pulls/{}'.format(ZOWE_GITHUB_API_URL, pr_number),
@@ -69,7 +65,7 @@ def main():
         log.info("No posting of PR labels for master")
 
     else:
-        log.info("Branch %s is not a pull request", branch)
+        log.info("Branch %s is neither a pull request nor master", branch)
 
 
 if __name__ == "__main__":
