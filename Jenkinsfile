@@ -80,58 +80,39 @@ pipeline {
         timestamps ()
     }
 
-    parameters {
-        booleanParam(name: 'PUBLISH_PR_ARTIFACTS', defaultValue: 'false', description: 'If true it will publish the pull requests artifacts', )
-    }
-
     stages {
-        stage ('Full build') {
-            stages {
-                stage('Clean') {
-                    steps {
-                        sh "./gradlew clean"
-                    }
-                }
+        stage('Clean') {
+            steps {
+                sh "./gradlew clean"
+            }
+        }
 
-                stage('Build and unit test with coverage') {
-                    steps {
-                        timeout(time: 20, unit: 'MINUTES') {
-                            sh './gradlew build coverage'
-                        }
-                    }
-                }
+        stage('Package api-layer source code') {
+            steps {
+                sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
+            }
+        }
 
-                stage('Publish snapshot version to Artifactory for master') {
-                    when {
-                        expression {
-                            return BRANCH_NAME.equals(MASTER_BRANCH);
-                        }
-                    }
-                    steps {
-                        withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                         sh '''
-                         ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
-                         '''
-                        }
-                    }
+        stage('Build and unit test with coverage') {
+            steps {
+                timeout(time: 20, unit: 'MINUTES') {
+                    sh './gradlew build coverage'
                 }
+            }
+        }
 
-                stage('Publish snapshot version to Artifactory for Pull Request') {
-                    when {
-                        expression {
-                            return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
-                        }
-                    }
-                    steps {
-                        withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                            sh '''
-                            sudo sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
-                            ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -PpullRequest=$env.BRANCH_NAME
-                            '''
-                        }
-                    }
+        stage('Publish snapshot version to Artifactory for master') {
+            when {
+                expression {
+                    return BRANCH_NAME.equals(MASTER_BRANCH);
                 }
-
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                 sh '''
+                 ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
+                 '''
+                }
             }
         }
 
