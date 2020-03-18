@@ -151,7 +151,7 @@ pipeline {
 
         stage ('Start the services') {
             steps {
-                sh 'npm run api-layer &'
+                sh 'npm install && npm run api-layer &'
             }
         }
 
