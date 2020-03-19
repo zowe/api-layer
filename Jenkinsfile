@@ -96,7 +96,9 @@ pipeline {
         stage('Build and unit test with coverage') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
-                    sh './gradlew build coverage'
+                    withSonarQubeEnv('sonarcloud-server') {
+                        sh './gradlew --info --scan build coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}'
+                    }
                 }
             }
         }
@@ -112,31 +114,6 @@ pipeline {
                  sh '''
                  ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
                  '''
-                }
-            }
-        }
-
-        /************************************************************************
-         * STAGE
-         * -----
-         * SonarQube Scanner
-         *
-         * EXECUTION CONDITIONS
-         * --------------------
-         * - SHOULD_BUILD is true
-         * - The build is still successful and not unstable
-         *
-         * DESCRIPTION
-         * -----------
-         * Runs the sonar-scanner analysis tool, which submits the source, test results,
-         *  and coverage results for analysis in our SonarQube server.
-         * TODO: This step does not yet support branch or PR submissions properly.
-         ***********************************************************************/
-        stage('sonar') {
-            steps {
-                withSonarQubeEnv('sonarcloud-server') {
-                    // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                    sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
                 }
             }
         }
