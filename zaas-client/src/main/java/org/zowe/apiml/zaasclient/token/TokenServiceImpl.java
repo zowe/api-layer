@@ -20,7 +20,9 @@ import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -110,7 +112,27 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String passTicket(String jwtToken, String applicationId) {
-        return null;
+        /*String apimlAuthCookie = apimlLogin(configProperties);
+        try (CloseableHttpClient client = new HttpsClient(configProperties).getCloseableHttpClient()) {
+            HttpPost httpPost = new HttpPost("https://"+configProperties.getApimlHost()+":"+configProperties.getApimlPort()+configProperties.getApimlBaseUrl()+"/ticket");
+            String json = "{\"applicationName\":\"ZOWEAPPL\"}";
+            StringEntity entity = new StringEntity(json);
+            httpPost.setEntity(entity);
+            httpPost.setHeader("Content-type", "application/json");
+            httpPost.setHeader("Cookie", apimlAuthCookie.split(";")[0]);
+            CloseableHttpResponse response = client.execute(httpPost);
+            System.out.println("****************************************");
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
+                String data = "";
+                while((data=reader.readLine())!=null)
+                {
+                    System.out.println(data);
+                }
+            }
+            System.out.println("****************************************");
+            System.out.println(response);
+        }*/
+        return "";
     }
 
     private String extractToken(CloseableHttpResponse response) throws ZaasClientException {
