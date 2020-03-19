@@ -72,10 +72,6 @@ if (BRANCH_NAME == MASTER_BRANCH) {
 properties(opts)
 
 pipeline {
-    environment {
-        def node = tool name: 'Node.js 8.11.1', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
-    }
-
     agent {
         label 'apiml-jenkins-agent-swarm'
     }
