@@ -96,12 +96,11 @@ pipeline {
         }
 
         stage ('Run Integration Tests') {
-            wrap([$class: 'Xvfb']) {
-                steps {
-                    sh 'npm install'
-                    sh 'npm run api-layer &'
-                    sh './gradlew runCITests'
-                }
+            steps {
+                sh 'apt-get install xvfb'
+                sh 'npm install'
+                sh 'npm run api-layer &'
+                sh './gradlew runCITests'
             }
         }
 
