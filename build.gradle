@@ -121,7 +121,7 @@ task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTest
     group "Integration tests"
 }
 
-task runCITests(dependsOn: [":integration-tests:runCITests"]) {
+task runCITests(dependsOn: ":integration-tests:runCITests") {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }
