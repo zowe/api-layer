@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.discoveryservice;
 
+import org.junit.experimental.categories.Category;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.categories.Flaky;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import io.restassured.RestAssured;
@@ -138,6 +140,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(Flaky.class)
     public void testApplicationInfoEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
@@ -149,6 +152,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(Flaky.class)
     public void testApplicationInfoEndpoints_whenProvidedToken() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
@@ -162,6 +166,7 @@ public class EurekaInstancesIntegrationTest {
 
     // /discovery endpoints
     @Test
+    @Category(Flaky.class)
     public void testDiscoveryEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
@@ -173,6 +178,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(Flaky.class)
     public void testDiscoveryEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
@@ -218,6 +224,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(Flaky.class)
     public void testUIEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
@@ -229,6 +236,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(Flaky.class)
     public void testUIEndpoints_whenProvidedToken() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
@@ -241,6 +249,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(Flaky.class)
     public void verifyHttpHeadersOnUi() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         Map<String, String> expectedHeaders = new HashMap<>();

@@ -77,6 +77,7 @@ task runCITests(type: Test) {
     useJUnit {
         excludeCategories(
             'org.zowe.apiml.util.categories.StartupCheck',
+            'org.zowe.apiml.util.categories.Flaky',
             'org.zowe.apiml.util.categories.SlowTests',
             'org.zowe.apiml.util.categories.AdditionalLocalTest',
             'org.zowe.apiml.util.categories.MainframeDependentTests'

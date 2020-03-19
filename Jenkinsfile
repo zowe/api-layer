@@ -81,32 +81,12 @@ pipeline {
     }
 
     stages {
-        stage('Clean') {
-            steps {
-                sh "./gradlew clean"
-            }
-        }
-
-        stage('Package api-layer source code') {
-            steps {
-                sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
-            }
-        }
-
         stage('Build and unit test with coverage') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     withSonarQubeEnv('sonarcloud-server') {
-                        sh './gradlew --info --scan build coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}'
+                        sh './gradlew --info --scan clean build coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}'
                     }
-                }
-            }
-        }
-
-        stage ('Codecov') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
-                    sh 'curl -s https://codecov.io/bash | bash -s'
                 }
             }
         }
@@ -123,6 +103,20 @@ pipeline {
             steps {
                 sh 'cd api-catalog-ui && npm install'
                 sh 'cd api-catalog-ui && npm run cy:e2e:ci'
+            }
+        }
+
+        stage ('Codecov') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
+                    sh 'curl -s https://codecov.io/bash | bash -s'
+                }
+            }
+        }
+
+        stage('Package api-layer source code') {
+            steps {
+                sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
             }
         }
 
