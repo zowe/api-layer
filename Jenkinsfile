@@ -126,21 +126,20 @@ pipeline {
             }
         }
 
-        stage ('Install dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
-        stage ('Start the services') {
-            steps {
-                sh 'npm run api-layer &'
-            }
-        }
-
         stage ('Run Integration Tests') {
             steps {
+                sh 'npm install'
+                sh 'npm run api-layer &'
                 sh './gradlew runCITests'
+            }
+        }
+
+        stage ('Run end2end Tests') {
+            steps {
+                sh 'cd api-catalog-ui'
+                sh 'npm install'
+                sh 'npm run cy:e2e:ci'
+                sh 'cd ..'
             }
         }
     }
