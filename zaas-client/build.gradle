@@ -10,7 +10,7 @@ sourceCompatibility = 1.8
 license {
     header rootProject.file('.licence/EPL-2.0-licence-header.txt')
     ext.year = Calendar.getInstance().get(Calendar.YEAR)
-    excludes(["**/*.yml", "**/*.json", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks", "**/*.so", "**/*.md"])
+    excludes(["**/*.yml", "**/*.json", "**/*.sh", "**/*.txt", "**/*.p12", "**/*.xml", "**/*.jsp", "**/*.html", "**/*.jks", "**/*.so", "**/*.md", "**/*.properties"])
     mapping {
         java = 'SLASHSTAR_STYLE'
     }

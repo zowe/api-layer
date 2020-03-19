@@ -32,8 +32,17 @@ public class MainClass {
     private static final String EMPTY_AUTH_HEADER = "";
     private static final String NULL_AUTH_HEADER = null;
 
-    public static void main(String[] args) throws IOException {
-        ConfigProperties configProperties = new ConfigProperties();
+    private static final String CONFIG_FILE_ENV_VARIABLE = "CONFIG_FILE";
+    private static final String CONFIG_FILE_PATH = "/Users/sandeepydhh/Taanu/Workspaces/IntelliJ/Zowe/api-layer/zaas-client/src/test/resources/configFile.properties";
+
+    public static void main(String[] args) {
+        System.setProperty(CONFIG_FILE_ENV_VARIABLE, CONFIG_FILE_PATH);
+        ConfigProperties configProperties = null;
+        try {
+            configProperties = new ConfigProperties();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
         TokenServiceImpl tokenService = new TokenServiceImpl(configProperties);
 
         testLoginWithCredentials(tokenService);
@@ -76,12 +85,12 @@ public class MainClass {
         executeCaseWithAuthHeader(tokenService, EMPTY_USER, VALID_PASS, "##### START OF NEGATIVE CASE 3 - Empty Username #####", "##### END OF NEGATIVE CASE 3 #####");
         executeCaseWithAuthHeader(tokenService, VALID_USER, EMPTY_PASS, "##### START OF NEGATIVE CASE 4 - Empty Password #####", "##### END OF NEGATIVE CASE 4 #####");
         executeCaseWithAuthHeader(tokenService, NULL_AUTH_HEADER, "##### START OF NEGATIVE CASE 5 - Null Auth Header #####", "##### END OF NEGATIVE CASE 5 #####");
-        executeCaseWithAuthHeader(tokenService, NULL_AUTH_HEADER, "##### START OF NEGATIVE CASE 6 - Empty Auth Header #####", "##### END OF NEGATIVE CASE 6 #####");
+        executeCaseWithAuthHeader(tokenService, EMPTY_AUTH_HEADER, "##### START OF NEGATIVE CASE 6 - Empty Auth Header #####", "##### END OF NEGATIVE CASE 6 #####");
 
         System.out.println("Please stop the server, then type a character & press Enter to continue");
         sc.next();
 
-        executeCaseWithAuthHeader(tokenService, VALID_USER, VALID_PASS, "##### START OF NEGATIVE CASE 7 - Empty Password #####", "##### END OF NEGATIVE CASE 7 #####");
+        executeCaseWithAuthHeader(tokenService, VALID_USER, VALID_PASS, "##### START OF NEGATIVE CASE 7 - Gateway Server Stopped/Unavailable #####", "##### END OF NEGATIVE CASE 7 #####");
 
         System.out.println("$$$$$$$$$$$$ END of Tests of LOGIN with AUTHORIZATION HEADER $$$$$$$$$$$$\n\n");
     }
@@ -108,7 +117,7 @@ public class MainClass {
         } catch (ZaasClientException zce) {
             System.out.println(zce.getErrorCode() + "\n" + zce.getErrorMessage() + "\n" + zce.getHttpResponseCode());
         } finally {
-            System.out.println(caseEndMsg+"\n\n");
+            System.out.println(caseEndMsg + "\n\n");
         }
     }
 
@@ -119,7 +128,7 @@ public class MainClass {
         } catch (ZaasClientException zce) {
             System.out.println(zce.getErrorCode() + "\n" + zce.getErrorMessage() + "\n" + zce.getHttpResponseCode());
         } finally {
-            System.out.println(caseEndMsg+"\n\n");
+            System.out.println(caseEndMsg + "\n\n");
         }
     }
 }

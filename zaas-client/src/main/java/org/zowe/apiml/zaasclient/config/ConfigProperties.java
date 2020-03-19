@@ -14,7 +14,6 @@ import lombok.Getter;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Properties;
 
@@ -36,14 +35,11 @@ public class ConfigProperties {
 
     public ConfigProperties() throws IOException {
         String configFile = System.getProperty("CONFIG_FILE");
-        Properties configProperties= new Properties();
-        if(configFile!=null && !configFile.isEmpty()) {
+        Properties configProperties = new Properties();
+        if (configFile != null && !configFile.isEmpty()) {
             configProperties.load(new FileReader(configFile));
-        } else if(Paths.get(CONFIG_FILE_NAME).toFile().exists()) {
+        } else if (Paths.get(CONFIG_FILE_NAME).toFile().exists()) {
             configProperties.load(new FileReader(CONFIG_FILE_NAME));
-        } else {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE_NAME);
-            configProperties.load(inputStream);
         }
         this.keyStorePath = configProperties.getProperty("KEYSTOREPATH");
         this.keyStorePassword = configProperties.getProperty("KEYSTOREPASSWORD");

@@ -53,7 +53,7 @@ public final class HttpsClient implements Closeable
         TrustManagerFactory tmf = null;
         KeyManagerFactory kmf = null;
 
-        if(trustStorePath!=null) {
+        if (trustStorePath != null) {
 //        Load Trust Store *************
             tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             KeyStore trustStore = KeyStore.getInstance(trustStoreType);
@@ -63,7 +63,7 @@ public final class HttpsClient implements Closeable
 //        **************
         }
 
-        if(keyStorePath!=null) {
+        if (keyStorePath != null) {
             kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             KeyStore keyStore = KeyStore.getInstance(keyStoreType);
             File keyFile = new File(keyStorePath);
@@ -99,7 +99,7 @@ public final class HttpsClient implements Closeable
         SSLContext sslContext;
         try {
             sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(kmf != null?kmf.getKeyManagers():null, tmf!=null?tmf.getTrustManagers():null, new SecureRandom());
+            sslContext.init(kmf != null ? kmf.getKeyManagers() : null, tmf != null ? tmf.getTrustManagers() : null, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             throw e;
         }
@@ -108,9 +108,9 @@ public final class HttpsClient implements Closeable
 
     private RequestConfig buildCustomRequestConfig() {
         final RequestConfig.Builder builder = RequestConfig.custom();
-        builder.setConnectionRequestTimeout(10*1000);
-        builder.setSocketTimeout(10*1000);
-        builder.setConnectTimeout(10*1000);
+        builder.setConnectionRequestTimeout(10 * 1000);
+        builder.setSocketTimeout(10 * 1000);
+        builder.setConnectTimeout(10 * 1000);
         return builder.build();
     }
 

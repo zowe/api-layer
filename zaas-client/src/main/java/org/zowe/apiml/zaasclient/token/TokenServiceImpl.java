@@ -20,9 +20,9 @@ import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 
-import java.io.BufferedReader;
+//import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+//import java.io.InputStreamReader;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -40,7 +40,7 @@ public class TokenServiceImpl implements TokenService {
         CloseableHttpResponse response = null;
         String token = "";
 
-        if(userId == null || password == null)
+        if (userId == null || password == null)
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
 
         try {
@@ -60,9 +60,9 @@ public class TokenServiceImpl implements TokenService {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
         } finally {
             try {
-                if(response != null)
+                if (response != null)
                     response.close();
-                if(client != null)
+                if (client != null)
                     client.close();
             } catch (IOException e) {
                 // Do nothing
@@ -77,7 +77,7 @@ public class TokenServiceImpl implements TokenService {
         CloseableHttpResponse response = null;
         String token = "";
 
-        if(authorizationHeader == null || authorizationHeader.isEmpty())
+        if (authorizationHeader == null || authorizationHeader.isEmpty())
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER);
 
         try {
@@ -94,9 +94,9 @@ public class TokenServiceImpl implements TokenService {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
         } finally {
             try {
-                if(response != null)
+                if (response != null)
                     response.close();
-                if(client != null)
+                if (client != null)
                     client.close();
             } catch (IOException e) {
                 // Do nothing
@@ -141,11 +141,11 @@ public class TokenServiceImpl implements TokenService {
         if (httpResponseCode == 204) {
             HeaderElement[] elements = response.getHeaders("Set-Cookie")[0].getElements();
             Optional<HeaderElement> apimlAuthCookie = Stream.of(elements).filter(element -> element.getName().equals("apimlAuthenticationToken")).findFirst();
-            if(apimlAuthCookie.isPresent())
+            if (apimlAuthCookie.isPresent())
                 token = apimlAuthCookie.get().getValue();
-        } else if(httpResponseCode == 401) {
+        } else if (httpResponseCode == 401) {
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION);
-        } else if(httpResponseCode == 400) {
+        } else if (httpResponseCode == 400) {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         } else {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
