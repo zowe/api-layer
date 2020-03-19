@@ -45,6 +45,13 @@ task runTests(type: NpmTask) {
     args = ['run', 'test']
 }
 
+task runE2ETests(type: NpmTask, dependsOn: npmInstall) {
+    group = 'integration tests'
+    description = "End to End Tests depending on the catalog ui"
+
+    args = ['run', 'cy:e2e:ci']
+}
+
 
 task bundle(type: NpmTask) {
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)

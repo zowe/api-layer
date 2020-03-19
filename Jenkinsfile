@@ -99,13 +99,6 @@ pipeline {
             }
         }
 
-        stage ('Run end2end Tests') {
-            steps {
-                sh 'cd api-catalog-ui && npm install'
-                sh 'cd api-catalog-ui && npm run cy:e2e:ci'
-            }
-        }
-
         stage ('Codecov') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
