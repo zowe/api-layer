@@ -103,21 +103,6 @@ pipeline {
             }
         }
 
-        stage('Publish snapshot version to Artifactory for master') {
-            when {
-                expression {
-                    return BRANCH_NAME.equals(MASTER_BRANCH);
-                }
-            }
-            steps {
-                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                 sh '''
-                 ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
-                 '''
-                }
-            }
-        }
-
         stage ('Codecov') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
@@ -136,10 +121,23 @@ pipeline {
 
         stage ('Run end2end Tests') {
             steps {
-                sh 'cd api-catalog-ui'
-                sh 'npm install'
-                sh 'npm run cy:e2e:ci'
-                sh 'cd ..'
+                sh 'cd api-catalog-ui && npm install'
+                sh 'cd api-catalog-ui && npm run cy:e2e:ci'
+            }
+        }
+
+        stage('Publish snapshot version to Artifactory for master') {
+            when {
+                expression {
+                    return BRANCH_NAME.equals(MASTER_BRANCH);
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                 sh '''
+                 ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
+                 '''
+                }
             }
         }
     }
