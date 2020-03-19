@@ -10,6 +10,7 @@
 package org.zowe.apiml.zaasclient.main;
 
 import org.apache.commons.codec.binary.Base64;
+import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.token.TokenService;
@@ -33,7 +34,7 @@ public class MainClass {
     private static final String NULL_AUTH_HEADER = null;
 
     private static final String CONFIG_FILE_ENV_VARIABLE = "CONFIG_FILE";
-    private static final String CONFIG_FILE_PATH = "/Users/sandeepydhh/Taanu/Workspaces/IntelliJ/Zowe/api-layer/zaas-client/src/test/resources/configFile.properties";
+    private static final String CONFIG_FILE_PATH = "/Users/ac891054/IdeaProjects/api-layer-sdk/zaas-client/src/test/resources/configFile.properties";
 
     public static void main(String[] args) {
         System.setProperty(CONFIG_FILE_ENV_VARIABLE, CONFIG_FILE_PATH);
@@ -43,7 +44,8 @@ public class MainClass {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        TokenServiceImpl tokenService = new TokenServiceImpl(configProperties);
+        TokenServiceImpl tokenService = new TokenServiceImpl();
+        tokenService.init(configProperties, new HttpsClient(configProperties));
 
         testLoginWithCredentials(tokenService);
         testLoginWithAuthHeader(tokenService);

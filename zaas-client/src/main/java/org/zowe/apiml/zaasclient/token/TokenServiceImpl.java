@@ -20,18 +20,21 @@ import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 
-//import java.io.BufferedReader;
+import java.io.BufferedReader;
 import java.io.IOException;
-//import java.io.InputStreamReader;
+import java.io.InputStreamReader;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public class TokenServiceImpl implements TokenService {
 
     private ConfigProperties configProperties;
+    private HttpsClient httpsClient;
 
-    public TokenServiceImpl(ConfigProperties configProperties) {
+    @Override
+    public void init(ConfigProperties configProperties, HttpsClient httpsClient) {
         this.configProperties = configProperties;
+        this.httpsClient = httpsClient;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class TokenServiceImpl implements TokenService {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
 
         try {
-            client = new HttpsClient(configProperties).getCloseableHttpClient();
+            client = httpsClient.getHttpsClientWithTrustStore();
             HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/login");
             String json = "{\"username\":\"" + userId + "\",\"password\":\"" + password + "\"}";
             StringEntity entity = new StringEntity(json);
@@ -59,32 +62,24 @@ public class TokenServiceImpl implements TokenService {
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
         } finally {
-            try {
-                if (response != null)
-                    response.close();
-                if (client != null)
-                    client.close();
-            } catch (IOException e) {
-                // Do nothing
-            }
+            finallyClose(response);
         }
         return token;
     }
 
     @Override
     public String login(String authorizationHeader) throws ZaasClientException {
-        CloseableHttpClient client = null;
         CloseableHttpResponse response = null;
         String token = "";
+        CloseableHttpClient client = null;
 
         if (authorizationHeader == null || authorizationHeader.isEmpty())
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER);
 
         try {
-            client = new HttpsClient(configProperties).getCloseableHttpClient();
             HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/login");
             httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
-            response = client.execute(httpPost);
+            response = httpsClient.getHttpsClientWithTrustStore().execute(httpPost);
             token = extractToken(response);
         } catch (ZaasClientException zce) {
             throw zce;
@@ -93,14 +88,7 @@ public class TokenServiceImpl implements TokenService {
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
         } finally {
-            try {
-                if (response != null)
-                    response.close();
-                if (client != null)
-                    client.close();
-            } catch (IOException e) {
-                // Do nothing
-            }
+            finallyClose(response);
         }
         return token;
     }
@@ -111,28 +99,42 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public String passTicket(String jwtToken, String applicationId) {
-        /*String apimlAuthCookie = apimlLogin(configProperties);
-        try (CloseableHttpClient client = new HttpsClient(configProperties).getCloseableHttpClient()) {
-            HttpPost httpPost = new HttpPost("https://"+configProperties.getApimlHost()+":"+configProperties.getApimlPort()+configProperties.getApimlBaseUrl()+"/ticket");
+    public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
+        CloseableHttpResponse response = null;
+        try {
+            HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/ticket");
             String json = "{\"applicationName\":\"ZOWEAPPL\"}";
             StringEntity entity = new StringEntity(json);
             httpPost.setEntity(entity);
             httpPost.setHeader("Content-type", "application/json");
-            httpPost.setHeader("Cookie", apimlAuthCookie.split(";")[0]);
-            CloseableHttpResponse response = client.execute(httpPost);
-            System.out.println("****************************************");
+            httpPost.setHeader("Cookie", jwtToken.split(";")[0]);
+            response = httpsClient.getHttpsClientWithKeyStoreAndTrustStore().execute(httpPost);
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
                 String data = "";
-                while((data=reader.readLine())!=null)
-                {
+                while ((data = reader.readLine()) != null) {
                     System.out.println(data);
                 }
             }
-            System.out.println("****************************************");
             System.out.println(response);
-        }*/
+        } catch (IOException ioe) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+        } catch (Exception e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
+        } finally {
+            finallyClose(response);
+        }
         return "";
+    }
+
+    private void finallyClose(CloseableHttpResponse response) {
+        try {
+            if (response != null)
+                response.close();
+            if (httpsClient != null)
+                httpsClient.close();
+        } catch (IOException e) {
+            // Do nothing
+        }
     }
 
     private String extractToken(CloseableHttpResponse response) throws ZaasClientException {
