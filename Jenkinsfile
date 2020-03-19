@@ -93,7 +93,6 @@ pipeline {
 
         stage ('Run Integration Tests') {
             steps {
-                sh 'apt-get install xvfb'
                 sh 'npm install'
                 sh 'npm run api-layer &'
                 sh './gradlew runCITests'
