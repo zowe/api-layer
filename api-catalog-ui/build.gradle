@@ -45,7 +45,7 @@ task runTests(type: NpmTask) {
     args = ['run', 'test']
 }
 
-task runE2ETests(type: NpmTask, dependsOn: npmInstall) {
+task runE2ETests(type: NpmTask) {
     group = 'integration tests'
     description = "End to End Tests depending on the catalog ui"
 
