@@ -4,10 +4,6 @@
 def MASTER_BRANCH = "master"
 
 /**
-* Is this a release branch? Temporary workaround that won't break everything horribly if we merge.
-*/
-def RELEASE_BRANCH = false
-/**
  * The result string for a successful build
  */
 def BUILD_SUCCESS = 'SUCCESS'
@@ -70,9 +66,6 @@ if (BRANCH_NAME == MASTER_BRANCH) {
     // twice in quick succession
     opts.push(disableConcurrentBuilds())
 } else {
-    if (BRANCH_NAME.equals("1.0.0")){
-        RELEASE_BRANCH = true
-    }
     // Only keep 5 builds on other branches
     opts.push(buildDiscarder(logRotator(numToKeepStr: '5')))
 }
@@ -88,163 +81,74 @@ pipeline {
     }
 
     parameters {
-        string(name: 'CHANGE_CLASS', defaultValue: '', description: 'Override change class - for testing (empty, doc, full, api-catalog)', )
         booleanParam(name: 'PUBLISH_PR_ARTIFACTS', defaultValue: 'false', description: 'If true it will publish the pull requests artifacts', )
     }
 
     stages {
-        stage('Classify changes') {
+        stage('Build and unit test with coverage') {
             steps {
-                script {
-                    if (params.CHANGE_CLASS != '') {
-                        changeClass = params.CHANGE_CLASS
+                timeout(time: 20, unit: 'MINUTES') {
+                    withSonarQubeEnv('sonarcloud-server') {
+                        sh './gradlew --info --scan clean build coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}'
                     }
-                    else {
-                        ccOutput = sh(returnStdout: true, script: "python3 scripts/classify_changes.py")
-                        echo "${ccOutput}"
-                        changeClass = ccOutput.trim().tokenize().last()
-                    }
-                    allowEmptyArchive = changeClass in ['empty', 'doc'] && !BRANCH_NAME.equals(MASTER_BRANCH) && !RELEASE_BRANCH
                 }
-                echo "Change class: ${changeClass}"
-                sh "echo ${changeClass} > .change_class"
             }
         }
 
-        stage('Copy archives from last successful build') {
-            when { expression { changeClass != 'full' } }
+        stage('Publish coverage reports') {
             steps {
-                script {
-                    try {
-                        copyArtifacts(projectName: JOB_NAME)
-                    }
-                    catch (error) {
-                        copyArtifacts(projectName: 'API_Mediation/master')
-                    }
-                }
-                sh "echo ${changeClass} > .change_class"
+                   publishHTML(target: [
+                       allowMissing         : false,
+                       alwaysLinkToLastBuild: false,
+                       keepAll              : true,
+                       reportDir            : 'build/reports/jacoco/jacocoFullReport/html',
+                       reportFiles          : 'index.html',
+                       reportName           : "Java Coverage Report"
+                   ])
+                    publishHTML(target: [
+                        allowMissing         : false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll              : true,
+                        reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
+                        reportFiles          : 'index.html',
+                        reportName           : "UI JavaScript Test Coverage"
+                    ])
             }
         }
 
-        stage ('API Catalog build') {
-            when { expression { changeClass in ['api-catalog'] } }
-            stages {
-                stage('Package api-layer source code') {
-                    steps {
-                        sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
-                    }
-                }
-
-                stage ('Build API Catalog') {
-                    steps {
-                        timeout(time: 10, unit: 'MINUTES') {
-                            sh './gradlew :api-catalog-services:build'
-                        }
-                    }
-                }
-            }
-        }
-
-        stage ('Full build') {
-            when { expression { changeClass in ['full'] } }
-            stages {
-                stage('Clean') {
-                    when { expression { BRANCH_NAME.equals(MASTER_BRANCH) || RELEASE_BRANCH } }
-                    steps {
-                        sh "./gradlew clean"
-                    }
-                }
-
-                stage('Package api-layer source code') {
-                    steps {
-                        sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
-                    }
-                }
-
-                stage('Build and unit test with coverage') {
-                    steps {
-                        timeout(time: 20, unit: 'MINUTES') {
-                            sh './gradlew build coverage'
-                        }
-                    }
-                }
-
-                stage('Publish coverage reports') {
-                    steps {
-                           publishHTML(target: [
-                               allowMissing         : false,
-                               alwaysLinkToLastBuild: false,
-                               keepAll              : true,
-                               reportDir            : 'build/reports/jacoco/jacocoFullReport/html',
-                               reportFiles          : 'index.html',
-                               reportName           : "Java Coverage Report"
-                           ])
-                            publishHTML(target: [
-                                allowMissing         : false,
-                                alwaysLinkToLastBuild: false,
-                                keepAll              : true,
-                                reportDir            : 'api-catalog-ui/frontend/coverage/lcov-report',
-                                reportFiles          : 'index.html',
-                                reportName           : "UI JavaScript Test Coverage"
-                            ])
-                    }
-                }
-
-                stage('Publish snapshot version to Artifactory for master') {
-                    when {
-                        expression {
-                            return BRANCH_NAME.equals(MASTER_BRANCH) || RELEASE_BRANCH;
-                        }
-                    }
-                    steps {
-                        withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                         sh '''
-                         ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
-                         '''
-                        }
-                    }
-                }
-
-                stage('Publish snapshot version to Artifactory for Pull Request') {
-                    when {
-                        expression {
-                            return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
-                        }
-                    }
-                    steps {
-                        withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                            sh '''
-                            sudo sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
-                            ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -PpullRequest=$env.BRANCH_NAME
-                            '''
-                        }
-                    }
-                }
-
-            }
-        }
-
-        /************************************************************************
-         * STAGE
-         * -----
-         * SonarQube Scanner
-         *
-         * EXECUTION CONDITIONS
-         * --------------------
-         * - SHOULD_BUILD is true
-         * - The build is still successful and not unstable
-         *
-         * DESCRIPTION
-         * -----------
-         * Runs the sonar-scanner analysis tool, which submits the source, test results,
-         *  and coverage results for analysis in our SonarQube server.
-         * TODO: This step does not yet support branch or PR submissions properly.
-         ***********************************************************************/
-        stage('sonar') {
+        stage('Package api-layer source code') {
             steps {
-                withSonarQubeEnv('sonarcloud-server') {
-                    // Per Sonar Doc - It's important to add --info because of SONARJNKNS-281
-                    sh "./gradlew --info sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}"
+                sh "git archive --format tar.gz -9 --output api-layer.tar.gz HEAD"
+            }
+        }
+
+        stage('Publish snapshot version to Artifactory for master') {
+            when {
+                expression {
+                    return BRANCH_NAME.equals(MASTER_BRANCH);
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                 sh '''
+                 ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD
+                 '''
+                }
+            }
+        }
+
+        stage('Publish snapshot version to Artifactory for Pull Request') {
+            when {
+                expression {
+                    return BRANCH_NAME.contains("PR-") && params.PUBLISH_PR_ARTIFACTS;
+                }
+            }
+            steps {
+                withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh '''
+                    sudo sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
+                    ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD -PpullRequest=$env.BRANCH_NAME
+                    '''
                 }
             }
         }
@@ -263,7 +167,6 @@ pipeline {
         }
 
         stage ('Codecov') {
-            when { expression { changeClass in ['full', 'api-catalog'] } }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'Codecov', usernameVariable: 'CODECOV_USERNAME', passwordVariable: 'CODECOV_TOKEN')]) {
                     sh 'curl -s https://codecov.io/bash | bash -s'
@@ -275,7 +178,6 @@ pipeline {
     post {
         always {
             junit allowEmptyResults: true, testResults: '**/test-results/**/*.xml'
-            archiveArtifacts '.change_class'
             publishHTML (target: [
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
@@ -317,7 +219,7 @@ pipeline {
                     python3 -m pip install --user requests
                     python3 -m pip freeze
                     python3 -c 'import requests'
-                    python3 scripts/post_actions.py $env.BRANCH_NAME $ZOWE_GITHUB_APIKEY $changeClass
+                    python3 scripts/post_actions.py $env.BRANCH_NAME $ZOWE_GITHUB_APIKEY full
                     """
             }
         }

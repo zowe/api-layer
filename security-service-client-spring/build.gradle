@@ -6,7 +6,10 @@ dependencies {
     compile libraries.apache_commons_lang3
 
     compileOnly libraries.javax_servlet_api
+
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
+
 
     testCompile libraries.junit
     testCompile libraries.mockito_core

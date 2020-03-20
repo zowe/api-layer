@@ -9,8 +9,6 @@
  */
 package org.zowe.apiml.gatewayservice;
 
-import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.config.ConfigReader;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
@@ -18,6 +16,8 @@ import io.restassured.http.Cookie;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.util.config.ConfigReader;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -37,7 +37,6 @@ public class LoginIntegrationTest {
     private final static String BASE_PATH = "/api/v1/gateway";
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final static String ISSUER = "APIML";
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
@@ -76,7 +75,6 @@ public class LoginIntegrationTest {
 
         assertThat(claims.getId(), not(isEmptyString()));
         assertThat(claims.getSubject(), is(USERNAME));
-        assertThat(claims.getIssuer(), is(ISSUER));
     }
 
     @Test
@@ -99,7 +97,6 @@ public class LoginIntegrationTest {
 
         assertThat(claims.getId(), not(isEmptyString()));
         assertThat(claims.getSubject(), is(USERNAME));
-        assertThat(claims.getIssuer(), is(ISSUER));
     }
 
     @Test

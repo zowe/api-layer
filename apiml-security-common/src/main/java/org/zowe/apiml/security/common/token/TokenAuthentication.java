@@ -20,6 +20,9 @@ import java.util.Collections;
  */
 @EqualsAndHashCode(callSuper = false)
 public class TokenAuthentication extends AbstractAuthenticationToken {
+
+    private static final long serialVersionUID = 9187160928171618141L;
+
     private final String username;
     private final String token;
 
@@ -50,4 +53,17 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
     public String getPrincipal() {
         return username;
     }
+
+    /**
+     * Creates the TokenAuthentication with fulfilled username (principal), token and marked as authenticated.
+     * @param username Username, who is authenticated
+     * @param token Token, which authenticate the user
+     * @return TokenAuthentication marked as authenticated with username, token
+     */
+    public static TokenAuthentication createAuthenticated(String username, String token) {
+        final TokenAuthentication out = new TokenAuthentication(username, token);
+        out.setAuthenticated(true);
+        return out;
+    }
+
 }

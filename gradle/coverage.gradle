@@ -1,3 +1,5 @@
+apply plugin: 'jacoco'
+
 ext.javaProjectsWithUnitTests = [
     'api-catalog-services',
     'common-service-core',
@@ -14,13 +16,14 @@ ext.javaProjectsWithUnitTests = [
     'apiml-security-common'
 ]
 
+ext.jacocoProjects = subprojects.findAll { it.name in javaProjectsWithUnitTests }
 
-configure(subprojects.findAll { it.name in javaProjectsWithUnitTests }) {
+configure(jacocoProjects) {
     apply plugin: 'java'
     apply plugin: 'idea'
     apply plugin: 'jacoco'
     jacoco {
-        toolVersion = '0.8.2'
+        toolVersion = '0.8.4'
     }
 
     jacocoTestReport {
@@ -30,4 +33,40 @@ configure(subprojects.findAll { it.name in javaProjectsWithUnitTests }) {
             html.enabled true
         }
     }
+}
+
+task jacocoFullReport(type: JacocoReport) {
+    description = 'Generates an aggregate report from all subprojects'
+    dependsOn(jacocoProjects.jacocoTestReport)
+
+    getAdditionalSourceDirs().from(
+        files(jacocoProjects.sourceSets.main.allSource.srcDirs)
+    )
+
+    getSourceDirectories().from(
+        files(jacocoProjects.sourceSets.main.allSource.srcDirs)
+    )
+
+    getClassDirectories().from(
+        files(jacocoProjects.sourceSets.main.output)
+    )
+
+    getExecutionData().from(
+        files(jacocoProjects.jacocoTestReport.executionData)
+    )
+
+    reports {
+        html.enabled = true
+        xml.enabled = true
+    }
+
+    doFirst {
+        getExecutionData().from(
+            files(executionData.findAll { it.exists() })
+        )
+    }
+}
+
+task coverage() {
+    dependsOn jacocoFullReport, ":api-catalog-ui:javaScriptCoverage"
 }

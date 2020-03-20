@@ -7,9 +7,13 @@ dependencies {
 
     compileOnly libraries.javax_servlet_api
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     testCompile libraries.junit
     testCompile libraries.mockito_core
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
+
+    testCompileOnly libraries.lombok
+    testAnnotationProcessor libraries.lombok
 }

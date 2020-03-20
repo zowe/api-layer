@@ -193,8 +193,8 @@ public class CachedProductFamilyTest {
 
         when(cachedServicesService.getService("service")).thenReturn(application);
         service = new CachedProductFamilyService(
-            null,
             cachedServicesService,
+            null,
             cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
@@ -224,8 +224,8 @@ public class CachedProductFamilyTest {
         when(cachedServicesService.getService("service1")).thenReturn(application1);
         when(cachedServicesService.getService("service2")).thenReturn(application2);
         service = new CachedProductFamilyService(
-            null,
             cachedServicesService,
+            null,
             cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);
@@ -254,8 +254,8 @@ public class CachedProductFamilyTest {
         when(cachedServicesService.getService("service1")).thenReturn(application1);
         when(cachedServicesService.getService("service2")).thenReturn(application2);
         service = new CachedProductFamilyService(
-            null,
             cachedServicesService,
+            null,
             cacheRefreshUpdateThresholdInMillis);
 
         service.getContainer("demoapp", instance1);

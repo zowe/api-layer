@@ -138,12 +138,14 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         // token1 - valid
         QueryResponse qr1 = new QueryResponse("domain", "userId",
             Date.valueOf(LocalDate.of(1900, 1, 1)),
-            Date.valueOf(LocalDate.of(2100, 1, 1))
+            Date.valueOf(LocalDate.of(2100, 1, 1)),
+            QueryResponse.Source.ZOWE
         );
         // token2 - expired
         QueryResponse qr2 = new QueryResponse("domain", "userId",
             Date.valueOf(LocalDate.of(1900, 1, 1)),
-            Date.valueOf(LocalDate.of(2000, 1, 1))
+            Date.valueOf(LocalDate.of(2000, 1, 1)),
+            QueryResponse.Source.ZOWE
         );
         AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
         AuthenticationCommand acExpired = spy(new AuthenticationCommandTest(true));

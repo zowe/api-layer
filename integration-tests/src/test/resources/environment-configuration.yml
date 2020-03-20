@@ -29,3 +29,4 @@ zosmfServiceConfiguration:
     scheme: https
     host: river.zowe.org
     port: 10443
+    serviceId: zosmf

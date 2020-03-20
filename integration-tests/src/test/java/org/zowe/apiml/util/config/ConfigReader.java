@@ -51,7 +51,7 @@ public class ConfigReader {
                             .trustStorePassword("password")
                             .build();
 
-                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "ca32.ca.com", 1443);
+                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
                         configuration = new EnvironmentConfiguration(
                             credentials,
                             gatewayServiceConfiguration,
@@ -76,6 +76,7 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setPort(Integer.parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setInstances(Integer.parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
+                    setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
 
                     instance = configuration;
@@ -86,10 +87,20 @@ public class ConfigReader {
         return instance;
     }
 
+    private static void setZosmfConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
+        ZosmfServiceConfiguration zosmfConfiguration = configuration.getZosmfServiceConfiguration();
+        zosmfConfiguration.setHost(System.getProperty("zosmf.host", zosmfConfiguration.getHost()));
+        String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
+        zosmfConfiguration.setPort(Integer.parseInt(port));
+        zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));
+        zosmfConfiguration.setServiceId(System.getProperty("zosmf.serviceId", zosmfConfiguration.getServiceId()));
+    }
+
     private static void setTlsConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
         TlsConfiguration tlsConfiguration = configuration.getTlsConfiguration();
         tlsConfiguration.setKeyAlias(System.getProperty("tlsConfiguration.keyAlias", tlsConfiguration.getKeyAlias()));
         tlsConfiguration.setKeyPassword(System.getProperty("tlsConfiguration.keyPassword", tlsConfiguration.getKeyPassword()));
+        tlsConfiguration.setKeyStore(System.getProperty("tlsConfiguration.keyStore", tlsConfiguration.getKeyStore()));
         tlsConfiguration.setKeyStoreType(System.getProperty("tlsConfiguration.keyStoreType", tlsConfiguration.getKeyStoreType()));
         tlsConfiguration.setKeyPassword(System.getProperty("tlsConfiguration.keyStorePassword", tlsConfiguration.getKeyStorePassword()));
         tlsConfiguration.setTrustStoreType(System.getProperty("tlsConfiguration.trustStoreType", tlsConfiguration.getTrustStoreType()));
