@@ -2,9 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: bug
-assignees: petr-galik
-
+labels: bug, new
 ---
 
 **Describe the bug**
