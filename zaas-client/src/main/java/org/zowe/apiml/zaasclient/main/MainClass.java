@@ -10,14 +10,17 @@
 package org.zowe.apiml.zaasclient.main;
 
 import org.apache.commons.codec.binary.Base64;
-import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.token.TokenService;
 import org.zowe.apiml.zaasclient.token.TokenServiceImpl;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class MainClass {
@@ -30,22 +33,15 @@ public class MainClass {
     private static final String NULL_PASS = null;
     private static final String EMPTY_USER = "";
     private static final String EMPTY_PASS = "";
-    private static final String EMPTY_AUTH_HEADER = "";
     private static final String NULL_AUTH_HEADER = null;
+    private static final String EMPTY_AUTH_HEADER = "";
 
-    private static final String CONFIG_FILE_ENV_VARIABLE = "CONFIG_FILE";
-    private static final String CONFIG_FILE_PATH = "/Users/ac891054/IdeaProjects/api-layer-sdk/zaas-client/src/test/resources/configFile.properties";
+    private static final String CONFIG_FILE_PATH = "zaas-client/src/test/resources/configFile.properties";
 
     public static void main(String[] args) {
-        System.setProperty(CONFIG_FILE_ENV_VARIABLE, CONFIG_FILE_PATH);
-        ConfigProperties configProperties = null;
-        try {
-            configProperties = new ConfigProperties();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
+        ConfigProperties configProperties = getConfigProperties();
         TokenServiceImpl tokenService = new TokenServiceImpl();
-        tokenService.init(configProperties, new HttpsClient(configProperties));
+        tokenService.init(configProperties);
 
         testLoginWithCredentials(tokenService);
         testLoginWithAuthHeader(tokenService);
@@ -95,6 +91,30 @@ public class MainClass {
         executeCaseWithAuthHeader(tokenService, VALID_USER, VALID_PASS, "##### START OF NEGATIVE CASE 7 - Gateway Server Stopped/Unavailable #####", "##### END OF NEGATIVE CASE 7 #####");
 
         System.out.println("$$$$$$$$$$$$ END of Tests of LOGIN with AUTHORIZATION HEADER $$$$$$$$$$$$\n\n");
+    }
+
+    private static ConfigProperties getConfigProperties() {
+        String absoluteFilePath = new File(CONFIG_FILE_PATH).getAbsolutePath();
+        ConfigProperties configProperties = new ConfigProperties();
+        Properties configProp = new Properties();
+        try {
+            if (Paths.get(absoluteFilePath).toFile().exists()) {
+                configProp.load(new FileReader(absoluteFilePath));
+
+                configProperties.setApimlHost(configProp.getProperty("APIML_HOST"));
+                configProperties.setApimlPort(configProp.getProperty("APIML_PORT"));
+                configProperties.setApimlBaseUrl(configProp.getProperty("APIML_BASE_URL"));
+                configProperties.setKeyStorePath(configProp.getProperty("KEYSTOREPATH"));
+                configProperties.setKeyStorePassword(configProp.getProperty("KEYSTOREPASSWORD"));
+                configProperties.setKeyStoreType(configProp.getProperty("KEYSTORETYPE"));
+                configProperties.setTrustStorePath(configProp.getProperty("TRUSTSTOREPATH"));
+                configProperties.setTrustStorePassword(configProp.getProperty("TRUSTSTOREPASSWORD"));
+                configProperties.setTrustStoreType(configProp.getProperty("TRUSTSTORETYPE"));
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        return configProperties;
     }
 
     private static void executeCaseWithCredentials(TokenService tokenService, String userName, String password, String caseStartMsg, String caseEndMsg) {

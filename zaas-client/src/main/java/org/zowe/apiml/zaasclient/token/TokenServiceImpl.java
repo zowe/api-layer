@@ -32,9 +32,9 @@ public class TokenServiceImpl implements TokenService {
     private HttpsClient httpsClient;
 
     @Override
-    public void init(ConfigProperties configProperties, HttpsClient httpsClient) {
+    public void init(ConfigProperties configProperties) {
         this.configProperties = configProperties;
-        this.httpsClient = httpsClient;
+        this.httpsClient = new HttpsClient(configProperties);
     }
 
     @Override

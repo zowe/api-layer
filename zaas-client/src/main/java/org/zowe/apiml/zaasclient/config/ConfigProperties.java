@@ -11,17 +11,14 @@ package org.zowe.apiml.zaasclient.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Properties;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class ConfigProperties {
-
-    private static final String CONFIG_FILE_NAME = "configFile.properties";
 
     private String apimlHost;
     private String apimlPort;
@@ -32,25 +29,6 @@ public class ConfigProperties {
     private String trustStoreType;
     private String trustStorePath;
     private String trustStorePassword;
-
-    public ConfigProperties() throws IOException {
-        String configFile = System.getProperty("CONFIG_FILE");
-        Properties configProperties = new Properties();
-        if (configFile != null && !configFile.isEmpty()) {
-            configProperties.load(new FileReader(configFile));
-        } else if (Paths.get(CONFIG_FILE_NAME).toFile().exists()) {
-            configProperties.load(new FileReader(CONFIG_FILE_NAME));
-        }
-        this.keyStorePath = configProperties.getProperty("KEYSTOREPATH");
-        this.keyStorePassword = configProperties.getProperty("KEYSTOREPASSWORD");
-        this.keyStoreType = configProperties.getProperty("KEYSTORETYPE");
-        this.trustStorePath = configProperties.getProperty("TRUSTSTOREPATH");
-        this.trustStorePassword = configProperties.getProperty("TRUSTSTOREPASSWORD");
-        this.trustStoreType = configProperties.getProperty("TRUSTSTORETYPE");
-        this.apimlHost = configProperties.getProperty("APIML_HOST");
-        this.apimlPort = configProperties.getProperty("APIML_PORT");
-        this.apimlBaseUrl = configProperties.getProperty("APIML_BASE_URL");
-    }
 
     @Override
     public String toString() {
