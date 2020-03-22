@@ -19,18 +19,20 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ZaasToken {
-    String token;
+    String domain;
     String userId;
     Date creation;
     Date expiration;
+    boolean expired;
 
     @Override
     public String toString() {
         return "ZaasToken{" +
-            "token='" + token + '\'' +
+            "domain='" + domain + '\'' +
             ", userId='" + userId + '\'' +
             ", creation=" + creation +
             ", expiration=" + expiration +
+            ", expired=" + expired +
             '}';
     }
 }

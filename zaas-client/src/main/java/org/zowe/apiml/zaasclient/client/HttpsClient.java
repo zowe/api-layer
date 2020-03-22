@@ -12,6 +12,7 @@ package org.zowe.apiml.zaasclient.client;
 import lombok.AllArgsConstructor;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
@@ -103,6 +104,45 @@ public final class HttpsClient implements Closeable {
         return getCloseableHttpClient(sslContext);
     }
 
+    /**
+     * An overloaded version of the getHttpsClientWithKeyStoreAndTrustStore to be used in query api
+     *
+     * @param cookieStore
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws CertificateException
+     * @throws UnrecoverableKeyException
+     * @throws KeyManagementException
+     */
+    public CloseableHttpClient getHttpsClientWithKeyStoreAndTrustStore(BasicCookieStore cookieStore)
+        throws NoSuchAlgorithmException, IOException, KeyStoreException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+        SSLContext sslContext;
+        TrustManagerFactory tmf = null;
+        KeyManagerFactory kmf = null;
+
+        if (trustStorePath != null) {
+            tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            KeyStore trustStore = KeyStore.getInstance(trustStoreType);
+            File trustFile = new File(trustStorePath);
+            trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
+            tmf.init(trustStore);
+        }
+
+        if (keyStorePath != null) {
+            kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+            File keyFile = new File(keyStorePath);
+            keyStore.load(new FileInputStream(keyFile), keyStorePassword.toCharArray());
+            kmf.init(keyStore, keyStorePassword.toCharArray());
+        }
+
+        sslContext = this.getSSLContext(kmf, tmf);
+
+        return getCloseableHttpClient(sslContext, cookieStore);
+    }
+
     private CloseableHttpClient getCloseableHttpClient(SSLContext sslContext) {
         final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
             SSLConnectionSocketFactory.getDefaultHostnameVerifier());
@@ -112,6 +152,27 @@ public final class HttpsClient implements Closeable {
             .setDefaultRequestConfig(this.requestConfig)
             .setMaxConnTotal(3 * 3)
             .setMaxConnPerRoute(3)
+            .build();
+        return closeableHttpsClient;
+    }
+
+    /**
+     * Overloaded method of the getclosableHttpClient method .. so that the cookies can be used for storing jwt tokens
+     *
+     * @param sslContext
+     * @param cookieStore
+     * @return
+     */
+    private CloseableHttpClient getCloseableHttpClient(SSLContext sslContext, BasicCookieStore cookieStore) {
+        final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
+            SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+
+        closeableHttpsClient = HttpClients.custom()
+            .setSSLSocketFactory(sslsf)
+            .setDefaultRequestConfig(this.requestConfig)
+            .setMaxConnTotal(3 * 3)
+            .setMaxConnPerRoute(3)
+            .setDefaultCookieStore(cookieStore)
             .build();
         return closeableHttpsClient;
     }

@@ -16,6 +16,6 @@ public interface TokenService {
     void init(ConfigProperties configProperties);
     String login(String userId, String password) throws ZaasClientException;
     String login(String authorizationHeader) throws ZaasClientException;
-    ZaasToken query(String token);
+    ZaasToken query(String token) throws ZaasClientException;
     String passTicket(String jwtToken, String applicationId) throws  ZaasClientException;
 }

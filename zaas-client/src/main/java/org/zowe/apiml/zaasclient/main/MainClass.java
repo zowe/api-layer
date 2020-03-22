@@ -43,9 +43,9 @@ public class MainClass {
         TokenServiceImpl tokenService = new TokenServiceImpl();
         tokenService.init(configProperties);
 
-        executePassTicketWithAuthHeader(tokenService, VALID_USER, VALID_PASS, "##### START OF POSITIVE CASE -PASS TICKET 1  #####", "##### END OF POSITIVE CASE #####");
         testLoginWithCredentials(tokenService);
         testLoginWithAuthHeader(tokenService);
+        executePassTicketWithAuthHeader(tokenService, VALID_USER, VALID_PASS, "##### START OF POSITIVE CASE -PASS TICKET 1  #####", "##### END OF POSITIVE CASE #####");
 
     }
 
@@ -123,7 +123,9 @@ public class MainClass {
     private static void executeCaseWithCredentials(TokenService tokenService, String userName, String password, String caseStartMsg, String caseEndMsg) {
         try {
             System.out.println(caseStartMsg);
-            System.out.println("Token obtained: " + tokenService.login(userName, password));
+            String token = tokenService.login(userName, password);
+            System.out.println("Token obtained: " + token);
+            tokenService.query(token);
         } catch (ZaasClientException zce) {
             System.out.println(zce.getErrorCode() + "\n" + zce.getErrorMessage() + "\n" + zce.getHttpResponseCode());
         } finally {
@@ -138,7 +140,9 @@ public class MainClass {
             byte[] encodedAuth = Base64.encodeBase64(
                 auth.getBytes(StandardCharsets.ISO_8859_1));
             String authHeader = "Basic " + new String(encodedAuth);
-            System.out.println("Token obtained: " + tokenService.login(authHeader));
+            String token = tokenService.login(authHeader);
+            System.out.println("Token obtained: " + token);
+            tokenService.query(token);
         } catch (ZaasClientException zce) {
             System.out.println(zce.getErrorCode() + "\n" + zce.getErrorMessage() + "\n" + zce.getHttpResponseCode());
         } finally {
@@ -158,7 +162,6 @@ public class MainClass {
     }
 
 
-
     private static void executePassTicketWithAuthHeader(TokenService tokenService, String userName, String password, String caseStartMsg, String caseEndMsg) {
         System.out.println("PassTicket: Please start the server, then type a character to test PassTicket");
         Scanner sc = new Scanner(System.in);
@@ -171,7 +174,7 @@ public class MainClass {
                 auth.getBytes(StandardCharsets.ISO_8859_1));
             String authHeader = "Basic " + new String(encodedAuth);
             String token = tokenService.login(authHeader);
-            tokenService.passTicket(token,"ZOWEAPPL");
+            tokenService.passTicket(token, "ZOWEAPPL");
             System.out.println("Token obtained: " + tokenService.login(authHeader));
         } catch (ZaasClientException zce) {
             System.out.println(zce.getErrorCode() + "\n" + zce.getErrorMessage() + "\n" + zce.getHttpResponseCode());

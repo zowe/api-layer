@@ -9,12 +9,16 @@
  */
 package org.zowe.apiml.zaasclient.token;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
@@ -94,8 +98,35 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public ZaasToken query(String token) {
-        return null;
+    public ZaasToken query(String token) throws ZaasClientException {
+
+        CloseableHttpResponse response = null;
+        ZaasToken zaasToken = null;
+
+        BasicCookieStore cookieStore = new BasicCookieStore();
+        BasicClientCookie cookie = new BasicClientCookie("apimlAuthenticationToken", token);
+        cookie.setDomain("localhost");
+        cookie.setPath("/");
+        cookieStore.addCookie(cookie);
+
+        try {
+            HttpGet httpGet = new HttpGet("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/query");
+            //APIML query api doesn't work with just authorization bearers ...so a cookie has to be set
+            //a cookie store is passed along with the method call here .. so that the token can be passed
+            response = httpsClient.getHttpsClientWithKeyStoreAndTrustStore(cookieStore).execute(httpGet);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                zaasToken = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasToken.class);
+                System.out.println(zaasToken);
+            }
+        } catch (IOException ioe) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+        } catch (Exception e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
+        } finally {
+            finallyClose(response);
+        }
+        return zaasToken;
     }
 
     @Override
