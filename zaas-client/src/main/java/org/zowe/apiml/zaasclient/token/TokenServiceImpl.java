@@ -137,7 +137,7 @@ public class TokenServiceImpl implements TokenService {
             StringEntity entity = new StringEntity(json);
             httpPost.setEntity(entity);
             httpPost.setHeader("Content-type", "application/json");
-            httpPost.setHeader("Cookie", jwtToken);
+            httpPost.setHeader("Cookie", "apimlAuthenticationToken=" + jwtToken);
             response = httpsClient.getHttpsClientWithKeyStoreAndTrustStore().execute(httpPost);
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
                 String data = "";
