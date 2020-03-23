@@ -10,6 +10,7 @@
 package org.zowe.apiml.zaasclient.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,10 +24,13 @@ import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.passTicket.ZaasClientTicketRequest;
+import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -131,21 +135,34 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
         CloseableHttpResponse response = null;
+        ZaasPassTicketResponse zaasPassTicketResponse = null;
+        ZaasClientTicketRequest zaasClientTicketRequest = null;
+        ObjectMapper mapper = new ObjectMapper();
+
         try {
-            HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/ticket");
-            String json = "{\"applicationName\":\"ZOWEAPPL\"}";
-            StringEntity entity = new StringEntity(json);
-            httpPost.setEntity(entity);
+            zaasClientTicketRequest.setApplicationName(applicationId);
+
+            HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" +
+                configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/ticket");
+            httpPost.setEntity(new StringEntity(mapper.writeValueAsString(zaasClientTicketRequest)));
             httpPost.setHeader("Content-type", "application/json");
-            httpPost.setHeader("Cookie", "apimlAuthenticationToken=" + jwtToken);
+            httpPost.setHeader("Cookie", COOKIE_PREFIX + "=" + jwtToken);
+
             response = httpsClient.getHttpsClientWithKeyStoreAndTrustStore().execute(httpPost);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()))) {
-                String data = "";
-                while ((data = reader.readLine()) != null) {
-                    System.out.println(data);
-                }
+            if (Objects.isNull(applicationId) && applicationId.isEmpty()) {
+                throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
             }
-            System.out.println(response);
+            if (Objects.isNull(jwtToken) && jwtToken.isEmpty()) {
+                throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED);
+            }
+
+            if (response.getStatusLine().getStatusCode() == 500) {
+                throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+            } else if (response.getStatusLine().getStatusCode() == 401) {
+                throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION);
+            } else if (response.getStatusLine().getStatusCode() == 200) {
+                zaasPassTicketResponse = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasPassTicketResponse.class);
+            }
         } catch (IOException ioe) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
@@ -153,7 +170,7 @@ public class TokenServiceImpl implements TokenService {
         } finally {
             finallyClose(response);
         }
-        return "";
+        return zaasPassTicketResponse.getTicket();
     }
 
     private void finallyClose(CloseableHttpResponse response) {
