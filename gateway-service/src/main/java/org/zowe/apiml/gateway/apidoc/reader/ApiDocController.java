@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api-doc")
+@RequestMapping("/api/v1/gateway/api-doc")
 @RequiredArgsConstructor
 public class ApiDocController {
 
