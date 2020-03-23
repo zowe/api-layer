@@ -35,8 +35,8 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 @Category(MainframeDependentTests.class)
 public class PublicKeyIntegrationTest {
 
-    private final static String ALL_PUBLIC_KEY_ENDPOINT = "/auth/keys/public/all";
-    private final static String CURRENT_PUBLIC_KEY_ENDPOINT = "/auth/keys/public/current";
+    private final static String ALL_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/all";
+    private final static String CURRENT_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/current";
 
     private final static GatewayServiceConfiguration SERVICE_CONFIGURATION = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private final static String GATEWAY_SCHEME = SERVICE_CONFIGURATION.getScheme();
