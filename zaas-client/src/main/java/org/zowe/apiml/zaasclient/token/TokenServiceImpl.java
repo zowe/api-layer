@@ -104,7 +104,7 @@ public class TokenServiceImpl implements TokenService {
         ZaasToken zaasToken = null;
 
         BasicCookieStore cookieStore = new BasicCookieStore();
-        BasicClientCookie cookie = new BasicClientCookie("apimlAuthenticationToken", token);
+        BasicClientCookie cookie = new BasicClientCookie(COOKIE_PREFIX, token);
         cookie.setDomain("localhost");
         cookie.setPath("/");
         cookieStore.addCookie(cookie);
@@ -117,7 +117,6 @@ public class TokenServiceImpl implements TokenService {
 
             if (response.getStatusLine().getStatusCode() == 200) {
                 zaasToken = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasToken.class);
-                System.out.println(zaasToken);
             }
         } catch (IOException ioe) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);

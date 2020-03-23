@@ -125,7 +125,7 @@ public class MainClass {
             System.out.println(caseStartMsg);
             String token = tokenService.login(userName, password);
             System.out.println("Token obtained: " + token);
-            tokenService.query(token);
+            System.out.println(tokenService.query(token));
         } catch (ZaasClientException zce) {
             System.out.println(zce.getErrorCode() + "\n" + zce.getErrorMessage() + "\n" + zce.getHttpResponseCode());
         } finally {
