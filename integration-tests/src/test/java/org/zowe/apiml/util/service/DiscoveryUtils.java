@@ -14,9 +14,11 @@ import io.restassured.response.ResponseBody;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -36,11 +38,11 @@ public class DiscoveryUtils {
     }
 
     public static final List<String> getDiscoveryUrls() {
-        return getInstances("discovery").stream().filter(InstanceInfo.ONLY_UP).map(x -> x.getUrl()).collect(Collectors.toList());
+        return getInstances("discovery").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).collect(Collectors.toList());
     }
 
     public static final List<String> getGatewayUrls() {
-        return getInstances("gateway").stream().filter(InstanceInfo.ONLY_UP).map(x -> x.getUrl()).collect(Collectors.toList());
+        return getInstances("gateway").stream().filter(InstanceInfo.ONLY_UP).map(InstanceInfo::getUrl).collect(Collectors.toList());
     }
 
     public static final List<InstanceInfo> getInstances(String serviceId) {
@@ -63,6 +65,8 @@ public class DiscoveryUtils {
         final ResponseBody body = given()
             .get(url.toString())
             .body();
+
+        if (StringUtils.isEmpty(body.asString())) return Collections.emptyList();
 
         final String applicationPath;
         if (serviceId == null) {

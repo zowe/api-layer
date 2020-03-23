@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.controllers;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.minidev.json.JSONObject;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -31,9 +32,10 @@ import static org.apache.http.HttpStatus.*;
  */
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/auth")
+@RequestMapping(AuthController.CONTROLLER_PATH)
 public class AuthController {
 
+    @Setter
     @org.springframework.beans.factory.annotation.Value("${apiml.security.zosmf.useJwtToken:true}")
     protected boolean useZosmfJwtToken;
 
@@ -42,7 +44,14 @@ public class AuthController {
     private final JwtSecurityInitializer jwtSecurityInitializer;
     private final ZosmfServiceFacade zosmfServiceFacade;
 
-    @DeleteMapping(path = "/invalidate/**")
+    public static final String CONTROLLER_PATH = "/api/v1/gateway/auth";
+    public static final String INVALIDATE_PATH = "/invalidate/**";
+    public static final String DISTRIBUTE_PATH = "/distribute/**";
+    public static final String PUBLIC_KEYS_PATH = "/keys/public";
+    public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
+    public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
+
+    @DeleteMapping(path = INVALIDATE_PATH)
     public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/invalidate/";
         final String uri = request.getRequestURI();
@@ -54,7 +63,7 @@ public class AuthController {
         response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
     }
 
-    @GetMapping(path = "/distribute/**")
+    @GetMapping(path = DISTRIBUTE_PATH)
     public void distributeInvalidate(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/distribute/";
         final String uri = request.getRequestURI();
@@ -66,7 +75,7 @@ public class AuthController {
         response.setStatus(distributed ? SC_OK : SC_NO_CONTENT);
     }
 
-    @GetMapping(path = "/keys/public/all")
+    @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getAllPublicKeys() {
         final List<JWK> keys = new LinkedList<>();
@@ -75,7 +84,7 @@ public class AuthController {
         return new JWKSet(keys).toJSONObject(true);
     }
 
-    @GetMapping(path = "/keys/public/current")
+    @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
     @ResponseBody
     public JSONObject getCurrentPublicKeys() {
         final List<JWK> keys = new LinkedList<>();

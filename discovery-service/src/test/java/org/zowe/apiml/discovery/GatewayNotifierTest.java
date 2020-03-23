@@ -90,12 +90,12 @@ public class GatewayNotifierTest {
         when(registry.getApplication("GATEWAY")).thenReturn(application);
 
         gatewayNotifierSync.serviceUpdated("testService", null);
-        verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services/testService");
-        verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services/testService");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/api/v1/gateway/cache/services/testService");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/api/v1/gateway/cache/services/testService");
 
         gatewayNotifierSync.serviceUpdated(null, null);
-        verify(restTemplate, times(1)).delete("https://hostname1:1433/cache/services");
-        verify(restTemplate, times(1)).delete("http://hostname2:1000/cache/services");
+        verify(restTemplate, times(1)).delete("https://hostname1:1433/api/v1/gateway/cache/services");
+        verify(restTemplate, times(1)).delete("http://hostname2:1000/api/v1/gateway/cache/services");
 
         verify(restTemplate, times(4)).delete(anyString());
     }
@@ -137,7 +137,7 @@ public class GatewayNotifierTest {
         verify(restTemplate, times(1)).delete(anyString());
         verify(messageService).createMessage(
             "org.zowe.apiml.discovery.registration.gateway.notify",
-            "https://host:1433/cache/services/service",
+            "https://host:1433/api/v1/gateway/cache/services/service",
             "host2:service:123"
         );
     }
@@ -148,7 +148,7 @@ public class GatewayNotifierTest {
         String targetInstanceId = targetInstanceInfo.getInstanceId();
 
         InstanceInfo gatewayInstance = createInstanceInfo("gateway", 111, 123);
-        String gatewayUrl = "https://gateway:123/auth/distribute/" + targetInstanceId;
+        String gatewayUrl = "https://gateway:123/api/v1/gateway/auth/distribute/" + targetInstanceId;
 
         Application application = mock(Application.class);
         when(application.getInstances()).thenReturn(Collections.singletonList(gatewayInstance));
@@ -177,16 +177,12 @@ public class GatewayNotifierTest {
 
         gatewayNotifier.serviceUpdated("serviceId", "instanceId");
         await().atMost(TIMEOUT_ASYNC_CALL_SEC, TimeUnit.SECONDS).untilAsserted(
-            () -> {
-                assertEquals("serviceUpdatedProcess(serviceId,instanceId)", gatewayNotifier.getLastCall());
-            }
+            () -> assertEquals("serviceUpdatedProcess(serviceId,instanceId)", gatewayNotifier.getLastCall())
         );
 
         gatewayNotifier.distributeInvalidatedCredentials("instanceId");
         await().atMost(TIMEOUT_ASYNC_CALL_SEC, TimeUnit.SECONDS).untilAsserted(
-            () -> {
-                assertEquals("distributeInvalidatedCredentialsProcess(instanceId)", gatewayNotifier.getLastCall());
-            }
+            () -> assertEquals("distributeInvalidatedCredentialsProcess(instanceId)", gatewayNotifier.getLastCall())
         );
 
         gatewayNotifier.preDestroy();

@@ -27,6 +27,8 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.zowe.apiml.gateway.controllers.AuthController;
+import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -107,6 +109,26 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers("/application/health", "/application/info").permitAll()
             .antMatchers("/application/**").authenticated()
+
+            // auth controller
+            .and()
+            .authorizeRequests()
+            .antMatchers(
+                AuthController.CONTROLLER_PATH + AuthController.ALL_PUBLIC_KEYS_PATH,
+                AuthController.CONTROLLER_PATH + AuthController.CURRENT_PUBLIC_KEYS_PATH
+            ).permitAll()
+            .and()
+            .authorizeRequests()
+            .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
+            .and()
+            .x509().userDetailsService(x509UserDetailsService())
+
+            // cache controller
+            .and()
+            .authorizeRequests()
+            .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
+            .and()
+            .x509().userDetailsService(x509UserDetailsService())
 
             // add filters - login, query, ticket
             .and()
@@ -201,5 +223,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         firewall.setAllowUrlEncodedPeriod(true);
         firewall.setAllowSemicolon(true);
         web.httpFirewall(firewall);
+
+        web.ignoring()
+            .antMatchers(AuthController.CONTROLLER_PATH + AuthController.PUBLIC_KEYS_PATH + "/**");
     }
 }

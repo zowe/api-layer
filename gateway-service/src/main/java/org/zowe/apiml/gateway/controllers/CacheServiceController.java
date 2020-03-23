@@ -26,8 +26,10 @@ import java.util.List;
  */
 @AllArgsConstructor
 @RestController
-@RequestMapping("/cache/services")
+@RequestMapping(CacheServiceController.CONTROLLER_PATH)
 public class CacheServiceController {
+
+    public static final String CONTROLLER_PATH = "/api/v1/gateway/cache/services";
 
     private final List<ServiceCacheEvict> toEvict;
     private final ApimlDiscoveryClient discoveryClient;
