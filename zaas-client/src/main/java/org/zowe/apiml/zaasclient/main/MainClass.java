@@ -36,11 +36,11 @@ public class MainClass {
     private static final String NULL_AUTH_HEADER = null;
     private static final String EMPTY_AUTH_HEADER = "";
 
-    private static final String CONFIG_FILE_PATH = "zaas-client/src/test/resources/configFile.properties";
+    private static final String CONFIG_FILE_PATH = "/Users/ac891054/IdeaProjects/api-layer-sdk/zaas-client/src/test/resources/configFile.properties";
 
     public static void main(String[] args) {
         ConfigProperties configProperties = getConfigProperties();
-        TokenServiceImpl tokenService = new TokenServiceImpl();
+        TokenService tokenService = new TokenServiceImpl();
         tokenService.init(configProperties);
 
         testLoginWithCredentials(tokenService);
@@ -49,7 +49,7 @@ public class MainClass {
 
     }
 
-    private static void testLoginWithCredentials(TokenServiceImpl tokenService) {
+    private static void testLoginWithCredentials(TokenService tokenService) {
         System.out.println("$$$$$$$$$$$$ START of Tests of LOGIN with CREDENTIALS $$$$$$$$$$$$\n\n");
 
         System.out.println("Please start the server, then type a character & press Enter to continue");
@@ -72,7 +72,7 @@ public class MainClass {
         System.out.println("$$$$$$$$$$$$ END of Tests of LOGIN with CREDENTIALS $$$$$$$$$$$$\n\n");
     }
 
-    private static void testLoginWithAuthHeader(TokenServiceImpl tokenService) {
+    private static void testLoginWithAuthHeader(TokenService tokenService) {
         System.out.println("$$$$$$$$$$$$ START of Tests of LOGIN with AUTHORIZATION HEADER $$$$$$$$$$$$\n\n");
 
         System.out.println("Please start the server, then type a character & press Enter to continue");
