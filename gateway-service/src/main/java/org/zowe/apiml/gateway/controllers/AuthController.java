@@ -14,6 +14,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
@@ -36,7 +37,7 @@ import static org.apache.http.HttpStatus.*;
 public class AuthController {
 
     @Setter
-    @org.springframework.beans.factory.annotation.Value("${apiml.security.zosmf.useJwtToken:true}")
+    @Value("${apiml.security.zosmf.useJwtToken:true}")
     protected boolean useZosmfJwtToken;
 
     private final AuthenticationService authenticationService;
