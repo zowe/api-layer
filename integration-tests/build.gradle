@@ -65,7 +65,6 @@ task startUpCheck(type: Test) {
     useJUnit {
         includeCategories 'org.zowe.apiml.util.categories.StartupCheck'
     }
-    useJUnitPlatform()
     outputs.upToDateWhen { false }
 }
 
@@ -77,7 +76,6 @@ task runWebsocketTests(type: Test) {
     useJUnit {
         includeCategories 'org.zowe.apiml.util.categories.WebsocketTest'
     }
-    useJUnitPlatform()
     outputs.upToDateWhen { false }
 }
 
@@ -94,7 +92,6 @@ task runIntegrationTests(type: Test) {
             'org.zowe.apiml.util.categories.AdditionalLocalTest'
         )
     }
-    useJUnitPlatform()
 }
 
 task runLocalIntegrationTests(type: Test) {
@@ -111,7 +108,6 @@ task runLocalIntegrationTests(type: Test) {
             'org.zowe.apiml.util.categories.AdditionalLocalTest'
         )
     }
-    useJUnitPlatform()
     outputs.upToDateWhen { false }
 }
 
@@ -128,7 +124,6 @@ task runAllLocalIntegrationTests(type: Test) {
             'org.zowe.apiml.util.categories.MainframeDependentTests'
         )
     }
-    useJUnitPlatform()
     outputs.upToDateWhen { false }
 }
 
@@ -144,7 +139,6 @@ task runAllIntegrationTests(type: Test) {
             'org.zowe.apiml.util.categories.AdditionalLocalTest'
         )
     }
-    useJUnitPlatform()
     outputs.upToDateWhen { false }
 }
 
