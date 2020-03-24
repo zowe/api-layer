@@ -10,7 +10,6 @@
 package org.zowe.apiml.zaasclient.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.StringUtils;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,9 +26,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.passTicket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
