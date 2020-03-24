@@ -41,6 +41,15 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  * For right execution is required:
  *  - set provider in gateway to zosmf with using serviceId of z/OSMF
  *  - start discovery service and gateway locally
+ *
+ *  Instance settings
+ *  - gateway-service.yml
+ *   - apiml.security.auth.provider = zosmf
+ *   - apiml.security.auth.zosmfServiceId = <setting for integration tests, see environment-configuration.yml:zosmfServiceConfiguration.serviceId>
+ *  - environment-configuration.yml
+ *   - credentials.user = user
+ *   - credentials.password = user
+ *  - static definition of zosmf could be supported, but it is suggested to haven't any one
  */
 @RunWith(JUnit4.class)
 @Category(AdditionalLocalTest.class)

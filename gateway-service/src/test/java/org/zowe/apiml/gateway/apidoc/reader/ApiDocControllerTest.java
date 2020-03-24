@@ -52,7 +52,7 @@ public class ApiDocControllerTest {
 
         Mockito.when(apiDocReader.load(any())).thenReturn(openApi);
 
-        this.mockMvc.perform(get("/api/v1/gateway/api-doc"))
+        this.mockMvc.perform(get("/api-doc"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.openapi", is("3.0.0")))
             .andExpect(jsonPath("$.info.title", is("Service title")))

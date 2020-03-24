@@ -44,7 +44,7 @@ public class AuthController {
     private final JwtSecurityInitializer jwtSecurityInitializer;
     private final ZosmfServiceFacade zosmfServiceFacade;
 
-    public static final String CONTROLLER_PATH = "/api/v1/gateway/auth";
+    public static final String CONTROLLER_PATH = "/auth";
     public static final String INVALIDATE_PATH = "/invalidate/**";
     public static final String DISTRIBUTE_PATH = "/distribute/**";
     public static final String PUBLIC_KEYS_PATH = "/keys/public";

@@ -63,12 +63,12 @@ public class AuthControllerTest {
     @Test
     public void invalidateJwtToken() throws Exception {
         when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/api/v1/gateway/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
+        this.mockMvc.perform(delete("/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
 
         when(authenticationService.invalidateJwtToken("abcde", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/api/v1/gateway/auth/invalidate/abcde")).andExpect(status().is(SC_OK));
+        this.mockMvc.perform(delete("/auth/invalidate/abcde")).andExpect(status().is(SC_OK));
 
-        this.mockMvc.perform(delete("/api/v1/gateway/auth/invalidate/xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
+        this.mockMvc.perform(delete("/auth/invalidate/xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
@@ -77,10 +77,10 @@ public class AuthControllerTest {
     @Test
     public void distributeInvalidate() throws Exception {
         when(authenticationService.distributeInvalidate("instance/1")).thenReturn(true);
-        this.mockMvc.perform(get("/api/v1/gateway/auth/distribute/instance/1")).andExpect(status().is(SC_OK));
+        this.mockMvc.perform(get("/auth/distribute/instance/1")).andExpect(status().is(SC_OK));
 
         when(authenticationService.distributeInvalidate("instance2")).thenReturn(false);
-        this.mockMvc.perform(get("/api/v1/gateway/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
+        this.mockMvc.perform(get("/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
     }
 
     private JWK getJwk(int i) throws ParseException {
@@ -105,7 +105,7 @@ public class AuthControllerTest {
     public void testGetAllPublicKeys() throws Exception {
         initPublicKeys(true);
         JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2, jwk3));
-        this.mockMvc.perform(get("/api/v1/gateway/auth/keys/public/all"))
+        this.mockMvc.perform(get("/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
     }
@@ -115,7 +115,7 @@ public class AuthControllerTest {
         initPublicKeys(true);
         authController.setUseZosmfJwtToken(false);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
-        this.mockMvc.perform(get("/api/v1/gateway/auth/keys/public/current"))
+        this.mockMvc.perform(get("/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
     }
@@ -125,7 +125,7 @@ public class AuthControllerTest {
         initPublicKeys(true);
         authController.setUseZosmfJwtToken(true);
         JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
-        this.mockMvc.perform(get("/api/v1/gateway/auth/keys/public/current"))
+        this.mockMvc.perform(get("/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
     }
@@ -135,7 +135,7 @@ public class AuthControllerTest {
         initPublicKeys(false);
         authController.setUseZosmfJwtToken(true);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
-        this.mockMvc.perform(get("/api/v1/gateway/auth/keys/public/current"))
+        this.mockMvc.perform(get("/auth/keys/public/current"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toString()));
     }

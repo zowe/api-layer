@@ -52,7 +52,6 @@ public class GatewayNotifier implements Runnable {
 
     public static final String GATEWAY_SERVICE_ID = CoreService.GATEWAY.getServiceId().toUpperCase();
 
-    private static final String GATEWAY_PATH = "/api/v1/gateway";
     private static final String DISTRIBUTE_PATH = "/auth/distribute/";
     private static final String CACHE_PATH = "/cache/services";
 
@@ -153,7 +152,7 @@ public class GatewayNotifier implements Runnable {
             final StringBuilder url = new StringBuilder();
             url
                 .append(EurekaUtils.getUrl(instanceInfo))
-                .append(GATEWAY_PATH).append(CACHE_PATH);
+                .append(CACHE_PATH);
             if (serviceId != null) url.append('/').append(serviceId);
 
             try {
@@ -169,7 +168,7 @@ public class GatewayNotifier implements Runnable {
         notify(instanceId, instanceInfo -> {
             final StringBuilder url = new StringBuilder();
             url.append(EurekaUtils.getUrl(instanceInfo))
-               .append(GATEWAY_PATH).append(DISTRIBUTE_PATH)
+               .append(DISTRIBUTE_PATH)
                .append(instanceId);
 
             try {

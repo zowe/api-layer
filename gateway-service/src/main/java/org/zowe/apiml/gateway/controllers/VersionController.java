@@ -25,7 +25,7 @@ import org.zowe.apiml.product.version.VersionService;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/gateway")
+@RequestMapping("/")
 public class VersionController {
 
     private VersionService versionService;
