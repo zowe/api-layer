@@ -18,8 +18,7 @@ public enum ZaasClientErrorCodes {
     GENERIC_EXCEPTION("ZWEAZC170E", "An exception occurred while trying to get the token", 400),
     APPLICATION_NAME_NOT_FOUND("ZWEAZC417E", "The token provided is invalid", 404),
     TOKEN_NOT_PROVIDED("ZWEAZC401E", "The token provided is not provided", 401),
-    EXPIRED_JWT_EXCEPTION("ZWEAZC170D", "The JWT token provided is expired", 401),
-    INVALID_JWT_EXCEPTION("ZWEAZC170F", "The JWT token provided is invalid", 401);
+    EXPIRED_JWT_EXCEPTION("ZWEAT100E", "Token is expired for URL", 401);
 
     private final String id;
     private final String message;

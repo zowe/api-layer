@@ -10,8 +10,7 @@
 package org.zowe.apiml.zaasclient.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -21,6 +20,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+@Slf4j
 public class TokenServiceImpl implements TokenService {
 
     private ConfigProperties configProperties;
@@ -114,17 +115,14 @@ public class TokenServiceImpl implements TokenService {
 
         try {
             HttpGet httpGet = new HttpGet("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/query");
-            //APIML query api doesn't work with just authorization bearers ...so a cookie has to be set
-            //a cookie store is passed along with the method call here .. so that the token can be passed
             response = httpsClient.getHttpsClientWithTrustStore(cookieStore).execute(httpGet);
 
             if (response.getStatusLine().getStatusCode() == 200) {
                 zaasToken = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasToken.class);
+            } else {
+                log.error(EntityUtils.toString(response.getEntity()));
+                throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION);
             }
-        } catch (ExpiredJwtException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION);
-        } catch (MalformedJwtException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_EXCEPTION);
         } catch (IOException e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (Exception e) {

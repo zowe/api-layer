@@ -38,6 +38,10 @@ public class MainClass {
 
     private static final String CONFIG_FILE_PATH = "zaas-client/src/test/resources/configFile.properties";
 
+    private static final String INVALID_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJsdHBhIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE1ODQ5NzQ3NDMsImV4cCI6MTU4NTA2MTE0MywiaXNzIjoiQVBJTUwiLCJqdGkiOiJiNTc3ZTcwMy1lN2ZkLTQ2ZjMtOWJiZS02ZTczMGRiMGJkYWYifQ.OFL-25GSmXPVXjtGVR133z89bocCni1-WcyDho1eaBfUkX7ggxRp7PW7ITn8hRvaZdWGCArYfHJHuZ1jdoXDUYqo4k2UWZFvkDLkHzLGOSTmZLhYE_Klq9u73bBJ5g6wBQ7L_ErBBLTDtS_szXLJ3hTc3LS1FfVgA-RXW2kROjTuHLexq8Et3f6PiBWfqjZ116WWZp3qlNQb_BvU3pZEn9hlcW9SATQFVb-qL7vTXtKLPBlYqxClNLr-IJ2HpTBCORB7ITcATKPJ7FlKLmMwFPxzW_x0RE2BDbQ_2ICj8rON-xUyHkWoVKuxeky3p3z4n3-lEwqcnLu0wghx9F864gINVALID";
+    private static final String EXPIRED_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJsdHBhIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE1ODQ5NzQ3NDMsImV4cCI6MTU4NTA2MTE0MywiaXNzIjoiQVBJTUwiLCJqdGkiOiJiNTc3ZTcwMy1lN2ZkLTQ2ZjMtOWJiZS02ZTczMGRiMGJkYWYifQ.OFL-25GSmXPVXjtGVR133z89bocCni1-WcyDho1eaBfUkX7ggxRp7PW7ITn8hRvaZdWGCArYfHJHuZ1jdoXDUYqo4k2UWZFvkDLkHzLGOSTmZLhYE_Klq9u73bBJ5g6wBQ7L_ErBBLTDtS_szXLJ3hTc3LS1FfVgA-RXW2kROjTuHLexq8Et3f6PiBWfqjZ116WWZp3qlNQb_BvU3pZEn9hlcW9SATQFVb-qL7vTXtKLPBlYqxClNLr-IJ2HpTBCORB7ITcATKPJ7FlKLmMwFPxzW_x0RE2BDbQ_2ICj8rON-xUyHkWoVKuxeky3p3z4n3-lEwqcnLu0wghx9F864g";
+
+
     public static void main(String[] args) {
         ConfigProperties configProperties = getConfigProperties();
         TokenServiceImpl tokenService = new TokenServiceImpl();
@@ -125,7 +129,14 @@ public class MainClass {
             System.out.println(caseStartMsg);
             String token = tokenService.login(userName, password);
             System.out.println("Token obtained: " + token);
+            //query with valid token
             System.out.println(tokenService.query(token));
+
+            //query with expired token
+            System.out.println(tokenService.query(EXPIRED_TOKEN));
+
+            //query with invalid token
+            System.out.println(tokenService.query(INVALID_TOKEN));
         } catch (ZaasClientException zce) {
             System.out.println(zce.getErrorCode() + "\n" + zce.getErrorMessage() + "\n" + zce.getHttpResponseCode());
         } finally {
