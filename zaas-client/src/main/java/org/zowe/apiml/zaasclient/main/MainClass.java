@@ -185,8 +185,8 @@ public class MainClass {
                 auth.getBytes(StandardCharsets.ISO_8859_1));
             String authHeader = "Basic " + new String(encodedAuth);
             String token = tokenService.login(authHeader);
-            tokenService.passTicket(token, "ZOWEAPPL");
-            System.out.println("Token obtained: " + tokenService.login(authHeader));
+            String passTicket = tokenService.passTicket(token, "ZOWEAPPL");
+            System.out.println("Dummy Pass Ticket obtained: " + passTicket);
         } catch (ZaasClientException zce) {
             System.out.println(zce.getErrorCode() + "\n" + zce.getErrorMessage() + "\n" + zce.getHttpResponseCode());
         } finally {
