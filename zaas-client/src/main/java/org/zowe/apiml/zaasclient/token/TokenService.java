@@ -14,14 +14,9 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 
 public interface TokenService {
     static String COOKIE_PREFIX = "apimlAuthenticationToken";
-
     void init(ConfigProperties configProperties);
-
     String login(String userId, String password) throws ZaasClientException;
-
     String login(String authorizationHeader) throws ZaasClientException;
-
     ZaasToken query(String token) throws ZaasClientException;
-
     String passTicket(String jwtToken, String applicationId) throws ZaasClientException;
 }

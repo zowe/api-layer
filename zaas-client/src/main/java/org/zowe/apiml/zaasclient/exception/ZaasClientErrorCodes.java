@@ -16,6 +16,8 @@ public enum ZaasClientErrorCodes {
     EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAZC122E", "Empty or null authoorization header provided", 400),
     SERVICE_UNAVAILABLE("ZWEAZC404E", "Gateway service is unavailable", 404),
     GENERIC_EXCEPTION("ZWEAZC170E", "An exception occurred while trying to get the token", 400),
+    APPLICATION_NAME_NOT_FOUND("ZWEAZC417E", "The token provided is invalid", 404),
+    TOKEN_NOT_PROVIDED("ZWEAZC401E", "The token provided is not provided", 401),
     EXPIRED_JWT_EXCEPTION("ZWEAZC170D", "The JWT token provided is expired", 401),
     INVALID_JWT_EXCEPTION("ZWEAZC170F", "The JWT token provided is invalid", 401);
 
@@ -49,5 +51,4 @@ public enum ZaasClientErrorCodes {
             ", returnCode=" + returnCode +
             '}';
     }
-
 }
