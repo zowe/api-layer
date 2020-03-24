@@ -26,5 +26,5 @@ dependencies {
     annotationProcessor libraries.lombok
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
-
+    compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
 }

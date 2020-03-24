@@ -10,6 +10,8 @@
 package org.zowe.apiml.zaasclient.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -113,12 +115,16 @@ public class TokenServiceImpl implements TokenService {
             HttpGet httpGet = new HttpGet("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/query");
             //APIML query api doesn't work with just authorization bearers ...so a cookie has to be set
             //a cookie store is passed along with the method call here .. so that the token can be passed
-            response = httpsClient.getHttpsClientWithKeyStoreAndTrustStore(cookieStore).execute(httpGet);
+            response = httpsClient.getHttpsClientWithTrustStore(cookieStore).execute(httpGet);
 
             if (response.getStatusLine().getStatusCode() == 200) {
                 zaasToken = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasToken.class);
             }
-        } catch (IOException ioe) {
+        } catch (ExpiredJwtException e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION);
+        } catch (MalformedJwtException e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_EXCEPTION);
+        } catch (IOException e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);

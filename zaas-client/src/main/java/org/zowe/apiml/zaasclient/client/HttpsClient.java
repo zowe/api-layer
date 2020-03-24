@@ -50,7 +50,7 @@ public final class HttpsClient implements Closeable {
 
 
     public CloseableHttpClient getHttpsClientWithTrustStore()
-        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, KeyManagementException, UnrecoverableKeyException {
+        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, KeyManagementException {
         SSLContext sslContext;
         TrustManagerFactory tmf = null;
 
@@ -64,6 +64,34 @@ public final class HttpsClient implements Closeable {
         sslContext = this.getSSLContext(null, tmf);
 
         return getCloseableHttpClient(sslContext);
+    }
+
+    /**
+     * an overloaded version of getHttpsClientWithTrustStore for the query api
+     *
+     * @param cookieStore
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws CertificateException
+     * @throws KeyManagementException
+     */
+    public CloseableHttpClient getHttpsClientWithTrustStore(BasicCookieStore cookieStore)
+        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, KeyManagementException {
+        SSLContext sslContext;
+        TrustManagerFactory tmf = null;
+
+        if (trustStorePath != null) {
+            tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            KeyStore trustStore = KeyStore.getInstance(trustStoreType);
+            File trustFile = new File(trustStorePath);
+            trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
+            tmf.init(trustStore);
+        }
+        sslContext = this.getSSLContext(null, tmf);
+
+        return getCloseableHttpClient(sslContext, cookieStore);
     }
 
     /**
@@ -102,45 +130,6 @@ public final class HttpsClient implements Closeable {
         sslContext = this.getSSLContext(kmf, tmf);
 
         return getCloseableHttpClient(sslContext);
-    }
-
-    /**
-     * An overloaded version of the getHttpsClientWithKeyStoreAndTrustStore to be used in query api
-     *
-     * @param cookieStore
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws IOException
-     * @throws KeyStoreException
-     * @throws CertificateException
-     * @throws UnrecoverableKeyException
-     * @throws KeyManagementException
-     */
-    public CloseableHttpClient getHttpsClientWithKeyStoreAndTrustStore(BasicCookieStore cookieStore)
-        throws NoSuchAlgorithmException, IOException, KeyStoreException, CertificateException, UnrecoverableKeyException, KeyManagementException {
-        SSLContext sslContext;
-        TrustManagerFactory tmf = null;
-        KeyManagerFactory kmf = null;
-
-        if (trustStorePath != null) {
-            tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            KeyStore trustStore = KeyStore.getInstance(trustStoreType);
-            File trustFile = new File(trustStorePath);
-            trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
-            tmf.init(trustStore);
-        }
-
-        if (keyStorePath != null) {
-            kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-            File keyFile = new File(keyStorePath);
-            keyStore.load(new FileInputStream(keyFile), keyStorePassword.toCharArray());
-            kmf.init(keyStore, keyStorePassword.toCharArray());
-        }
-
-        sslContext = this.getSSLContext(kmf, tmf);
-
-        return getCloseableHttpClient(sslContext, cookieStore);
     }
 
     private CloseableHttpClient getCloseableHttpClient(SSLContext sslContext) {

@@ -11,11 +11,13 @@ package org.zowe.apiml.zaasclient.exception;
 
 public enum ZaasClientErrorCodes {
 
-    INVALID_AUTHENTICATION("ZWEAZC120E","Invalid username or password",401),
-    EMPTY_NULL_USERNAME_PASSWORD("ZWEAZC121E","Empty or null username or password values provided",400),
-    EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAZC122E","Empty or null authoorization header provided",400),
-    SERVICE_UNAVAILABLE("ZWEAZC404E","Gateway service is unavailable",404),
-    GENERIC_EXCEPTION("ZWEAZC170E","An exception occurred while trying to get the token",400);
+    INVALID_AUTHENTICATION("ZWEAZC120E", "Invalid username or password", 401),
+    EMPTY_NULL_USERNAME_PASSWORD("ZWEAZC121E", "Empty or null username or password values provided", 400),
+    EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAZC122E", "Empty or null authoorization header provided", 400),
+    SERVICE_UNAVAILABLE("ZWEAZC404E", "Gateway service is unavailable", 404),
+    GENERIC_EXCEPTION("ZWEAZC170E", "An exception occurred while trying to get the token", 400),
+    EXPIRED_JWT_EXCEPTION("ZWEAZC170D", "The JWT token provided is expired", 401),
+    INVALID_JWT_EXCEPTION("ZWEAZC170F", "The JWT token provided is invalid", 401);
 
     private final String id;
     private final String message;
@@ -47,4 +49,5 @@ public enum ZaasClientErrorCodes {
             ", returnCode=" + returnCode +
             '}';
     }
+
 }
