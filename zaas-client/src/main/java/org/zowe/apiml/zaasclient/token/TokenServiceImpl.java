@@ -133,7 +133,7 @@ public class TokenServiceImpl implements TokenService {
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
         CloseableHttpResponse response = null;
         ZaasPassTicketResponse zaasPassTicketResponse = null;
-        ZaasClientTicketRequest zaasClientTicketRequest = null;
+        ZaasClientTicketRequest zaasClientTicketRequest = new ZaasClientTicketRequest();
         ObjectMapper mapper = new ObjectMapper();
 
         try {
