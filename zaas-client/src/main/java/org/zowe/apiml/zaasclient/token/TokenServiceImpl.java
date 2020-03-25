@@ -141,6 +141,13 @@ public class TokenServiceImpl implements TokenService {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
+            if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
+                throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
+            }
+            if (Objects.isNull(jwtToken) || jwtToken.isEmpty()) {
+                throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED);
+            }
+
             zaasClientTicketRequest.setApplicationName(applicationId);
 
             HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" +
@@ -150,13 +157,6 @@ public class TokenServiceImpl implements TokenService {
             httpPost.setHeader("Cookie", COOKIE_PREFIX + "=" + jwtToken);
 
             response = httpsClient.getHttpsClientWithKeyStoreAndTrustStore().execute(httpPost);
-            if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
-                throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
-            }
-            if (Objects.isNull(jwtToken) || jwtToken.isEmpty()) {
-                throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED);
-            }
-
             if (response.getStatusLine().getStatusCode() == 500) {
                 throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
             } else if (response.getStatusLine().getStatusCode() == 401) {
@@ -166,8 +166,6 @@ public class TokenServiceImpl implements TokenService {
             }
         } catch (IOException ioe) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
-        } catch (Exception e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
         } finally {
             finallyClose(response);
         }

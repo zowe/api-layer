@@ -94,4 +94,24 @@ public class TokenServiceImplTest {
         assertNotNull(tokenService.query(tokenService.login("user", "user")));
     }
 
+    @Test
+    public void testPassTicketWithToken() throws ZaasClientException {
+        assertNotNull(tokenService.passTicket(tokenService.login("user", "user"), "ZOWEAPPL"));
+    }
+
+    @Test(expected = ZaasClientException.class)
+    public void testPassTicketWithInvalidToken() throws ZaasClientException {
+        tokenService.passTicket(INVALID_TOKEN, "ZOWEAPPL");
+    }
+
+    @Test(expected = ZaasClientException.class)
+    public void testPassTicketWithEmptyToken() throws ZaasClientException {
+        tokenService.passTicket("", "ZOWEAPPL");
+    }
+
+    @Test(expected = ZaasClientException.class)
+    public void testPassTicketWithEmptyApplicationId() throws ZaasClientException {
+        tokenService.passTicket("", "");
+    }
+
 }
