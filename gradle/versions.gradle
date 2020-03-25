@@ -36,6 +36,7 @@ ext {
     spring4Version = '4.3.7.RELEASE'
     awaitilityVersion = '3.0.0'
     jjwtVersion = '0.9.1'
+    nimbusJoseJwtVersion = '8.10'
     velocityVersion = '2.0'
     jsoupVersion = '1.8.3'
     httpCoreVersion = '4.4.10'
@@ -139,6 +140,7 @@ ext {
         spring4Test                        : "org.springframework:spring-test:${spring4Version}",
         awaitility                         : "org.awaitility:awaitility:${awaitilityVersion}",
         jjwt                               : "io.jsonwebtoken:jjwt:${jjwtVersion}",
+        nimbusJoseJwt                      : "com.nimbusds:nimbus-jose-jwt:${nimbusJoseJwtVersion}",
         apache_velocity                    : "org.apache.velocity:velocity-engine-core:${velocityVersion}",
         snakeyaml                          : "org.yaml:snakeyaml:${snakeyamlVersion}",
         json_unit                          : "net.javacrumbs.json-unit:json-unit:${jsonUnitVersion}",
