@@ -260,7 +260,7 @@
     },
     "servers": [
         {
-            "url": "/gateway"
+            "url": "/"
         }
     ],
     "components": {
