@@ -1,0 +1,11 @@
+TRUSTSTOREPATH: ../keystore/localhost/localhost.truststore.p12
+KEYSTOREPATH: ../keystore/localhost/localhost.keystore.p12
+TRUSTSTOREPASSWORD: password
+KEYSTOREPASSWORD: password
+KEYSTORETYPE: PKCS12
+TRUSTSTORETYPE: PKCS12
+APIML_HOST: localhost
+APIML_PORT: 10010
+APIML_BASE_URL: /api/v1/gateway/auth
+
+

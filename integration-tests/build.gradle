@@ -26,6 +26,7 @@ dependencies {
     compile libraries.json
     compile libraries.jjwt
     compile(project(':apiml-security-common'))
+    compile(project(':zaas-client'))
 
     testCompile libraries.junit
     testCompile libraries.hamcrest
