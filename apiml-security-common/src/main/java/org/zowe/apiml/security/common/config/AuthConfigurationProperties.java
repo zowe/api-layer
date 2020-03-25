@@ -29,13 +29,17 @@ public class AuthConfigurationProperties {
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
     // General properties
-    private String gatewayLoginEndpoint = "/api/v1/gateway/auth/login";
-    private String gatewayLogoutEndpoint = "/api/v1/gateway/auth/logout";
-    private String gatewayQueryEndpoint = "/api/v1/gateway/auth/query";
-    private String gatewayTicketEndpoint = "/api/v1/gateway/auth/ticket";
+    private static final String API_PREFIX = "/api/v1/gateway";
 
-    private String serviceLoginEndpoint = "/auth/login";
-    private String serviceLogoutEndpoint = "/auth/logout";
+    private final String serviceLoginEndpoint = "/auth/login";
+    private final String serviceLogoutEndpoint = "/auth/logout";
+    private final String serviceQueryEndpoint = "/auth/query";
+    private final String serviceTicketEndpoint = "/auth/ticket";
+
+    private final String gatewayLoginEndpoint = API_PREFIX + serviceLoginEndpoint;
+    private final String gatewayLogoutEndpoint = API_PREFIX + serviceLogoutEndpoint;
+    private final String gatewayQueryEndpoint = API_PREFIX + serviceQueryEndpoint;
+    private final String gatewayTicketEndpoint = API_PREFIX + serviceTicketEndpoint;
 
     private AuthConfigurationProperties.TokenProperties tokenProperties;
     private AuthConfigurationProperties.CookieProperties cookieProperties;

@@ -87,19 +87,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             // login endpoint
             .and()
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayLoginEndpoint()).permitAll()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll()
 
             // ticket endpoint
             .and()
             .authorizeRequests()
-            .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
+            .antMatchers(HttpMethod.POST, authConfigurationProperties.getServiceTicketEndpoint()).authenticated()
             .and()
             .x509().userDetailsService(x509UserDetailsService())
 
             // logout endpoint
             .and()
             .logout()
-            .logoutRequestMatcher(new AntPathRequestMatcher(authConfigurationProperties.getGatewayLogoutEndpoint(), HttpMethod.POST.name()))
+            .logoutRequestMatcher(new AntPathRequestMatcher(authConfigurationProperties.getServiceLogoutEndpoint(), HttpMethod.POST.name()))
             .addLogoutHandler(logoutHandler())
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
             .permitAll()
@@ -132,9 +132,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login, query, ticket
             .and()
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(queryFilter(authConfigurationProperties.getServiceQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(ticketFilter(authConfigurationProperties.getServiceTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
