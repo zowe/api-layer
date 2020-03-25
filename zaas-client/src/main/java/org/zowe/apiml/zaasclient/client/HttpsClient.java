@@ -28,7 +28,7 @@ import java.security.*;
 import java.security.cert.CertificateException;
 
 @AllArgsConstructor
-public final class HttpsClient implements Closeable {
+public class HttpsClient implements Closeable {
     private CloseableHttpClient closeableHttpsClient;
     private final String keyStorePassword;
     private final String trustStorePassword;

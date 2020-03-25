@@ -109,7 +109,7 @@ public class TokenServiceImpl implements TokenService {
 
         BasicCookieStore cookieStore = new BasicCookieStore();
         BasicClientCookie cookie = new BasicClientCookie(COOKIE_PREFIX, token);
-        cookie.setDomain("localhost");
+        cookie.setDomain(configProperties.getApimlHost());
         cookie.setPath("/");
         cookieStore.addCookie(cookie);
 
