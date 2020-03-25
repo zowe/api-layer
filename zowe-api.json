@@ -1,0 +1,38 @@
+{
+    "name": "API Mediation Layer",
+    "defaultDirName": "api-mediation-layer",
+    "defaultHlqSegment": "ZADSMP",
+    "zfsMegabytes": 500,
+
+    "deployment": {
+
+    },
+
+    "shellStartCommand": "echo 'Hello World'",
+    "jobTemplatePath": "config/zowe-api-dev/template-bpxbatch.jcl",
+    "jobPath": "build/api.jcl",
+
+    "configurations": {
+        "zos": {
+            "files": {
+                "config/zowe-api-dev/run-wrapper.sh": {
+                    "target": "bin/run-wrapper.sh",
+                    "binary": false
+                },
+                "zowe-install/src/main/resources/component-scripts/start.sh": {
+                    "target": "bin/start.sh",
+                    "binary": false
+                },
+                "keystore/localhost/localhost.keystore.p12": {
+                    "target": "keystore/keystore.p12",
+                    "binary": true
+                },
+                "keystore/localhost/localhost.truststore.p12": {
+                    "target": "keystore/truststore.p12",
+                    "binary": true
+                }
+            }
+        }
+    }
+
+}

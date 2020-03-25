@@ -25,7 +25,7 @@
 //STDENV   DD *
 dir={{{user.zosTargetDir}}}
 JAVA_HOME={{{user.javaHome}}}
-port={{{user.port}}}
+basePort={{{user.basePort}}}
 /*
 // PEND
 //********************************************************************
