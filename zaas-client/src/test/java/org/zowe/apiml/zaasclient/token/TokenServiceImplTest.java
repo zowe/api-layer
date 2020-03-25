@@ -85,7 +85,7 @@ public class TokenServiceImplTest {
     }
 
     @Test(expected = ZaasClientException.class)
-    public void mockLogin() throws ZaasClientException {
+    public void testQueryWithInvalidToken() throws ZaasClientException {
         tokenService.query(INVALID_TOKEN);
     }
 
