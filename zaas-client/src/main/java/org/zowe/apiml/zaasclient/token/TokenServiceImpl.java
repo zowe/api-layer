@@ -29,6 +29,11 @@ import org.zowe.apiml.zaasclient.passTicket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -165,6 +170,16 @@ public class TokenServiceImpl implements TokenService {
                 zaasPassTicketResponse = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasPassTicketResponse.class);
             }
         } catch (IOException ioe) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+        } catch (CertificateException e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+        } catch (NoSuchAlgorithmException e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+        } catch (UnrecoverableKeyException e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+        } catch (KeyStoreException e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+        } catch (KeyManagementException e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
         } finally {
             finallyClose(response);
