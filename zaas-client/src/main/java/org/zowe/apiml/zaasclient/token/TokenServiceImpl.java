@@ -150,10 +150,10 @@ public class TokenServiceImpl implements TokenService {
             httpPost.setHeader("Cookie", COOKIE_PREFIX + "=" + jwtToken);
 
             response = httpsClient.getHttpsClientWithKeyStoreAndTrustStore().execute(httpPost);
-            if (Objects.isNull(applicationId) && applicationId.isEmpty()) {
+            if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
                 throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
             }
-            if (Objects.isNull(jwtToken) && jwtToken.isEmpty()) {
+            if (Objects.isNull(jwtToken) || jwtToken.isEmpty()) {
                 throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED);
             }
 
