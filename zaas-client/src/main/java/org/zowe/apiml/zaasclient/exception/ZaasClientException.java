@@ -15,6 +15,13 @@ public class ZaasClientException extends Exception {
     private String errorMessage;
     private int httpResponseCode;
 
+    public ZaasClientException(ZaasClientErrorCodes code, String errorMessage) {
+        super(errorMessage);
+        this.errorCode = code.getId();
+        this.errorMessage = code.getMessage();
+        this.httpResponseCode = code.getReturnCode();
+    }
+
     public ZaasClientException(ZaasClientErrorCodes code) {
         this.errorCode = code.getId();
         this.errorMessage = code.getMessage();

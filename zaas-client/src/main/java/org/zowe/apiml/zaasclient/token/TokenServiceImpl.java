@@ -29,11 +29,6 @@ import org.zowe.apiml.zaasclient.passTicket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
 
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -141,18 +136,18 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
         CloseableHttpResponse response = null;
+        CloseableHttpClient closeableHttpsClient = null;
         ZaasPassTicketResponse zaasPassTicketResponse = null;
         ZaasClientTicketRequest zaasClientTicketRequest = new ZaasClientTicketRequest();
         ObjectMapper mapper = new ObjectMapper();
-
+        if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
+            throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
+        }
+        if (Objects.isNull(jwtToken) || jwtToken.isEmpty()) {
+            throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED);
+        }
         try {
-            if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
-                throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
-            }
-            if (Objects.isNull(jwtToken) || jwtToken.isEmpty()) {
-                throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED);
-            }
-
+            closeableHttpsClient = httpsClient.getHttpsClientWithKeyStoreAndTrustStore();
             zaasClientTicketRequest.setApplicationName(applicationId);
 
             HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" +
@@ -161,7 +156,7 @@ public class TokenServiceImpl implements TokenService {
             httpPost.setHeader("Content-type", "application/json");
             httpPost.setHeader("Cookie", COOKIE_PREFIX + "=" + jwtToken);
 
-            response = httpsClient.getHttpsClientWithKeyStoreAndTrustStore().execute(httpPost);
+            response = closeableHttpsClient.execute(httpPost);
             if (response.getStatusLine().getStatusCode() == 500) {
                 throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
             } else if (response.getStatusLine().getStatusCode() == 401) {
@@ -170,17 +165,9 @@ public class TokenServiceImpl implements TokenService {
                 zaasPassTicketResponse = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasPassTicketResponse.class);
             }
         } catch (IOException ioe) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
-        } catch (CertificateException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
-        } catch (NoSuchAlgorithmException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
-        } catch (UnrecoverableKeyException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
-        } catch (KeyStoreException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
-        } catch (KeyManagementException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, ioe.getMessage());
+        } catch (Exception e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e.getMessage());
         } finally {
             finallyClose(response);
         }
