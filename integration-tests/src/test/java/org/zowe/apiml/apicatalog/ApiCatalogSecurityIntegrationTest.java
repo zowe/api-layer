@@ -9,14 +9,15 @@
  */
 package org.zowe.apiml.apicatalog;
 
-import org.zowe.apiml.gatewayservice.SecurityUtils;
-import org.zowe.apiml.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.springframework.http.HttpHeaders;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +27,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @RunWith(value = Parameterized.class)
 public class ApiCatalogSecurityIntegrationTest {
@@ -114,14 +116,28 @@ public class ApiCatalogSecurityIntegrationTest {
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body("messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
-            );
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test
-    public void accessProtectedEndpointWithInvalidCookie() {
+    public void accessProtectedEndpointWithInvalidCookieCatalog() {
         String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
+        String invalidToken = "nonsense";
+
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        String catalogUrl = DiscoveryUtils.getInstances("APICATALOG").get(0).getUrl();
+
+        given()
+            .cookie(COOKIE, invalidToken)
+        .when()
+            .get(String.format("%s%s%s", catalogUrl, CATALOG_SERVICE_ID, endpoint))
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body("messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage));
+    }
+
+    @Test
+    public void accessProtectedEndpointWithInvalidCookieGateway() {
         String invalidToken = "nonsense";
 
         given()
@@ -130,9 +146,7 @@ public class ApiCatalogSecurityIntegrationTest {
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body("messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
-            );
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     //@formatter:on
