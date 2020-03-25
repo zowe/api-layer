@@ -170,6 +170,6 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     }
 
     private boolean isHidden(List<Tag> tags) {
-        return tags.stream().anyMatch(tag -> tag.getName().equals(HIDDEN_TAG));
+        return tags != null && tags.stream().anyMatch(tag -> tag.getName().equals(HIDDEN_TAG));
     }
 }
