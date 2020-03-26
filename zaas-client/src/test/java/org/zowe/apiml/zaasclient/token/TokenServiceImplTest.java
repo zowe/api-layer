@@ -340,12 +340,12 @@ public class TokenServiceImplTest {
 
     @Test
     public void testQueryWithCorrectToken() throws ZaasClientException {
-        assertNotNull(tokenService.query(tokenService.login("user", "user")));
+        assertNotNull(tokenService.query(token));
     }
 
     @Test
     public void testPassTicketWithToken() throws ZaasClientException {
-        assertNotNull(tokenService.passTicket(tokenService.login("user", "user"), "ZOWEAPPL"));
+        assertNotNull(tokenService.passTicket(token, "ZOWEAPPL"));
     }
 
     @Test(expected = ZaasClientException.class)
