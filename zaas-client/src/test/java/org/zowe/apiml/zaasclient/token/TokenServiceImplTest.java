@@ -8,12 +8,18 @@ package org.zowe.apiml.zaasclient.token;
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.lang.Assert;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +31,7 @@ import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +57,9 @@ public class TokenServiceImplTest {
     private HttpsClient httpsClient;
 
     @Mock
+    StatusLine statusLine;
+
+    @Mock
     private CloseableHttpResponse closeableHttpResponse;
 
     @Mock
@@ -57,6 +67,12 @@ public class TokenServiceImplTest {
 
     @Mock
     private HttpGet httpGet;
+
+    @Mock
+    private InputStream inputStream;
+
+    @Mock
+    private HttpEntity httpsEntity;
 
     String token = null;
 
@@ -93,8 +109,13 @@ public class TokenServiceImplTest {
             .signWith(SignatureAlgorithm.RS256, jwtSecretKey)
             .compact();
 
-        when(httpsClient.getHttpsClientWithTrustStore(any())).thenReturn(closeableHttpClient);
-        when(httpsClient.getHttpsClientWithTrustStore(any()).execute(httpGet)).thenReturn(closeableHttpResponse);
+        when(httpsClient.getHttpsClientWithTrustStore(any(BasicCookieStore.class))).thenReturn(closeableHttpClient);
+        when(closeableHttpClient.execute(any(HttpGet.class))).thenReturn(closeableHttpResponse);
+        when(closeableHttpClient.execute(any(HttpPost.class))).thenReturn(closeableHttpResponse);
+        when(closeableHttpResponse.getEntity()).thenReturn(httpsEntity);
+        tokenService.setHttpsClient(httpsClient);
+        when(closeableHttpResponse.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
     }
 
@@ -229,6 +250,8 @@ public class TokenServiceImplTest {
     @Test
     public void testLoginWithAuthHeader_ValidUserName_ValidPassword() {
         try {
+
+
             String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASS));
             assertNotNull(token);
             assertNotEquals(EMPTY_STRING, token);
@@ -339,27 +362,39 @@ public class TokenServiceImplTest {
     }
 
     @Test
-    public void testQueryWithCorrectToken() throws ZaasClientException {
-        assertNotNull(tokenService.query(token));
+    public void testQueryWithCorrectToken_ValidToken_ValidTokenDetails() throws ZaasClientException, IOException {
+        ZaasToken zaasToken = new ZaasToken();
+        zaasToken.setUserId("user");
+        when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasToken)));
+
+        assertEquals(tokenService.query(token).userId, "user");
     }
 
     @Test
-    public void testPassTicketWithToken() throws ZaasClientException {
+    public void testPassTicketWithToken_ValidToken_ValidPassTicket() throws ZaasClientException,
+        UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+
+        ZaasPassTicketResponse zaasPassTicketResponse = new ZaasPassTicketResponse();
+        zaasPassTicketResponse.setTicket("ticket");
+
+        when(httpsClient.getHttpsClientWithKeyStoreAndTrustStore()).thenReturn(closeableHttpClient);
+        when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasPassTicketResponse)));
+
         assertNotNull(tokenService.passTicket(token, "ZOWEAPPL"));
     }
 
     @Test(expected = ZaasClientException.class)
-    public void testPassTicketWithInvalidToken() throws ZaasClientException {
+    public void testPassTicketWithInvalidToken_InvalidToken_ZaasClientException() throws ZaasClientException {
         tokenService.passTicket(INVALID_TOKEN, "ZOWEAPPL");
     }
 
     @Test(expected = ZaasClientException.class)
-    public void testPassTicketWithEmptyToken() throws ZaasClientException {
+    public void testPassTicketWithEmptyToken_EmptyToken_ZaasClientException() throws ZaasClientException {
         tokenService.passTicket("", "ZOWEAPPL");
     }
 
     @Test(expected = ZaasClientException.class)
-    public void testPassTicketWithEmptyApplicationId() throws ZaasClientException {
+    public void testPassTicketWithEmptyApplicationId_EmptyApplicationId_ZaasClientException() throws ZaasClientException {
         tokenService.passTicket("", "");
     }
 }

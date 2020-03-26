@@ -45,6 +45,11 @@ public class TokenServiceImpl implements TokenService {
         this.httpsClient = new HttpsClient(configProperties);
     }
 
+    //For Junits to work
+    protected void setHttpsClient(HttpsClient httpsClient) {
+        this.httpsClient = httpsClient;
+    }
+
     @Override
     public String login(String userId, String password) throws ZaasClientException {
         CloseableHttpClient client = null;
