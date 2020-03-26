@@ -20,6 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.zowe.apiml.util.config.ConfigReader;
 
+import java.io.IOException;
+
 public class LoginZaasClientIntegrationTest {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -29,7 +31,7 @@ public class LoginZaasClientIntegrationTest {
     TokenService tokenService;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         ConfigProperties configProperties = ConfigReaderZaasClient.getConfigProperties();
         tokenService = new TokenServiceImpl();
         tokenService.init(configProperties);

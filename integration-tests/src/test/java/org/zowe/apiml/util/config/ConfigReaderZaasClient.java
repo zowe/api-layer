@@ -24,37 +24,24 @@ import java.util.Properties;
 @Slf4j
 public class ConfigReaderZaasClient {
 
-        static final String configFileName = "configFile-properties.yml";
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        File configFile = new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile());
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        EnvironmentConfiguration configuration;
+        public final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
 
+        public static ConfigProperties getConfigProperties () throws IOException {
 
-        public static ConfigProperties getConfigProperties () {
-            String absoluteFilePath = new File(configFileName).getAbsolutePath();
             ConfigProperties configProperties = new ConfigProperties();
-            Properties configProp = new Properties();
-            try {
-                if (Paths.get(absoluteFilePath).toFile().exists()) {
-                    configProp.load(new FileReader(absoluteFilePath));
 
-                    configProperties.setApimlHost(configProp.getProperty("APIML_HOST"));
-                    configProperties.setApimlPort(configProp.getProperty("APIML_PORT"));
-                    configProperties.setApimlBaseUrl(configProp.getProperty("APIML_BASE_URL"));
-                    configProperties.setKeyStorePath(configProp.getProperty("KEYSTOREPATH"));
-                    configProperties.setKeyStorePassword(configProp.getProperty("KEYSTOREPASSWORD"));
-                    configProperties.setKeyStoreType(configProp.getProperty("KEYSTORETYPE"));
-                    configProperties.setTrustStorePath(configProp.getProperty("TRUSTSTOREPATH"));
-                    configProperties.setTrustStorePassword(configProp.getProperty("TRUSTSTOREPASSWORD"));
-                    configProperties.setTrustStoreType(configProp.getProperty("TRUSTSTORETYPE"));
-                }
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
+
+            configProperties.setApimlHost(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost());
+            configProperties.setApimlPort(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort());
+            configProperties.setApimlBaseUrl("/api/v1/gateway/auth");
+            configProperties.setKeyStorePath(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore());
+            configProperties.setKeyStorePassword(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword());
+            configProperties.setKeyStoreType(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStoreType());
+            configProperties.setTrustStorePath(ConfigReader.environmentConfiguration().getTlsConfiguration().getTrustStore());
+            configProperties.setTrustStorePassword(ConfigReader.environmentConfiguration().getTlsConfiguration().getTrustStorePassword());
+            configProperties.setTrustStoreType(ConfigReader.environmentConfiguration().getTlsConfiguration().getTrustStoreType());
+
             return configProperties;
         }
-
-
 }
 
