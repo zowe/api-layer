@@ -13,7 +13,7 @@ public enum ZaasClientErrorCodes {
 
     INVALID_AUTHENTICATION("ZWEAZC120E", "Invalid username or password", 401),
     EMPTY_NULL_USERNAME_PASSWORD("ZWEAZC121E", "Empty or null username or password values provided", 400),
-    EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAZC122E", "Empty or null authoorization header provided", 400),
+    EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAZC122E", "Empty or null authorization header provided", 400),
     SERVICE_UNAVAILABLE("ZWEAZC404E", "Gateway service is unavailable", 404),
     GENERIC_EXCEPTION("ZWEAZC170E", "An exception occurred while trying to get the token", 400),
     APPLICATION_NAME_NOT_FOUND("ZWEAZC417E", "The token provided is invalid", 404),
