@@ -19,7 +19,7 @@
 //*-------------------------------------------------------------------
 //EXPORT EXPORT SYMLIST=*
 //RUNSTEP EXEC PGM=BPXBATSL,REGION=0M,TIME=NOLIMIT,
-//  PARM='PGM /bin/sh &SRVRPATH/bin/run-wrapper.sh'
+//  PARM='PGM /bin/sh &SRVRPATH/run-wrapper.sh'
 //STDOUT   DD SYSOUT=*
 //STDERR   DD SYSOUT=*
 //STDENV   DD *

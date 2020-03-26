@@ -7,19 +7,19 @@
     "deployment": {
         "files": {
             "discovery-service/build/libs/discovery-service-thin.jar": {
-                "target": "bin/discovery-service.jar",
+                "target": "components/api-mediation/discovery-service.jar",
                 "binary": true
             },
             "gateway-service/build/libs/gateway-service-thin.jar": {
-                "target": "bin/gateway-service.jar",
+                "target": "components/api-mediation/gateway-service.jar",
                 "binary": true
             },
             "api-catalog-services/build/libs/api-catalog-services-thin.jar": {
-                "target": "bin/api-catalog-services.jar",
+                "target": "components/api-mediation/api-catalog-services.jar",
                 "binary": true
             },
             "build/libraries.zip": {
-                "target": "bin/lib/libraries.zip",
+                "target": "components/api-mediation/lib/libraries.zip",
                 "binary": true
             }
         }
@@ -33,11 +33,11 @@
         "zos": {
             "files": {
                 "config/zowe-api-dev/run-wrapper.sh": {
-                    "target": "bin/run-wrapper.sh",
+                    "target": "run-wrapper.sh",
                     "binary": false
                 },
                 "zowe-install/src/main/resources/component-scripts/start.sh": {
-                    "target": "bin/start.sh",
+                    "target": "start.sh",
                     "binary": false
                 },
                 "keystore/localhost/localhost.keystore.p12": {
