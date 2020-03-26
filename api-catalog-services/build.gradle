@@ -95,3 +95,18 @@ bootRun {
     }
     systemProperties = System.properties
 }
+
+jar {
+    enabled = true
+    archiveName = "${jar.baseName}-thin.jar"
+
+    def libClassPathEntries = configurations.compile.files.collect {
+        "lib/" + it.getName()
+    }
+    doFirst {
+        manifest {
+            attributes "Class-Path": libClassPathEntries.join(" "),
+                "Main-Class": "org.zowe.apiml.apicatalog.ApiCatalogApplication"
+        }
+    }
+}

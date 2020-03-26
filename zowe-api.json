@@ -5,10 +5,27 @@
     "zfsMegabytes": 500,
 
     "deployment": {
-
+        "files": {
+            "discovery-service/build/libs/discovery-service-thin.jar": {
+                "target": "bin/discovery-service.jar",
+                "binary": true
+            },
+            "gateway-service/build/libs/gateway-service-thin.jar": {
+                "target": "bin/gateway-service.jar",
+                "binary": true
+            },
+            "api-catalog-services/build/libs/api-catalog-services-thin.jar": {
+                "target": "bin/api-catalog-services.jar",
+                "binary": true
+            },
+            "build/libraries.zip": {
+                "target": "bin/lib/libraries.zip",
+                "binary": true
+            }
+        }
     },
 
-    "shellStartCommand": "echo 'Hello World'",
+    "shellStartCommand": "echo 'Not supported until variable replacement is implemented by Zowe SDK team'",
     "jobTemplatePath": "config/zowe-api-dev/template-bpxbatch.jcl",
     "jobPath": "build/api.jcl",
 

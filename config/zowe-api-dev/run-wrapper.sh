@@ -9,4 +9,7 @@ echo "PATH "$PATH
 echo "basePort "$basePort
 echo "******************* /ENVIRONMENT  *******************"
 
-cd $dir
+
+echo "Inflating dependencies"
+cd $dir/bin/lib
+jar -xvf libraries.zip
