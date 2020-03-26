@@ -147,6 +147,8 @@ task runTestWithoutStartupCheck(type: Test) {
     group "Integration tests"
     description "Run integration test without startup check"
 
+    useJUnitPlatform()
+
     systemProperties System.properties
 
     outputs.upToDateWhen { false }
