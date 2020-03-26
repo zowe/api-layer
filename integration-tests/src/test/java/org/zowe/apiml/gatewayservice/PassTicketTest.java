@@ -195,21 +195,6 @@ public class PassTicketTest {
     }
 
     @Test
-    public void doTicketWithoutCertificate() {
-        String jwt = gatewayToken();
-        TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
-
-        given()
-            .contentType(JSON)
-            .body(ticketRequest)
-            .cookie(COOKIE, jwt)
-        .when()
-            .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, ticketEndpoint))
-        .then()
-            .statusCode(is(SC_FORBIDDEN));
-    }
-
-    @Test
     public void doTicketWithoutToken() {
         String expectedMessage = "No authorization token provided for URL '" + ticketEndpoint + "'";
 
@@ -221,13 +206,11 @@ public class PassTicketTest {
             .body(ticketRequest)
         .when()
             .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, ticketEndpoint))
-        .then();
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED));
 
-        if (rejectedOnZull()) {
-            vr  .statusCode(is(SC_FORBIDDEN));
-        } else {
-            vr.statusCode(is(SC_UNAUTHORIZED))
-                .body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
+        if (!rejectedOnZull()) {
+            vr.body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
         }
     }
 
@@ -264,13 +247,11 @@ public class PassTicketTest {
             .header("Authorization", "Bearer " + jwt)
         .when()
             .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, ticketEndpoint))
-        .then();
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED));
 
-        if (rejectedOnZull()) {
-            vr  .statusCode(is(SC_FORBIDDEN));
-        } else {
-            vr  .statusCode(is(SC_UNAUTHORIZED))
-                .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
+        if (!rejectedOnZull()) {
+            vr.body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
         }
     }
 
@@ -285,13 +266,11 @@ public class PassTicketTest {
             .cookie(COOKIE, jwt)
         .when()
             .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, ticketEndpoint))
-        .then();
+        .then()
+            .statusCode(is(SC_BAD_REQUEST));
 
-        if (rejectedOnZull()) {
-            vr  .statusCode(is(SC_FORBIDDEN));
-        } else {
-            vr.statusCode(is(SC_BAD_REQUEST))
-                .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
+        if (!rejectedOnZull()) {
+             vr.body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
         }
     }
 
@@ -309,13 +288,11 @@ public class PassTicketTest {
             .cookie(COOKIE, jwt)
         .when()
             .post(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, ticketEndpoint))
-        .then();
+        .then()
+            .statusCode(is(SC_BAD_REQUEST));
 
-        if (rejectedOnZull()) {
-            vr  .statusCode(is(SC_FORBIDDEN));
-        } else {
-            vr  .statusCode(is(SC_BAD_REQUEST))
-                .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
+        if (!rejectedOnZull()) {
+            vr.body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
         }
     }
     //@formatter:on

@@ -55,6 +55,10 @@ public class QueryIntegrationTest {
         });
     }
 
+    private boolean rejectedOnZull() {
+        return !basePath.isEmpty();
+    }
+
     @Before
     public void setUp() {
         RestAssured.port = PORT;
@@ -92,16 +96,17 @@ public class QueryIntegrationTest {
         String invalidToken = "1234";
         String expectedMessage = "Token is not valid for URL '" + QUERY_ENDPOINT + "'";
 
-        given()
+        ValidatableResponse vr = given()
             .header("Authorization", "Bearer " + invalidToken)
             .contentType(JSON)
         .when()
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, basePath, QUERY_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-            "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
-        );
+            .statusCode(is(SC_UNAUTHORIZED));
+
+        if (!rejectedOnZull()) {
+            vr.body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
+        }
     }
 
     @Test
