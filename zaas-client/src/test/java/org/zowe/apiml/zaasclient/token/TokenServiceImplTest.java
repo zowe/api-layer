@@ -13,9 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
+import org.apache.http.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -58,6 +56,12 @@ public class TokenServiceImplTest {
 
     @Mock
     StatusLine statusLine;
+
+    @Mock
+    HeaderElement headerElement;
+
+    @Mock
+    Header header;
 
     @Mock
     private CloseableHttpResponse closeableHttpResponse;
@@ -165,11 +169,23 @@ public class TokenServiceImplTest {
     }
 
     @Test
-    public void testLoginWithCredentials_ValidUserName_ValidPassword() throws ZaasClientException {
+    public void testLoginWithCredentials_ValidUserName_ValidPassword() throws
+        CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
         try {
+            Header[] headers = new Header[1];
+            headers[0] = header;
+
+            HeaderElement[] headerElements = new HeaderElement[1];
+            headerElements[0] = headerElement;
+            when(httpsClient.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
+            when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_NO_CONTENT);
+            when(closeableHttpResponse.getHeaders("Set-Cookie")).thenReturn(headers);
+            when(header.getElements()).thenReturn(headerElements);
+            when(headerElement.getName()).thenReturn("apimlAuthenticationToken");
+            when(headerElement.getValue()).thenReturn("token");
+
             String token = tokenService.login(VALID_USER, VALID_PASS);
-            assertNotNull(token);
-            assertNotEquals(EMPTY_STRING, token);
+            assertEquals("token", token);
         } catch (ZaasClientException zce) {
             fail("Test case failed as it threw an exception");
         }
@@ -380,7 +396,7 @@ public class TokenServiceImplTest {
         when(httpsClient.getHttpsClientWithKeyStoreAndTrustStore()).thenReturn(closeableHttpClient);
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasPassTicketResponse)));
 
-        assertNotNull(tokenService.passTicket(token, "ZOWEAPPL"));
+        assertEquals(tokenService.passTicket(token, "ZOWEAPPL"), "ticket");
     }
 
     @Test(expected = ZaasClientException.class)
