@@ -406,4 +406,17 @@ public class ZosmfAuthenticationProviderTest {
         verify(authenticationService, times(1)).createJwtToken("userId", "domain", "ltpaToken");
     }
 
+    @Test
+    public void testAuthentication_givenMissingPrincipal_thenException() {
+        ZosmfService zosmfService = createZosmfService();
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+        UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(null, "password");
+        try {
+            zosmfAuthenticationProvider.authenticate(upat);
+            fail();
+        } catch (BadCredentialsException bce) {
+            assertEquals("Username or password are invalid.", bce.getMessage());
+        }
+    }
+
 }

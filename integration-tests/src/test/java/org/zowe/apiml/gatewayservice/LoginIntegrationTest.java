@@ -16,8 +16,13 @@ import io.restassured.http.Cookie;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -27,20 +32,36 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(value = Parameterized.class)
 public class LoginIntegrationTest {
-    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
-    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
-    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-    private final static String BASE_PATH = "/api/v1/gateway";
-    private final static String LOGIN_ENDPOINT = "/auth/login";
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    private final static String INVALID_USERNAME = "incorrectUser";
-    private final static String INVALID_PASSWORD = "incorrectPassword";
+
+    private static final String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
+    private static final String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
+    private static final int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+    private static final String PATH_PREFIX = "/api/v1/gateway";
+    private static final String LOGIN_ENDPOINT = "/auth/login";
+    private static final String COOKIE_NAME = "apimlAuthenticationToken";
+    private static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private static final String INVALID_USERNAME = "incorrectUser";
+    private static final String INVALID_PASSWORD = "incorrectPassword";
+
+    private String basePath;
+
+    public LoginIntegrationTest(String basePath) {
+        this.basePath = basePath;
+    }
+
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+            {""},
+            {PATH_PREFIX}
+        });
+    }
 
     @Before
     public void setUp() {
@@ -57,7 +78,7 @@ public class LoginIntegrationTest {
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, basePath, LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -83,7 +104,7 @@ public class LoginIntegrationTest {
             .auth().preemptive().basic(USERNAME, PASSWORD)
             .contentType(JSON)
         .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, basePath, LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -101,7 +122,7 @@ public class LoginIntegrationTest {
 
     @Test
     public void doLoginWithInvalidCredentialsInLoginRequest() {
-        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
+        String expectedMessage = "Invalid username or password for URL '" + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
@@ -109,7 +130,7 @@ public class LoginIntegrationTest {
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, basePath, LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -119,7 +140,7 @@ public class LoginIntegrationTest {
 
     @Test
     public void doLoginWithInvalidCredentialsInHeader() {
-        String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
+        String expectedMessage = "Invalid username or password for URL '" + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
@@ -127,7 +148,7 @@ public class LoginIntegrationTest {
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, basePath, LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -138,11 +159,11 @@ public class LoginIntegrationTest {
     @Test
     public void doLoginWithoutCredentials() {
         String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
-            BASE_PATH + LOGIN_ENDPOINT + "'";
+            LOGIN_ENDPOINT + "'";
 
         given()
         .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, basePath, LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
@@ -153,7 +174,7 @@ public class LoginIntegrationTest {
     @Test
     public void doLoginWithInvalidLoginRequest() {
         String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
-            BASE_PATH + LOGIN_ENDPOINT + "'";
+            LOGIN_ENDPOINT + "'";
 
         JSONObject loginRequest = new JSONObject()
             .put("user",USERNAME)
@@ -163,7 +184,7 @@ public class LoginIntegrationTest {
             .contentType(JSON)
             .body(loginRequest.toString())
         .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, basePath, LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
@@ -174,7 +195,7 @@ public class LoginIntegrationTest {
     @Test
     public void doLoginWithWrongHttpMethod() {
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
-            BASE_PATH + LOGIN_ENDPOINT + "'";
+            LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
@@ -182,7 +203,7 @@ public class LoginIntegrationTest {
             .contentType(JSON)
             .body(loginRequest)
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, basePath, LOGIN_ENDPOINT))
         .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(

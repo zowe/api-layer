@@ -176,7 +176,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getAuthenticationFailureHandler(),
             authenticationService,
             HttpMethod.POST,
-            true,
+            false,
             authenticationManager());
     }
 

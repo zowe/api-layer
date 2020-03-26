@@ -26,7 +26,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 @Category(MainframeDependentTests.class)
 public class LogoutTest {
 
-    private final static String BASE_PATH = "/api/v1/gateway";
+    private final static String BASE_PATH = "";// "/api/v1/gateway";
     private final static String LOGOUT_ENDPOINT = "/auth/logout";
     private final static String QUERY_ENDPOINT = "/auth/query";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";

@@ -43,6 +43,10 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
      */
     @Override
     public Authentication authenticate(Authentication authentication) {
+        if (authentication.getPrincipal() == null) {
+            throw new BadCredentialsException("Username or password are invalid.");
+        }
+
         final String user = authentication.getPrincipal().toString();
 
         final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
