@@ -36,6 +36,8 @@ import java.util.stream.Stream;
 @Slf4j
 public class TokenServiceImpl implements TokenService {
 
+    private static final String SCHEME = "https://";
+    private static final String LOGIN_ENDPOINT = "/login";
     private ConfigProperties configProperties;
     private HttpsClient httpsClient;
 
@@ -52,16 +54,16 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String login(String userId, String password) throws ZaasClientException {
-        CloseableHttpClient client = null;
+        CloseableHttpClient client;
         CloseableHttpResponse response = null;
-        String token = "";
+        String token;
 
         if (userId == null || password == null)
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
 
         try {
             client = httpsClient.getHttpsClientWithTrustStore();
-            HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/login");
+            HttpPost httpPost = new HttpPost(SCHEME + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + LOGIN_ENDPOINT);
             String json = "{\"username\":\"" + userId + "\",\"password\":\"" + password + "\"}";
             StringEntity entity = new StringEntity(json);
             httpPost.setEntity(entity);
@@ -83,16 +85,17 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String login(String authorizationHeader) throws ZaasClientException {
         CloseableHttpResponse response = null;
-        String token = "";
-        CloseableHttpClient client = null;
+        String token;
+        CloseableHttpClient client;
 
         if (authorizationHeader == null || authorizationHeader.isEmpty())
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER);
 
         try {
-            HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/login");
+            client = httpsClient.getHttpsClientWithTrustStore();
+            HttpPost httpPost = new HttpPost(SCHEME + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + LOGIN_ENDPOINT);
             httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
-            response = httpsClient.getHttpsClientWithTrustStore().execute(httpPost);
+            response = client.execute(httpPost);
             token = extractToken(response);
         } catch (ZaasClientException zce) {
             throw zce;
@@ -119,7 +122,7 @@ public class TokenServiceImpl implements TokenService {
         cookieStore.addCookie(cookie);
 
         try {
-            HttpGet httpGet = new HttpGet("https://" + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/query");
+            HttpGet httpGet = new HttpGet(SCHEME + configProperties.getApimlHost() + ":" + configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/query");
             response = httpsClient.getHttpsClientWithTrustStore(cookieStore).execute(httpGet);
 
             if (response.getStatusLine().getStatusCode() == 200) {
@@ -155,7 +158,7 @@ public class TokenServiceImpl implements TokenService {
             closeableHttpsClient = httpsClient.getHttpsClientWithKeyStoreAndTrustStore();
             zaasClientTicketRequest.setApplicationName(applicationId);
 
-            HttpPost httpPost = new HttpPost("https://" + configProperties.getApimlHost() + ":" +
+            HttpPost httpPost = new HttpPost(SCHEME + configProperties.getApimlHost() + ":" +
                 configProperties.getApimlPort() + configProperties.getApimlBaseUrl() + "/ticket");
             httpPost.setEntity(new StringEntity(mapper.writeValueAsString(zaasClientTicketRequest)));
             httpPost.setHeader("Content-type", "application/json");
