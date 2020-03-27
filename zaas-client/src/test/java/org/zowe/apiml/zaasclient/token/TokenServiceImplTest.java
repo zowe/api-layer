@@ -49,7 +49,6 @@ public class TokenServiceImplTest {
 
     private TokenServiceImpl tokenService;
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
-    private static final String INVALID_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJsdHBhIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE1ODUwOTA3MDAsImV4cCI6MTU4NTE3NzEwMCwiaXNzIjoiQVBJTUwiLCJqdGkiOiI2NDcwNDViOS1hOTEwLTQxNjctOWNmMi1jODhmNDk3MWJjZWEifQ.Mo6qfM699EgcZ5jpgF3y6dSzdYklwrQfLCLZskSExXICwqaWw7E6CTWPc9j1u4MvurTjI5xGx2RsAmzMmxPpS8kgQPUZoGLBhza6Px9DVXzRYEFmIC2wD6b5BY2xP5f2N5Y4Mj5yiAFnOLQRFgKDaUhpohUa4kXCZjD5EanDPtyaHDlXGqVBmJLlzH7ZRYCAB2ROC0jvhKGa3UuHWbsbf4sX2m1NfgI9aGwZFZuQMAat-gvJJcBk5jGY4Cwo-bqlM_NV63LbhBrkMdgMUZFJtUi9qey6tE0CtzcbwCtfHAHMAKmrl1FSwQJHYvZiSoAEUaevovAEfnx6hf-CGrgJQginvalid";
 
     @Mock
     private HttpsClient httpsClient;
@@ -72,7 +71,9 @@ public class TokenServiceImplTest {
     @Mock
     private HttpEntity httpsEntity;
 
-    private String token = null;
+    String token;
+    String expiredToken;
+    String invalidToken;
 
     private static final String VALID_USER = "user";
     private static final String VALID_PASSWORD = "user";
@@ -95,17 +96,13 @@ public class TokenServiceImplTest {
         tokenService.init(configProperties);
         long now = System.currentTimeMillis();
         long expiration = now + 10000;
+        long expirationForExpiredToken = now - 1000;
 
         Key jwtSecretKey = getDummyKey(configProperties);
 
-        token = Jwts.builder()
-            .setSubject("user")
-            .setIssuedAt(new Date(now))
-            .setExpiration(new Date(expiration))
-            .setIssuer("APIML")
-            .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.RS256, jwtSecretKey)
-            .compact();
+        token = getToken(now, expiration, jwtSecretKey);
+        expiredToken = getToken(now, expirationForExpiredToken, jwtSecretKey);
+        invalidToken = token + "DUMMY TEXT";
 
         when(httpsClient.getHttpsClientWithTrustStore(any(BasicCookieStore.class))).thenReturn(closeableHttpClient);
         when(closeableHttpClient.execute(any(HttpGet.class))).thenReturn(closeableHttpResponse);
@@ -115,6 +112,17 @@ public class TokenServiceImplTest {
         when(closeableHttpResponse.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
+    }
+
+    private String getToken(long now, long expiration, Key jwtSecretKey) {
+        return Jwts.builder()
+            .setSubject("user")
+            .setIssuedAt(new Date(now))
+            .setExpiration(new Date(expiration))
+            .setIssuer("APIML")
+            .setId(UUID.randomUUID().toString())
+            .signWith(SignatureAlgorithm.RS256, jwtSecretKey)
+            .compact();
     }
 
     private Key getDummyKey(ConfigProperties configProperties) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
@@ -484,8 +492,8 @@ public class TokenServiceImplTest {
     }
 
     @Test(expected = ZaasClientException.class)
-    public void testQueryWithInvalidToken() throws ZaasClientException {
-        tokenService.query(INVALID_TOKEN);
+    public void testQueryWithToken_InvalidToken_ZaasClientException() throws ZaasClientException {
+        tokenService.query(invalidToken);
     }
 
     @Test
@@ -495,6 +503,22 @@ public class TokenServiceImplTest {
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasToken)));
 
         assertEquals(tokenService.query(token).userId, "user");
+    }
+
+    @Test(expected = ZaasClientException.class)
+    public void testQueryWithToken_ExpiredToken_ZaasClientException() throws ZaasClientException {
+        tokenService.query(expiredToken);
+    }
+
+    @Test(expected = ZaasClientException.class)
+    public void testQueryWithToken_EmptyToken_ZaasClientException() throws ZaasClientException {
+        tokenService.query("");
+    }
+
+    @Test(expected = ZaasClientException.class)
+    public void testQueryWithToken_WhenResponseCodeIs404_ZaasClientException() throws ZaasClientException {
+        when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(404);
+        tokenService.query(token);
     }
 
     @Test
@@ -512,7 +536,7 @@ public class TokenServiceImplTest {
 
     @Test(expected = ZaasClientException.class)
     public void testPassTicketWithInvalidToken_InvalidToken_ZaasClientException() throws ZaasClientException {
-        tokenService.passTicket(INVALID_TOKEN, "ZOWEAPPL");
+        tokenService.passTicket(invalidToken, "ZOWEAPPL");
     }
 
     @Test(expected = ZaasClientException.class)
