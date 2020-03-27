@@ -14,7 +14,7 @@ export CATALOG_PORT=$((basePort+2))
 export GATEWAY_PORT=$basePort
 export STATIC_DEF_CONFIG_DIR=/z/masserv/janda06/apiml/apidef
 export VERIFY_CERTIFICATES=true
-export KEY_ALIAS=localhost
+export KEY_ALIAS=apiml
 export KEYSTORE=$dir/keystore/keystore.p12
 export KEYSTORE_TYPE=pkcs12
 export KEYSTORE_PASSWORD=password
@@ -22,10 +22,6 @@ export TRUSTSTORE=$dir/keystore/truststore.p12
 export ROOT_DIR=$dir
 export WORKSPACE_DIR=$dir
 export ZOWE_MANIFEST=
-
-# API Mediation Layer Debug Mode
-# To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
-LOG_LEVEL=
 
 echo "*******************  ENVIRONMENT  *******************"
 echo "Working directory "$dir
@@ -40,6 +36,7 @@ echo "******************* /ENVIRONMENT  *******************"
 echo "Inflating dependencies"
 cd $dir/components/api-mediation/lib
 jar -xvf libraries.zip
+echo " "
 
 echo "Running API Mediation Layer"
 cd $dir

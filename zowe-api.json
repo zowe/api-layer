@@ -40,11 +40,11 @@
                     "target": "start.sh",
                     "binary": false
                 },
-                "keystore/localhost/localhost.keystore.p12": {
+                "../api-layer-deploy/apiml.keystore.p12": {
                     "target": "keystore/keystore.p12",
                     "binary": true
                 },
-                "keystore/localhost/localhost.truststore.p12": {
+                "../api-layer-deploy/apiml.truststore.p12": {
                     "target": "keystore/truststore.p12",
                     "binary": true
                 }
