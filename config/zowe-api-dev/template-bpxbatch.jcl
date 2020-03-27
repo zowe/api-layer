@@ -26,6 +26,7 @@
 dir={{{user.zosTargetDir}}}
 JAVA_HOME={{{user.javaHome}}}
 basePort={{{user.basePort}}}
+systemHostname={{{user.systemHostname}}}
 /*
 // PEND
 //********************************************************************

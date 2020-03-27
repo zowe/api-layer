@@ -47,6 +47,10 @@
                 "../api-layer-deploy/apiml.truststore.p12": {
                     "target": "keystore/truststore.p12",
                     "binary": true
+                },
+                "../api-layer-deploy/zosmf.yml": {
+                    "target": "apidef/zosmf.yml",
+                    "binary": true
                 }
             }
         }
