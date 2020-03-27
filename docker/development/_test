@@ -1,0 +1,18 @@
+# Update and build
+cd /var/src/api-layer
+git fetch
+git pull
+./gradlew clean build
+
+# Run integration tests and local instances of the services
+npm install
+npm run api-layer &
+./gradlew runLocalIntegrationTests
+
+# Run the E2E tests
+cd api-catalog-ui/frontend
+npm install
+npm run cy:e2e:localhost
+
+# Kill all the running services
+killall -9 java
