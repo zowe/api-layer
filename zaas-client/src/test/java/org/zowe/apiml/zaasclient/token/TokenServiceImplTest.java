@@ -71,9 +71,9 @@ public class TokenServiceImplTest {
     @Mock
     private HttpEntity httpsEntity;
 
-    String token;
-    String expiredToken;
-    String invalidToken;
+    private String token;
+    private String expiredToken;
+    private String invalidToken;
 
     private static final String VALID_USER = "user";
     private static final String VALID_PASSWORD = "user";
@@ -502,7 +502,7 @@ public class TokenServiceImplTest {
         zaasToken.setUserId("user");
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasToken)));
 
-        assertEquals(tokenService.query(token).userId, "user");
+        assertEquals("user", tokenService.query(token).userId);
     }
 
     @Test(expected = ZaasClientException.class)
@@ -531,7 +531,7 @@ public class TokenServiceImplTest {
         when(httpsClient.getHttpsClientWithKeyStoreAndTrustStore()).thenReturn(closeableHttpClient);
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasPassTicketResponse)));
 
-        assertEquals(tokenService.passTicket(token, "ZOWEAPPL"), "ticket");
+        assertEquals("ticket", tokenService.passTicket(token, "ZOWEAPPL"));
     }
 
     @Test(expected = ZaasClientException.class)
