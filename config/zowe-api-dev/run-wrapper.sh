@@ -21,7 +21,7 @@ export KEYSTORE_PASSWORD=password
 export TRUSTSTORE=$dir/keystore/truststore.p12
 export ROOT_DIR=$dir
 export WORKSPACE_DIR=$dir
-export ZOWE_MANIFEST=
+export ZOWE_MANIFEST=$dir/zowe-manifest.json
 
 echo "*******************  ENVIRONMENT  *******************"
 echo "Working directory "$dir
