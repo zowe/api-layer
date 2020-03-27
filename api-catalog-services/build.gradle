@@ -58,7 +58,7 @@ dependencies {
     compile libraries.spring_boot_starter_thymeleaf
     compile libraries.apache_velocity
 
-    implementation libraries.springFox
+    compile libraries.springFox
 
     testCompile libraries.rest_assured
     testCompile libraries.spring_mock_mvc

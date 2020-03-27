@@ -71,7 +71,7 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    implementation libraries.springFox
+    compile libraries.springFox
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
     testRuntime libraries.http_client
