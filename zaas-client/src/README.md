@@ -11,8 +11,7 @@
   
 ## Introduction
 
-This is a native java library developed on top of APIML login/query and pass ticket API. It has very less dependency and is developed
-with apache http Client version 4.5.11.
+This is a native java library developed on the top of APIML login, query and pass ticket API. It is developed with apache http Client version 4.5.11.
 
 ## Pre-requisites
 
