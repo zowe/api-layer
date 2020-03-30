@@ -1,6 +1,6 @@
 ---
 name: Question
-about: Ask us if you're not certain about something
+about: Ask us if you're not certain about something. We will handle it based on [Issue Management](https://github.com/zowe/api-layer/wiki)
 title: ''
 labels: question, new
 ---
