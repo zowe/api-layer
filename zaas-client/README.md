@@ -4,9 +4,6 @@
   - [Introduction](#introduction)
   - [Pre-requisites](#pre-requisites)
   - [Getting Started](#getting-started)
-  - [Building](#building)
-  - [Packaging](#packaging)
-  - [Required Security Access for Development](#required-security-access-for-development)
   - [Commands to Setup PassTickets for Your Service](#commands-to-setup-passtickets-for-your-service)
   
 ## Introduction
@@ -96,15 +93,6 @@ It has an added layer of security where you do not have to provide an input to t
 ConfigProperties class. Hence, it will automatically fetch the truststore and keystore files as an input.
 
 In return, this method will provide a valid pass ticket as a String to the authorized user.
-
-#### Building
-
-
-#### Packaging
-
-
-## Required Security Access for Development
-
 
 ### Commands to Setup PassTickets for Your Service
 
