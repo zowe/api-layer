@@ -12,6 +12,9 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.zowe.apiml.gateway.security.service.ZosmfService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
@@ -37,6 +40,7 @@ import org.springframework.web.client.RestTemplate;
  */
 @Service
 @Order(1)
+@Slf4j
 public class ZosmfServiceV2 extends AbstractZosmfService {
 
     public ZosmfServiceV2(AuthConfigurationProperties authConfigurationProperties, DiscoveryClient discovery,
@@ -74,7 +78,12 @@ public class ZosmfServiceV2 extends AbstractZosmfService {
             if (hce.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
                 return true;
             }
+            else if (hce.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                return false;
+            }
+            log.warn("The check of z/OSMF JWT authentication endpoint has failed with exception", hce);
         } catch (RuntimeException re) {
+            log.warn("The check of z/OSMF JWT authentication endpoint has failed with exception", re);
         }
         return false;
     }
