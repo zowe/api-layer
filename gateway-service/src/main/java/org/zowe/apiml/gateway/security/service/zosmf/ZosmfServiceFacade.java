@@ -145,7 +145,7 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
         final ZosmfInfo zosmfInfo = meProxy.getZosmfInfo(zosmfServiceId);
         final int version = getVersion(zosmfInfo);
         for (final ZosmfService zosmfService : implementations) {
-            if (zosmfService.matchesVersion(version)) return new ImplementationWrapper(zosmfInfo, zosmfService);
+            if (zosmfService.isSupported(version)) return new ImplementationWrapper(zosmfInfo, zosmfService);
         }
 
         meProxy.evictCaches();
@@ -179,9 +179,8 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
     public void invalidate(TokenType type, String token) {
         getImplementation().getZosmfService().invalidate(type, token);
     }
-
     @Override
-    public boolean matchesVersion(int version) {
+    public boolean isSupported(int version) {
         return false;
     }
 
