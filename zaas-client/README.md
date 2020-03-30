@@ -3,11 +3,11 @@
 - [zaas-client](#zaas-client)
   - [Introduction](#introduction)
   - [Pre-requisites](#pre-requisites)
-  - [Getting Started](#getting started)
+  - [Getting Started](#getting-started)
   - [Building](#building)
   - [Packaging](#packaging)
-  - [Required Security Access for Development](#required security access for development)
-  - [Commands to Setup PassTickets for Your Service](#commands to setup passtickets for your service)
+  - [Required Security Access for Development](#required-security-access-for-development)
+  - [Commands to Setup PassTickets for Your Service](#commands-to-setup-passtickets-for-your-service)
   
 ## Introduction
 
