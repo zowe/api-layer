@@ -7,6 +7,8 @@ Using [zowe-api-dev](https://github.com/zowe/sample-spring-boot-api-service/blob
 
 Underlying technology is Zowe CLI.
 
+**WARNING: TECHNOLOGY AND IMPLEMENTATION IS STILL IN EXPERIMENTAL STAGE**
+
 ### Prerequisities
  - Install Zowe CLI - https://docs.zowe.org/stable/user-guide/cli-installcli.html#installing-zowe-cli
  - Install zowe-api-dev
@@ -70,6 +72,10 @@ objective of this phase is to setup zowe-api-dev and perform first deployment
 
  - Run `zowe-api-dev zfs`. ZFS filesystem is be created and mounted to the `zosTargetDir`.
  
+ - Build deployment artifacts.
+   - Run Gradle build task
+   - Run Gradle packageLibs task
+ 
  - Run `zowe-api-dev deploy`. Binaries are be deployed. 
  
  - Run `zowe-api-dev config --name zos`. Configuration is deployed.
@@ -80,7 +86,7 @@ objective of this phase is to setup zowe-api-dev and perform first deployment
 
 #### Phase 2 - Operate the solution
 
-`zowe-api-dev status` - To understand the state of your job
+`zowe-api-dev status` - To understand the state of your job.
 
 `zowe-api-dev start --job` - Starts the deployment job. Make sure the job is not running before.
 
@@ -88,7 +94,7 @@ objective of this phase is to setup zowe-api-dev and perform first deployment
 
 `zowe-api-dev config --name zos` - After configuration change, you can run this command to redeploy changed files. There is no force and the redeployment sometimes finds no changes, even when changes have been made. In that case, inspect `.zowe-api-dev` folder and remove the mirrored deployment files and rerun the command.
 
-`zowe zos-jobs cancel job <job id>` - Stop your running job. There is no better way at the moment. We have issue pending with zowe-api-dev
+`zowe zos-jobs cancel job <job id>` - Stop your running job. There is no better way at the moment. We have issue pending with zowe-api-dev.
 
 #### Phase 3 - Dispose of the deployment
 
@@ -106,4 +112,18 @@ Wrapper script `config/zowe-api-dev/run-wrapper.sh` is launched on mainframe. Th
 
 ### Notes and Known issues
 
-//TODO
+ - The delta algorithm that zowe-api-dev is using is not perfect. Sometimes manual delete of `.zowe-api-dev/uploadedFiles` cache is needed to force deployment.
+ - Zowe CLI sometimes fails to upload large files with error: `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+`. When retried, upload passes. Further optimization can be done to reduce size of our deployment.
+
+### Deployment size optimization
+
+*Following changes are additional to standard packaging*
+
+Code packaging into jars is enhanced. 
+
+#### Thin jars package
+Next to normal BootJar Gradle task, Jar task for core services is enabled, which package thin jar without dependencies packed in. Additional jar file is created with `-thin` suffix and classpath entries in it's manifest. All relevant libraries are expected to be present in `./lib` folder. This task is executed on project build or individual module build.
+
+#### Libraries package
+Gradle task on root project level: `packageLibs` is added. It grabs all dependencies from the modules and packs into libraries.zip file. It is not included in build for performance reasons and needs to be executed manually prior deployment. It's not needed for subsequent deployments without dependencies changes.
