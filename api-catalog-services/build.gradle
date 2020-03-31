@@ -58,7 +58,7 @@ dependencies {
     compile libraries.spring_boot_starter_thymeleaf
     compile libraries.apache_velocity
 
-    implementation libraries.springFox
+    compile libraries.springFox
 
     testCompile libraries.rest_assured
     testCompile libraries.spring_mock_mvc
@@ -94,4 +94,19 @@ bootRun {
              args project.args.split(',')
     }
     systemProperties = System.properties
+}
+
+jar {
+    enabled = true
+    archiveName = "${jar.baseName}-thin.jar"
+
+    def libClassPathEntries = configurations.compile.files.collect {
+        "lib/" + it.getName()
+    }
+    doFirst {
+        manifest {
+            attributes "Class-Path": libClassPathEntries.join(" "),
+                "Main-Class": "org.zowe.apiml.apicatalog.ApiCatalogApplication"
+        }
+    }
 }

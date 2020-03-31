@@ -1,0 +1,63 @@
+{
+    "name": "API Mediation Layer",
+    "defaultDirName": "api-mediation-layer",
+    "defaultHlqSegment": "ZADSMP",
+    "zfsMegabytes": 500,
+
+    "deployment": {
+        "files": {
+            "discovery-service/build/libs/discovery-service-thin.jar": {
+                "target": "components/api-mediation/discovery-service.jar",
+                "binary": true
+            },
+            "gateway-service/build/libs/gateway-service-thin.jar": {
+                "target": "components/api-mediation/gateway-service.jar",
+                "binary": true
+            },
+            "api-catalog-services/build/libs/api-catalog-services-thin.jar": {
+                "target": "components/api-mediation/api-catalog-services.jar",
+                "binary": true
+            },
+            "build/libraries.zip": {
+                "target": "components/api-mediation/lib/libraries.zip",
+                "binary": true
+            }
+        }
+    },
+
+    "shellStartCommand": "echo 'Not supported until variable replacement is implemented by Zowe SDK team'",
+    "jobTemplatePath": "config/zowe-api-dev/template-bpxbatch.jcl",
+    "jobPath": "build/api.jcl",
+
+    "configurations": {
+        "zos": {
+            "files": {
+                "config/zowe-api-dev/run-wrapper.sh": {
+                    "target": "run-wrapper.sh",
+                    "binary": false
+                },
+                "zowe-install/src/main/resources/component-scripts/start.sh": {
+                    "target": "start.sh",
+                    "binary": false
+                },
+                "../api-layer-deploy/apiml.keystore.p12": {
+                    "target": "keystore/keystore.p12",
+                    "binary": true
+                },
+                "../api-layer-deploy/apiml.truststore.p12": {
+                    "target": "keystore/truststore.p12",
+                    "binary": true
+                },
+                "../api-layer-deploy/zosmf.yml": {
+                    "target": "apidef/zosmf.yml",
+                    "binary": true
+                },
+                "apiml-common/src/test/resources/zowe.version/zowe-manifest.json": {
+                    "target": "zowe-manifest.json",
+                    "binary": true
+                }
+            }
+        }
+    }
+
+}
