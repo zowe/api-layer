@@ -30,9 +30,7 @@ Procedure is separated into 3 distinct phases
 
 objective of this phase is to setup zowe-api-dev and perform first deployment
 
- - Run 'zowe-api-dev init --account=<mf-account-id>'. 'user-zowe-api.json' will be generated in repository root folder.
-
-  - Create `user-zowe-api.json` file in repository root folder. Fill in specific information. 
+ - Create `user-zowe-api.json` file in repository root folder. Fill in specific information. 
   
     *Keep ports and job identifiers unique so you do not overlap other developers deployments*
 
