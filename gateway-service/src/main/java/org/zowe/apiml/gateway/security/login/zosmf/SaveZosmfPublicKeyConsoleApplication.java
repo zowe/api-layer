@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
@@ -46,6 +47,9 @@ public class SaveZosmfPublicKeyConsoleApplication {
         } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());
             System.exit(1);
+        } catch (ResourceAccessException e) {
+            System.err.println(e.getMessage());
+            System.exit(2);
         }
     }
 
