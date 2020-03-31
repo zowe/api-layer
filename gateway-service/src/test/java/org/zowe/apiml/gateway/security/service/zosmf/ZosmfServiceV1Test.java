@@ -201,11 +201,11 @@ public class ZosmfServiceV1Test {
     }
 
     @Test
-    public void testMatchesVersion() {
-        assertTrue(zosmfService.matchesVersion(Integer.MIN_VALUE));
-        assertTrue(zosmfService.matchesVersion(25));
-        assertFalse(zosmfService.matchesVersion(26));
-        assertFalse(zosmfService.matchesVersion(Integer.MAX_VALUE));
+    public void testIsSupported() {
+        assertTrue(zosmfService.isSupported(Integer.MIN_VALUE));
+        assertTrue(zosmfService.isSupported(25));
+        assertTrue(zosmfService.isSupported(26));
+        assertTrue(zosmfService.isSupported(Integer.MAX_VALUE));
     }
 
 }

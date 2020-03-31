@@ -38,6 +38,7 @@ import java.util.Collections;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ZosmfServiceV2Test {
@@ -290,11 +291,25 @@ public class ZosmfServiceV2Test {
     }
 
     @Test
-    public void testMatchesVersion() {
-        assertFalse(zosmfService.matchesVersion(Integer.MIN_VALUE));
-        assertFalse(zosmfService.matchesVersion(25));
-        assertTrue(zosmfService.matchesVersion(26));
-        assertTrue(zosmfService.matchesVersion(Integer.MAX_VALUE));
+    public void testIsSupported() {
+        assertFalse(zosmfService.isSupported(Integer.MIN_VALUE));
+        assertFalse(zosmfService.isSupported(25));
+
+        mockZosmfService("zosmf", 1433);
+
+        // HttpClientErrorException.Unauthorized - it means that the authentication endpoint is activated
+        reset(restTemplate);
+        when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
+            .thenThrow(HttpClientErrorException.create(UNAUTHORIZED, "msg", new HttpHeaders(), new byte[0], Charset.defaultCharset()));
+        assertTrue(zosmfService.isSupported(26));
+        assertTrue(zosmfService.isSupported(Integer.MAX_VALUE));
+
+        // HttpClientErrorException.NotFound
+        reset(restTemplate);
+        when(restTemplate.exchange(anyString(), (HttpMethod) any(), (HttpEntity<?>) any(), (Class<?>) any()))
+            .thenThrow(HttpClientErrorException.create(NOT_FOUND, "msg", new HttpHeaders(), new byte[0], Charset.defaultCharset()));
+        assertFalse(zosmfService.isSupported(26));
+        assertFalse(zosmfService.isSupported(Integer.MAX_VALUE));
     }
 
 }

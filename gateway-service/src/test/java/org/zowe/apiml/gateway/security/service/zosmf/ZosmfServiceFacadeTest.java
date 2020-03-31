@@ -226,9 +226,9 @@ public class ZosmfServiceFacadeTest {
     }
 
     @Test
-    public void testMatchesVersion() {
-        assertFalse(zosmfService.matchesVersion(1));
-        assertFalse(zosmfService.matchesVersion(25));
+    public void testIsSupported() {
+        assertFalse(zosmfService.isSupported(1));
+        assertFalse(zosmfService.isSupported(25));
     }
 
     @Test
@@ -345,7 +345,7 @@ public class ZosmfServiceFacadeTest {
         }
 
         @Override
-        public boolean matchesVersion(int version) {
+        public boolean isSupported(int version) {
             return this.version == version;
         }
 
@@ -372,7 +372,7 @@ public class ZosmfServiceFacadeTest {
         }
 
         @Override
-        public boolean matchesVersion(int version) {
+        public boolean isSupported(int version) {
             return this.version == version;
         }
 
@@ -386,7 +386,7 @@ public class ZosmfServiceFacadeTest {
 
         public ZosmfService getService(int version) {
             for (final ZosmfService zosmfService : implementations) {
-                if (zosmfService.matchesVersion(version)) return zosmfService;
+                if (zosmfService.isSupported(version)) return zosmfService;
             }
             return null;
         }

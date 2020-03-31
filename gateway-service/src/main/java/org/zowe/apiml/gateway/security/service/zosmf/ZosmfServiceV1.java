@@ -1,3 +1,4 @@
+
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -12,6 +13,7 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -30,6 +32,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
  * Bean could be served via {@link ZosmfServiceFacade}
  */
 @Service
+@Order(2)
 public class ZosmfServiceV1 extends AbstractZosmfService {
 
     public ZosmfServiceV1(
@@ -89,12 +92,12 @@ public class ZosmfServiceV1 extends AbstractZosmfService {
 
     @Override
     public void invalidate(TokenType type, String token) {
-        // not supported by z/OSMF
+        // not supported by this version of z/OSMF
     }
 
     @Override
-    public boolean matchesVersion(int version) {
-        return version <= 25;
+    public boolean isSupported(int version) {
+        return true;
     }
 
 }
