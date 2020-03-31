@@ -71,7 +71,7 @@ dependencies {
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    implementation libraries.springFox
+    compile libraries.springFox
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
     testRuntime libraries.http_client
@@ -92,4 +92,19 @@ bootRun {
         args project.args.split(',')
     }
     systemProperties = System.properties
+}
+
+jar {
+    enabled = true
+    archiveName = "${jar.baseName}-thin.jar"
+
+    def libClassPathEntries = configurations.compile.files.collect {
+        "lib/" + it.getName()
+    }
+    doFirst {
+        manifest {
+            attributes "Class-Path": libClassPathEntries.join(" "),
+                "Main-Class": "org.zowe.apiml.gateway.GatewayApplication"
+        }
+    }
 }

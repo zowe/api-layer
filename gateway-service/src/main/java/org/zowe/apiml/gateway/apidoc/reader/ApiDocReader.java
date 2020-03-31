@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 
 /**
  * Service class for loading Gateway API doc from a resource file
@@ -45,11 +44,8 @@ public class ApiDocReader {
             throw new ApiDocReaderException("API doc location can't be null or empty");
         }
 
-        if (!location.startsWith(CLASSPATH_URL_PREFIX)) {
-            location = CLASSPATH_URL_PREFIX + location.trim();
-        }
 
-        String openAPIJsonContent = getOpenAPIJsonContent(location);
+        String openAPIJsonContent = getOpenAPIJsonContent(location.trim());
 
         SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(openAPIJsonContent);
         OpenAPI openAPI = parseResult.getOpenAPI();

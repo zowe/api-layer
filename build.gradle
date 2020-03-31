@@ -129,6 +129,28 @@ task publishAllVersions {
     }
 }
 
+task clearStagedLibs(type: Delete) {
+    delete "$buildDir/libs"
+    delete "$buildDir/libraries.zip"
+    followSymlinks = true
+}
+task stageLibs(type: Copy) {
+    dependsOn(clearStagedLibs)
+    evaluationDependsOnChildren()
+    into "$buildDir"
+    into('libs') {
+        from subprojects.collect { it.configurations.runtime }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+task packageLibs(type: Zip) {
+    dependsOn(stageLibs)
+    archiveFileName = "libraries.zip"
+    destinationDirectory = file("$buildDir")
+
+    from "$buildDir/libs"
+}
+
 publishAllVersions.dependsOn publishSdkArtifacts
 
 //-----------Release part start
