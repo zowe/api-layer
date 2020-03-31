@@ -45,11 +45,11 @@ public class SaveZosmfPublicKeyConsoleApplication {
                 System.out.printf("Public key of z/OSMF at stored to %s\n", filename);
             }
         } catch (FileNotFoundException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            System.err.println(e.getMessage());  // NOSONAR: It is a console application
+            System.exit(1);  // NOSONAR
         } catch (ResourceAccessException e) {
-            System.err.println(e.getMessage());
-            System.exit(2);
+            System.err.println(e.getMessage());  // NOSONAR
+            System.exit(2);  // NOSONAR
         }
     }
 
