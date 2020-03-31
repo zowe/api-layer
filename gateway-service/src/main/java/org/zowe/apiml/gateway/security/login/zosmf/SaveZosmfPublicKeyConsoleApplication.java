@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
@@ -44,8 +45,11 @@ public class SaveZosmfPublicKeyConsoleApplication {
                 System.out.printf("Public key of z/OSMF at stored to %s\n", filename);
             }
         } catch (FileNotFoundException e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            System.err.println(e.getMessage());  // NOSONAR: It is a console application
+            System.exit(1);  // NOSONAR
+        } catch (ResourceAccessException e) {
+            System.err.println(e.getMessage());  // NOSONAR
+            System.exit(2);  // NOSONAR
         }
     }
 
