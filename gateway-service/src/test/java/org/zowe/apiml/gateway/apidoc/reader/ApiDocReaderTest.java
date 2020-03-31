@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.apidoc.reader;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ApiDocReaderTest {
@@ -43,23 +44,11 @@ public class ApiDocReaderTest {
     public void givenFileLocation_whenFileIsNotExist_thenThrowApiDocReaderException() {
         ApiDocReader apiDocReader = new ApiDocReader();
         Exception exception = assertThrows(ApiDocReaderException.class,
-            () -> apiDocReader.load("classpath:invalid-path.json"),
-            "Expected exception is not ApiDocReaderException");
-
-        assertEquals("OpenAPI file does not exist: classpath:invalid-path.json", exception.getMessage());
-    }
-
-
-    @Test
-    public void givenFileLocationWithoutClassPathPrefix_whenFileIsNotExist_thenThrowApiDocReaderException() {
-        ApiDocReader apiDocReader = new ApiDocReader();
-        Exception exception = assertThrows(ApiDocReaderException.class,
             () -> apiDocReader.load("invalid-path.json"),
             "Expected exception is not ApiDocReaderException");
 
-        assertEquals("OpenAPI file does not exist: classpath:invalid-path.json", exception.getMessage());
+        assertEquals("OpenAPI file does not exist: invalid-path.json", exception.getMessage());
     }
-
 
     @Test
     public void givenFileLocationWithInvalidJsonContent_whenLoadIsCalled_thenThrowApiDocReaderException() {
