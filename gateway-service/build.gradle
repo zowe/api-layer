@@ -83,6 +83,10 @@ dependencies {
     testCompile libraries.powermock_api_mockito2
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule
+
+
+    runtime libraries.jjwt_impl
+    runtime libraries.jjwt_jackson
 }
 
 bootJar.archiveName = "${bootJar.baseName}.jar"

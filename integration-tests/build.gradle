@@ -43,6 +43,8 @@ dependencies {
     testCompile(libraries.jackson_databind)
     testCompile libraries.jackson_dataformat_yaml
     testCompile libraries.javax_servlet_api
+    runtime libraries.jjwt_impl
+    runtime libraries.jjwt_jackson
 }
 
 jar {
