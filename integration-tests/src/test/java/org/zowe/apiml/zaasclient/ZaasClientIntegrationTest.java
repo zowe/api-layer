@@ -16,7 +16,6 @@ import org.zowe.apiml.util.config.ConfigReaderZaasClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
 import org.zowe.apiml.zaasclient.token.TokenService;
 import org.zowe.apiml.zaasclient.token.TokenServiceImpl;
 
