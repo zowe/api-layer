@@ -9,41 +9,51 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
+import com.netflix.loadbalancer.reactive.ExecutionListener;
+import com.netflix.zuul.context.RequestContext;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.gateway.security.service.schema.*;
-import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import com.netflix.zuul.context.RequestContext;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.mockito.stubbing.Stubber;
+import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.security.service.schema.*;
+import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
+import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
-import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -133,7 +143,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     }
 
     @Test
-    public void testGetAuthenticationCommand() throws Exception {
+    public void testGetAuthenticationCommand() {
         AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
         // token1 - valid
         QueryResponse qr1 = new QueryResponse("domain", "userId",
@@ -154,8 +164,8 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
             .thenReturn(schemeBeanMock);
         when(authenticationService.parseJwtToken("token1")).thenReturn(qr1);
         when(authenticationService.parseJwtToken("token2")).thenReturn(qr2);
-        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), qr1)).thenReturn(acValid);
-        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), qr2)).thenReturn(acExpired);
+        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr1)))).thenReturn(acValid);
+        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr2)))).thenReturn(acExpired);
 
         assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token1"));
         verify(schemeBeanMock, times(1)).createCommand(any(), any());
@@ -167,13 +177,13 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         assertSame(acExpired, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token2"));
         verify(schemeBeanMock, times(2)).createCommand(any(), any());
         // replace result (to know that expired record is removed and get new one)
-        when(schemeBeanMock.createCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), qr2)).thenReturn(acValid);
+        when(schemeBeanMock.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")), argThat(x -> Objects.equals(x.get(), qr2)))).thenReturn(acValid);
         assertSame(acValid, serviceAuthenticationService.getAuthenticationCommand(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"), "token2"));
         verify(schemeBeanMock, times(3)).createCommand(any(), any());
     }
 
     @Test
-    public void testGetAuthenticationCommandByServiceId() throws Exception {
+    public void testGetAuthenticationCommandByServiceId() {
         AuthenticationCommand ok = new AuthenticationCommandTest(false);
         Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
         Authentication a2 = new Authentication(AuthenticationScheme.ZOWE_JWT, null);
@@ -191,16 +201,23 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
 
         ServiceAuthenticationService sas = spy(serviceAuthenticationServiceImpl);
 
-        when(authenticationSchemeFactory.getSchema(any())).thenReturn(mock(AbstractAuthenticationScheme.class));
+        //AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                ((Supplier<?>) invocation.getArgument(1)).get();
+                return ok;
+            }
+        }).when(scheme).createCommand(any(), any());
+        when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
 
         // just one instance
-        when(sas.getAuthenticationCommand(a1, "jwt01")).thenReturn(ok);
         application = createApplication(ii1);
         when(discoveryClient.getApplication("svr01")).thenReturn(application);
         assertSame(ok, sas.getAuthenticationCommand("svr01", "jwt01"));
 
         // multiple same instances
-        when(sas.getAuthenticationCommand(a1, "jwt02")).thenReturn(ok);
         application = createApplication(ii1, ii1, ii1);
         when(discoveryClient.getApplication("svr02")).thenReturn(application);
         assertSame(ok, sas.getAuthenticationCommand("svr02", "jwt02"));
@@ -235,7 +252,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     }
 
     @Test
-    public void testGetAuthenticationCommandByServiceIdCache() throws Exception {
+    public void testGetAuthenticationCommandByServiceIdCache() {
         InstanceInfo ii1 = createInstanceInfo("i1", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1");
         AuthenticationCommand ac1 = new AuthenticationCommandTest(true);
         AuthenticationCommand ac2 = new AuthenticationCommandTest(false);
@@ -263,7 +280,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     }
 
     @Test
-    public void testUniversalAuthenticationCommand() throws Exception {
+    public void testUniversalAuthenticationCommand() {
         ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand uac = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
         assertFalse(uac.isExpired());
 
@@ -304,7 +321,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     }
 
     @Test
-    public void testEvictCacheService() throws Exception {
+    public void testEvictCacheService() {
         AuthenticationCommand command = AuthenticationCommand.EMPTY;
         Authentication auth = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applicationId0001");
         doReturn(Collections.singletonList(createInstanceInfo("instance0001", auth))).when(discoveryClient).getInstancesById("service0001");
@@ -343,9 +360,92 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     }
 
     @Test
-    public void testNoApplication() throws Exception {
+    public void testNoApplication() {
         when(discoveryClient.getApplication(any())).thenReturn(null);
         assertSame(AuthenticationCommand.EMPTY, serviceAuthenticationServiceImpl.getAuthenticationCommand("unknown", "jwtToken"));
+    }
+
+    @Test
+    public void testIsRequiredValidJwt() {
+        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand = serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
+        assertFalse(universalAuthenticationCommand.isRequiredValidJwt());
+    }
+
+    private <T> T getUnProxy(T springClass) throws Exception {
+        if (springClass instanceof  Advised) {
+            return (T) ((Advised) springClass).getTargetSource().getTarget();
+        }
+        return springClass;
+    }
+
+    private AuthenticationCommand testRequiredAuthentication(boolean requiredJwtValidation, String jwtToken) throws Exception {
+        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
+        ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand universalAuthenticationCommand =
+            serviceAuthenticationServiceImpl.new UniversalAuthenticationCommand();
+
+        AuthenticationCommand ac = mock(AuthenticationCommand.class);
+        QueryResponse queryResponse = mock(QueryResponse.class);
+        AbstractAuthenticationScheme schema = mock(AbstractAuthenticationScheme.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        RequestContext.getCurrentContext().setRequest(request);
+
+        Stubber stubber;
+        if (StringUtils.equals(jwtToken, "validJwt")) {
+            stubber = doReturn(Optional.of(jwtToken));
+        } else {
+            stubber = doThrow(new TokenNotValidException("Token is not valid."));
+        }
+        stubber.when(getUnProxy(authenticationService)).getJwtTokenFromRequest(request);
+        doReturn(ac).when(schema).createCommand(eq(authentication), argThat(x -> Objects.equals(x.get(), queryResponse)));
+        doReturn(schema).when(getUnProxy(authenticationSchemeFactory)).getSchema(authentication.getScheme());
+        doReturn(queryResponse).when(getUnProxy(authenticationService)).parseJwtToken("validJwt");
+        doReturn(requiredJwtValidation).when(ac).isRequiredValidJwt();
+
+        universalAuthenticationCommand.apply(createInstanceInfo("id", authentication));
+
+        return ac;
+    }
+
+    @Test
+    public void givenMissingJwt_whenCommandRequiredAuthentication_thenReject() throws Exception {
+        try {
+            testRequiredAuthentication(true, null);
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @Test
+    public void givenInvalidJwt_whenCommandRequiredAuthentication_thenReject() throws Exception {
+        try {
+            testRequiredAuthentication(true, "invalidJwt");
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @Test
+    public void givenValidExpiredJwt_whenCommandRequiredAuthentication_thenCall() throws Exception {
+        doThrow(new TokenExpireException("Token is expired."))
+            .when(getUnProxy(authenticationService)).validateJwtToken("validJwt");
+
+        try {
+            testRequiredAuthentication(true, "validJwt");
+            fail();
+        } catch (ExecutionListener.AbortExecutionException aee) {
+            assertTrue(aee.getMessage().contains("Invalid JWT token"));
+        }
+    }
+
+    @Test
+    public void givenValidJwt_whenCommandRequiredAuthentication_thenCall() throws Exception {
+        doReturn(TokenAuthentication.createAuthenticated("user", "pass"))
+            .when(getUnProxy(authenticationService)).validateJwtToken("validJwt");
+
+        AuthenticationCommand ac = testRequiredAuthentication(true, "validJwt");
+        verify(ac, times(1)).apply(any());
     }
 
     public class AuthenticationCommandTest extends AuthenticationCommand {
@@ -365,6 +465,11 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
+        }
+
+        @Override
+        public boolean isRequiredValidJwt() {
+            return false;
         }
 
     }

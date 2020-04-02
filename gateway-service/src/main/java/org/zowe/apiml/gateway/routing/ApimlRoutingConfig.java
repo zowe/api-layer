@@ -19,7 +19,6 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.filters.post.ConvertAuthTokenInUriToCookieFilter;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
 import org.zowe.apiml.gateway.filters.pre.*;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.ws.WebSocketProxyServerHandler;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
@@ -41,11 +40,6 @@ public class ApimlRoutingConfig {
     public EncodedCharactersFilter encodedCharactersFilter(DiscoveryClient discovery,
                                                                  MessageService messageService) {
         return new EncodedCharactersFilter(discovery, messageService);
-    }
-
-    @Bean
-    public JwtValidatorFilter jwtValidatorFilter(AuthenticationService authenticationService) {
-        return new JwtValidatorFilter(authenticationService);
     }
 
     @Bean

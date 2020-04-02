@@ -9,18 +9,20 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
-import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.exception.ZuulException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
+import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
 
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 /**
@@ -61,6 +63,18 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
             final String serviceId = (String) context.get(SERVICE_ID_KEY);
             try {
                 final AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId,  jwtToken.get());
+
+                // Verify JWT validity if it is required for the schema
+                if (cmd.isRequiredValidJwt()) {
+                    final TokenAuthentication tokenAuthentication = authenticationService.validateJwtToken(jwtToken.get());
+                    if (!tokenAuthentication.isAuthenticated()) {
+                        context.setSendZuulResponse(false);
+                        context.setResponseStatusCode(SC_UNAUTHORIZED);
+                        return null;
+                    }
+                }
+
+                // Update ZUUL context by authentication schema
                 cmd.apply(null);
             } catch (Exception e) {
                 throw new ZuulRuntimeException(new ZuulException(e, HttpStatus.INTERNAL_SERVER_ERROR.value(), String.valueOf(e)));

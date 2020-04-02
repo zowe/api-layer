@@ -177,6 +177,7 @@ public class HttpConfig {
      */
     @Bean
     @Primary
+    @Qualifier("secureHttpClientWithKeystore")
     public CloseableHttpClient secureHttpClient() {
         return secureHttpClient;
     }
