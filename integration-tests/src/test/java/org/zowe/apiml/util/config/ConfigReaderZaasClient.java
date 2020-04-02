@@ -12,14 +12,12 @@ package org.zowe.apiml.util.config;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
-import java.io.IOException;
-
-import static org.zowe.apiml.util.config.ConfigReader.*;
+import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 
 @Slf4j
 public class ConfigReaderZaasClient {
 
-        public static ConfigProperties getConfigProperties () throws IOException {
+        public static ConfigProperties getConfigProperties () {
 
             ConfigProperties configProperties = new ConfigProperties();
 

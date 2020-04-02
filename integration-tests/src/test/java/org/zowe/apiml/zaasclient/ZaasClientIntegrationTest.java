@@ -12,16 +12,15 @@ package org.zowe.apiml.zaasclient;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.Before;
+import org.junit.Test;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ConfigReaderZaasClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.token.TokenService;
 import org.zowe.apiml.zaasclient.token.TokenServiceImpl;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.zaasclient.token.ZaasToken;
 
 import java.io.File;
@@ -88,7 +87,7 @@ public class ZaasClientIntegrationTest {
     }
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         configProperties = ConfigReaderZaasClient.getConfigProperties();
         tokenService = new TokenServiceImpl();
         tokenService.init(configProperties);
@@ -301,17 +300,17 @@ public class ZaasClientIntegrationTest {
 
     @Test(expected = ZaasClientException.class)
     public void testQueryWithInvalidToken() throws ZaasClientException {
-            String token = tokenService.login(USERNAME, PASSWORD);
-            String invalidToken = token + "INVALID";
-            ZaasToken zaasToken = tokenService.query(invalidToken);
-            fail("Test case failed as it didn't throw an exception");
+        String token = tokenService.login(USERNAME, PASSWORD);
+        String invalidToken = token + "INVALID";
+        ZaasToken zaasToken = tokenService.query(invalidToken);
+        fail("Test case failed as it didn't throw an exception");
     }
 
     @Test(expected = ZaasClientException.class)
     public void testQueryWithExpiredToken() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, ZaasClientException {
-            String expiredToken = getToken(now, expirationForExpiredToken, getDummyKey(configProperties));
-            ZaasToken zaasToken = tokenService.query(expiredToken);
-            fail("Test case failed as it didn't throw an exception");
+        String expiredToken = getToken(now, expirationForExpiredToken, getDummyKey(configProperties));
+        ZaasToken zaasToken = tokenService.query(expiredToken);
+        fail("Test case failed as it didn't throw an exception");
     }
 
     @Test(expected = ZaasClientException.class)
