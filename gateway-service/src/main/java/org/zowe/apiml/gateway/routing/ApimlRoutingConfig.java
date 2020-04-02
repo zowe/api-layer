@@ -44,8 +44,8 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
-    public JwtValidatorFilter jwtValidatorFilter(AuthenticationService authenticationService) {
-        return new JwtValidatorFilter(authenticationService);
+    public JwtValidatorFilter jwtValidatorFilter(AuthenticationService authenticationService, AuthConfigurationProperties authConfigurationProperties) {
+        return new JwtValidatorFilter(authenticationService, authConfigurationProperties);
     }
 
     @Bean
