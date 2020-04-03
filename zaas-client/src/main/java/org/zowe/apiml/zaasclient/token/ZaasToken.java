@@ -9,32 +9,17 @@
  */
 package org.zowe.apiml.zaasclient.token;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.Date;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 public class ZaasToken {
+
     String domain;
     String userId;
     Date creation;
     Date expiration;
     boolean expired;
 
-    @Override
-    public String toString() {
-        return "ZaasToken{" +
-            "domain='" + domain + '\'' +
-            ", userId='" + userId + '\'' +
-            ", creation=" + creation +
-            ", expiration=" + expiration +
-            ", expired=" + expired +
-            '}';
-    }
 }

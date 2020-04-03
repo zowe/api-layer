@@ -12,29 +12,27 @@ package org.zowe.apiml.util.config;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
-import java.io.IOException;
+import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 
 @Slf4j
 public class ConfigReaderZaasClient {
 
-    public final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+        public static ConfigProperties getConfigProperties () {
 
-    public static ConfigProperties getConfigProperties() {
-
-        ConfigProperties configProperties = new ConfigProperties();
+            ConfigProperties configProperties = new ConfigProperties();
 
 
-        configProperties.setApimlHost(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost());
-        configProperties.setApimlPort(String.valueOf(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort()));
-        configProperties.setApimlBaseUrl("/api/v1/gateway/auth");
-        configProperties.setKeyStorePath(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore());
-        configProperties.setKeyStorePassword(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword());
-        configProperties.setKeyStoreType(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStoreType());
-        configProperties.setTrustStorePath(ConfigReader.environmentConfiguration().getTlsConfiguration().getTrustStore());
-        configProperties.setTrustStorePassword(ConfigReader.environmentConfiguration().getTlsConfiguration().getTrustStorePassword());
-        configProperties.setTrustStoreType(ConfigReader.environmentConfiguration().getTlsConfiguration().getTrustStoreType());
+            configProperties.setApimlHost(environmentConfiguration().getGatewayServiceConfiguration().getHost());
+            configProperties.setApimlPort(environmentConfiguration().getGatewayServiceConfiguration().getPort() + "");
+            configProperties.setApimlBaseUrl("/api/v1/gateway/auth");
+            configProperties.setKeyStorePath(environmentConfiguration().getTlsConfiguration().getKeyStore());
+            configProperties.setKeyStorePassword(environmentConfiguration().getTlsConfiguration().getKeyStorePassword());
+            configProperties.setKeyStoreType(environmentConfiguration().getTlsConfiguration().getKeyStoreType());
+            configProperties.setTrustStorePath(environmentConfiguration().getTlsConfiguration().getTrustStore());
+            configProperties.setTrustStorePassword(environmentConfiguration().getTlsConfiguration().getTrustStorePassword());
+            configProperties.setTrustStoreType(environmentConfiguration().getTlsConfiguration().getTrustStoreType());
 
-        return configProperties;
-    }
+            return configProperties;
+        }
 }
 

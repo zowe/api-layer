@@ -9,15 +9,9 @@
  */
 package org.zowe.apiml.zaasclient.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@Data
 public class ConfigProperties {
 
     private String apimlHost;
@@ -30,18 +24,4 @@ public class ConfigProperties {
     private String trustStorePath;
     private String trustStorePassword;
 
-    @Override
-    public String toString() {
-        return "ConfigProperties{" +
-            "apimlHost='" + apimlHost + '\'' +
-            ", apimlPort='" + apimlPort + '\'' +
-            ", apimlBaseUrl='" + apimlBaseUrl + '\'' +
-            ", keyStoreType='" + keyStoreType + '\'' +
-            ", keyStorePath='" + keyStorePath + '\'' +
-            ", keyStorePassword='" + "" + '\'' +
-            ", trustStoreType='" + trustStoreType + '\'' +
-            ", trustStorePath='" + trustStorePath + '\'' +
-            ", trustStorePassword='" + "" + '\'' +
-            '}';
-    }
 }
