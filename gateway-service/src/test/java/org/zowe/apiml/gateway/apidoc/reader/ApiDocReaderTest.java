@@ -9,18 +9,20 @@
  */
 package org.zowe.apiml.gateway.apidoc.reader;
 
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gateway.utils.JsonReaderUtil;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ApiDocReaderTest {
 
+    private final ApiDocReader apiDocReader = new ApiDocReader();
+
 
     @Test
     public void givenFileLocationAsANull_whenLoadIsCalled_thenThrowApiDocReaderException() {
-        ApiDocReader apiDocReader = new ApiDocReader();
         Exception exception = assertThrows(ApiDocReaderException.class,
             () -> apiDocReader.load(null),
             "Expected exception is not ApiDocReaderException");
@@ -31,7 +33,6 @@ public class ApiDocReaderTest {
 
     @Test
     public void givenEmptyFileLocation_whenLoadIsCalled_thenThrowApiDocReaderException() {
-        ApiDocReader apiDocReader = new ApiDocReader();
         Exception exception = assertThrows(ApiDocReaderException.class,
             () -> apiDocReader.load(""),
             "Expected exception is not ApiDocReaderException");
@@ -52,7 +53,6 @@ public class ApiDocReaderTest {
 
     @Test
     public void givenFileLocationWithInvalidJsonContent_whenLoadIsCalled_thenThrowApiDocReaderException() {
-        ApiDocReader apiDocReader = new ApiDocReader();
         Exception exception = assertThrows(ApiDocReaderException.class,
             () -> apiDocReader.load("api-doc-invalid-content.json"),
             "Expected exception is not ApiDocReaderException");
@@ -61,22 +61,25 @@ public class ApiDocReaderTest {
     }
 
     @Test
-    public void givenFileLocationWithValidJsonContent_whenLoadIsCalled_thenOpenApiShouldMatchWithJsonContent() {
-        ApiDocReader apiDocReader = new ApiDocReader();
-        OpenAPI actualOpenApi = apiDocReader.load("api-doc.json");
-        OpenAPI expectedOpenApi = new OpenAPIV3Parser().read("api-doc.json");
+    public void givenFileLocationWithValidJsonContent_whenLoadIsCalled_thenOpenApiShouldMatchWithJsonContent()
+        throws IOException {
+
+        String actualOpenApi = apiDocReader.load("api-doc.json");
+        String expectedOpenApi = JsonReaderUtil.getJsonStringFromResource("api-doc.json");
 
         assertNotNull(actualOpenApi,"Open api object is null");
         assertEquals(expectedOpenApi, actualOpenApi, "Open api object is not equal with expected");
     }
 
     @Test
-    public void givenFileLocationNameWithSpaces_whenFileExists_thenOpenApiShouldMatchWithJsonContent() {
-        ApiDocReader apiDocReader = new ApiDocReader();
-        OpenAPI actualOpenApi = apiDocReader.load(" api-doc.json ");
-        OpenAPI expectedOpenApi = new OpenAPIV3Parser().read("api-doc.json");
+    public void givenFileLocationNameWithSpaces_whenFileExists_thenOpenApiShouldMatchWithJsonContent()
+        throws IOException {
+
+        String actualOpenApi = apiDocReader.load(" api-doc.json ");
+        String expectedOpenApi = JsonReaderUtil.getJsonStringFromResource("api-doc.json");
 
         assertNotNull(actualOpenApi, "Open api object is null");
         assertEquals(expectedOpenApi, actualOpenApi, "Open api object is not equal with expected");
     }
+
 }
