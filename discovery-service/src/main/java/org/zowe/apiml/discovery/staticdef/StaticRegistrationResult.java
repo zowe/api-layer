@@ -11,6 +11,7 @@ package org.zowe.apiml.discovery.staticdef;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.Data;
+import org.zowe.apiml.message.core.Message;
 
 import java.util.*;
 
@@ -20,7 +21,7 @@ import java.util.*;
  */
 @Data
 public class StaticRegistrationResult {
-    private final List<Object> errors = new LinkedList<>();
+    private final List<Message> errors = new LinkedList<>();
     private final List<InstanceInfo> instances = new LinkedList<>();
     private final Map<String, ServiceOverrideData> additionalServiceMetadata = new HashMap<>();
     private final List<String> registeredServices = new LinkedList<>();

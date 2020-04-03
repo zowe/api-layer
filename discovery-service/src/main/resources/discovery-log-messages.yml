@@ -41,7 +41,7 @@ messages:
     - key: org.zowe.apiml.discovery.errorParsingStaticDefinitionData
       number: ZWEAD702
       type: WARNING
-      text: "Unable to process static API definition data: '%s'"
+      text: "Unable to process static API definition data: '%s' - '%s'"
       reason: "A problem occurred while parsing a static API definition file."
       action: "Review the mentioned static API definition file for errors.\n
       Refer to the specific log message to see what is the exact cause of the problem:\n\n
@@ -54,7 +54,8 @@ messages:
       - The specified URL is missing a port number. Make sure to specify a valid URL.\n
       - The URL %s is malformed. The instance of %s will not be created: The Specified URL is malformed. Make sure to specify a valid URL.\n
       - The hostname of URL %s is unknown. The instance of %s will not be created: The specified hostname of the URL is invalid. Make sure to specify valid hostname.\n
-      - Invalid protocol. The specified protocol of the URL is invalid. Make sure to specify valid protocol."
+      - Invalid protocol. The specified protocol of the URL is invalid. Make sure to specify valid protocol.\n
+      - Additional service metadata of %s in processing file %s could not be created: %s"
 
     - key: org.zowe.apiml.discovery.errorReadingStaticDefinitionFolder
       number: ZWEAD703
