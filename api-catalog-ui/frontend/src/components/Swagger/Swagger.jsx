@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import SwaggerUi, { presets } from 'swagger-ui';
+import SwaggerUi, { presets } from 'swagger-ui-react/swagger-ui';
 import './Swagger.css';
 
 export default class SwaggerUI extends Component {
@@ -21,7 +21,7 @@ export default class SwaggerUI extends Component {
         statePlugins: {
             spec: {
                 wrapSelectors: {
-                    allowTryItOutFor: () => () => false,
+                    allowTryItOutFor: () => () => true,
                 },
                 wrapActions: {
                     updateLoadingStatus: ori => (...args) => {
