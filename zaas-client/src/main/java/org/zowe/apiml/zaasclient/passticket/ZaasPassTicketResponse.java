@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.zaasclient.passTicket;
+package org.zowe.apiml.zaasclient.passticket;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

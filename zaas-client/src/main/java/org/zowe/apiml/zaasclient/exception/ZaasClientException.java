@@ -11,9 +11,9 @@ package org.zowe.apiml.zaasclient.exception;
 
 public class ZaasClientException extends Exception {
 
-    private String errorCode;
-    private String errorMessage;
-    private int httpResponseCode;
+    private final String errorCode;
+    private final String errorMessage;
+    private final int httpResponseCode;
 
     public ZaasClientException(ZaasClientErrorCodes code, String errorMessage) {
         super(errorMessage);
