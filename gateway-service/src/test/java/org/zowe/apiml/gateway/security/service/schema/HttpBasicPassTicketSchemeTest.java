@@ -30,6 +30,7 @@ import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.
 import static org.junit.Assert.assertEquals;
 
 public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
+    private static final String USERNAME = "USERNAME";
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private HttpBasicPassTicketScheme httpBasicPassTicketScheme;
 
@@ -42,8 +43,8 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     @Test
     public void testCreateCommand() throws Exception {
         Calendar calendar = Calendar.getInstance();
-        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
-        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
+        QueryResponse queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
 
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
         assertNotNull(ac);
@@ -54,23 +55,23 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
         RequestContext.testSetCurrentContext(requestContext);
         ac.apply(null);
 
-        assertEquals("Basic dXNlcm5hbWU6Wm93ZUR1bW15UGFzc1RpY2tldF9hcHBsaWRfdXNlcm5hbWVfMA==",
+        assertEquals("Basic VVNFUk5BTUU6Wk9XRURVTU1ZUEFTU1RJQ0tFVF9BUFBMSURfVVNFUk5BTUVfMA==",  // USERNAME:ZOWEDUMMYPASSTICKET_APPLID_USERNAME_0
             requestContext.getZuulRequestHeaders().get("authorization"));
 
         // JWT token expired one minute ago (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, -1);
-        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+        queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
         ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
         assertTrue(ac.isExpired());
 
         // JWT token will expire in one minute (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, 2);
-        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+        queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
         ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
         assertFalse(ac.isExpired());
 
         calendar.add(Calendar.MINUTE, 100);
-        queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+        queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
         ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
 
         calendar = Calendar.getInstance();
@@ -86,7 +87,7 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
 
     @Test
     public void getExceptionWhenUserIdNotValid() {
-        String applId = "applId";
+        String applId = "APPLID";
 
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, applId);
