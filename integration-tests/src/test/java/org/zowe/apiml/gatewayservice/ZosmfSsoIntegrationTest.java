@@ -10,6 +10,7 @@
 package org.zowe.apiml.gatewayservice;
 
 import org.zowe.apiml.util.categories.MainframeDependentTests;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
@@ -49,6 +50,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     //@formatter:off
     public void doZosmfCallWithValidToken() {
         String dsname1 = "SYS1.PARMLIB";
@@ -66,6 +68,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void doZosmfCallWithValidCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
@@ -82,6 +85,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void doZosmfCallWithValidLtpaCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
@@ -100,6 +104,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void doZosmfCallWithValidBasicHeader() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
@@ -116,6 +121,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
         String expectedMessage = "Token is not valid";
@@ -132,6 +138,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
         String expectedMessage = "Token is not valid";
@@ -148,6 +155,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void doZosmfCallWithoutToken() {
         given()
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
@@ -158,6 +166,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void doZosmfCallWithEmptyHeader() {
         String emptyToken = " ";
 
@@ -172,6 +181,7 @@ public class ZosmfSsoIntegrationTest {
 
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void doZosmfCallWithEmptyCookie() {
         String emptyToken = "";
 
