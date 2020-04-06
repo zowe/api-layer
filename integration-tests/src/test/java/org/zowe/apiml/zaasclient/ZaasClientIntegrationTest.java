@@ -188,9 +188,9 @@ public class ZaasClientIntegrationTest {
     }
 
     @Test
-    public void doLoginWithAuthHeaderValidUsername() {
+    public void doLoginWithAuthHeaderInValidUsername() {
         try {
-            String token = tokenService.login(getAuthHeader(USERNAME, INVALID_PASS));
+            String token = tokenService.login(getAuthHeader(INVALID_USER, PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.INVALID_AUTHENTICATION.getId(), zce.getErrorCode());
@@ -201,9 +201,9 @@ public class ZaasClientIntegrationTest {
 
 
     @Test
-    public void doLoginWithAuthHeaderValidPassWord() {
+    public void doLoginWithAuthHeaderInValidPassWord() {
         try {
-            String token = tokenService.login(getAuthHeader(INVALID_USER, PASSWORD));
+            String token = tokenService.login(getAuthHeader(USERNAME, INVALID_PASS));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.INVALID_AUTHENTICATION.getId(), zce.getErrorCode());
