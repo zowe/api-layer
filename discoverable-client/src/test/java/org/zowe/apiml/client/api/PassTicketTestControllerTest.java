@@ -43,7 +43,7 @@ public class PassTicketTestControllerTest {
     private PassTicketTestController passTicketTestController;
 
     private static final String ZOWE_PASSTICKET_AUTH_HEADER = "Basic "
-            + Base64.getEncoder().encodeToString(("user:ZoweDummyPassTicket").getBytes());
+            + Base64.getEncoder().encodeToString(("user:ZOWE_DUMMY_PASS_TICKET").getBytes());
 
     private static final String BAD_PASSTICKET_AUTH_HEADER = "Basic "
             + Base64.getEncoder().encodeToString(("user:bad").getBytes());
