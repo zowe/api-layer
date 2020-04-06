@@ -40,7 +40,7 @@ import org.zowe.apiml.security.HttpsFactory;
  *  The issue with DiscoveryService and its behavior is tested in the Eureka.
  */
 public class ApiMediationClientImpl implements ApiMediationClient {
-    private EurekaClientProvider eurekaClientProvider;
+    private final EurekaClientProvider eurekaClientProvider;
     private EurekaClient eurekaClient;
     private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
 

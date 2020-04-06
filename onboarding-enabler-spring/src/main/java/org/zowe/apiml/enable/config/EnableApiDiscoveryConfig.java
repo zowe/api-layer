@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.enable.config;
 
+import org.springframework.lang.Nullable;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
 import org.zowe.apiml.message.core.MessageService;
@@ -35,8 +37,11 @@ public class EnableApiDiscoveryConfig {
     }
 
     @Bean
-    public ApiMediationClient apiMediationClient() {
-       return new ApiMediationClientImpl();
+    public ApiMediationClient apiMediationClient(@Nullable EurekaClientProvider eurekaClientProvider) {
+        if (eurekaClientProvider == null) {
+            return new ApiMediationClientImpl();
+        }
+       return new ApiMediationClientImpl(eurekaClientProvider);
     }
 
     @ConfigurationProperties(prefix = "apiml.service")
