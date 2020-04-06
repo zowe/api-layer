@@ -55,7 +55,7 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
         RequestContext.testSetCurrentContext(requestContext);
         ac.apply(null);
 
-        assertEquals("Basic VVNFUk5BTUU6Wk9XRURVTU1ZUEFTU1RJQ0tFVF9BUFBMSURfVVNFUk5BTUVfMA==",  // USERNAME:ZOWEDUMMYPASSTICKET_APPLID_USERNAME_0
+        assertEquals("Basic VVNFUk5BTUU6Wk9XRV9EVU1NWV9QQVNTX1RJQ0tFVF9BUFBMSURfVVNFUk5BTUVfMA==",  // USERNAME:ZOWE_DUMMY_PASS_TICKET_APPLID_USERNAME_0
             requestContext.getZuulRequestHeaders().get("authorization"));
 
         // JWT token expired one minute ago (command expired also if JWT token expired)

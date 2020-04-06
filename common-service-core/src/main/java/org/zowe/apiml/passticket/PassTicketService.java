@@ -57,10 +57,10 @@ public class PassTicketService {
         private static int id = 0;
 
         public static final String ZOWE_DUMMY_USERID = "USER";
-        public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZOWEDUMMYPASSTICKET";
+        public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZOWE_DUMMY_PASS_TICKET";
 
         public static final String DUMMY_USER = "USER";
-        public static final String UNKNOWN_USER = "UNKNOWNUSER";
+        public static final String UNKNOWN_USER = "UNKNOWN_USER";
         public static final String UNKNOWN_APPLID = "XBADAPPL";
 
         private final Map<UserApp, Set<String>> userAppToPasstickets = new HashMap<>();
