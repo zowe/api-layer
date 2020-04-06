@@ -11,7 +11,7 @@
 package org.zowe.apiml.util.categories;
 
 /**
- * A category market for tests that are meant to be excluded from the Zowe RC testing.
+ * A category marker for tests that are meant to be excluded from the Zowe RC testing.
  *
  */
 public interface TestsNotMeantForZowe {

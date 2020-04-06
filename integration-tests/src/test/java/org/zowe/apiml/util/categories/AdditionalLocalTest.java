@@ -10,7 +10,7 @@
 package org.zowe.apiml.util.categories;
 
 /**
- * A category market for tests for additional local services and special cases
+ * A category marker for tests for additional local services and special cases
  * reproducible only in the local environment.
  *
  * These tests will not run by default with other integration tests.
