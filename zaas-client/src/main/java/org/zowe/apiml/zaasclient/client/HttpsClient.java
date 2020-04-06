@@ -178,8 +178,10 @@ public class HttpsClient implements Closeable {
         try {
             sslContext = SSLContext.getInstance("TLS");
             sslContext.init(kmf != null ? kmf.getKeyManagers() : null, tmf != null ? tmf.getTrustManagers() : null, new SecureRandom());
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw e;
+        } catch (NoSuchAlgorithmException ex) {
+            throw new NoSuchAlgorithmException();
+        } catch (KeyManagementException ex) {
+            throw new KeyManagementException();
         }
         return sslContext;
     }

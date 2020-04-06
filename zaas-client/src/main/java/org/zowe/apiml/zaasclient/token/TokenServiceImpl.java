@@ -25,8 +25,8 @@ import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.passTicket.ZaasClientTicketRequest;
-import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
+import org.zowe.apiml.zaasclient.passticket.ZaasClientTicketRequest;
+import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 @Slf4j
 public class TokenServiceImpl implements TokenService {
 
+    private static final String COOKIE_PREFIX = "apimlAuthenticationToken";
     private static final String SCHEME = "https://";
     private static final String LOGIN_ENDPOINT = "/login";
     private ConfigProperties configProperties;
@@ -47,7 +48,6 @@ public class TokenServiceImpl implements TokenService {
         this.httpsClient = new HttpsClient(configProperties);
     }
 
-    //For Junits to work
     protected void setHttpsClient(HttpsClient httpsClient) {
         this.httpsClient = httpsClient;
     }
@@ -171,15 +171,14 @@ public class TokenServiceImpl implements TokenService {
                 throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION);
             } else if (response.getStatusLine().getStatusCode() == 200) {
                 zaasPassTicketResponse = new ObjectMapper().readValue(response.getEntity().getContent(), ZaasPassTicketResponse.class);
+                return zaasPassTicketResponse.getTicket();
             }
-        } catch (IOException ioe) {
+        } catch (Exception ioe) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, ioe.getMessage());
-        } catch (Exception e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e.getMessage());
         } finally {
             finallyClose(response);
         }
-        return zaasPassTicketResponse.getTicket();
+        return null;
     }
 
     private void finallyClose(CloseableHttpResponse response) {
@@ -198,7 +197,7 @@ public class TokenServiceImpl implements TokenService {
         int httpResponseCode = response.getStatusLine().getStatusCode();
         if (httpResponseCode == 204) {
             HeaderElement[] elements = response.getHeaders("Set-Cookie")[0].getElements();
-            Optional<HeaderElement> apimlAuthCookie = Stream.of(elements).filter(element -> element.getName().equals("apimlAuthenticationToken")).findFirst();
+            Optional<HeaderElement> apimlAuthCookie = Stream.of(elements).filter(element -> element.getName().equals(COOKIE_PREFIX)).findFirst();
             if (apimlAuthCookie.isPresent())
                 token = apimlAuthCookie.get().getValue();
         } else if (httpResponseCode == 401) {
