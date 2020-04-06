@@ -3,6 +3,7 @@ import java.io.PrintWriter;
 
 import com.ibm.eserver.zos.racf.IRRPassTicket;
 import com.ibm.eserver.zos.racf.IRRPassTicketGenerationException;
+import com.ibm.os390.security.PlatformThread;
 
 public class PtGen {
     public static void main(String args[]) {
@@ -11,6 +12,7 @@ public class PtGen {
         String applid = args[1];
 
         try {
+            System.out.println("activeUserid=" + PlatformThread.getUserName());
             passTicketService = new IRRPassTicket();
             System.out.println("userid=" + userid + " applid=" + applid);
             String passTicket = passTicketService.generate(userid, applid);
