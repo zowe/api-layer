@@ -29,7 +29,7 @@ import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
+import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -375,7 +375,7 @@ public class TokenServiceImplTest {
     }
 
     @Test
-    public void testLoginWithAuthHeader_EmptyUserName_InvalidPassword() {
+    public void testLoginWithAuthHeader_EmptyUserName_ValidPassword() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
             tokenService.login(getAuthHeader(EMPTY_USER, VALID_PASSWORD));
