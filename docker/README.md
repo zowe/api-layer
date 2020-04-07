@@ -19,7 +19,7 @@ Just for running:
 With volume for static configuration. 
 
 ```
-docker run --rm --name api-layer -p 10010-10019:10010-10019 -d jbalhar/api-layer-development:1.0.1 /sbin/my_init
+docker run --rm --name api-layer --net host -d jbalhar/api-layer-development:1.0.1 /sbin/my_init
 docker exec api-layer bash _run
 ```
 
@@ -43,7 +43,7 @@ The main goal of the image is to simplify running of all the types of the tests.
 To download and run the container it is necessary to install the [Docker Engine](https://www.docker.com/) first. The following commands start new instance of the container and log you into the bash with root privileges. The last line then updates the version of the api-layer and run the unit tests, integration tests and end to end tests. 
 
 ```
-docker run --rm --name api-layer -p 10010:10010 10011:10011 10012:10012 10013:10013 10014:10014 -d jbalhar/api-layer-development:1.0.1 /sbin/my_init
+docker run --rm --name api-layer -d jbalhar/api-layer-development:1.0.1 /sbin/my_init
 docker exec api-layer bash _test
 ```
 
