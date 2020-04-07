@@ -60,19 +60,19 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
 
         // JWT token expired one minute ago (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, -1);
-        queryResponse2 = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
-        ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
+        QueryResponse queryResponse2 = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+        ac = httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse2);
         assertTrue(ac.isExpired());
 
         // JWT token will expire in one minute (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, 2);
-        queryResponse3 = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
-        ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
+        QueryResponse queryResponse3 = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+        ac = httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse3);
         assertFalse(ac.isExpired());
 
         calendar.add(Calendar.MINUTE, 100);
-        queryResponse4 = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
-        ac = httpBasicPassTicketScheme.createCommand(authentication, queryResponse);
+        QueryResponse queryResponse4 = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+        ac = httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse4);
 
         calendar = Calendar.getInstance();
         calendar.add(Calendar.SECOND, authConfigurationProperties.getPassTicket().getTimeout());
