@@ -57,11 +57,11 @@ public class PassTicketServiceTest {
 
         evaluated = null;
         passTicketService.evaluate("userId", "applId", "passTicket");
-        assertEquals("userId-applId-passTicket", evaluated);
+        assertEquals("USERID-APPLID-PASSTICKET", evaluated);
         passTicketService.evaluate("1", "2", "3");
         assertEquals("1-2-3", evaluated);
 
-        assertEquals("userId-applId", passTicketService.generate("userId", "applId"));
+        assertEquals("USERID-APPLID", passTicketService.generate("userId", "applId"));
         assertEquals("1-2", passTicketService.generate("1", "2"));
     }
 

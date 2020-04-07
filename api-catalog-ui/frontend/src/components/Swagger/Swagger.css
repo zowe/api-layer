@@ -3,6 +3,15 @@
     box-sizing: border-box
 }
 
+.modal-btn {
+    max-width: 20vh;
+    margin: 1rem;
+}
+
+.try-out {
+    padding-left: 1rem;
+}
+
 #swaggerContainer > div > div:nth-child(2) > div.scheme-container > section > label {
     display: none;
 }
@@ -664,7 +673,7 @@
 .swagger-ui .authorization__btn {
     padding: 0 10px;
     border: none;
-    background: none
+    background: none;
 }
 
 .swagger-ui .authorization__btn.locked {
