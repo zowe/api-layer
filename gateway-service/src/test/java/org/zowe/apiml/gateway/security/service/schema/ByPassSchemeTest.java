@@ -8,6 +8,7 @@ package org.zowe.apiml.gateway.security.service.schema;/*
  * Copyright Contributors to the Zowe Project.
  */
 
+import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 
@@ -21,7 +22,11 @@ public class ByPassSchemeTest {
         ByPassScheme scheme = new ByPassScheme();
         assertTrue(scheme.isDefault());
         assertEquals(AuthenticationScheme.BYPASS, scheme.getScheme());
-        assertSame(AuthenticationCommand.EMPTY, scheme.createCommand(null, null));
+
+        AuthenticationCommand cmd = scheme.createCommand(null, null);
+        assertNull(RequestContext.getCurrentContext().get("AuthenticationSchemeByPass"));
+        cmd.apply(null);
+        assertEquals(Boolean.TRUE, RequestContext.getCurrentContext().get("AuthenticationSchemeByPass"));
     }
 
 }

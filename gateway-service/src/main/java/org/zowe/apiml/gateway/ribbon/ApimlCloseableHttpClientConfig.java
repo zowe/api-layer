@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
+import com.netflix.zuul.context.RequestContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cglib.proxy.Enhancer;
@@ -21,6 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
+
+import static org.zowe.apiml.gateway.security.service.schema.ByPassScheme.AUTHENTICATION_SCHEME_BY_PASS_KEY;
 
 /**
  *  This configuration create instance of CloseableHttpClient. This Http client make a proxy of other clients. It choose
@@ -52,7 +55,11 @@ public class ApimlCloseableHttpClientConfig {
         e.setSuperclass(CloseableHttpClient.class);
         e.setCallback(new MethodInterceptor() {
 
-            private boolean isRequestSigned() {
+            private boolean isRequestToSign() {
+                if (!Boolean.TRUE.equals(RequestContext.getCurrentContext().get(AUTHENTICATION_SCHEME_BY_PASS_KEY))) {
+                    return false;
+                }
+
                 final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
                 if (authentication == null) return false;
@@ -63,7 +70,7 @@ public class ApimlCloseableHttpClientConfig {
             }
 
             private CloseableHttpClient getCloseableHttpClient() {
-                if (isRequestSigned()) {
+                if (isRequestToSign()) {
                     return withCertificate;
                 } else {
                     return withoutCertificate;

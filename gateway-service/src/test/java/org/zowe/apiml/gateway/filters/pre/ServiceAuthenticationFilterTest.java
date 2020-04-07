@@ -74,7 +74,8 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
 
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(Optional.empty());
         serviceAuthenticationFilter.run();
-        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand(anyString(), any());
+        verify(serviceAuthenticationService, times(1)).getAuthenticationCommand("service", null);
+        verify(serviceAuthenticationService, times(2)).getAuthenticationCommand(anyString(), any());
 
         reset(requestContext);
         reset(authenticationService);

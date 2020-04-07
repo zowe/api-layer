@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
@@ -73,7 +72,7 @@ public class RequestInfoController {
             final X509Certificate cert = certs[i];
             final Certificate certDto = new Certificate(
                 cert.getSerialNumber(),
-                cert.getPublicKey(),
+                Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded()),
                 Base64.getEncoder().encodeToString(cert.getEncoded())
             );
             requestInfo.certs[i] = certDto;
@@ -115,8 +114,8 @@ public class RequestInfoController {
     public class Certificate {
 
         private final BigInteger serialNo;
-        private final PublicKey publicKey;
-        private final String base64;
+        private final String publicKeyEncodedBase64;
+        private final String encodedBase64;
 
     }
 

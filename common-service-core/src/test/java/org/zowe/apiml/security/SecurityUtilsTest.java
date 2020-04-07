@@ -16,8 +16,13 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.*;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.util.Base64;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -125,4 +130,38 @@ public class SecurityUtilsTest {
         }
         return publicKey;
     }
+
+    @Test
+    public void loadCertificateChainNoKeystore() {
+        HttpsConfig httpsConfig = HttpsConfig.builder().build();
+        try {
+            Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
+            assertEquals(certificates.length, 0);
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void loadCertificateChain() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
+        try {
+            Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
+            assertTrue(certificates.length > 0);
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+
+    @Test
+    public void loadCertificateChainBase64() {
+        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
+        try {
+            Set<String> certificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+            assertFalse(certificatesBase64.isEmpty());
+        } catch (Exception ex) {
+            fail(ex.getMessage());
+        }
+    }
+
 }

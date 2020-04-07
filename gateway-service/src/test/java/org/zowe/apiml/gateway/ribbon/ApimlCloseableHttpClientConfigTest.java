@@ -8,6 +8,7 @@ package org.zowe.apiml.gateway.ribbon;/*
  * Copyright Contributors to the Zowe Project.
  */
 
+import com.netflix.zuul.context.RequestContext;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -46,6 +47,8 @@ public class ApimlCloseableHttpClientConfigTest {
         ).apimlCloseableHttpClient();
 
         backupSecurityContext = SecurityContextHolder.getContext();
+
+        RequestContext.getCurrentContext().remove("AuthenticationSchemeByPass");
     }
 
     @AfterEach
@@ -101,13 +104,31 @@ public class ApimlCloseableHttpClientConfigTest {
     }
 
     @Test
-    public void givenX509ValidAuthentication_whenCall_thenUseWithKey() throws IOException {
+    public void givenX509ValidAuthentication_whenNoScheme_thenUseWithKey() throws IOException {
         X509Certificate x509Certificate = mock(X509Certificate.class);
         PreAuthenticatedAuthenticationToken preAuthenticatedAuthenticationToken = spy(
             new PreAuthenticatedAuthenticationToken("user", x509Certificate)
         );
         when(preAuthenticatedAuthenticationToken.isAuthenticated()).thenReturn(true);
         setAuthentication(preAuthenticatedAuthenticationToken);
+
+        HttpHost arg0 = mock(HttpHost.class);
+        HttpRequest arg1 = mock(HttpRequest.class);
+
+        combinated.execute(arg0, arg1);
+        verify(withCertificate, never()).execute(arg0, arg1);
+        verify(withoutCertificate, times(1)).execute(arg0, arg1);
+    }
+
+    @Test
+    public void givenX509ValidAuthentication_whenByPassScheme_thenUseWithKey() throws IOException {
+        X509Certificate x509Certificate = mock(X509Certificate.class);
+        PreAuthenticatedAuthenticationToken preAuthenticatedAuthenticationToken = spy(
+            new PreAuthenticatedAuthenticationToken("user", x509Certificate)
+        );
+        when(preAuthenticatedAuthenticationToken.isAuthenticated()).thenReturn(true);
+        setAuthentication(preAuthenticatedAuthenticationToken);
+        RequestContext.getCurrentContext().put("AuthenticationSchemeByPass", true);
 
         HttpHost arg0 = mock(HttpHost.class);
         HttpRequest arg1 = mock(HttpRequest.class);
