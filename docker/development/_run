@@ -11,13 +11,4 @@ git pull
 
 # Run integration tests and local instances of the services
 npm install
-npm run api-layer &
-./gradlew runLocalIntegrationTests
-
-# Run the E2E tests
-cd api-catalog-ui/frontend
-npm install
-npm run cy:e2e:localhost
-
-# Kill all the running services
-killall -9 java
+npm run api-layer
