@@ -14,6 +14,8 @@ import io.restassured.http.ContentType;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
@@ -43,6 +45,7 @@ public class EncodedCharactersTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldCallDiscoverableServiceWithEncodedCharacterAndAllow() {
         final String encodedURI = "/api/v1/discoverableclient/wor%2fld/greeting";
 

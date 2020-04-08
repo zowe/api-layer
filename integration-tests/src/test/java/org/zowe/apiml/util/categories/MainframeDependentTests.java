@@ -10,7 +10,7 @@
 package org.zowe.apiml.util.categories;
 
 /**
- * A category market for tests which must run when mainframe is accessible.
+ * A category marker for tests which must run when mainframe is accessible.
  *
  * These tests will run by default with other integration tests.
  * To run locally, use runLocalIntegrationTests Gradle task.

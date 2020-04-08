@@ -7,13 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.util.categories;
 
 /**
- * A category marker for tests for additional local services and special cases
- * reproducible only in the local environment.
+ * A category marker for tests that are meant to be excluded from the Zowe RC testing.
  *
- * These tests will not run by default with other integration tests.
  */
-public interface AdditionalLocalTest {
+public interface TestsNotMeantForZowe {
 }

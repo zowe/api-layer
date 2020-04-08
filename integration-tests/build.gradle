@@ -154,3 +154,19 @@ task runTestWithoutStartupCheck(type: Test) {
 
     outputs.upToDateWhen { false }
 }
+
+task runAllIntegrationTestsForZoweTesting(type: Test) {
+    group "Integration tests"
+    description "Run all integration tests for Zowe testing"
+
+    dependsOn startUpCheck
+    systemProperties System.properties
+    useJUnit {
+        excludeCategories(
+            'org.zowe.apiml.util.categories.StartupCheck',
+            'org.zowe.apiml.util.categories.AdditionalLocalTest',
+            'org.zowe.apiml.util.categories.TestsNotMeantForZowe'
+        )
+    }
+    outputs.upToDateWhen { false }
+}

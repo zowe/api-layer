@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.discoveryservice;
 
+import org.junit.experimental.categories.Category;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import io.restassured.RestAssured;
@@ -138,6 +140,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void testApplicationInfoEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
@@ -149,6 +152,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void testApplicationInfoEndpoints_whenProvidedToken() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
@@ -316,6 +320,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldSeeEurekaReplicasIfRegistered() throws Exception {
         final int instances = discoveryServiceConfiguration.getInstances();
         //@formatter:off

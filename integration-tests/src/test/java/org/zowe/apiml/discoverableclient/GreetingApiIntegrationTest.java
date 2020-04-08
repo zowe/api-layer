@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.discoverableclient;
 
+import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -22,6 +24,7 @@ import static org.junit.Assert.assertThat;
 
 public class GreetingApiIntegrationTest {
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldCallDiscoverableServiceApi() throws Exception {
         // When
         final HttpResponse response = HttpRequestUtils.getResponse("/api/v1/discoverableclient/greeting", SC_OK);
