@@ -62,7 +62,6 @@ public class ApiDocReader {
             throw new ApiDocReaderException("API doc location can't be null or empty");
         }
 
-
         String openAPIJsonContent = getOpenAPIJsonContent(location.trim());
 
         SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(openAPIJsonContent);

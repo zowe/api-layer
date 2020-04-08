@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.apidoc.reader;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.utils.JsonReaderUtil;
 
@@ -67,7 +68,7 @@ public class ApiDocReaderTest {
         String actualOpenApi = apiDocReader.load("api-doc.json");
         String expectedOpenApi = JsonReaderUtil.getJsonStringFromResource("api-doc.json");
 
-        assertNotNull(actualOpenApi,"Open api object is null");
+        assertNotNull(actualOpenApi, "Open api object is null");
         assertEquals(expectedOpenApi, actualOpenApi, "Open api object is not equal with expected");
     }
 
@@ -82,4 +83,10 @@ public class ApiDocReaderTest {
         assertEquals(expectedOpenApi, actualOpenApi, "Open api object is not equal with expected");
     }
 
+    @Test
+    public void load2Test() {
+        OpenAPI actualOpenApi = apiDocReader.load2("api-doc.json ");
+        assertNotNull(actualOpenApi, "Open api object is null");
+        assertEquals("3.0.0", actualOpenApi.getOpenapi(), "Open api object is not equal with expected");
+    }
 }

@@ -30,7 +30,8 @@ import java.util.List;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 public class ApiDocControllerTest {
@@ -58,6 +59,16 @@ public class ApiDocControllerTest {
             .andExpect(jsonPath("$.info.description", is("Service description")))
             .andExpect(jsonPath("$.info.version", is("1.0.0")))
             .andExpect(jsonPath("$.servers[0].url", is("/api/v1/gateway/auth")));
+    }
+
+    @Test
+    public void callApiDoc2Endpoint() throws Exception {
+        Mockito.when(apiDocReader.load2(any())).thenReturn(getDummyOpenApiObject());
+        this.mockMvc.perform(get("/api-doc/test")).andExpect(status().isOk())
+            .andExpect(jsonPath("$.openapi", is("3.0.0")))
+            .andExpect(jsonPath("$.info.title", is("Service title")))
+            .andExpect(jsonPath("$.info.version", is("1.0.0")))
+            .andExpect(jsonPath("$.servers[0].url", is("/api/v1/apicatalog")));
     }
 
     private OpenAPI getDummyOpenApiObject() {
