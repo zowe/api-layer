@@ -27,6 +27,8 @@ public class ByPassSchemeTest {
         assertNull(RequestContext.getCurrentContext().get("AuthenticationSchemeByPass"));
         cmd.apply(null);
         assertEquals(Boolean.TRUE, RequestContext.getCurrentContext().get("AuthenticationSchemeByPass"));
+        assertFalse(cmd.isExpired());
+        assertFalse(cmd.isRequiredValidJwt());
     }
 
 }

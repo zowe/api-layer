@@ -59,7 +59,7 @@ public class RequestInfoController {
         setHeaders(httpServletRequest, out);
         setContent(httpServletRequest, out);
 
-        return out;
+        return out; // NOSONAR
     }
 
     private void setCerts(HttpServletRequest httpServletRequest, RequestInfo requestInfo) throws CertificateEncodingException {

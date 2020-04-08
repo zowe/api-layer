@@ -20,11 +20,13 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.zuul.util.ZuulRuntimeException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -136,6 +138,55 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
         verify(RequestContext.getCurrentContext(), never()).setSendZuulResponse(anyBoolean());
         verify(RequestContext.getCurrentContext(), never()).setResponseStatusCode(anyInt());
         verify(cmd, times(1)).apply(null);
+    }
+
+    @Test
+    public void givenValidJwt_whenCommandFailed_thenInternalError() {
+        String jwtToken = "validJwtToken";
+        AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
+        doThrow(new RuntimeException()).when(cmd).apply(null);
+        doReturn(TokenAuthentication.createAuthenticated("user", jwtToken)).when(authenticationService).validateJwtToken(jwtToken);
+        CounterFactory.initialize(new CounterFactory() {
+            @Override
+            public void increment(String name) {
+            }
+        });
+
+        try {
+            serviceAuthenticationFilter.run();
+            fail();
+        } catch (ZuulRuntimeException zre) {
+            assertTrue(zre.getCause() instanceof ZuulException);
+            ZuulException ze = (ZuulException) zre.getCause();
+            assertEquals(500, ze.nStatusCode);
+        }
+    }
+
+    @Test
+    public void givenExpiredJwt_thenCallThrought() {
+        String jwtToken = "expiredJwtToken";
+        AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
+        doThrow(new TokenExpireException("Token is expired.")).when(authenticationService).validateJwtToken(jwtToken);
+
+        serviceAuthenticationFilter.run();
+
+        verify(RequestContext.getCurrentContext(), never()).setSendZuulResponse(false);
+        verify(RequestContext.getCurrentContext(), never()).setResponseStatusCode(401);
+        verify(cmd, never()).apply(any());
+    }
+
+    @Test
+    public void givenInvalidJwt_whenAuthenticationException_thenReject() {
+        String jwtToken = "unparsableJwtToken";
+        AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
+        AuthenticationException ae = mock(AuthenticationException.class);
+        doThrow(ae).when(authenticationService).validateJwtToken(jwtToken);
+
+        serviceAuthenticationFilter.run();
+
+        verify(RequestContext.getCurrentContext(), times(1)).setSendZuulResponse(false);
+        verify(RequestContext.getCurrentContext(), times(1)).setResponseStatusCode(401);
+        verify(cmd, never()).apply(any());
     }
 
 }

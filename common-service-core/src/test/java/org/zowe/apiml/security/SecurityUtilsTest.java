@@ -16,17 +16,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.Base64;
 import java.util.Set;
 
 import static org.junit.Assert.*;
 
 public class SecurityUtilsTest {
+
     private static final String KEY_ALIAS = "localhost";
     private static final String JWT_KEY_ALIAS = "jwtsecret";
     private static final String WRONG_PARAMETER = "wrong";
@@ -98,14 +97,10 @@ public class SecurityUtilsTest {
     }
 
     @Test
-    public void testLoadKeyStore() {
+    public void testLoadKeyStore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        try {
-            KeyStore keyStore = SecurityUtils.loadKeyStore(httpsConfig);
-            assertTrue(keyStore.size() > 0);
-        } catch (Exception ex) {
-            fail(ex.getMessage());
-        }
+        KeyStore keyStore = SecurityUtils.loadKeyStore(httpsConfig);
+        assertTrue(keyStore.size() > 0);
     }
 
     @Test
@@ -132,36 +127,24 @@ public class SecurityUtilsTest {
     }
 
     @Test
-    public void loadCertificateChainNoKeystore() {
+    public void loadCertificateChainNoKeystore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = HttpsConfig.builder().build();
-        try {
-            Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
-            assertEquals(certificates.length, 0);
-        } catch (Exception ex) {
-            fail(ex.getMessage());
-        }
+        Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
+        assertEquals(certificates.length, 0);
     }
 
     @Test
-    public void loadCertificateChain() {
+    public void loadCertificateChain() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
-        try {
-            Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
-            assertTrue(certificates.length > 0);
-        } catch (Exception ex) {
-            fail(ex.getMessage());
-        }
+        Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
+        assertTrue(certificates.length > 0);
     }
 
     @Test
-    public void loadCertificateChainBase64() {
+    public void loadCertificateChainBase64() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
-        try {
-            Set<String> certificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-            assertFalse(certificatesBase64.isEmpty());
-        } catch (Exception ex) {
-            fail(ex.getMessage());
-        }
+        Set<String> certificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+        assertFalse(certificatesBase64.isEmpty());
     }
 
 }

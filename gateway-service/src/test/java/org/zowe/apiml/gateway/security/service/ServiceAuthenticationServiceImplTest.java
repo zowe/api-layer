@@ -183,6 +183,21 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     }
 
     @Test
+    public void testGetAuthenticationCommand_whenNoJwt() {
+        AbstractAuthenticationScheme schemeBeanMock = mock(AbstractAuthenticationScheme.class);
+        when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET))
+            .thenReturn(schemeBeanMock);
+        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
+
+        serviceAuthenticationService.getAuthenticationCommand(authentication, null);
+
+        verify(schemeBeanMock, times(1)).createCommand(
+            eq(authentication),
+            argThat(x -> x.get() == null)
+        );
+    }
+
+    @Test
     public void testGetAuthenticationCommandByServiceId() {
         AuthenticationCommand ok = new AuthenticationCommandTest(false);
         Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
@@ -318,6 +333,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         assertNull(requestContext.get(AUTHENTICATION_COMMAND_KEY));
         lbac.apply(null);
         assertTrue(requestContext.get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand);
+        assertFalse(lbac.isRequiredValidJwt());
     }
 
     @Test

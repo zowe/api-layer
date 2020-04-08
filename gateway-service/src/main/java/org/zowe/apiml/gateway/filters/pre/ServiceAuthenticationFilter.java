@@ -19,6 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.security.common.token.TokenExpireException;
 
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
@@ -70,6 +71,8 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
                     rejected = true;
                 }
             }
+        } catch (TokenExpireException tee) {
+            cmd = null;
         } catch (AuthenticationException ae) {
             rejected = true;
         } catch (Exception e) {
@@ -82,7 +85,7 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
             context.setSendZuulResponse(false);
             context.setResponseStatusCode(SC_UNAUTHORIZED);
             return null;
-        } else {
+        } else if (cmd != null) {
             try {
                 // Update ZUUL context by authentication schema
                 cmd.apply(null);
