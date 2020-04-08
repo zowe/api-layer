@@ -29,7 +29,7 @@ import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.passTicket.ZaasPassTicketResponse;
+import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
