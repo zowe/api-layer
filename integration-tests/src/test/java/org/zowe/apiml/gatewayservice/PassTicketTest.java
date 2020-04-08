@@ -18,6 +18,9 @@ import org.zowe.apiml.security.common.ticket.TicketRequest;
 import org.zowe.apiml.security.common.ticket.TicketResponse;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
+import org.zowe.apiml.util.config.EnvironmentConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -31,14 +34,18 @@ import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.
 
 @Slf4j
 public class PassTicketTest {
-    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
-        .getScheme();
-    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()
-        .getHost();
-    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration()
-        .getDiscoverableClientConfiguration().getApplId();
+
+    private final static EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
+    private final static GatewayServiceConfiguration GATEWAY_SERVICE_CONFIGURATION =
+        ENVIRONMENT_CONFIGURATION.getGatewayServiceConfiguration();
+    private final static DiscoverableClientConfiguration DISCOVERABLE_CLIENT_CONFIGURATION =
+        ENVIRONMENT_CONFIGURATION.getDiscoverableClientConfiguration();
+
+    private final static String SCHEME = GATEWAY_SERVICE_CONFIGURATION.getScheme();
+    private final static String HOST = GATEWAY_SERVICE_CONFIGURATION.getHost();
+    private final static int PORT = GATEWAY_SERVICE_CONFIGURATION.getPort();
+    private final static String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
+    private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
     private final static String DISCOVERABLECLIENT_PASSTICKET_BASE_PATH = "/api/v1/dcpassticket";
     private final static String DISCOVERABLECLIENT_BASE_PATH = "/api/v1/discoverableclient";
     private final static String PASSTICKET_TEST_ENDPOINT = "/passticketTest";
@@ -56,20 +63,28 @@ public class PassTicketTest {
     @Category(TestsNotMeantForZowe.class)
     public void accessServiceWithCorrectPassTicket() {
         String jwt = gatewayToken();
-        given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when().get(
-            String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
-            .then().statusCode(is(SC_OK));
+        given()
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+        .when()
+            .get(
+                String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, PASSTICKET_TEST_ENDPOINT)
+            )
+        .then()
+            .statusCode(is(SC_OK));
     }
 
     @Test
     @Category(TestsNotMeantForZowe.class)
     public void accessServiceWithIncorrectApplId() {
         String jwt = gatewayToken();
-        given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when()
-            .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH,
-                PASSTICKET_TEST_ENDPOINT))
-            .then().statusCode(is(SC_UNAUTHORIZED))
-            .body("message", containsString("Error on evaluation of PassTicket"));
+        given()
+            .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+        .when()
+            .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL",
+                SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
+            .then()
+                .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+                .body("message", containsString("Error on evaluation of PassTicket"));
     }
 
     //@formatter:off
@@ -280,4 +295,5 @@ public class PassTicketTest {
 
     }
     //@formatter:on
+
 }
