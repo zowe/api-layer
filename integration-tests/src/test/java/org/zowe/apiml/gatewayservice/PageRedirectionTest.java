@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gatewayservice;
 
+import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -62,6 +64,7 @@ public class PageRedirectionTest {
      * Test api instance of staticclient
      */
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void apiRouteOfDiscoverableClient() {
         String apiRelativeUrl = "/api/v1";
         String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, BASE_URL, apiRelativeUrl, "/greeting");
@@ -83,6 +86,7 @@ public class PageRedirectionTest {
      * Test ws instance of staticclient
      */
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
@@ -105,6 +109,7 @@ public class PageRedirectionTest {
      * Test ui instance of staticclient
      */
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
         String uiPrefix = "/ui/v1";

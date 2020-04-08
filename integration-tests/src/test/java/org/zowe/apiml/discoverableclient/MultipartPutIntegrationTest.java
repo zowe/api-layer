@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.discoverableclient;
 
+import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
@@ -35,6 +37,7 @@ public class MultipartPutIntegrationTest {
 
     //@formatter:off
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldDoPutRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
@@ -50,6 +53,7 @@ public class MultipartPutIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldDoPostRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);

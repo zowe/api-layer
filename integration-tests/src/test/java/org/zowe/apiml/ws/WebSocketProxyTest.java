@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.ws;
 
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.categories.WebsocketTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -93,7 +94,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category(WebsocketTest.class)
+    @Category({WebsocketTest.class, TestsNotMeantForZowe.class})
     public void shouldRouteWebSocketSession() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 1);
@@ -108,7 +109,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category(WebsocketTest.class)
+    @Category({WebsocketTest.class, TestsNotMeantForZowe.class})
     public void shouldRouteHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
@@ -126,7 +127,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category(WebsocketTest.class)
+    @Category({WebsocketTest.class, TestsNotMeantForZowe.class})
     public void shouldCloseSessionAfterClientServerCloses() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 2);

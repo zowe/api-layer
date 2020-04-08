@@ -10,7 +10,7 @@
 package org.zowe.apiml.util.categories;
 
 /**
- * A category market for test that should be pass before other integration tests,
+ * A category marker for test that should be pass before other integration tests,
  * to make sure that all services are ready for testing.
  * These tests will run before all other integration tests.
  */

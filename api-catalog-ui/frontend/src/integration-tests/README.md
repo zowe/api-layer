@@ -8,7 +8,7 @@ For our integration tests we use [jest](https://jestjs.io/) as the test runner a
 
 ## How to run the integration tests
 
-To be able to run the tests you need to first run the mocked-backend service (`npm run start:mocked-backend`). 
+To be able to run the tests you need to first run the mocked-backend service (`npm run start:mock`). 
 
 Then run the tests itself (`npm run test:integration`).
 

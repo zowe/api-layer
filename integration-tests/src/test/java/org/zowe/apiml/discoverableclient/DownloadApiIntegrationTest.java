@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.discoverableclient;
 
+import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
@@ -27,6 +29,7 @@ public class DownloadApiIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldSendGetRequestAndDownloadCompressedImage() {
         RestAssured.registerParser("image/png", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/get-file");
