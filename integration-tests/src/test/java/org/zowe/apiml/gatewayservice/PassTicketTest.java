@@ -68,7 +68,7 @@ public class PassTicketTest {
         given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when()
             .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH,
                 PASSTICKET_TEST_ENDPOINT))
-            .then().statusCode(is(SC_INTERNAL_SERVER_ERROR))
+            .then().statusCode(is(SC_UNAUTHORIZED))
             .body("message", containsString("Error on evaluation of PassTicket"));
     }
 

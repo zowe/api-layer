@@ -85,7 +85,7 @@ services:
             serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
       authentication:
           scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
-          applid: TSTAPPL  # APPLID to generate PassTickets for this service
+          applid: ZOWEAPPL  # APPLID to generate PassTickets for this service
       apiInfo:
           - apiId: org.zowe.discoverableclient
             gatewayUrl: api/v1
