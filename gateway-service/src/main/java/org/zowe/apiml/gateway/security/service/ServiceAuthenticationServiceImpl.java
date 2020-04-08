@@ -96,6 +96,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Cacheable(CACHE_BY_AUTHENTICATION)
     public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
+        if (jwtToken == null) return scheme.createCommand(authentication, () -> null);
         return scheme.createCommand(authentication, () -> authenticationService.parseJwtToken(jwtToken));
     }
 
