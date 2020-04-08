@@ -10,7 +10,7 @@
 package org.zowe.apiml.util.categories;
 
 /**
- * A category market for tests that are intentionally slow.
+ * A category marker for tests that are intentionally slow.
  *
  * These tests will not run by default with other integration tests.
  */

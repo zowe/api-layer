@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.discoveryservice.staticdef;
 
+import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
@@ -22,6 +24,7 @@ public class StaticClientRoutingEndpointsTest {
     private static final String STATIC_GREET = "/api/v1/staticclient/greeting";
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldSameResponseAsDynamicService() throws Exception {
         // When
         final HttpResponse response = HttpRequestUtils.getResponse(GREET, SC_OK);
