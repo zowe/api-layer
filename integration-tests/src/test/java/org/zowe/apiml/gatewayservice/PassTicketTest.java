@@ -9,23 +9,23 @@
  */
 package org.zowe.apiml.gatewayservice;
 
-import org.zowe.apiml.security.common.ticket.TicketRequest;
-import org.zowe.apiml.security.common.ticket.TicketResponse;
-import org.zowe.apiml.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
+import org.zowe.apiml.security.common.ticket.TicketRequest;
+import org.zowe.apiml.security.common.ticket.TicketResponse;
+import org.zowe.apiml.util.config.ConfigReader;
 
-import static org.junit.Assert.assertEquals;
-import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
-import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
+import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 
 @Slf4j
 public class PassTicketTest {
@@ -37,7 +37,7 @@ public class PassTicketTest {
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration()
         .getDiscoverableClientConfiguration().getApplId();
-    private final static String STATICCLIENT_BASE_PATH = "/api/v1/staticclient";
+    private final static String DISCOVERABLECLIENT_PASSTICKET_BASE_PATH = "/api/v1/dcpassticket";
     private final static String DISCOVERABLECLIENT_BASE_PATH = "/api/v1/discoverableclient";
     private final static String PASSTICKET_TEST_ENDPOINT = "/passticketTest";
     private final static String TICKET_ENDPOINT = "/api/v1/gateway/auth/ticket";
@@ -54,7 +54,7 @@ public class PassTicketTest {
     public void accessServiceWithCorrectPassTicket() {
         String jwt = gatewayToken();
         given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when().get(
-            String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
+            String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
             .then().statusCode(is(SC_OK));
     }
 
@@ -62,7 +62,7 @@ public class PassTicketTest {
     public void accessServiceWithIncorrectApplId() {
         String jwt = gatewayToken();
         given().cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt).when()
-            .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH,
+            .get(String.format("%s://%s:%d%s%s?applId=XBADAPPL", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH,
                 PASSTICKET_TEST_ENDPOINT))
             .then().statusCode(is(SC_INTERNAL_SERVER_ERROR))
             .body("message", containsString("Error on evaluation of PassTicket"));
@@ -77,10 +77,9 @@ public class PassTicketTest {
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
         .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, STATICCLIENT_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
+            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, DISCOVERABLECLIENT_PASSTICKET_BASE_PATH, PASSTICKET_TEST_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body("messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage));
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     /*
