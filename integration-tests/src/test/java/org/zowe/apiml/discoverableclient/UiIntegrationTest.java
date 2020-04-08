@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.discoverableclient;
 
+import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.apache.http.HttpResponse;
@@ -21,6 +23,7 @@ import static org.junit.Assert.assertThat;
 
 public class UiIntegrationTest {
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldCallDiscoverableUiWithSlashAtPathEnd() throws Exception {
         // Given
         HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient/");
@@ -33,6 +36,7 @@ public class UiIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd() throws Exception {
         // Given
         HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient");
