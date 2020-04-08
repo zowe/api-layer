@@ -10,7 +10,6 @@
 package org.zowe.apiml.gateway.apidoc.reader;
 
 
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import lombok.RequiredArgsConstructor;
@@ -55,23 +54,6 @@ public class ApiDocReader {
         }
 
         return openAPIJsonContent;
-    }
-
-    public OpenAPI load2(String location) {
-        if (location == null || location.isEmpty()) {
-            throw new ApiDocReaderException("API doc location can't be null or empty");
-        }
-
-        String openAPIJsonContent = getOpenAPIJsonContent(location.trim());
-
-        SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(openAPIJsonContent);
-        OpenAPI openAPI = parseResult.getOpenAPI();
-        if (openAPI == null) {
-            log.debug("Could not convert response body to an OpenAPI object");
-            throw new ApiDocReaderException("OpenAPI content is not valid");
-        }
-
-        return openAPI;
     }
 
     private boolean isValidOpenApi3Content(String openAPIJsonContent) {

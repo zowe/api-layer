@@ -61,16 +61,6 @@ public class ApiDocControllerTest {
             .andExpect(jsonPath("$.servers[0].url", is("/api/v1/gateway/auth")));
     }
 
-    @Test
-    public void callApiDoc2Endpoint() throws Exception {
-        Mockito.when(apiDocReader.load2(any())).thenReturn(getDummyOpenApiObject());
-        this.mockMvc.perform(get("/api-doc/test")).andExpect(status().isOk())
-            .andExpect(jsonPath("$.openapi", is("3.0.0")))
-            .andExpect(jsonPath("$.info.title", is("Service title")))
-            .andExpect(jsonPath("$.info.version", is("1.0.0")))
-            .andExpect(jsonPath("$.servers[0].url", is("/api/v1/apicatalog")));
-    }
-
     private OpenAPI getDummyOpenApiObject() {
         List<Server> servers = new ArrayList<>();
         servers.add(0, new Server().url("/api/v1/apicatalog"));

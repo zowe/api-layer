@@ -27,14 +27,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class SecuritySchemeSerializerTest {
 
     @Test
-    void serialize() throws IOException {
+    void givenSecurityScheme_whenItIsSerializingToJson_thenEnumTypesShouldPrintedLowercase() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
 
         Writer jsonWriter = new StringWriter();
         JsonGenerator jsonGenerator = new JsonFactory().createGenerator(jsonWriter);
-        jsonGenerator.setCodec(new ObjectMapper());
-        SerializerProvider provider = new ObjectMapper().getSerializerProvider();
+        jsonGenerator.setCodec(objectMapper);
+
+        SerializerProvider provider = objectMapper.getSerializerProvider();
+
         new SecuritySchemeSerializer().serialize(getDummyScheme(), jsonGenerator, provider);
         jsonGenerator.flush();
+
         assertEquals("{\"type\":\"http\",\"description\":\"desc\",\"name\":\"name\",\"$ref\":\"#/components/securitySchemes/ref\",\"in\":\"cookie\",\"scheme\":\"scheme\",\"bearerFormat\":\"format\",\"flows\":{},\"openIdConnectUrl\":\"url\",\"extensions\":{}}", jsonWriter.toString());
     }
 
