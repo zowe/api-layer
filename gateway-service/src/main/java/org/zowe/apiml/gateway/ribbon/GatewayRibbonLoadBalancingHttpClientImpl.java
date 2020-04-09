@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
-import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
-import org.zowe.apiml.util.CacheUtils;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.IClientConfig;
@@ -39,14 +36,17 @@ import org.springframework.cloud.netflix.ribbon.apache.RibbonApacheHttpResponse;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.util.CacheUtils;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 
-import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecureConnectionIfNeeded;
+import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @Slf4j
 public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancingHttpClient implements GatewayRibbonLoadBalancingHttpClient {
@@ -67,19 +67,19 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
     /**
      * Ribbon load balancer
      *
-     * @param secureHttpClientWithoutKeystore   custom http client for our certificates
+     * @param apimlCloseableHttpClient   custom http client for our certificates (depends on sign in original request)
      * @param config             configuration details
      * @param serverIntrospector introspector
      */
     public GatewayRibbonLoadBalancingHttpClientImpl(
-        CloseableHttpClient secureHttpClientWithoutKeystore,
+        CloseableHttpClient apimlCloseableHttpClient,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
         EurekaClient discoveryClient,
         CacheManager cacheManager,
         ApplicationContext applicationContext
     ) {
-        super(secureHttpClientWithoutKeystore, config, serverIntrospector);
+        super(apimlCloseableHttpClient, config, serverIntrospector);
         this.discoveryClient = discoveryClient;
         this.cacheManager = cacheManager;
         this.applicationContext = applicationContext;
@@ -221,7 +221,8 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
 
             @Override
             public void onStartWithServer(ExecutionContext<Object> context, ExecutionInfo info) {
-                final AuthenticationCommand cmd = (AuthenticationCommand) RequestContext.getCurrentContext().get(AUTHENTICATION_COMMAND_KEY);
+                final RequestContext requestContext = RequestContext.getCurrentContext();
+                final AuthenticationCommand cmd = (AuthenticationCommand) requestContext.get(AUTHENTICATION_COMMAND_KEY);
                 if (cmd != null) {
                     // in context is a command, it means update of authentication is waiting for select an instance
                     final Server.MetaInfo metaInfo = info.getServer().getMetaInfo();
@@ -249,6 +250,7 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
             public void onExecutionFailed(ExecutionContext<Object> context, Throwable finalException, ExecutionInfo info) {
                 // dont needed yet
             }
+
         }));
         builder.withExecutionContext(new ExecutionContext<Object>(request, config, config, null));
     }
