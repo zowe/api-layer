@@ -64,9 +64,8 @@ public class ApimlCloseableHttpClientConfig {
 
                 if (authentication == null) return false;
                 if (!(authentication.getCredentials() instanceof X509Certificate)) return false;
-                if (!authentication.isAuthenticated()) return false;
 
-                return true;
+                return authentication.isAuthenticated();
             }
 
             private CloseableHttpClient getCloseableHttpClient() {

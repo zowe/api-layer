@@ -66,10 +66,11 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
             cmd = serviceAuthenticationService.getAuthenticationCommand(serviceId, jwtToken);
 
             // Verify JWT validity if it is required for the schema
-            if ((jwtToken != null) && cmd.isRequiredValidJwt()) {
-                if (!authenticationService.validateJwtToken(jwtToken).isAuthenticated()) {
+            if (
+                (jwtToken != null) && cmd.isRequiredValidJwt() &&
+                !authenticationService.validateJwtToken(jwtToken).isAuthenticated()
+            ) {
                     rejected = true;
-                }
             }
         } catch (TokenExpireException tee) {
             cmd = null;
@@ -84,7 +85,6 @@ public class ServiceAuthenticationFilter extends ZuulFilter {
         if (rejected) {
             context.setSendZuulResponse(false);
             context.setResponseStatusCode(SC_UNAUTHORIZED);
-            return null;
         } else if (cmd != null) {
             try {
                 // Update ZUUL context by authentication schema

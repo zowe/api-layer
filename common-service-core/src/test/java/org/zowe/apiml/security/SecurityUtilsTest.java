@@ -130,7 +130,7 @@ public class SecurityUtilsTest {
     public void loadCertificateChainNoKeystore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = HttpsConfig.builder().build();
         Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
-        assertEquals(certificates.length, 0);
+        assertEquals(0, certificates.length);
     }
 
     @Test
