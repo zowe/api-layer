@@ -8,12 +8,6 @@ package org.zowe.apiml.gateway.ribbon;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.gateway.security.service.AuthenticationException;
-import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
@@ -28,6 +22,9 @@ import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import com.netflix.zuul.context.RequestContext;
 import lombok.Getter;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +37,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,8 +52,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
@@ -79,6 +81,11 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
         Application out = mock(Application.class);
         when(out.getInstances()).thenReturn(Arrays.asList(instanceInfos));
         return out;
+    }
+
+    @AfterEach
+    public void tearDown() {
+        RequestContext.testSetCurrentContext(null);
     }
 
     @Test
@@ -154,7 +161,7 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
             listener.onStartWithServer(context, info);
             fail();
         } catch (ExecutionListener.AbortExecutionException e) {
-            assertTrue(e.getCause() instanceof AuthenticationException);
+            assertTrue(e.getCause() instanceof PassTicketException);
             assertEquals("Test exception", e.getCause().getMessage());
         }
 
@@ -233,6 +240,10 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
             return false;
         }
 
+        @Override
+        public boolean isRequiredValidJwt() {
+            return false;
+        }
     }
 
     class TestAuthenticationCommand2 extends AuthenticationCommand {
@@ -240,12 +251,17 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
         private static final long serialVersionUID = 3708128389148113917L;
 
         @Override
-        public void apply(InstanceInfo instanceInfo) throws AuthenticationException {
-            throw new AuthenticationException("Test exception", null);
+        public void apply(InstanceInfo instanceInfo) {
+            throw new PassTicketException("Test exception", null);
         }
 
         @Override
         public boolean isExpired() {
+            return false;
+        }
+
+        @Override
+        public boolean isRequiredValidJwt() {
             return false;
         }
 
@@ -277,17 +293,17 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
     public static class Context {
 
         @Bean
-        public EurekaClient getDiscoveryClient() {
+        public EurekaClient discoveryClient() {
             return mock(EurekaClient.class);
         }
 
         @Bean
-        public CloseableHttpClient getSecureHttpClient() {
+        public CloseableHttpClient secureHttpClient() {
             return mock(CloseableHttpClient.class);
         }
 
         @Bean
-        public IClientConfig getConfig() {
+        public IClientConfig config() {
             return  IClientConfig.Builder.newBuilder(DefaultClientConfigImpl.class, "apicatalog")
                 .withSecure(false)
                 .withFollowRedirects(false)
@@ -297,8 +313,13 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
         }
 
         @Bean
-        public ServerIntrospector getServerIntrospector() {
+        public ServerIntrospector serverIntrospector() {
             return mock(ServerIntrospector.class);
+        }
+
+        @Bean
+        public AuthenticationService authenticationService() {
+            return mock(AuthenticationService.class);
         }
 
         @Bean
@@ -308,9 +329,14 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
             ServerIntrospector serverIntrospector,
             EurekaClient discoveryClient,
             CacheManager cacheManager,
+            AuthenticationService authenticationService,
             ApplicationContext applicationContext
         ) {
-            return new GatewayRibbonLoadBalancingHttpClientImplTestBean(secureHttpClient, config, serverIntrospector, discoveryClient, cacheManager, applicationContext);
+            return new GatewayRibbonLoadBalancingHttpClientImplTestBean(
+                secureHttpClient, config, serverIntrospector,
+                discoveryClient, cacheManager, authenticationService,
+                applicationContext
+            );
         }
 
     }
@@ -331,8 +357,15 @@ public class GatewayRibbonLoadBalancingHttpClientImplTest {
          * @param serverIntrospector introspector
          * @param discoveryClient    using discovery client
          */
-        public GatewayRibbonLoadBalancingHttpClientImplTestBean(CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector, EurekaClient discoveryClient, CacheManager cacheManager, ApplicationContext applicationContext) {
-            super(secureHttpClient, config, serverIntrospector, discoveryClient, cacheManager, applicationContext);
+        public GatewayRibbonLoadBalancingHttpClientImplTestBean(
+            CloseableHttpClient secureHttpClient, IClientConfig config, ServerIntrospector serverIntrospector,
+            EurekaClient discoveryClient, CacheManager cacheManager, AuthenticationService authenticationService,
+            ApplicationContext applicationContext
+        ) {
+            super(
+                secureHttpClient, config, serverIntrospector,
+                discoveryClient, cacheManager, applicationContext
+            );
         }
 
         @Override

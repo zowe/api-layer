@@ -9,10 +9,10 @@
  */
 package org.zowe.apiml.security;
 
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,9 +23,7 @@ import java.net.URL;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Enumeration;
+import java.util.*;
 
 @Slf4j
 @UtilityClass
@@ -71,7 +69,7 @@ public class SecurityUtils {
             try {
                 KeyStore ks = loadKeyStore(config);
                 char[] keyPasswordInChars = config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray();
-                Key key = null;
+                final Key key;
                 if (config.getKeyAlias() != null) {
                     key = ks.getKey(config.getKeyAlias(), keyPasswordInChars);
                 } else {
@@ -86,6 +84,44 @@ public class SecurityUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Return certificate chain of certificate using to sing of HTTPS communication (certificate stored in keystore,
+     * under keyAlias, both values are determinated via config)
+     * @param config defines path to KeyStore and key alias
+     * @return chain of certificates loaded from Keystore to alias keyAlias from HttpsConfig
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     * @throws IOException
+     */
+    public static Certificate[] loadCertificateChain(HttpsConfig config) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        if (config.getKeyStore() != null) {
+            KeyStore ks = loadKeyStore(config);
+            return ks.getCertificateChain(config.getKeyAlias());
+        }
+        return new Certificate[0];
+    }
+
+    /**
+     * Method load certification chain from KeyStore for KeyAlias stored in the HttpsConfig. Then it takes public keys
+     * and convert them into Base64 code and return them as a Set.
+     * @param config defines path to KeyStore and key alias
+     * @return Base64 codes of all public certificates determinated for KeyAlias in KeyStore
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     * @throws IOException
+     */
+    public static Set<String> loadCertificateChainBase64(HttpsConfig config) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        final Set<String> out = new HashSet<>();
+        for (Certificate certificate : loadCertificateChain(config)) {
+            final byte[] certificateEncoded = certificate.getPublicKey().getEncoded();
+            final String base64 = Base64.getEncoder().encodeToString(certificateEncoded);
+            out.add(base64);
+        }
+        return out;
     }
 
     private static Key findFirstSecretKey(KeyStore keyStore, char[] keyPasswordInChars) throws KeyStoreException, NoSuchAlgorithmException {

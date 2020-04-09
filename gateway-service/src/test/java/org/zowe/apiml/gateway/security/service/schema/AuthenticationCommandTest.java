@@ -17,9 +17,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class AuthenticationCommandTest {
 
     @Test
-    public void testEmptyCommand() throws Exception {
+    public void testEmptyCommand() {
         assertFalse(AuthenticationCommand.EMPTY.isExpired());
         AuthenticationCommand.EMPTY.apply(null);
+    }
+
+    @Test
+    public void testIsRequiredValidJwt() {
+        assertFalse(AuthenticationCommand.EMPTY.isRequiredValidJwt());
     }
 
 }

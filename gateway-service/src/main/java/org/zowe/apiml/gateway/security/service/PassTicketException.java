@@ -9,10 +9,14 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-public class AuthenticationException extends Exception {
+import org.springframework.security.core.AuthenticationException;
+
+public class PassTicketException extends AuthenticationException {
+
     private static final long serialVersionUID = -5152411541425940337L;
 
-    public AuthenticationException(String message, Throwable cause) {
+    public PassTicketException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

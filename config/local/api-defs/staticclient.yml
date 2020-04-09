@@ -52,12 +52,51 @@ services:
           gatewayUrl: api/v1
           version: 1.0.0
 
+    - serviceId: dcbypass  # unique lowercase ID of the service
+      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+      title: Discoverable client with by pass authentication scheme  # Title of the service in the API catalog
+      description: Define service to test by pass authentication schema for integration tests.
+      instanceBaseUrls:  # list of base URLs for each instance
+          - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+      homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
+      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+      routes:
+          - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+            serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
+      authentication:
+          scheme: bypass
+      apiInfo:
+          - apiId: org.zowe.discoverableclient
+            gatewayUrl: api/v1
+            version: 1.0.0
+
+    - serviceId: dcpassticket  # unique lowercase ID of the service
+      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+      title: Discoverable client with passTicket authentication scheme  # Title of the service in the API catalog
+      description: Define service to test passTicket authentication schema for integration tests.
+      instanceBaseUrls:  # list of base URLs for each instance
+          - https://localhost:10012/discoverableclient  # scheme://hostname:port/contextPath
+      homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
+      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+      routes:
+          - gatewayUrl: api/v1  # [api/ui/ws]/v{majorVersion}
+            serviceRelativeUrl: /api/v1 # relativePath that is added to baseUrl of an instance
+      authentication:
+          scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
+          applid: ZOWEAPPL  # APPLID to generate PassTickets for this service
+      apiInfo:
+          - apiId: org.zowe.discoverableclient
+            gatewayUrl: api/v1
+            version: 1.0.0
+
 # Additional metadata that will be added to existing dynamically registered services:
 additionalServiceMetadata:
     - serviceId: staticclient  # The staticclient service metadata will be extended
       mode: UPDATE # How to update UPDATE=only missing, FORCE_UPDATE=update all set values
       authentication:
-        scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
+        scheme: bypass  # This service expects credentials in HTTP basic scheme with a PassTicket
         applid: TSTAPPL  # APPLID to generate PassTickets for this service
 
 # List of tiles that can be used by services defined in the YAML file:
