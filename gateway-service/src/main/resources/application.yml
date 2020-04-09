@@ -158,7 +158,7 @@ eureka:
                 routes:
                     api_v1:
                         gatewayUrl: /api/v1
-                        serviceUrl: /
+                        serviceUrl: /gateway
                 apiInfo:
                     - apiId: org.zowe.apiml.gateway
                       gatewayUrl: api/v1

@@ -52,8 +52,8 @@ public class GatewayNotifier implements Runnable {
 
     public static final String GATEWAY_SERVICE_ID = CoreService.GATEWAY.getServiceId().toUpperCase();
 
-    private static final String DISTRIBUTE_PATH = "/auth/distribute/";
-    private static final String CACHE_PATH = "/cache/services";
+    private static final String DISTRIBUTE_PATH = "/gateway/auth/distribute/";
+    private static final String CACHE_PATH = "/gateway/cache/services";
 
     private final ApimlLogger logger;
 
