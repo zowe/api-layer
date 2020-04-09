@@ -34,14 +34,17 @@ public class AuthProviderInitializer {
     private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
 
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
+    private final CertificateAuthenticationProvider certificateAuthenticationProvider;
 
     public AuthProviderInitializer(DummyAuthenticationProvider dummyAuthenticationProvider,
                                    ZosmfAuthenticationProvider zosmfAuthenticationProvider,
                                    TokenAuthenticationProvider tokenAuthenticationProvider,
+                                   CertificateAuthenticationProvider certificateAuthenticationProvider,
                                    @Value("${apiml.security.auth.provider:zosmf}") String authProvider) {
         this.dummyAuthenticationProvider = dummyAuthenticationProvider;
         this.zosmfAuthenticationProvider = zosmfAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;
+        this.certificateAuthenticationProvider = certificateAuthenticationProvider;
         this.authProvider = authProvider;
     }
 
@@ -61,6 +64,7 @@ public class AuthProviderInitializer {
             auth.authenticationProvider(dummyAuthenticationProvider);
         }
         auth.authenticationProvider(tokenAuthenticationProvider);
+        auth.authenticationProvider(certificateAuthenticationProvider);
     }
 
     /**
