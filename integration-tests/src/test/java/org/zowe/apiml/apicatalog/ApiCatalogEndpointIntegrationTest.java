@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.apicatalog;
 
+import org.junit.experimental.categories.Category;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
@@ -100,6 +102,7 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
+    @Category(TestsNotMeantForZowe.class)
     public void whenDiscoveryClientApiDoc_thenResponseOK() throws Exception {
         final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 

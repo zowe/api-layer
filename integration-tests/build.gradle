@@ -44,6 +44,8 @@ dependencies {
     testCompile libraries.jackson_dataformat_yaml
     testCompile libraries.javax_servlet_api
     testCompile libraries.nimbusJoseJwt
+    runtime libraries.jjwt_impl
+    runtime libraries.jjwt_jackson
 }
 
 jar {
@@ -151,5 +153,21 @@ task runTestWithoutStartupCheck(type: Test) {
 
     systemProperties System.properties
 
+    outputs.upToDateWhen { false }
+}
+
+task runAllIntegrationTestsForZoweTesting(type: Test) {
+    group "Integration tests"
+    description "Run all integration tests for Zowe testing"
+
+    dependsOn startUpCheck
+    systemProperties System.properties
+    useJUnit {
+        excludeCategories(
+            'org.zowe.apiml.util.categories.StartupCheck',
+            'org.zowe.apiml.util.categories.AdditionalLocalTest',
+            'org.zowe.apiml.util.categories.TestsNotMeantForZowe'
+        )
+    }
     outputs.upToDateWhen { false }
 }
