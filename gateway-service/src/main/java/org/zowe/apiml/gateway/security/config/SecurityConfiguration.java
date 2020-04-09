@@ -97,8 +97,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
-            .and()
-            .x509()
+            .and().x509()
                 .x509AuthenticationFilter(apimlX509AuthenticationFilter())
                 .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
                 .userDetailsService(x509UserDetailsService())
@@ -127,15 +126,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
-            .and()
-            .x509().userDetailsService(x509UserDetailsService())
+            .and().x509()
+                .x509AuthenticationFilter(apimlX509AuthenticationFilter())
+                .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                .userDetailsService(x509UserDetailsService())
 
             // cache controller
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
-            .and()
-            .x509().userDetailsService(x509UserDetailsService())
+            .and().x509()
+                .x509AuthenticationFilter(apimlX509AuthenticationFilter())
+                .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                .userDetailsService(x509UserDetailsService())
 
             // add filters - login, query, ticket
             .and()
