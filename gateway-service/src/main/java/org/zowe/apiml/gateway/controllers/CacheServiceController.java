@@ -29,7 +29,7 @@ import java.util.List;
 @RequestMapping(CacheServiceController.CONTROLLER_PATH)
 public class CacheServiceController {
 
-    public static final String CONTROLLER_PATH = "/gateway/cache/services";
+    public static final String CONTROLLER_PATH = "/gateway/cache/services";  // NOSONAR: URL is always using / to separate path segments
 
     private final List<ServiceCacheEvict> toEvict;
     private final ApimlDiscoveryClient discoveryClient;
