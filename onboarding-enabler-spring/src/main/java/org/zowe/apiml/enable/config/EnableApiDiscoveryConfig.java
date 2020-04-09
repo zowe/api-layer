@@ -56,7 +56,7 @@ public class EnableApiDiscoveryConfig {
             }
         } else {
             if (eurekaClientConfigProvider != null) {
-                return new ApiMediationClientImpl(new DiscoveryClientProvider());
+                return new ApiMediationClientImpl(new DiscoveryClientProvider(), eurekaClientConfigProvider);
             } else {
                 return new ApiMediationClientImpl();
             }
