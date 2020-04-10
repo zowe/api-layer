@@ -59,6 +59,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         "/application"
     };
 
+    private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
+
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
     private final AuthConfigurationProperties authConfigurationProperties;
@@ -99,7 +101,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
             .and().x509()
                 .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(x509UserDetailsService())
 
             // logout endpoint
@@ -128,7 +130,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
             .and().x509()
                 .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(x509UserDetailsService())
 
             // cache controller
@@ -137,7 +139,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
             .and().x509()
                 .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex("CN=(.*?)(?:,|$)")
+                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(x509UserDetailsService())
 
             // add filters - login, query, ticket
