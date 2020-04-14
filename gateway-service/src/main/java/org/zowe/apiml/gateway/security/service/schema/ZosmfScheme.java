@@ -25,6 +25,7 @@ import org.zowe.apiml.util.CookieUtil;
 
 import java.util.Date;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * This bean provide LTPA token into request. It get LTPA from JWT token (value is set on logon) and distribute it as
@@ -43,8 +44,9 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) {
-        final Date expiration = token == null ? null : token.getExpiration();
+    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> tokenSupplier) {
+        final QueryResponse queryResponse = tokenSupplier.get();
+        final Date expiration = queryResponse == null ? null : queryResponse.getExpiration();
         final Long expirationTime = expiration == null ? null : expiration.getTime();
         return new ZosmfCommand(expirationTime);
     }
@@ -112,6 +114,12 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
             return System.currentTimeMillis() > expireAt;
         }
+
+        @Override
+        public boolean isRequiredValidJwt() {
+            return true;
+        }
+
     }
 
 }

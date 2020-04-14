@@ -126,9 +126,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage));
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test
@@ -142,9 +140,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", containsString(expectedMessage));
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test

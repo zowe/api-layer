@@ -9,10 +9,12 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.springframework.stereotype.Component;
+
+import java.util.function.Supplier;
 
 @Component
 public class ZoweJwtScheme implements AbstractAuthenticationScheme {
@@ -23,7 +25,7 @@ public class ZoweJwtScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) {
+    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
         return AuthenticationCommand.EMPTY;
     }
 
