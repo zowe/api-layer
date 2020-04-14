@@ -121,7 +121,7 @@ public abstract class AbstractApiDocService<T, N> {
         } else {
             String gatewayUrl = apiInfo.getGatewayUrl();
             RoutedService route = apiDocInfo.getRoutes().findServiceByGatewayUrl(gatewayUrl);
-            if (endPoint.toLowerCase().startsWith(route.getServiceUrl())) {
+            if ((route != null) && endPoint.toLowerCase().startsWith(route.getServiceUrl())) {
                 return route;
             } else {
                 return null;
