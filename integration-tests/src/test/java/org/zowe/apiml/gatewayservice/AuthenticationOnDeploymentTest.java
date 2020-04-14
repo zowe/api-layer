@@ -34,6 +34,13 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
  * This test requires to allow endpoint routes on gateway (ie profile dev)
+ *
+ * Instance settings
+ * - gateway-service.yml
+ *  - apiml.security.auth.provider = dummy
+ * - environment-configuration.yml
+ *  - credentials.user = user
+ *  - credentials.password = user
  */
 @RunWith(JUnit4.class)
 @Category(AdditionalLocalTest.class)
