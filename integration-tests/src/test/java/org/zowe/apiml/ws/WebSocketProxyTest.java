@@ -9,15 +9,9 @@
  */
 package org.zowe.apiml.ws;
 
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.categories.WebsocketTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.http.HttpClientUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -25,6 +19,11 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.categories.WebsocketTest;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.http.HttpClientUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,7 +41,7 @@ public class WebSocketProxyTest {
     private final static String UPPERCASE_URL = "/ws/v1/discoverableclient/uppercase";
     private final static String HEADER_URL = "/ws/v1/discoverableclient/header";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     }
@@ -94,7 +93,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category({WebsocketTest.class, TestsNotMeantForZowe.class})
+    @WebsocketTest @TestsNotMeantForZowe
     public void shouldRouteWebSocketSession() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 1);
@@ -109,7 +108,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category({WebsocketTest.class, TestsNotMeantForZowe.class})
+    @WebsocketTest @TestsNotMeantForZowe
     public void shouldRouteHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
@@ -127,7 +126,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category({WebsocketTest.class, TestsNotMeantForZowe.class})
+    @WebsocketTest @TestsNotMeantForZowe
     public void shouldCloseSessionAfterClientServerCloses() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 2);
@@ -141,7 +140,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category(WebsocketTest.class)
+    @WebsocketTest
     public void shouldFailIfPathIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL + "bad"), response, 1);
@@ -155,7 +154,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category(WebsocketTest.class)
+    @WebsocketTest
     public void shouldFailIfServiceIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(
@@ -170,7 +169,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @Category(WebsocketTest.class)
+    @WebsocketTest
     public void shouldFailIfUrlFormatIsNotCorrent() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), response, 1);

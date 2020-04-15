@@ -65,8 +65,8 @@ task startUpCheck(type: Test) {
     description "Check that the API Mediation Layer is up and runnig"
 
     systemProperties System.properties
-    useJUnit {
-        includeCategories 'org.zowe.apiml.util.categories.StartupCheck'
+    useJUnitPlatform {
+        includeTags 'StartupCheck'
     }
     outputs.upToDateWhen { false }
 }
@@ -76,8 +76,8 @@ task runWebsocketTests(type: Test) {
     description "Runs tests for WebSockets"
 
     systemProperties System.properties
-    useJUnit {
-        includeCategories 'org.zowe.apiml.util.categories.WebsocketTest'
+    useJUnitPlatform {
+        includeTags 'WebsocketTest'
     }
     outputs.upToDateWhen { false }
 }
@@ -88,11 +88,11 @@ task runIntegrationTests(type: Test) {
 
     dependsOn startUpCheck
     systemProperties System.properties
-    useJUnit {
-        excludeCategories(
-            'org.zowe.apiml.util.categories.StartupCheck',
-            'org.zowe.apiml.util.categories.SlowTests',
-            'org.zowe.apiml.util.categories.AdditionalLocalTest'
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'SlowTests',
+            'AdditionalLocalTest'
         )
     }
 }
@@ -103,12 +103,12 @@ task runLocalIntegrationTests(type: Test) {
 
     dependsOn startUpCheck
     systemProperties System.getProperties()
-    useJUnit {
-        excludeCategories(
-            'org.zowe.apiml.util.categories.StartupCheck',
-            'org.zowe.apiml.util.categories.SlowTests',
-            'org.zowe.apiml.util.categories.MainframeDependentTests',
-            'org.zowe.apiml.util.categories.AdditionalLocalTest'
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'SlowTests',
+            'MainframeDependentTests',
+            'AdditionalLocalTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -120,11 +120,11 @@ task runAllLocalIntegrationTests(type: Test) {
 
     dependsOn startUpCheck
     systemProperties System.getProperties()
-    useJUnit {
-        excludeCategories(
-            'org.zowe.apiml.util.categories.StartupCheck',
-            'org.zowe.apiml.util.categories.SlowTests',
-            'org.zowe.apiml.util.categories.MainframeDependentTests'
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'SlowTests',
+            'MainframeDependentTests'
         )
     }
     outputs.upToDateWhen { false }
@@ -136,10 +136,10 @@ task runAllIntegrationTests(type: Test) {
 
     dependsOn startUpCheck
     systemProperties System.properties
-    useJUnit {
-        excludeCategories(
-            'org.zowe.apiml.util.categories.StartupCheck',
-            'org.zowe.apiml.util.categories.AdditionalLocalTest'
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'AdditionalLocalTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -162,11 +162,11 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
 
     dependsOn startUpCheck
     systemProperties System.properties
-    useJUnit {
-        excludeCategories(
-            'org.zowe.apiml.util.categories.StartupCheck',
-            'org.zowe.apiml.util.categories.AdditionalLocalTest',
-            'org.zowe.apiml.util.categories.TestsNotMeantForZowe'
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe'
         )
     }
     outputs.upToDateWhen { false }

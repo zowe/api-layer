@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.apicatalog;
 
-import org.zowe.apiml.gatewayservice.SecurityUtils;
-import org.zowe.apiml.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.config.ConfigReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +36,7 @@ public class ApiCatalogHttpHeadersIntegrationTest {
     private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     private final static String COOKIE = "apimlAuthenticationToken";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }
