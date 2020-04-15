@@ -1,9 +1,9 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "description": "REST API for the API Gateway service, which is a component of the API\nMediation Layer. Use this API to perform tasks such as logging in with the\nmainframe credentials and checking authorization to mainframe resources.",
-        "version": "1.3.0",
-        "title": "API Gateway"
+        "description": "Service description",
+        "version": "1.0.0",
+        "title": "Service title"
     },
     "tags": [
         {

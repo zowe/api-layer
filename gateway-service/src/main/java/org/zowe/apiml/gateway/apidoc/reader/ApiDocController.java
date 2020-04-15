@@ -10,8 +10,8 @@
 
 package org.zowe.apiml.gateway.apidoc.reader;
 
-import io.swagger.v3.oas.models.OpenAPI;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,8 +25,8 @@ public class ApiDocController {
 
     private final ApiDocReader apiDocReader;
 
-    @GetMapping
-    public OpenAPI getApiDoc() {
+    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String getApiDoc() {
         return apiDocReader.load(API_DOC_LOCATION);
     }
 }
