@@ -10,18 +10,21 @@
 
 package org.zowe.apiml.gateway.security.service;
 
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.RSAKey;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
-import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.security.Key;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 
 
 @Service
@@ -78,4 +81,10 @@ public class JwtSecurityInitializer {
     public PublicKey getJwtPublicKey() {
         return jwtPublicKey;
     }
+
+    public JWK getJwkPublicKey() {
+         final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) jwtPublicKey).build();
+         return rsaKey.toPublicJWK();
+    }
+
 }
