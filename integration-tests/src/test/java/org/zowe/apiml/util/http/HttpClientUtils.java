@@ -9,17 +9,16 @@
  */
 package org.zowe.apiml.util.http;
 
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import javax.net.ssl.SSLContext;
-
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;

@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.util.http;
 
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.io.IOException;
 import java.net.URI;

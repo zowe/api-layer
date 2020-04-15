@@ -9,13 +9,6 @@
  */
 package org.zowe.apiml.apicatalog;
 
-import org.junit.experimental.categories.Category;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.http.HttpClientUtils;
-import org.zowe.apiml.util.http.HttpRequestUtils;
-import org.zowe.apiml.util.http.HttpSecurityUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
@@ -26,8 +19,14 @@ import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.http.HttpClientUtils;
+import org.zowe.apiml.util.http.HttpRequestUtils;
+import org.zowe.apiml.util.http.HttpSecurityUtils;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -45,7 +44,7 @@ public class ApiCatalogEndpointIntegrationTest {
 
     private String baseHost;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String host = gatewayServiceConfiguration.getHost();
@@ -102,7 +101,7 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
-    @Category(TestsNotMeantForZowe.class)
+    @TestsNotMeantForZowe
     public void whenDiscoveryClientApiDoc_thenResponseOK() throws Exception {
         final HttpResponse response = getResponse(GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 

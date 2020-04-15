@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.gatewayservice;
 
-import org.zowe.apiml.util.config.ConfigReader;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
+import org.zowe.apiml.util.config.ConfigReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
@@ -42,7 +43,7 @@ public class GatewaySecurityTest {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }

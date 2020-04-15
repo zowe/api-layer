@@ -14,9 +14,8 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import io.restassured.RestAssured;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
@@ -32,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@Category(MainframeDependentTests.class)
+@MainframeDependentTests
 public class PublicKeyIntegrationTest {
 
     private final static String ALL_PUBLIC_KEY_ENDPOINT = "/api/v1/gateway/auth/keys/public/all";
@@ -44,7 +43,7 @@ public class PublicKeyIntegrationTest {
     private final static int GATEWAY_PORT = SERVICE_CONFIGURATION.getPort();
     private final static String GATEWAY_URL = String.format("%s://%s:%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());

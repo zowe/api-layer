@@ -11,11 +11,8 @@ package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
@@ -42,15 +39,14 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  *  - credentials.user = user
  *  - credentials.password = user
  */
-@RunWith(JUnit4.class)
-@Category(AdditionalLocalTest.class)
+@AdditionalLocalTest
 public class AuthenticationOnDeploymentTest {
 
     private static final int TIMEOUT = 100;
 
     private RequestVerifier verifier;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
