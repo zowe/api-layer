@@ -2,33 +2,21 @@
 
 - [zaas-client](#zaas-client)
   - [Introduction](#introduction)
-  - [Pre-requisites](#pre-requisites)
-    - [Getting Started](#getting-started)
   - [Functionalities of `zaas-client`](#functionalities-of-zaas-client)
+  - [Pre-requisites](#pre-requisites)
+  - [Getting Started(Step by Step Instruction)](#getting-started)
   - [Commands to Set Up PassTickets for Your Service](#commands-to-set-up-passtickets-for-your-service)
 
 ## Introduction
 
 This is a native java library developed on the top of API ML login, query and pass ticket API. It is developed with apache http Client version 4.5.11.
 
-## Pre-requisites
+## Functionalities of zaas-client
 
-- Java SDK version 1.8.
-- The Gateway Service of API ML should be up and running as a service.
-- A property file which defines the keystore or truststore certificates.
-
-### Getting Started
-
-To use this library use the procedure described in this article.
-
-**Follow these steps:**
-
-1. Create your API (or RestController, in case of Spring API) for login, query and pass ticket.
-
-2. Add the zaas-client as a dependency in your project. This library provides you the following interface:
+This java library provides you the `ZaasClient` interface:
 
     ```java
-    public interface TokenService {
+    public interface ZaasClient {
         static String COOKIE_PREFIX = "apimlAuthenticationToken";
         void init(ConfigProperties configProperties);
         String login(String userId, String password) throws ZaasClientException;
@@ -38,32 +26,11 @@ To use this library use the procedure described in this article.
     }
     ```
 
-3. To use `zaas-client`, provide a property file to initialize `ConfigProperties` used
-in the token service. Include the path to your truststore and keystore files and the following
-configuration parameters:
-
-    ```java
-    public class ConfigProperties {
-
-        private String apimlHost;
-        private String apimlPort;
-        private String apimlBaseUrl;
-        private String keyStoreType;
-        private String keyStorePath;
-        private String keyStorePassword;
-        private String trustStoreType;
-        private String trustStorePath;
-        private String trustStorePassword;
-    }
-    ```
-
-## Functionalities of `zaas-client`
-
-`zaas-client` enables your application with the following functionalities:
+which enables your application to add following functions:
 
 - **Obtain JWT token (login)**
 
-  To integrate login, call one of the following methods for login in the `TokenService` interface. Credentials can be provided either in   the request body, or as Basic Auth.
+  To integrate login, call one of the following methods for login in the `ZaasClient` interface. Credentials can be provided either in   the request body, or as Basic Auth.
 
   - If user provides credentials in the request body, then you can call the following method from your API:
 
@@ -92,7 +59,7 @@ configuration parameters:
     ZaasToken query(String token) throws ZaasClientException;
     ```
 
-    In return you receive the `ZaasToken` Object in JSON format.
+    In return you will receive the `ZaasToken` Object in JSON format.
 
     This method will automatically use the truststore file to add a security layer, which you configured in the `ConfigProperties`         class.
 
@@ -109,6 +76,146 @@ configuration parameters:
     In return, this method provides a valid pass ticket as a String to the authorized user.
 
     For additional information about PassTickets in API ML see [Enabling PassTicket creation for API Services that Accept PassTickets](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-passtickets.html).
+
+## Pre-requisites
+
+- Java SDK version 1.8.
+- The Gateway Service of API ML should be up and running as a service.
+- A property file which defines the keystore or truststore certificates.
+
+### Getting Started(Step by Step Instruction)
+
+To use this library use the procedure described in this article.
+
+**Follow these steps:**
+
+1. Add `zaas-client` as a dependency in your project. 
+
+    Gradle:
+    
+        dependencies {
+            compile 'org.zowe.apiml.sdk:zaas-client:{{version}}'
+        }
+
+    Pom:
+    
+        <dependency>
+                    <groupId>org.zowe.apiml.sdk:zaas-client</groupId>
+                    <artifactId>{{version}}</artifactId>
+        </dependency>
+
+2. In your application, create your java class which will be used to create an instance of `ZaasClient` and further to use its method to
+   login, query and to issue passTicket.
+
+3. Create an instance of `ZaasClient` in your class like the following:
+
+    ```java
+    ZaasClient zaasClient = new ZaasClientImpl();
+    ```
+
+4. To use `zaas-client`, provide a property file for configuration. Kindly check `org.zowe.apiml.zaasclient.config.ConfigProperites` to make sure what properties we have to provide in the property file. 
+ 
+    ```java
+        public ConfigProperties getConfigProperties(){
+           CofigProperties configProperties = new ConfigProperties();
+           // Code to initialize configProperties variables from your property file/yml.
+           return configProperties;
+        }
+   ```
+    
+   Example:
+   
+   ```java
+   private static ConfigProperties getConfigProperties() {
+   String CONFIG_FILE_PATH = "zaas-client/src/test/resources/configFile.properties";
+         String absoluteFilePath = new File(CONFIG_FILE_PATH).getAbsolutePath();
+         ConfigProperties configProperties = new ConfigProperties();
+         Properties configProp = new Properties();
+           try {
+               if (Paths.get(absoluteFilePath).toFile().exists()) {
+                    configProp.load(new FileReader(absoluteFilePath));
+    
+                    configProperties.setApimlHost(configProp.getProperty("APIML_HOST"));
+                    configProperties.setApimlPort(configProp.getProperty("APIML_PORT"));
+                    configProperties.setApimlBaseUrl(configProp.getProperty("APIML_BASE_URL"));
+                    configProperties.setKeyStorePath(configProp.getProperty("KEYSTOREPATH"));
+                    configProperties.setKeyStorePassword(configProp.getProperty("KEYSTOREPASSWORD"));
+                    configProperties.setKeyStoreType(configProp.getProperty("KEYSTORETYPE"));
+                    configProperties.setTrustStorePath(configProp.getProperty("TRUSTSTOREPATH"));
+                    configProperties.setTrustStorePassword(configProp.getProperty("TRUSTSTOREPASSWORD"));
+                    configProperties.setTrustStoreType(configProp.getProperty("TRUSTSTORETYPE"));
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
+            return configProperties;
+        }   
+   ``` 
+   
+5. With the following code inject the `configProperties` object we just initialised in `ZaasClient` instance created in Step 3.
+    
+    ```java
+       zaasClient.init(getConfigProperties);
+     ```
+   
+6. Now use any of the method from `ZaasClient` in your class. Like for login use the following code snippet:
+
+    ```java
+       String zaasClientToken = zaasClient.login("user", "user");
+    ```
+
+7. Following is an example of a `SampleZaasClientImplementation`:
+
+    ```java
+    public class SampleZaasClientImplementation {
+    
+        /**
+         * This method is used to fetch token from zaasClient
+         * @param username
+         * @param password
+         * @return
+         */
+        public String login(String username, String password) {
+            try {
+                String zaasClientToken = zaasClient.login(username, password);
+                zaasClient.init(getConfigProperties);
+                //Use this token  in subsequent calls
+            } catch (ZaasClientException exception) {
+                System.out.println(exception.getErrorMessage());
+            }
+        }
+    
+        /**
+         * Method to instantiate configuration properties for zaas-client
+         * @return
+         */
+        private static ConfigProperties getConfigProperties() {
+            String CONFIG_FILE_PATH = "zaas-client/src/test/resources/configFile.properties";
+            String absoluteFilePath = new File(CONFIG_FILE_PATH).getAbsolutePath();
+            ConfigProperties configProperties = new ConfigProperties();
+            Properties configProp = new Properties();
+            try {
+                if (Paths.get(absoluteFilePath).toFile().exists()) {
+                    configProp.load(new FileReader(absoluteFilePath));
+    
+                    configProperties.setApimlHost(configProp.getProperty("APIML_HOST"));
+                    configProperties.setApimlPort(configProp.getProperty("APIML_PORT"));
+                    configProperties.setApimlBaseUrl(configProp.getProperty("APIML_BASE_URL"));
+                    configProperties.setKeyStorePath(configProp.getProperty("KEYSTOREPATH"));
+                    configProperties.setKeyStorePassword(configProp.getProperty("KEYSTOREPASSWORD"));
+                    configProperties.setKeyStoreType(configProp.getProperty("KEYSTORETYPE"));
+                    configProperties.setTrustStorePath(configProp.getProperty("TRUSTSTOREPATH"));
+                    configProperties.setTrustStorePassword(configProp.getProperty("TRUSTSTOREPASSWORD"));
+                    configProperties.setTrustStoreType(configProp.getProperty("TRUSTSTORETYPE"));
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
+            return configProperties;
+        }
+    }
+    ```
+
 
 ## Commands to Set Up PassTickets for Your Service
 
