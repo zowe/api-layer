@@ -91,12 +91,18 @@ zuul:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
     forceOriginalQueryStringEncoding: true
+    retryable: true
 
 ribbon:
-    IsSecure: false
     ConnectTimeout: ${apiml.gateway.timeoutMillis}
     ReadTimeout: ${apiml.gateway.timeoutMillis}
     ConnectionManagerTimeout: ${apiml.gateway.timeoutMillis}
+    MaxAutoRetries: 0
+    MaxAutoRetriesNextServer: 5
+    OkToRetryOnAllOperations: true
+    IsSecure: true
+    EnableGZIPContentEncodingFilter: true
+    GZipPayload: true
 
 http:
     connection:
