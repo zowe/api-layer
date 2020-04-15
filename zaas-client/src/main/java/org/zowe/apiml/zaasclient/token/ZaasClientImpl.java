@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
-public class TokenServiceImpl implements TokenService {
+public class ZaasClientImpl implements ZaasClient {
 
     private static final String COOKIE_PREFIX = "apimlAuthenticationToken";
     private static final String SCHEME = "https://";

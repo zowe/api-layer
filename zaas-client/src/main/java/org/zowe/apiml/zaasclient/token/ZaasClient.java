@@ -12,7 +12,7 @@ package org.zowe.apiml.zaasclient.token;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 
-public interface TokenService {
+public interface ZaasClient {
 
     void init(ConfigProperties configProperties);
 

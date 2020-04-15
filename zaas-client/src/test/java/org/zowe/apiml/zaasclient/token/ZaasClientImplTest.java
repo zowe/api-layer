@@ -45,9 +45,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
-public class TokenServiceImplTest {
+public class ZaasClientImplTest {
 
-    private TokenServiceImpl tokenService;
+    private ZaasClientImpl zaasClient;
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
 
     @Mock
@@ -90,10 +90,10 @@ public class TokenServiceImplTest {
     @Before
     public void setupMethod() throws IOException, CertificateException,
         NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
-        MockitoAnnotations.initMocks(TokenServiceImplTest.class);
+        MockitoAnnotations.initMocks(ZaasClientImplTest.class);
         ConfigProperties configProperties = getConfigProperties();
-        tokenService = new TokenServiceImpl();
-        tokenService.init(configProperties);
+        zaasClient = new ZaasClientImpl();
+        zaasClient.init(configProperties);
         long now = System.currentTimeMillis();
         long expiration = now + 10000;
         long expirationForExpiredToken = now - 1000;
@@ -108,7 +108,7 @@ public class TokenServiceImplTest {
         when(closeableHttpClient.execute(any(HttpGet.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpClient.execute(any(HttpPost.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpResponse.getEntity()).thenReturn(httpsEntity);
-        tokenService.setHttpsClient(httpsClient);
+        zaasClient.setHttpsClient(httpsClient);
         when(closeableHttpResponse.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
@@ -209,7 +209,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_ValidUserName_ValidPassword() {
         prepareResponse(HttpStatus.SC_NO_CONTENT);
         try {
-            String token = tokenService.login(VALID_USER, VALID_PASSWORD);
+            String token = zaasClient.login(VALID_USER, VALID_PASSWORD);
             assertNotNull("null Token obtained", token);
             assertNotEquals("Empty Token obtained", EMPTY_STRING, token);
             assertEquals("Token Mismatch","token", token);
@@ -222,7 +222,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_InvalidUserName_ValidPassword() {
         prepareResponse(HttpStatus.SC_UNAUTHORIZED);
         try {
-            tokenService.login(INAVLID_USER, VALID_PASSWORD);
+            zaasClient.login(INAVLID_USER, VALID_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.INVALID_AUTHENTICATION.getId(), zce.getErrorCode());
@@ -235,7 +235,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_ValidUserName_InvalidPassword() {
         prepareResponse(HttpStatus.SC_UNAUTHORIZED);
         try {
-            tokenService.login(VALID_USER, INVALID_PASSWORD);
+            zaasClient.login(VALID_USER, INVALID_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.INVALID_AUTHENTICATION.getId(), zce.getErrorCode());
@@ -248,7 +248,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_EmptyUserName_InvalidPassword() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
-            tokenService.login(EMPTY_USER, VALID_PASSWORD);
+            zaasClient.login(EMPTY_USER, VALID_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD.getId(), zce.getErrorCode());
@@ -261,7 +261,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_ValidUserName_EmptyPassword() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
-            tokenService.login(VALID_USER, EMPTY_PASSWORD);
+            zaasClient.login(VALID_USER, EMPTY_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD.getId(), zce.getErrorCode());
@@ -274,7 +274,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_NullUserName_ValidPassword() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
-            tokenService.login(NULL_USER, VALID_PASSWORD);
+            zaasClient.login(NULL_USER, VALID_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD.getId(), zce.getErrorCode());
@@ -287,7 +287,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_ValidUserName_NullPassword() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
-            tokenService.login(VALID_USER, NULL_PASSWORD);
+            zaasClient.login(VALID_USER, NULL_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD.getId(), zce.getErrorCode());
@@ -300,7 +300,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_ServerUnavailable() {
         prepareResponseForServerUnavailable();
         try {
-            tokenService.login(VALID_USER, VALID_PASSWORD);
+            zaasClient.login(VALID_USER, VALID_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.SERVICE_UNAVAILABLE.getId(), zce.getErrorCode());
@@ -313,7 +313,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_GenericException() {
         prepareResponse(HttpStatus.SC_NOT_FOUND);
         try {
-            tokenService.login(VALID_USER, VALID_PASSWORD);
+            zaasClient.login(VALID_USER, VALID_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.GENERIC_EXCEPTION.getId(), zce.getErrorCode());
@@ -326,7 +326,7 @@ public class TokenServiceImplTest {
     public void testLoginWithCredentials_UnexpectedException() {
         prepareResponseForUnexpectedException();
         try {
-            tokenService.login(VALID_USER, VALID_PASSWORD);
+            zaasClient.login(VALID_USER, VALID_PASSWORD);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.GENERIC_EXCEPTION.getId(), zce.getErrorCode());
@@ -339,7 +339,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_ValidUserName_ValidPassword() {
         prepareResponse(HttpStatus.SC_NO_CONTENT);
         try {
-            String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+            String token = zaasClient.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
             assertNotNull("null Token obtained", token);
             assertNotEquals("Empty Token obtained", EMPTY_STRING, token);
             assertEquals("Token Mismatch","token", token);
@@ -352,7 +352,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_InvalidUserName_ValidPassword() {
         prepareResponse(HttpStatus.SC_UNAUTHORIZED);
         try {
-            tokenService.login(getAuthHeader(INAVLID_USER, VALID_PASSWORD));
+            zaasClient.login(getAuthHeader(INAVLID_USER, VALID_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.INVALID_AUTHENTICATION.getId(), zce.getErrorCode());
@@ -365,7 +365,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_ValidUserName_InvalidPassword() {
         prepareResponse(HttpStatus.SC_UNAUTHORIZED);
         try {
-            tokenService.login(getAuthHeader(VALID_USER, INVALID_PASSWORD));
+            zaasClient.login(getAuthHeader(VALID_USER, INVALID_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.INVALID_AUTHENTICATION.getId(), zce.getErrorCode());
@@ -378,7 +378,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_EmptyUserName_ValidPassword() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
-            tokenService.login(getAuthHeader(EMPTY_USER, VALID_PASSWORD));
+            zaasClient.login(getAuthHeader(EMPTY_USER, VALID_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD.getId(), zce.getErrorCode());
@@ -391,7 +391,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_ValidUserName_EmptyPassword() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
-            tokenService.login(getAuthHeader(VALID_USER, EMPTY_PASSWORD));
+            zaasClient.login(getAuthHeader(VALID_USER, EMPTY_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD.getId(), zce.getErrorCode());
@@ -404,7 +404,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_NullUserName_ValidPassword() {
         prepareResponse(HttpStatus.SC_UNAUTHORIZED);
         try {
-            tokenService.login(getAuthHeader(NULL_USER, VALID_PASSWORD));
+            zaasClient.login(getAuthHeader(NULL_USER, VALID_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.INVALID_AUTHENTICATION.getId(), zce.getErrorCode());
@@ -417,7 +417,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_ValidUserName_NullPassword() {
         prepareResponse(HttpStatus.SC_UNAUTHORIZED);
         try {
-            tokenService.login(getAuthHeader(VALID_USER, NULL_PASSWORD));
+            zaasClient.login(getAuthHeader(VALID_USER, NULL_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.INVALID_AUTHENTICATION.getId(), zce.getErrorCode());
@@ -430,7 +430,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_EmptyHeader() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
-            tokenService.login(EMPTY_AUTH_HEADER);
+            zaasClient.login(EMPTY_AUTH_HEADER);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER.getId(), zce.getErrorCode());
@@ -443,7 +443,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_NullHeader() {
         prepareResponse(HttpStatus.SC_BAD_REQUEST);
         try {
-            tokenService.login(NULL_AUTH_HEADER);
+            zaasClient.login(NULL_AUTH_HEADER);
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER.getId(), zce.getErrorCode());
@@ -456,7 +456,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_ServerUnavailable() {
         prepareResponseForServerUnavailable();
         try {
-            tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+            zaasClient.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.SERVICE_UNAVAILABLE.getId(), zce.getErrorCode());
@@ -469,7 +469,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_GenericException() {
         prepareResponse(HttpStatus.SC_NOT_FOUND);
         try {
-            tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+            zaasClient.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.GENERIC_EXCEPTION.getId(), zce.getErrorCode());
@@ -482,7 +482,7 @@ public class TokenServiceImplTest {
     public void testLoginWithAuthHeader_UnexpectedException() {
         prepareResponseForUnexpectedException();
         try {
-            tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+            zaasClient.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
             fail("Test case failed as it didn't throw an exception");
         } catch (ZaasClientException zce) {
             assertEquals("Error Code Mismatch", ZaasClientErrorCodes.GENERIC_EXCEPTION.getId(), zce.getErrorCode());
@@ -493,7 +493,7 @@ public class TokenServiceImplTest {
 
     @Test(expected = ZaasClientException.class)
     public void testQueryWithToken_InvalidToken_ZaasClientException() throws ZaasClientException {
-        tokenService.query(invalidToken);
+        zaasClient.query(invalidToken);
     }
 
     @Test
@@ -502,23 +502,23 @@ public class TokenServiceImplTest {
         zaasToken.setUserId("user");
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasToken)));
 
-        assertEquals("user", tokenService.query(token).userId);
+        assertEquals("user", zaasClient.query(token).userId);
     }
 
     @Test(expected = ZaasClientException.class)
     public void testQueryWithToken_ExpiredToken_ZaasClientException() throws ZaasClientException {
-        tokenService.query(expiredToken);
+        zaasClient.query(expiredToken);
     }
 
     @Test(expected = ZaasClientException.class)
     public void testQueryWithToken_EmptyToken_ZaasClientException() throws ZaasClientException {
-        tokenService.query("");
+        zaasClient.query("");
     }
 
     @Test(expected = ZaasClientException.class)
     public void testQueryWithToken_WhenResponseCodeIs404_ZaasClientException() throws ZaasClientException {
         when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(404);
-        tokenService.query(token);
+        zaasClient.query(token);
     }
 
     @Test
@@ -531,21 +531,21 @@ public class TokenServiceImplTest {
         when(httpsClient.getHttpsClientWithKeyStoreAndTrustStore()).thenReturn(closeableHttpClient);
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasPassTicketResponse)));
 
-        assertEquals("ticket", tokenService.passTicket(token, "ZOWEAPPL"));
+        assertEquals("ticket", zaasClient.passTicket(token, "ZOWEAPPL"));
     }
 
     @Test(expected = ZaasClientException.class)
     public void testPassTicketWithInvalidToken_InvalidToken_ZaasClientException() throws ZaasClientException {
-        tokenService.passTicket(invalidToken, "ZOWEAPPL");
+        zaasClient.passTicket(invalidToken, "ZOWEAPPL");
     }
 
     @Test(expected = ZaasClientException.class)
     public void testPassTicketWithEmptyToken_EmptyToken_ZaasClientException() throws ZaasClientException {
-        tokenService.passTicket("", "ZOWEAPPL");
+        zaasClient.passTicket("", "ZOWEAPPL");
     }
 
     @Test(expected = ZaasClientException.class)
     public void testPassTicketWithEmptyApplicationId_EmptyApplicationId_ZaasClientException() throws ZaasClientException {
-        tokenService.passTicket("", "");
+        zaasClient.passTicket("", "");
     }
 }
