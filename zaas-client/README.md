@@ -3,9 +3,10 @@
 - [zaas-client](#zaas-client)
   - [Introduction](#introduction)
   - [Pre-requisites](#pre-requisites)
-  - [Getting Started](#getting-started)
-  - [Commands to Setup PassTickets for Your Service](#commands-to-setup-passtickets-for-your-service)
-  
+    - [Getting Started](#getting-started)
+  - [Functionalities of `zaas-client`](#functionalities-of-zaas-client)
+  - [Commands to Set Up PassTickets for Your Service](#commands-to-set-up-passtickets-for-your-service)
+
 ## Introduction
 
 This is a native java library developed on the top of API ML login, query and pass ticket API. It is developed with apache http Client version 4.5.11.
@@ -26,82 +27,90 @@ To use this library use the procedure described in this article.
 
 2. Add the zaas-client as a dependency in your project. This library provides you the following interface:
 
-```java
-public interface TokenService {
-    static String COOKIE_PREFIX = "apimlAuthenticationToken";
-    void init(ConfigProperties configProperties);
-    String login(String userId, String password) throws ZaasClientException;
-    String login(String authorizationHeader) throws ZaasClientException;
-    ZaasToken query(String token) throws ZaasClientException;
-    String passTicket(String jwtToken, String applicationId) throws ZaasClientException;
-}
-```
-3. To use `zaas-client`, provide a property file to initialize `ConfigProperties` used 
-in the token service. Include the path to your truststore and keystore files and the following 
+    ```java
+    public interface TokenService {
+        static String COOKIE_PREFIX = "apimlAuthenticationToken";
+        void init(ConfigProperties configProperties);
+        String login(String userId, String password) throws ZaasClientException;
+        String login(String authorizationHeader) throws ZaasClientException;
+        ZaasToken query(String token) throws ZaasClientException;
+        String passTicket(String jwtToken, String applicationId) throws ZaasClientException;
+    }
+    ```
+
+3. To use `zaas-client`, provide a property file to initialize `ConfigProperties` used
+in the token service. Include the path to your truststore and keystore files and the following
 configuration parameters:
 
-```java
-public class ConfigProperties {
+    ```java
+    public class ConfigProperties {
 
-    private String apimlHost;
-    private String apimlPort;
-    private String apimlBaseUrl;
-    private String keyStoreType;
-    private String keyStorePath;
-    private String keyStorePassword;
-    private String trustStoreType;
-    private String trustStorePath;
-    private String trustStorePassword;
-}
-```
+        private String apimlHost;
+        private String apimlPort;
+        private String apimlBaseUrl;
+        private String keyStoreType;
+        private String keyStorePath;
+        private String keyStorePassword;
+        private String trustStoreType;
+        private String trustStorePath;
+        private String trustStorePassword;
+    }
+    ```
+
 ## Functionalities of `zaas-client`
 
 `zaas-client` enables your application with the following functionalities:
 
-- **Login**
+- **Obtain JWT token (login)**
 
   To integrate login, call one of the following methods for login in the `TokenService` interface. Credentials can be provided either in   the request body, or as Basic Auth.
 
-    - If user provides credentials in the request body, then you can call the following method from your API:
+  - If user provides credentials in the request body, then you can call the following method from your API:
+
     ```java
     String login(String userId, String password) throws ZaasClientException;
-    ``` 
-    - If the user is providing credentials as Basic Auth, then use the following method:
-    ```java
-    String login(String authorizationHeader) throws ZaasClientException;
-    ```    
-    These methods will return the JWT token as a String. This token can be further used to authenticate the user
-    in subsequent APIs.
+    ```
 
-    This method will automatically use the truststore file to add a security layer, which you have configured in the `ConfigProperties`         class.
+  - If the user is providing credentials as Basic Auth, then use the following method:
 
-- **Query**
+      ```java
+      String login(String authorizationHeader) throws ZaasClientException;
+      ```
 
-    The Query method is used to provide you the details embedded in the token which includes creation time of the token, expiration time 
+  These methods will return the JWT token as a String. This token can be further used to authenticate the user in subsequent APIs.
+
+  This method will automatically use the truststore file to add a security layer, which you have configured in the `ConfigProperties`         class.
+
+- **Validate and get details from token (query)**
+
+    The `query` method is used to provide you the details embedded in the token which includes creation time of the token, expiration time
     of the token, and the user to whom the token has been issued.
 
     To use this method, call the method from your API.
+
     ```java
     ZaasToken query(String token) throws ZaasClientException;
-    ``` 
+    ```
+
     In return you receive the `ZaasToken` Object in JSON format.
 
     This method will automatically use the truststore file to add a security layer, which you configured in the `ConfigProperties`         class.
 
-- **Pass ticket**
+- **Obtain a PassTicket (passTicket)**
 
-    The Pass ticket method has an added layer of protection. To use this method, call the method of the interface and provide
+    The `passTicket` method has an added layer of protection. To use this method, call the method of the interface and provide
     a valid APPLID of the application and JWT token as an input.
 
-    The APPLID is the name of the application (up to 8 characters)vthat is used by security products to differentiate 
-    certain security operations (like PassTickets) between applications.
+    The APPLID is the name of the application (up to 8 characters) that is used by security products to differentiate certain security operations (like PassTickets) between applications.
 
     This method has an added layer of security so that you do not have to provide an input to the method as you have already initialized the
     `ConfigProperties` class. As such, this method automatically fetches the truststore and keystore files as an input.
 
     In return, this method provides a valid pass ticket as a String to the authorized user.
 
-## Commands to set up PassTickets for your service
+    For additional information about PassTickets in API ML see [Enabling PassTicket creation for API Services that Accept PassTickets](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-passtickets.html).
+
+## Commands to Set Up PassTickets for Your Service
 
 Commands for CA Top Secret for z/OS:
 
@@ -140,10 +149,11 @@ SET PROFILE(PTKTDATA) DIVISION(SSIGNON)
 INSERT <applid> SSKEY(<key>) MULT-USE
 F ACF2,REBUILD(PTK),CLASS(P)
 ```
+
 where:
 
 **`<key>`**
 
-is the value of 16 hexadecimal digits (creating an 8-byte or 64-bit key). 
+is the value of 16 hexadecimal digits (creating an 8-byte or 64-bit key).
 
 **Example:** `FEDCBA9876543210`.
