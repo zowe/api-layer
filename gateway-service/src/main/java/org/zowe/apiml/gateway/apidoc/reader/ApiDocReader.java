@@ -10,9 +10,9 @@
 package org.zowe.apiml.gateway.apidoc.reader;
 
 
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -25,40 +25,40 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static org.springframework.util.ResourceUtils.CLASSPATH_URL_PREFIX;
 
 /**
  * Service class for loading Gateway API doc from a resource file
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ApiDocReader {
 
     /**
      * Load the swagger/api doc info from a local resource file
      * @param location the location of the local resource file
-     * @return the Swagger as a OpenAPI object
+     * @return the OpenApi as a String object
      * @throws ApiDocReaderException when the conversion to an OpenAPI object fails
      */
-    public OpenAPI load(String location) {
+    public String load(String location) {
         if (location == null || location.isEmpty()) {
             throw new ApiDocReaderException("API doc location can't be null or empty");
         }
 
-        if (!location.startsWith(CLASSPATH_URL_PREFIX)) {
-            location = CLASSPATH_URL_PREFIX + location.trim();
-        }
 
-        String openAPIJsonContent = getOpenAPIJsonContent(location);
-
-        SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(openAPIJsonContent);
-        OpenAPI openAPI = parseResult.getOpenAPI();
-        if (openAPI == null) {
+        String openAPIJsonContent = getOpenAPIJsonContent(location.trim());
+        boolean isValidJson = isValidOpenApi3Content(openAPIJsonContent);
+        if (!isValidJson) {
             log.debug("Could not convert response body to an OpenAPI object");
             throw new ApiDocReaderException("OpenAPI content is not valid");
         }
 
-        return openAPI;
+        return openAPIJsonContent;
+    }
+
+    private boolean isValidOpenApi3Content(String openAPIJsonContent) {
+        SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(openAPIJsonContent);
+        return parseResult.getOpenAPI() != null;
     }
 
     private String getOpenAPIJsonContent(String location) {

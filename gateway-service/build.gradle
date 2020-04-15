@@ -64,13 +64,14 @@ dependencies {
     compile libraries.jetty_websocket_client
     compile libraries.jetty_util
     compile libraries.jjwt
+    compile libraries.nimbusJoseJwt
     compile libraries.eh_cache
 
     compileOnly libraries.javax_inject
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
 
-    implementation libraries.springFox
+    compile libraries.springFox
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
     testRuntime libraries.http_client
@@ -82,14 +83,32 @@ dependencies {
     testCompile libraries.powermock_api_mockito2
     testCompile libraries.power_mock_junit4
     testCompile libraries.power_mock_junit4_rule
+
+
+    runtime libraries.jjwt_impl
+    runtime libraries.jjwt_jackson
 }
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
-
 
 bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
     }
     systemProperties = System.properties
+}
+
+jar {
+    enabled = true
+    archiveName = "${jar.baseName}-thin.jar"
+
+    def libClassPathEntries = configurations.runtime.files.collect {
+        "lib/" + it.getName()
+    }
+    doFirst {
+        manifest {
+            attributes "Class-Path": libClassPathEntries.join(" "),
+                "Main-Class": "org.zowe.apiml.gateway.GatewayApplication"
+        }
+    }
 }

@@ -10,6 +10,7 @@
 package org.zowe.apiml.discovery.staticdef;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
@@ -48,17 +49,20 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @Slf4j
 @Component
 public class ServiceDefinitionProcessor {
-
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
     private static final String STATIC_INSTANCE_ID_PREFIX = "STATIC-";
-
     private static final DataCenterInfo DEFAULT_INFO = () -> DataCenterInfo.Name.MyOwn;
-
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
-
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
+
+    public ServiceDefinitionProcessor() {
+    }
+
+    public ServiceDefinitionProcessor(ApimlLogger apimlLog) {
+        this.apimlLog = apimlLog;
+    }
 
     protected List<File> getFiles(StaticRegistrationResult context, String staticApiDefinitionsDirectories) {
         if (StringUtils.isEmpty(staticApiDefinitionsDirectories)) {
@@ -125,13 +129,12 @@ public class ServiceDefinitionProcessor {
         final String content;
         try {
             content = new String(Files.readAllBytes(Paths.get(fileName)));
+            return loadDefinition(context, fileName, content);
         } catch (IOException e) {
             final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionFile", fileName);
             context.getErrors().add(msg);
             return null;
         }
-
-        return loadDefinition(context, fileName, content);
     }
 
     protected Definition loadDefinition(StaticRegistrationResult context, String ymlFileName, String ymlData) {
@@ -139,11 +142,15 @@ public class ServiceDefinitionProcessor {
 
         try {
             return mapper.readValue(ymlData, Definition.class);
+        } catch (UnrecognizedPropertyException e) {
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName, e.getOriginalMessage());
+            context.getErrors().add(msg);
+            return null;
         } catch (IOException e) {
-            context.getErrors().add(String.format("Error processing file %s - %s", ymlFileName, e.getMessage()));
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName, e.getMessage());
+            context.getErrors().add(msg);
+            return null;
         }
-
-        return null;
     }
 
     protected void process(StaticRegistrationResult context, String ymlFileName, Definition definition) {
@@ -152,7 +159,9 @@ public class ServiceDefinitionProcessor {
         // process static services
         Optional.ofNullable(definition.getServices()).ifPresent(
             x -> {
-                final Map<String, CatalogUiTile> tiles = Optional.ofNullable(definition.getCatalogUiTiles()).orElse(Collections.emptyMap());
+                final Map<String, CatalogUiTile> tiles = Optional
+                    .ofNullable(definition.getCatalogUiTiles())
+                    .orElse(Collections.emptyMap());
                 x.forEach(y -> createInstances(context, ymlFileName, y, tiles));
             }
         );
@@ -164,12 +173,15 @@ public class ServiceDefinitionProcessor {
                 try {
                     metadata = createMetadata(so, null, null);
                 } catch (ServiceDefinitionException e) {
-                    context.getErrors().add(String.format("Additional service metadata of %s in processing file %s could not be created: %s", so.getServiceId(), ymlFileName, e.getMessage()));
+                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName, e.getMessage());
+                    context.getErrors().add(msg);
                 }
                 final ServiceOverride.Mode mode = Optional.ofNullable(so.getMode()).orElse(ServiceOverride.Mode.UPDATE);
                 final ServiceOverrideData sod = new ServiceOverrideData(mode, metadata);
                 if (context.getAdditionalServiceMetadata().put(so.getServiceId(), sod) != null) {
-                    context.getErrors().add(String.format("Additional service metadata of %s in processing file %s were replaced for duplicities", so.getServiceId(), ymlFileName));
+                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName,
+                        String.format("Additional service metadata of %s in processing file %s were replaced for duplicities", so.getServiceId(), ymlFileName));
+                    context.getErrors().add(msg);
                 }
             }
         }
@@ -179,7 +191,9 @@ public class ServiceDefinitionProcessor {
         if (service.getCatalogUiTileId() != null) {
             final CatalogUiTile tile = tiles.get(service.getCatalogUiTileId());
             if (tile == null) {
-                context.getErrors().add(String.format("Error processing file %s - The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", ymlFileName, service.getCatalogUiTileId(), service.getServiceId()));
+                final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName,
+                    String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), service.getServiceId()));
+                context.getErrors().add(msg);
             } else {
                 tile.setId(service.getCatalogUiTileId());
             }
@@ -189,6 +203,7 @@ public class ServiceDefinitionProcessor {
         return null;
     }
 
+    // Do I understand properly that the createInstances
     private List<InstanceInfo> createInstances(StaticRegistrationResult context, String ymlFileName, Service service, Map<String, CatalogUiTile> tiles) {
         try {
             if (service.getServiceId() == null) {
@@ -208,7 +223,8 @@ public class ServiceDefinitionProcessor {
 
             return output;
         } catch (ServiceDefinitionException e) {
-            context.getErrors().add(e.getMessage());
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName, e.getMessage());
+            context.getErrors().add(msg);
         }
 
         return Collections.emptyList();
@@ -225,9 +241,11 @@ public class ServiceDefinitionProcessor {
         try {
             URL url = new URL(instanceBaseUrl);
             if (url.getHost().isEmpty()) {
-                context.getErrors().add(String.format("The URL %s does not contain a hostname. The instance of %s will not be created", instanceBaseUrl, service.getServiceId()));
+                throw new ServiceDefinitionException(String.format("The URL %s does not contain a hostname. The instance of %s will not be created",
+                    instanceBaseUrl, serviceId));
             } else if (url.getPort() == -1) {
-                context.getErrors().add(String.format("The URL %s does not contain a port number. The instance of %s will not be created", instanceBaseUrl, service.getServiceId()));
+                throw new ServiceDefinitionException(String.format("The URL %s does not contain a port number. The instance of %s will not be created",
+                    instanceBaseUrl, serviceId));
             } else {
                 InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
 
@@ -244,8 +262,6 @@ public class ServiceDefinitionProcessor {
                 context.getInstances().add(instance);
                 return instance;
             }
-
-            return null;
         } catch (MalformedURLException e) {
             throw new ServiceDefinitionException(String.format("The URL %s is malformed. The instance of %s will not be created: %s",
                 instanceBaseUrl, serviceId, e.getMessage()));

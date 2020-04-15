@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.util.http;
 
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.Credentials;
-import org.zowe.apiml.gatewayservice.SecurityUtils;
 import lombok.experimental.UtilityClass;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -19,6 +16,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.Credentials;
 
 import java.io.IOException;
 import java.net.URI;

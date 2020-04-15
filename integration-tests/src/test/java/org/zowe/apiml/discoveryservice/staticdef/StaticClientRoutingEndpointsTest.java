@@ -9,10 +9,11 @@
  */
 package org.zowe.apiml.discoveryservice.staticdef;
 
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertEquals;
@@ -22,6 +23,7 @@ public class StaticClientRoutingEndpointsTest {
     private static final String STATIC_GREET = "/api/v1/staticclient/greeting";
 
     @Test
+    @TestsNotMeantForZowe
     public void shouldSameResponseAsDynamicService() throws Exception {
         // When
         final HttpResponse response = HttpRequestUtils.getResponse(GREET, SC_OK);

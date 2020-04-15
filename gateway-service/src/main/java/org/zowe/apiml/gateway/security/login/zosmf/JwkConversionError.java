@@ -7,12 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service;
+package org.zowe.apiml.gateway.security.login.zosmf;
 
-public class AuthenticationException extends Exception {
-    private static final long serialVersionUID = -5152411541425940337L;
+public class JwkConversionError extends RuntimeException {
+    private static final long serialVersionUID = -8854148780170907565L;
 
-    public AuthenticationException(String message, Throwable cause) {
-        super(message, cause);
+    public JwkConversionError(Throwable e) {
+        super(e);
     }
 }

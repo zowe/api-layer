@@ -10,7 +10,13 @@
 package org.zowe.apiml.discovery.staticdef;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -19,21 +25,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class ServiceDefinitionProcessorTest {
+    private ServiceDefinitionProcessor serviceDefinitionProcessor;
 
-    private StaticRegistrationResult processServicesData(ServiceDefinitionProcessor serviceDefinitionProcessor, String ymlFile, String data) {
+    @BeforeEach
+    public void prepareServiceDefinitionProcessor() {
+        MessageService messages = new YamlMessageService();
+        messages.loadMessages("/discovery-log-messages.yml");
+        ApimlLogger logger = new ApimlLogger(ServiceDefinitionProcessor.class, messages);
+        serviceDefinitionProcessor = new ServiceDefinitionProcessor(logger);
+    }
+
+    private StaticRegistrationResult processServicesData(String data) {
         StaticRegistrationResult context = new StaticRegistrationResult();
-        Definition definition = serviceDefinitionProcessor.loadDefinition(context, ymlFile, data);
-        serviceDefinitionProcessor.process(context, ymlFile, definition);
+        String dummyFileName = "test.yml";
+        Definition definition = serviceDefinitionProcessor.loadDefinition(context, dummyFileName, data);
+        serviceDefinitionProcessor.process(context, dummyFileName, definition);
         return context;
     }
 
-    private StaticRegistrationResult processServicesData(ServiceDefinitionProcessor serviceDefinitionProcessor, Map<String, String> ymlSources) {
+    private StaticRegistrationResult processServicesData(Map<String, String> ymlSources) {
         StaticRegistrationResult context = new StaticRegistrationResult();
         for (final Map.Entry<String, String> entry : ymlSources.entrySet()) {
             Definition definition = serviceDefinitionProcessor.loadDefinition(context, entry.getKey(), entry.getValue());
@@ -44,7 +59,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testProcessServicesDataWithTwoRoutes() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -57,7 +71,7 @@ public class ServiceDefinitionProcessorTest {
             "          serviceRelativeUrl: api/v1\n" +
             "        - gatewayUrl: api/v2\n" +
             "          serviceRelativeUrl: api/v2\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -77,7 +91,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testProcessServicesDataWithEmptyHomepage() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYamlEmptyRelativeUrls = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -88,7 +101,7 @@ public class ServiceDefinitionProcessorTest {
             "      routes:\n" +
             "        - gatewayUrl: api/v1\n" +
             "          serviceRelativeUrl:\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYamlEmptyRelativeUrls);
+        StaticRegistrationResult result = processServicesData(routedServiceYamlEmptyRelativeUrls);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -106,22 +119,17 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testProcessServicesDataNoServicesNode() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenUnknownFieldInTheStaticDefinition_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
+        StaticRegistrationResult result = processServicesData("something: value");
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", "something: value");
-        assertEquals(0, result.getInstances().size());
-        assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0) instanceof String);
-
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("Error processing file test - Unrecognized field \"something\""));
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "Unrecognized field &quot;something&quot; (class org.zowe.apiml.discovery.staticdef.Definition), not marked as ignorable"
+        );
     }
 
     @Test
     public void testFileInsteadOfDirectoryForDefinitions() throws URISyntaxException {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
-
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(
             Paths.get(ClassLoader.getSystemResource("api-defs/staticclient.yml").toURI()).toAbsolutePath().toString());
 
@@ -129,60 +137,49 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testProcessServicesDataWithWrongUrlNoScheme() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenMalformedUrlAmongBaseUrls_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - localhost:10019/casamplerestapiservice/\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(0, instances.size());
-        assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0) instanceof String);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("The URL localhost:10019/casamplerestapiservice/ is malformed"));
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "The URL localhost:10019/casamplerestapiservice/ is malformed. The instance of casamplerestapiservice will not be created: unknown protocol: localhost"
+        );
     }
 
     @Test
-    public void testProcessServicesDataWithWrongUrlUnsupportedScheme() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenUnsupportedSchemaAmongBaseUrls_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - ftp://localhost:10019/casamplerestapiservice/\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(0, instances.size());
-        assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0) instanceof String);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("The URL ftp://localhost:10019/casamplerestapiservice/ is malformed"));
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "The URL ftp://localhost:10019/casamplerestapiservice/ is malformed. The instance of casamplerestapiservice will not be created: Invalid protocol"
+        );
     }
 
     @Test
-    public void testProcessServicesDataWithWrongUrlMissingHostname() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenNoHostnameInBaseUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - https:///casamplerestapiservice/\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(0, instances.size());
-        assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0) instanceof String);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("The URL https:///casamplerestapiservice/ does not contain a hostname. The instance of casamplerestapiservice will not be created"));
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "The URL https:///casamplerestapiservice/ does not contain a hostname. The instance of casamplerestapiservice will not be created"
+        );
     }
 
     @Test
-    public void testProcessServicesDataWithWrongDocumentationUrl() {
-
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenInvalidDocumentationUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -194,36 +191,31 @@ public class ServiceDefinitionProcessorTest {
             "          version: 2.0.0\n" +
             "          documentationUrl: httpBlah://localhost:10021/hellospring/api-doc";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
 
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(0, instances.size());
-
-        assertNotNull(result.getErrors());
-        assertEquals(1, result.getErrors().size());
-        assertEquals("Metadata creation failed. The instance of casamplerestapiservice will not be created: org.zowe.apiml.exception.MetadataValidationException: The documentation URL \"httpBlah://localhost:10021/hellospring/api-doc\" for service casamplerestapiservice is not valid", result.getErrors().get(0));
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "Metadata creation failed. The instance of casamplerestapiservice will not be created: " +
+                "org.zowe.apiml.exception.MetadataValidationException: The documentation URL &quot;httpBlah://localhost:10021/hellospring/api-doc&quot; for service casamplerestapiservice is not valid"
+        );
     }
 
     @Test
-    public void testProcessServicesDataWithWrongUrlMissingPort() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenBaseInstanceUrlHasNoPort_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - https://host/casamplerestapiservice/\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertEquals(0, instances.size());
-        assertEquals(1, result.getErrors().size());
-        assertTrue(result.getErrors().get(0) instanceof String);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("The URL https://host/casamplerestapiservice/ does not contain a port number. The instance of casamplerestapiservice will not be created"));
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "The URL https://host/casamplerestapiservice/ does not contain a port number. The instance of casamplerestapiservice will not be created"
+        );
     }
 
     @Test
     public void testServiceWithCatalogMetadata() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -237,7 +229,7 @@ public class ServiceDefinitionProcessorTest {
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
+        StaticRegistrationResult result = processServicesData(yaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(7, result.getInstances().get(0).getMetadata().size());
@@ -245,7 +237,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testServiceWithCustomMetadata() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String yaml =
             "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
@@ -270,7 +261,7 @@ public class ServiceDefinitionProcessorTest {
             "        title: Tile Title\n" +
             "        description: Tile Description\n";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
+        StaticRegistrationResult result = processServicesData(yaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertThat(result.getInstances().get(0).getMetadata(), hasEntry("key", "value"));
@@ -282,8 +273,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testServiceWithWrongCustomMetadata() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenListAmongCustomMetadata_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -301,15 +291,14 @@ public class ServiceDefinitionProcessorTest {
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("List parsing is not supported"));
+        StaticRegistrationResult result = processServicesData(yaml);
 
+        final Message errorMsg = result.getErrors().get(0);
+        assertFullMessageIsCorrect(errorMsg.getConvertedText(), "List parsing is not supported");
     }
 
     @Test
-    public void testCreateInstancesWithUndefinedInstanceBaseUrls() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenUndefinedInstanceBaseUrls_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -321,18 +310,16 @@ public class ServiceDefinitionProcessorTest {
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertThat(instances.size(), is(0));
-        assertTrue(result.getErrors().get(0) instanceof String);
+        StaticRegistrationResult result = processServicesData(yaml);
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("The instanceBaseUrls parameter of casamplerestapiservice is not defined. The instance will not be created."));
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "The instanceBaseUrls parameter of casamplerestapiservice is not defined. The instance will not be created."
+        );
     }
 
     @Test
-    public void testCreateInstancesWithUndefinedInstanceBaseUrl() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenNoInstanceInBaseUrls_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -345,18 +332,16 @@ public class ServiceDefinitionProcessorTest {
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertThat(instances.size(), is(0));
-        assertTrue(result.getErrors().get(0) instanceof String);
+        StaticRegistrationResult result = processServicesData(yaml);
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("One of the instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created."));
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "One of the instanceBaseUrl of casamplerestapiservice is not defined. The instance will not be created."
+        );
     }
 
     @Test
-    public void testCreateInstancesWithUndefinedServiceId() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenInstanceWithoutServiceId_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: \n" +
@@ -368,18 +353,39 @@ public class ServiceDefinitionProcessorTest {
                 "    tileid:\n" +
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
-        List<InstanceInfo> instances = result.getInstances();
-        assertThat(instances.size(), is(0));
-        assertTrue(result.getErrors().get(0) instanceof String);
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("ServiceId is not defined in the file 'test'. The instance will not be created."));
+        StaticRegistrationResult result = processServicesData(yaml);
+
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "ServiceId is not defined in the file 'test.yml'. The instance will not be created."
+        );
+    }
+
+    /**
+     * Internal helper
+     * Verify that no instance was created and that there was exactly one error produced with given message
+     * The message is a combination of the standard part for all errors related to the data and specific message for
+     *   each case.
+     */
+    private void assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(StaticRegistrationResult result, String specificMessage) {
+        List<InstanceInfo> instances = result.getInstances();
+        List<Message> errors = result.getErrors();
+
+        assertThat(instances, hasSize(0));
+        assertThat(errors, hasSize(1));
+
+        final Message errorMsg = errors.get(0);
+        assertFullMessageIsCorrect(errorMsg.getConvertedText(), specificMessage);
+    }
+
+    private void assertFullMessageIsCorrect(String actualFullMessage, String specificMessage) {
+        String expectedError = String.format("Unable to process static API definition data: 'test.yml' - '%s'", specificMessage);
+        assertThat(actualFullMessage, is(expectedError));
     }
 
     @Test
-    public void testCreateInstancesWithMultipleStaticDefinitions() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
+    public void givenInstanceDefinitionWithoutInstanceBaseUrls_whenStaticDefinitionIsProcessed_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -404,19 +410,19 @@ public class ServiceDefinitionProcessorTest {
                 "        title: Tile Title\n" +
                 "        description: Tile Description\n";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", yaml);
+        StaticRegistrationResult result = processServicesData(yaml);
         List<InstanceInfo> instances = result.getInstances();
+        List<Message> errors = result.getErrors();
+
         assertThat(instances.size(), is(2));
-        assertTrue(result.getErrors().get(0) instanceof String);
+        assertThat(errors, hasSize(1));
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
-
+        final Message errorMsg = errors.get(0);
+        assertFullMessageIsCorrect(errorMsg.getConvertedText(), "The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created.");
     }
 
     @Test
     public void testCreateInstancesWithMultipleYmls() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -458,19 +464,16 @@ public class ServiceDefinitionProcessorTest {
         ymlSources.put("yaml", yaml);
         ymlSources.put("yaml1", yaml2);
         ymlSources.put("yaml2", yaml3);
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, ymlSources);
+        StaticRegistrationResult result = processServicesData(ymlSources);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(2));
-        assertTrue(result.getErrors().get(0) instanceof String);
 
-        final String errorMsg = (String) result.getErrors().get(0);
-        assertTrue(errorMsg.contains("The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created."));
-
+        final Message errorMsg = result.getErrors().get(0);
+        assertThat(errorMsg.getConvertedText(), is("Unable to process static API definition data: 'yaml1' - 'The instanceBaseUrls parameter of casamplerestapiservice2 is not defined. The instance will not be created.'"));
     }
 
     @Test
     public void testEnableUnsecurePortIfHttp() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -484,7 +487,7 @@ public class ServiceDefinitionProcessorTest {
             "        - gatewayUrl: api/v2\n" +
             "          serviceRelativeUrl: api/v2\n";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertThat(instances.size(), is(1));
         assertFalse(instances.get(0).isPortEnabled(InstanceInfo.PortType.SECURE));
@@ -496,7 +499,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void shouldGenerateMetadataIfApiInfoIsNotNUll() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      catalogUiTileId: static\n" +
@@ -518,7 +520,7 @@ public class ServiceDefinitionProcessorTest {
             "        title: Static API Services\n" +
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor,"test", routedServiceYaml);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
         assertEquals(10019, instances.get(0).getSecurePort());
@@ -538,7 +540,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void shouldGiveErrorIfTileIdIsInvalid() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      catalogUiTileId: adajand\n" +
@@ -560,13 +561,14 @@ public class ServiceDefinitionProcessorTest {
             "        title: Static API Services\n" +
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
-        assertEquals("Error processing file test - The API Catalog UI tile ID adajand is invalid. The service casamplerestapiservice will not have API Catalog UI tile", result.getErrors().get(0));
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
+
+        final Message errorMsg = result.getErrors().get(0);
+        assertFullMessageIsCorrect(errorMsg.getConvertedText(), "The API Catalog UI tile ID adajand is invalid. The service casamplerestapiservice will not have API Catalog UI tile");
     }
 
     @Test
     public void testFindServicesWithTwoDirectories() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         String pathTwo = ClassLoader.getSystemResource("ext-config/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";" + pathTwo);
@@ -576,7 +578,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testFindServicesWithOneDirectory() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne);
 
@@ -585,7 +586,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testFindServicesWithSecondEmptyDirectory() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";");
 
@@ -594,7 +594,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testProcessServicesDataWithAuthenticationMetadata() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -602,7 +601,7 @@ public class ServiceDefinitionProcessorTest {
             "      authentication:\n" +
             "        scheme: httpBasicPassTicket\n" +
             "        applid: TSTAPPL\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
         assertEquals(new ArrayList<>(), result.getErrors());
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(1, instances.size());
@@ -612,14 +611,13 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testProcessServicesDataWithInvalidAuthenticationScheme() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
             "        - https://localhost:10019/casamplerestapiservice/\n" +
             "      authentication:\n" +
             "        scheme: bad\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
         assertEquals(1, result.getErrors().size());
         List<InstanceInfo> instances = result.getInstances();
         assertEquals(0, instances.size());
@@ -627,7 +625,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testAdditionalServiceMetadata() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml =
             "additionalServiceMetadata:\n" +
             "    - serviceId: testService\n" +
@@ -648,7 +645,7 @@ public class ServiceDefinitionProcessorTest {
             "           - apiId: apiId2\n" +
             "             gatewayUrl: api/v2\n" +
             "             swaggerUrl: https://localhost:10012/discoverableclient2/api-doc\n";
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        StaticRegistrationResult result = processServicesData(routedServiceYaml);
         Map<String, ServiceOverrideData> asm = result.getAdditionalServiceMetadata();
         assertEquals(1, asm.size());
         assertTrue(asm.containsKey("testService"));
@@ -680,7 +677,6 @@ public class ServiceDefinitionProcessorTest {
 
     @Test
     public void testAdditionalServiceMetadataMulti() {
-        ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
         String routedServiceYaml =
             "additionalServiceMetadata:\n" +
             "    - serviceId: service1\n" +
@@ -692,7 +688,7 @@ public class ServiceDefinitionProcessorTest {
             "      mode: FORCE_UPDATE\n" +
             "      title: title3\n";
 
-        StaticRegistrationResult result = processServicesData(serviceDefinitionProcessor, "test", routedServiceYaml);
+        StaticRegistrationResult result = processServicesData( routedServiceYaml);
         Map<String, ServiceOverrideData> asm = result.getAdditionalServiceMetadata();
 
         assertEquals(2, asm.size());
@@ -705,10 +701,8 @@ public class ServiceDefinitionProcessorTest {
 
         assertEquals("title2", asm.get("service1").getMetadata().get(SERVICE_TITLE));
 
-        assertTrue(result.getErrors().get(0) instanceof String);
-        final String errMsg = (String) result.getErrors().get(0);
-        assertTrue(errMsg.contains("were replaced for duplicities"));
+        final Message errorMsg = result.getErrors().get(0);
+        assertFullMessageIsCorrect(errorMsg.getConvertedText(), "Additional service metadata of service1 in processing file test.yml were replaced for duplicities");
     }
-
 }
 

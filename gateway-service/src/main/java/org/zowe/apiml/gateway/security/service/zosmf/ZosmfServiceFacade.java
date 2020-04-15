@@ -13,8 +13,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
+import com.nimbusds.jose.jwk.JWKSet;
 import lombok.Data;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheEvict;
@@ -28,12 +30,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 import org.zowe.apiml.gateway.security.service.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import javax.annotation.PostConstruct;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -49,10 +53,16 @@ import java.util.List;
  */
 @Primary
 @Service
+@Slf4j
 public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceCacheEvict {
+
+    private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
 
     protected final ApplicationContext applicationContext;
     protected final List<ZosmfService> implementations;
+
+    @org.springframework.beans.factory.annotation.Value("${apiml.security.zosmf.useJwtToken:true}")
+    private boolean useZosmfJwtToken;
 
     /**
      * This attribute is used for calling of methods in the bean, which are covered by AOP (cache). Direct call will
@@ -145,7 +155,7 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
         final ZosmfInfo zosmfInfo = meProxy.getZosmfInfo(zosmfServiceId);
         final int version = getVersion(zosmfInfo);
         for (final ZosmfService zosmfService : implementations) {
-            if (zosmfService.matchesVersion(version)) return new ImplementationWrapper(zosmfInfo, zosmfService);
+            if (zosmfService.isSupported(version)) return new ImplementationWrapper(zosmfInfo, zosmfService);
         }
 
         meProxy.evictCaches();
@@ -179,9 +189,8 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
     public void invalidate(TokenType type, String token) {
         getImplementation().getZosmfService().invalidate(type, token);
     }
-
     @Override
-    public boolean matchesVersion(int version) {
+    public boolean isSupported(int version) {
         return false;
     }
 
@@ -195,6 +204,28 @@ public class ZosmfServiceFacade extends AbstractZosmfService implements ServiceC
         if (StringUtils.equalsIgnoreCase(getZosmfServiceId(), serviceId)) {
             meProxy.evictCaches();
         }
+    }
+
+    /**
+     * Method returns all public keys for z/OSMF. They could be use to verify JWT token signed z/OSMF.
+     * It contains usually just one key, but by definition there could be up to N keys.
+     *
+     * If REST API of z/OSMF is not available or it is invalid, an empty set of keys is returned.
+     *
+     * @return JWKSet with public keys from z/OSMF
+     */
+    public JWKSet getPublicKeys() {
+        final String url = getURI(getZosmfServiceId()) + PUBLIC_JWK_ENDPOINT;
+
+        try {
+            final String json = restTemplateWithoutKeystore.getForObject(url, String.class);
+            return JWKSet.parse(json);
+        } catch (ParseException pe) {
+            log.debug("Invalid format of public keys from z/OSMF", pe);
+        } catch (HttpClientErrorException.NotFound nf) {
+            log.debug("Cannot get public keys from z/OSMF", nf);
+        }
+        return new JWKSet();
     }
 
     /**

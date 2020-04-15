@@ -92,3 +92,9 @@ api-layer.tar.gz
 gateway-service/**/*.data
 gateway-service/**/*.index
 .ehcache-diskstore.lock
+gateway-service/jwt*.tmp
+
+# zowe-api-dev
+.zowe-api-dev
+user-zowe-api.json
+lastJob.json

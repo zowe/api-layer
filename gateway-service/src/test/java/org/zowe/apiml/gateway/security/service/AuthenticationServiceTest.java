@@ -208,7 +208,7 @@ public class AuthenticationServiceTest {
         assertEquals(DOMAIN, parsedToken.getDomain());
         assertEquals(USER, parsedToken.getUserId());
         assertEquals(parsedToken.getCreation().toString().substring(0, 16), dateNow);
-        Date toBeExpired = DateUtils.addDays(parsedToken.getCreation(), 1);
+        Date toBeExpired = DateUtils.addHours(parsedToken.getCreation(), 24);
         assertEquals(parsedToken.getExpiration(), toBeExpired);
     }
 
@@ -316,8 +316,8 @@ public class AuthenticationServiceTest {
         tokenAuthentication = authService.validateJwtToken(jwt1);
         assertFalse(tokenAuthentication.isAuthenticated());
         verify(restTemplate, times(2)).delete(anyString(), (Object[]) any());
-        verify(restTemplate).delete("https://hostname1:10433/auth/invalidate/{}", jwt1);
-        verify(restTemplate).delete("http://hostname2:10001/auth/invalidate/{}", jwt1);
+        verify(restTemplate).delete("https://hostname1:10433/gateway/auth/invalidate/{}", jwt1);
+        verify(restTemplate).delete("http://hostname2:10001/gateway/auth/invalidate/{}", jwt1);
         verify(restTemplate, times(1))
             .exchange(eq(zosmfUrl + "/zosmf/services/authenticate"), eq(HttpMethod.DELETE), any(), eq(String.class));
     }
@@ -564,8 +564,8 @@ public class AuthenticationServiceTest {
         authenticationService.distributeInvalidate(instanceInfo.getInstanceId());
 
         verify(restTemplate, times(2)).delete(anyString(), anyString());
-        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}", "a");
-        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}", "a");
+        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
+        verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
     }
 
     @Configuration

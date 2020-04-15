@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.loadbalancer.*;
@@ -26,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -42,14 +42,17 @@ public class GatewayRibbonConfig {
     @Primary
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
-        @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore,
+        @Qualifier("apimlCloseableHttpClientConfig") CloseableHttpClient apimlCloseableHttpClient,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
         EurekaClient discoveryClient,
         CacheManager cacheManager,
         ApplicationContext applicationContext
     ) {
-        return new GatewayRibbonLoadBalancingHttpClientImpl(secureHttpClientWithoutKeystore, config, serverIntrospector, discoveryClient, cacheManager, applicationContext);
+        return new GatewayRibbonLoadBalancingHttpClientImpl(
+            apimlCloseableHttpClient, config, serverIntrospector,
+            discoveryClient, cacheManager, applicationContext
+        );
     }
 
     @Bean

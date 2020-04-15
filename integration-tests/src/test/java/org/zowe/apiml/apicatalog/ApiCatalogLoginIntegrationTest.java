@@ -14,8 +14,8 @@ import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -44,7 +44,7 @@ public class ApiCatalogLoginIntegrationTest {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }

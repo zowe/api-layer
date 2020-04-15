@@ -9,18 +9,20 @@
 */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
-import com.netflix.zuul.context.RequestContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -42,7 +44,7 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
             }
 
             @Override
-            public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) {
+            public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token) {
                 return COMMAND;
             }
         };
@@ -128,7 +130,7 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void testGetAuthenticationCommand() throws Exception {
+    public void testGetAuthenticationCommand() {
         final AbstractAuthenticationScheme byPass = spy(createScheme(AuthenticationScheme.BYPASS, true));
         final AbstractAuthenticationScheme passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false));
 
@@ -145,40 +147,40 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
         when(as.getJwtTokenFromRequest(null)).thenReturn(Optional.empty());
         when(as.parseJwtToken("jwtToken123")).thenReturn(qr);
 
-        verify(byPass, times(0)).createCommand(authentication, null);
-        verify(passTicket, times(0)).createCommand(authentication, null);
+        verify(byPass, times(0)).createCommand(eq(authentication), argThat(x -> x.get() == null));
+        verify(passTicket, times(0)).createCommand(eq(authentication), argThat(x -> x.get() == null));
         asf.getAuthenticationCommand(authentication);
 
-        verify(byPass, times(1)).createCommand(authentication, null);
-        verify(passTicket, times(0)).createCommand(authentication, null);
+        verify(byPass, times(1)).createCommand(eq(authentication), argThat(x -> x.get() == null));
+        verify(passTicket, times(0)).createCommand(eq(authentication), argThat(x -> x.get() == null));
         authentication.setScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
         asf.getAuthenticationCommand(authentication);
 
-        verify(byPass, times(1)).createCommand(authentication, null);
-        verify(passTicket, times(1)).createCommand(authentication, null);
+        verify(byPass, times(1)).createCommand(eq(authentication), argThat(x -> x.get() == null));
+        verify(passTicket, times(1)).createCommand(eq(authentication), argThat(x -> x.get() == null));
         authentication.setScheme(null);
         asf.getAuthenticationCommand(authentication);
 
-        verify(byPass, times(2)).createCommand(authentication, null);
-        verify(passTicket, times(1)).createCommand(authentication, null);
+        verify(byPass, times(2)).createCommand(eq(authentication), argThat(x -> x.get() == null));
+        verify(passTicket, times(1)).createCommand(eq(authentication), argThat(x -> x.get() == null));
         asf.getAuthenticationCommand(null);
 
-        verify(byPass, times(2)).createCommand(authentication, null);
-        verify(byPass, times(1)).createCommand(null, null);
-        verify(passTicket, times(1)).createCommand(authentication, null);
+        verify(byPass, times(2)).createCommand(eq(authentication), argThat(x -> x.get() == null));
+        verify(byPass, times(1)).createCommand(eq(null), argThat(x -> x.get() == null));
+        verify(passTicket, times(1)).createCommand(eq(authentication), argThat(x -> x.get() == null));
 
         RequestContext.testSetCurrentContext(requestContext);
 
-        verify(byPass, times(0)).createCommand(authentication, qr);
-        verify(passTicket, times(0)).createCommand(authentication, qr);
+        verify(byPass, times(0)).createCommand(eq(authentication), argThat(x -> Objects.equals(qr, x.get())));
+        verify(passTicket, times(0)).createCommand(eq(authentication), argThat(x -> Objects.equals(qr, x.get())));
         authentication.setScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
         asf.getAuthenticationCommand(authentication);
-        verify(byPass, times(0)).createCommand(authentication, qr);
-        verify(passTicket, times(1)).createCommand(authentication, qr);
+        verify(byPass, times(0)).createCommand(eq(authentication), argThat(x -> Objects.equals(qr, x.get())));
+        verify(passTicket, times(1)).createCommand(eq(authentication), argThat(x -> Objects.equals(qr, x.get())));
     }
 
     @Test
-    public void testUnknownScheme() throws Exception {
+    public void testUnknownScheme() {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
             mock(AuthenticationService.class),
             Arrays.asList(

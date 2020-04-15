@@ -11,14 +11,18 @@ package org.zowe.apiml.gateway.security.service.zosmf;/*
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import lombok.AllArgsConstructor;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.ZosmfService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -37,6 +41,19 @@ public class ZosmfServiceFacadeTest {
 
     private RestTemplate restTemplate = mock(RestTemplate.class);
     private ZosmfServiceFacadeTestExt zosmfService;
+
+    private static final String ZOSMF_PUBLIC_KEY_JSON = "{\n" +
+        "    \"keys\": [\n" +
+        "        {\n" +
+        "            \"kty\": \"RSA\",\n" +
+        "            \"e\": \"AQAB\",\n" +
+        "            \"use\": \"sig\",\n" +
+        "            \"kid\": \"ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg\",\n" +
+        "            \"alg\": \"RS256\",\n" +
+        "            \"n\": \"wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q\"\n" +
+        "        }\n" +
+        "    ]\n" +
+        "}";
 
     @Before
     public void setUp() {
@@ -209,9 +226,9 @@ public class ZosmfServiceFacadeTest {
     }
 
     @Test
-    public void testMatchesVersion() {
-        assertFalse(zosmfService.matchesVersion(1));
-        assertFalse(zosmfService.matchesVersion(25));
+    public void testIsSupported() {
+        assertFalse(zosmfService.isSupported(1));
+        assertFalse(zosmfService.isSupported(25));
     }
 
     @Test
@@ -272,6 +289,30 @@ public class ZosmfServiceFacadeTest {
         assertNull(new ZosmfServiceFacadeTestExt(null, null, null, null, null, null).readTokenFromCookie(null, null));
     }
 
+    @Test
+    public void testGetPublicKeys_zosm404() {
+        when(restTemplate.getForObject(anyString(), any()))
+            .thenThrow(mock(HttpClientErrorException.NotFound.class));
+        assertTrue(zosmfService.getPublicKeys().getKeys().isEmpty());
+    }
+
+    @Test
+    public void testGetPublicKeys_invalidFormat() {
+        when(restTemplate.getForObject(anyString(), any()))
+            .thenReturn("invalidFormat");
+        assertTrue(zosmfService.getPublicKeys().getKeys().isEmpty());
+    }
+
+    @Test
+    public void testGetPublicKeys_success() throws JSONException {
+        when(restTemplate.getForObject(
+            "http://zosmf:1433/jwt/ibm/api/zOSMFBuilder/jwk",
+            String.class
+        )).thenReturn(ZOSMF_PUBLIC_KEY_JSON);
+
+        JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toString()), true);
+    }
+
     @AllArgsConstructor
     private static class TestException extends RuntimeException {
 
@@ -304,7 +345,7 @@ public class ZosmfServiceFacadeTest {
         }
 
         @Override
-        public boolean matchesVersion(int version) {
+        public boolean isSupported(int version) {
             return this.version == version;
         }
 
@@ -331,7 +372,7 @@ public class ZosmfServiceFacadeTest {
         }
 
         @Override
-        public boolean matchesVersion(int version) {
+        public boolean isSupported(int version) {
             return this.version == version;
         }
 
@@ -345,7 +386,7 @@ public class ZosmfServiceFacadeTest {
 
         public ZosmfService getService(int version) {
             for (final ZosmfService zosmfService : implementations) {
-                if (zosmfService.matchesVersion(version)) return zosmfService;
+                if (zosmfService.isSupported(version)) return zosmfService;
             }
             return null;
         }

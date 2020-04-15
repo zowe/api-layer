@@ -11,9 +11,10 @@ package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
@@ -29,12 +30,12 @@ public class EncodedCharactersTest {
     private String host;
     private int port;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
@@ -43,6 +44,7 @@ public class EncodedCharactersTest {
     }
 
     @Test
+    @TestsNotMeantForZowe
     public void shouldCallDiscoverableServiceWithEncodedCharacterAndAllow() {
         final String encodedURI = "/api/v1/discoverableclient/wor%2fld/greeting";
 

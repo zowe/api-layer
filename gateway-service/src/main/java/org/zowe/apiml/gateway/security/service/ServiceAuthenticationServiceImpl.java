@@ -9,25 +9,27 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.gateway.config.CacheConfig;
-import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationScheme;
-import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
-import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
-import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
-import org.zowe.apiml.util.CacheUtils;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationScheme;
+import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
+import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
+import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.util.CacheUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -92,16 +94,16 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     @Override
     @CacheEvict(value = CACHE_BY_AUTHENTICATION, condition = "#result != null && #result.isExpired()")
     @Cacheable(CACHE_BY_AUTHENTICATION)
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) throws AuthenticationException {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication, String jwtToken) {
         final AbstractAuthenticationScheme scheme = authenticationSchemeFactory.getSchema(authentication.getScheme());
-        final QueryResponse queryResponse = authenticationService.parseJwtToken(jwtToken);
-        return scheme.createCommand(authentication, queryResponse);
+        if (jwtToken == null) return scheme.createCommand(authentication, () -> null);
+        return scheme.createCommand(authentication, () -> authenticationService.parseJwtToken(jwtToken));
     }
 
     @Override
     @CacheEvict(value = CACHE_BY_SERVICE_ID, condition = "#result != null && #result.isExpired()")
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
-    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) throws AuthenticationException {
+    public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
         final Application application = discoveryClient.getApplication(serviceId);
         if (application == null) return AuthenticationCommand.EMPTY;
 
@@ -147,18 +149,38 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
         private static final long serialVersionUID = -2980076158001292742L;
 
+        private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
+
         protected UniversalAuthenticationCommand() {}
 
         @Override
-        public void apply(InstanceInfo instanceInfo) throws AuthenticationException {
+        public void apply(InstanceInfo instanceInfo) {
             if (instanceInfo == null) throw new NullPointerException("Argument instanceInfo is required");
 
             final Authentication auth = getAuthentication(instanceInfo);
-            final HttpServletRequest request = RequestContext.getCurrentContext().getRequest();
+            final RequestContext requestContext = RequestContext.getCurrentContext();
+            final HttpServletRequest request = requestContext.getRequest();
 
-            final String jwtToken = getAuthenticationService().getJwtTokenFromRequest(request).orElse(null);
+            AuthenticationCommand cmd = null;
 
-            final AuthenticationCommand cmd = getAuthenticationCommand(auth, jwtToken);
+            boolean rejected = false;
+            try {
+                final String jwtToken = getAuthenticationService().getJwtTokenFromRequest(request).orElse(null);
+                cmd = getAuthenticationCommand(auth, jwtToken);
+
+                // if authentication schema required valid JWT, check it
+                if (cmd.isRequiredValidJwt()) {
+                    rejected = (jwtToken == null) || !authenticationService.validateJwtToken(jwtToken).isAuthenticated();
+                }
+
+            } catch (AuthenticationException ae) {
+                rejected = true;
+            }
+
+            if (rejected) {
+                throw new ExecutionListener.AbortExecutionException(INVALID_JWT_MESSAGE, new BadCredentialsException(INVALID_JWT_MESSAGE));
+            }
+
             cmd.apply(null);
         }
 
@@ -166,6 +188,12 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
         public boolean isExpired() {
             return false;
         }
+
+        @Override
+        public boolean isRequiredValidJwt() {
+            return false;
+        }
+
     }
 
     public class LoadBalancerAuthenticationCommand extends AuthenticationCommand {
@@ -183,6 +211,11 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
 
         @Override
         public boolean isExpired() {
+            return false;
+        }
+
+        @Override
+        public boolean isRequiredValidJwt() {
             return false;
         }
 

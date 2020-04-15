@@ -87,7 +87,7 @@ To configure variouse environment specific variables for development see [this e
 
 If you want to develop only on the UI side mocked backend can come in handy. It serves a static jsons from the `mocked-abackend/assets` folder.
 
-To fire up the server run `npm run start:mocked-backend`;
+To fire up the server run `npm run start:mock`;
 
 The server tuns on <http://localhost:8000/> and the endpoints addresses are set up so that they simulate the real services as much as possible.
 

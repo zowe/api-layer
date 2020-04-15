@@ -9,14 +9,15 @@
  */
 package org.zowe.apiml.gatewayservice;
 
-import org.zowe.apiml.util.config.ConfigReader;
 import io.restassured.RestAssured;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.config.ConfigReader;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 
@@ -32,7 +33,7 @@ public class QueryIntegrationTest {
 
     private String token;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.port = PORT;
         RestAssured.basePath = BASE_PATH;

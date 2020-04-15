@@ -36,6 +36,16 @@ then
   APIML_STATIC_DEF="${APIML_STATIC_DEF};${ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES}"
 fi
 
+LIBPATH="$LIBPATH":"/lib"
+LIBPATH="$LIBPATH":"/usr/lib"
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
+export LIBPATH="$LIBPATH":
+
 DISCOVERY_CODE=AD
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dibm.serversocket.recover=true \
@@ -53,6 +63,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m -Xquickstart 
     -Dapiml.service.preferIpAddress=true \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
+    -Dapiml.security.zosmf.useJwtToken=true \
     -Dserver.ssl.enabled=true \
     -Dserver.ssl.keyStore=${KEYSTORE} \
     -Dserver.ssl.keyStoreType=${KEYSTORE_TYPE} \
@@ -121,4 +132,5 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart \
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -jar ${ROOT_DIR}"/components/api-mediation/gateway-service.jar" &
+    -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/usr/include/java_classes/IRRRacf.jar \
+    org.springframework.boot.loader.PropertiesLauncher &
