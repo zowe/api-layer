@@ -11,12 +11,9 @@ package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
 import lombok.AllArgsConstructor;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,8 +48,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  *   - credentials.password = user
  *  - static definition of zosmf could be supported, but it is suggested to haven't any one
  */
-@RunWith(JUnit4.class)
-@Category(AdditionalLocalTest.class)
+@AdditionalLocalTest
 public class ZosmfAuthenticationTest {
 
     private static final String ZOSMF_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
@@ -64,7 +60,7 @@ public class ZosmfAuthenticationTest {
 
     private static final int TIMEOUT_REGISTRATION = 10;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -79,7 +75,7 @@ public class ZosmfAuthenticationTest {
         );
     }
 
-    @After
+    @AfterEach
     public void after() {
         // reload static clients to use default one again
         DiscoveryUtils.getDiscoveryUrls().forEach(ds -> {
