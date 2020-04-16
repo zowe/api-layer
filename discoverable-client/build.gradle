@@ -63,7 +63,7 @@ jar {
     enabled = true
     archiveName = "${jar.baseName}-thin.jar"
 
-    def libClassPathEntries = configurations.runtime.files.collect {
+    def libClassPathEntries = configurations.runtimeClasspath.files.collect {
         "lib/" + it.getName()
     }
     doFirst {
