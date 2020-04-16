@@ -101,8 +101,7 @@ ribbon:
     MaxAutoRetriesNextServer: 5
     OkToRetryOnAllOperations: true
     IsSecure: true
-    EnableGZIPContentEncodingFilter: true
-    GZipPayload: true
+    GZipPayload: false # this stops Gateway from deflating gzip responses from services
 
 http:
     connection:
