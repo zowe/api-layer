@@ -12,11 +12,9 @@ package org.zowe.apiml.zaasclient.token;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 
 /**
- * Get JWT tokens, PaasTickets and details about the Tokens.
- * Facade covering all operations related to the security API exposed via API Mediation Layer
- * The implementations hide the actual methods used to obtain the information.
+ * Operations related to the tokens. Mainly JWT token.
  */
-public interface ZaasClient {
+interface TokenService {
     /**
      * Tries to login a user given the id and the password of the user. The password is expected in plain text.
      *
@@ -48,17 +46,4 @@ public interface ZaasClient {
      *      communication occurs, this exception with details is thrown.
      */
     ZaasToken query(String token) throws ZaasClientException;
-
-    /**
-     * Retrieve PassTicket based on the valid JWT Token and the application id. To succeed the Application ID must
-     * be known by the PassTicker provider and the JWT token must be valid and not expired.
-     *
-     * @param jwtToken Valid JWT Token. One of the ways to obtain the token is via the login methods in this interface.
-     * @param applicationId Valid application id known by the provider. The application Id will usually be up to 8 letters
-     *                      long. Get the details from the PassTicket provider you are using.
-     * @return Valid PassTicket to be used with other services supporting PassTicket as authorization method.
-     * @throws ZaasClientException If the provided token was expired, invalid or application id was unknown or some other
-     *      issue with respect to communication occurs, this exception with details is thrown.
-     */
-    String passTicket(String jwtToken, String applicationId) throws ZaasClientException;
 }

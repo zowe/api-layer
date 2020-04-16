@@ -23,7 +23,7 @@ import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.token.ZaasClient;
-import org.zowe.apiml.zaasclient.token.ZaasClientImpl;
+import org.zowe.apiml.zaasclient.token.ZaasClientHttps;
 import org.zowe.apiml.zaasclient.token.ZaasToken;
 
 import java.io.File;
@@ -103,8 +103,7 @@ public class ZaasClientIntegrationTest {
     @BeforeEach
     public void setUp() {
         configProperties = ConfigReaderZaasClient.getConfigProperties();
-        tokenService = new ZaasClientImpl();
-        tokenService.init(configProperties);
+        tokenService = new ZaasClientHttps(configProperties);
     }
 
     @Test
@@ -127,9 +126,7 @@ public class ZaasClientIntegrationTest {
     @ParameterizedTest
     @MethodSource("provideInvalidUsernamePassword")
     public void giveInvalidCredentials_whenLoginIsRequested_thenProperExceptionIsRaised(String username, String password, ZaasClientErrorCodes expectedCode) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> {
-            tokenService.login(username, password);
-        });
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
 
         assertThatExceptionContainValidCode(exception, expectedCode);
     }
@@ -150,9 +147,7 @@ public class ZaasClientIntegrationTest {
     @ParameterizedTest
     @MethodSource("provideInvalidAuthHeaders")
     public void doLoginWithAuthHeaderInValidUsername(String authHeader, ZaasClientErrorCodes expectedCode) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> {
-            tokenService.login(authHeader);
-        });
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
 
         assertThatExceptionContainValidCode(exception, expectedCode);
     }
