@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.bmuschko:gradle-tomcat-plugin:2.4.2'
+        classpath 'com.bmuschko:gradle-tomcat-plugin:2.5'
     }
 }
 
@@ -37,7 +37,7 @@ dependencies {
     testCompile libraries.mockito_core
     testCompile libraries.json_path
 
-    def tomcatVersion = '8.0.53'
+    def tomcatVersion = '8.0.42'
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
         "org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}"
