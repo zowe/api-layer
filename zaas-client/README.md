@@ -107,13 +107,7 @@ To use this library use the procedure described in this article.
 2. In your application, create your java class which will be used to create an instance of `ZaasClient` and further to use its method to
    login, query and to issue passTicket.
 
-3. Create an instance of `ZaasClient` in your class like the following:
-
-    ```java
-    ZaasClient zaasClient = new ZaasClientImpl();
-    ```
-
-4. To use `zaas-client`, provide a property file for configuration. Kindly check `org.zowe.apiml.zaasclient.config.ConfigProperites` to make sure what properties we have to provide in the property file. 
+3. To use `zaas-client`, provide a property file for configuration. Kindly check `org.zowe.apiml.zaasclient.config.ConfigProperites` to make sure what properties we have to provide in the property file. 
  
     ```java
         public ConfigProperties getConfigProperties(){
@@ -152,11 +146,11 @@ To use this library use the procedure described in this article.
         }   
    ``` 
    
-5. With the following code inject the `configProperties` object we just initialised in `ZaasClient` instance created in Step 3.
-    
+4. Create an instance of `ZaasClient` in your class and provide the `configProperties` object like the following:
+
     ```java
-       zaasClient.init(getConfigProperties);
-     ```
+    ZaasClient zaasClient = new ZaasClientHttps(getConfigProperties());
+    ```
    
 6. Now use any of the method from `ZaasClient` in your class. Like for login use the following code snippet:
 
@@ -177,8 +171,8 @@ To use this library use the procedure described in this article.
          */
         public String login(String username, String password) {
             try {
+                ZaasClient zaasClient = new ZaasClientHttps(getConfigProperties());
                 String zaasClientToken = zaasClient.login(username, password);
-                zaasClient.init(getConfigProperties);
                 //Use this token  in subsequent calls
             } catch (ZaasClientException exception) {
                 System.out.println(exception.getErrorMessage());
