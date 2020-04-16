@@ -49,7 +49,6 @@ public class SwaggerConfiguration {
             .securitySchemes(
                 Arrays.asList(
                     new BasicAuth("LoginBasicAuth"),
-                    new ApiKey("Bearer", "Authorization", "header"),
                     new ApiKey("CookieAuth", "apimlAuthenticationToken", "header")
                 )
             )

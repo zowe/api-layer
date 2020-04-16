@@ -53,7 +53,7 @@ public class CatalogApiDocController {
         notes = "Returns the API documentation for a specific service {serviceId} and version {apiVersion}. When " +
             " the API documentation for the specified version is not found, the first discovered version will be used.",
         authorizations = {
-            @Authorization("LoginBasicAuth"), @Authorization("Bearer"), @Authorization("CookieAuth")
+            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         },
         response = String.class)
     @ApiResponses(value = {
