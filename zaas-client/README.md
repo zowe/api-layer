@@ -17,8 +17,6 @@ This java library provides you the `ZaasClient` interface:
 
     ```java
     public interface ZaasClient {
-        static String COOKIE_PREFIX = "apimlAuthenticationToken";
-        void init(ConfigProperties configProperties);
         String login(String userId, String password) throws ZaasClientException;
         String login(String authorizationHeader) throws ZaasClientException;
         ZaasToken query(String token) throws ZaasClientException;
@@ -174,6 +172,7 @@ To use this library use the procedure described in this article.
                 ZaasClient zaasClient = new ZaasClientHttps(getConfigProperties());
                 String zaasClientToken = zaasClient.login(username, password);
                 //Use this token  in subsequent calls
+                return zaasClientToken;
             } catch (ZaasClientException exception) {
                 System.out.println(exception.getErrorMessage());
             }
