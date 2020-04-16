@@ -18,7 +18,10 @@ public enum ZaasClientErrorCodes {
     GENERIC_EXCEPTION("ZWEAZC170E", "An exception occurred while trying to get the token", 400),
     APPLICATION_NAME_NOT_FOUND("ZWEAZC417E", "The token provided is invalid", 404),
     TOKEN_NOT_PROVIDED("ZWEAZC401E", "The token provided is not provided", 401),
-    EXPIRED_JWT_EXCEPTION("ZWEAT100E", "Token is expired for URL", 401);
+    EXPIRED_JWT_EXCEPTION("ZWEAT100E", "Token is expired for URL", 401),
+    BAD_REQUEST("ZWEAZC400E", "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function " +
+        "and application ID is configured properly by referring to Using PassTickets in z/OS Security Server " +
+        "RACF Security Administrator's Guide.", 400);
 
     private final String id;
     private final String message;
