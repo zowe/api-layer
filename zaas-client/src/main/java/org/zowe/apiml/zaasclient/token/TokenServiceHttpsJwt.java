@@ -124,7 +124,7 @@ public class TokenServiceHttpsJwt implements TokenService {
         }
     }
 
-    private String extractToken(CloseableHttpResponse response) throws ZaasClientException {
+    private String extractToken(CloseableHttpResponse response) throws ZaasClientException, IOException {
         String token = "";
         int httpResponseCode = response.getStatusLine().getStatusCode();
         if (httpResponseCode == 204) {
@@ -136,10 +136,13 @@ public class TokenServiceHttpsJwt implements TokenService {
                 token = apimlAuthCookie.get().getValue();
             }
         } else if (httpResponseCode == 401) {
+            log.error(EntityUtils.toString(response.getEntity()));
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION);
         } else if (httpResponseCode == 400) {
+            log.error(EntityUtils.toString(response.getEntity()));
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         } else {
+            log.error(EntityUtils.toString(response.getEntity()));
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
         }
         return token;

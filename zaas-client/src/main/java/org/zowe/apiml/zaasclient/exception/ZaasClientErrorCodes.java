@@ -17,14 +17,14 @@ public enum ZaasClientErrorCodes {
     SERVICE_UNAVAILABLE("ZWEAZC404E", "Gateway service is unavailable", 404),
     GENERIC_EXCEPTION("ZWEAZC170E", "An exception occurred while trying to get the token", 400),
     APPLICATION_NAME_NOT_FOUND("ZWEAZC417E", "The token provided is invalid", 404),
-    TOKEN_NOT_PROVIDED("ZWEAZC401E", "The token provided is not provided", 401),
+    TOKEN_NOT_PROVIDED("ZWEAZC401E", "Token is not provided", 401),
     EXPIRED_JWT_EXCEPTION("ZWEAT100E", "Token is expired for URL", 401);
 
     private final String id;
     private final String message;
     private final int returnCode;
 
-    private ZaasClientErrorCodes(String id, String message, int returnCode) {
+    ZaasClientErrorCodes(String id, String message, int returnCode) {
         this.id = id;
         this.message = message;
         this.returnCode = returnCode;
