@@ -35,6 +35,7 @@ import static org.zowe.apiml.gateway.security.service.schema.ByPassScheme.AUTHEN
  * client of course).
  */
 @Configuration
+@Deprecated
 public class ApimlCloseableHttpClientConfig {
 
     private final CloseableHttpClient withCertificate;

@@ -70,11 +70,6 @@ class ApimlZoneAwareLoadBalancerTest {
     @Test
     public void givenNoServerList_whenChooseServer_thenSetNothing() {
 
-        InstanceInfo info = InstanceInfo.Builder.newBuilder()
-            .setAppName("appname")
-            .setInstanceId("instance")
-            .build();
-
         ApimlZoneAwareLoadBalancer balancer = new ApimlZoneAwareLoadBalancer(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, serviceCacheEvictor);
 

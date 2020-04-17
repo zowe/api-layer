@@ -49,6 +49,7 @@ import static org.springframework.cloud.netflix.ribbon.RibbonUtils.updateToSecur
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @Slf4j
+@Deprecated
 public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancingHttpClient implements GatewayRibbonLoadBalancingHttpClient {
 
     private static final String HTTPS = "https";

@@ -41,13 +41,13 @@ public class GatewayRibbonConfig {
     @Primary
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
-        @Qualifier("apimlCloseableHttpClientConfig") CloseableHttpClient apimlCloseableHttpClient,
+        @Qualifier("HttpClientProxy") CloseableHttpClient httpClientProxy,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
         LoadBalancedRetryFactory retryFactory
     ) {
         return new RetryableRibbonLoadBalancingHttpClient(
-            apimlCloseableHttpClient, config, serverIntrospector, retryFactory);
+            httpClientProxy, config, serverIntrospector, retryFactory);
     }
 
     @Bean
