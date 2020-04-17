@@ -40,7 +40,7 @@ public class HttpClientChooserTest {
 
     @Test
     public void givenBypassScheme_whenNoAuthentication_thenWithoutCertificate() {
-        RequestContext.getCurrentContext().set(AUTHENTICATION_SCHEME_BY_PASS_KEY);
+        RequestContext.getCurrentContext().put(AUTHENTICATION_SCHEME_BY_PASS_KEY, true);
         assertThat(chooser.chooseClient(), is(clientWithoutCertificate));
     }
 
@@ -51,14 +51,14 @@ public class HttpClientChooserTest {
 
     @Test
     public void givenBypassScheme_whenGenericAuthentication_thenWithout() {
-        RequestContext.getCurrentContext().set(AUTHENTICATION_SCHEME_BY_PASS_KEY);
+        RequestContext.getCurrentContext().put(AUTHENTICATION_SCHEME_BY_PASS_KEY, true);
         SecurityContextHolder.getContext().setAuthentication(mock(Authentication.class));
         assertThat(chooser.chooseClient(), is(clientWithoutCertificate));
     }
 
     @Test
     public void givenBypassSchemeAndX509Authentication_whenX509NotAuthenticated_thenWithout() {
-        RequestContext.getCurrentContext().set(AUTHENTICATION_SCHEME_BY_PASS_KEY);
+        RequestContext.getCurrentContext().put(AUTHENTICATION_SCHEME_BY_PASS_KEY, true);
         Authentication auth = mock(Authentication.class);
         when(auth.getCredentials()).thenReturn(mock(X509Certificate.class));
         SecurityContextHolder.getContext().setAuthentication(auth);
@@ -66,7 +66,7 @@ public class HttpClientChooserTest {
     }
     @Test
     public void givenBypassSchemeAndX509Authentication_whenX509Authenticated_thenWith() {
-        RequestContext.getCurrentContext().set(AUTHENTICATION_SCHEME_BY_PASS_KEY);
+        RequestContext.getCurrentContext().put(AUTHENTICATION_SCHEME_BY_PASS_KEY, true);
         Authentication auth = mock(Authentication.class);
         when(auth.isAuthenticated()).thenReturn(true);
         when(auth.getCredentials()).thenReturn(mock(X509Certificate.class));
