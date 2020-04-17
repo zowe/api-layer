@@ -9,14 +9,13 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
-import java.net.URI;
-
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.loadbalancer.Server;
-
 import org.springframework.cloud.client.loadbalancer.ServiceInstanceChooser;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
+import java.net.URI;
+@Deprecated
 public interface GatewayRibbonLoadBalancingHttpClient extends ServiceInstanceChooser, ServiceCacheEvict {
 
     public InstanceInfo putInstanceInfo(String serviceId, String instanceId, InstanceInfo instanceInfo);
