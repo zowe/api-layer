@@ -9,17 +9,16 @@
  */
 package org.zowe.apiml.gatewayservice;
 
-import org.junit.experimental.categories.Category;
-import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.path.xml.element.Node;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -64,7 +63,7 @@ public class PageRedirectionTest {
      * Test api instance of staticclient
      */
     @Test
-    @Category(TestsNotMeantForZowe.class)
+    @TestsNotMeantForZowe
     public void apiRouteOfDiscoverableClient() {
         String apiRelativeUrl = "/api/v1";
         String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, BASE_URL, apiRelativeUrl, "/greeting");
@@ -86,7 +85,7 @@ public class PageRedirectionTest {
      * Test ws instance of staticclient
      */
     @Test
-    @Category(TestsNotMeantForZowe.class)
+    @TestsNotMeantForZowe
     public void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
@@ -109,7 +108,7 @@ public class PageRedirectionTest {
      * Test ui instance of staticclient
      */
     @Test
-    @Category(TestsNotMeantForZowe.class)
+    @TestsNotMeantForZowe
     public void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
         String uiPrefix = "/ui/v1";

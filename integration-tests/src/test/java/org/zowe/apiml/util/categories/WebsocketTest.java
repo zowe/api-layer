@@ -9,10 +9,22 @@
  */
 package org.zowe.apiml.util.categories;
 
+import org.junit.jupiter.api.Tag;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+
 /**
  * A category marker for test that should be pass before other integration tests,
  * to make sure that all services are ready for testing.
  * These tests will run before all other integration tests.
  */
-public interface WebsocketTest {
+@Tag("WebsocketTest")
+@Target({ TYPE, METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface WebsocketTest {
 }

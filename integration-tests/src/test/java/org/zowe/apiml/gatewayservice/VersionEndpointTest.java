@@ -10,9 +10,9 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
@@ -25,12 +25,12 @@ public class VersionEndpointTest {
 
     private String requestString;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         String scheme = serviceConfiguration.getScheme();
