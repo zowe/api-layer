@@ -14,6 +14,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.junit.Before;
 import org.junit.Test;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
+import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 
 import java.io.File;
 import java.io.FileReader;
@@ -65,12 +66,12 @@ public class HttpsClientTest {
 
     //tests
     @Test
-    public void testGetHttpClientWithTrustStore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+    public void testGetHttpClientWithTrustStore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, ZaasClientException {
         assertNotNull(httpsClient.getHttpsClientWithTrustStore());
     }
 
     @Test
-    public void testGetHttpClientWithTrustStoreWithCookies() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+    public void testGetHttpClientWithTrustStoreWithCookies() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, ZaasClientException {
         BasicCookieStore cookieStore = new BasicCookieStore();
         BasicClientCookie cookie = new BasicClientCookie("apimlAuthenticationToken", "token");
         cookie.setDomain(configProperties.getApimlHost());
@@ -81,7 +82,7 @@ public class HttpsClientTest {
     }
 
     @Test
-    public void testGetHttpsClientWithKeyStoreAndTrustStore() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException {
+    public void testGetHttpsClientWithKeyStoreAndTrustStore() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException, ZaasClientException {
         assertNotNull(httpsClient.getHttpsClientWithKeyStoreAndTrustStore());
     }
 }

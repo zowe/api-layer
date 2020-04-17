@@ -16,6 +16,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
+import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -26,6 +27,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.*;
 
 @AllArgsConstructor
 public class HttpsClient implements Closeable {
@@ -48,18 +51,27 @@ public class HttpsClient implements Closeable {
         this.trustStoreType = configProperties.getTrustStoreType();
     }
 
-
+    /**
+     * This method is used to fectch CloseableHttpsClient with truststore.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws CertificateException
+     * @throws KeyManagementException
+     */
     public CloseableHttpClient getHttpsClientWithTrustStore()
-        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, KeyManagementException {
+        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, KeyManagementException, ZaasClientException {
         SSLContext sslContext;
         TrustManagerFactory tmf = null;
 
         if (trustStorePath != null) {
             tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             KeyStore trustStore = KeyStore.getInstance(trustStoreType);
-            File trustFile = new File(trustStorePath);
-            trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
-            tmf.init(trustStore);
+            initializeTrustManagerFactory(tmf, trustStore);
+        } else {
+            throw new ZaasClientException(TRUSTSTORE_NOT_PROVIDED);
         }
         sslContext = this.getSSLContext(null, tmf);
 
@@ -78,16 +90,16 @@ public class HttpsClient implements Closeable {
      * @throws KeyManagementException
      */
     public CloseableHttpClient getHttpsClientWithTrustStore(BasicCookieStore cookieStore)
-        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, KeyManagementException {
+        throws NoSuchAlgorithmException, KeyStoreException, IOException, CertificateException, KeyManagementException, ZaasClientException {
         SSLContext sslContext;
         TrustManagerFactory tmf = null;
 
         if (trustStorePath != null) {
             tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             KeyStore trustStore = KeyStore.getInstance(trustStoreType);
-            File trustFile = new File(trustStorePath);
-            trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
-            tmf.init(trustStore);
+            initializeTrustManagerFactory(tmf, trustStore);
+        } else {
+            throw new ZaasClientException(TRUSTSTORE_NOT_PROVIDED);
         }
         sslContext = this.getSSLContext(null, tmf);
 
@@ -106,7 +118,7 @@ public class HttpsClient implements Closeable {
      * @throws KeyManagementException
      */
     public CloseableHttpClient getHttpsClientWithKeyStoreAndTrustStore()
-        throws NoSuchAlgorithmException, IOException, KeyStoreException, CertificateException, UnrecoverableKeyException, KeyManagementException {
+        throws NoSuchAlgorithmException, IOException, KeyStoreException, CertificateException, UnrecoverableKeyException, KeyManagementException, ZaasClientException {
         SSLContext sslContext;
         TrustManagerFactory tmf = null;
         KeyManagerFactory kmf = null;
@@ -114,9 +126,9 @@ public class HttpsClient implements Closeable {
         if (trustStorePath != null) {
             tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             KeyStore trustStore = KeyStore.getInstance(trustStoreType);
-            File trustFile = new File(trustStorePath);
-            trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
-            tmf.init(trustStore);
+            initializeTrustManagerFactory(tmf, trustStore);
+        } else {
+            throw new ZaasClientException(TRUSTSTORE_NOT_PROVIDED);
         }
 
         if (keyStorePath != null) {
@@ -125,6 +137,8 @@ public class HttpsClient implements Closeable {
             File keyFile = new File(keyStorePath);
             keyStore.load(new FileInputStream(keyFile), keyStorePassword.toCharArray());
             kmf.init(keyStore, keyStorePassword.toCharArray());
+        } else {
+            throw new ZaasClientException(KEYSTORE_NOT_PROVIDED);
         }
 
         sslContext = this.getSSLContext(kmf, tmf);
@@ -132,6 +146,28 @@ public class HttpsClient implements Closeable {
         return getCloseableHttpClient(sslContext);
     }
 
+    /**
+     * Method to initialize TrustManagerFactory instance.
+     *
+     * @param tmf
+     * @param trustStore
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws CertificateException
+     * @throws KeyStoreException
+     */
+    private void initializeTrustManagerFactory(TrustManagerFactory tmf, KeyStore trustStore) throws IOException, NoSuchAlgorithmException, CertificateException, KeyStoreException {
+        File trustFile = new File(trustStorePath);
+        trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
+        tmf.init(trustStore);
+    }
+
+    /**
+     * Method to initialize closeableHttpsClient object with some default parameters.
+     *
+     * @param sslContext
+     * @return
+     */
     private CloseableHttpClient getCloseableHttpClient(SSLContext sslContext) {
         final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,
             SSLConnectionSocketFactory.getDefaultHostnameVerifier());
@@ -168,6 +204,8 @@ public class HttpsClient implements Closeable {
 
 
     /**
+     * Method to fetch SSL Context.
+     *
      * @param kmf
      * @param tmf
      * @return
@@ -199,6 +237,11 @@ public class HttpsClient implements Closeable {
         return builder.build();
     }
 
+    /**
+     * It closes the closeableHttpsClient instance used in ZaasClientHttps
+     *
+     * @throws IOException
+     */
     @Override
     public void close() throws IOException {
         closeableHttpsClient.close();

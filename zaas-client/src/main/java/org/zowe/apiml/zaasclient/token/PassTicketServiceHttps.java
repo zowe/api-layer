@@ -68,6 +68,8 @@ public class PassTicketServiceHttps implements PassTicketService {
             return zaasPassTicketResponse.getTicket();
         } else if (statusCode == 401) {
             throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION);
+        } else if (statusCode == 400) {
+            throw new ZaasClientException(ZaasClientErrorCodes.BAD_REQUEST);
         } else if (statusCode == 500) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
         } else {

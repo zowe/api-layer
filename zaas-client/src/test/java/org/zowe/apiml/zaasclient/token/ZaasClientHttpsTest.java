@@ -78,7 +78,7 @@ public class ZaasClientHttpsTest {
 
     @BeforeEach
     public void setupMethod() throws IOException, CertificateException,
-        NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException {
+        NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException, ZaasClientException {
         httpsClient = mock(HttpsClient.class);
         statusLine = mock(StatusLine.class);
         headerElement = mock(HeaderElement.class);
@@ -176,7 +176,7 @@ public class ZaasClientHttpsTest {
             when(header.getElements()).thenReturn(headerElements);
             when(headerElement.getName()).thenReturn("apimlAuthenticationToken");
             when(headerElement.getValue()).thenReturn("token");
-        } catch (NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException | KeyManagementException e) {
+        } catch (NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException | KeyManagementException | ZaasClientException e) {
             e.printStackTrace();
         }
     }
@@ -185,7 +185,7 @@ public class ZaasClientHttpsTest {
         try {
             when(httpsClient.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
             when(closeableHttpClient.execute(any(HttpPost.class))).thenThrow(IOException.class);
-        } catch (IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+        } catch (IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException | ZaasClientException e) {
             e.printStackTrace();
         }
     }
@@ -194,7 +194,7 @@ public class ZaasClientHttpsTest {
         try {
             when(httpsClient.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
             when(closeableHttpClient.execute(any(HttpPost.class))).thenAnswer( invocation -> { throw new Exception(); });
-        } catch (IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {
+        } catch (IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException | ZaasClientException e) {
             e.printStackTrace();
         }
     }
