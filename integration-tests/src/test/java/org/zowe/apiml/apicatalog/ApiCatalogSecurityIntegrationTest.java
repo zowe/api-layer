@@ -31,6 +31,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 
 @RunWith(value = Parameterized.class)
 public class ApiCatalogSecurityIntegrationTest {
+
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String GATEWAY_SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
@@ -116,7 +117,8 @@ public class ApiCatalogSecurityIntegrationTest {
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED));
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body("messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage));
     }
 
     @Test
@@ -138,6 +140,7 @@ public class ApiCatalogSecurityIntegrationTest {
 
     @Test
     public void accessProtectedEndpointWithInvalidCookieGateway() {
+        String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
         String invalidToken = "nonsense";
 
         given()
@@ -146,7 +149,8 @@ public class ApiCatalogSecurityIntegrationTest {
             .get(String.format("%s://%s:%d%s%s%s", GATEWAY_SCHEME, GATEWAY_HOST, GATEWAY_PORT, CATALOG_PREFIX,
                 CATALOG_SERVICE_ID, endpoint))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED));
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body("messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage));
     }
 
     //@formatter:on

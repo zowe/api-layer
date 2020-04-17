@@ -9,11 +9,12 @@
  */
 package org.zowe.apiml.discoverableclient;
 
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 
@@ -21,12 +22,13 @@ import static io.restassured.RestAssured.given;
 
 public class DownloadApiIntegrationTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @Test
+    @TestsNotMeantForZowe
     public void shouldSendGetRequestAndDownloadCompressedImage() {
         RestAssured.registerParser("image/png", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/get-file");

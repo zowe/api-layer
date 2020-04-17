@@ -9,18 +9,17 @@
  */
 package org.zowe.apiml.startup;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
 import org.zowe.apiml.util.categories.StartupCheck;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import static junit.framework.TestCase.assertTrue;
 
-@Category(StartupCheck.class)
+@StartupCheck
 public class ApiMediationLayerStartTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         new ApiMediationLayerStartupChecker().waitUntilReady();
     }

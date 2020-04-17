@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.zowe.apiml.gateway.utils.JsonReaderUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,8 @@ import java.util.List;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 public class ApiDocControllerTest {
@@ -47,10 +49,8 @@ public class ApiDocControllerTest {
 
     @Test
     public void callApiDocEndpoint() throws Exception {
-
-        OpenAPI openApi = getDummyOpenApiObject();
-
-        Mockito.when(apiDocReader.load(any())).thenReturn(openApi);
+        String expectedOpenApi = JsonReaderUtil.getJsonStringFromResource("api-doc.json");
+        Mockito.when(apiDocReader.load(any())).thenReturn(expectedOpenApi);
 
         this.mockMvc.perform(get("/api-doc"))
             .andExpect(status().isOk())
@@ -58,7 +58,7 @@ public class ApiDocControllerTest {
             .andExpect(jsonPath("$.info.title", is("Service title")))
             .andExpect(jsonPath("$.info.description", is("Service description")))
             .andExpect(jsonPath("$.info.version", is("1.0.0")))
-            .andExpect(jsonPath("$.servers[0].url", is("/api/v1/apicatalog")));
+            .andExpect(jsonPath("$.servers[0].url", is("/api/v1/gateway/auth")));
     }
 
     private OpenAPI getDummyOpenApiObject() {
