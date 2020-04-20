@@ -85,9 +85,3 @@ jar {
         }
     }
 }
-
-test {
-    jacoco {
-        append = false
-    }
-}

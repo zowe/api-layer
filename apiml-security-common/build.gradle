@@ -17,9 +17,3 @@ dependencies {
     testCompileOnly libraries.lombok
     testAnnotationProcessor libraries.lombok
 }
-
-test {
-    jacoco {
-        append = false
-    }
-}

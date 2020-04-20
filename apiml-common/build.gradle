@@ -22,9 +22,3 @@ dependencies {
     testCompile libraries.lombok
     annotationProcessor libraries.lombok
 }
-
-test {
-    jacoco {
-        append = false
-    }
-}

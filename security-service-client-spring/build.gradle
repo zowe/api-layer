@@ -16,10 +16,3 @@ dependencies {
     testCompile libraries.spring_mock_mvc
     testCompile libraries.spring_boot_starter_test
 }
-
-
-test {
-    jacoco {
-        append = false
-    }
-}

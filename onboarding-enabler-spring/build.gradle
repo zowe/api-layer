@@ -44,10 +44,3 @@ jar {
     baseName = "enabler-springboot-${springBootVersion}"
     archiveName = "${baseName}.jar"
 }
-
-
-test {
-    jacoco {
-        append = false
-    }
-}

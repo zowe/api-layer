@@ -55,10 +55,3 @@ tomcat {
     tomcatRun.keystorePass = "password"
     tomcatRun.truststorePass = "password"
 }
-
-
-test {
-    jacoco {
-        append = false
-    }
-}
