@@ -1,10 +1,15 @@
 rootProject.name = 'api-layer'
 
-// TODO: Make sure the cache is populated only by the CI server
+ext.isPush = getProperty('gradle.cache.push')
+
 buildCache {
     remote(HttpBuildCache) {
-        url = 'http://18.195.20.86/cache/'
-        push = true
+        url = 'https://zowe.jfrog.io/zowe/cache/'
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+        push = isPush
     }
 }
 
