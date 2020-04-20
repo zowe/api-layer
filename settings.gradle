@@ -1,6 +1,8 @@
 rootProject.name = 'api-layer'
 
 ext.isPush = getProperty('gradle.cache.push')
+ext.artifactory_user = getProperty('artifactory_user')
+ext.artifactory_password = getProperty('artifactory_password')
 
 buildCache {
     remote(HttpBuildCache) {
