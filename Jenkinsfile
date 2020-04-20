@@ -85,6 +85,19 @@ pipeline {
     }
 
     stages {
+        stage('usernamePassword') {
+          steps {
+            script {
+              withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
+                print 'username=' + ARTIFACTORY_USERNAME + 'password=' + ARTIFACTORY_PASSWORD
+
+                print 'username.collect { it }=' + ARTIFACTORY_USERNAME.collect { it }
+                print 'password.collect { it }=' + ARTIFACTORY_PASSWORD.collect { it }
+              }
+            }
+          }
+        }
+
         stage('Build and unit test with coverage') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
