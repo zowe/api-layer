@@ -36,13 +36,13 @@
         "redux-thunk": "2.3.0",
         "rimraf": "3.0.2",
         "rxjs": "6.3.3",
-        "swagger-ui": "3.25.0",
+        "swagger-ui-react": "3.25.0",
         "uuid": "3.3.2"
     },
     "scripts": {
         "start": "cross-env HTTPS=true react-scripts start",
-        "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mocked-backend\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
-        "start:mocked-backend": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mocked-backend/server.js",
+        "start:dev": "concurrently -c blue,green -n Backend,UI \"npm run start:mock\" \"cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 npm run start\"",
+        "start:mock": "cross-env REACT_APP_GATEWAY_URL=http://localhost:8000 nodemon mock/server.js",
         "build": "pnpm install && react-scripts build",
         "analyze": "source-map-explorer build/static/js/main.*",
         "postbuild": "rimraf build/**/*.map",
@@ -63,10 +63,11 @@
         "includeFailureMsg": true
     },
     "devDependencies": {
+        "body-parser": "1.18.3",
         "concurrently": "4.1.0",
         "cors": "2.8.5",
         "cross-env": "5.2.0",
-        "cypress": "^3.4.0",
+        "cypress": "3.8.3",
         "enzyme": "3.7.0",
         "enzyme-adapter-react-16": "1.7.0",
         "eslint-config-prettier": "3.3.0",
@@ -85,7 +86,7 @@
         "prettier": "1.14.2",
         "react-testing-library": "5.3.0",
         "rimraf": "3.0.2",
-        "source-map-explorer": "1.6.0",
+        "source-map-explorer": "2.3.1",
         "start-server-and-test": "1.10.8"
     },
     "jest": {

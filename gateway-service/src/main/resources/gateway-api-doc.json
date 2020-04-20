@@ -9,10 +9,14 @@
         {
             "name": "Security",
             "description": "Mainframe authentication and authorization operations"
+        },
+        {
+            "name": "Diagnostic",
+            "description": "Operations which showing diagnostic information"
         }
     ],
     "paths": {
-        "/login": {
+        "/auth/login": {
             "post": {
                 "tags": [
                     "Security"
@@ -65,13 +69,13 @@
                 }
             }
         },
-        "/query": {
+        "/auth/query": {
             "get": {
                 "tags": [
                     "Security"
                 ],
                 "summary": "Validate the authentication token.",
-                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authenticatio\n  \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
+                "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
                 "operationId": "validateUsingGET",
                 "security": [
                     {
@@ -107,7 +111,7 @@
                 }
             }
         },
-        "/ticket": {
+        "/auth/ticket": {
             "post": {
                 "tags": [
                     "Security"
@@ -164,11 +168,99 @@
                     }
                 }
             }
+        },
+        "/version": {
+            "get": {
+                "tags": [
+                    "Diagnostic"
+                ],
+                "summary": "Return version information of API Mediation Layer and Zowe",
+                "description": "Use the `/version` API to get the version information of API Mediation Layer and Zowe.\nThe version information includes version, build number and commit hash.\nIn the response can be only API ML version information or API ML and Zowe version information, this depends on API ML installed as part of Zowe build or as standalone application.",
+                "operationId": "VersionInfoUsingGET",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VersionInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/keys/public/all" : {
+            "get" : {
+                "tags" : [
+                    "Security"
+                ],
+                "summary" : "Returns all public keys to verify JWT tokens validity",
+                "description" : "This endpoint return all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF.",
+                "operationId" : "GetAllPublicKeysUsingGET",
+                "security" : [
+                    {
+                        "CookieAuth" : []
+                    },
+                    {
+                        "Bearer" : []
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description": "OK",
+                        "content": {
+                            "application/json" : {
+                                "schema" : {
+                                    "$ref" : "#/components/schemas/JWKSet"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/auth/keys/public/current" : {
+            "get" : {
+                "tags" : [
+                    "Security"
+                ],
+                "summary" : "Returns public keys to verify JWT tokens, which can be generated now",
+                "description" : "This endpoint return all possible JWKs, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF.",
+                "operationId" : "GetCurrentPublicKeysUsingGET",
+                "security" : [
+                    {
+                        "CookieAuth" : []
+                    },
+                    {
+                        "Bearer" : []
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description": "OK",
+                        "content": {
+                            "application/json" : {
+                                "schema" : {
+                                    "$ref" : "#/components/schemas/JWKSet"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
         }
     },
     "servers": [
         {
-            "url": "/api/v1/gateway/auth"
+            "url": "/gateway"
         }
     ],
     "components": {
@@ -280,6 +372,112 @@
                     "userId": "John",
                     "applicationName": "ZOWEAPPL",
                     "ticket": "LZTKEEDQ"
+                }
+            },
+            "VersionInfoDetails": {
+                "description": "Version information",
+                "properties": {
+                    "version": {
+                        "type": "string"
+                    },
+                    "buildNumber": {
+                        "type": "string"
+                    },
+                    "commitHash": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "version": "1.4.0",
+                    "buildNumber": "123",
+                    "commitHash": "1a3b5c7"
+                }
+            },
+            "VersionInfo": {
+                "properties": {
+                    "zowe": {
+                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    },
+                    "apiml": {
+                        "$ref": "#/components/schemas/VersionInfoDetails"
+                    }
+                }
+            },
+            "JWKSet" : {
+                "properties" : {
+                    "keys" : {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/JWK"
+                        }
+                    }
+                },
+                "example" : {
+                    "keys": [
+                        {
+                            "kty": "RSA",
+                            "e": "AQAB",
+                            "use": "sig",
+                            "kid": "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg",
+                            "alg": "RS256",
+                            "n": "wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q"
+                        },
+                        {
+                            "kty": "RSA",
+                            "e": "AQAB",
+                            "n": "jpEmp7mNnx8bi_nF2lqLEkN1cxUn1qLavU2EAy70XmX9rZSx1hlA1k8St1apD678oI-Ob38Mab-vTrnk9nvJgs6e67mtsm00OP1mpGHzQSY2WDwA5OGLv-9FeDI6HThAH1cEz148pRBtiN9VkVM-OzV2-vqH5hXO2vnSneUnnIlMVZ1-J7G5WIPJLDxodXWFqne8l56SYIRWz62rTK0Hwe0ghAMrsiTz0eVKgfVr76rP0hIYZMwC3b1bxfhjwUOuQxjEeYMh2jEL-5Nv2IcEfOzXYEOC_IrD_rLa4m4nfBs-JJiw4hOgHvjzdNz9EzV0D-HSWrInHXEd_gWjDn4sFw"
+                        }
+                    ]
+                }
+            },
+            "JWK" : {
+                "properties": {
+                    "n" : {
+                        "type": "string"
+                    },
+                    "e" : {
+                        "type": "string"
+                    },
+                    "d" : {
+                        "type": "string"
+                    },
+                    "p" : {
+                        "type": "string"
+                    },
+                    "q" : {
+                        "type": "string"
+                    },
+                    "dp" : {
+                        "type": "string"
+                    },
+                    "dq" : {
+                        "type": "string"
+                    },
+                    "qi" : {
+                        "type": "string"
+                    },
+                    "oth" : {
+                        "type": "object",
+                        "properties": {
+                            "r" : {
+                                "type": "string"
+                            },
+                            "d" : {
+                                "type": "string"
+                            },
+                            "t" : {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "example" : {
+                    "kty": "RSA",
+                    "e": "AQAB",
+                    "use": "sig",
+                    "kid": "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg",
+                    "alg": "RS256",
+                    "n": "wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q"
                 }
             }
         }

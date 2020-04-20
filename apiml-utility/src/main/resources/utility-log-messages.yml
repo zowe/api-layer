@@ -1,0 +1,28 @@
+messages:
+
+    # Info messages
+    # 000-099
+
+    - key: org.zowe.apiml.common.serviceStarted
+      number: ZWEAM000
+      type: INFO
+      text: "%s has been started in %s seconds"
+      reason: "The service has been started"
+      action: "No action is needed"
+
+    # General messages
+    # 100-199
+
+    # HTTP,Protocol messages
+    # 400-499
+
+    # TLS,Certificate messages
+    # 500-599
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+
+    # Legacy messages

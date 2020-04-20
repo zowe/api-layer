@@ -9,24 +9,23 @@
  */
 package org.zowe.apiml.gatewayservice;
 
-import org.zowe.apiml.util.categories.SlowTests;
-import org.zowe.apiml.util.http.HttpClientUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.SlowTests;
+import org.zowe.apiml.util.http.HttpClientUtils;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @Slf4j
 public class GatewayTimeoutTest {
@@ -34,7 +33,7 @@ public class GatewayTimeoutTest {
     private static final int DEFAULT_TIMEOUT = 30000;
 
     @Test
-    @Category(SlowTests.class)
+    @SlowTests
     @SuppressWarnings("squid:S1160")
     public void shouldCallLongButBelowTimeoutRequest() throws IOException {
         // Given
@@ -48,7 +47,7 @@ public class GatewayTimeoutTest {
     }
 
     @Test
-    @Category(SlowTests.class)
+    @SlowTests
     @SuppressWarnings("squid:S1160")
     public void shouldTimeoutRequestWithGatewayTimeoutHttpResponseCode() throws IOException {
         // Given

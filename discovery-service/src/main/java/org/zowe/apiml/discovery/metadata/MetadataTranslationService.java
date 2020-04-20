@@ -9,7 +9,9 @@
  */
 package org.zowe.apiml.discovery.metadata;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,12 +29,14 @@ public class MetadataTranslationService {
      *
      * @param metadata to be translated
      */
-    public void translateMetadata(Map<String, String> metadata) {
+    public void translateMetadata(String serviceId, Map<String, String> metadata) {
         // Version check
         String version = metadata.get(VERSION);
         if (version == null) {
             translateV1toV2(metadata);
         }
+
+        updateZosmfAuthentication(serviceId, metadata);
     }
 
     private void translateV1toV2(Map<String, String> metadata) {
@@ -86,4 +90,19 @@ public class MetadataTranslationService {
             metadata.put(newParameter, parameterValue);
         }
     }
+
+    /**
+     * This method support automatically mapping of z/OSMF's authentication scheme. It means, this method set the
+     * right authentication scheme to z/OSMF on registration if value is missing in the static service definition.
+     *
+     * @param serviceId Id of service to check (if contains zosmf ignoring case it will be applied)
+     * @param metadata metadata of service
+     */
+    protected void updateZosmfAuthentication(String serviceId, Map<String, String> metadata) {
+        if (!StringUtils.containsIgnoreCase(serviceId, "zosmf")) return;
+        if (metadata.containsKey(AUTHENTICATION_SCHEME)) return;
+
+        metadata.put(AUTHENTICATION_SCHEME, AuthenticationScheme.ZOSMF.getScheme());
+    }
+
 }

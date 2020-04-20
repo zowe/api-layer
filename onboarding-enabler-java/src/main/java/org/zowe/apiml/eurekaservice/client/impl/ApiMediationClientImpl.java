@@ -24,20 +24,22 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.config.EurekaClientConfiguration;
 import org.zowe.apiml.eurekaservice.client.config.Ssl;
 import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
+import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
 
+
 /**
- *  Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
- *  API Mediation Layer Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient}, which is
- *  stored in a member variable for later use. The client instance is internally used during unregistering.
- *  A getter method is provided for accessing the instance by the owning object.
- *  Basically it gathers the configuration and provides it to the DiscoveryClient.
- *  So here we may want to test whether we properly gather the configuration.
- *  And verify internal issues if something is wrong.
- *
- *  The issue with DiscoveryService and its behavior is tested in the Eureka.
+ * Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
+ * API Mediation Layer Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient}, which is
+ * stored in a member variable for later use. The client instance is internally used during unregistering.
+ * A getter method is provided for accessing the instance by the owning object.
+ * Basically it gathers the configuration and provides it to the DiscoveryClient.
+ * So here we may want to test whether we properly gather the configuration.
+ * And verify internal issues if something is wrong.
+ * <p>
+ * The issue with DiscoveryService and its behavior is tested in the Eureka.
  */
 public class ApiMediationClientImpl implements ApiMediationClient {
     private EurekaClientProvider eurekaClientProvider;
@@ -55,7 +57,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
     /**
      * Registers this service with Eureka server using EurekaClient which is initialized with the provided {@link ApiMediationServiceConfig} methods parameter.
      * Successive calls to {@link #register} method without intermediate call to {@linl #unregister} will be rejected with exception.
-     *
+     * <p>
      * This method catches all RuntimeException, and rethrows {@link ServiceDefinitionException} checked exception.
      *
      * @param config
@@ -101,23 +103,25 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         Ssl sslConfig = config.getSsl();
 
         HttpsConfig.HttpsConfigBuilder builder = HttpsConfig.builder();
-        builder.protocol(sslConfig.getProtocol());
+        if (sslConfig != null) {
+            builder.protocol(sslConfig.getProtocol());
+            if (Boolean.TRUE.equals(sslConfig.getEnabled())) {
+                builder.keyAlias(sslConfig.getKeyAlias())
+                    .keyStore(sslConfig.getKeyStore())
+                    .keyPassword(sslConfig.getKeyPassword())
+                    .keyStorePassword(sslConfig.getKeyStorePassword())
+                    .keyStoreType(sslConfig.getKeyStoreType());
+            }
 
-        if (Boolean.TRUE.equals(sslConfig.getEnabled())) {
-            builder.keyAlias(sslConfig.getKeyAlias())
-                   .keyStore(sslConfig.getKeyStore())
-                   .keyPassword(sslConfig.getKeyPassword())
-                   .keyStorePassword(sslConfig.getKeyStorePassword())
-                   .keyStoreType(sslConfig.getKeyStoreType());
+            builder.verifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()));
+            if (Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices())) {
+                builder.trustStore(sslConfig.getTrustStore())
+                    .trustStoreType(sslConfig.getTrustStoreType())
+                    .trustStorePassword(sslConfig.getTrustStorePassword());
+            }
+        } else {
+            throw new MetadataValidationException("SSL configuration was not provided. Try add apiml.service.ssl section.");
         }
-
-        builder.verifySslCertificatesOfServices(Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices()));
-        if (Boolean.TRUE.equals(sslConfig.getVerifySslCertificatesOfServices())) {
-            builder.trustStore(sslConfig.getTrustStore())
-                   .trustStoreType(sslConfig.getTrustStoreType())
-                   .trustStorePassword(sslConfig.getTrustStorePassword());
-        }
-
         HttpsConfig httpsConfig = builder.build();
 
         HttpsFactory factory = new HttpsFactory(httpsConfig);

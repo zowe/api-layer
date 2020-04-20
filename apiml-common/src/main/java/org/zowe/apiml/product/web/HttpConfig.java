@@ -9,12 +9,6 @@
  */
 package org.zowe.apiml.product.web;
 
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +21,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.security.SecurityUtils;
 
 import javax.annotation.PostConstruct;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import java.util.Set;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -84,6 +85,8 @@ public class HttpConfig {
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
+    private Set<String> publicKeyCertificatesBase64;
+
     @PostConstruct
     public void init() {
         try {
@@ -112,6 +115,8 @@ public class HttpConfig {
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient();
 
             factory.setSystemSslProperties();
+
+            publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         }
         catch (HttpsConfigError e) {
             System.exit(1); // NOSONAR
@@ -120,6 +125,12 @@ public class HttpConfig {
             apimlLog.log("org.zowe.apiml.common.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
+    }
+
+    @Bean
+    @Qualifier("publicKeyCertificatesBase64")
+    public Set<String> publicKeyCertificatesBase64() {
+        return publicKeyCertificatesBase64;
     }
 
     @Bean
@@ -144,6 +155,13 @@ public class HttpConfig {
         return sslContextFactory;
     }
 
+    /**
+     * Returns RestTemplate without keystore. The purpose is to call z/OSMF (or other systems), which accept login by
+     * certificate. In case of login into z/OSMF can certificate has higher priority. It breaks credentials
+     * verification.
+     *
+     * @return default RestTemplate, which doesn't use certificate from keystore
+     */
     @Bean
     @Primary
     @Qualifier("restTemplateWithKeystore")
@@ -152,18 +170,32 @@ public class HttpConfig {
         return new RestTemplate(factory);
     }
 
+    /**
+     * Returns RestTemplate with keystore. This RestTemplate makes calls to other systems with a certificate to sign to
+     * other systems by certificate. It is necessary to call systems like DiscoverySystem etc.
+     *
+     * @return RestTemplate, which uses certificate from keystore to authenticate
+     */
     @Bean
+    @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
         return new RestTemplate(factory);
     }
 
+    /**
+     * @return HttpClient which doesn't use a certificate to authenticate
+     */
     @Bean
     @Primary
+    @Qualifier("secureHttpClientWithKeystore")
     public CloseableHttpClient secureHttpClient() {
         return secureHttpClient;
     }
 
+    /**
+     * @return HttpClient, which doesn't use a certificate to authenticate
+     */
     @Bean
     @Qualifier("secureHttpClientWithoutKeystore")
     public CloseableHttpClient secureHttpClientWithoutKeystore() {

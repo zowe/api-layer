@@ -1,10 +1,8 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help us improve. We will handle it based on [Issue Management](https://github.com/zowe/api-layer/wiki)
 title: ''
-labels: bug
-assignees: petr-galik
-
+labels: bug, new
 ---
 
 **Describe the bug**
@@ -39,3 +37,5 @@ If applicable, add server logs collected at the time of your problem.
 
 **Additional context**
 Add any other context about the problem here.
+
+https://github.com/zowe/api-layer/wiki/(WIP)-Issue-managements

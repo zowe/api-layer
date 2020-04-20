@@ -9,13 +9,17 @@
  */
 package org.zowe.apiml.apicatalog.swagger.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
+import org.zowe.apiml.apicatalog.swagger.SecuritySchemeSerializer;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.util.Json;
 import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -59,7 +63,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         updateExternalDoc(openAPI, apiDocInfo);
 
         try {
-            return Json.mapper().writeValueAsString(openAPI);
+            return initializeObjectMapper().writeValueAsString(openAPI);
         } catch (JsonProcessingException e) {
             log.debug("Could not convert Swagger to JSON", e);
             throw new ApiDocTransformationException("Could not convert Swagger to JSON");
@@ -170,6 +174,18 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     }
 
     private boolean isHidden(List<Tag> tags) {
-        return tags.stream().anyMatch(tag -> tag.getName().equals(HIDDEN_TAG));
+        return tags != null && tags.stream().anyMatch(tag -> tag.getName().equals(HIDDEN_TAG));
+    }
+
+    private ObjectMapper initializeObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        SimpleModule simpleModule = new SimpleModule();
+        simpleModule.addSerializer(SecurityScheme.class, new SecuritySchemeSerializer());
+
+        objectMapper.registerModule(simpleModule);
+
+        return objectMapper;
     }
 }

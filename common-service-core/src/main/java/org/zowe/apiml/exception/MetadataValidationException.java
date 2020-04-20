@@ -14,4 +14,8 @@ public class MetadataValidationException extends RuntimeException {
     public MetadataValidationException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public MetadataValidationException(String message) {
+        super(message);
+    }
 }

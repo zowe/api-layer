@@ -9,41 +9,44 @@
  */
 package org.zowe.apiml.gatewayservice;
 
+import io.restassured.RestAssured;
+import org.apache.http.HttpHeaders;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
-import io.restassured.RestAssured;
-import org.apache.http.HttpHeaders;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
  * This test requires to allow endpoint routes on gateway (ie profile dev)
+ *
+ * Instance settings
+ * - gateway-service.yml
+ *  - apiml.security.auth.provider = dummy
+ * - environment-configuration.yml
+ *  - credentials.user = user
+ *  - credentials.password = user
  */
-@RunWith(JUnit4.class)
-@Category(AdditionalLocalTest.class)
+@AdditionalLocalTest
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 10;
+    private static final int TIMEOUT = 100;
 
     private RequestVerifier verifier;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());

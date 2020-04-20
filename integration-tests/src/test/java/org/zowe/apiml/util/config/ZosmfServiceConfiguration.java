@@ -20,4 +20,5 @@ public class ZosmfServiceConfiguration {
     private String scheme;
     private String host;
     private int port;
+    private String serviceId;
 }

@@ -28,3 +28,28 @@ It is also printed to the log as the very first messsage:
     [GS] 16:32:04.098 [main] INFO org.zowe.apiml.product.service.BuildInfo - Service gateway-service version xyz #n/a on 2018-08-23T14:28:33.231Z by plape03mac850 commit 6fd7c53
     [DC] 16:32:04.195 [main] INFO org.zowe.apiml.product.service.BuildInfo - Service discoverable-client version xyz #n/a on 2018-08-23T14:28:33.217Z by plape03mac850 commit 6fd7c53
     [AC] 16:32:04.317 [main] INFO org.zowe.apiml.product.service.BuildInfo - Service api-catalog-services version xyz #n/a on 2018-08-23T14:28:33.201Z by plape03mac850 commit 6fd7c53
+
+
+## Version Information
+
+It is also possible to know the version of API ML and Zowe (if API ML used as part of Zowe), using the `/api/v1/gateway/version` endpoint in the API Gateway service. E.g.:
+
+    https://localhost:10010/api/v1/gateway/version
+
+To view the Zowe version requires setting up the launch parameter of API Gateway - `apiml.zoweManifest` with a path to the Zowe build manifest.json file, which is usually located in the root folder of Zowe build. 
+If the encoding of manifest.json file is different from UTF-8 and IBM1047 it requires setting up the launch parameter of API Gateway - `apiml.zoweManifestEncoding` with correct encoding.
+    
+Example of response:
+
+    {
+        "zowe": {
+            "version": "1.8.0",
+            "buildNumber": "437",
+            "commitHash": "8dd9f512a2723bc07840c193d78e5d5ff5751e92"
+        },
+        "apiml": {
+            "version": "1.3.3-SNAPSHOT",
+            "buildNumber": "10",
+            "commitHash": "c50d0b5"
+        }
+    }                                                  

@@ -9,24 +9,25 @@
  */
 package org.zowe.apiml.gatewayservice;
 
+import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import io.restassured.RestAssured;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.core.Is.is;
 
-@Category(MainframeDependentTests.class)
+@MainframeDependentTests
 public class ZosmfSsoIntegrationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String BASE_PATH = "/api/zosmfca32";
+    private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
+    private final static String BASE_PATH = "/api/" + ZOSMF_SERVICE_ID;
     private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
 
     private String token;
@@ -34,7 +35,7 @@ public class ZosmfSsoIntegrationTest {
     private String host;
     private int port;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         scheme = serviceConfiguration.getScheme();
@@ -125,9 +126,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", equalTo(expectedMessage));
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test
@@ -141,9 +140,7 @@ public class ZosmfSsoIntegrationTest {
         .when()
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
         .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .body(
-                "messages.find { it.messageNumber == 'ZWEAG102E' }.messageContent", containsString(expectedMessage));
+            .statusCode(is(SC_UNAUTHORIZED));
     }
 
     @Test

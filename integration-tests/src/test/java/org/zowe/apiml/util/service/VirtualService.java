@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.util.service;
 
-import org.zowe.apiml.security.common.auth.Authentication;
 import io.restassured.response.ResponseBody;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -18,11 +17,12 @@ import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.http.MediaType;
+import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.util.UrlUtils;
 
 import javax.servlet.Servlet;
@@ -356,6 +356,10 @@ public class VirtualService implements AutoCloseable {
                     .put("status", Status.UP.toString())
                     .put("port", new JSONObject()
                         .put("$", getPort())
+                        .put("@enabled", "true")
+                    )
+                    .put("securePort", new JSONObject()
+                        .put("$", 0)
                         .put("@enabled", "true")
                     )
                     .put("healthCheckUrl", getUrl() + "/application/health")

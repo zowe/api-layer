@@ -51,6 +51,7 @@ dependencies {
 
     implementation libraries.gson
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     testImplementation libraries.spring_boot_starter_test
 }
@@ -58,6 +59,20 @@ dependencies {
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
 
+jar {
+    enabled = true
+    archiveName = "${jar.baseName}-thin.jar"
+
+    def libClassPathEntries = configurations.runtime.files.collect {
+        "lib/" + it.getName()
+    }
+    doFirst {
+        manifest {
+            attributes "Class-Path": libClassPathEntries.join(" "),
+                "Main-Class": "org.zowe.apiml.client.DiscoverableClientSampleApplication"
+        }
+    }
+}
 
 test {
     jacoco {

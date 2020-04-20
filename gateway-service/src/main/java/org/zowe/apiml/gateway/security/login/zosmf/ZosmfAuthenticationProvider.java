@@ -9,67 +9,31 @@
  */
 package org.zowe.apiml.gateway.security.login.zosmf;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.ZosmfService;
 
-import java.io.IOException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Supplier;
+import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.JWT;
+import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.LTPA;
 
 /**
  * Authentication provider that verifies credentials against z/OSMF service
  */
 @Component
+@RequiredArgsConstructor
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
-    @InjectApimlLogger
-    private ApimlLogger apimlLog = ApimlLogger.empty();
 
-    private static final String ZOSMF_END_POINT = "zosmf/info";
-    private static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
-    private static final String ZOSMF_DOMAIN = "zosmf_saf_realm";
+    @Value("${apiml.security.zosmf.useJwtToken:true}")
+    private boolean useJwtToken;
 
-    private final AuthConfigurationProperties authConfigurationProperties;
     private final AuthenticationService authenticationService;
-    private final DiscoveryClient discovery;
-    private final ObjectMapper securityObjectMapper;
-    private final RestTemplate restTemplate;
-
-    public ZosmfAuthenticationProvider(AuthConfigurationProperties authConfigurationProperties,
-                                       AuthenticationService authenticationService,
-                                       DiscoveryClient discovery,
-                                       ObjectMapper securityObjectMapper,
-                                       @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore) {
-        this.authConfigurationProperties = authConfigurationProperties;
-        this.discovery = discovery;
-        this.authenticationService = authenticationService;
-        this.securityObjectMapper = securityObjectMapper;
-        this.restTemplate = restTemplateWithoutKeystore;
-    }
+    private final ZosmfService zosmfService;
 
     /**
      * Authenticate the credentials with the z/OSMF service
@@ -79,116 +43,30 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
      */
     @Override
     public Authentication authenticate(Authentication authentication) {
-        String zosmf = authConfigurationProperties.validatedZosmfServiceId();
-        String uri = getURI(zosmf);
+        final String user = authentication.getPrincipal().toString();
 
-        String user = authentication.getPrincipal().toString();
-        String password = authentication.getCredentials().toString();
+        final ZosmfService.AuthenticationResponse ar = zosmfService.authenticate(authentication);
 
-        String credentials = user + ":" + password;
-        String authorization = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.AUTHORIZATION, authorization);
-        headers.add(ZOSMF_CSRF_HEADER, "");
-
-        try {
-            ResponseEntity<String> response = restTemplate.exchange(
-                uri + ZOSMF_END_POINT,
-                HttpMethod.GET,
-                new HttpEntity<>(null, headers),
-                String.class);
-
-            List<String> cookies = response.getHeaders().get(HttpHeaders.SET_COOKIE);
-
-            String ltpaToken = readLtpaToken(cookies);
-            String domain = readDomain(response.getBody());
-            String jwtToken = authenticationService.createJwtToken(user, domain, ltpaToken);
-
-            TokenAuthentication tokenAuthentication = new TokenAuthentication(user, jwtToken);
-            tokenAuthentication.setAuthenticated(true);
-
-            return tokenAuthentication;
-        } catch (ResourceAccessException e) {
-            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", uri, e.getMessage());
-            throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
-        } catch (RestClientException e) {
-            apimlLog.log("org.zowe.apiml.security.generic", e.getMessage(), uri);
-            throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
+        // if z/OSMF support JWT, use it as Zowe JWT token
+        if (ar.getTokens().containsKey(JWT) && useJwtToken) {
+            return authenticationService.createTokenAuthentication(user, ar.getTokens().get(JWT));
         }
-    }
 
-    /**
-     * Return z/OSMF instance uri
-     *
-     * @param zosmf the z/OSMF service id
-     * @return the uri
-     */
-    private String getURI(String zosmf) {
-        Supplier<ServiceNotAccessibleException> authenticationServiceExceptionSupplier = () -> {
-            apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmf);
-            return new ServiceNotAccessibleException("z/OSMF instance not found or incorrectly configured.");
-        };
+        if (ar.getTokens().containsKey(LTPA)) {
+            // construct own JWT token, including LTPA from z/OSMF
+            final String domain = ar.getDomain();
+            final String jwtToken = authenticationService.createJwtToken(user, domain, ar.getTokens().get(LTPA));
 
-        return Optional.ofNullable(discovery.getInstances(zosmf))
-            .orElseThrow(authenticationServiceExceptionSupplier)
-            .stream()
-            .filter(Objects::nonNull)
-            .findFirst()
-            .map(zosmfInstance -> zosmfInstance.getUri().toString())
-            .orElseThrow(authenticationServiceExceptionSupplier);
-    }
-
-    /**
-     * Read the LTPA token from the cookies
-     *
-     * @param cookies the cookies
-     * @return the LPTA token
-     * @throws BadCredentialsException if the cookie does not contain valid LTPA token
-     */
-    private String readLtpaToken(List<String> cookies) {
-        Supplier<BadCredentialsException> exceptionSupplier = () -> new BadCredentialsException("Username or password are invalid.");
-
-        return Optional.ofNullable(cookies)
-            .orElseThrow(exceptionSupplier)
-            .stream()
-            .filter(cookie -> cookie != null && cookie.contains("LtpaToken2"))
-            .map(this::convertCookieToLtpaToken)
-            .findFirst()
-            .orElseThrow(exceptionSupplier);
-    }
-
-    private String convertCookieToLtpaToken(String content) {
-        int end = content.indexOf(';');
-        return (end > 0) ? content.substring(0, end) : content;
-    }
-
-    /**
-     * Read the z/OSMF domain from the content in the response
-     *
-     * @param content the response body
-     * @return the z/OSMF domain
-     * @throws AuthenticationServiceException if the zosmf domain cannot be read
-     */
-    private String readDomain(String content) {
-        try {
-            ObjectNode zosmfNode = securityObjectMapper.readValue(content, ObjectNode.class);
-
-            return Optional.ofNullable(zosmfNode)
-                .filter(zn -> zn.has(ZOSMF_DOMAIN))
-                .map(zn -> zn.get(ZOSMF_DOMAIN).asText())
-                .orElseThrow(() -> {
-                    apimlLog.log("org.zowe.apiml.security.zosmfDomainIsEmpty", ZOSMF_DOMAIN);
-                    return new AuthenticationServiceException("z/OSMF domain cannot be read.");
-                });
-        } catch (IOException e) {
-            apimlLog.log("org.zowe.apiml.security.errorParsingZosmfResponse", e.getMessage());
-            throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
+            return authenticationService.createTokenAuthentication(user, jwtToken);
         }
+
+        // JWT and LTPA tokens are missing, authentication was wrong
+        throw new BadCredentialsException("Username or password are invalid.");
     }
 
     @Override
     public boolean supports(Class<?> auth) {
-        return auth.equals(UsernamePasswordAuthenticationToken.class);
+        return auth == UsernamePasswordAuthenticationToken.class;
     }
+
 }

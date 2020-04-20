@@ -1,5 +1,5 @@
 plugins {
-    id "com.moowork.node" version "1.2.0"
+    id "com.moowork.node" version "1.3.1"
 }
 
 node {
@@ -30,7 +30,7 @@ task cleanBundle(type: Delete) {
 task startMockedBackend(type: NpmTask) {
     group = 'testing'
     description = "UI Mocked Backend"
-    args = ['run', 'start:mocked-backend']
+    args = ['run', 'start:mock']
 }
 
 task javaScriptCoverage(type: NpmTask) {
@@ -45,11 +45,12 @@ task runTests(type: NpmTask) {
     args = ['run', 'test']
 }
 
+
 task bundle(type: NpmTask) {
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.dir('frontend/public').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.files('frontend/.env*').withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.file('frontend/eslintrc.json').withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file('frontend/.eslintrc').withPathSensitivity(PathSensitivity.RELATIVE)
     inputs.file('frontend/package.json').withPathSensitivity(PathSensitivity.RELATIVE)
 
     outputs.dir('frontend/build')

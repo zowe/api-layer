@@ -14,6 +14,18 @@ Last section of this document shows how to import and trust the local CA certifi
 
 Key stores:
 
+  * `keystore/local/localhost.keystore.cer` 
+    - convenience 
+    - contains the exported server certificate signed by the local CA and private key for the server
+
+  * `keystore/local/localhost.keystore.key` 
+    - convenience 
+    - contains the exported private key 
+
+  * `keystore/local/localhost.pem` 
+    - convenience 
+    - contains the exported server certificate in PEM format for use with http clients
+
   * `keystore/local/localhost.keystore.p12` 
     - password: ``password``
     - used for the HTTPS server(s) 
@@ -23,6 +35,14 @@ Key stores:
     - password: ``password``
     - used for HTTPS clients (e.g. integration tests, services using the gateway) 
     - contains the root certificate of the local CA (not the server certificate)
+
+  * `keystore/local/localhost2.keystore.p12` 
+    - password: ``password``
+    - used for tests only, please refer to the particular tests for detils
+    
+  * `keystore/local/localhost2.truststore.p12` 
+    - password: ``password``
+    - used for tests only, please refer to the particular tests for detils
 
 Local CA:
 

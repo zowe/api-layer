@@ -1,10 +1,8 @@
 ---
 name: Feature request
-about: Suggest an idea for this project
+about: Suggest an idea for this project. We will handle it based on [Issue Management](https://github.com/zowe/api-layer/wiki)
 title: ''
-labels: enhancement
-assignees: petr-galik
-
+labels: enhancement, new
 ---
 
 **Is your feature request related to a problem? Please describe.**

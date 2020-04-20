@@ -13,7 +13,8 @@ import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import org.zowe.apiml.util.ObjectUtil;
 import lombok.AllArgsConstructor;
 import lombok.Value;
-import org.apache.commons.lang.StringUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,11 +40,11 @@ public class PassTicketService {
     }
 
     public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
-        irrPassTicket.evaluate(userId, applId, passTicket);
+        irrPassTicket.evaluate(userId.toUpperCase(), applId.toUpperCase(), passTicket.toUpperCase());
     }
 
     public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
-        return irrPassTicket.generate(userId, applId);
+        return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
     }
 
     public boolean isUsingSafImplementation() {
@@ -55,11 +56,11 @@ public class PassTicketService {
 
         private static int id = 0;
 
-        public static final String ZOWE_DUMMY_USERID = "user";
-        public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZoweDummyPassTicket";
+        public static final String ZOWE_DUMMY_USERID = "USER";
+        public static final String ZOWE_DUMMY_PASS_TICKET_PREFIX = "ZOWE_DUMMY_PASS_TICKET";
 
-        public static final String DUMMY_USER = "user";
-        public static final String UNKNOWN_USER = "unknownUser";
+        public static final String DUMMY_USER = "USER";
+        public static final String UNKNOWN_USER = "UNKNOWN_USER";
         public static final String UNKNOWN_APPLID = "XBADAPPL";
 
         private final Map<UserApp, Set<String>> userAppToPasstickets = new HashMap<>();

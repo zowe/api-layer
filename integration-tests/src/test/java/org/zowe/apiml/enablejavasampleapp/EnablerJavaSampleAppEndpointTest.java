@@ -10,9 +10,8 @@
 package org.zowe.apiml.enablejavasampleapp;
 
 import io.restassured.RestAssured;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -22,7 +21,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
-@Category(AdditionalLocalTest.class)
+@AdditionalLocalTest
 public class EnablerJavaSampleAppEndpointTest {
     private static final String UI_V1_PATH = "/ui/v1/enablerJavaSampleApp/";
     private static final String APP_INFO_PATH = "/api/v1/enablerJavaSampleApp/application/info/";
@@ -31,7 +30,7 @@ public class EnablerJavaSampleAppEndpointTest {
     private static final String GREETING_WITH_NAME_PATH = "/api/v1/enablerJavaSampleApp/greeting/Petr";
     private static final String JSON_CONTENT_TYPE = "application/json";
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }

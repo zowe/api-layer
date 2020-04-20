@@ -1,5 +1,7 @@
 dependencies {
     compile(libraries.eureka_client)
+    compile libraries.netflix_servo
+
     compile(libraries.http_client)
     compile(libraries.http_core)
     compile(libraries.jackson_annotations)
@@ -8,8 +10,16 @@ dependencies {
     compile(libraries.slf4j_api)
     compile(libraries.snakeyaml)
 
+    compile libraries.apache_commons_lang3
+    compile libraries.apache_commons_text
+
+    compile libraries.jsr305
+
     compileOnly(libraries.javax_servlet_api)
-    compileOnly(libraries.lombok)
+
+    compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
+
     compileOnly(libraries.spring_boot_starter_cache)
     compileOnly(libraries.eh_cache)
 
@@ -29,7 +39,8 @@ dependencies {
     testCompile(libraries.powermock_api_mockito2)
     testCompile(libraries.power_mock_junit4)
 
-    testCompileOnly(libraries.lombok)
+    testCompileOnly libraries.lombok
+    testAnnotationProcessor libraries.lombok
 }
 
 test {

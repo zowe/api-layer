@@ -48,9 +48,16 @@ dependencies {
     compile libraries.jackson_dataformat_yaml
 
     compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
+
+    // https://mvnrepository.com/artifact/com.netflix.servo/servo-core
+    compile group: 'com.netflix.servo', name: 'servo-core', version: '0.12.28'
 
     testCompile libraries.lombok
+    testAnnotationProcessor libraries.lombok
+
     testCompile libraries.spring_boot_starter_test
+    testCompile libraries.awaitility
 }
 
 
@@ -62,6 +69,21 @@ bootRun {
         args project.args.split(',')
     }
     systemProperties = System.properties
+}
+
+jar {
+    enabled = true
+    archiveName = "${jar.baseName}-thin.jar"
+
+    def libClassPathEntries = configurations.runtime.files.collect {
+        "lib/" + it.getName()
+    }
+    doFirst {
+        manifest {
+            attributes "Class-Path": libClassPathEntries.join(" "),
+                "Main-Class": "org.zowe.apiml.discovery.DiscoveryServiceApplication"
+        }
+    }
 }
 
 test {

@@ -157,19 +157,16 @@ eureka:
                         version: 1.0.0
                 routes:
                     api_v1:
-                        gatewayUrl: "/api/v1"
-                        serviceUrl: /api/v1/gateway
-
+                        gatewayUrl: /api/v1
+                        serviceUrl: /gateway
                 apiInfo:
                     - apiId: org.zowe.apiml.gateway
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
                       documentationUrl: https://zowe.github.io/docs-site/
-
                 service:
                     title: API Gateway
                     description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
-
     client:
         fetchRegistry: true
         registerWithEureka: true

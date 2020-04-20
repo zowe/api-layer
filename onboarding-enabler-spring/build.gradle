@@ -30,13 +30,13 @@ dependencies {
     compile project(':onboarding-enabler-java')
     compile "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
 
-    compile libraries.lombok
+    compileOnly libraries.lombok
+    annotationProcessor libraries.lombok
 
     testCompile "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
     testCompile libraries.mockito_core
 
     annotationProcessor libraries.spring_boot_configuration_processor
-    annotationProcessor libraries.lombok
     testCompile libraries.gson
 }
 

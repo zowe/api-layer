@@ -51,6 +51,14 @@ public class LogLevelInfoFilterTest {
     }
 
     @Test
+    public void createInactiveFilterInDebugModeWithDevProfile() {
+        System.getProperties().setProperty("spring.profiles.include", "blueberries,dev,diag");
+        LogLevelInfoFilter filter = new LogLevelInfoFilter();
+        FilterReply reply = filter.decide(null, (ch.qos.logback.classic.Logger) log, Level.INFO, "", null, null);
+        assertEquals("Filter should not filter when service not in debug mode", FilterReply.NEUTRAL, reply);
+    }
+
+    @Test
     public void filtersLevelTest() {
 
         Map<Level, Boolean> filteringMap = new HashMap<>();

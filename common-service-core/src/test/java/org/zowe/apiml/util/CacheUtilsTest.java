@@ -8,8 +8,9 @@ package org.zowe.apiml.util;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.zowe.apiml.cache.CompositeKey;
+import net.sf.ehcache.Element;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
@@ -17,10 +18,10 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.zowe.apiml.cache.CompositeKey;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -89,6 +90,62 @@ public class CacheUtilsTest {
         assertEquals(5, removeCounter);
         verify(ehCache2, times(3)).remove(keys.get(0));
         verify(ehCache2, times(1)).remove(keys.get(3));
+    }
+
+    @Test
+    public void givenUnknownCacheName_whenGetAllRecords_thenThrowsException() {
+        CacheManager cacheManager = mock(CacheManager.class);
+        IllegalArgumentException iae = Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> CacheUtils.getAllRecords(cacheManager, "unknownCacheName")
+        );
+        assertEquals("Unknown cache unknownCacheName", iae.getMessage());
+    }
+
+    @Test
+    public void givenUnsupportedCacheManager_whenGetAllRecords_thenThrowsException() {
+        CacheManager cacheManager = mock(CacheManager.class);
+        Cache cache = mock(Cache.class);
+        when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
+        when(cache.getNativeCache()).thenReturn(new Object());
+        IllegalArgumentException iae = Assertions.assertThrows(
+            IllegalArgumentException.class,
+            () -> CacheUtils.getAllRecords(cacheManager, "knownCacheName")
+        );
+        assertTrue(iae.getMessage().startsWith("Unsupported type of cache : "));
+    }
+
+    private Map<Object, Element> convert(Map<Integer, String> in) {
+        Map<Object, Element> out = new HashMap<>();
+        for (Map.Entry<Integer, String> entry : in.entrySet()) {
+            out.put(entry.getKey(), new Element(entry.getKey(), entry.getValue()));
+        }
+        return out;
+    }
+
+    @Test
+    public void givenValidCacheManager_whenGetAllRecords_thenReadAllStoredRecords() {
+        CacheManager cacheManager = mock(CacheManager.class);
+        Cache cache = mock(Cache.class);
+        net.sf.ehcache.Cache ehCache = PowerMockito.mock(net.sf.ehcache.Cache.class);
+
+        Map<Integer, String> entries = new HashMap<>();
+        entries.put(1, "a");
+        entries.put(2, "b");
+        entries.put(3, "c");
+        List<Object> keys = new ArrayList<>(entries.keySet());
+
+        when(cacheManager.getCache("knownCacheName")).thenReturn(cache);
+        when(cache.getNativeCache()).thenReturn(ehCache);
+        when(ehCache.getKeys()).thenReturn(keys);
+        when(ehCache.getAll(keys)).thenReturn(convert(entries));
+
+        Collection<String> values = CacheUtils.getAllRecords(cacheManager, "knownCacheName");
+        assertNotNull(values);
+        assertEquals(3, values.size());
+        assertTrue(values.contains("a"));
+        assertTrue(values.contains("b"));
+        assertTrue(values.contains("c"));
     }
 
 }

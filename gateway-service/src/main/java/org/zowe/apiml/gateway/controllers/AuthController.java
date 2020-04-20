@@ -9,30 +9,50 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import net.minidev.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceFacade;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.LinkedList;
+import java.util.List;
 
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.*;
 
 /**
  * Controller offer method to control security. It can contains method for user and also method for calling services
  * by gateway to distribute state of authentication between nodes.
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
-@RequestMapping("/auth")
+@RequestMapping(AuthController.CONTROLLER_PATH)
 public class AuthController {
+
+    @Setter
+    @Value("${apiml.security.zosmf.useJwtToken:true}")
+    protected boolean useZosmfJwtToken;
 
     private final AuthenticationService authenticationService;
 
-    @DeleteMapping(path = "/invalidate/**")
+    private final JwtSecurityInitializer jwtSecurityInitializer;
+    private final ZosmfServiceFacade zosmfServiceFacade;
+
+    public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
+    public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
+    public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
+    public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
+    public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
+    public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
+
+    @DeleteMapping(path = INVALIDATE_PATH)
     public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
         final String endpoint = "/auth/invalidate/";
         final String uri = request.getRequestURI();
@@ -42,6 +62,40 @@ public class AuthController {
         final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
 
         response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
+    }
+
+    @GetMapping(path = DISTRIBUTE_PATH)
+    public void distributeInvalidate(HttpServletRequest request, HttpServletResponse response) {
+        final String endpoint = "/auth/distribute/";
+        final String uri = request.getRequestURI();
+        final int index = uri.indexOf(endpoint);
+
+        final String toInstanceId = uri.substring(index + endpoint.length());
+        final boolean distributed = authenticationService.distributeInvalidate(toInstanceId);
+
+        response.setStatus(distributed ? SC_OK : SC_NO_CONTENT);
+    }
+
+    @GetMapping(path = ALL_PUBLIC_KEYS_PATH)
+    @ResponseBody
+    public JSONObject getAllPublicKeys() {
+        final List<JWK> keys = new LinkedList<>();
+        keys.addAll(zosmfServiceFacade.getPublicKeys().getKeys());
+        keys.add(jwtSecurityInitializer.getJwkPublicKey());
+        return new JWKSet(keys).toJSONObject(true);
+    }
+
+    @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH)
+    @ResponseBody
+    public JSONObject getCurrentPublicKeys() {
+        final List<JWK> keys = new LinkedList<>();
+        if (useZosmfJwtToken) {
+            keys.addAll(zosmfServiceFacade.getPublicKeys().getKeys());
+        }
+        if (keys.isEmpty()) {
+            keys.add(jwtSecurityInitializer.getJwkPublicKey());
+        }
+        return new JWKSet(keys).toJSONObject(true);
     }
 
 }

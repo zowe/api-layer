@@ -9,29 +9,29 @@
  */
 package org.zowe.apiml.discoveryservice;
 
-import org.zowe.apiml.gatewayservice.SecurityUtils;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import io.restassured.RestAssured;
 import io.restassured.path.xml.XmlPath;
 import io.restassured.response.Response;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 
 import java.net.URI;
 import java.util.*;
 
-import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
+import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 /**
  * This test suite must be run with HTTPS on and Certificate validation ON for Discovery service
@@ -48,7 +48,7 @@ public class EurekaInstancesIntegrationTest {
     private int port;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         scheme = discoveryServiceConfiguration.getScheme();
@@ -138,6 +138,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @TestsNotMeantForZowe
     public void testApplicationInfoEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
@@ -149,6 +150,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @TestsNotMeantForZowe
     public void testApplicationInfoEndpoints_whenProvidedToken() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
@@ -316,6 +318,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @TestsNotMeantForZowe
     public void shouldSeeEurekaReplicasIfRegistered() throws Exception {
         final int instances = discoveryServiceConfiguration.getInstances();
         //@formatter:off
@@ -337,18 +340,18 @@ public class EurekaInstancesIntegrationTest {
         String unavailableReplicas = XmlPath.from(xml).getString("StatusInfo.applicationStats.unavailable-replicas");
         List<String> servicesList = Arrays.asList(registeredReplicas.split(","));
         if (instances == 1) {
-            Assert.assertEquals("", registeredReplicas);
-            Assert.assertEquals("", availableReplicas);
-            Assert.assertEquals("", unavailableReplicas);
+            assertEquals("", registeredReplicas);
+            assertEquals("", availableReplicas);
+            assertEquals("", unavailableReplicas);
         } else {
             if (availableReplicas.charAt(availableReplicas.length() - 1) == ',') {
                 availableReplicas = availableReplicas.substring(0, availableReplicas.length() - 1);
             }
-            Assert.assertNotEquals("", registeredReplicas);
-            Assert.assertNotEquals("", availableReplicas);
-            Assert.assertEquals("", unavailableReplicas);
-            Assert.assertEquals(registeredReplicas, availableReplicas);
-            Assert.assertEquals(servicesList.size(), instances - 1);
+            assertNotEquals("", registeredReplicas);
+            assertNotEquals("", availableReplicas);
+            assertEquals("", unavailableReplicas);
+            assertEquals(registeredReplicas, availableReplicas);
+            assertEquals(servicesList.size(), instances - 1);
         }
     }
 

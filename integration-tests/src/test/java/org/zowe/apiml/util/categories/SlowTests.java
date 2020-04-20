@@ -9,10 +9,22 @@
  */
 package org.zowe.apiml.util.categories;
 
+import org.junit.jupiter.api.Tag;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+
 /**
- * A category market for tests that are intentionally slow.
+ * A category marker for tests that are intentionally slow.
  *
  * These tests will not run by default with other integration tests.
  */
-public interface SlowTests {
+@Tag("SlowTests")
+@Target({ TYPE, METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SlowTests {
 }

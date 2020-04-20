@@ -8,3 +8,7 @@ a.nav-tab > svg {
     margin-left: .3rem;
     padding-top: .3rem;
 }
+
+section.schemes.wrapper.block.col-12 > label {
+    display: none;
+}
