@@ -270,9 +270,9 @@
                 "scheme": "basic"
             },
             "Bearer": {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header"
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
             },
             "CookieAuth": {
                 "type": "apiKey",
