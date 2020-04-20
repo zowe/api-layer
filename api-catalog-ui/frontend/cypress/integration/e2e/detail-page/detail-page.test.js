@@ -66,10 +66,6 @@ describe('>>> Detail page test', () => {
 
         cy.get('.opblock-tag-section').should('have.length.gte', 1);
 
-        cy.get('.opblock-summary').eq(0).click();
-
-        cy.get('.try-out').should('exist')
-
     });
 
 
