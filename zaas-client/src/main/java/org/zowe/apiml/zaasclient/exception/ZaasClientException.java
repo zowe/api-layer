@@ -39,4 +39,9 @@ public class ZaasClientException extends Exception {
     public int getHttpResponseCode() {
         return httpResponseCode;
     }
+
+    @Override
+    public String getMessage() {
+        return errorMessage;
+    }
 }
