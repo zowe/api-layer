@@ -22,6 +22,7 @@ import org.zowe.apiml.util.config.ConfigReaderZaasClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.internal.ZaasClientHttps;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
@@ -193,7 +194,7 @@ public class ZaasClientIntegrationTest {
     }
 
     @Test
-    public void givenValidTicket_whenPassTicketIsRequested_thenValidPassTicketIsReturned() throws ZaasClientException {
+    public void givenValidTicket_whenPassTicketIsRequested_thenValidPassTicketIsReturned() throws ZaasClientException, ZaasConfigurationException {
         String token = tokenService.login(USERNAME, PASSWORD);
         String passTicket = tokenService.passTicket(token, "ZOWEAPPL");
         assertNotNull(passTicket);

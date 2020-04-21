@@ -91,7 +91,7 @@ public class HttpsClientProviderTest {
         ZaasConfigurationException zaasException =
             assertThrows(ZaasConfigurationException.class, () -> new HttpsClientProvider(new ConfigProperties()));
 
-        assertThat(zaasException.getErrorCode(), is("ZWEACZ500E"));
+        assertThat(zaasException.getErrorCode(), is("ZWEAS500E"));
         assertThat(zaasException.getErrorMessage(), is("There was no path to the trust store."));
     }
 
@@ -104,7 +104,7 @@ public class HttpsClientProviderTest {
             new HttpsClientProvider(config);
         });
 
-        assertThat(zaasException.getErrorCode(), is("ZWEACZ503E"));
+        assertThat(zaasException.getErrorCode(), is("ZWEAS503E"));
     }
 
     @Test
@@ -117,7 +117,7 @@ public class HttpsClientProviderTest {
             new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
         });
 
-        assertThat(zaasException.getErrorCode(), is("ZWEACZ501E"));
+        assertThat(zaasException.getErrorCode(), is("ZWEAS501E"));
     }
 
     @Test
@@ -132,7 +132,7 @@ public class HttpsClientProviderTest {
             new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
         });
 
-        assertThat(zaasException.getErrorCode(), is("ZWEACZ503E"));
+        assertThat(zaasException.getErrorCode(), is("ZWEAS503E"));
     }
 
     @Test
@@ -147,6 +147,6 @@ public class HttpsClientProviderTest {
             new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
         });
 
-        assertThat(zaasException.getErrorCode(), is("ZWEACZ502E"));
+        assertThat(zaasException.getErrorCode(), is("ZWEAS502E"));
     }
 }
