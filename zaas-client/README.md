@@ -98,8 +98,9 @@ To use this library use the procedure described in this article.
     Pom:
     
         <dependency>
-                    <groupId>org.zowe.apiml.sdk:zaas-client</groupId>
-                    <artifactId>{{version}}</artifactId>
+                    <groupId>org.zowe.apiml.sdk</groupId>
+                    <artifactId>zaas-client</artifactId>
+                    <version>{{version}}</version>
         </dependency>
 
 2. In your application, create your java class which will be used to create an instance of `ZaasClient` and further to use its method to
