@@ -28,7 +28,7 @@ which enables your application to add following functions:
 
 - **Obtain JWT token (login)**
 
-  To integrate login, call one of the following methods for login in the `ZaasClient` interface. Credentials can be provided either in   the request body, or as Basic Auth.
+  To integrate login, call one of the following methods for login in the `ZaasClient` interface. Credentials can be provided either in the request body, or as Basic Auth.
 
   - If user provides credentials in the request body, then you can call the following method from your API:
 
@@ -44,7 +44,7 @@ which enables your application to add following functions:
 
   These methods will return the JWT token as a String. This token can be further used to authenticate the user in subsequent APIs.
 
-  This method will automatically use the truststore file to add a security layer, which you have configured in the `ConfigProperties`         class.
+  This method will automatically use the truststore file to add a security layer, which you have configured in the `ConfigProperties` class.
 
 - **Validate and get details from token (query)**
 
@@ -173,9 +173,9 @@ To use this library use the procedure described in this article.
                 String zaasClientToken = zaasClient.login(username, password);
                 //Use this token  in subsequent calls
                 return zaasClientToken;
-            } catch (ZaasClientException exception) {
+            } catch (ZaasClientException | ZaasConfigurationException exception) {
                 System.out.println(exception.getErrorMessage());
-            }
+            } 
         }
     
         /**
