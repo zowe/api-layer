@@ -41,7 +41,7 @@ public class GatewayRibbonConfig {
     @Primary
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
-        @Qualifier("HttpClientProxy") CloseableHttpClient httpClientProxy,
+        @Qualifier("httpClientProxy") CloseableHttpClient httpClientProxy,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
         LoadBalancedRetryFactory retryFactory
