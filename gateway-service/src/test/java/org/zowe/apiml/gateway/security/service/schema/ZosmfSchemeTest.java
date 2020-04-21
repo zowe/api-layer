@@ -11,6 +11,8 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import io.jsonwebtoken.JwtException;
+import org.apache.http.HttpRequest;
+import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -256,6 +258,34 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         AuthenticationCommand command = scheme.createCommand(new Authentication(AuthenticationScheme.ZOSMF, null), () -> null);
 
         assertTrue(command.isRequiredValidJwt());
+    }
+
+
+    // TESTS for the APPLYTOREQUEST (wip)
+    @Test
+    public void givenRequestWithSetCookie_applyToRequest_ThenAppendSetCookie() {
+        Calendar calendar = Calendar.getInstance();
+
+        RequestContext requestContext = spy(new RequestContext());
+        RequestContext.testSetCurrentContext(requestContext);
+
+        HttpRequest httpRequest = new HttpGet("/test/request");
+        httpRequest.setHeader(COOKIE_HEADER, "cookie1=1");
+        Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
+        HttpServletRequest request = new MockHttpServletRequest();
+        requestContext.setRequest(request);
+        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+        requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, "cookie1=1");
+        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken2"));
+        when(authenticationService.getLtpaTokenWithValidation("jwtToken2")).thenReturn("ltpa2");
+        when(authenticationService.parseJwtToken("jwtToken2")).thenReturn(queryResponse);
+
+//        ZosmfScheme.ZosmfCommand zosmfCommand = new ZosmfScheme(authenticationService, authConfigurationProperties).new ZosmfCommand(calendar.getTimeInMillis());
+
+        zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
+
+        assertEquals("cookie1=1;LtpaToken2=\"ltpa2\"", httpRequest.getFirstHeader("cookie").getValue());
+
     }
 
 }

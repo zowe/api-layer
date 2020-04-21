@@ -14,6 +14,8 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpRequest;
+import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ZosmfService;
@@ -22,7 +24,9 @@ import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.CookieUtil;
+import org.zowe.apiml.util.RequestUtils;
 
+import java.net.HttpCookie;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -105,6 +109,32 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
                 // remove authentication part
                 context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, null);
+            });
+        }
+
+        @Override
+        public void applyToRequest(HttpRequest request) {
+            RequestUtils wrapper = RequestUtils.of(request);
+            final RequestContext context = RequestContext.getCurrentContext();
+
+            Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
+            jwtToken.ifPresent(token -> {
+                // parse JWT token to detect the source (z/OSMF / Zowe)
+                QueryResponse queryResponse = authenticationService.parseJwtToken(token);
+                switch (queryResponse.getSource()) {
+                    case ZOSMF:
+                        wrapper.removeCookie(authConfigurationProperties.getCookieProperties().getCookieName());
+                        wrapper.setCookie(new HttpCookie(ZosmfService.TokenType.JWT.getCookieName(), token));
+                        break;
+                    case ZOWE:
+                        final String ltpaToken = authenticationService.getLtpaTokenWithValidation(token);
+                        wrapper.setCookie(new HttpCookie(ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken));
+                        break;
+                    default:
+                        return;
+                }
+                // remove authentication part
+                wrapper.setHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, null));
             });
         }
 
