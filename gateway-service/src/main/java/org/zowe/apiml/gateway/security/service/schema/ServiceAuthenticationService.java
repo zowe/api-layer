@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
+import com.netflix.appinfo.InstanceInfo;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 import org.zowe.apiml.security.common.auth.Authentication;
 
@@ -34,5 +35,8 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      * @return authentication command to update request in ZUUL (or lazy command to be updated in load balancer)
      */
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken);
+
+
+    public Authentication getAuthentication(InstanceInfo instanceInfo);
 
 }
