@@ -74,7 +74,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final AuthenticationService authenticationService;
     private final CacheManager cacheManager;
 
-    protected Authentication getAuthentication(InstanceInfo instanceInfo) {
+    public Authentication getAuthentication(InstanceInfo instanceInfo) {
         final Map<String, String> metadata = instanceInfo.getMetadata();
 
         final Authentication out = new Authentication();

@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.appinfo.InstanceInfo;
+import org.apache.http.HttpRequest;
 import org.zowe.apiml.cache.EntryExpiration;
 
 import java.io.Serializable;
@@ -23,6 +24,8 @@ import java.io.Serializable;
 public abstract class AuthenticationCommand implements EntryExpiration, Serializable {
 
     private static final long serialVersionUID = -4519869709905127608L;
+
+    // TODO Authentication Command key should be here
 
     public static final AuthenticationCommand EMPTY = new AuthenticationCommand() {
 
@@ -59,6 +62,10 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * it is required be logged and send valid JWT token.
      * @return true is valid token is required, otherwise false
      */
+
     public abstract boolean isRequiredValidJwt();
 
+    public void applyToRequest(HttpRequest request) {
+        throw new UnsupportedOperationException();
+    }
 }
