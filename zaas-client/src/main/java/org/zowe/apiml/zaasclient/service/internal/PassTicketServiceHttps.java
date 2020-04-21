@@ -38,8 +38,9 @@ class PassTicketServiceHttps implements PassTicketService {
     @Override
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
         CloseableHttpResponse response = null;
+        CloseableHttpClient closeableHttpsClient = null;
         try {
-            CloseableHttpClient closeableHttpsClient = httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore();
+            closeableHttpsClient = httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore();
             ZaasClientTicketRequest zaasClientTicketRequest = new ZaasClientTicketRequest();
             ObjectMapper mapper = new ObjectMapper();
             zaasClientTicketRequest.setApplicationName(applicationId);
@@ -54,7 +55,7 @@ class PassTicketServiceHttps implements PassTicketService {
         } catch (Exception ioe) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, ioe.getMessage());
         } finally {
-            finallyClose(response);
+            finallyClose(closeableHttpsClient, response);
         }
     }
 
@@ -76,11 +77,14 @@ class PassTicketServiceHttps implements PassTicketService {
         }
     }
 
-    private void finallyClose(CloseableHttpResponse response) {
+    private void finallyClose(CloseableHttpClient client, CloseableHttpResponse response) {
         try {
-            if (response != null)
+            if (response != null) {
                 response.close();
-            // TODO: Properly close client
+            }
+            if(client != null) {
+                client.close();
+            }
         } catch (IOException e) {
             log.warn("It wasn't possible to close the resources. " + e.getMessage());
         }

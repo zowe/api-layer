@@ -10,6 +10,7 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 /**
@@ -25,7 +26,7 @@ interface TokenService {
      * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
      *   communication with service occurs, this exception with details is thrown.
      */
-    String login(String userId, String password) throws ZaasClientException;
+    String login(String userId, String password) throws ZaasClientException, ZaasConfigurationException;
 
     /**
      * Tries to login a user given the information encoded in the format used by the Authorization HTTP header.
@@ -35,7 +36,7 @@ interface TokenService {
      * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
      *   communication with service occurs, this exception with details is thrown.
      */
-    String login(String authorizationHeader) throws ZaasClientException;
+    String login(String authorizationHeader) throws ZaasClientException, ZaasConfigurationException;
 
     /**
      * Return details about the provided JWT token. The token is expected to be valid.
@@ -46,5 +47,5 @@ interface TokenService {
      * @throws ZaasClientException If the provided token was expired, invalid or some other issue with respect to
      *      communication occurs, this exception with details is thrown.
      */
-    ZaasToken query(String token) throws ZaasClientException;
+    ZaasToken query(String token) throws ZaasClientException, ZaasConfigurationException;
 }

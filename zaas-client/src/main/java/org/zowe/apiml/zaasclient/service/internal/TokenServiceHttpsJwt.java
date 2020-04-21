@@ -12,6 +12,7 @@ package org.zowe.apiml.zaasclient.service.internal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpHeaders;
@@ -25,6 +26,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.IOException;
@@ -49,13 +51,13 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     @Override
-    public String login(String userId, String password) throws ZaasClientException {
+    public String login(String userId, String password) throws ZaasClientException, ZaasConfigurationException {
         return (String) doRequest(
             () -> loginWithCredentials(userId, password),
             this::extractToken);
     }
 
-    private CloseableHttpResponse loginWithCredentials(String userId, String password) throws Exception {
+    private ClientWithResponse loginWithCredentials(String userId, String password) throws Exception {
         CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
@@ -64,35 +66,35 @@ class TokenServiceHttpsJwt implements TokenService {
         httpPost.setEntity(entity);
 
         httpPost.setHeader("Content-type", "application/json");
-        return client.execute(httpPost);
+        return new ClientWithResponse(client, client.execute(httpPost));
     }
 
     @Override
-    public String login(String authorizationHeader) throws ZaasClientException {
+    public String login(String authorizationHeader) throws ZaasClientException, ZaasConfigurationException {
         return (String) doRequest(
             () -> loginWithHeader(authorizationHeader),
             this::extractToken);
     }
 
-    private CloseableHttpResponse loginWithHeader(String authorizationHeader) throws Exception {
+    private ClientWithResponse loginWithHeader(String authorizationHeader) throws Exception {
         CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
-        return client.execute(httpPost);
+        return new ClientWithResponse(client, client.execute(httpPost));
     }
 
     @Override
-    public ZaasToken query(String jwtToken) throws ZaasClientException {
+    public ZaasToken query(String jwtToken) throws ZaasClientException, ZaasConfigurationException {
         return (ZaasToken) doRequest(
             () -> queryWithJwtToken(jwtToken),
             this::extractZaasToken);
     }
 
-    private CloseableHttpResponse queryWithJwtToken(String jwtToken) throws Exception {
+    private ClientWithResponse queryWithJwtToken(String jwtToken) throws Exception {
         BasicCookieStore cookieStore = prepareCookieWithToken(jwtToken);
         CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore(cookieStore);
         HttpGet httpGet = new HttpGet(queryEndpoint);
-        return client.execute(httpGet);
+        return new ClientWithResponse(client, client.execute(httpGet));
     }
 
     private BasicCookieStore prepareCookieWithToken(String jwtToken) {
@@ -104,11 +106,14 @@ class TokenServiceHttpsJwt implements TokenService {
         return cookieStore;
     }
 
-    private void finallyClose(CloseableHttpResponse response) {
+    private void finallyClose(CloseableHttpClient client, CloseableHttpResponse response) {
         try {
-            if (response != null)
+            if (response != null) {
                 response.close();
-            // TODO: Properly close also the client.
+            }
+            if(client != null) {
+                client.close();
+            }
         } catch (IOException e) {
             log.warn("It wasn't possible to close the resources. " + e.getMessage());
         }
@@ -147,21 +152,21 @@ class TokenServiceHttpsJwt implements TokenService {
         return token;
     }
 
-    private Object doRequest(Operation request, Token token) throws ZaasClientException {
-        CloseableHttpResponse response = null;
+    private Object doRequest(Operation request, Token token) throws ZaasClientException, ZaasConfigurationException {
+        ClientWithResponse clientWithResponse = new ClientWithResponse();
 
         try {
-            response = request.request();
+            clientWithResponse = request.request();
 
-            return token.extract(response);
-        } catch (ZaasClientException e) {
+            return token.extract(clientWithResponse.getResponse());
+        } catch (ZaasClientException | ZaasConfigurationException e) {
             throw e;
         } catch (IOException e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
         } finally {
-            finallyClose(response);
+            finallyClose(clientWithResponse.getClient(), clientWithResponse.getResponse());
         }
     }
 
@@ -172,11 +177,19 @@ class TokenServiceHttpsJwt implements TokenService {
         String password;
     }
 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    static class ClientWithResponse {
+        CloseableHttpClient client;
+        CloseableHttpResponse response;
+    }
+
     interface Token {
         Object extract(CloseableHttpResponse response) throws IOException, ZaasClientException;
     }
 
     interface Operation {
-        CloseableHttpResponse request() throws Exception;
+        ClientWithResponse request() throws Exception;
     }
 }
