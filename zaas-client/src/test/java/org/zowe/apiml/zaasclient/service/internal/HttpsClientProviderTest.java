@@ -7,39 +7,35 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.zaasclient.client;
+package org.zowe.apiml.zaasclient.service.internal;
 
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.junit.Before;
 import org.junit.Test;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
-import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.Properties;
 
 import static org.junit.Assert.assertNotNull;
 
-public class HttpsClientTest {
+public class HttpsClientProviderTest {
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
     private ConfigProperties configProperties;
-    private HttpsClient httpsClient;
+    private HttpsClientProvider httpsClientProvider;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws Exception {
         this.configProperties = getConfigProperties();
-        this.httpsClient = new HttpsClient(configProperties);
+        this.httpsClientProvider = new HttpsClientProvider(configProperties);
     }
 
+    // TODO Replace with loading used elsewhere
     private ConfigProperties getConfigProperties() throws IOException {
         String absoluteFilePath = new File(CONFIG_FILE_PATH).getAbsolutePath();
         ConfigProperties properties = new ConfigProperties();
@@ -66,23 +62,23 @@ public class HttpsClientTest {
 
     //tests
     @Test
-    public void testGetHttpClientWithTrustStore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, ZaasClientException {
-        assertNotNull(httpsClient.getHttpsClientWithTrustStore());
+    public void testGetHttpClientWithTrustStore() throws ZaasConfigurationException {
+        assertNotNull(httpsClientProvider.getHttpsClientWithTrustStore());
     }
 
     @Test
-    public void testGetHttpClientWithTrustStoreWithCookies() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException, ZaasClientException {
+    public void testGetHttpClientWithTrustStoreWithCookies() throws ZaasConfigurationException {
         BasicCookieStore cookieStore = new BasicCookieStore();
         BasicClientCookie cookie = new BasicClientCookie("apimlAuthenticationToken", "token");
         cookie.setDomain(configProperties.getApimlHost());
         cookie.setPath("/");
         cookieStore.addCookie(cookie);
 
-        assertNotNull(httpsClient.getHttpsClientWithTrustStore(cookieStore));
+        assertNotNull(httpsClientProvider.getHttpsClientWithTrustStore(cookieStore));
     }
 
     @Test
-    public void testGetHttpsClientWithKeyStoreAndTrustStore() throws CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, IOException, KeyManagementException, KeyStoreException, ZaasClientException {
-        assertNotNull(httpsClient.getHttpsClientWithKeyStoreAndTrustStore());
+    public void testGetHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
+        assertNotNull(httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore());
     }
 }

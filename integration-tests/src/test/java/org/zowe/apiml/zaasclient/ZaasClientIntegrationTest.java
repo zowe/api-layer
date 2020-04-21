@@ -22,9 +22,9 @@ import org.zowe.apiml.util.config.ConfigReaderZaasClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.token.ZaasClient;
-import org.zowe.apiml.zaasclient.token.ZaasClientHttps;
-import org.zowe.apiml.zaasclient.token.ZaasToken;
+import org.zowe.apiml.zaasclient.service.ZaasClient;
+import org.zowe.apiml.zaasclient.service.internal.ZaasClientHttps;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -101,7 +101,7 @@ public class ZaasClientIntegrationTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         configProperties = ConfigReaderZaasClient.getConfigProperties();
         tokenService = new ZaasClientHttps(configProperties);
     }

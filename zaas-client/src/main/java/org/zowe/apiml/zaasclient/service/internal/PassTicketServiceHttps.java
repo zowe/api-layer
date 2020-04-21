@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.zaasclient.token;
+package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.passticket.ZaasClientTicketRequest;
@@ -24,14 +23,14 @@ import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 import java.io.IOException;
 
 @Slf4j
-public class PassTicketServiceHttps implements PassTicketService {
+class PassTicketServiceHttps implements PassTicketService {
     private static final String COOKIE_PREFIX = "apimlAuthenticationToken";
 
-    private HttpsClient httpsClient;
+    private HttpsClientProvider httpsClientProvider;
     private final String ticketUrl;
 
-    public PassTicketServiceHttps(HttpsClient client, String baseUrl) {
-        this.httpsClient = client;
+    public PassTicketServiceHttps(HttpsClientProvider client, String baseUrl) {
+        this.httpsClientProvider = client;
 
         ticketUrl = baseUrl + "/ticket";
     }
@@ -40,7 +39,7 @@ public class PassTicketServiceHttps implements PassTicketService {
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
         CloseableHttpResponse response = null;
         try {
-            CloseableHttpClient closeableHttpsClient = httpsClient.getHttpsClientWithKeyStoreAndTrustStore();
+            CloseableHttpClient closeableHttpsClient = httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore();
             ZaasClientTicketRequest zaasClientTicketRequest = new ZaasClientTicketRequest();
             ObjectMapper mapper = new ObjectMapper();
             zaasClientTicketRequest.setApplicationName(applicationId);
@@ -81,8 +80,7 @@ public class PassTicketServiceHttps implements PassTicketService {
         try {
             if (response != null)
                 response.close();
-            if (httpsClient != null)
-                httpsClient.close();
+            // TODO: Properly close client
         } catch (IOException e) {
             log.warn("It wasn't possible to close the resources. " + e.getMessage());
         }

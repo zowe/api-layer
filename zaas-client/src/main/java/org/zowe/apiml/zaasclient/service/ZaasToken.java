@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.zaasclient.token;
+package org.zowe.apiml.zaasclient.service;
 
 import lombok.Data;
 
@@ -15,11 +15,9 @@ import java.util.Date;
 
 @Data
 public class ZaasToken {
-
-    String domain;
-    String userId;
-    Date creation;
-    Date expiration;
-    boolean expired;
-
+    private String domain;
+    private String userId;
+    private Date creation;
+    private Date expiration;
+    private boolean expired;
 }

@@ -27,7 +27,7 @@ public enum ZaasClientErrorCodes {
     private final String message;
     private final int returnCode;
 
-    private ZaasClientErrorCodes(String id, String message, int returnCode) {
+    ZaasClientErrorCodes(String id, String message, int returnCode) {
         this.id = id;
         this.message = message;
         this.returnCode = returnCode;

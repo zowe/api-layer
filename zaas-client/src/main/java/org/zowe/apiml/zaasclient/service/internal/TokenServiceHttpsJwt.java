@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.zaasclient.token;
+package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -23,25 +23,25 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
-import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
-public class TokenServiceHttpsJwt implements TokenService {
+class TokenServiceHttpsJwt implements TokenService {
     private static final String COOKIE_PREFIX = "apimlAuthenticationToken";
     private final String loginEndpoint;
     private final String queryEndpoint;
     private final String host;
 
-    private HttpsClient httpsClient;
+    private HttpsClientProvider httpsClientProvider;
 
-    public TokenServiceHttpsJwt(HttpsClient client, String baseUrl, String host) {
-        this.httpsClient = client;
+    public TokenServiceHttpsJwt(HttpsClientProvider client, String baseUrl, String host) {
+        this.httpsClientProvider = client;
         this.host = host;
 
         loginEndpoint = baseUrl + "/login";
@@ -56,7 +56,7 @@ public class TokenServiceHttpsJwt implements TokenService {
     }
 
     private CloseableHttpResponse loginWithCredentials(String userId, String password) throws Exception {
-        CloseableHttpClient client = httpsClient.getHttpsClientWithTrustStore();
+        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(new Credentials(userId, password));
@@ -75,7 +75,7 @@ public class TokenServiceHttpsJwt implements TokenService {
     }
 
     private CloseableHttpResponse loginWithHeader(String authorizationHeader) throws Exception {
-        CloseableHttpClient client = httpsClient.getHttpsClientWithTrustStore();
+        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
         return client.execute(httpPost);
@@ -90,7 +90,7 @@ public class TokenServiceHttpsJwt implements TokenService {
 
     private CloseableHttpResponse queryWithJwtToken(String jwtToken) throws Exception {
         BasicCookieStore cookieStore = prepareCookieWithToken(jwtToken);
-        CloseableHttpClient client = httpsClient.getHttpsClientWithTrustStore(cookieStore);
+        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore(cookieStore);
         HttpGet httpGet = new HttpGet(queryEndpoint);
         return client.execute(httpGet);
     }
@@ -108,8 +108,7 @@ public class TokenServiceHttpsJwt implements TokenService {
         try {
             if (response != null)
                 response.close();
-            if (httpsClient != null)
-                httpsClient.close();
+            // TODO: Properly close also the client.
         } catch (IOException e) {
             log.warn("It wasn't possible to close the resources. " + e.getMessage());
         }
