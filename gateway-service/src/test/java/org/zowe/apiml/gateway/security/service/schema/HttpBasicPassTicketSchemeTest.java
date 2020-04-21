@@ -108,4 +108,11 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
         assertTrue(ac.isRequiredValidJwt());
     }
 
+    @Test
+    public void whenCallWithoutJwt_thenDoNothing() {
+        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
+        AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> null);
+        assertSame(ac, AuthenticationCommand.EMPTY);
+    }
+
 }
