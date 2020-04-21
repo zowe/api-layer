@@ -20,7 +20,7 @@ public enum ZaasClientErrorCodes {
         "RACF Security Administrator's Guide.", 400),
     TOKEN_NOT_PROVIDED("ZWEAS401E", "Token is not provided", 401),
     SERVICE_UNAVAILABLE("ZWEAS404E", "Gateway service is unavailable", 404),
-    APPLICATION_NAME_NOT_FOUND("ZWEAS417E", "The token provided is invalid", 404);
+    APPLICATION_NAME_NOT_FOUND("ZWEAS417E", "The application name wasn't found", 404);
 
     private final String id;
     private final String message;
