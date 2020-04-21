@@ -98,6 +98,7 @@ public class RequestUtils {
     }
 
     public void setCookie(HttpCookie cookie) {
+        // TODO the cookie version is still 1. It contains the "" (cookie1=1;LtpaToken2="ltpa2"). Check the test
         List<Header> allHeaders = getAllHeaders();
         if (getHeader(HttpHeaders.COOKIE).isEmpty()) {
             //allHeaders.add();
