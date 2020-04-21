@@ -10,7 +10,6 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 /**

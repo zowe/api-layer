@@ -26,7 +26,6 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
-import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.IOException;
@@ -111,7 +110,7 @@ class TokenServiceHttpsJwt implements TokenService {
             if (response != null) {
                 response.close();
             }
-            if(client != null) {
+            if (client != null) {
                 client.close();
             }
         } catch (IOException e) {

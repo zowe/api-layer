@@ -82,7 +82,7 @@ class PassTicketServiceHttps implements PassTicketService {
             if (response != null) {
                 response.close();
             }
-            if(client != null) {
+            if (client != null) {
                 client.close();
             }
         } catch (IOException e) {
