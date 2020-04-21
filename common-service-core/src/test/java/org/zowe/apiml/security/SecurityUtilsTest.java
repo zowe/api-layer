@@ -17,11 +17,15 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.Base64;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
 public class SecurityUtilsTest {
+
     private static final String KEY_ALIAS = "localhost";
     private static final String JWT_KEY_ALIAS = "jwtsecret";
     private static final String WRONG_PARAMETER = "wrong";
@@ -93,14 +97,10 @@ public class SecurityUtilsTest {
     }
 
     @Test
-    public void testLoadKeyStore() {
+    public void testLoadKeyStore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        try {
-            KeyStore keyStore = SecurityUtils.loadKeyStore(httpsConfig);
-            assertTrue(keyStore.size() > 0);
-        } catch (Exception ex) {
-            fail(ex.getMessage());
-        }
+        KeyStore keyStore = SecurityUtils.loadKeyStore(httpsConfig);
+        assertTrue(keyStore.size() > 0);
     }
 
     @Test
@@ -125,4 +125,26 @@ public class SecurityUtilsTest {
         }
         return publicKey;
     }
+
+    @Test
+    public void loadCertificateChainNoKeystore() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        HttpsConfig httpsConfig = HttpsConfig.builder().build();
+        Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
+        assertEquals(0, certificates.length);
+    }
+
+    @Test
+    public void loadCertificateChain() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
+        Certificate[] certificates = SecurityUtils.loadCertificateChain(httpsConfig);
+        assertTrue(certificates.length > 0);
+    }
+
+    @Test
+    public void loadCertificateChainBase64() throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
+        Set<String> certificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+        assertFalse(certificatesBase64.isEmpty());
+    }
+
 }

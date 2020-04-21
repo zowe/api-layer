@@ -10,31 +10,32 @@
 
 package org.zowe.apiml.discoverableclient;
 
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static org.hamcrest.Matchers.equalTo;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.File;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 public class MultipartPutIntegrationTest {
     private static final String MULTIPART_PATH = "/api/v1/discoverableclient/multipart";
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     //@formatter:off
     @Test
+    @TestsNotMeantForZowe
     public void shouldDoPutRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
@@ -50,6 +51,7 @@ public class MultipartPutIntegrationTest {
     }
 
     @Test
+    @TestsNotMeantForZowe
     public void shouldDoPostRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);

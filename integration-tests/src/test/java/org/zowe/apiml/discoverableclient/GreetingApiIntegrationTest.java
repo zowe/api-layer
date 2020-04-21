@@ -9,12 +9,13 @@
  */
 package org.zowe.apiml.discoverableclient;
 
-import org.zowe.apiml.util.http.HttpRequestUtils;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -22,6 +23,7 @@ import static org.junit.Assert.assertThat;
 
 public class GreetingApiIntegrationTest {
     @Test
+    @TestsNotMeantForZowe
     public void shouldCallDiscoverableServiceApi() throws Exception {
         // When
         final HttpResponse response = HttpRequestUtils.getResponse("/api/v1/discoverableclient/greeting", SC_OK);

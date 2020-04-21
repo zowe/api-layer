@@ -9,13 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import org.zowe.apiml.gateway.security.service.AuthenticationException;
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.passticket.PassTicketService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
@@ -23,9 +16,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.apache.http.HttpHeaders;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.service.PassTicketException;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.QueryResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.function.Supplier;
 
 /**
  * This bean support PassTicket. Bean is responsible for getting PassTicket from
@@ -43,9 +44,13 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
     }
 
     @Override
-    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token)
-        throws AuthenticationException {
+    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> tokenSupplier) {
         final long before = System.currentTimeMillis();
+        final QueryResponse token = tokenSupplier.get();
+
+        if (token == null) {
+            return AuthenticationCommand.EMPTY;
+        }
 
         final String applId = authentication.getApplid();
         final String userId = token.getUserId();
@@ -53,8 +58,9 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         try {
             passTicket = passTicketService.generate(userId, applId);
         } catch (IRRPassTicketGenerationException e) {
-            throw new AuthenticationException(
-                String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e);
+            throw new PassTicketException(
+                String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId), e
+            );
         }
         final String encoded = Base64.getEncoder()
             .encodeToString((userId + ":" + passTicket).getBytes(StandardCharsets.UTF_8));
@@ -84,6 +90,11 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         @Override
         public boolean isExpired() {
             return System.currentTimeMillis() > expireAt;
+        }
+
+        @Override
+        public boolean isRequiredValidJwt() {
+            return true;
         }
 
     }

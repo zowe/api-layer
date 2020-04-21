@@ -58,3 +58,18 @@ dependencies {
 
 
 bootJar.archiveName = "${bootJar.baseName}.jar"
+
+jar {
+    enabled = true
+    archiveName = "${jar.baseName}-thin.jar"
+
+    def libClassPathEntries = configurations.runtimeClasspath.files.collect {
+        "lib/" + it.getName()
+    }
+    doFirst {
+        manifest {
+            attributes "Class-Path": libClassPathEntries.join(" "),
+                "Main-Class": "org.zowe.apiml.client.DiscoverableClientSampleApplication"
+        }
+    }
+}

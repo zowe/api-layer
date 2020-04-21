@@ -89,3 +89,14 @@ Start the suite of slow tests by executing the following shell script:
 ```sh
 ./gradlew :integration-tests:runIntegrationTests --tests org.zowe.apiml.gatewayservice.PassTicketTest
 ```
+
+## Running specific tests to test Zowe RC 
+
+Run special integration tests to test a Zowe instance as part of the RC testing process.
+
+```shell
+./gradlew :integration-tests:runAllIntegrationTestsForZoweTesting
+```
+
+Tests annotated with `@Category(TestsNotMeantForZowe.class)` are excluded from this test suite (e.g Discoverable Client tests, PassTicket tests, etc...).
+
