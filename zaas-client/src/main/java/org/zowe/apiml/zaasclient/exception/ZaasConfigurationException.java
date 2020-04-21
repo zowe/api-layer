@@ -25,16 +25,11 @@ public class ZaasConfigurationException extends Exception {
         this.errorMessage = code.getMessage();
     }
 
-    public String getErrorCode() {
-        return errorCode;
-    }
-
     public String getErrorMessage() {
         return errorMessage;
     }
 
-    @Override
-    public String getMessage() {
-        return errorMessage;
+    public String getErrorCode() {
+        return errorCode;
     }
 }

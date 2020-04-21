@@ -92,7 +92,7 @@ class HttpsClientProvider implements CloseableClientProvider {
         } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException e) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e.getMessage());
         } catch (IOException e) {
-            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.TRUST_STORE_NOT_PROVIDED, e.getMessage());
+            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE, e.getMessage());
         }
     }
 
@@ -125,7 +125,7 @@ class HttpsClientProvider implements CloseableClientProvider {
     }
 
     /**
-     * Create Http Configuration with defaults for maximum of conncetions and maximum of connections per route.
+     * Create Http Configuration with defaults for maximum of connections and maximum of connections per route.
      */
     private HttpClientBuilder sharedHttpClientConfiguration(SSLContext sslContext) {
         final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext,

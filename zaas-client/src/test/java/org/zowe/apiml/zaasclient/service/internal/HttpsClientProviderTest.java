@@ -11,8 +11,8 @@ package org.zowe.apiml.zaasclient.service.internal;
 
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
@@ -22,14 +22,18 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 public class HttpsClientProviderTest {
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
     private ConfigProperties configProperties;
     private HttpsClientProvider httpsClientProvider;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         this.configProperties = getConfigProperties();
         this.httpsClientProvider = new HttpsClientProvider(configProperties);
@@ -80,5 +84,69 @@ public class HttpsClientProviderTest {
     @Test
     public void testGetHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
         assertNotNull(httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore());
+    }
+
+    @Test
+    public void givenNullTrustStore_whenTheClientIsConstructed_thenExceptionsIsThrown() {
+        ZaasConfigurationException zaasException =
+            assertThrows(ZaasConfigurationException.class, () -> new HttpsClientProvider(new ConfigProperties()));
+
+        assertThat(zaasException.getErrorCode(), is("ZWEACZ500E"));
+        assertThat(zaasException.getErrorMessage(), is("There was no path to the trust store."));
+    }
+
+    @Test
+    public void giveInvalidTrustStorePath_whenTheClientIsConstructed_thenExceptionsIsThrown() {
+        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
+            ConfigProperties config = new ConfigProperties();
+            config.setTrustStorePath("intentionallyInvalidPath");
+            config.setTrustStoreType("PKCS12");
+            new HttpsClientProvider(config);
+        });
+
+        assertThat(zaasException.getErrorCode(), is("ZWEACZ503E"));
+    }
+
+    @Test
+    public void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() {
+        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
+            ConfigProperties config = new ConfigProperties();
+            config.setTrustStorePassword("password");
+            config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
+            config.setTrustStoreType("PKCS12");
+            new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
+        });
+
+        assertThat(zaasException.getErrorCode(), is("ZWEACZ501E"));
+    }
+
+    @Test
+    public void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() {
+        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
+            ConfigProperties config = new ConfigProperties();
+            config.setTrustStorePassword("password");
+            config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
+            config.setTrustStoreType("PKCS12");
+            config.setKeyStorePath("intentionallyInvalidPath");
+            config.setKeyStoreType("PKCS12");
+            new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
+        });
+
+        assertThat(zaasException.getErrorCode(), is("ZWEACZ503E"));
+    }
+
+    @Test
+    public void givenInvalidKeyStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() {
+        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
+            ConfigProperties config = new ConfigProperties();
+            config.setTrustStorePassword("password");
+            config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
+            config.setTrustStoreType("PKCS12");
+            config.setKeyStorePath("src/test/resources/localhost.keystore.p12");
+            config.setKeyStoreType("invalidCryptoType");
+            new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
+        });
+
+        assertThat(zaasException.getErrorCode(), is("ZWEACZ502E"));
     }
 }

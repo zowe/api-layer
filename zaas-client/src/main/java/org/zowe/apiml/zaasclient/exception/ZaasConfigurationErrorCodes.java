@@ -10,10 +10,10 @@
 package org.zowe.apiml.zaasclient.exception;
 
 public enum ZaasConfigurationErrorCodes {
-    TRUST_STORE_NOT_PROVIDED("ZWEACZ500E", ""),
-    KEY_STORE_NOT_PROVIDED("ZWEACZ501E",""),
-    WRONG_CRYPTO_CONFIGURATION("ZWEACZ502E", ""),
-    IO_CONFIGURATION_ISSUE("ZWEACZ503E", "");
+    TRUST_STORE_NOT_PROVIDED("ZWEACZ500E", "There was no path to the trust store."),
+    KEY_STORE_NOT_PROVIDED("ZWEACZ501E","There was no path to the key store."),
+    WRONG_CRYPTO_CONFIGURATION("ZWEACZ502E", "The configuration provided for SSL is invalid."),
+    IO_CONFIGURATION_ISSUE("ZWEACZ503E", "The SSL configuration contained invalid path.");
 
     private final String id;
     private final String message;
