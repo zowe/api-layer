@@ -26,7 +26,7 @@ interface TokenService {
      * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
      *   communication with service occurs, this exception with details is thrown.
      */
-    String login(String userId, String password) throws ZaasClientException, ZaasConfigurationException;
+    String login(String userId, String password) throws ZaasClientException;
 
     /**
      * Tries to login a user given the information encoded in the format used by the Authorization HTTP header.
@@ -36,7 +36,7 @@ interface TokenService {
      * @throws ZaasClientException If the provided information were incorrect or some other issue with respect to the
      *   communication with service occurs, this exception with details is thrown.
      */
-    String login(String authorizationHeader) throws ZaasClientException, ZaasConfigurationException;
+    String login(String authorizationHeader) throws ZaasClientException;
 
     /**
      * Return details about the provided JWT token. The token is expected to be valid.
@@ -47,5 +47,5 @@ interface TokenService {
      * @throws ZaasClientException If the provided token was expired, invalid or some other issue with respect to
      *      communication occurs, this exception with details is thrown.
      */
-    ZaasToken query(String token) throws ZaasClientException, ZaasConfigurationException;
+    ZaasToken query(String token) throws ZaasClientException;
 }

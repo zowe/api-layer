@@ -51,7 +51,7 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     @Override
-    public String login(String userId, String password) throws ZaasClientException, ZaasConfigurationException {
+    public String login(String userId, String password) throws ZaasClientException {
         return (String) doRequest(
             () -> loginWithCredentials(userId, password),
             this::extractToken);
@@ -70,7 +70,7 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     @Override
-    public String login(String authorizationHeader) throws ZaasClientException, ZaasConfigurationException {
+    public String login(String authorizationHeader) throws ZaasClientException {
         return (String) doRequest(
             () -> loginWithHeader(authorizationHeader),
             this::extractToken);
@@ -84,7 +84,7 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     @Override
-    public ZaasToken query(String jwtToken) throws ZaasClientException, ZaasConfigurationException {
+    public ZaasToken query(String jwtToken) throws ZaasClientException {
         return (ZaasToken) doRequest(
             () -> queryWithJwtToken(jwtToken),
             this::extractZaasToken);
@@ -152,14 +152,14 @@ class TokenServiceHttpsJwt implements TokenService {
         return token;
     }
 
-    private Object doRequest(Operation request, Token token) throws ZaasClientException, ZaasConfigurationException {
+    private Object doRequest(Operation request, Token token) throws ZaasClientException {
         ClientWithResponse clientWithResponse = new ClientWithResponse();
 
         try {
             clientWithResponse = request.request();
 
             return token.extract(clientWithResponse.getResponse());
-        } catch (ZaasClientException | ZaasConfigurationException e) {
+        } catch (ZaasClientException e) {
             throw e;
         } catch (IOException e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
