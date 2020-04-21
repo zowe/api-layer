@@ -17,6 +17,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.passticket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 
@@ -36,7 +37,7 @@ class PassTicketServiceHttps implements PassTicketService {
     }
 
     @Override
-    public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
+    public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
         CloseableHttpResponse response = null;
         CloseableHttpClient closeableHttpsClient = null;
         try {
@@ -52,8 +53,10 @@ class PassTicketServiceHttps implements PassTicketService {
 
             response = closeableHttpsClient.execute(httpPost);
             return extractPassTicket(response);
-        } catch (Exception ioe) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, ioe.getMessage());
+        } catch (ZaasConfigurationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e.getMessage());
         } finally {
             finallyClose(closeableHttpsClient, response);
         }

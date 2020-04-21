@@ -10,6 +10,7 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
 /**
  * Operations related to passTicket.
@@ -26,5 +27,5 @@ interface PassTicketService {
      * @throws ZaasClientException If the provided token was expired, invalid or application id was unknown or some other
      *      issue with respect to communication occurs, this exception with details is thrown.
      */
-    String passTicket(String jwtToken, String applicationId) throws ZaasClientException;
+    String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException;
 }
