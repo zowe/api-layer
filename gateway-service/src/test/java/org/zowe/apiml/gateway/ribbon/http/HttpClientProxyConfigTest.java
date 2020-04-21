@@ -40,6 +40,10 @@ public class HttpClientProxyConfigTest {
             return new HttpClientChooser(client1, client2);
         }
 
+        @Bean
+        public ServiceAuthenticationDecorator serviceAuthenticationDecorator() {
+            return mock(ServiceAuthenticationDecorator.class);
+        }
     }
 
     @Autowired
