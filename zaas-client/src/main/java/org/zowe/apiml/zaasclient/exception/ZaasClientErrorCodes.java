@@ -19,6 +19,8 @@ public enum ZaasClientErrorCodes {
     APPLICATION_NAME_NOT_FOUND("ZWEAZC417E", "The token provided is invalid", 404),
     TOKEN_NOT_PROVIDED("ZWEAZC401E", "Token is not provided", 401),
     EXPIRED_JWT_EXCEPTION("ZWEAT100E", "Token is expired for URL", 401),
+    KEYSTORE_NOT_PROVIDED("ZWEAT123E", "Keystore is not provided", 401),
+    TRUSTSTORE_NOT_PROVIDED("ZWEAT124E", "Truststore is not provided", 401),
     BAD_REQUEST("ZWEAZC400E", "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function " +
         "and application ID is configured properly by referring to Using PassTickets in z/OS Security Server " +
         "RACF Security Administrator's Guide.", 400);
