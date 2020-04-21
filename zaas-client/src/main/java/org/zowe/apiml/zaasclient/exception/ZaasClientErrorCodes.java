@@ -10,17 +10,17 @@
 package org.zowe.apiml.zaasclient.exception;
 
 public enum ZaasClientErrorCodes {
-    EXPIRED_JWT_EXCEPTION("ZWEAAC100E", "Token is expired for URL", 401),
-    INVALID_AUTHENTICATION("ZWEAAC120E", "Invalid username or password", 401),
-    EMPTY_NULL_USERNAME_PASSWORD("ZWEAAC121E", "Empty or null username or password values provided", 400),
-    EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAAC122E", "Empty or null authorization header provided", 400),
-    GENERIC_EXCEPTION("ZWEAAC170E", "An exception occurred while trying to get the token", 400),
-    BAD_REQUEST("ZWEAAC400E", "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function " +
+    EXPIRED_JWT_EXCEPTION("ZWEAS100E", "Token is expired for URL", 401),
+    INVALID_AUTHENTICATION("ZWEAS120E", "Invalid username or password", 401),
+    EMPTY_NULL_USERNAME_PASSWORD("ZWEAS121E", "Empty or null username or password values provided", 400),
+    EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAS122E", "Empty or null authorization header provided", 400),
+    GENERIC_EXCEPTION("ZWEAS170E", "An exception occurred while trying to get the token", 400),
+    BAD_REQUEST("ZWEAS400E", "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function " +
         "and application ID is configured properly by referring to Using PassTickets in z/OS Security Server " +
         "RACF Security Administrator's Guide.", 400),
-    TOKEN_NOT_PROVIDED("ZWEAAC401E", "Token is not provided", 401),
-    SERVICE_UNAVAILABLE("ZWEAAC404E", "Gateway service is unavailable", 404),
-    APPLICATION_NAME_NOT_FOUND("ZWEAAC417E", "The token provided is invalid", 404);
+    TOKEN_NOT_PROVIDED("ZWEAS401E", "Token is not provided", 401),
+    SERVICE_UNAVAILABLE("ZWEAS404E", "Gateway service is unavailable", 404),
+    APPLICATION_NAME_NOT_FOUND("ZWEAS417E", "The token provided is invalid", 404);
 
     private final String id;
     private final String message;
