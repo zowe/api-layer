@@ -1,10 +1,13 @@
 dependencies {
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.11'
-    compileOnly libraries.lombok
     annotationProcessor libraries.lombok
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.11'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.1'
     compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
-    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+
+    compileOnly libraries.lombok
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 }

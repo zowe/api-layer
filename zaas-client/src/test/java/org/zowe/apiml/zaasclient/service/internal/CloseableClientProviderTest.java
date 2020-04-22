@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-public class HttpsClientProviderTest {
+public class CloseableClientProviderTest {
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
     private ConfigProperties configProperties;
     private HttpsClientProvider httpsClientProvider;
@@ -40,7 +40,6 @@ public class HttpsClientProviderTest {
         this.httpsClientProvider = new HttpsClientProvider(configProperties);
     }
 
-    // TODO Replace with loading used elsewhere
     private ConfigProperties getConfigProperties() throws IOException {
         String absoluteFilePath = new File(CONFIG_FILE_PATH).getAbsolutePath();
         ConfigProperties properties = new ConfigProperties();

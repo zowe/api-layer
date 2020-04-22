@@ -24,21 +24,29 @@ public class ZaasClientHttps implements ZaasClient {
     private TokenService tokens;
     private PassTicketService passTickets;
 
-    ZaasClientHttps(HttpsClientProvider client, ConfigProperties configProperties) {
-        String baseUrl = String.format("https://%s:%s%s", configProperties.getApimlHost(), configProperties.getApimlPort(),
-            configProperties.getApimlBaseUrl());
+    public ZaasClientHttps(ConfigProperties configProperties) throws ZaasConfigurationException {
+        try {
+            HttpsClientProvider provider = new HttpsClientProvider(configProperties);
+            String baseUrl = String.format("https://%s:%s%s", configProperties.getApimlHost(), configProperties.getApimlPort(),
+                configProperties.getApimlBaseUrl());
 
-        tokens = new TokenServiceHttpsJwt(client, baseUrl, configProperties.getApimlHost());
-        passTickets = new PassTicketServiceHttps(client, baseUrl);
+            tokens = new TokenServiceHttpsJwt(provider, baseUrl, configProperties.getApimlHost());
+            passTickets = new PassTicketServiceHttps(provider, baseUrl);
+        } catch (ZaasConfigurationException e) {
+            log.error(e.getErrorCode().toString());
+            throw e;
+        }
     }
 
-    public ZaasClientHttps(ConfigProperties configProperties) throws ZaasConfigurationException {
-        this(new HttpsClientProvider(configProperties), configProperties);
+    ZaasClientHttps(TokenService tokens, PassTicketService passTickets) {
+        this.tokens = tokens;
+        this.passTickets = passTickets;
     }
 
     @Override
     public String login(String userId, String password) throws ZaasClientException {
-        if (userId == null || password == null) {
+        if (userId == null || password == null || userId.isEmpty() || password.isEmpty()) {
+            log.error(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD.toString());
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
 
