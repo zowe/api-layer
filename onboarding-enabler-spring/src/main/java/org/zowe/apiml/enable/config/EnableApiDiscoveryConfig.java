@@ -9,9 +9,13 @@
  */
 package org.zowe.apiml.enable.config;
 
+import org.springframework.lang.Nullable;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.EurekaClientConfigProvider;
+import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
+import org.zowe.apiml.eurekaservice.client.impl.DiscoveryClientProvider;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,8 +39,28 @@ public class EnableApiDiscoveryConfig {
     }
 
     @Bean
-    public ApiMediationClient apiMediationClient() {
-       return new ApiMediationClientImpl();
+    public ApiMediationClient apiMediationClient(@Nullable EurekaClientProvider eurekaClientProvider) {
+        if (eurekaClientProvider == null) {
+            return new ApiMediationClientImpl();
+        }
+       return new ApiMediationClientImpl(eurekaClientProvider);
+    }
+
+    @Bean
+    public ApiMediationClient apiMediationClient(@Nullable EurekaClientProvider eurekaClientProvider, @Nullable EurekaClientConfigProvider eurekaClientConfigProvider) {
+        if (eurekaClientProvider != null) {
+            if (eurekaClientConfigProvider != null) {
+                return new ApiMediationClientImpl(eurekaClientProvider, eurekaClientConfigProvider);
+            } else {
+                return new ApiMediationClientImpl(eurekaClientProvider);
+            }
+        } else {
+            if (eurekaClientConfigProvider != null) {
+                return new ApiMediationClientImpl(new DiscoveryClientProvider(), eurekaClientConfigProvider);
+            } else {
+                return new ApiMediationClientImpl();
+            }
+        }
     }
 
     @ConfigurationProperties(prefix = "apiml.service")

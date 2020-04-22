@@ -19,9 +19,9 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.EurekaClientConfigProvider;
 import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
-import org.zowe.apiml.eurekaservice.client.config.EurekaClientConfiguration;
 import org.zowe.apiml.eurekaservice.client.config.Ssl;
 import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.MetadataValidationException;
@@ -43,15 +43,27 @@ import org.zowe.apiml.security.HttpsFactory;
  */
 public class ApiMediationClientImpl implements ApiMediationClient {
     private EurekaClientProvider eurekaClientProvider;
+    private EurekaClientConfigProvider eurekaClientConfigProvider;
+
     private EurekaClient eurekaClient;
-    private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
+    private EurekaInstanceConfigCreator eurekaInstanceConfigCreator;
 
     public ApiMediationClientImpl() {
-        eurekaClientProvider = new DiscoveryClientProvider();
+        this(new DiscoveryClientProvider());
     }
 
     public ApiMediationClientImpl(EurekaClientProvider eurekaClientProvider) {
+        this(eurekaClientProvider, new ApiMlEurekaClientConfigProvider());
+    }
+
+    public ApiMediationClientImpl(EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider) {
+        this(eurekaClientProvider, eurekaClientConfigProvider, new EurekaInstanceConfigCreator());
+    }
+
+    public ApiMediationClientImpl(EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider, EurekaInstanceConfigCreator instanceConfigCreator) {
         this.eurekaClientProvider = eurekaClientProvider;
+        this.eurekaClientConfigProvider = eurekaClientConfigProvider;
+        this.eurekaInstanceConfigCreator = instanceConfigCreator;
     }
 
     /**
@@ -69,7 +81,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
             throw new ServiceDefinitionException("EurekaClient was previously registered for this instance of ApiMediationClient. Call your ApiMediationClient unregister() method before attempting other registration.");
         }
 
-        EurekaClientConfiguration clientConfiguration = new EurekaClientConfiguration(config);
+        EurekaClientConfig clientConfiguration = eurekaClientConfigProvider.config(config);
         try {
             ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
             eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);

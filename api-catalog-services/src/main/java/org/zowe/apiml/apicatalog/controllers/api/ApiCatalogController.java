@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
+import io.swagger.annotations.Authorization;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
@@ -70,7 +71,10 @@ public class ApiCatalogController {
      */
     @GetMapping(value = "/containers", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Lists catalog dashboard tiles",
-        notes = "Returns a list of tiles including status and tile description"
+        notes = "Returns a list of tiles including status and tile description",
+        authorizations = {
+            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
+        }
     )
     public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalException {
         try {
@@ -96,7 +100,10 @@ public class ApiCatalogController {
      */
     @GetMapping(value = "/containers/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @ApiOperation(value = "Retrieves a specific dashboard tile information",
-        notes = "Returns information for a specific tile {id} including status and tile description"
+        notes = "Returns information for a specific tile {id} including status and tile description",
+        authorizations = {
+            @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
+        }
     )
     public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
         try {

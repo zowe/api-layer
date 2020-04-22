@@ -48,6 +48,10 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         final long before = System.currentTimeMillis();
         final QueryResponse token = tokenSupplier.get();
 
+        if (token == null) {
+            return AuthenticationCommand.EMPTY;
+        }
+
         final String applId = authentication.getApplid();
         final String userId = token.getUserId();
         String passTicket;
