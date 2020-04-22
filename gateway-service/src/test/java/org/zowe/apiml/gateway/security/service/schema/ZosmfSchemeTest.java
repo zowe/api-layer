@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
 import io.jsonwebtoken.JwtException;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.Test;
@@ -50,7 +51,6 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     @InjectMocks
     private ZosmfScheme zosmfScheme;
 
-
     @Test
     public void givenNoToken_whenCreateCommand_thenDontAddZuulHeader() {
         Calendar calendar = Calendar.getInstance();
@@ -70,7 +70,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenRequestWithNoCookie_whenCreateCommand_ThenAddOnlyLtpaCookie() {
+    public void givenRequestWithNoCookie_whenCreateCommand_thenAddOnlyLtpaCookie() {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
         QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
@@ -91,7 +91,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenRequestWithSetCookie_whenCreateCommand_ThenAppendSetCookie() {
+    public void givenRequestWithSetCookie_whenCreateCommand_thenAppendSetCookie() {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
         QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
@@ -259,11 +259,10 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         assertTrue(command.isRequiredValidJwt());
     }
 
-
-    // TESTS for the APPLYTOREQUEST (wip)
     @Test
-    public void givenRequestWithSetCookie_applyToRequest_ThenAppendSetCookie() {
+    public void givenRequestWithSetCookie_whenApplyToRequest_thenAppendSetCookie() {
         Calendar calendar = Calendar.getInstance();
+        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
 
         RequestContext requestContext = spy(new RequestContext());
         RequestContext.testSetCurrentContext(requestContext);
@@ -273,18 +272,82 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
         Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
         HttpServletRequest request = new MockHttpServletRequest();
         requestContext.setRequest(request);
-        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
-        requestContext.getZuulRequestHeaders().put(COOKIE_HEADER, "cookie1=1");
+
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken2"));
         when(authenticationService.getLtpaTokenWithValidation("jwtToken2")).thenReturn("ltpa2");
         when(authenticationService.parseJwtToken("jwtToken2")).thenReturn(queryResponse);
 
-//        ZosmfScheme.ZosmfCommand zosmfCommand = new ZosmfScheme(authenticationService, authConfigurationProperties).new ZosmfCommand(calendar.getTimeInMillis());
-
         zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
 
         assertEquals("cookie1=1;LtpaToken2=ltpa2", httpRequest.getFirstHeader("cookie").getValue());
+    }
 
+    @Test
+    public void givenRequestWithNoCookie_whenApplyToRequest_thenAppendSetCookie() {
+        Calendar calendar = Calendar.getInstance();
+        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+
+        RequestContext requestContext = spy(new RequestContext());
+        RequestContext.testSetCurrentContext(requestContext);
+
+        HttpRequest httpRequest = new HttpGet("/test/request");
+        Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
+        HttpServletRequest request = new MockHttpServletRequest();
+        requestContext.setRequest(request);
+
+        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken2"));
+        when(authenticationService.getLtpaTokenWithValidation("jwtToken2")).thenReturn("ltpa1");
+        when(authenticationService.parseJwtToken("jwtToken2")).thenReturn(queryResponse);
+
+        zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
+
+        assertEquals("LtpaToken2=ltpa1", httpRequest.getFirstHeader("cookie").getValue());
+    }
+
+    @Test
+    public void givenRequest_whenApplyToRequest_thenSetAuthHeaderToNull() {
+        Calendar calendar = Calendar.getInstance();
+        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
+
+        RequestContext requestContext = spy(new RequestContext());
+        RequestContext.testSetCurrentContext(requestContext);
+
+        HttpRequest httpRequest = new HttpGet("/test/request");
+        Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
+        HttpServletRequest request = new MockHttpServletRequest();
+        requestContext.setRequest(request);
+
+        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken2"));
+        when(authenticationService.getLtpaTokenWithValidation("jwtToken2")).thenReturn("ltpa1");
+        when(authenticationService.parseJwtToken("jwtToken2")).thenReturn(queryResponse);
+
+        zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
+
+        assertEquals(null, httpRequest.getFirstHeader(HttpHeaders.AUTHORIZATION).getValue());
+    }
+
+    @Test
+    public void givenZosmfToken_whenApplyToRequest_thenTestJwtToken() {
+        Calendar calendar = Calendar.getInstance();
+        QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOSMF);
+        AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
+        when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
+        when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
+        RequestContext requestContext = spy(new RequestContext());
+        RequestContext.testSetCurrentContext(requestContext);
+
+        HttpRequest httpRequest = new HttpGet("/test/request");
+        httpRequest.setHeader(COOKIE_HEADER, "cookie1=1");
+        Authentication authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
+        HttpServletRequest request = new MockHttpServletRequest();
+        requestContext.setRequest(request);
+
+        when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken2"));
+        when(authenticationService.parseJwtToken("jwtToken2")).thenReturn(queryResponse);
+        when(authConfigurationProperties.getCookieProperties().getCookieName()).thenReturn("apimlAuthenticationToken");
+        zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
+
+        assertEquals("cookie1=1;jwtToken=jwtToken2", httpRequest.getFirstHeader("cookie").getValue());
     }
 
 }
