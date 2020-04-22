@@ -14,7 +14,6 @@ import io.jsonwebtoken.JwtException;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.Test;
-
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -284,7 +283,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
 
-        assertEquals("cookie1=1;LtpaToken2=\"ltpa2\"", httpRequest.getFirstHeader("cookie").getValue());
+        assertEquals("cookie1=1;LtpaToken2=ltpa2", httpRequest.getFirstHeader("cookie").getValue());
 
     }
 
