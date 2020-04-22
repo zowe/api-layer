@@ -31,15 +31,25 @@ public class ServiceAuthenticationDecorator {
 
     private static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
 
-    public void process(HttpRequest request) {
+    public void process(HttpRequest request) throws RequestContextNotPreparedException {
         RequestContext context = RequestContext.getCurrentContext();
-        InstanceInfo info = (InstanceInfo) context.get(LOADBALANCED_INSTANCE_INFO_KEY);
+
         if (context.get(AUTHENTICATION_COMMAND_KEY) != null && context.get(AUTHENTICATION_COMMAND_KEY) instanceof AuthenticationCommand) {
+            InstanceInfo info = getInstanceInfoFromContext(context);
             Authentication authentication = serviceAuthenticationService.getAuthentication(info);
-            String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
-            AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
-            cmd.applyToRequest(request);
+
+            //String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
+            //AuthenticationCommand cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
+            //cmd.applyToRequest(request);
         }
+    }
+
+    private InstanceInfo getInstanceInfoFromContext(RequestContext context) throws RequestContextNotPreparedException {
+        Object o = context.get(LOADBALANCED_INSTANCE_INFO_KEY);
+        if (o == null && ! (o instanceof InstanceInfo)) {
+            throw new RequestContextNotPreparedException("InstanceInfo of loadbalanced instance is not present in RequestContext");
+        }
+        return (InstanceInfo) o;
     }
 }
 
