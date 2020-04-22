@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
@@ -39,10 +38,9 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  *  - credentials.user = user
  *  - credentials.password = user
  */
-@AdditionalLocalTest
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 100;
+    private static final int TIMEOUT = 2;
 
     private RequestVerifier verifier;
 
@@ -59,8 +57,9 @@ public class AuthenticationOnDeploymentTest {
         final String jwt = gatewayToken();
 
         try (
-            final VirtualService service1 = new VirtualService("testService");
-            final VirtualService service2 = new VirtualService("testService")
+            final VirtualService service1 = new VirtualService("testService1");
+            final VirtualService service2 = new VirtualService("testService1")
+
         ) {
             // start first instance - without passTickets
             service1
@@ -90,18 +89,14 @@ public class AuthenticationOnDeploymentTest {
                 .waitForGatewayRegistration(2, TIMEOUT);
 
             // on each gateway make calls (count same as instances) to service
-            service1.getGatewayVerifyUrls().forEach(x -> {
-                given()
+            service1.getGatewayVerifyUrls().forEach(x -> given()
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                .when().get(x + "/test")
+                .then().statusCode(is(SC_OK)));
+            service2.getGatewayVerifyUrls().forEach(x -> given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
                     .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
-            service2.getGatewayVerifyUrls().forEach(x -> {
-                given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                    .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
+                    .then().statusCode(is(SC_OK)));
 
             // verify if each gateway sent request to service (one with and one without passTicket)
             String auth = "Basic " + Base64.getEncoder().encodeToString(("user:" + PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX).getBytes(StandardCharsets.UTF_8));
@@ -122,20 +117,18 @@ public class AuthenticationOnDeploymentTest {
                 .stop();
 
             // check second service, all called second one with passTicket, same url like service1 (removed)
-            service1.getGatewayVerifyUrls().forEach(x -> {
-                given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                    .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
-            service1.getGatewayVerifyUrls().forEach(gw -> {
-                verifier.existAndClean(service2, x -> {
-                    assertEquals(auth, x.getHeader(HttpHeaders.AUTHORIZATION));
-                    assertEquals("/verify/test", x.getRequestURI());
-                    return true;
-                });
-            });
+            service1.getGatewayVerifyUrls().forEach(x -> given()
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                .when().get(x + "/test")
+                .then().statusCode(is(SC_OK)));
+
+            service1.getGatewayVerifyUrls().forEach(gw -> verifier.existAndClean(service2, x -> {
+                assertEquals(auth, x.getHeader(HttpHeaders.AUTHORIZATION));
+                assertEquals("/verify/test", x.getRequestURI());
+                return true;
+            }));
         }
     }
+
 
 }
