@@ -14,7 +14,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
-import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
 import java.io.File;
@@ -92,7 +92,7 @@ public class HttpsClientProviderTest {
         ZaasConfigurationException zaasException =
             assertThrows(ZaasConfigurationException.class, () -> new HttpsClientProvider(new ConfigProperties()));
 
-        ZaasClientErrorCodes errorCode = zaasException.getErrorCode();
+        ZaasConfigurationErrorCodes errorCode = zaasException.getErrorCode();
         assertThat(errorCode.getId(), is("ZWEAS500E"));
         assertThat(errorCode.getMessage(), is("There was no path to the trust store."));
     }
