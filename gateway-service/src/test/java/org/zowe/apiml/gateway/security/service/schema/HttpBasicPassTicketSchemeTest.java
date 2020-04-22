@@ -14,11 +14,13 @@ import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.gateway.utils.CleanCurrentRequestContextTest;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
@@ -32,6 +34,8 @@ import java.util.Calendar;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 
 public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
@@ -87,16 +91,25 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     }
 
     @Test
-    public void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() {
+    public void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
+        PassTicketService passTicketService = mock(PassTicketService.class);
+        httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
+
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
         QueryResponse queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
         HttpRequest httpRequest = new HttpGet("/test/request");
+
+        RequestContext requestContext = new RequestContext();
+        RequestContext.testSetCurrentContext(requestContext);
+
+        doReturn("HI").when(passTicketService).generate(ArgumentMatchers.any(), ArgumentMatchers.any());
+
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse);
         ac.applyToRequest(httpRequest);
         assertThat(RequestUtils.of(httpRequest).getHeader(HttpHeaders.AUTHORIZATION), is(not(empty())));
         assertThat(RequestUtils.of(httpRequest).getHeader(HttpHeaders.AUTHORIZATION), hasItem(hasToString(
-            "Authorization: Basic VVNFUk5BTUU6Wk9XRV9EVU1NWV9QQVNTX1RJQ0tFVF9BUFBMSURfVVNFUk5BTUVfMA=="
+            "Authorization: Basic VVNFUk5BTUU6SEk=" // USERNAME:HI
         )));
     }
 
