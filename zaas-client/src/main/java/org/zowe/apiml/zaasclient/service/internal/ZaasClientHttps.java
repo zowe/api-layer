@@ -7,13 +7,15 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.zaasclient.token;
+package org.zowe.apiml.zaasclient.service.internal;
 
 import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+import org.zowe.apiml.zaasclient.service.ZaasClient;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.util.Objects;
 
@@ -22,7 +24,7 @@ public class ZaasClientHttps implements ZaasClient {
     private TokenService tokens;
     private PassTicketService passTickets;
 
-    public ZaasClientHttps(HttpsClient client, ConfigProperties configProperties) {
+    ZaasClientHttps(HttpsClientProvider client, ConfigProperties configProperties) {
         String baseUrl = String.format("https://%s:%s%s", configProperties.getApimlHost(), configProperties.getApimlPort(),
             configProperties.getApimlBaseUrl());
 
@@ -30,8 +32,8 @@ public class ZaasClientHttps implements ZaasClient {
         passTickets = new PassTicketServiceHttps(client, baseUrl);
     }
 
-    public ZaasClientHttps(ConfigProperties configProperties) {
-        this(new HttpsClient(configProperties), configProperties);
+    public ZaasClientHttps(ConfigProperties configProperties) throws ZaasConfigurationException {
+        this(new HttpsClientProvider(configProperties), configProperties);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class ZaasClientHttps implements ZaasClient {
     }
 
     @Override
-    public String passTicket(String jwtToken, String applicationId) throws ZaasClientException {
+    public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
         if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
             throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
         }

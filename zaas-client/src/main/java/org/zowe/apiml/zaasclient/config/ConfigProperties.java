@@ -13,7 +13,6 @@ import lombok.Data;
 
 @Data
 public class ConfigProperties {
-
     private String apimlHost;
     private String apimlPort;
     private String apimlBaseUrl;
@@ -23,5 +22,4 @@ public class ConfigProperties {
     private String trustStoreType;
     private String trustStorePath;
     private String trustStorePassword;
-
 }

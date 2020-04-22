@@ -7,11 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.zaasclient.token;
+package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpHeaders;
@@ -23,25 +24,25 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
-import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Slf4j
-public class TokenServiceHttpsJwt implements TokenService {
+class TokenServiceHttpsJwt implements TokenService {
     private static final String COOKIE_PREFIX = "apimlAuthenticationToken";
     private final String loginEndpoint;
     private final String queryEndpoint;
     private final String host;
 
-    private HttpsClient httpsClient;
+    private HttpsClientProvider httpsClientProvider;
 
-    public TokenServiceHttpsJwt(HttpsClient client, String baseUrl, String host) {
-        this.httpsClient = client;
+    public TokenServiceHttpsJwt(HttpsClientProvider client, String baseUrl, String host) {
+        this.httpsClientProvider = client;
         this.host = host;
 
         loginEndpoint = baseUrl + "/login";
@@ -55,8 +56,8 @@ public class TokenServiceHttpsJwt implements TokenService {
             this::extractToken);
     }
 
-    private CloseableHttpResponse loginWithCredentials(String userId, String password) throws Exception {
-        CloseableHttpClient client = httpsClient.getHttpsClientWithTrustStore();
+    private ClientWithResponse loginWithCredentials(String userId, String password) throws Exception {
+        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(new Credentials(userId, password));
@@ -64,7 +65,7 @@ public class TokenServiceHttpsJwt implements TokenService {
         httpPost.setEntity(entity);
 
         httpPost.setHeader("Content-type", "application/json");
-        return client.execute(httpPost);
+        return new ClientWithResponse(client, client.execute(httpPost));
     }
 
     @Override
@@ -74,11 +75,11 @@ public class TokenServiceHttpsJwt implements TokenService {
             this::extractToken);
     }
 
-    private CloseableHttpResponse loginWithHeader(String authorizationHeader) throws Exception {
-        CloseableHttpClient client = httpsClient.getHttpsClientWithTrustStore();
+    private ClientWithResponse loginWithHeader(String authorizationHeader) throws Exception {
+        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
-        return client.execute(httpPost);
+        return new ClientWithResponse(client, client.execute(httpPost));
     }
 
     @Override
@@ -88,11 +89,11 @@ public class TokenServiceHttpsJwt implements TokenService {
             this::extractZaasToken);
     }
 
-    private CloseableHttpResponse queryWithJwtToken(String jwtToken) throws Exception {
+    private ClientWithResponse queryWithJwtToken(String jwtToken) throws Exception {
         BasicCookieStore cookieStore = prepareCookieWithToken(jwtToken);
-        CloseableHttpClient client = httpsClient.getHttpsClientWithTrustStore(cookieStore);
+        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore(cookieStore);
         HttpGet httpGet = new HttpGet(queryEndpoint);
-        return client.execute(httpGet);
+        return new ClientWithResponse(client, client.execute(httpGet));
     }
 
     private BasicCookieStore prepareCookieWithToken(String jwtToken) {
@@ -104,12 +105,14 @@ public class TokenServiceHttpsJwt implements TokenService {
         return cookieStore;
     }
 
-    private void finallyClose(CloseableHttpResponse response) {
+    private void finallyClose(CloseableHttpClient client, CloseableHttpResponse response) {
         try {
-            if (response != null)
+            if (response != null) {
                 response.close();
-            if (httpsClient != null)
-                httpsClient.close();
+            }
+            if (client != null) {
+                client.close();
+            }
         } catch (IOException e) {
             log.warn("It wasn't possible to close the resources. " + e.getMessage());
         }
@@ -149,12 +152,12 @@ public class TokenServiceHttpsJwt implements TokenService {
     }
 
     private Object doRequest(Operation request, Token token) throws ZaasClientException {
-        CloseableHttpResponse response = null;
+        ClientWithResponse clientWithResponse = new ClientWithResponse();
 
         try {
-            response = request.request();
+            clientWithResponse = request.request();
 
-            return token.extract(response);
+            return token.extract(clientWithResponse.getResponse());
         } catch (ZaasClientException e) {
             throw e;
         } catch (IOException e) {
@@ -162,7 +165,7 @@ public class TokenServiceHttpsJwt implements TokenService {
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
         } finally {
-            finallyClose(response);
+            finallyClose(clientWithResponse.getClient(), clientWithResponse.getResponse());
         }
     }
 
@@ -173,11 +176,19 @@ public class TokenServiceHttpsJwt implements TokenService {
         String password;
     }
 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    static class ClientWithResponse {
+        CloseableHttpClient client;
+        CloseableHttpResponse response;
+    }
+
     interface Token {
         Object extract(CloseableHttpResponse response) throws IOException, ZaasClientException;
     }
 
     interface Operation {
-        CloseableHttpResponse request() throws Exception;
+        ClientWithResponse request() throws Exception;
     }
 }

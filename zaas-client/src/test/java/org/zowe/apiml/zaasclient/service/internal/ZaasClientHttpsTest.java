@@ -1,4 +1,4 @@
-package org.zowe.apiml.zaasclient.token;
+package org.zowe.apiml.zaasclient.service.internal;
 /*
  * This program and the accompanying materials are made available under the terms of the
  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
@@ -24,11 +24,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.zowe.apiml.zaasclient.client.HttpsClient;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -52,7 +53,7 @@ public class ZaasClientHttpsTest {
     private ZaasClientHttps zaasClient;
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
 
-    private HttpsClient httpsClient;
+    private HttpsClientProvider httpsClientProvider;
     StatusLine statusLine;
     HeaderElement headerElement;
     Header header;
@@ -77,9 +78,8 @@ public class ZaasClientHttpsTest {
     private static final String EMPTY_STRING = "";
 
     @BeforeEach
-    public void setupMethod() throws IOException, CertificateException,
-        NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException, ZaasClientException {
-        httpsClient = mock(HttpsClient.class);
+    public void setupMethod() throws Exception {
+        httpsClientProvider = mock(HttpsClientProvider.class);
         statusLine = mock(StatusLine.class);
         headerElement = mock(HeaderElement.class);
         header = mock(Header.class);
@@ -98,14 +98,14 @@ public class ZaasClientHttpsTest {
         expiredToken = getToken(now, expirationForExpiredToken, jwtSecretKey);
         invalidToken = token + "DUMMY TEXT";
 
-        when(httpsClient.getHttpsClientWithTrustStore(any(BasicCookieStore.class))).thenReturn(closeableHttpClient);
+        when(httpsClientProvider.getHttpsClientWithTrustStore(any(BasicCookieStore.class))).thenReturn(closeableHttpClient);
         when(closeableHttpClient.execute(any(HttpGet.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpClient.execute(any(HttpPost.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpResponse.getEntity()).thenReturn(httpsEntity);
         when(closeableHttpResponse.getStatusLine()).thenReturn(statusLine);
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
-        zaasClient = new ZaasClientHttps(httpsClient, configProperties);
+        zaasClient = new ZaasClientHttps(httpsClientProvider, configProperties);
     }
 
     private String getToken(long now, long expiration, Key jwtSecretKey) {
@@ -132,6 +132,7 @@ public class ZaasClientHttpsTest {
             configProperties.getKeyStorePassword() == null ? null : configProperties.getKeyStorePassword().toCharArray());
     }
 
+    // TODO: Change to the way used in enablers.
     private ConfigProperties getConfigProperties() throws IOException {
         String absoluteFilePath = new File(CONFIG_FILE_PATH).getAbsolutePath();
         ConfigProperties configProperties = new ConfigProperties();
@@ -170,31 +171,31 @@ public class ZaasClientHttpsTest {
         HeaderElement[] headerElements = new HeaderElement[1];
         headerElements[0] = headerElement;
         try {
-            when(httpsClient.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
+            when(httpsClientProvider.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
             when(statusLine.getStatusCode()).thenReturn(httpResponseCode);
             when(closeableHttpResponse.getHeaders("Set-Cookie")).thenReturn(headers);
             when(header.getElements()).thenReturn(headerElements);
             when(headerElement.getName()).thenReturn("apimlAuthenticationToken");
             when(headerElement.getValue()).thenReturn("token");
-        } catch (NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException | KeyManagementException | ZaasClientException e) {
+        } catch (ZaasConfigurationException e) {
             e.printStackTrace();
         }
     }
 
     private void prepareResponseForServerUnavailable() {
         try {
-            when(httpsClient.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
+            when(httpsClientProvider.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
             when(closeableHttpClient.execute(any(HttpPost.class))).thenThrow(IOException.class);
-        } catch (IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException | ZaasClientException e) {
+        } catch (IOException | ZaasConfigurationException e) {
             e.printStackTrace();
         }
     }
 
     private void prepareResponseForUnexpectedException() {
         try {
-            when(httpsClient.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
+            when(httpsClientProvider.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
             when(closeableHttpClient.execute(any(HttpPost.class))).thenAnswer( invocation -> { throw new Exception(); });
-        } catch (IOException | CertificateException | NoSuchAlgorithmException | KeyStoreException | KeyManagementException | ZaasClientException e) {
+        } catch (IOException | ZaasConfigurationException e) {
             e.printStackTrace();
         }
     }
@@ -313,7 +314,7 @@ public class ZaasClientHttpsTest {
         zaasToken.setUserId("user");
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasToken)));
 
-        assertEquals("user", zaasClient.query(token).userId);
+        assertEquals("user", zaasClient.query(token).getUserId());
     }
 
     @Test
@@ -339,13 +340,12 @@ public class ZaasClientHttpsTest {
     }
 
     @Test
-    public void testPassTicketWithToken_ValidToken_ValidPassTicket() throws ZaasClientException,
-        UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+    public void testPassTicketWithToken_ValidToken_ValidPassTicket() throws Exception {
 
         ZaasPassTicketResponse zaasPassTicketResponse = new ZaasPassTicketResponse();
         zaasPassTicketResponse.setTicket("ticket");
 
-        when(httpsClient.getHttpsClientWithKeyStoreAndTrustStore()).thenReturn(closeableHttpClient);
+        when(httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore()).thenReturn(closeableHttpClient);
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasPassTicketResponse)));
 
         assertEquals("ticket", zaasClient.passTicket(token, "ZOWEAPPL"));

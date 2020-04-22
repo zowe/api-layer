@@ -10,26 +10,23 @@
 package org.zowe.apiml.zaasclient.exception;
 
 public enum ZaasClientErrorCodes {
-
-    INVALID_AUTHENTICATION("ZWEAZC120E", "Invalid username or password", 401),
-    EMPTY_NULL_USERNAME_PASSWORD("ZWEAZC121E", "Empty or null username or password values provided", 400),
-    EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAZC122E", "Empty or null authorization header provided", 400),
-    SERVICE_UNAVAILABLE("ZWEAZC404E", "Gateway service is unavailable", 404),
-    GENERIC_EXCEPTION("ZWEAZC170E", "An exception occurred while trying to get the token", 400),
-    APPLICATION_NAME_NOT_FOUND("ZWEAZC417E", "The token provided is invalid", 404),
-    TOKEN_NOT_PROVIDED("ZWEAZC401E", "Token is not provided", 401),
-    EXPIRED_JWT_EXCEPTION("ZWEAT100E", "Token is expired for URL", 401),
-    KEYSTORE_NOT_PROVIDED("ZWEAT123E", "Keystore is not provided", 401),
-    TRUSTSTORE_NOT_PROVIDED("ZWEAT124E", "Truststore is not provided", 401),
-    BAD_REQUEST("ZWEAZC400E", "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function " +
+    EXPIRED_JWT_EXCEPTION("ZWEAS100E", "Token is expired for URL", 401),
+    INVALID_AUTHENTICATION("ZWEAS120E", "Invalid username or password", 401),
+    EMPTY_NULL_USERNAME_PASSWORD("ZWEAS121E", "Empty or null username or password values provided", 400),
+    EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAS122E", "Empty or null authorization header provided", 400),
+    GENERIC_EXCEPTION("ZWEAS170E", "An exception occurred while trying to get the token", 400),
+    BAD_REQUEST("ZWEAS400E", "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function " +
         "and application ID is configured properly by referring to Using PassTickets in z/OS Security Server " +
-        "RACF Security Administrator's Guide.", 400);
+        "RACF Security Administrator's Guide.", 400),
+    TOKEN_NOT_PROVIDED("ZWEAS401E", "Token is not provided", 401),
+    SERVICE_UNAVAILABLE("ZWEAS404E", "Gateway service is unavailable", 404),
+    APPLICATION_NAME_NOT_FOUND("ZWEAS417E", "The application name wasn't found", 404);
 
     private final String id;
     private final String message;
     private final int returnCode;
 
-    private ZaasClientErrorCodes(String id, String message, int returnCode) {
+    ZaasClientErrorCodes(String id, String message, int returnCode) {
         this.id = id;
         this.message = message;
         this.returnCode = returnCode;
