@@ -37,6 +37,11 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
         }
 
         @Override
+        public void applyToRequest(HttpRequest request) {
+            // do nothing
+        }
+
+        @Override
         public boolean isExpired() {
             return false;
         }
