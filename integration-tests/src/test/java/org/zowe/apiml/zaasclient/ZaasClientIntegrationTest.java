@@ -12,6 +12,7 @@ package org.zowe.apiml.zaasclient;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.codec.binary.Base64;
+import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -96,9 +97,10 @@ public class ZaasClientIntegrationTest {
     }
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
-        assertThat(code.getId(), is(zce.getErrorCode()));
-        assertThat( code.getMessage(), is(zce.getErrorMessage()));
-        assertThat(code.getReturnCode(), is(zce.getHttpResponseCode()));
+        ZaasClientErrorCodes producedErrorCode = zce.getErrorCode();
+        assertThat(code.getId(), Is.is(producedErrorCode.getId()));
+        assertThat( code.getMessage(), Is.is(producedErrorCode.getMessage()));
+        assertThat(code.getReturnCode(), Is.is(producedErrorCode.getReturnCode()));
     }
 
     @BeforeEach

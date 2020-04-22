@@ -90,9 +90,9 @@ class HttpsClientProvider implements CloseableClientProvider {
             trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
             tmf.init(trustStore);
         } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException e) {
-            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e.getMessage());
+            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
         } catch (IOException e) {
-            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE, e.getMessage());
+            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE, e);
         }
     }
 
@@ -104,9 +104,9 @@ class HttpsClientProvider implements CloseableClientProvider {
             keyStore.load(new FileInputStream(keyFile), keyStorePassword.toCharArray());
             kmf.init(keyStore, keyStorePassword.toCharArray());
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
-            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e.getMessage());
+            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
         } catch (IOException e) {
-            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE, e.getMessage());
+            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE, e);
         }
     }
 
@@ -120,7 +120,7 @@ class HttpsClientProvider implements CloseableClientProvider {
             );
             return sslContext;
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e.getMessage());
+            throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
         }
     }
 

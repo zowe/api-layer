@@ -14,6 +14,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
+import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
 import java.io.File;
@@ -91,8 +92,9 @@ public class HttpsClientProviderTest {
         ZaasConfigurationException zaasException =
             assertThrows(ZaasConfigurationException.class, () -> new HttpsClientProvider(new ConfigProperties()));
 
-        assertThat(zaasException.getErrorCode(), is("ZWEAS500E"));
-        assertThat(zaasException.getErrorMessage(), is("There was no path to the trust store."));
+        ZaasClientErrorCodes errorCode = zaasException.getErrorCode();
+        assertThat(errorCode.getId(), is("ZWEAS500E"));
+        assertThat(errorCode.getMessage(), is("There was no path to the trust store."));
     }
 
     @Test
@@ -104,7 +106,7 @@ public class HttpsClientProviderTest {
             new HttpsClientProvider(config);
         });
 
-        assertThat(zaasException.getErrorCode(), is("ZWEAS503E"));
+        assertThat(zaasException.getErrorCode().getId(), is("ZWEAS503E"));
     }
 
     @Test
@@ -117,7 +119,7 @@ public class HttpsClientProviderTest {
             new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
         });
 
-        assertThat(zaasException.getErrorCode(), is("ZWEAS501E"));
+        assertThat(zaasException.getErrorCode().getId(), is("ZWEAS501E"));
     }
 
     @Test
@@ -132,7 +134,7 @@ public class HttpsClientProviderTest {
             new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
         });
 
-        assertThat(zaasException.getErrorCode(), is("ZWEAS503E"));
+        assertThat(zaasException.getErrorCode().getId(), is("ZWEAS503E"));
     }
 
     @Test
@@ -147,6 +149,6 @@ public class HttpsClientProviderTest {
             new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
         });
 
-        assertThat(zaasException.getErrorCode(), is("ZWEAS502E"));
+        assertThat(zaasException.getErrorCode().getId(), is("ZWEAS502E"));
     }
 }

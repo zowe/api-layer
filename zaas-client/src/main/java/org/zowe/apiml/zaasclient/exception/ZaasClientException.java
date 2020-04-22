@@ -10,33 +10,27 @@
 package org.zowe.apiml.zaasclient.exception;
 
 public class ZaasClientException extends Exception {
-
-    private final String errorCode;
-    private final String errorMessage;
-    private final int httpResponseCode;
-
-    public ZaasClientException(ZaasClientErrorCodes code, String errorMessage) {
-        super(errorMessage);
-        this.errorCode = code.getId();
-        this.errorMessage = code.getMessage();
-        this.httpResponseCode = code.getReturnCode();
-    }
+    private final ZaasClientErrorCodes errorCode;
 
     public ZaasClientException(ZaasClientErrorCodes code) {
-        this.errorCode = code.getId();
-        this.errorMessage = code.getMessage();
-        this.httpResponseCode = code.getReturnCode();
+        super(code.toString());
+
+        errorCode = code;
     }
 
-    public String getErrorCode() {
+    public ZaasClientException(ZaasClientErrorCodes code, Throwable e) {
+        super(code.toString(), e);
+
+        errorCode = code;
+    }
+
+    public ZaasClientException(ZaasClientErrorCodes code, String downstreamMessage) {
+        super(downstreamMessage + " \n " + code.toString());
+
+        errorCode = code;
+    }
+
+    public ZaasClientErrorCodes getErrorCode() {
         return errorCode;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public int getHttpResponseCode() {
-        return httpResponseCode;
     }
 }

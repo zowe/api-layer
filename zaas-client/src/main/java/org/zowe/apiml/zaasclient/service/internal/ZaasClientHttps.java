@@ -42,7 +42,12 @@ public class ZaasClientHttps implements ZaasClient {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         }
 
-        return tokens.login(userId, password);
+        try {
+            return tokens.login(userId, password);
+        } catch (ZaasClientException e) {
+            log.error(e.getErrorCode().toString());
+            throw e;
+        }
     }
 
     @Override
@@ -51,12 +56,22 @@ public class ZaasClientHttps implements ZaasClient {
             throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER);
         }
 
-        return tokens.login(authorizationHeader);
+        try {
+            return tokens.login(authorizationHeader);
+        } catch (ZaasClientException e) {
+            log.error(e.getErrorCode().toString());
+            throw e;
+        }
     }
 
     @Override
     public ZaasToken query(String token) throws ZaasClientException {
-        return tokens.query(token);
+        try {
+            return tokens.query(token);
+        } catch (ZaasClientException e) {
+            log.error(e.getErrorCode().toString());
+            throw e;
+        }
     }
 
     @Override
@@ -68,6 +83,14 @@ public class ZaasClientHttps implements ZaasClient {
             throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED);
         }
 
-        return passTickets.passTicket(jwtToken, applicationId);
+        try {
+            return passTickets.passTicket(jwtToken, applicationId);
+        } catch (ZaasClientException e) {
+            log.error(e.getErrorCode().toString());
+            throw e;
+        } catch (ZaasConfigurationException e) {
+            log.error(e.getErrorCode().toString());
+            throw e;
+        }
     }
 }

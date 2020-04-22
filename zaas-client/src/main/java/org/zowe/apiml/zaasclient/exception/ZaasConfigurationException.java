@@ -10,26 +10,27 @@
 package org.zowe.apiml.zaasclient.exception;
 
 public class ZaasConfigurationException extends Exception {
-
-    private final String errorCode;
-    private final String errorMessage;
-
-    public ZaasConfigurationException(ZaasConfigurationErrorCodes code, String errorMessage) {
-        super(errorMessage);
-        this.errorCode = code.getId();
-        this.errorMessage = code.getMessage();
-    }
+    private final ZaasConfigurationErrorCodes errorCode;
 
     public ZaasConfigurationException(ZaasConfigurationErrorCodes code) {
-        this.errorCode = code.getId();
-        this.errorMessage = code.getMessage();
+        super(code.toString());
+
+        errorCode = code;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    public ZaasConfigurationException(ZaasConfigurationErrorCodes code, Throwable e) {
+        super(code.toString(), e);
+
+        errorCode = code;
     }
 
-    public String getErrorCode() {
+    public ZaasConfigurationException(ZaasConfigurationErrorCodes code, String downstreamMessage) {
+        super(downstreamMessage + " \n " + code.toString());
+
+        errorCode = code;
+    }
+
+    public ZaasConfigurationErrorCodes getErrorCode() {
         return errorCode;
     }
 }

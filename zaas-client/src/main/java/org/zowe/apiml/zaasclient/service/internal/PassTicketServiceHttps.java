@@ -15,6 +15,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
@@ -56,7 +57,7 @@ class PassTicketServiceHttps implements PassTicketService {
         } catch (ZaasConfigurationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e.getMessage());
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
         } finally {
             finallyClose(closeableHttpsClient, response);
         }
@@ -69,14 +70,17 @@ class PassTicketServiceHttps implements PassTicketService {
             ZaasPassTicketResponse zaasPassTicketResponse = mapper
                 .readValue(response.getEntity().getContent(), ZaasPassTicketResponse.class);
             return zaasPassTicketResponse.getTicket();
-        } else if (statusCode == 401) {
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION);
-        } else if (statusCode == 400) {
-            throw new ZaasClientException(ZaasClientErrorCodes.BAD_REQUEST);
-        } else if (statusCode == 500) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
         } else {
-            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
+            String obtainedMessage = EntityUtils.toString(response.getEntity());
+            if (statusCode == 401) {
+                throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
+            } else if (statusCode == 400) {
+                throw new ZaasClientException(ZaasClientErrorCodes.BAD_REQUEST, obtainedMessage);
+            } else if (statusCode == 500) {
+                throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, obtainedMessage);
+            } else {
+                throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
+            }
         }
     }
 

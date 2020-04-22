@@ -122,8 +122,7 @@ class TokenServiceHttpsJwt implements TokenService {
         if (response.getStatusLine().getStatusCode() == 200) {
             return new ObjectMapper().readValue(response.getEntity().getContent(), ZaasToken.class);
         } else {
-            log.error(EntityUtils.toString(response.getEntity()));
-            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION);
+            throw new ZaasClientException(ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION, EntityUtils.toString(response.getEntity()));
         }
     }
 
@@ -138,15 +137,15 @@ class TokenServiceHttpsJwt implements TokenService {
             if (apimlAuthCookie.isPresent()) {
                 token = apimlAuthCookie.get().getValue();
             }
-        } else if (httpResponseCode == 401) {
-            log.error(EntityUtils.toString(response.getEntity()));
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION);
-        } else if (httpResponseCode == 400) {
-            log.error(EntityUtils.toString(response.getEntity()));
-            throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD);
         } else {
-            log.error(EntityUtils.toString(response.getEntity()));
-            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
+            String obtainedMessage = EntityUtils.toString(response.getEntity());
+            if (httpResponseCode == 401) {
+                throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
+            } else if (httpResponseCode == 400) {
+                throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD, obtainedMessage);
+            } else {
+                throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
+            }
         }
         return token;
     }
@@ -161,9 +160,9 @@ class TokenServiceHttpsJwt implements TokenService {
         } catch (ZaasClientException e) {
             throw e;
         } catch (IOException e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE);
+            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
         } catch (Exception e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION);
+            throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, e);
         } finally {
             finallyClose(clientWithResponse.getClient(), clientWithResponse.getResponse());
         }

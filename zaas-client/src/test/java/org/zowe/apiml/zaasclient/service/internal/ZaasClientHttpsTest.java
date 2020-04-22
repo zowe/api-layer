@@ -201,9 +201,10 @@ public class ZaasClientHttpsTest {
     }
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
-        assertThat(code.getId(), is(zce.getErrorCode()));
-        assertThat( code.getMessage(), is(zce.getErrorMessage()));
-        assertThat(code.getReturnCode(), is(zce.getHttpResponseCode()));
+        ZaasClientErrorCodes producedErrorCode = zce.getErrorCode();
+        assertThat(code.getId(), is(producedErrorCode.getId()));
+        assertThat( code.getMessage(), is(producedErrorCode.getMessage()));
+        assertThat(code.getReturnCode(), is(producedErrorCode.getReturnCode()));
     }
 
     @Test
