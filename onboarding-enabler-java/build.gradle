@@ -21,4 +21,6 @@ dependencies {
 
     testCompile libraries.javax_servlet_api
     testCompile libraries.hamcrest
+
+    testCompile libraries.javax_inject
 }
