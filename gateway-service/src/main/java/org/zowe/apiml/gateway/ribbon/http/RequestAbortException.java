@@ -15,4 +15,8 @@ public class RequestAbortException extends Exception{
     public RequestAbortException(String msg) {
         super(msg);
     }
+
+    public RequestAbortException(Throwable t) {
+        super(t);
+    }
 }

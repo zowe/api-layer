@@ -52,6 +52,21 @@ messages:
       reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
 
+    - key: org.zowe.apiml.gateway.contextNotPrepared
+      number: ZWEAG706
+      type: ERROR
+      text: "RequestContext not prepared for load balancing."
+      reason: "Custom Ribbon load balancing is not in place before calling Ribbon."
+      action: "Contact Broadcom support."
+
+    - key: org.zowe.apiml.gateway.requestAborted
+      number: ZWEAG707
+      type: ERROR
+      text: "The request to the URL '%s' has been aborted without retrying on another instance. Caused by: %s"
+      reason: "Request to server instance has failed and will not be retried on another instance."
+      action: "Refer to Caused by details for troubleshooting."
+
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
