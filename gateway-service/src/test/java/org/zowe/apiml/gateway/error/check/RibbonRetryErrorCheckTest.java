@@ -35,7 +35,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes={MessageServiceConfiguration.class})
+@ContextConfiguration(classes = {MessageServiceConfiguration.class})
 class RibbonRetryErrorCheckTest {
 
     private static InternalServerErrorController underTest;

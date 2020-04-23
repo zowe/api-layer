@@ -9,7 +9,6 @@
     <cache name="validationJwtToken" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
     <cache name="serviceAuthenticationByServiceId" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
     <cache name="serviceAuthenticationByAuthentication" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
-    <cache name="instanceInfoByInstanceId" diskPersistent="false" maxEntriesLocalHeap="1000" eternal="false" timeToIdleSeconds="86400" timeToLiveSeconds="86400" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
     <cache name="zosmfInfo" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="3600" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
     <cache name="zosmfServiceImplementation" diskPersistent="false" maxEntriesLocalHeap="10" eternal="false" timeToIdleSeconds="3600" timeToLiveSeconds="3600" memoryStoreEvictionPolicy="LRU" transactionalMode="off" />
 

@@ -18,6 +18,13 @@ import org.springframework.cglib.proxy.MethodInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuration class creates proxy bean for ClosableHttpClient that interceps method calls
+ *
+ * Actions on intercept are:
+ *   Decide which client to use for call (with/without) certificate
+ *   Decorate HttpRequest object with security
+ */
 @RequiredArgsConstructor
 @Configuration
 public class HttpClientProxyConfig {
@@ -31,9 +38,8 @@ public class HttpClientProxyConfig {
         e.setSuperclass(CloseableHttpClient.class);
         e.setCallback((MethodInterceptor) (o, method, objects, methodProxy) ->
             {
-                if (method.getName().equals("execute") && objects.length>0 && objects[0] instanceof HttpRequest) {
+                if (method.getName().equals("execute") && objects.length > 0 && objects[0] instanceof HttpRequest) {
                     serviceAuthenticationDecorator.process((HttpRequest) objects[0]);
-                    // TODO exception handling
                 }
                 return method.invoke(clientChooser.chooseClient(), objects);
             }

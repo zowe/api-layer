@@ -175,7 +175,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenTokenWithoutExpiration__whenCreateCommand_thenTestCommandExpiration() {
+    public void givenTokenWithoutExpiration_whenCreateCommand_thenTestCommandExpiration() {
         ZosmfScheme scheme = new ZosmfScheme(authenticationService, authConfigurationProperties);
 
         AuthenticationCommand command;
@@ -188,7 +188,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenTokenWithExpiration__whenCreateCommand_thenTestCommandExpiration() {
+    public void givenTokenWithExpiration_whenCreateCommand_thenTestCommandExpiration() {
         ZosmfScheme scheme = new ZosmfScheme(authenticationService, authConfigurationProperties);
 
         AuthenticationCommand command;
