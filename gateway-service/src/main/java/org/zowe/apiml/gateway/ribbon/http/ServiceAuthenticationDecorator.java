@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.ribbon.http;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpRequest;
@@ -35,7 +34,7 @@ public class ServiceAuthenticationDecorator {
     private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
     private static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
 
-    public void process(HttpRequest request) throws RequestContextNotPreparedException {
+    public void process(HttpRequest request) throws RequestAbortException {
         final RequestContext context = RequestContext.getCurrentContext();
 
         if (context.get(AUTHENTICATION_COMMAND_KEY) != null && context.get(AUTHENTICATION_COMMAND_KEY) instanceof AuthenticationCommand) {
@@ -58,7 +57,7 @@ public class ServiceAuthenticationDecorator {
                 rejected = true;
             }
             if (rejected) {
-                throw new ExecutionListener.AbortExecutionException(INVALID_JWT_MESSAGE, new BadCredentialsException(INVALID_JWT_MESSAGE));
+                throw new RequestAbortException(new BadCredentialsException(INVALID_JWT_MESSAGE));
             }
 
             cmd.applyToRequest(request);

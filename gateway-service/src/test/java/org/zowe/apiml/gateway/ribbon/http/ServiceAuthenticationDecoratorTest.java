@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.ribbon.http;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
@@ -76,16 +75,16 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieve() {
+    void givenContextWithCorrectKeyAndJWT_whenJwtNotAuthenticated_thenShouldAbort() {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         AuthenticationCommand cmd = getAuthenticationCommand(universalCmd);
         TokenAuthentication tokenAuthentication = mock(TokenAuthentication.class);
         doReturn(tokenAuthentication).when(authenticationService).validateJwtToken("jwtToken");
         when(authenticationService.validateJwtToken("jwtToken").isAuthenticated()).thenReturn(false);
 
-        assertThrows(ExecutionListener.AbortExecutionException.class, () ->
+        assertThrows(RequestAbortException.class, () ->
             decorator.process(request),
-            "Exception is not BadCredentialsException");
+            "Exception is not RequestAbortException");
         verify(cmd, times(0)).applyToRequest(request);
     }
 
