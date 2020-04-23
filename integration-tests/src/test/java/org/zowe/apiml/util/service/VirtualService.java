@@ -120,7 +120,7 @@ public class VirtualService implements AutoCloseable {
     public VirtualService start() throws IOException, LifecycleException {
         // start Tomcat to get listening port
         tomcat.start();
-        instanceId = InetAddress.getLocalHost().getHostName() + ":" + serviceId + ":" + getPort();
+        instanceId = "localhost:" + getPort();
 
         // register into discovery service and start heart beating
         register();
@@ -343,37 +343,37 @@ public class VirtualService implements AutoCloseable {
 
     private void register() throws UnknownHostException {
         addDefaultRouteIfMissing();
+        JSONObject jsonObject = new JSONObject()
+            .put("instance", new JSONObject()
+                .put("instanceId", instanceId)
+                .put("hostName", InetAddress.getLocalHost().getHostName())
+                .put("vipAddress", serviceId)
+                .put("app", serviceId)
+                .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
+                .put("status", Status.UP.toString())
+                .put("port", new JSONObject()
+                    .put("$", getPort())
+                    .put("@enabled", "true")
+                )
+                .put("securePort", new JSONObject()
+                    .put("$", 0)
+                    .put("@enabled", "true")
+                )
+                .put("healthCheckUrl", getUrl() + "/application/health")
+                .put("dataCenterInfo", new JSONObject()
+                    .put("@class", "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo")
+                    .put("name", "MyOwn")
+                )
+                .put("leaseInfo", new JSONObject()
+                    .put("renewalIntervalInSecs", renewalIntervalInSecs)
+                    .put("durationInSecs", renewalIntervalInSecs * 3)
+                )
+                .put("metadata", metadata)
+            );
 
         given().when()
             .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
-            .body(new JSONObject()
-                .put("instance", new JSONObject()
-                    .put("instanceId", instanceId)
-                    .put("hostName", InetAddress.getLocalHost().getHostName())
-                    .put("vipAddress", serviceId)
-                    .put("app", serviceId)
-                    .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
-                    .put("status", Status.UP.toString())
-                    .put("port", new JSONObject()
-                        .put("$", getPort())
-                        .put("@enabled", "true")
-                    )
-                    .put("securePort", new JSONObject()
-                        .put("$", 0)
-                        .put("@enabled", "true")
-                    )
-                    .put("healthCheckUrl", getUrl() + "/application/health")
-                    .put("dataCenterInfo", new JSONObject()
-                        .put("@class", "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo")
-                        .put("name", "MyOwn")
-                    )
-                    .put("leaseInfo", new JSONObject()
-                        .put("renewalIntervalInSecs", renewalIntervalInSecs)
-                        .put("durationInSecs", renewalIntervalInSecs * 3)
-                    )
-                    .put("metadata", metadata)
-                ).toString()
-            )
+            .body(jsonObject.toString())
             .post(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}", serviceId)
             .then().statusCode(SC_NO_CONTENT);
 
