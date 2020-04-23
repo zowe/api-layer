@@ -117,10 +117,10 @@ public class VirtualService implements AutoCloseable {
      * @throws IOException        problem with socket
      * @throws LifecycleException Tomcat exception
      */
-    public VirtualService start() throws IOException, LifecycleException {
+    public VirtualService start(int portNumber) throws IOException, LifecycleException {
         // start Tomcat to get listening port
         tomcat.start();
-        instanceId = "localhost:" + getPort();
+        instanceId = InetAddress.getLocalHost().getHostName() + ":" + (portNumber!=0 ? portNumber : getPort());
 
         // register into discovery service and start heart beating
         register();

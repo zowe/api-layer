@@ -64,7 +64,7 @@ public class AuthenticationOnDeploymentTest {
             // start first instance - without passTickets
             service1
                 .addVerifyServlet()
-                .start()
+                .start(5679)
                 .waitForGatewayRegistration(1, TIMEOUT);
 
 
@@ -85,7 +85,7 @@ public class AuthenticationOnDeploymentTest {
             service2
                 .addVerifyServlet()
                 .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "TESTAPPL"))
-                .start()
+                .start(5678)
                 .waitForGatewayRegistration(2, TIMEOUT);
 
             // on each gateway make calls (count same as instances) to service
