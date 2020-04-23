@@ -16,6 +16,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
@@ -56,14 +57,24 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
+    void givenContextWithAnyOtherCommand_whenProcess_thenNoAction() throws RequestAbortException {
+        HttpRequest request = new HttpGet("/");
+        AuthenticationCommand cmd = mock(ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand.class);
+        prepareContext(cmd);
+        decorator.process(request);
+        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
+        verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
+    }
+
+    @Test
     void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() throws RequestAbortException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
-        AuthenticationCommand cmd = getAuthenticationCommand(universalCmd);
+        prepareContext(universalCmd);
         doReturn(TokenAuthentication.createAuthenticated("user", "jwtToken")).when(authenticationService).validateJwtToken("jwtToken");
 
         decorator.process(request);
         verify(serviceAuthenticationService, atLeastOnce()).getAuthentication(info);
-        verify(cmd, times(1)).applyToRequest(request);
+        verify(universalCmd, times(1)).applyToRequest(request);
     }
 
     @Test
@@ -77,7 +88,7 @@ class ServiceAuthenticationDecoratorTest {
     @Test
     void givenContextWithCorrectKeyAndJWT_whenJwtNotAuthenticated_thenShouldAbort() {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
-        AuthenticationCommand cmd = getAuthenticationCommand(universalCmd);
+        prepareContext(universalCmd);
         TokenAuthentication tokenAuthentication = mock(TokenAuthentication.class);
         doReturn(tokenAuthentication).when(authenticationService).validateJwtToken("jwtToken");
         when(authenticationService.validateJwtToken("jwtToken").isAuthenticated()).thenReturn(false);
@@ -85,20 +96,32 @@ class ServiceAuthenticationDecoratorTest {
         assertThrows(RequestAbortException.class, () ->
             decorator.process(request),
             "Exception is not RequestAbortException");
-        verify(cmd, times(0)).applyToRequest(request);
+        verify(universalCmd, times(0)).applyToRequest(request);
     }
 
-    private AuthenticationCommand getAuthenticationCommand(AuthenticationCommand universalCmd) {
+    @Test
+    void givenContextWithCorrectKeyAndJWT_whenAuthenticationThrows_thenShouldAbort() {
+        AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
+        prepareContext(universalCmd);
+        TokenAuthentication tokenAuthentication = mock(TokenAuthentication.class);
+        AuthenticationException ae = mock(AuthenticationException.class);
+        doThrow(ae).when(authenticationService).validateJwtToken(anyString());
 
-        RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, universalCmd);
+        assertThrows(RequestAbortException.class, () ->
+                decorator.process(request),
+            "Exception is not RequestAbortException");
+        verify(universalCmd, times(0)).applyToRequest(request);
+    }
+
+    private void prepareContext(AuthenticationCommand command) {
+
+        RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
         doReturn(Optional.of("jwtToken")).when(authenticationService).getJwtTokenFromRequest(any());
         Authentication authentication = mock(Authentication.class);
-        AuthenticationCommand cmd = mock(AuthenticationCommand.class);
 
         when(serviceAuthenticationService.getAuthentication(info)).thenReturn(authentication);
-        when(serviceAuthenticationService.getAuthenticationCommand(authentication, "jwtToken")).thenReturn(cmd);
-        doReturn(true).when(cmd).isRequiredValidJwt();
-        return cmd;
+        when(serviceAuthenticationService.getAuthenticationCommand(authentication, "jwtToken")).thenReturn(command);
+        doReturn(true).when(command).isRequiredValidJwt();
     }
 }
