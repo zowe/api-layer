@@ -122,7 +122,7 @@ public class RequestUtils {
 
     public void removeCookie(String cookie) {
         List<Header> cookieHeaders = getHeader(HttpHeaders.COOKIE);
-        for(Header header: cookieHeaders) {
+        for (Header header: cookieHeaders) {
             List<HttpCookie> cookieList = getAllCookiesFromHeader(header);
             cookieList = cookieList.stream()
                 .filter(c -> !c.getName().equalsIgnoreCase(cookie))
