@@ -36,7 +36,7 @@ class RequestUtilsTest {
     RequestUtils wrapper;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         request = mock(HttpRequest.class);
         wrapper = RequestUtils.of(request);
     }

@@ -17,11 +17,13 @@ import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 
+/**
+ * Bean construction for HttpClientProxy
+ */
 @Configuration
 public class BeanConfig {
 
     @Bean
-    //@Qualifier("httpClientChooser") // TODO should this be here
     public HttpClientChooser httpClientChooser(@Qualifier("secureHttpClientWithKeystore")
                                                    CloseableHttpClient withCertificate,
                                                @Qualifier("secureHttpClientWithoutKeystore")

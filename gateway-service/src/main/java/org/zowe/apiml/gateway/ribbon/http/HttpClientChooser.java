@@ -19,6 +19,9 @@ import java.security.cert.X509Certificate;
 
 import static org.zowe.apiml.gateway.security.service.schema.ByPassScheme.AUTHENTICATION_SCHEME_BY_PASS_KEY;
 
+/**
+ * Decides which HttpClient to use for HttpClientProxy method calls
+ */
 public class HttpClientChooser {
 
     private final CloseableHttpClient clientWithoutCertificate;

@@ -23,6 +23,9 @@ import org.zowe.apiml.message.core.MessageService;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * Handler for exceptions that arise during the Ribbon retries
+ */
 @RequiredArgsConstructor
 public class RibbonRetryErrorCheck implements ErrorCheck {
     private final MessageService messageService;

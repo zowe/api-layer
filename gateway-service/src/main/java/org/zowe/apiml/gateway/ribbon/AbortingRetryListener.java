@@ -15,6 +15,9 @@ import org.springframework.retry.RetryContext;
 import org.springframework.retry.RetryListener;
 import org.zowe.apiml.gateway.ribbon.http.RequestAbortException;
 
+/**
+ * Listener that aborts the Ribbon retrying on specific exceptions
+ */
 public class AbortingRetryListener implements RetryListener {
     @Override
     public <T, E extends Throwable> boolean open(RetryContext context, RetryCallback<T, E> callback) {

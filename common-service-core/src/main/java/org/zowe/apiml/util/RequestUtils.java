@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * This class is meant for wrapping HttpRequest and exposing convenience mehtods
  * for working with headers and cookies
  *
- * Suport for duplicate headers with same name is not present and can be added in future
+ * Support for duplicate headers with same name is not present and can be added in future
  */
 public class RequestUtils {
 

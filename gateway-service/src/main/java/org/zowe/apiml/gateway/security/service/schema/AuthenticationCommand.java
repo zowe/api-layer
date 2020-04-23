@@ -25,8 +25,6 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
 
     private static final long serialVersionUID = -4519869709905127608L;
 
-    // TODO Authentication Command key should be here
-
     public static final AuthenticationCommand EMPTY = new AuthenticationCommand() {
 
         private static final long serialVersionUID = 5280496524123534478L;
@@ -70,6 +68,13 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
 
     public abstract boolean isRequiredValidJwt();
 
+    /**
+     * Used for deferred processing of command during Ribbon Retry.
+     * There exists case when {@link org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter} cannot
+     * decide which command to apply, when there are service instances with multiple security schemas.
+     * In that case, the filter applies {@link org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand}
+     * and defers the processing to happen during Ribbon's Retry.
+     */
     public void applyToRequest(HttpRequest request) {
         throw new UnsupportedOperationException();
     }
