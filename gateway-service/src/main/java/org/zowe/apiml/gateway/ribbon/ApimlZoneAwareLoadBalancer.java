@@ -64,7 +64,7 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
             RequestContext context = RequestContext.getCurrentContext();
             context.set(LOADBALANCED_INSTANCE_INFO_KEY, ((DiscoveryEnabledServer) server).getInstanceInfo());
         } else {
-            throw new RuntimeException("Something is not right");
+            throw new RuntimeException("Unexpected error, please contact Broadcom support");
         }
 
         return server;

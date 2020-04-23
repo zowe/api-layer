@@ -14,6 +14,9 @@ import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.retry.RetryListener;
 
+/**
+ * Allows adding RetryListeners to Ribbon Retry
+ */
 public class ApimlRibbonRetryFactory extends RibbonLoadBalancedRetryFactory {
 
     private final RetryListener[] listeners;

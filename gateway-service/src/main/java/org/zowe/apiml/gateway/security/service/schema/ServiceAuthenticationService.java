@@ -36,7 +36,11 @@ public interface ServiceAuthenticationService extends ServiceCacheEvict {
      */
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken);
 
-
+    /**
+     * Get authentication for given InstanceInfo
+     * @param instanceInfo InstanceInfo object of service instance, containing the security metadata
+     * @return Authentication object representing instance's authentication schema
+     */
     public Authentication getAuthentication(InstanceInfo instanceInfo);
 
 }

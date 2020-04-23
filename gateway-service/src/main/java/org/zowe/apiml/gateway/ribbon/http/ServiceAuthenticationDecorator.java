@@ -17,14 +17,14 @@ import org.apache.http.HttpRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.security.common.auth.Authentication;
 
 import static org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY;
+import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
-// TODO do we need interface or abstraction?
-// TODO add tests
 @RequiredArgsConstructor
 public class ServiceAuthenticationDecorator {
 
@@ -32,12 +32,11 @@ public class ServiceAuthenticationDecorator {
     private final AuthenticationService authenticationService;
 
     private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
-    private static final String AUTHENTICATION_COMMAND_KEY = "zoweAuthenticationCommand";
 
     public void process(HttpRequest request) throws RequestAbortException {
         final RequestContext context = RequestContext.getCurrentContext();
 
-        if (context.get(AUTHENTICATION_COMMAND_KEY) != null && context.get(AUTHENTICATION_COMMAND_KEY) instanceof AuthenticationCommand) {
+        if (context.get(AUTHENTICATION_COMMAND_KEY) != null && context.get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand) {
             InstanceInfo info = getInstanceInfoFromContext(context);
             final Authentication authentication = serviceAuthenticationService.getAuthentication(info);
             boolean rejected = false;
