@@ -45,7 +45,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithoutCommand_whenProcess_thenNoAction() throws RequestContextNotPreparedException {
+    void givenContextWithoutCommand_whenProcess_thenNoAction() throws RequestAbortException {
         HttpRequest request = new HttpGet("/");
         decorator.process(request);
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
@@ -53,7 +53,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() throws RequestContextNotPreparedException {
+    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() throws RequestAbortException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, universalCmd);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);

@@ -15,10 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClientName;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
+import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.cloud.netflix.ribbon.apache.RetryableRibbonLoadBalancingHttpClient;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.Bean;
@@ -38,13 +38,19 @@ public class GatewayRibbonConfig {
     private String ribbonClientName = "client";
 
     @Bean
+    public ApimlRibbonRetryFactory apimlRibbonRetryFactory(SpringClientFactory springClientFactory) {
+        AbortingRetryListener retryListener = new AbortingRetryListener();
+        return new ApimlRibbonRetryFactory(springClientFactory, retryListener);
+    }
+
+    @Bean
     @Primary
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
         @Qualifier("httpClientProxy") CloseableHttpClient httpClientProxy,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
-        LoadBalancedRetryFactory retryFactory
+        ApimlRibbonRetryFactory retryFactory
     ) {
         return new RetryableRibbonLoadBalancingHttpClient(
             httpClientProxy, config, serverIntrospector, retryFactory);
