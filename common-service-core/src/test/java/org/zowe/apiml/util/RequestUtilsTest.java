@@ -143,22 +143,6 @@ class RequestUtilsTest {
         assertThat(Arrays.asList(argument.getValue()), hasItem(hasToString("Cookie: cookie=cookie;cookie1=cookie1")));
     }
 
-    @Disabled
-    @Test
-    void givenRequestWithMultipleCookieHeaders_whenSetCookie_thenMergesHeadersAndCreatesOrOverwritesCookie() {
-        //TODO add support for this when needed
-        doReturn(new Header[] { contentLenght, pragma, cookieSingle, cookieMultiple}).when(request).getAllHeaders();
-        ArgumentCaptor<Header[]> argument = ArgumentCaptor.forClass(Header[].class);
-
-        HttpCookie newCookie = new HttpCookie("cookiex", "cookiex");
-        newCookie.setVersion(0);
-
-        wrapper.setCookie(newCookie);
-        verify(request).setHeaders(argument.capture());
-        assertThat(argument.getValue().length, is(3));
-        assertThat(Arrays.asList(argument.getValue()), hasItem(hasToString("")));
-    }
-
     @Test
     void givenRequestWithCookieHeaderWithSingleCookie_whenRemoveCookie_thenRemovesCookieAndHeader() {
         doReturn(new Header[] { contentLenght, pragma, cookieSingle}).when(request).getAllHeaders();

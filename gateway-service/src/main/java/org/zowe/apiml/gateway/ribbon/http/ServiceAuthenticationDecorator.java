@@ -48,7 +48,11 @@ public class ServiceAuthenticationDecorator {
                 //what if cmd is null? it's failing with NullPointerException, if jwt is null cmd is null
                 cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
 
-                if (cmd != null && cmd.isRequiredValidJwt()) {
+                if (cmd == null) {
+                    return;
+                }
+
+                if (cmd.isRequiredValidJwt()) {
                     rejected = (jwtToken == null) || !authenticationService.validateJwtToken(jwtToken).isAuthenticated();
                 }
             }
