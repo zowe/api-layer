@@ -67,9 +67,9 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
     /**
      * Ribbon load balancer
      *
-     * @param apimlCloseableHttpClient   custom http client for our certificates (depends on sign in original request)
-     * @param config             configuration details
-     * @param serverIntrospector introspector
+     * @param apimlCloseableHttpClient custom http client for our certificates (depends on sign in original request)
+     * @param config                   configuration details
+     * @param serverIntrospector       introspector
      */
     public GatewayRibbonLoadBalancingHttpClientImpl(
         CloseableHttpClient apimlCloseableHttpClient,
@@ -126,11 +126,11 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
 
         final RequestConfig requestConfig = builder.build();
         final HttpUriRequest httpUriRequest = request.toRequest(requestConfig);
-        try{
+        try {
             final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
             return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
         } catch (Exception e) {
-            log.error("URI of http request: {}",httpUriRequest.getURI().toString());
+            log.error("URI of http request: {}", httpUriRequest.getURI().toString());
             final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
             return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
         }
