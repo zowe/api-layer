@@ -15,7 +15,7 @@ logging:
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
         net.sf.ehcache: WARN
-
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
 
@@ -54,7 +54,7 @@ spring:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
     mvc:
-        throw-exception-if-no-handler-found: true
+        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
         favicon:
             enabled: false
     output:
@@ -184,6 +184,8 @@ eureka:
 ---
 spring:
     profiles: debug
+    mvc:
+        throw-exception-if-no-handler-found: true
 
 management:
     endpoints:
@@ -203,6 +205,7 @@ logging:
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         net.sf.ehcache: INFO
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
 spring:
