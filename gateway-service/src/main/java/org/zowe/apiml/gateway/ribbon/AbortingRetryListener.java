@@ -26,7 +26,7 @@ public class AbortingRetryListener implements RetryListener {
 
     @Override
     public <T, E extends Throwable> void close(RetryContext context, RetryCallback<T, E> callback, Throwable throwable) {
-
+        // do nothing
     }
 
     @Override
