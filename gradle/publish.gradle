@@ -6,7 +6,8 @@ ext.javaLibraries = [
     'apiml-utility',
     'apiml-common',
     'apiml-security-common',
-    'security-service-client-spring'
+    'security-service-client-spring',
+    'zaas-client'
 ]
 
 ext.serviceJars = [ 'zowe-install' ]
