@@ -57,8 +57,8 @@ public class AuthenticationOnDeploymentTest {
         final String jwt = gatewayToken();
 
         try (
-            final VirtualService service1 = new VirtualService("testService1");
-            final VirtualService service2 = new VirtualService("testService1")
+            final VirtualService service1 = new VirtualService("testService1",5679);
+            final VirtualService service2 = new VirtualService("testService1", 5678)
 
         ) {
             // start first instance - without passTickets
