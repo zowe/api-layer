@@ -40,7 +40,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  */
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 2;
+    private static final int TIMEOUT = 100;
 
     private RequestVerifier verifier;
 

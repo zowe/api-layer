@@ -126,8 +126,16 @@ public class GatewayRibbonLoadBalancingHttpClientImpl extends RibbonLoadBalancin
 
         final RequestConfig requestConfig = builder.build();
         final HttpUriRequest httpUriRequest = request.toRequest(requestConfig);
-        final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
-        return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
+        try{
+            final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
+            return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
+        } catch (Exception e) {
+            log.error("URI of http request: {}",httpUriRequest.getURI().toString());
+            final HttpResponse httpResponse = this.delegate.execute(httpUriRequest);
+            return new RibbonApacheHttpResponse(httpResponse, httpUriRequest.getURI());
+        }
+
+
     }
 
     @Override
