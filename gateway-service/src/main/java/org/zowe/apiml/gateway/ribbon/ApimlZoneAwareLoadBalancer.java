@@ -57,18 +57,16 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
         Server server = super.chooseServer(key);
 
         if (server == null) {
-            return server;
+            return null;
         }
 
         if (server instanceof DiscoveryEnabledServer) {
             RequestContext context = RequestContext.getCurrentContext();
             context.set(LOADBALANCED_INSTANCE_INFO_KEY, ((DiscoveryEnabledServer) server).getInstanceInfo());
         } else {
-            throw new RuntimeException("Unexpected error, please contact Broadcom support");
+            throw new IllegalStateException("Unexpected error, please contact Broadcom support");
         }
 
         return server;
     }
-
-
 }
