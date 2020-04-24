@@ -84,7 +84,7 @@ public class RequestUtils {
         }
         String headerValue = header.getValue();
         if (headerValue == null || headerValue.isEmpty()) {
-            return new ArrayList<HttpCookie>();
+            return new ArrayList<>();
         } else {
             List<HttpCookie> cookieList = new ArrayList<>();
             List<String> cookieStringList = Arrays.asList(header.getValue().split(";"));
@@ -98,13 +98,11 @@ public class RequestUtils {
     }
 
     public void setCookie(HttpCookie cookie) {
-        // TODO the cookie version is still 1. It contains the "" (cookie1=1;LtpaToken2="ltpa2"). Check the test
-        List<Header> allHeaders = getAllHeaders();
         if (getHeader(HttpHeaders.COOKIE).isEmpty()) {
-            //allHeaders.add();
             setHeader(new BasicHeader(HttpHeaders.COOKIE, cookie.toString()));
         } else {
-            Header cookieHeader = getHeader(HttpHeaders.COOKIE).get(0); //cookie always added to first cookie header found
+            //cookie always added to first cookie header found
+            Header cookieHeader = getHeader(HttpHeaders.COOKIE).get(0);
             List<HttpCookie> cookieList = getAllCookiesFromHeader(cookieHeader);
             cookieList = cookieList.stream()
                 .filter(c -> !c.getName().equalsIgnoreCase(cookie.getName()))
@@ -116,7 +114,7 @@ public class RequestUtils {
 
     private Header getCookieHeader(List<HttpCookie> cookieList) {
         return new BasicHeader(HttpHeaders.COOKIE, cookieList.stream()
-            .map(c -> c.toString())
+            .map(HttpCookie::toString)
             .collect(Collectors.joining(";")));
     }
 

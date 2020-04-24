@@ -26,7 +26,7 @@ import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
  */
 public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T> {
 
-    public static String LOADBALANCED_INSTANCE_INFO_KEY = "apimlLoadBalancedInstanceInfo";
+    public static final String LOADBALANCED_INSTANCE_INFO_KEY = "apimlLoadBalancedInstanceInfo";
 
     public ApimlZoneAwareLoadBalancer(
         IClientConfig clientConfig,
