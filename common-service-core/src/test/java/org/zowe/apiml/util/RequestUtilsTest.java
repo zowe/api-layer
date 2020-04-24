@@ -14,7 +14,6 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.message.BasicHeader;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 

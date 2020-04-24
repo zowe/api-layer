@@ -125,12 +125,16 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
                     case ZOSMF:
                         wrapper.removeCookie(authConfigurationProperties.getCookieProperties().getCookieName());
                         HttpCookie jwtCookie = new HttpCookie(ZosmfService.TokenType.JWT.getCookieName(), token);
+                        jwtCookie.setSecure(true);
+                        jwtCookie.setHttpOnly(true);
                         jwtCookie.setVersion(0);
                         wrapper.setCookie(jwtCookie);
                         break;
                     case ZOWE:
                         final String ltpaToken = authenticationService.getLtpaTokenWithValidation(token);
                         HttpCookie ltpaCookie = new HttpCookie(ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
+                        ltpaCookie.setSecure(true);
+                        ltpaCookie.setHttpOnly(true);
                         ltpaCookie.setVersion(0);
                         wrapper.setCookie(ltpaCookie);
                         break;
