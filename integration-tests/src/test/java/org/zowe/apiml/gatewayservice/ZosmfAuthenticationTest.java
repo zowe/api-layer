@@ -93,7 +93,7 @@ public class ZosmfAuthenticationTest {
                     null, null, "LtpaToken2=ltpaToken", HttpStatus.OK
                 ))
                 .addRoute("/api", "/")
-                .start(0)
+                .start()
                 .waitForGatewayRegistration(1, TIMEOUT_REGISTRATION);
 
             given()
@@ -114,7 +114,7 @@ public class ZosmfAuthenticationTest {
                     null, "LtpaToken2=ltpaToken", HttpStatus.OK
                 ))
                 .addRoute("/api", "/")
-                .start(0)
+                .start()
                 .waitForGatewayRegistration(1, TIMEOUT_REGISTRATION);
 
             given()
@@ -135,7 +135,7 @@ public class ZosmfAuthenticationTest {
                     null, "LtpaToken2=ltpaToken", HttpStatus.OK
                 ))
                 .addRoute("/api", "/")
-                .start(0)
+                .start()
                 .waitForGatewayRegistration(1, TIMEOUT_REGISTRATION);
 
             given()
@@ -160,7 +160,7 @@ public class ZosmfAuthenticationTest {
                     null, "LtpaToken2=ltpaToken", HttpStatus.UNAUTHORIZED
                 ))
                 .addRoute("/api", "/")
-                .start(0)
+                .start()
                 .waitForGatewayRegistration(1, TIMEOUT_REGISTRATION);
 
             given()
@@ -185,7 +185,7 @@ public class ZosmfAuthenticationTest {
                     null, "jwtToken=jwtToken", HttpStatus.UNAUTHORIZED
                 ))
                 .addRoute("/api", "/")
-                .start(0)
+                .start()
                 .waitForGatewayRegistration(1, TIMEOUT_REGISTRATION);
 
             given()
@@ -210,7 +210,7 @@ public class ZosmfAuthenticationTest {
                     null, "jwtToken=jwtToken", HttpStatus.UNAUTHORIZED
                 ))
                 .addRoute("/api", "/")
-                .start(0)
+                .start()
                 .waitForGatewayRegistration(1, TIMEOUT_REGISTRATION);
 
             given()

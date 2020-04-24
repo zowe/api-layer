@@ -40,7 +40,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  */
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 100;
+    private static final int TIMEOUT = 5;
 
     private RequestVerifier verifier;
 
@@ -56,16 +56,17 @@ public class AuthenticationOnDeploymentTest {
     public void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
-
+        int port1 = 5679;
+        int port2 = 5678;
         try (
-            final VirtualService service1 = new VirtualService("testService1",5679);
-            final VirtualService service2 = new VirtualService("testService1", 5678)
+            final VirtualService service1 = new VirtualService("testService1",port1);
+            final VirtualService service2 = new VirtualService("testService1", port2)
 
         ) {
             // start first instance - without passTickets
             service1
                 .addVerifyServlet()
-                .start(5679)
+                .start()
                 .waitForGatewayRegistration(1, TIMEOUT);
 
 
@@ -86,7 +87,7 @@ public class AuthenticationOnDeploymentTest {
             service2
                 .addVerifyServlet()
                 .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "TESTAPPL"))
-                .start(5678)
+                .start()
                 .waitForGatewayRegistration(2, TIMEOUT);
 
             // on each gateway make calls (count same as instances) to service

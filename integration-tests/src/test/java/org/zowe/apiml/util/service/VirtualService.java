@@ -117,14 +117,14 @@ public class VirtualService implements AutoCloseable {
      * @throws IOException        problem with socket
      * @throws LifecycleException Tomcat exception
      */
-    public VirtualService start(int portNumber) throws IOException, LifecycleException {
+    public VirtualService start() throws IOException, LifecycleException {
         // start Tomcat to get listening port
         tomcat.start();
-        int port = (portNumber != 0 ? portNumber : getPort());
-        instanceId = InetAddress.getLocalHost().getHostName() + ":" + port;
+
+        instanceId = InetAddress.getLocalHost().getHostName() + ":" + getPort();
 
         // register into discovery service and start heart beating
-        register(port);
+        register();
         healthService = new HealthService(renewalIntervalInSecs);
 
         started = true;
@@ -338,11 +338,11 @@ public class VirtualService implements AutoCloseable {
     /**
      * @return base URL of this service (without slash), ie: http://localhost:65123
      */
-    public String getUrl(int port) {
-        return "http://" + tomcat.getEngine().getDefaultHost() + ":" + port;
+    public String getUrl() {
+        return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
     }
 
-    private void register(int port) throws UnknownHostException {
+    private void register() throws UnknownHostException {
         addDefaultRouteIfMissing();
         JSONObject jsonObject = new JSONObject()
             .put("instance", new JSONObject()
@@ -353,14 +353,14 @@ public class VirtualService implements AutoCloseable {
                 .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
                 .put("status", Status.UP.toString())
                 .put("port", new JSONObject()
-                    .put("$", port)
+                    .put("$", getPort())
                     .put("@enabled", "true")
                 )
                 .put("securePort", new JSONObject()
                     .put("$", 0)
                     .put("@enabled", "true")
                 )
-                .put("healthCheckUrl", getUrl(port) + "/application/health")
+                .put("healthCheckUrl", getUrl() + "/application/health")
                 .put("dataCenterInfo", new JSONObject()
                     .put("@class", "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo")
                     .put("name", "MyOwn")
