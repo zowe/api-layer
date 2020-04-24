@@ -120,10 +120,11 @@ public class VirtualService implements AutoCloseable {
     public VirtualService start(int portNumber) throws IOException, LifecycleException {
         // start Tomcat to get listening port
         tomcat.start();
-        instanceId = InetAddress.getLocalHost().getHostName() + ":" + (portNumber != 0 ? portNumber : getPort());
+        int port = (portNumber != 0 ? portNumber : getPort());
+        instanceId = InetAddress.getLocalHost().getHostName() + ":" + port;
 
         // register into discovery service and start heart beating
-        register();
+        register(port);
         healthService = new HealthService(renewalIntervalInSecs);
 
         started = true;
@@ -341,7 +342,7 @@ public class VirtualService implements AutoCloseable {
         return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
     }
 
-    private void register() throws UnknownHostException {
+    private void register(int port) throws UnknownHostException {
         addDefaultRouteIfMissing();
         JSONObject jsonObject = new JSONObject()
             .put("instance", new JSONObject()
@@ -352,7 +353,7 @@ public class VirtualService implements AutoCloseable {
                 .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
                 .put("status", Status.UP.toString())
                 .put("port", new JSONObject()
-                    .put("$", getPort())
+                    .put("$", port)
                     .put("@enabled", "true")
                 )
                 .put("securePort", new JSONObject()
