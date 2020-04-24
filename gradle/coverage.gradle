@@ -13,7 +13,8 @@ ext.javaProjectsWithUnitTests = [
     'onboarding-enabler-java-sample-app',
     'security-module',
     'security-service-client-spring',
-    'apiml-security-common'
+    'apiml-security-common',
+    'zaas-client'
 ]
 
 ext.jacocoProjects = subprojects.findAll { it.name in javaProjectsWithUnitTests }

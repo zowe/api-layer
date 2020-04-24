@@ -1,0 +1,110 @@
+messages:
+
+    # Info messages
+    # 000-099
+
+    # General messages
+    # 100-199
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.EXPIRED_JWT_EXCEPTION
+      number: ZWEAS100E
+      type: ERROR
+      text: "Token is expired for URL"
+      reason: "The application using the token kept it for longer than the expiration time"
+      action: "When this error occurs it is necessary to get a new JWT token. "
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.INVALID_AUTHENTICATION
+      number: ZWEAS120E
+      type: ERROR
+      text: "Invalid username or password"
+      reason: "Provided credentials weren't recognized"
+      action: "Try with different credentials"
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD
+      number: ZWEAS121E
+      type: ERROR
+      text: "Empty or null username or password values provided"
+      reason: "One of the credentials was null or empty"
+      action: "Try with full set of credentials"
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER
+      number: ZWEAS122E
+      type: ERROR
+      text: "Empty or null authorization header provided"
+      reason: "The authorization header was empty or null"
+      action: "Try again with valid authorization header"
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.GENERIC_EXCEPTION
+      number: ZWEAS170E
+      type: ERROR
+      text: "An exception occurred while trying to get the token"
+      reason: "General exception. There are more information in the message"
+      action: "Log the message from the exception and then handle the exception based on the information provided there. "
+
+    # HTTP,Protocol messages
+    # 400-499
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.BAD_REQUEST
+      number: ZWEAS400E
+      type: ERROR
+      text: "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in the guide for your security provider"
+      reason: "Unable to generate PassTicket."
+      action: "Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in the guide for your security provider"
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.TOKEN_NOT_PROVIDED
+      number: ZWEAS401E
+      type: ERROR
+      text: "Token is not provided"
+      reason: "There was no JWT token provided for the generation of the PassTicket"
+      action: "Ensure that you are passing JWT token for PassTicker generation"
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.SERVICE_UNAVAILABLE
+      number: ZWEAS404E
+      type: ERROR
+      text: "Gateway service is unavailable"
+      reason: "Gateway service doesn't respond."
+      action: "Ensure that the Gateway service is up and that the path to the gateway service is properly set."
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND
+      number: ZWEAS417E
+      type: ERROR
+      text: "The application name wasn't found"
+      reason: "The application id provided for the generation of the PassTicket wasn't recognized by security provider"
+      action: "Ensure that the security provider recognized the application id."
+
+
+    # TLS,Certificate messages
+    # 500-599
+    - key: org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.TRUST_STORE_NOT_PROVIDED
+      number: ZWEAS500E
+      type: ERROR
+      text: "There was no path to the trust store."
+      reason: "The Zaas Client configuration didn't contain the path to the trust store"
+      action: "Ensure that the configuration contains the trustStorePath and that it points to valid trust store."
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED
+      number: ZWEAS501E
+      type: ERROR
+      text: "There was no path to the key store."
+      reason: "The Zaas Client configuration didn't contain the path to the key store"
+      action: "Ensure that the configuration contains the keyStorePath and that it points to valid key store."
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION
+      number: ZWEAS502E
+      type: ERROR
+      text: "The configuration provided for SSL is invalid."
+      reason: "The type of the keystore, truststore or the included keys/certs aren't considered valid"
+      action: "Ensure that the combination of the configuration is cryptographically valid."
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE
+      number: ZWEAS503E
+      type: ERROR
+      text: "The SSL configuration contained invalid path."
+      reason: "There was an invalid path to either trust store or keystore"
+      action: "Ensure that both provided paths are resolved to valid trust store and valid key store"
+
+    # Various messages
+    # 600-699
+
+    # Service specific messages
+    # 700-999
+
+    # Legacy messages
