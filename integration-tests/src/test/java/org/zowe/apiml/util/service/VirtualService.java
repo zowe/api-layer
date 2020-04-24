@@ -338,8 +338,8 @@ public class VirtualService implements AutoCloseable {
     /**
      * @return base URL of this service (without slash), ie: http://localhost:65123
      */
-    public String getUrl() {
-        return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
+    public String getUrl(int port) {
+        return "http://" + tomcat.getEngine().getDefaultHost() + ":" + port;
     }
 
     private void register(int port) throws UnknownHostException {
@@ -360,7 +360,7 @@ public class VirtualService implements AutoCloseable {
                     .put("$", 0)
                     .put("@enabled", "true")
                 )
-                .put("healthCheckUrl", getUrl() + "/application/health")
+                .put("healthCheckUrl", getUrl(port) + "/application/health")
                 .put("dataCenterInfo", new JSONObject()
                     .put("@class", "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo")
                     .put("name", "MyOwn")
