@@ -27,6 +27,7 @@ import org.zowe.apiml.gateway.config.MessageServiceConfiguration;
 import org.zowe.apiml.gateway.error.ErrorUtils;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.gateway.ribbon.http.RequestAbortException;
+import org.zowe.apiml.gateway.ribbon.http.RequestContextNotPreparedException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 
@@ -76,6 +77,19 @@ class RibbonRetryErrorCheckTest {
         assertCorrectResponse(response,
             "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: org.springframework.security.access.AuthorizationServiceException: test",
             HttpStatus.INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.requestAborted");
+    }
+
+    @Test
+    void givenExceptionChain_whenIsContextNotPreparedExceptionWithCause_thenContextNotPreparedAndCause() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        ZuulException exc = new ZuulException(new Exception(new RequestContextNotPreparedException("RequestContext not prepared for load balancing.")), HttpStatus.INTERNAL_SERVER_ERROR.value(), "");
+        request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
+        ResponseEntity<ApiMessageView> response = underTest.error(request);
+
+        assertCorrectResponse(response,
+            "RequestContext not prepared for load balancing.",
+            HttpStatus.INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.contextNotPrepared");
     }
 
     private void assertCorrectResponse(ResponseEntity<ApiMessageView> response, String expectedMessage, HttpStatus expectedStatus, String expectedKey) {
