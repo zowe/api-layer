@@ -19,7 +19,6 @@ import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
 import org.springframework.cloud.netflix.ribbon.RibbonClientName;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-import org.springframework.cloud.netflix.ribbon.apache.RetryableRibbonLoadBalancingHttpClient;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,7 +51,7 @@ public class GatewayRibbonConfig {
         ServerIntrospector serverIntrospector,
         ApimlRibbonRetryFactory retryFactory
     ) {
-        return new RetryableRibbonLoadBalancingHttpClient(
+        return new ApimlRetryableClient(
             httpClientProxy, config, serverIntrospector, retryFactory);
     }
 

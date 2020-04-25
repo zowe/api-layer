@@ -16,13 +16,13 @@ import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
+import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.security.common.auth.Authentication;
 
-import static org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY;
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
 @RequiredArgsConstructor
@@ -33,11 +33,13 @@ public class ServiceAuthenticationDecorator {
 
     private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
 
-    public void process(HttpRequest request) throws RequestAbortException {
+    public void process(HttpRequest request) {
         final RequestContext context = RequestContext.getCurrentContext();
 
         if (context.get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand) {
-            InstanceInfo info = getInstanceInfoFromContext(context);
+            InstanceInfo info = RequestContextUtils.getInstanceInfo().orElseThrow(
+                () -> new RequestContextNotPreparedException("InstanceInfo of loadbalanced instance is not present in RequestContext")
+            );
             final Authentication authentication = serviceAuthenticationService.getAuthentication(info);
             boolean rejected = false;
             AuthenticationCommand cmd = null;
@@ -45,7 +47,7 @@ public class ServiceAuthenticationDecorator {
             try {
                 final String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
 
-                //what if cmd is null? it's failing with NullPointerException, if jwt is null cmd is null
+                //TODO what if cmd is null? it's failing with NullPointerException, if jwt is null cmd is null
                 cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
 
                 if (cmd == null) {
@@ -65,14 +67,6 @@ public class ServiceAuthenticationDecorator {
 
             cmd.applyToRequest(request);
         }
-    }
-
-    private InstanceInfo getInstanceInfoFromContext(RequestContext context) throws RequestContextNotPreparedException {
-        Object o = context.get(LOADBALANCED_INSTANCE_INFO_KEY);
-        if (o == null) {
-            throw new RequestContextNotPreparedException("InstanceInfo of loadbalanced instance is not present in RequestContext");
-        }
-        return (InstanceInfo) o;
     }
 }
 
