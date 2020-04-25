@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.ribbon;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import com.netflix.zuul.context.RequestContext;
 import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 
 /**
@@ -61,8 +60,7 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
         }
 
         if (server instanceof DiscoveryEnabledServer) {
-            RequestContext context = RequestContext.getCurrentContext();
-            context.set(LOADBALANCED_INSTANCE_INFO_KEY, ((DiscoveryEnabledServer) server).getInstanceInfo());
+            RequestContextUtils.setInstanceInfo(((DiscoveryEnabledServer) server).getInstanceInfo());
         } else {
             throw new IllegalStateException("Unexpected error, please contact Broadcom support");
         }

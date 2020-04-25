@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.ribbon.http;
 
-public class RequestAbortException extends Exception {
+public class RequestAbortException extends RuntimeException {
 
     public RequestAbortException(String msg) {
         super(msg);

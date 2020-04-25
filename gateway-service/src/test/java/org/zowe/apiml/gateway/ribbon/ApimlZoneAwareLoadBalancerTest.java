@@ -100,7 +100,7 @@ class ApimlZoneAwareLoadBalancerTest {
             serverListFilter, serverListUpdater, serviceCacheEvictor);
         balancer.addServer(new Server("localhost", 69));
 
-        assertThrows(RuntimeException.class, () -> balancer.chooseServer("instance"));
+        assertThrows(IllegalStateException.class, () -> balancer.chooseServer("instance"));
     }
 
 
