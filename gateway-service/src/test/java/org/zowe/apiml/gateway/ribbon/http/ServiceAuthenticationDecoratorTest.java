@@ -49,7 +49,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithoutCommand_whenProcess_thenNoAction() throws RequestAbortException {
+    void givenContextWithoutCommand_whenProcess_thenNoAction() {
         HttpRequest request = new HttpGet("/");
         decorator.process(request);
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
@@ -57,7 +57,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithAnyOtherCommand_whenProcess_thenNoAction() throws RequestAbortException {
+    void givenContextWithAnyOtherCommand_whenProcess_thenNoAction() {
         HttpRequest request = new HttpGet("/");
         AuthenticationCommand cmd = mock(ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand.class);
         prepareContext(cmd);
@@ -67,7 +67,7 @@ class ServiceAuthenticationDecoratorTest {
     }
 
     @Test
-    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() throws RequestAbortException {
+    void givenContextWithCorrectKey_whenProcess_thenShouldRetrieveCommand() {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareContext(universalCmd);
         doReturn(TokenAuthentication.createAuthenticated("user", "jwtToken")).when(authenticationService).validateJwtToken("jwtToken");
