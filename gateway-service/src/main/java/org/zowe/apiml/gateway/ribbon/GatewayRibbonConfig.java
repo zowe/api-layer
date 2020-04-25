@@ -15,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
-import org.springframework.cloud.netflix.ribbon.RibbonClientName;
-import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
+import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,10 +46,13 @@ public class GatewayRibbonConfig {
         @Qualifier("httpClientProxy") CloseableHttpClient httpClientProxy,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
-        ApimlRibbonRetryFactory retryFactory
+        ApimlRibbonRetryFactory retryFactory,
+        RibbonLoadBalancerContext ribbonContext
     ) {
-        return new ApimlRetryableClient(
+        ApimlRetryableClient client = new ApimlRetryableClient(
             httpClientProxy, config, serverIntrospector, retryFactory);
+        client.setRibbonLoadBalancerContext(ribbonContext);
+        return client;
     }
 
     @Bean
