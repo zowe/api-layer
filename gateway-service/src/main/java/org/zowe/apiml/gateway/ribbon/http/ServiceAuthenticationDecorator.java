@@ -47,7 +47,6 @@ public class ServiceAuthenticationDecorator {
             try {
                 final String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
 
-                //TODO what if cmd is null? it's failing with NullPointerException, if jwt is null cmd is null
                 cmd = serviceAuthenticationService.getAuthenticationCommand(authentication, jwtToken);
 
                 if (cmd == null) {

@@ -22,6 +22,7 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.ConnectException;
 
 /**
  * Handler for exceptions that arise during the Ribbon retries
@@ -52,6 +53,16 @@ public class RibbonRetryErrorCheck implements ErrorCheck {
                     .body(messageView);
             }
 
+        }
+
+        if ( (exceptionIndex = ExceptionUtils.indexOfType(exc, ConnectException.class)) != -1) {
+            ConnectException t = (ConnectException) ExceptionUtils.getThrowables(exc)[exceptionIndex];
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.connectionRefused",
+                ErrorUtils.getGatewayUri(request),
+                t.getCause()).mapToView();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .body(messageView);
         }
 
         return null;
