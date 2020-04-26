@@ -216,7 +216,7 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-
+zuul.debug.request: true
 ---
 spring:
     profiles: dev

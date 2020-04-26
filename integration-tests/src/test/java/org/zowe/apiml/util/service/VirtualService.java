@@ -70,6 +70,10 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  *      .waitForGatewayUnregistering(1, TIMEOUT)
  *      .stop();
  *
+ *  If you want to simulate crashed service that does not deregister you can call:
+ *
+ *  service1.zombie();
+ *
  *  VirtualService allow to you add custom servlets for checking, but few are implemented yet:
  *  - HeaderServlet
  *      - register with addGetHeaderServlet({header})
@@ -104,6 +108,7 @@ public class VirtualService implements AutoCloseable {
     private final Map<String, String> metadata = new HashMap<>();
 
     private String gatewayPath;
+    private boolean isZombie = false;
 
     public VirtualService(String serviceId) {
         this.serviceId = serviceId;
@@ -305,9 +310,22 @@ public class VirtualService implements AutoCloseable {
     public void stop() throws LifecycleException {
         unregister();
         healthService.stop();
+        if (!isZombie) {
+            tomcat.stop();
+            tomcat.destroy();
+        }
+        started = false;
+    }
+
+    /**
+     * Kill service's Tomcat while maintaining heartbeats to keep service registered
+     *
+     * @throws LifecycleException
+     */
+    public void zombie() throws LifecycleException {
+        isZombie = true;
         tomcat.stop();
         tomcat.destroy();
-        started = false;
     }
 
     /**
@@ -360,7 +378,7 @@ public class VirtualService implements AutoCloseable {
                     )
                     .put("securePort", new JSONObject()
                         .put("$", 0)
-                        .put("@enabled", "true")
+                        .put("@enabled", "false")
                     )
                     .put("healthCheckUrl", getUrl() + "/application/health")
                     .put("dataCenterInfo", new JSONObject()
