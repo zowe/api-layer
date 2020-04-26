@@ -61,6 +61,7 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
 
         if (server instanceof DiscoveryEnabledServer) {
             RequestContextUtils.setInstanceInfo(((DiscoveryEnabledServer) server).getInstanceInfo());
+            RequestContextUtils.addDebugInfo("Load Balancer chooses: " + ((DiscoveryEnabledServer) server).getInstanceInfo());
         } else {
             throw new IllegalStateException("Unexpected error, please contact Broadcom support");
         }

@@ -23,6 +23,7 @@ public class RequestContextUtils {
     private RequestContextUtils() {}
 
     public static final String INSTANCE_INFO_KEY = "apimlLoadBalancedInstanceInfo";
+    public static final String DEBUG_INFO_KEY = "apimlRibbonRetryDebug";
 
     public static Optional<InstanceInfo> getInstanceInfo() {
         Object o = RequestContext.getCurrentContext().get(INSTANCE_INFO_KEY);
@@ -35,5 +36,16 @@ public class RequestContextUtils {
 
     public static void setInstanceInfo(InstanceInfo info) {
         RequestContext.getCurrentContext().set(INSTANCE_INFO_KEY, info);
+    }
+
+    public static void addDebugInfo(String debug) {
+        String existingDebugInfo = getDebugInfo();
+        RequestContext.getCurrentContext().set(DEBUG_INFO_KEY,
+            existingDebugInfo.isEmpty() ? debug : existingDebugInfo + "|" + debug);
+    }
+
+    public static String getDebugInfo() {
+        Object o = RequestContext.getCurrentContext().get(DEBUG_INFO_KEY);
+        return o != null ? (String) o : "";
     }
 }
