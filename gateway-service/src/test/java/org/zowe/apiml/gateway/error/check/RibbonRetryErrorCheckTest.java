@@ -31,6 +31,8 @@ import org.zowe.apiml.gateway.ribbon.http.RequestContextNotPreparedException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 
+import java.net.ConnectException;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -90,6 +92,19 @@ class RibbonRetryErrorCheckTest {
         assertCorrectResponse(response,
             "RequestContext not prepared for load balancing.",
             HttpStatus.INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.contextNotPrepared");
+    }
+
+    @Test
+    void givenExceptionChain_whenIsConnectionException_thenConnectionExceptionAndCause() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        ZuulException exc = new ZuulException(new Exception(new ConnectException("test")), HttpStatus.INTERNAL_SERVER_ERROR.value(), "");
+        request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
+        ResponseEntity<ApiMessageView> response = underTest.error(request);
+
+        assertCorrectResponse(response,
+            "The request to the URL 'null' has failed after retrying on all known service instances. Caused by: null",
+            HttpStatus.INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.connectionRefused");
     }
 
     private void assertCorrectResponse(ResponseEntity<ApiMessageView> response, String expectedMessage, HttpStatus expectedStatus, String expectedKey) {
