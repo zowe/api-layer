@@ -66,6 +66,12 @@ messages:
       reason: "Request to server instance has failed and will not be retried on another instance."
       action: "Refer to Caused by details for troubleshooting."
 
+    - key: org.zowe.apiml.gateway.connectionRefused
+      number: ZWEAG708
+      type: ERROR
+      text: "The request to the URL '%s' has failed after retrying on all known service instances. Caused by: %s"
+      reason: "Request to server instance could not be executed on any known service instance."
+      action: "Verify status of the requested instance."
 
     # Legacy messages
 
