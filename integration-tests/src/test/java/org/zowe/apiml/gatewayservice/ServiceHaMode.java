@@ -15,7 +15,6 @@ import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.service.VirtualService;
 
 import java.util.List;

@@ -53,38 +53,42 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  * It is recommended to use try-with-resource to be sure, service will be unregistered on the end, ie.:
  * <p>
  * try (final VirtualService service = new VirtualService("testService")) {
- * service
- * // add same servlet and setting of service
- * .start()
- * // you should wait until service is registered, usually registration is faster, but for sure - registration
- * // contains many asynchronous steps
- * .waitForGatewayRegistration(1, TIMEOUT);
- * // use service
- * }
- * <p>
- * If you want to unregister service during the test, you can do that like this:
- * <p>
- * service1
- * .unregister()
- * // similar to registration, unregister contains same asynchronous steps
- * .waitForGatewayUnregistering(1, TIMEOUT)
- * .stop();
- * <p>
- * VirtualService allow to you add custom servlets for checking, but few are implemented yet:
- * - HeaderServlet
- * - register with addGetHeaderServlet({header})
- * - it will response content of header with name {header} on /header/{header}
+ *      service
+ *          // add same servlet and setting of service
+ *          .start()
+ *          // you should wait until service is registered, usually registration is faster, but for sure - registration
+ *          // contains many asynchronous steps
+ *          .waitForGatewayRegistration(1, TIMEOUT);
+ *      // use service
+ *  }
+ *
+ *  If you want to unregister service during the test, you can do that like this:
+ *
+ *  service1
+ *      .unregister()
+ *      // similar to registration, unregister contains same asynchronous steps
+ *      .waitForGatewayUnregistering(1, TIMEOUT)
+ *      .stop();
+ *
+ *  If you want to simulate crashed service that does not deregister you can call:
+ *
+ *  service1.zombie();
+ *
+ *  VirtualService allow to you add custom servlets for checking, but few are implemented yet:
+ *  - HeaderServlet
+ *      - register with addGetHeaderServlet({header})
+ *      - it will response content of header with name {header} on /header/{header}
  * - VerifyServlet
- * - register with addVerifyServlet
- * - it allows to store all request on path /verify/* and then make asserts on them
- * - see also method getGatewayVerifyUrls
+ *      - register with addVerifyServlet
+ *      - it allows to store all request on path /verify/* and then make asserts on them
+ *      - see also method getGatewayVerifyUrls
  * - InstanceServlet
- * - automatically created
- * - return instanceId in the body at /application/instance
- * - it is used for checking of gateways (see waitForGatewayRegistration and waitForGatewayUnregistering)
+ *      - automatically created
+ *      - return instanceId in the body at /application/instance
+ *      - it is used for checking of gateways (see waitForGatewayRegistration and waitForGatewayUnregistering)
  * - HealthServlet
- * - automatically created
- * - to check state of service from discovery service (see /application/health)
+ *      - automatically created
+ *      - to check state of service from discovery service (see /application/health)
  */
 @Slf4j
 public class VirtualService implements AutoCloseable {
@@ -104,6 +108,8 @@ public class VirtualService implements AutoCloseable {
     private final Map<String, String> metadata = new HashMap<>();
 
     private String gatewayPath;
+
+    private boolean isZombie = false;
 
     public VirtualService(String serviceId,int port) {
         this.serviceId = serviceId;
@@ -306,9 +312,22 @@ public class VirtualService implements AutoCloseable {
     public void stop() throws LifecycleException {
         unregister();
         healthService.stop();
+        if (!isZombie) {
+            tomcat.stop();
+            tomcat.destroy();
+        }
+        started = false;
+    }
+
+    /**
+     * Kill service's Tomcat while maintaining heartbeats to keep service registered
+     *
+     * @throws LifecycleException
+     */
+    public void zombie() throws LifecycleException {
+        isZombie = true;
         tomcat.stop();
         tomcat.destroy();
-        started = false;
     }
 
     /**
