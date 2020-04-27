@@ -39,7 +39,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  *  - credentials.user = user
  *  - credentials.password = user
  */
-@AdditionalLocalTest
+
 public class AuthenticationOnDeploymentTest {
 
     private static final int TIMEOUT = 100;
@@ -59,8 +59,8 @@ public class AuthenticationOnDeploymentTest {
         final String jwt = gatewayToken();
 
         try (
-            final VirtualService service1 = new VirtualService("testService");
-            final VirtualService service2 = new VirtualService("testService")
+            final VirtualService service1 = new VirtualService("testService", 5678);
+            final VirtualService service2 = new VirtualService("testService", 5679)
         ) {
             // start first instance - without passTickets
             service1
