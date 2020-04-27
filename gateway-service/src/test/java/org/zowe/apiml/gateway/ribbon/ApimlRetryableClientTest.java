@@ -70,7 +70,9 @@ class ApimlRetryableClientTest {
             InstanceInfo.Builder.newBuilder().setAppName("Sonya").build()
         );
         client.setLoadBalancer(lb);
+
         ServiceInstance instance = client.choose("service1");
+
         assertThat(instance, instanceOf(EurekaDiscoveryClient.EurekaServiceInstance.class));
     }
 }
