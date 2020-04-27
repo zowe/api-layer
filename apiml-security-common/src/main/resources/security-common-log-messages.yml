@@ -10,7 +10,7 @@ messages:
       type: ERROR
       text: "Token is expired for URL '%s'"
       reason: "The validity of the token is expired."
-      action: "Obtain new token by performing an authentication request."
+      action: "Obtain a new token by performing an authentication request."
 
     - key: org.zowe.apiml.security.errorWrittingResponse
       number: ZWEAT103
