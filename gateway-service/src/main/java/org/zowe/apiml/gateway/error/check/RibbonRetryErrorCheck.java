@@ -39,18 +39,14 @@ public class RibbonRetryErrorCheck implements ErrorCheck {
             Throwable t = ExceptionUtils.getThrowables(exc)[exceptionIndex];
             if (t instanceof RequestContextNotPreparedException) {
                 ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.contextNotPrepared").mapToView();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .body(messageView);
+                return getApiMessageViewResponseEntity(messageView);
             }
 
             if (t instanceof RequestAbortException) {
                 ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.requestAborted",
                     ErrorUtils.getGatewayUri(request),
                     t.getCause()).mapToView();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .contentType(MediaType.APPLICATION_JSON_UTF8)
-                    .body(messageView);
+                return getApiMessageViewResponseEntity(messageView);
             }
 
         }
@@ -60,12 +56,16 @@ public class RibbonRetryErrorCheck implements ErrorCheck {
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.connectionRefused",
                 ErrorUtils.getGatewayUri(request),
                 t.getCause()).mapToView();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                .body(messageView);
+            return getApiMessageViewResponseEntity(messageView);
         }
 
         return null;
+    }
+
+    private ResponseEntity<ApiMessageView> getApiMessageViewResponseEntity(ApiMessageView messageView) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(MediaType.APPLICATION_JSON_UTF8)
+            .body(messageView);
     }
 
 }
