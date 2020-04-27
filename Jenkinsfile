@@ -93,7 +93,7 @@ pipeline {
             }
         }
 
-         stage('Build and unit test with coverage') {
+         stage('Build and unit test with coverage 2') {
             steps {
               timeout(time: 20, unit: 'MINUTES') {
                   sh './gradlew discoverable-client:printHello'
