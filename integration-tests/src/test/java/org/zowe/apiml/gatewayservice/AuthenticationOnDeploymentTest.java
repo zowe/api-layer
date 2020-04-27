@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
