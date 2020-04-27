@@ -61,7 +61,7 @@ class RibbonRetryErrorCheckTest {
         underTest = new InternalServerErrorController(messageService);
     }
 
-    private static Stream<Arguments> provideInvalidUsernamePassword() {
+    private static Stream<Arguments> provideExceptionsWithRelevantTexts() {
         return Stream.of(
             Arguments.of("givenExceptionChain_whenIsAbortException_thenRequestAbortedGeneric",
                 new RequestAbortException("test"),
@@ -84,7 +84,7 @@ class RibbonRetryErrorCheckTest {
 
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource("provideInvalidUsernamePassword")
+    @MethodSource("provideExceptionsWithRelevantTexts")
     void givenExceptionChain_whenExceptionIsRaised_thenRequestIsProperlyAborted(String description, Exception toWrap, String message, String key) {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
