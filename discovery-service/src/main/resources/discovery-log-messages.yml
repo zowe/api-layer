@@ -62,10 +62,10 @@ messages:
       type: ERROR
       text: "A problem occurred during reading the static API definition directory: '%s'"
       reason: "There are three possible causes of this error:\n
-      - The specified static API definition folder is empty\n
-      - The definition does not denote a directory\n
+      - The specified static API definition folder is empty.\n
+      - The definition does not denote a directory.\n
       - An I/O error occurred while attempting to read the static API definition directory."
-      action: "Review the static API definition directory definition and its contents on the storage. The static definition directories are specified as a parameter to launch a Discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
+      action: "Review the static API definition directory definition and its contents on the storage. The static definition directories are specified as a parameter to launch a Discovery Service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
 
     - key: org.zowe.apiml.discovery.errorNotifyingGateway
       number: ZWEAD704
