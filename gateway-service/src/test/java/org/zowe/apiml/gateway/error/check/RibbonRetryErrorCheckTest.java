@@ -63,10 +63,22 @@ class RibbonRetryErrorCheckTest {
 
     private static Stream<Arguments> provideInvalidUsernamePassword() {
         return Stream.of(
-            Arguments.of("givenExceptionChain_whenIsAbortException_thenRequestAbortedGeneric", new RequestAbortException("test"), "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: null", "org.zowe.apiml.gateway.requestAborted"),
-            Arguments.of("givenExceptionChain_whenIsAbortExceptionWithCause_thenRequestAbortedGenericAndCause", new RequestAbortException(new AuthorizationServiceException("test")),"The request to the URL 'null' has been aborted without retrying on another instance. Caused by: org.springframework.security.access.AuthorizationServiceException: test", "org.zowe.apiml.gateway.requestAborted"),
-            Arguments.of("givenExceptionChain_whenIsContextNotPreparedExceptionWithCause_thenContextNotPreparedAndCause", new RequestContextNotPreparedException("RequestContext not prepared for load balancing."), "RequestContext not prepared for load balancing.", "org.zowe.apiml.gateway.contextNotPrepared"),
-            Arguments.of("givenExceptionChain_whenIsConnectionException_thenConnectionExceptionAndCause", new ConnectException("test"), "The request to the URL 'null' has failed after retrying on all known service instances. Caused by: null", "org.zowe.apiml.gateway.connectionRefused")
+            Arguments.of("givenExceptionChain_whenIsAbortException_thenRequestAbortedGeneric",
+                new RequestAbortException("test"),
+                "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: null",
+                "org.zowe.apiml.gateway.requestAborted"),
+            Arguments.of("givenExceptionChain_whenIsAbortExceptionWithCause_thenRequestAbortedGenericAndCause",
+                new RequestAbortException(new AuthorizationServiceException("test")),
+                "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: org.springframework.security.access.AuthorizationServiceException: test",
+                "org.zowe.apiml.gateway.requestAborted"),
+            Arguments.of("givenExceptionChain_whenIsContextNotPreparedExceptionWithCause_thenContextNotPreparedAndCause",
+                new RequestContextNotPreparedException("RequestContext not prepared for load balancing."),
+                "RequestContext not prepared for load balancing.",
+                "org.zowe.apiml.gateway.contextNotPrepared"),
+            Arguments.of("givenExceptionChain_whenIsConnectionException_thenConnectionExceptionAndCause",
+                new ConnectException("test"),
+                "The request to the URL 'null' has failed after retrying on all known service instances. Caused by: null",
+                "org.zowe.apiml.gateway.connectionRefused")
         );
     }
 
