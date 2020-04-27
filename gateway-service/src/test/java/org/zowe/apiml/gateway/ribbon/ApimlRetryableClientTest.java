@@ -59,6 +59,7 @@ class ApimlRetryableClientTest {
     ServerIntrospector introspector = mock(ServerIntrospector.class);
     LoadBalancedRetryFactory retryFactory = mock(LoadBalancedRetryFactory.class);
     ILoadBalancer lb = mock(ILoadBalancer.class);
+
     @Test
     void givenServiceId_whenChoose_thenProducesServiceInstance() {
         ApimlRetryableClient client = new ApimlRetryableClient(
