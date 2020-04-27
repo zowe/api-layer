@@ -110,9 +110,9 @@ public class VirtualService implements AutoCloseable {
     private String gatewayPath;
     private boolean isZombie = false;
 
-    public VirtualService(String serviceId) {
+    public VirtualService(String serviceId, int port) {
         this.serviceId = serviceId;
-        createTomcat();
+        createTomcat(port);
     }
 
     /**
@@ -143,9 +143,9 @@ public class VirtualService implements AutoCloseable {
         return registered;
     }
 
-    private void createTomcat() {
+    private void createTomcat(int port) {
         httpConnector = new Connector();
-        httpConnector.setPort(0);
+        httpConnector.setPort(port);
         httpConnector.setScheme("http");
 
         tomcat = new Tomcat();
