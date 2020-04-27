@@ -51,7 +51,9 @@ class ServiceAuthenticationDecoratorTest {
     @Test
     void givenContextWithoutCommand_whenProcess_thenNoAction() {
         HttpRequest request = new HttpGet("/");
+
         decorator.process(request);
+
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
     }
@@ -61,7 +63,9 @@ class ServiceAuthenticationDecoratorTest {
         HttpRequest request = new HttpGet("/");
         AuthenticationCommand cmd = mock(ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand.class);
         prepareContext(cmd);
+
         decorator.process(request);
+
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(Authentication.class), any());
         verify(serviceAuthenticationService, never()).getAuthenticationCommand(any(String.class), any());
     }
@@ -73,6 +77,7 @@ class ServiceAuthenticationDecoratorTest {
         doReturn(TokenAuthentication.createAuthenticated("user", "jwtToken")).when(authenticationService).validateJwtToken("jwtToken");
 
         decorator.process(request);
+
         verify(serviceAuthenticationService, atLeastOnce()).getAuthentication(info);
         verify(universalCmd, times(1)).applyToRequest(request);
     }
@@ -81,6 +86,7 @@ class ServiceAuthenticationDecoratorTest {
     void givenContextWithoutInstanceInfo_whenProcess_thenShouldThrowRequestStoppingException() {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, universalCmd);
+
         assertThrows(RequestContextNotPreparedException.class, () -> decorator.process(request),
             "Should fail on RequestContext without InstanceInfo set by LoadBalancer impl.");
     }
@@ -116,13 +122,14 @@ class ServiceAuthenticationDecoratorTest {
     void givenWrongContext_whenProcess_thenReturnWhenCmdIsNull() throws RequestAbortException {
         AuthenticationCommand universalCmd = mock(ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand.class);
         prepareWrongContextForCmdNull(universalCmd);
+
         decorator.process(request);
+
         verify(serviceAuthenticationService, atLeastOnce()).getAuthentication(info);
         verify(universalCmd, times(0)).applyToRequest(request);
     }
 
     private void prepareContext(AuthenticationCommand command) {
-
         RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, command);
         RequestContext.getCurrentContext().set(LOADBALANCED_INSTANCE_INFO_KEY, info);
         doReturn(Optional.of("jwtToken")).when(authenticationService).getJwtTokenFromRequest(any());
