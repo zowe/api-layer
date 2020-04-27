@@ -180,7 +180,7 @@ messages:
       number: ZWEAM701
       type: ERROR
       text: "The request to the URL '%s' has failed: %s caused by: %s"
-      reason: "Request failed because of internal error."
+      reason: "Request failed because of an internal error."
       action: "Refer to specific exception details for troubleshooting. Create an issue with this message."
 
     # Legacy messages
