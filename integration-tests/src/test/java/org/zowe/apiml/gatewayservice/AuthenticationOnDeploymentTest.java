@@ -56,8 +56,8 @@ public class AuthenticationOnDeploymentTest {
     public void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
-        int port1 = 5679;
-        int port2 = 5678;
+        int port1 = 5678;
+        int port2 = 5679;
         try (
             final VirtualService service1 = new VirtualService("testService1",port1);
             final VirtualService service2 = new VirtualService("testService1", port2)
@@ -96,7 +96,7 @@ public class AuthenticationOnDeploymentTest {
                 .when().get(x + "/test")
                 .then().statusCode(is(SC_OK)));
             service2.getGatewayVerifyUrls().forEach(x -> given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, gatewayToken())
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
                     .when().get(x + "/test")
                     .then().statusCode(is(SC_OK)));
 
