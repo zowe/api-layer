@@ -73,3 +73,14 @@ jar {
         }
     }
 }
+
+
+task printHello() {
+    doLast {
+        def libClassPathEntries = configurations.runtimeClasspath.files.collect {
+            "lib/" + it.getName()
+        }
+
+        println libClassPathEntries
+    }
+}
