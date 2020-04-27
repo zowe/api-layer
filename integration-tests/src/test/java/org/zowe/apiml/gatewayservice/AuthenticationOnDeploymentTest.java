@@ -30,18 +30,18 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
  * This test requires to allow endpoint routes on gateway (ie profile dev)
- *
+ * <p>
  * Instance settings
  * - gateway-service.yml
- *  - apiml.security.auth.provider = dummy
+ * - apiml.security.auth.provider = dummy
  * - environment-configuration.yml
- *  - credentials.user = user
- *  - credentials.password = user
+ * - credentials.user = user
+ * - credentials.password = user
  */
 
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 100;
+    private static final int TIMEOUT = 10;
 
     private RequestVerifier verifier;
 
@@ -54,12 +54,57 @@ public class AuthenticationOnDeploymentTest {
     }
 
     @Test
+    public void testPassTicket() throws Exception {
+        final String jwt = gatewayToken();
+
+        try (
+            final VirtualService service2 = new VirtualService("testService1", 5679)
+        ) {
+
+
+            // start second service (with passTicket authorization)
+            service2
+                .addVerifyServlet()
+                .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "TESTAPPL"))
+                .start()
+                .waitForGatewayRegistration(2, TIMEOUT);
+
+            // on each gateway make calls (count same as instances) to service
+
+            service2.getGatewayVerifyUrls().forEach(x -> {
+                given()
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                    .when().get(x + "/test")
+                    .then().statusCode(is(SC_OK));
+            });
+
+            // verify if each gateway sent request to service (one with and one without passTicket)
+            String auth = "Basic " + Base64.getEncoder().encodeToString(("user:" + PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX).getBytes(StandardCharsets.UTF_8));
+            service2.getGatewayVerifyUrls().forEach(gw -> {
+                    verifier.existAndClean(service2, x -> {
+                        assertEquals(auth, x.getHeader(HttpHeaders.AUTHORIZATION));
+                        assertEquals("/verify/test", x.getRequestURI());
+                        return true;
+                    });
+                }
+            );
+
+            // stop first service without authentication
+            service2
+                .unregister()
+                .waitForGatewayUnregistering(2, TIMEOUT)
+                .stop();
+
+
+        }
+    }
+
+    @Test
     public void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
         try (
-            final VirtualService service1 = new VirtualService("testService", 5678);
-            final VirtualService service2 = new VirtualService("testService", 5679)
+            final VirtualService service1 = new VirtualService("testService1", 5678)
         ) {
             // start first instance - without passTickets
             service1
@@ -82,11 +127,6 @@ public class AuthenticationOnDeploymentTest {
             );
 
             // start second service (with passTicket authorization)
-            service2
-                .addVerifyServlet()
-                .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "TESTAPPL"))
-                .start()
-                .waitForGatewayRegistration(2, TIMEOUT);
 
             // on each gateway make calls (count same as instances) to service
             service1.getGatewayVerifyUrls().forEach(x -> {
@@ -95,45 +135,21 @@ public class AuthenticationOnDeploymentTest {
                     .when().get(x + "/test")
                     .then().statusCode(is(SC_OK));
             });
-            service2.getGatewayVerifyUrls().forEach(x -> {
-                given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                    .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
+
 
             // verify if each gateway sent request to service (one with and one without passTicket)
-            String auth = "Basic " + Base64.getEncoder().encodeToString(("user:" + PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX).getBytes(StandardCharsets.UTF_8));
             service1.getGatewayVerifyUrls().forEach(gw -> {
                     verifier.existAndClean(service1, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"));
-                    verifier.existAndClean(service2, x -> {
-                        assertEquals(auth, x.getHeader(HttpHeaders.AUTHORIZATION));
-                        assertEquals("/verify/test", x.getRequestURI());
-                        return true;
-                    });
+
                 }
             );
 
-            // stop first service without authentication
             service1
                 .unregister()
                 .waitForGatewayUnregistering(2, TIMEOUT)
                 .stop();
 
-            // check second service, all called second one with passTicket, same url like service1 (removed)
-            service1.getGatewayVerifyUrls().forEach(x -> {
-                given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                    .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
-            service1.getGatewayVerifyUrls().forEach(gw -> {
-                verifier.existAndClean(service2, x -> {
-                    assertEquals(auth, x.getHeader(HttpHeaders.AUTHORIZATION));
-                    assertEquals("/verify/test", x.getRequestURI());
-                    return true;
-                });
-            });
+
         }
     }
 
