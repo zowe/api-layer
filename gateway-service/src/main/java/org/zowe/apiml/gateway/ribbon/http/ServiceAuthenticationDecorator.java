@@ -33,6 +33,17 @@ public class ServiceAuthenticationDecorator {
 
     private static final String INVALID_JWT_MESSAGE = "Invalid JWT token";
 
+    /**
+     * If a service requires authentication,
+     *   verify that the specific instance was selected upfront
+     *   decide whether it requires valid JWT token and if it does
+     *     verify that the request contains valid one
+     *
+     * Prevent ribbon from retrying if Authentication Exception was thrown or if valid JWT token is required and wasn't
+     * provided.
+     *
+     * @param request Current http request.
+     */
     public void process(HttpRequest request) {
         final RequestContext context = RequestContext.getCurrentContext();
 

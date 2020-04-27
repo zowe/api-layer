@@ -59,6 +59,7 @@ class ApimlRetryableClientTest {
     ServerIntrospector introspector = mock(ServerIntrospector.class);
     LoadBalancedRetryFactory retryFactory = mock(LoadBalancedRetryFactory.class);
     ILoadBalancer lb = mock(ILoadBalancer.class);
+
     @Test
     void givenServiceId_whenChoose_thenProducesServiceInstance() {
         ApimlRetryableClient client = new ApimlRetryableClient(
@@ -69,7 +70,9 @@ class ApimlRetryableClientTest {
             InstanceInfo.Builder.newBuilder().setAppName("Sonya").build()
         );
         client.setLoadBalancer(lb);
+
         ServiceInstance instance = client.choose("service1");
+
         assertThat(instance, instanceOf(EurekaDiscoveryClient.EurekaServiceInstance.class));
     }
 }

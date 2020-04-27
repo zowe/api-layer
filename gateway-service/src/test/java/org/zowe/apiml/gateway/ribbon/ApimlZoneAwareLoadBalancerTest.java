@@ -61,19 +61,19 @@ class ApimlZoneAwareLoadBalancerTest {
     ServerList<Server> serverList = mock(ServerList.class);
     ServerListFilter<Server> serverListFilter = mock(ServerListFilter.class);
     ServiceCacheEvictor serviceCacheEvictor = mock(ServiceCacheEvictor.class);
+    ApimlZoneAwareLoadBalancer underTest;
 
     @BeforeEach
     void setUp() {
         RequestContext.getCurrentContext().clear();
+        underTest = new ApimlZoneAwareLoadBalancer(config, rule, ping, serverList,
+            serverListFilter, serverListUpdater, serviceCacheEvictor);
     }
 
     @Test
     public void givenNoServerList_whenChooseServer_thenSetNothing() {
+        underTest.chooseServer("anotherInstance");
 
-        ApimlZoneAwareLoadBalancer balancer = new ApimlZoneAwareLoadBalancer(config, rule, ping, serverList,
-            serverListFilter, serverListUpdater, serviceCacheEvictor);
-
-        balancer.chooseServer("anotherInstance");
         RequestContext context = RequestContext.getCurrentContext();
         assertThat(context.get(ApimlZoneAwareLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY), is(nullValue()));
     }
@@ -84,23 +84,19 @@ class ApimlZoneAwareLoadBalancerTest {
             .setAppName("appname")
             .setInstanceId("instance")
             .build();
+        underTest.addServer(new DiscoveryEnabledServer(info, true));
 
-        ApimlZoneAwareLoadBalancer balancer = new ApimlZoneAwareLoadBalancer(config, rule, ping, serverList,
-            serverListFilter, serverListUpdater, serviceCacheEvictor);
-        balancer.addServer(new DiscoveryEnabledServer(info, true));
+        underTest.chooseServer("instance");
 
-        balancer.chooseServer("instance");
         RequestContext context = RequestContext.getCurrentContext();
         assertThat(context.get(ApimlZoneAwareLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY), is(info));
     }
 
     @Test
     public void givenUnexpectedServerImplementation_whenChooseServer_thenFailFast() {
-        ApimlZoneAwareLoadBalancer balancer = new ApimlZoneAwareLoadBalancer(config, rule, ping, serverList,
-            serverListFilter, serverListUpdater, serviceCacheEvictor);
-        balancer.addServer(new Server("localhost", 69));
+        underTest.addServer(new Server("localhost", 69));
 
-        assertThrows(IllegalStateException.class, () -> balancer.chooseServer("instance"));
+        assertThrows(IllegalStateException.class, () -> underTest.chooseServer("instance"));
     }
 
 
