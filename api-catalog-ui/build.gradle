@@ -61,7 +61,7 @@ task bundle(type: NpmTask) {
 }
 
 clean.dependsOn cleanBundle
-build.dependsOn bundle
+//build.dependsOn bundle
 javaScriptCoverage.dependsOn bundle
 runTests.dependsOn bundle
 

@@ -73,9 +73,9 @@ bootJar.archiveName = "${bootJar.baseName}.jar"
 
 def uiModule = "${project(':api-catalog-ui').projectDir}"
 
-processResources {
-    dependsOn "copyUi"
-}
+//processResources {
+//    dependsOn "copyUi"
+//}
 
 task copyUi(type: Copy) {
     group = "ui"

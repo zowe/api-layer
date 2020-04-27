@@ -85,12 +85,14 @@ pipeline {
     }
 
     stages {
-        stage('Build and unit test with coverage') {
-            steps {
-                timeout(time: 20, unit: 'MINUTES') {
-                   sh './gradlew clean build'
-                }
-            }
+        steps {
+           timeout(time: 20, unit: 'MINUTES') {
+               withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
+                  withSonarQubeEnv('sonarcloud-server') {
+                      sh './gradlew --info --scan clean build coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD}'
+                  }
+               }
+           }
         }
 
          stage('Build and unit test with coverage 2') {
