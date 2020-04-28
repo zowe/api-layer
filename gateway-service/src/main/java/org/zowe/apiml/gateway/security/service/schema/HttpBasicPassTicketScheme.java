@@ -15,6 +15,8 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpRequest;
+import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
@@ -85,6 +87,13 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
             context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+        }
+
+        @Override
+        public void applyToRequest(HttpRequest request) {
+            request.setHeader(
+                new BasicHeader(HttpHeaders.AUTHORIZATION, authorizationValue)
+            );
         }
 
         @Override

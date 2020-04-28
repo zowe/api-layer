@@ -11,8 +11,10 @@ package org.zowe.apiml.gateway.filters.post;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.Debug;
+import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +50,11 @@ public class DebugHeaderFilter extends ZuulFilter {
     public Object run() {
         String debug = convertToPrettyPrintString(Debug.getRoutingDebug());
         log.debug("Filter Debug Info = \n{}", debug);
+        log.debug("RibbonRetryDebug: " + RequestContextUtils.getDebugInfo());
+        RequestContext.getCurrentContext().addZuulResponseHeader(
+            "ZuulFilterDebug", Debug.getRoutingDebug().stream().collect(Collectors.joining("|")));
+        RequestContext.getCurrentContext().addZuulResponseHeader(
+            "RibbonRetryDebug", RequestContextUtils.getDebugInfo());
         return null;
     }
 

@@ -9,10 +9,12 @@ package org.zowe.apiml.gateway.security.service.schema;/*
  */
 
 import com.netflix.zuul.context.RequestContext;
+import org.apache.http.HttpRequest;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 
 public class ByPassSchemeTest {
@@ -29,6 +31,15 @@ public class ByPassSchemeTest {
         assertEquals(Boolean.TRUE, RequestContext.getCurrentContext().get("AuthenticationSchemeByPass"));
         assertFalse(cmd.isExpired());
         assertFalse(cmd.isRequiredValidJwt());
+    }
+
+    @Test
+    public void testApplyToRequest() {
+        HttpRequest request = mock(HttpRequest.class);
+        ByPassScheme scheme = new ByPassScheme();
+        AuthenticationCommand cmd = scheme.createCommand(null, null);
+        cmd.applyToRequest(request);
+        verify(request,never()).setHeaders(any());
     }
 
 }

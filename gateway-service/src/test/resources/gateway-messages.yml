@@ -28,8 +28,8 @@ messages:
       number: ZWEAG702
       type: ERROR
       text: "Gateway does not to allow encoded slashes in request: '%s'."
-      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in URL."
-      action: "Contact the system administrator and ask to enable encoded slashes in the gateway"
+      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
+      action: "Contact the system administrator and ask to enable encoded slashes in the Gateway."
 
     - key: org.zowe.apiml.gateway.jwtInitConfigError
       number: ZWEAG704
@@ -65,14 +65,14 @@ messages:
       number: ZWEAG102
       type: ERROR
       text: "Token is not valid"
-      reason: "The JWT token is not valid"
+      reason: "The JWT token is not valid."
       action: "Provide a valid token."
 
     - key: org.zowe.apiml.gateway.security.expiredToken
       number: ZWEAG103
       type: ERROR
       text: "Token is expired"
-      reason: "The JWT token has expired"
+      reason: "The JWT token has expired."
       action: "Obtain new token by performing an authentication request."
 
     - key: org.zowe.apiml.security.serviceUnavailable

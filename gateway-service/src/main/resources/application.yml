@@ -15,7 +15,7 @@ logging:
         org.eclipse.jetty: WARN
         org.springframework.web.servlet.PageNotFound: ERROR
         net.sf.ehcache: WARN
-
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
 
@@ -54,7 +54,7 @@ spring:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
     mvc:
-        throw-exception-if-no-handler-found: true
+        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
         favicon:
             enabled: false
     output:
@@ -91,12 +91,16 @@ zuul:
         connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
         socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
     forceOriginalQueryStringEncoding: true
+    retryable: true
 
 ribbon:
-    IsSecure: false
     ConnectTimeout: ${apiml.gateway.timeoutMillis}
     ReadTimeout: ${apiml.gateway.timeoutMillis}
     ConnectionManagerTimeout: ${apiml.gateway.timeoutMillis}
+    MaxAutoRetries: 0
+    MaxAutoRetriesNextServer: 5
+    OkToRetryOnAllOperations: true
+    GZipPayload: false # this stops Gateway from deflating gzip responses from services
 
 http:
     connection:
@@ -179,6 +183,8 @@ eureka:
 ---
 spring:
     profiles: debug
+    mvc:
+        throw-exception-if-no-handler-found: true
 
 management:
     endpoints:
@@ -198,6 +204,7 @@ logging:
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         net.sf.ehcache: INFO
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
 spring:
@@ -209,7 +216,7 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-
+zuul.debug.request: true
 ---
 spring:
     profiles: dev

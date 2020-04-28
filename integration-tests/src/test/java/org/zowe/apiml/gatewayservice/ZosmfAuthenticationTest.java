@@ -87,7 +87,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testNoContent() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     null, null, "LtpaToken2=ltpaToken", HttpStatus.OK
@@ -107,7 +107,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testOldAuthenticationEndpoint() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"25\",\"zosmf_full_version\": \"25.2\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
@@ -128,7 +128,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testOldAuthenticationEndpointInvalid() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"25\",\"zosmf_full_version\": \"25.2\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
@@ -149,7 +149,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testNewAuthenticationEndpointLtpa() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"27\",\"zosmf_full_version\": \"27.0\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
@@ -174,7 +174,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testNewAuthenticationEndpointJwt() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"27\",\"zosmf_full_version\": \"27.0\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
@@ -199,7 +199,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testNewAuthenticationEndpointInvalid() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"27\",\"zosmf_full_version\": \"27.0\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
