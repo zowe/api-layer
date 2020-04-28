@@ -65,7 +65,7 @@ public class AuthenticationOnDeploymentTest {
             // start second service (with passTicket authorization)
             service2
                 .addVerifyServlet()
-                .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "TESTAPPL"))
+                .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "ZOWEAPPL"))
                 .start()
                 .waitForGatewayRegistration(2, TIMEOUT);
 
