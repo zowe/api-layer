@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.access.AuthorizationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.gateway.config.MessageServiceConfiguration;
@@ -64,11 +65,15 @@ class RibbonRetryErrorCheckTest {
         return Stream.of(
             Arguments.of("givenExceptionChain_whenIsAbortException_thenRequestAbortedGeneric",
                 new RequestAbortException("test"),
-                "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: null",
+                "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: org.zowe.apiml.gateway.ribbon.http.RequestAbortException: test",
                 "org.zowe.apiml.gateway.requestAborted"),
             Arguments.of("givenExceptionChain_whenIsAbortExceptionWithCause_thenRequestAbortedGenericAndCause",
                 new RequestAbortException(new AuthorizationServiceException("test")),
-                "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: org.springframework.security.access.AuthorizationServiceException: test",
+                "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: org.zowe.apiml.gateway.ribbon.http.RequestAbortException: org.springframework.security.access.AuthorizationServiceException: test, Caused by: org.springframework.security.access.AuthorizationServiceException: test",
+                "org.zowe.apiml.gateway.requestAborted"),
+            Arguments.of("givenExceptionChainWithTwoNestedExceptions_whenIsAbortExceptionWithCause_thenRequestAbortedGenericAndCause",
+                new RequestAbortException(new AuthorizationServiceException("msg", new BadCredentialsException("test"))),
+                "The request to the URL 'null' has been aborted without retrying on another instance. Caused by: org.zowe.apiml.gateway.ribbon.http.RequestAbortException: org.springframework.security.access.AuthorizationServiceException: msg, Caused by: org.springframework.security.access.AuthorizationServiceException: msg, Caused by: org.springframework.security.authentication.BadCredentialsException: test",
                 "org.zowe.apiml.gateway.requestAborted"),
             Arguments.of("givenExceptionChain_whenIsContextNotPreparedExceptionWithCause_thenContextNotPreparedAndCause",
                 new RequestContextNotPreparedException("RequestContext not prepared for load balancing."),

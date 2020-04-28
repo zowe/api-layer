@@ -52,8 +52,7 @@ public class ServiceAuthenticationDecorator {
                 () -> new RequestContextNotPreparedException("InstanceInfo of loadbalanced instance is not present in RequestContext")
             );
             final Authentication authentication = serviceAuthenticationService.getAuthentication(info);
-            boolean rejected = false;
-            AuthenticationCommand cmd = null;
+            AuthenticationCommand cmd;
 
             try {
                 final String jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest()).orElse(null);
@@ -65,14 +64,13 @@ public class ServiceAuthenticationDecorator {
                 }
 
                 if (cmd.isRequiredValidJwt()) {
-                    rejected = (jwtToken == null) || !authenticationService.validateJwtToken(jwtToken).isAuthenticated();
+                    if (jwtToken == null || !authenticationService.validateJwtToken(jwtToken).isAuthenticated()) {
+                        throw new RequestAbortException(new BadCredentialsException("JWT Token is not authenticated"));
+                    }
                 }
             }
             catch (AuthenticationException ae) {
-                rejected = true;
-            }
-            if (rejected) {
-                throw new RequestAbortException(new BadCredentialsException(INVALID_JWT_MESSAGE));
+                throw new RequestAbortException(ae);
             }
 
             cmd.applyToRequest(request);

@@ -23,6 +23,7 @@ import org.zowe.apiml.message.core.MessageService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.ConnectException;
+import java.util.stream.Collectors;
 
 /**
  * Handler for exceptions that arise during the Ribbon retries
@@ -45,7 +46,9 @@ public class RibbonRetryErrorCheck implements ErrorCheck {
             if (t instanceof RequestAbortException) {
                 ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.gateway.requestAborted",
                     ErrorUtils.getGatewayUri(request),
-                    t.getCause()).mapToView();
+                    ExceptionUtils.getThrowableList(t).stream().map(Throwable::toString).collect(Collectors.joining(", Caused by: "))
+                    ).mapToView();
+
                 return getApiMessageViewResponseEntity(messageView);
             }
 
