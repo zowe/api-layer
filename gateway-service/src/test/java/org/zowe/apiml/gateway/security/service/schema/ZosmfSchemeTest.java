@@ -255,7 +255,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
         zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
 
-        assertEquals(null, httpRequest.getFirstHeader(HttpHeaders.AUTHORIZATION).getValue());
+        assertEquals(null, httpRequest.getFirstHeader(HttpHeaders.AUTHORIZATION));
     }
 
     @Test
