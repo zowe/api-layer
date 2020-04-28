@@ -35,8 +35,8 @@ messages:
       number: ZWEAG702
       type: ERROR
       text: "Gateway does not to allow encoded slashes in request: '%s'."
-      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in URL."
-      action: "Contact the system administrator and ask to enable encoded slashes in the gateway"
+      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
+      action: "Contact the system administrator and ask to enable encoded slashes in the Gateway."
 
     - key: org.zowe.apiml.gateway.jwtInitConfigError
       number: ZWEAG704
@@ -51,6 +51,27 @@ messages:
       text: "Failed to load public or private key from key with alias '%s' in the keystore '%s'."
       reason: "Failed to load a public or private key from the keystore during JWT Token initialization."
       action: "Check that the key alias is specified and correct. Verify that the keys are present in the keystore."
+
+    - key: org.zowe.apiml.gateway.contextNotPrepared
+      number: ZWEAG706
+      type: ERROR
+      text: "RequestContext not prepared for load balancing."
+      reason: "Custom Ribbon load balancing is not in place before calling Ribbon."
+      action: "Contact Broadcom support."
+
+    - key: org.zowe.apiml.gateway.requestAborted
+      number: ZWEAG707
+      type: ERROR
+      text: "The request to the URL '%s' has been aborted without retrying on another instance. Caused by: %s"
+      reason: "Request to server instance has failed and will not be retried on another instance."
+      action: "Refer to Caused by details for troubleshooting."
+
+    - key: org.zowe.apiml.gateway.connectionRefused
+      number: ZWEAG708
+      type: ERROR
+      text: "The request to the URL '%s' has failed after retrying on all known service instances. Caused by: %s"
+      reason: "Request to server instance could not be executed on any known service instance."
+      action: "Verify status of the requested instance."
 
     # Legacy messages
 
@@ -72,14 +93,14 @@ messages:
       number: ZWEAG102
       type: ERROR
       text: "Token is not valid"
-      reason: "The JWT token is not valid"
+      reason: "The JWT token is not valid."
       action: "Provide a valid token."
 
     - key: org.zowe.apiml.gateway.security.expiredToken
       number: ZWEAG103
       type: ERROR
       text: "Token is expired"
-      reason: "The JWT token has expired"
+      reason: "The JWT token has expired."
       action: "Obtain new token by performing an authentication request."
 
     - key: org.zowe.apiml.security.serviceUnavailable
