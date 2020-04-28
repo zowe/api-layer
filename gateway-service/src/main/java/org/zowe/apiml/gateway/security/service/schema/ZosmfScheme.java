@@ -15,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
-import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ZosmfService;
@@ -24,7 +23,7 @@ import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.util.CookieUtil;
-import org.zowe.apiml.util.RequestUtils;
+import org.zowe.apiml.util.Cookies;
 
 import java.net.HttpCookie;
 import java.util.Date;
@@ -114,7 +113,7 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
         @Override
         public void applyToRequest(HttpRequest request) {
-            RequestUtils wrapper = RequestUtils.of(request);
+            Cookies cookies = Cookies.of(request);
             final RequestContext context = RequestContext.getCurrentContext();
 
             Optional<String> jwtToken = authenticationService.getJwtTokenFromRequest(context.getRequest());
@@ -123,18 +122,18 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
                 QueryResponse queryResponse = authenticationService.parseJwtToken(token);
                 switch (queryResponse.getSource()) {
                     case ZOSMF:
-                        wrapper.removeCookie(authConfigurationProperties.getCookieProperties().getCookieName());
-                        createCookie(wrapper, ZosmfService.TokenType.JWT.getCookieName(), token);
+                        cookies.remove(authConfigurationProperties.getCookieProperties().getCookieName());
+                        createCookie(cookies, ZosmfService.TokenType.JWT.getCookieName(), token);
                         break;
                     case ZOWE:
                         final String ltpaToken = authenticationService.getLtpaTokenWithValidation(token);
-                        createCookie(wrapper, ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
+                        createCookie(cookies, ZosmfService.TokenType.LTPA.getCookieName(), ltpaToken);
                         break;
                     default:
                         return;
                 }
                 // remove authentication part
-                wrapper.setHeader(new BasicHeader(HttpHeaders.AUTHORIZATION, null));
+                request.removeHeaders(HttpHeaders.AUTHORIZATION);
             });
         }
 
@@ -152,12 +151,12 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
 
     }
 
-    private void createCookie(RequestUtils wrapper, String name, String token) {
+    private void createCookie(Cookies cookies, String name, String token) {
         HttpCookie jwtCookie = new HttpCookie(name, token);
         jwtCookie.setSecure(true);
         jwtCookie.setHttpOnly(true);
         jwtCookie.setVersion(0);
-        wrapper.setCookie(jwtCookie);
+        cookies.set(jwtCookie);
     }
 
 }

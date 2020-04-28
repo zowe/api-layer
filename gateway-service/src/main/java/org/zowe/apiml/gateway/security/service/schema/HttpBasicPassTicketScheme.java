@@ -25,7 +25,6 @@ import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.util.RequestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -92,8 +91,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
 
         @Override
         public void applyToRequest(HttpRequest request) {
-            RequestUtils wrapper = RequestUtils.of(request);
-            wrapper.setHeader(
+            request.setHeader(
                 new BasicHeader(HttpHeaders.AUTHORIZATION, authorizationValue)
             );
         }
