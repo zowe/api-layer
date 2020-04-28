@@ -1,4 +1,4 @@
-# Change Log
+# API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
