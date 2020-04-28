@@ -249,13 +249,13 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenRequest_whenApplyToRequest_thenRemoveAuthHeader() {
+    public void givenRequest_whenApplyToRequest_thenSetAuthHeaderToNull() {
         HttpRequest httpRequest = new HttpGet("/test/request");
         prepareAuthenticationService("ltpa1");
 
         zosmfScheme.createCommand(authentication, () -> queryResponse).applyToRequest(httpRequest);
 
-        assertEquals(null, httpRequest.getFirstHeader(HttpHeaders.AUTHORIZATION));
+        assertEquals(null, httpRequest.getFirstHeader(HttpHeaders.AUTHORIZATION).getValue());
     }
 
     @Test
