@@ -26,7 +26,6 @@ import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.util.Cookies;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Calendar;
@@ -107,8 +106,8 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
 
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse);
         ac.applyToRequest(httpRequest);
-        assertThat(Cookies.of(httpRequest).getHeader(HttpHeaders.AUTHORIZATION), is(not(empty())));
-        assertThat(Cookies.of(httpRequest).getHeader(HttpHeaders.AUTHORIZATION), hasItem(hasToString(
+        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION).length, is(not(0)));
+        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION), hasItemInArray(hasToString(
             "Authorization: Basic VVNFUk5BTUU6SEk=" // USERNAME:HI
         )));
     }
