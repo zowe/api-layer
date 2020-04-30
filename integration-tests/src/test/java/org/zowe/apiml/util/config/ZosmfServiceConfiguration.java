@@ -19,6 +19,8 @@ import lombok.NoArgsConstructor;
 public class ZosmfServiceConfiguration {
     private String scheme;
     private String host;
+    private String basePath;
+    private String restFileEndpointBasePath;
     private int port;
     private String serviceId;
 }

@@ -51,7 +51,7 @@ public class ConfigReader {
                             .trustStorePassword("password")
                             .build();
 
-                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
+                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", "/api/", "/zosmf", 1443, "zosmf");
                         configuration = new EnvironmentConfiguration(
                             credentials,
                             gatewayServiceConfiguration,
@@ -90,6 +90,8 @@ public class ConfigReader {
     private static void setZosmfConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
         ZosmfServiceConfiguration zosmfConfiguration = configuration.getZosmfServiceConfiguration();
         zosmfConfiguration.setHost(System.getProperty("zosmf.host", zosmfConfiguration.getHost()));
+        zosmfConfiguration.setBasePath(System.getProperty("zosmf.basePath", zosmfConfiguration.getBasePath()));
+        zosmfConfiguration.setRestFileEndpointBasePath(System.getProperty("zosmf.restFileEndpointBasePath", zosmfConfiguration.getRestFileEndpointBasePath()));
         String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
         zosmfConfiguration.setPort(Integer.parseInt(port));
         zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));

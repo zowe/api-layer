@@ -27,8 +27,10 @@ public class ZosmfSsoIntegrationTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
-    private final static String BASE_PATH = "/api/" + ZOSMF_SERVICE_ID;
-    private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
+    private final static String ZOSMF_BASE_PATH = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getBasePath();
+    private final static String ZOSMF_REST_FILE_BASE_PATH = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getRestFileEndpointBasePath();
+    private final static String BASE_PATH = ZOSMF_BASE_PATH + ZOSMF_SERVICE_ID;
+    private final static String ZOSMF_ENDPOINT = ZOSMF_REST_FILE_BASE_PATH + "/restfiles/ds?dslevel=sys1.p*";
 
     private String token;
     private String scheme;
