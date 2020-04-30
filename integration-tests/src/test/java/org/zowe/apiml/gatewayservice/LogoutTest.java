@@ -25,7 +25,6 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 @MainframeDependentTests
 public class LogoutTest {
 
-    private final static String BASE_PATH = "/api/v1/gateway";
     private final static String LOGOUT_ENDPOINT = "/auth/logout";
     private final static String QUERY_ENDPOINT = "/auth/query";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
@@ -39,14 +38,12 @@ public class LogoutTest {
     private void assertIfLogged(String jwt, boolean logged) {
         final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
 
-        DiscoveryUtils.getGatewayUrls().forEach(gw -> {
-            given()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-            .when()
-                .get(String.format("%s%s%s", gw, BASE_PATH, QUERY_ENDPOINT))
-            .then()
-                .statusCode(status.value());
-        });
+        given()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .when()
+            .get(SecurityUtils.getGateWayUrl(QUERY_ENDPOINT))
+        .then()
+            .statusCode(status.value());
     }
 
     @Test
