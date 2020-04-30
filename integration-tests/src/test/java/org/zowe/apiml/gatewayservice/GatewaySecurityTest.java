@@ -14,6 +14,7 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class GatewaySecurityTest {
     }
 
     @Test
+    @TestsNotMeantForZowe
     public void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
@@ -70,6 +72,7 @@ public class GatewaySecurityTest {
     }
 
     @Test
+    @TestsNotMeantForZowe
     public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
