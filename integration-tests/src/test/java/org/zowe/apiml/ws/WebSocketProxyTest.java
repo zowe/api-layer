@@ -140,7 +140,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @WebsocketTest
+    @WebsocketTest @TestsNotMeantForZowe
     public void shouldFailIfPathIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL + "bad"), response, 1);
@@ -154,7 +154,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @WebsocketTest
+    @WebsocketTest @TestsNotMeantForZowe
     public void shouldFailIfServiceIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(
@@ -169,7 +169,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @WebsocketTest
+    @WebsocketTest @TestsNotMeantForZowe
     public void shouldFailIfUrlFormatIsNotCorrent() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), response, 1);
