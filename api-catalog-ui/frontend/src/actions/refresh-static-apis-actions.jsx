@@ -27,7 +27,7 @@ export function refreshedStaticApi() {
     console.log("hi")
     const refreshEndpoint = '/discovery/api/v1/staticApi';
     const url =
-        'https://localhost:10011' + refreshEndpoint;
+        'https://localhost:10010/api/v1/apicatalog' + refreshEndpoint;
     return dispatch => {
         fetch(url, {
             method: 'POST',
