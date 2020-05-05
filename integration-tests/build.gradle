@@ -172,3 +172,34 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     }
     outputs.upToDateWhen { false }
 }
+
+task runCITests(type: Test) {
+    group "Integration tests"
+    description "Run only tests without long tests"
+
+    dependsOn startUpCheck
+    systemProperties System.properties
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'Flaky',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests'
+        )
+    }
+}
+
+task runMainFrameTests(type: Test) {
+    group "integration test"
+    description "Run tests that verify integration with MainFrame"
+
+    dependsOn startUpCheck
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'MainframeDependentTests'
+        )
+    }
+    outputs.upToDateWhen { false }
+}
