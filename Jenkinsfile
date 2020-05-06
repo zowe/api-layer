@@ -97,6 +97,14 @@ pipeline {
             }
         }
 
+        stage ('Run Integration Tests') {
+            steps {
+                sh 'npm install'
+                sh 'npm run api-layer &'
+                sh './gradlew runCITests'
+            }
+        }
+
         stage('Publish coverage reports') {
             steps {
                    publishHTML(target: [
