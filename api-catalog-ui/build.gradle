@@ -30,7 +30,7 @@ task cleanBundle(type: Delete) {
 task startMockedBackend(type: NpmTask) {
     group = 'testing'
     description = "UI Mocked Backend"
-    args = ['run', 'start:mocked-backend']
+    args = ['run', 'start:mock']
 }
 
 task javaScriptCoverage(type: NpmTask) {

@@ -11,12 +11,9 @@ package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
 import lombok.AllArgsConstructor;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,9 +38,17 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  * For right execution is required:
  *  - set provider in gateway to zosmf with using serviceId of z/OSMF
  *  - start discovery service and gateway locally
+ *
+ *  Instance settings
+ *  - gateway-service.yml
+ *   - apiml.security.auth.provider = zosmf
+ *   - apiml.security.auth.zosmfServiceId = <setting for integration tests, see environment-configuration.yml:zosmfServiceConfiguration.serviceId>
+ *  - environment-configuration.yml
+ *   - credentials.user = user
+ *   - credentials.password = user
+ *  - static definition of zosmf could be supported, but it is suggested to haven't any one
  */
-@RunWith(JUnit4.class)
-@Category(AdditionalLocalTest.class)
+@AdditionalLocalTest
 public class ZosmfAuthenticationTest {
 
     private static final String ZOSMF_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
@@ -55,7 +60,7 @@ public class ZosmfAuthenticationTest {
 
     private static final int TIMEOUT_REGISTRATION = 10;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -70,7 +75,7 @@ public class ZosmfAuthenticationTest {
         );
     }
 
-    @After
+    @AfterEach
     public void after() {
         // reload static clients to use default one again
         DiscoveryUtils.getDiscoveryUrls().forEach(ds -> {
@@ -82,7 +87,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testNoContent() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     null, null, "LtpaToken2=ltpaToken", HttpStatus.OK
@@ -102,7 +107,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testOldAuthenticationEndpoint() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"25\",\"zosmf_full_version\": \"25.2\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
@@ -123,7 +128,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testOldAuthenticationEndpointInvalid() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"25\",\"zosmf_full_version\": \"25.2\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
@@ -144,7 +149,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testNewAuthenticationEndpointLtpa() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"27\",\"zosmf_full_version\": \"27.0\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
@@ -169,7 +174,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testNewAuthenticationEndpointJwt() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"27\",\"zosmf_full_version\": \"27.0\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",
@@ -194,7 +199,7 @@ public class ZosmfAuthenticationTest {
 
     @Test
     public void testNewAuthenticationEndpointInvalid() throws Exception {
-        try (VirtualService zosmf = new VirtualService(ZOSMF_ID)) {
+        try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
                     "{\"zosmf_version\":\"27\",\"zosmf_full_version\": \"27.0\",\"zosmf_saf_realm\": \"SAFRealm\",\"otherAttribute\":\"someValue\"}",

@@ -52,6 +52,9 @@ public class GatewayNotifier implements Runnable {
 
     public static final String GATEWAY_SERVICE_ID = CoreService.GATEWAY.getServiceId().toUpperCase();
 
+    private static final String DISTRIBUTE_PATH = "/gateway/auth/distribute/";  // NOSONAR: URL is always using / to separate path segments
+    private static final String CACHE_PATH = "/gateway/cache/services";  // NOSONAR: URL is always using / to separate path segments
+
     private final ApimlLogger logger;
 
     private final RestTemplate restTemplate;
@@ -147,7 +150,9 @@ public class GatewayNotifier implements Runnable {
     protected void serviceUpdatedProcess(String serviceId, String instanceId) {
         notify(instanceId, instanceInfo -> {
             final StringBuilder url = new StringBuilder();
-            url.append(EurekaUtils.getUrl(instanceInfo)).append("/cache/services");
+            url
+                .append(EurekaUtils.getUrl(instanceInfo))
+                .append(CACHE_PATH);
             if (serviceId != null) url.append('/').append(serviceId);
 
             try {
@@ -162,7 +167,9 @@ public class GatewayNotifier implements Runnable {
     protected void distributeInvalidatedCredentialsProcess(String instanceId) {
         notify(instanceId, instanceInfo -> {
             final StringBuilder url = new StringBuilder();
-            url.append(EurekaUtils.getUrl(instanceInfo)).append("/auth/distribute/").append(instanceId);
+            url.append(EurekaUtils.getUrl(instanceInfo))
+               .append(DISTRIBUTE_PATH)
+               .append(instanceId);
 
             try {
                 restTemplate.getForEntity(url.toString(), Void.class);

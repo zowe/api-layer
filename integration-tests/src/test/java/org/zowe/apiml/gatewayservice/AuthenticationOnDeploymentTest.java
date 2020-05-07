@@ -11,39 +11,38 @@ package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.zowe.apiml.passticket.PassTicketService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.util.categories.AdditionalLocalTest;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
  * This test requires to allow endpoint routes on gateway (ie profile dev)
+ * <p>
+ * Instance settings
+ * - gateway-service.yml
+ * - apiml.security.auth.provider = dummy
+ * - environment-configuration.yml
+ * - credentials.user = user
+ * - credentials.password = user
  */
-@RunWith(JUnit4.class)
-@Category(AdditionalLocalTest.class)
+
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 100;
+    private static final int TIMEOUT = 10;
 
     private RequestVerifier verifier;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -56,8 +55,8 @@ public class AuthenticationOnDeploymentTest {
         final String jwt = gatewayToken();
 
         try (
-            final VirtualService service1 = new VirtualService("testService");
-            final VirtualService service2 = new VirtualService("testService")
+            final VirtualService service1 = new VirtualService("testService1", 5678);
+            final VirtualService service2 = new VirtualService("testService1", 5679)
         ) {
             // start first instance - without passTickets
             service1
@@ -82,7 +81,7 @@ public class AuthenticationOnDeploymentTest {
             // start second service (with passTicket authorization)
             service2
                 .addVerifyServlet()
-                .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "TESTAPPL"))
+                .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "ZOWEAPPL"))
                 .start()
                 .waitForGatewayRegistration(2, TIMEOUT);
 
@@ -101,11 +100,10 @@ public class AuthenticationOnDeploymentTest {
             });
 
             // verify if each gateway sent request to service (one with and one without passTicket)
-            String auth = "Basic " + Base64.getEncoder().encodeToString(("user:" + PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX).getBytes(StandardCharsets.UTF_8));
             service1.getGatewayVerifyUrls().forEach(gw -> {
                     verifier.existAndClean(service1, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"));
                     verifier.existAndClean(service2, x -> {
-                        assertEquals(auth, x.getHeader(HttpHeaders.AUTHORIZATION));
+                        assertNotNull( x.getHeader(HttpHeaders.AUTHORIZATION));
                         assertEquals("/verify/test", x.getRequestURI());
                         return true;
                     });
@@ -127,7 +125,7 @@ public class AuthenticationOnDeploymentTest {
             });
             service1.getGatewayVerifyUrls().forEach(gw -> {
                 verifier.existAndClean(service2, x -> {
-                    assertEquals(auth, x.getHeader(HttpHeaders.AUTHORIZATION));
+                    assertNotNull( x.getHeader(HttpHeaders.AUTHORIZATION));
                     assertEquals("/verify/test", x.getRequestURI());
                     return true;
                 });

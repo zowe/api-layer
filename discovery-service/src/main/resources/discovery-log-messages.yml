@@ -41,7 +41,7 @@ messages:
     - key: org.zowe.apiml.discovery.errorParsingStaticDefinitionData
       number: ZWEAD702
       type: WARNING
-      text: "Unable to process static API definition data: '%s'"
+      text: "Unable to process static API definition data: '%s' - '%s'"
       reason: "A problem occurred while parsing a static API definition file."
       action: "Review the mentioned static API definition file for errors.\n
       Refer to the specific log message to see what is the exact cause of the problem:\n\n
@@ -54,17 +54,18 @@ messages:
       - The specified URL is missing a port number. Make sure to specify a valid URL.\n
       - The URL %s is malformed. The instance of %s will not be created: The Specified URL is malformed. Make sure to specify a valid URL.\n
       - The hostname of URL %s is unknown. The instance of %s will not be created: The specified hostname of the URL is invalid. Make sure to specify valid hostname.\n
-      - Invalid protocol. The specified protocol of the URL is invalid. Make sure to specify valid protocol."
+      - Invalid protocol. The specified protocol of the URL is invalid. Make sure to specify valid protocol.\n
+      - Additional service metadata of %s in processing file %s could not be created: %s"
 
     - key: org.zowe.apiml.discovery.errorReadingStaticDefinitionFolder
       number: ZWEAD703
       type: ERROR
       text: "A problem occurred during reading the static API definition directory: '%s'"
       reason: "There are three possible causes of this error:\n
-      - The specified static API definition folder is empty\n
-      - The definition does not denote a directory\n
+      - The specified static API definition folder is empty.\n
+      - The definition does not denote a directory.\n
       - An I/O error occurred while attempting to read the static API definition directory."
-      action: "Review the static API definition directory definition and its contents on the storage. The static definition directories are specified as a parameter to launch a Discovery service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
+      action: "Review the static API definition directory definition and its contents on the storage. The static definition directories are specified as a parameter to launch a Discovery Service jar. The property key is: `apiml.discovery.staticApiDefinitionsDirectories`"
 
     - key: org.zowe.apiml.discovery.errorNotifyingGateway
       number: ZWEAD704

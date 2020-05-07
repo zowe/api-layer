@@ -190,6 +190,72 @@
                     }
                 }
             }
+        },
+        "/auth/keys/public/all" : {
+            "get" : {
+                "tags" : [
+                    "Security"
+                ],
+                "summary" : "Returns all public keys to verify JWT tokens validity",
+                "description" : "This endpoint return all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF.",
+                "operationId" : "GetAllPublicKeysUsingGET",
+                "security" : [
+                    {
+                        "CookieAuth" : []
+                    },
+                    {
+                        "Bearer" : []
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description": "OK",
+                        "content": {
+                            "application/json" : {
+                                "schema" : {
+                                    "$ref" : "#/components/schemas/JWKSet"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
+        "/auth/keys/public/current" : {
+            "get" : {
+                "tags" : [
+                    "Security"
+                ],
+                "summary" : "Returns public keys to verify JWT tokens, which can be generated now",
+                "description" : "This endpoint return all possible JWKs, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF.",
+                "operationId" : "GetCurrentPublicKeysUsingGET",
+                "security" : [
+                    {
+                        "CookieAuth" : []
+                    },
+                    {
+                        "Bearer" : []
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description": "OK",
+                        "content": {
+                            "application/json" : {
+                                "schema" : {
+                                    "$ref" : "#/components/schemas/JWKSet"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
         }
     },
     "servers": [
@@ -204,9 +270,9 @@
                 "scheme": "basic"
             },
             "Bearer": {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header"
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
             },
             "CookieAuth": {
                 "type": "apiKey",
@@ -335,6 +401,83 @@
                     "apiml": {
                         "$ref": "#/components/schemas/VersionInfoDetails"
                     }
+                }
+            },
+            "JWKSet" : {
+                "properties" : {
+                    "keys" : {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/JWK"
+                        }
+                    }
+                },
+                "example" : {
+                    "keys": [
+                        {
+                            "kty": "RSA",
+                            "e": "AQAB",
+                            "use": "sig",
+                            "kid": "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg",
+                            "alg": "RS256",
+                            "n": "wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q"
+                        },
+                        {
+                            "kty": "RSA",
+                            "e": "AQAB",
+                            "n": "jpEmp7mNnx8bi_nF2lqLEkN1cxUn1qLavU2EAy70XmX9rZSx1hlA1k8St1apD678oI-Ob38Mab-vTrnk9nvJgs6e67mtsm00OP1mpGHzQSY2WDwA5OGLv-9FeDI6HThAH1cEz148pRBtiN9VkVM-OzV2-vqH5hXO2vnSneUnnIlMVZ1-J7G5WIPJLDxodXWFqne8l56SYIRWz62rTK0Hwe0ghAMrsiTz0eVKgfVr76rP0hIYZMwC3b1bxfhjwUOuQxjEeYMh2jEL-5Nv2IcEfOzXYEOC_IrD_rLa4m4nfBs-JJiw4hOgHvjzdNz9EzV0D-HSWrInHXEd_gWjDn4sFw"
+                        }
+                    ]
+                }
+            },
+            "JWK" : {
+                "properties": {
+                    "n" : {
+                        "type": "string"
+                    },
+                    "e" : {
+                        "type": "string"
+                    },
+                    "d" : {
+                        "type": "string"
+                    },
+                    "p" : {
+                        "type": "string"
+                    },
+                    "q" : {
+                        "type": "string"
+                    },
+                    "dp" : {
+                        "type": "string"
+                    },
+                    "dq" : {
+                        "type": "string"
+                    },
+                    "qi" : {
+                        "type": "string"
+                    },
+                    "oth" : {
+                        "type": "object",
+                        "properties": {
+                            "r" : {
+                                "type": "string"
+                            },
+                            "d" : {
+                                "type": "string"
+                            },
+                            "t" : {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "example" : {
+                    "kty": "RSA",
+                    "e": "AQAB",
+                    "use": "sig",
+                    "kid": "ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg",
+                    "alg": "RS256",
+                    "n": "wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q"
                 }
             }
         }

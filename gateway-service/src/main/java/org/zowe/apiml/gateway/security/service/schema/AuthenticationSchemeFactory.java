@@ -9,14 +9,13 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import org.zowe.apiml.gateway.security.service.AuthenticationException;
-import org.zowe.apiml.security.common.auth.Authentication;
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import com.netflix.zuul.context.RequestContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.EnumMap;
@@ -79,7 +78,7 @@ public class AuthenticationSchemeFactory {
         return output;
     }
 
-    public AuthenticationCommand getAuthenticationCommand(Authentication authentication) throws AuthenticationException {
+    public AuthenticationCommand getAuthenticationCommand(Authentication authentication) {
         final AbstractAuthenticationScheme scheme;
         if ((authentication == null) || (authentication.getScheme() == null)) {
             scheme = defaultScheme;
@@ -92,7 +91,7 @@ public class AuthenticationSchemeFactory {
             .map(x -> authenticationService.parseJwtToken(x))
             .orElse(null);
 
-        return scheme.createCommand(authentication, jwtQr);
+        return scheme.createCommand(authentication, () -> jwtQr);
     }
 
 }

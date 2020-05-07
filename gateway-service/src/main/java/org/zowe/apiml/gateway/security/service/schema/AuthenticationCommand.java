@@ -9,9 +9,9 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import org.zowe.apiml.cache.EntryExpiration;
 import com.netflix.appinfo.InstanceInfo;
-import org.zowe.apiml.gateway.security.service.AuthenticationException;
+import org.apache.http.HttpRequest;
+import org.zowe.apiml.cache.EntryExpiration;
 
 import java.io.Serializable;
 
@@ -35,9 +35,20 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
         }
 
         @Override
+        public void applyToRequest(HttpRequest request) {
+            // do nothing
+        }
+
+        @Override
         public boolean isExpired() {
             return false;
         }
+
+        @Override
+        public boolean isRequiredValidJwt() {
+            return false;
+        }
+
     };
 
     /**
@@ -46,6 +57,25 @@ public abstract class AuthenticationCommand implements EntryExpiration, Serializ
      * In all other case call apply(null).
      * @param instanceInfo Specific instanceIf if it is needed
      */
-    public abstract void apply(InstanceInfo instanceInfo) throws AuthenticationException;
+    public abstract void apply(InstanceInfo instanceInfo);
 
+    /**
+     * This method identify if for this authentication command, schema is required to be logged. Main purpose is
+     * to make differences between bypass and other schema's type. Schema shouldn't change anything, but for some other
+     * it is required be logged and send valid JWT token.
+     * @return true is valid token is required, otherwise false
+     */
+
+    public abstract boolean isRequiredValidJwt();
+
+    /**
+     * Used for deferred processing of command during Ribbon Retry.
+     * There exists case when {@link org.zowe.apiml.gateway.filters.pre.ServiceAuthenticationFilter} cannot
+     * decide which command to apply, when there are service instances with multiple security schemas.
+     * In that case, the filter applies {@link org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand}
+     * and defers the processing to happen during Ribbon's Retry.
+     */
+    public void applyToRequest(HttpRequest request) {
+        throw new UnsupportedOperationException();
+    }
 }

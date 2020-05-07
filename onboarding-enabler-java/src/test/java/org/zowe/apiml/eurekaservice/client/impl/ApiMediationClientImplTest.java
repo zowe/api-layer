@@ -9,12 +9,15 @@
  */
 package org.zowe.apiml.eurekaservice.client.impl;
 
+import com.netflix.discovery.EurekaClientConfig;
 import org.mockito.Mockito;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.EurekaClientConfigProvider;
 import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.config.*;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import com.netflix.appinfo.InstanceInfo;
@@ -28,6 +31,7 @@ import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 public class ApiMediationClientImplTest {
@@ -99,11 +103,18 @@ public class ApiMediationClientImplTest {
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-service-configuration.yml");
 
-        EurekaClientProvider provider = Mockito.mock(EurekaClientProvider.class);
-        ApiMediationClient client = new ApiMediationClientImpl(provider);
+        EurekaClientProvider clientProvider = Mockito.mock(EurekaClientProvider.class);
+        EurekaInstanceConfigCreator instanceConfigCreator = new EurekaInstanceConfigCreator();
+
+        EurekaClientConfig clientConfig = new EurekaClientConfiguration(config);
+        EurekaClientConfigProvider eurekaClientConfigProvider = Mockito.mock(ApiMlEurekaClientConfigProvider.class);
+        when(eurekaClientConfigProvider.config(config)).thenReturn(clientConfig);
+
+        ApiMediationClient client = new ApiMediationClientImpl(clientProvider, eurekaClientConfigProvider, instanceConfigCreator);
+
         client.register(config);
 
-        verify(provider).client(any(), any(), any());
+        verify(clientProvider).client(any(), any(), any());
     }
 
     @Test

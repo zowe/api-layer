@@ -9,11 +9,23 @@
  */
 package org.zowe.apiml.util.categories;
 
+import org.junit.jupiter.api.Tag;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+
 /**
- * A category market for tests for additional local services and special cases
+ * A category marker for tests for additional local services and special cases
  * reproducible only in the local environment.
  *
  * These tests will not run by default with other integration tests.
  */
-public interface AdditionalLocalTest {
+@Tag("AdditionalLocalTest")
+@Target({ TYPE, METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AdditionalLocalTest {
 }

@@ -7,15 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.product.registry;
+package org.zowe.apiml.gateway.security.service;
 
-public class DiscoveryServiceNotAvailableException extends RuntimeException {
+import org.springframework.security.core.AuthenticationException;
 
-    public DiscoveryServiceNotAvailableException(String message) {
-        super(message);
-    }
+public class PassTicketException extends AuthenticationException {
 
-    public DiscoveryServiceNotAvailableException(String message, Throwable cause) {
+    private static final long serialVersionUID = -5152411541425940337L;
+
+    public PassTicketException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

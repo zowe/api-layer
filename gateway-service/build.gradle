@@ -66,7 +66,7 @@ dependencies {
     compile libraries.jjwt
     compile libraries.nimbusJoseJwt
     compile libraries.eh_cache
-
+    compile libraries.spring_retry
     compileOnly libraries.javax_inject
     compileOnly libraries.lombok
     annotationProcessor libraries.lombok
@@ -102,7 +102,7 @@ jar {
     enabled = true
     archiveName = "${jar.baseName}-thin.jar"
 
-    def libClassPathEntries = configurations.compile.files.collect {
+    def libClassPathEntries = configurations.runtime.files.collect {
         "lib/" + it.getName()
     }
     doFirst {

@@ -9,10 +9,11 @@
  */
 package org.zowe.apiml.gateway.security.service.schema;
 
-import org.zowe.apiml.gateway.security.service.AuthenticationException;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.token.QueryResponse;
+
+import java.util.function.Supplier;
 
 /**
  * This is abstract class for any processor which support service's authentication. They are called from ZUUL filters
@@ -31,9 +32,9 @@ public interface AbstractAuthenticationScheme {
      * This method decorate the request for target service
      *
      * @param authentication DTO describing details about authentication
-     * @param token User's parsed (Zowe's) JWT token
+     * @param token User's parsed (Zowe's) JWT token, evaluated only, if needed
      */
-    public AuthenticationCommand createCommand(Authentication authentication, QueryResponse token) throws AuthenticationException;
+    public AuthenticationCommand createCommand(Authentication authentication, Supplier<QueryResponse> token);
 
     /**
      * Define implementation, which will be use in case no scheme is defined.

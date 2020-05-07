@@ -7,12 +7,17 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gateway.security.service;
+package org.zowe.apiml.zaasclient.service;
 
-public class AuthenticationException extends Exception {
-    private static final long serialVersionUID = -5152411541425940337L;
+import lombok.Data;
 
-    public AuthenticationException(String message, Throwable cause) {
-        super(message, cause);
-    }
+import java.util.Date;
+
+@Data
+public class ZaasToken {
+    private String domain;
+    private String userId;
+    private Date creation;
+    private Date expiration;
+    private boolean expired;
 }

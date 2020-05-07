@@ -11,11 +11,11 @@ package org.zowe.apiml.gateway.security.config;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 
 import static org.mockito.Mockito.*;
 
@@ -24,19 +24,24 @@ public class AuthProviderInitializerTest {
     private DummyAuthenticationProvider dummyAuthenticationProvider;
     private TokenAuthenticationProvider tokenAuthenticationProvider;
     private ZosmfAuthenticationProvider zosmfAuthenticationProvider;
+    private CertificateAuthenticationProvider certificateAuthenticationProvider;
 
     @BeforeEach
     public void setup() {
         dummyAuthenticationProvider = mock(DummyAuthenticationProvider.class);
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);
         zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
+        certificateAuthenticationProvider = mock(CertificateAuthenticationProvider.class);
     }
 
     @Test
     public void testConfigure_whenProviderIsDummy() {
         String authProvider = LoginProvider.DUMMY.toString();
 
-        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider, authProvider);
+        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
+            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
+            certificateAuthenticationProvider, authProvider
+        );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
         authProviderInitializer.configure(authenticationManagerBuilder);
@@ -50,7 +55,10 @@ public class AuthProviderInitializerTest {
     public void testConfigure_whenProviderIsZOSMF() {
         String authProvider = LoginProvider.ZOSMF.toString();
 
-        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider, authProvider);
+        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
+            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
+            certificateAuthenticationProvider, authProvider
+        );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
         authProviderInitializer.configure(authenticationManagerBuilder);
@@ -64,7 +72,10 @@ public class AuthProviderInitializerTest {
     public void testConfigure_whenProviderIsUnexpectedString() {
         String authProvider = "unexpectedProvider";
 
-        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider, authProvider);
+        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
+            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
+            certificateAuthenticationProvider, authProvider
+        );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
         authProviderInitializer.configure(authenticationManagerBuilder);

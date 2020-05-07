@@ -31,6 +31,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -130,7 +131,7 @@ public class AuthenticationService {
             for (final InstanceInfo instanceInfo : application.getInstances()) {
                 if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
 
-                final String url = EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}";
+                final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
                 restTemplate.delete(url, jwtToken);
             }
         }
@@ -265,7 +266,7 @@ public class AuthenticationService {
         final InstanceInfo instanceInfo = application.getByInstanceId(toInstanceId);
         if (instanceInfo == null) return false;
 
-        final String url = EurekaUtils.getUrl(instanceInfo) + "/auth/invalidate/{}";
+        final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
 
         final Collection<String> invalidated = CacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {

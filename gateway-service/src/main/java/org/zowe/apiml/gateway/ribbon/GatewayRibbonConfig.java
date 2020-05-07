@@ -9,23 +9,18 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.loadbalancer.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.CacheManager;
-import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
-import org.springframework.cloud.netflix.ribbon.RibbonClientName;
-import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
+import org.springframework.cloud.netflix.ribbon.*;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 
 /**
  * Configuration of client side load balancing with Ribbon
@@ -39,17 +34,25 @@ public class GatewayRibbonConfig {
     private String ribbonClientName = "client";
 
     @Bean
+    public ApimlRibbonRetryFactory apimlRibbonRetryFactory(SpringClientFactory springClientFactory) {
+        AbortingRetryListener retryListener = new AbortingRetryListener();
+        return new ApimlRibbonRetryFactory(springClientFactory, retryListener);
+    }
+
+    @Bean
     @Primary
     @Autowired
     public RibbonLoadBalancingHttpClient ribbonLoadBalancingHttpClient(
-        @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore,
+        @Qualifier("httpClientProxy") CloseableHttpClient httpClientProxy,
         IClientConfig config,
         ServerIntrospector serverIntrospector,
-        EurekaClient discoveryClient,
-        CacheManager cacheManager,
-        ApplicationContext applicationContext
+        ApimlRibbonRetryFactory retryFactory,
+        RibbonLoadBalancerContext ribbonContext
     ) {
-        return new GatewayRibbonLoadBalancingHttpClientImpl(secureHttpClientWithoutKeystore, config, serverIntrospector, discoveryClient, cacheManager, applicationContext);
+        ApimlRetryableClient client = new ApimlRetryableClient(
+            httpClientProxy, config, serverIntrospector, retryFactory);
+        client.setRibbonLoadBalancerContext(ribbonContext);
+        return client;
     }
 
     @Bean

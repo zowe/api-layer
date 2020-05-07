@@ -59,9 +59,6 @@ apiml:
                 title: Sample API Mediation Layer Applications
                 description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
                 version: 1.0.1
-        authentication:
-            scheme: httpBasicPassTicket  # This service expects credentials in HTTP basic scheme with a PassTicket
-            applid: TSTAPPL  # APPLID to generate PassTickets for this service
         ssl:
             enabled: true
             verifySslCertificatesOfServices: true
@@ -88,6 +85,7 @@ server:
 
     ssl:
         enabled: true
+        clientAuth: want
         protocol: TLSv1.2
         enabled-protocols: TLSv1.2
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
