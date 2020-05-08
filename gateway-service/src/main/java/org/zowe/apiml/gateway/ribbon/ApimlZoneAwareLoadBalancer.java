@@ -9,9 +9,10 @@
  */
 package org.zowe.apiml.gateway.ribbon;
 
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
+import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 
 /**
  * Custom implementation of load balancer. This implementation register on creating into ServiceCacheEvictor. It allows
@@ -23,6 +24,8 @@ import com.netflix.loadbalancer.*;
  * @param <T> ussually Server class
  */
 public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T> {
+
+    public static final String LOADBALANCED_INSTANCE_INFO_KEY = "apimlLoadBalancedInstanceInfo";
 
     public ApimlZoneAwareLoadBalancer(
         IClientConfig clientConfig,
@@ -44,4 +47,25 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
         updateListOfServers();
     }
 
+    /**
+     * This method stores the instance info of chosen instance in the RequestContext for later usage, for
+     * example by authentication logic
+     */
+    @Override
+    public Server chooseServer(Object key) {
+        Server server = super.chooseServer(key);
+
+        if (server == null) {
+            return null;
+        }
+
+        if (server instanceof DiscoveryEnabledServer) {
+            RequestContextUtils.setInstanceInfo(((DiscoveryEnabledServer) server).getInstanceInfo());
+            RequestContextUtils.addDebugInfo("Load Balancer chooses: " + ((DiscoveryEnabledServer) server).getInstanceInfo());
+        } else {
+            throw new IllegalStateException("Unexpected error, please contact Broadcom support");
+        }
+
+        return server;
+    }
 }

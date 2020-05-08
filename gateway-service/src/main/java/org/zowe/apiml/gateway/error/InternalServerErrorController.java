@@ -9,11 +9,6 @@
  */
 package org.zowe.apiml.gateway.error;
 
-import org.zowe.apiml.gateway.error.check.*;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.log.ApimlLogger;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -24,6 +19,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.zowe.apiml.gateway.error.check.*;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -52,6 +52,7 @@ public class InternalServerErrorController implements ErrorController {
         errorChecks.add(new TimeoutErrorCheck(messageService));
         errorChecks.add(new SecurityTokenErrorCheck(messageService));
         errorChecks.add(new ServiceNotFoundCheck(messageService));
+        errorChecks.add(new RibbonRetryErrorCheck(messageService));
     }
 
     @Override

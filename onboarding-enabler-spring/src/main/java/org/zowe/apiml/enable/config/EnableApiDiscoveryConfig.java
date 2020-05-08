@@ -9,7 +9,8 @@
  */
 package org.zowe.apiml.enable.config;
 
-import org.springframework.lang.Nullable;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.eurekaservice.client.EurekaClientConfigProvider;
 import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
@@ -38,16 +39,24 @@ public class EnableApiDiscoveryConfig {
         return messageService;
     }
 
+    @ConditionalOnMissingBean(EurekaClientProvider.class)
     @Bean
-    public ApiMediationClient apiMediationClient(@Nullable EurekaClientProvider eurekaClientProvider) {
+    public ApiMediationClient defaultApiMediationClient() {
+        return new ApiMediationClientImpl();
+    }
+
+    @ConditionalOnBean(EurekaClientProvider.class)
+    @Bean
+    public ApiMediationClient apiMediationClient(EurekaClientProvider eurekaClientProvider) {
         if (eurekaClientProvider == null) {
             return new ApiMediationClientImpl();
         }
-       return new ApiMediationClientImpl(eurekaClientProvider);
+        return new ApiMediationClientImpl(eurekaClientProvider);
     }
 
+    @ConditionalOnBean(name = "EurekaClientProvider.class, EurekaClientConfigProvider.class")
     @Bean
-    public ApiMediationClient apiMediationClient(@Nullable EurekaClientProvider eurekaClientProvider, @Nullable EurekaClientConfigProvider eurekaClientConfigProvider) {
+    public ApiMediationClient apiMediationClient(EurekaClientProvider eurekaClientProvider, EurekaClientConfigProvider eurekaClientConfigProvider) {
         if (eurekaClientProvider != null) {
             if (eurekaClientConfigProvider != null) {
                 return new ApiMediationClientImpl(eurekaClientProvider, eurekaClientConfigProvider);

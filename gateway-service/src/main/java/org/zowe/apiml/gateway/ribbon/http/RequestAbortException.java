@@ -7,15 +7,16 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.product.registry;
 
-public class DiscoveryServiceNotAvailableException extends RuntimeException {
+package org.zowe.apiml.gateway.ribbon.http;
 
-    public DiscoveryServiceNotAvailableException(String message) {
-        super(message);
+public class RequestAbortException extends RuntimeException {
+
+    public RequestAbortException(String msg) {
+        super(msg);
     }
 
-    public DiscoveryServiceNotAvailableException(String message, Throwable cause) {
-        super(message, cause);
+    public RequestAbortException(Throwable t) {
+        super(t);
     }
 }
