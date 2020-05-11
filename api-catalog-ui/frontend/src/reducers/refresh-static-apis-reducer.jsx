@@ -15,7 +15,6 @@ const refreshStaticApisReducer = (state = staticApisDefaultState, action) => {
             };
         case REFRESH_STATIC_APIS_ERROR:
             return {
-                ...state,
                 error: action.error,
             };
         default:

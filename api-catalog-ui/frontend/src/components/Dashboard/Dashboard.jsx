@@ -1,4 +1,4 @@
-import { Text, Button } from 'mineral-ui';
+import { Text, Button, Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions } from 'mineral-ui';
 import React, { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -30,9 +30,12 @@ export default class Dashboard extends Component {
         refreshedStaticApi();
     }
 
+    handleClose = () => {
+        // TODO
+    }
+
     render() {
         const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError } = this.props;
-        console.log(refreshedStaticApisError)
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
@@ -51,6 +54,34 @@ export default class Dashboard extends Component {
                         {error}
                     </div>
                 )}
+                {refreshedStaticApisError !== null &&
+                refreshedStaticApisError !== undefined &&
+                refreshedStaticApisError.status &&
+                refreshedStaticApisError.status === 405
+                && (
+                        <Dialog
+                            variant="danger"
+                            appSelector="#App"
+                            closeOnClickOutside="true"
+                            hideOverlay="true"
+                            isOpen={refreshedStaticApisError}
+                        >
+                            <DialogHeader>
+                                <DialogTitle>Error</DialogTitle>
+                            </DialogHeader>
+                            <DialogBody>
+                                <Text>Error when trying to refresh the static APIs.</Text>
+                            </DialogBody>
+                            <DialogFooter>
+                                <DialogActions>
+                                    <Button size="medium" variant="danger" onClick={this.handleClose}>
+                                        Close
+                                    </Button>
+                                </DialogActions>
+                            </DialogFooter>
+                        </Dialog>
+                )
+                }
                 {!fetchTilesError && (
                     <div className="apis">
                         <div className="grid-container">
@@ -62,10 +93,6 @@ export default class Dashboard extends Component {
                                 <div>
                                     <Button size="medium" onClick={this.refreshStaticApis}>Refresh Static APIs</Button>
                                 </div>
-                                {refreshedStaticApisError  && (
-                                    <Text>erroooo</Text>
-                                )
-                                }
                             </div>
                             {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles &&
