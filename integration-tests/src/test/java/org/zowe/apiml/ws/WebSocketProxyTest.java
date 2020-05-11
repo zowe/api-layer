@@ -34,6 +34,7 @@ import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@TestsNotMeantForZowe
 public class WebSocketProxyTest {
     private GatewayServiceConfiguration serviceConfiguration;
 
@@ -93,7 +94,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @WebsocketTest @TestsNotMeantForZowe
+    @WebsocketTest
     public void shouldRouteWebSocketSession() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 1);
@@ -108,7 +109,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @WebsocketTest @TestsNotMeantForZowe
+    @WebsocketTest
     public void shouldRouteHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
@@ -126,7 +127,7 @@ public class WebSocketProxyTest {
     }
 
     @Test
-    @WebsocketTest @TestsNotMeantForZowe
+    @WebsocketTest
     public void shouldCloseSessionAfterClientServerCloses() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 2);

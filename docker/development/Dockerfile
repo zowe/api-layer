@@ -41,7 +41,7 @@ RUN cd /var/src \
     && ./gradlew clean build
 
 # Copy all the remaining scripts
-COPY ./_* /usr/local/bin/
+COPY ./_* /bin/
 
 # Other.
 RUN export TERM=xterm

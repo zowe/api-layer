@@ -161,7 +161,6 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     group "Integration tests"
     description "Run all integration tests for Zowe testing"
 
-    dependsOn startUpCheck
     systemProperties System.properties
     useJUnitPlatform {
         excludeTags(
