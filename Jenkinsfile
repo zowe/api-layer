@@ -100,7 +100,7 @@ pipeline {
         stage ('Run Integration Tests') {
             steps {
                 sh 'npm install'
-                sh 'npm run api-layer &'
+                sh 'npm run api-layer > integration-instances.log &'
                 sh './gradlew runCITests'
             }
         }
@@ -212,6 +212,8 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
+
+            archiveArtifacts artifacts: 'integration-instances.log'
         }
 
         success {
