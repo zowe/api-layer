@@ -34,9 +34,19 @@ export default class Dashboard extends Component {
         // TODO
     }
 
+    formatTimestamp = () => {
+        const { refreshTimestamp } = this.props;
+        let formattedTime;
+        if (refreshTimestamp !== undefined && refreshTimestamp !== null) {
+            formattedTime = new Date(refreshTimestamp).toString();
+        }
+        return formattedTime;
+    }
+
     render() {
         const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
+        let date = this.formatTimestamp();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
@@ -82,6 +92,9 @@ export default class Dashboard extends Component {
                         </Dialog>
                 )
                 }
+                {date !== undefined && date !== null && (
+                        <Text id="timestamp" element="h6">The last static APIs refresh was done on {date}</Text>
+                )}
                 {!fetchTilesError && (
                     <div className="apis">
                         <div className="grid-container">

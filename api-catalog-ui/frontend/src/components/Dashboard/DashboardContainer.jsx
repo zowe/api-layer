@@ -19,6 +19,7 @@ const mapStateToProps = state => ({
     fetchTilesError: state.tilesReducer.error,
     isLoading: loadingSelector(state),
     refreshedStaticApisError: state.refreshStaticApisReducer.error,
+    refreshTimestamp: state.refreshStaticApisReducer.refreshTimestamp,
 });
 
 const mapDispatchToProps = {

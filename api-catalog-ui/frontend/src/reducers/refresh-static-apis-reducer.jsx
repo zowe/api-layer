@@ -1,7 +1,7 @@
 import { REFRESH_STATIC_APIS_SUCCESS, REFRESH_STATIC_APIS_ERROR } from '../constants/refresh-static-apis-constants';
 
 const staticApisDefaultState = {
-    shouldRefresh: false,
+    refreshTimestamp: null,
     error: null,
 };
 
@@ -10,7 +10,7 @@ const refreshStaticApisReducer = (state = staticApisDefaultState, action) => {
         case REFRESH_STATIC_APIS_SUCCESS:
             return {
                 ...state,
-                shouldRefresh: action.shouldRefresh,
+                refreshTimestamp: action.refreshTimestamp,
                 error: null,
             };
         case REFRESH_STATIC_APIS_ERROR:

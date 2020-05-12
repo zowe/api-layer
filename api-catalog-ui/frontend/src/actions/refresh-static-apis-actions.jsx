@@ -1,4 +1,11 @@
-import { REFRESH_STATIC_APIS_ERROR } from '../constants/refresh-static-apis-constants';
+import { REFRESH_STATIC_APIS_SUCCESS, REFRESH_STATIC_APIS_ERROR } from '../constants/refresh-static-apis-constants';
+
+export function refreshStaticApisSuccess() {
+    return {
+        type: REFRESH_STATIC_APIS_SUCCESS,
+        refreshTimestamp: Date.now()
+    }
+}
 
 export function refreshStaticApisError(error) {
     return {
@@ -14,14 +21,15 @@ export function refreshedStaticApi() {
     return dispatch => {
         fetch(url, {
             method: 'POST'
-        }).then(error => {
-                dispatch(refreshStaticApisError(error));
-            }
-            )
+        }).then(
+            () => {
+                dispatch(refreshStaticApisSuccess());
+            })
             .catch(error => {
                 dispatch(refreshStaticApisError(error));
             });
     }
 
 }
+
 

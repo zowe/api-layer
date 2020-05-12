@@ -121,3 +121,7 @@ a {
         }
     }
 }
+
+#timestamp {
+    float: right;
+}
