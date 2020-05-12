@@ -73,7 +73,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'apiml-jenkins-agent'
+        label 'apiml-jenkins-agent-swarm'
     }
 
     options {
@@ -100,7 +100,7 @@ pipeline {
         stage ('Run Integration Tests') {
             steps {
                 sh 'npm install'
-                sh 'npm run api-layer &'
+                sh 'npm run api-layer & > integration-instances.log'
                 sh './gradlew runCITests'
             }
         }
@@ -221,6 +221,7 @@ pipeline {
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
+            archiveArtifacts artifacts: 'integration-instances.log'
 
             withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {
                 sh """
