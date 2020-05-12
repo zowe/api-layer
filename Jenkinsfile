@@ -100,7 +100,7 @@ pipeline {
         stage ('Run Integration Tests') {
             steps {
                 sh 'npm install'
-                sh 'npm run api-layer & > integration-instances.log'
+                sh 'npm run api-layer > integration-instances.log &'
                 sh './gradlew runCITests'
             }
         }
