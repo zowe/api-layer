@@ -87,7 +87,7 @@ pipeline {
     stages {
         stage ('Installation') {
             steps {
-                sh 'npm install -g pnpm'
+                sh 'npm install -g pnpm@4.0'
             }
         }
 
