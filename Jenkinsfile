@@ -99,6 +99,7 @@ pipeline {
 
         stage ('Run Integration Tests') {
             steps {
+                sh 'npm install -g pnpm'
                 sh 'npm install'
                 sh 'npm run api-layer > integration-instances.log &'
                 sh './gradlew runCITests'
