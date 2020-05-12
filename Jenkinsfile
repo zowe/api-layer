@@ -212,6 +212,8 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
+
+            archiveArtifacts artifacts: 'integration-instances.log'
         }
 
         success {
@@ -221,7 +223,6 @@ pipeline {
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
-            archiveArtifacts artifacts: 'integration-instances.log'
 
             withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {
                 sh """
