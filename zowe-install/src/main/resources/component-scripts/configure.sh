@@ -44,13 +44,8 @@ rm ${STATIC_DEF_CONFIG_DIR}/zosmf.ebcidic.yml
 chmod 770 $STATIC_DEF_CONFIG_DIR/zosmf.yml
 
 if [[ $LAUNCH_COMPONENT_GROUPS == *"DESKTOP"* ]]; then
-  if [[ $APIML_ENABLE_SSO == "true" ]]; then
-    # Access API Catalog with token injector
-    CATALOG_GATEWAY_URL=https://${ZOWE_EXPLORER_HOST}:${ZOWE_ZLUX_SERVER_HTTPS_PORT}/ZLUX/plugins/org.zowe.zlux.auth.apiml/services/tokenInjector/1.0.0/ui/v1/apicatalog/
-  else
-    # Access API Catalog directly
-    CATALOG_GATEWAY_URL=https://${ZOWE_EXPLORER_HOST}:${GATEWAY_PORT}/ui/v1/apicatalog
-  fi
+  # Access API Catalog directly
+  CATALOG_GATEWAY_URL=https://${ZOWE_EXPLORER_HOST}:${GATEWAY_PORT}/ui/v1/apicatalog
 
   # Create desktop app plugin
   ${ROOT_DIR}/bin/utils/zowe-install-iframe-plugin.sh \
