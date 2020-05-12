@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
-import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -39,14 +38,12 @@ public class LogoutTest {
     private void assertIfLogged(String jwt, boolean logged) {
         final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
 
-        DiscoveryUtils.getGatewayUrls().forEach(gw -> {
-            given()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-            .when()
-                .get(String.format("%s%s%s", gw, BASE_PATH, QUERY_ENDPOINT))
-            .then()
-                .statusCode(status.value());
-        });
+        given()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .when()
+            .get(SecurityUtils.getGateWayUrl(QUERY_ENDPOINT))
+        .then()
+            .statusCode(status.value());
     }
 
     @Test
