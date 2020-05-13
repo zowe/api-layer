@@ -43,16 +43,31 @@ export default class Dashboard extends Component {
         return formattedTime;
     }
 
+    getCorrectRefreshMessage = error => {
+        let refreshError = "OPS! Something went wrong! Unable to refresh the static APIs.";
+        if (error && error.status) {
+            if (error.status === 500) {
+                refreshError = "500 - Internal Server Error: Something went wrong and the static API refresh could not be performed";
+            }
+            else if (error.status === 503) {
+                refreshError = "503 - Service Unavailable: The service could not be found. Check if the service is up and registered";
+            }
+        }
+        return refreshError;
+    }
+
     render() {
         const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         let date = this.formatTimestamp();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
+        let refreshError = this.getCorrectRefreshMessage(refreshedStaticApisError);
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
         }
+
         return (
             <div>
                 <Spinner isLoading={isLoading} />
@@ -66,8 +81,7 @@ export default class Dashboard extends Component {
                 )}
                 {refreshedStaticApisError !== null &&
                 refreshedStaticApisError !== undefined &&
-                refreshedStaticApisError.status &&
-                refreshedStaticApisError.status === 405
+                refreshedStaticApisError.status
                 && (
                         <Dialog
                             variant="danger"
@@ -80,7 +94,7 @@ export default class Dashboard extends Component {
                                 <DialogTitle>Error</DialogTitle>
                             </DialogHeader>
                             <DialogBody>
-                                <Text>Error when trying to refresh the static APIs.</Text>
+                                <Text>{refreshError}</Text>
                             </DialogBody>
                             <DialogFooter>
                                 <DialogActions>
