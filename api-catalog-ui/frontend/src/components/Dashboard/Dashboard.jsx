@@ -114,7 +114,31 @@ export default class Dashboard extends Component {
                 )
                 }
                 {date !== undefined && date !== null && (
-                        <Text id="timestamp" element="h6">The last static APIs refresh was done on {date}</Text>
+                    <React.Fragment>
+                        <Dialog
+                            variant="success"
+                            appSelector="#App"
+                            closeOnClickOutside={isFalse}
+                            hideOverlay={isTrue}
+                            modeless={isFalse}
+                            isOpen={refreshedStaticApisError===null}
+                        >
+                            <DialogHeader>
+                                <DialogTitle>Success</DialogTitle>
+                            </DialogHeader>
+                            <DialogBody>
+                                <Text>The refresh of static APIs was successful!</Text>
+                            </DialogBody>
+                            <DialogFooter>
+                                <DialogActions>
+                                    <Button size="medium" variant="success" onClick={this.closeDialog}>
+                                        Close
+                                    </Button>
+                                </DialogActions>
+                            </DialogFooter>
+                        </Dialog>
+                        <Text id="timestamp" element="h5" color="#58606e">The last static APIs refresh was done on {date}</Text>
+                    </React.Fragment>
                 )}
                 {!fetchTilesError && (
                     <div className="apis">
