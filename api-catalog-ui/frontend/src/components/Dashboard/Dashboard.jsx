@@ -85,6 +85,9 @@ export default class Dashboard extends Component {
                         {error}
                     </div>
                 )}
+                <div>
+                    <Button id="refresh-api-button"size="medium" onClick={this.refreshStaticApis}>Refresh Static APIs</Button>
+                </div>
                 {refreshedStaticApisError !== null &&
                 refreshedStaticApisError !== undefined &&
                 refreshedStaticApisError.status
@@ -148,9 +151,6 @@ export default class Dashboard extends Component {
                                     <SearchCriteria placeholder="Search for APIs" doSearch={this.handleSearch} />
                                 </Shield>
                                 <h2 className="api-heading">Available API services</h2>
-                                <div>
-                                    <Button size="medium" onClick={this.refreshStaticApis}>Refresh Static APIs</Button>
-                                </div>
                             </div>
                             {hasTiles && tiles.map(tile => <Tile key={tile.id} tile={tile} history={history} />)}
                             {!hasTiles &&
