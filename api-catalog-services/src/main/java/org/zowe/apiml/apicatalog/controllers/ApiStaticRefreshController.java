@@ -25,6 +25,9 @@ import org.zowe.apiml.util.EurekaUtils;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Base64;
 
+/**
+ * Controller for static api refresh, acting as Discovery service proxy for UI
+ */
 @RestController
 public class ApiStaticRefreshController {
 
@@ -33,8 +36,7 @@ public class ApiStaticRefreshController {
 
     private static final String REFRESH_ENDPOINT = "/discovery/api/v1/staticApi";
 
-    //TODO when HTTP mode on Eureka is used, this has to be provided on commandline
-    //TODO documentation?
+    // integration-tests/README.md ## Manual testing of Discovery Service in HTTP mode
     @Value("${apiml.discovery.userid:eureka}")
     private String eurekaUserid;
 
@@ -79,7 +81,6 @@ public class ApiStaticRefreshController {
         byte[] encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes()).getBytes();
         String authHeader = "Basic " + new String(encodedAuth);
         headerMap.put("Authorization", authHeader);
-
         return headerMap;
     }
 
