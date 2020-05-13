@@ -28,11 +28,11 @@ export default class Dashboard extends Component {
     refreshStaticApis = () => {
         const { refreshedStaticApi } = this.props;
         refreshedStaticApi();
-    }
+    };
 
     handleClose = () => {
         // TODO
-    }
+    };
 
     formatTimestamp = () => {
         const { refreshTimestamp } = this.props;
@@ -41,20 +41,22 @@ export default class Dashboard extends Component {
             formattedTime = new Date(refreshTimestamp).toString();
         }
         return formattedTime;
-    }
+    };
 
     getCorrectRefreshMessage = error => {
-        let refreshError = "OPS! Something went wrong! Unable to refresh the static APIs.";
+        let messageText;
+        const errorMessages = require("../../error-messages.json");
         if (error && error.status) {
+            messageText = "Unexpected error, please try again later";
             if (error.status === 500) {
-                refreshError = "500 - Internal Server Error: Something went wrong and the static API refresh could not be performed";
+                messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[6].messageText}`;
             }
             else if (error.status === 503) {
-                refreshError = "503 - Service Unavailable: The service could not be found. Check if the service is up and registered";
+                messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[5].messageText}`;
             }
         }
-        return refreshError;
-    }
+        return messageText;
+    };
 
     render() {
         const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError } = this.props;

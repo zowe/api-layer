@@ -19,6 +19,14 @@
         {
             "messageKey": "ZWEAS104E",
             "messageText": "Authentication service not available, please try again later"
+        },
+        {
+            "messageKey": "ZWEAC706E",
+            "messageText": "503 - Service Unavailable: The service could not be found. Check if the service is up and registered"
+        },
+        {
+            "messageKey": "ZWEAC707E",
+            "messageText": "500 - Internal Server Error: Something went wrong and the static API refresh could not be performed"
         }
     ]
 
