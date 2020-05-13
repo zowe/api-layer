@@ -169,6 +169,32 @@
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Security"
+                ],
+                "summary": "Invalidate mainframe user session.",
+                "description": "Use the `/logout` API to invalidate mainframe user session.\n\n The cookie named `apimlAuthenticationToken` will be removed.\n",
+                "operationId": "logoutUsingPOST",
+                "security": [
+                    {
+                        "CookieAuth" : []
+                    },
+                    {
+                        "Bearer" : []
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Invalidated user session"
+                    },
+                    "500": {
+                        "description": "Internal error"
+                    }
+                }
+            }
+        },
         "/version": {
             "get": {
                 "tags": [
