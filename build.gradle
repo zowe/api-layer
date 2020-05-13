@@ -122,18 +122,11 @@ task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTest
 }
 
 task startUpCheck(dependsOn: ":integration-tests:startUpCheck") {
-   description "Test that the solution started"
-   group "Integration tests"
-}
-
-task runE2ETests(dependsOn: ["startUpCheck", ":api-catalog-ui:runE2ETests"]) {
-    description "E2E tests"
+    description "Test that the solution started"
     group "Integration tests"
 }
 
-runE2ETests.mustRunAfter startUpCheck
-
-task runCITests(dependsOn: [":integration-tests:runCITests", "runE2ETests"]) {
+task runCITests(dependsOn: [":integration-tests:runCITests", ":api-catalog-ui:runE2ETests"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }
