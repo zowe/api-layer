@@ -1,4 +1,8 @@
-import { REFRESH_STATIC_APIS_SUCCESS, REFRESH_STATIC_APIS_ERROR } from '../constants/refresh-static-apis-constants';
+import {
+    REFRESH_STATIC_APIS_SUCCESS,
+    REFRESH_STATIC_APIS_ERROR,
+    CLEAR_ERROR
+} from '../constants/refresh-static-apis-constants';
 
 export function refreshStaticApisSuccess() {
     return {
@@ -28,6 +32,13 @@ export function refreshedStaticApi() {
             });
     }
 
+}
+
+export function clearError() {
+    return {
+        type: CLEAR_ERROR,
+        error: null,
+    };
 }
 
 function fetchHandler(res) {

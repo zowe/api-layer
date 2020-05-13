@@ -8,6 +8,12 @@ import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 
 export default class Dashboard extends Component {
+
+    closeDialog = () => {
+        const { clearError } = this.props;
+        clearError();
+    };
+
     componentDidMount() {
         const { fetchTilesStart, clearService } = this.props;
         clearService();
@@ -28,10 +34,6 @@ export default class Dashboard extends Component {
     refreshStaticApis = () => {
         const { refreshedStaticApi } = this.props;
         refreshedStaticApi();
-    };
-
-    handleClose = () => {
-        // TODO
     };
 
     formatTimestamp = () => {
@@ -61,6 +63,8 @@ export default class Dashboard extends Component {
     render() {
         const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
+        const isTrue = true;
+        const isFalse = false;
         let date = this.formatTimestamp();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
@@ -88,9 +92,10 @@ export default class Dashboard extends Component {
                         <Dialog
                             variant="danger"
                             appSelector="#App"
-                            closeOnClickOutside="true"
-                            hideOverlay="true"
-                            isOpen={refreshedStaticApisError}
+                            closeOnClickOutside={isFalse}
+                            hideOverlay={isTrue}
+                            modeless={isFalse}
+                            isOpen={refreshedStaticApisError!==null}
                         >
                             <DialogHeader>
                                 <DialogTitle>Error</DialogTitle>
@@ -100,7 +105,7 @@ export default class Dashboard extends Component {
                             </DialogBody>
                             <DialogFooter>
                                 <DialogActions>
-                                    <Button size="medium" variant="danger" onClick={this.handleClose}>
+                                    <Button size="medium" variant="danger" onClick={this.closeDialog}>
                                         Close
                                     </Button>
                                 </DialogActions>
