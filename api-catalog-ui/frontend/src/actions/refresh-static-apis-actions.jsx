@@ -15,16 +15,14 @@ export function refreshStaticApisError(error) {
 }
 
 export function refreshedStaticApi() {
-    const refreshEndpoint = '/discovery/api/v1/staticApi';
     const url =
-        'https://localhost:10010/api/v1/apicatalog' + refreshEndpoint;
+        `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/discovery/api/v1/staticApi`;
     return dispatch => {
         fetch(url, {
             method: 'POST'
-        }).then(
-            () => {
-                dispatch(refreshStaticApisSuccess());
-            })
+        })
+            .then(fetchHandler, error => dispatch(refreshStaticApisError(error)))
+            .then(() => dispatch(refreshStaticApisSuccess()))
             .catch(error => {
                 dispatch(refreshStaticApisError(error));
             });
@@ -32,4 +30,10 @@ export function refreshedStaticApi() {
 
 }
 
+function fetchHandler(res) {
+    if (res.status >= 400 && res.status < 600) {
+        return Promise.reject(res);
+    }
+    return res.json();
+}
 
