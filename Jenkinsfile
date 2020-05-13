@@ -107,7 +107,7 @@ pipeline {
             steps {
                 sh 'npm install'
                 sh 'npm run api-layer > integration-instances.log &'
-                sh './gradlew startUpCheck'
+                sh './gradlew --scan startUpCheck'
                 sh './gradlew --scan runCITests'
             }
         }
