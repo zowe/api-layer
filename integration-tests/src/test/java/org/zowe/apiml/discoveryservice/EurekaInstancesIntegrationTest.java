@@ -189,6 +189,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
+    @Flaky
     public void testDiscoveryEndpoints_whenProvidedToken() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         String jwtToken = SecurityUtils.gatewayToken(username, password);
