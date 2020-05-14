@@ -73,7 +73,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'apiml-jenkins-agent-swarm'
+        label 'ibm-jenkins-slave-nvm'
     }
 
     options {
