@@ -35,6 +35,25 @@ describe('>>> Dashboard test', () => {
         cy.get('input[data-testid="search-bar"]').should('exist');
         cy.contains('Available API services').should('exist');
 
+        cy.get('#refresh-api-button').should('exist').click();
+
+        cy.get('#dialog-10-content').should('have.length.gte', 1);
+        cy.get('#dialog-10-content > div > div > div > p')
+            .should('have.length', 1)
+            .should('contain', 'The refresh of static APIs was successful!');
+
+        cy.get('#dialog-10-content > footer > div > button').should('exist').click();
+        // TODO error case
+        // cy.server({
+        //     method: 'POST',
+        //     status: 500,
+        // })
+        // cy.route({
+        //     url: '/api/v1/apicatalog/discovery/api/v1/staticApi',
+        //     onResponse: { error: "message" },
+        //     });
+        // cy.get('#refresh-api-button').should('exist').click();
+
         cy.get('input[data-testid="search-bar"]')
             .as('search')
             .type('API Mediation Layer API');
