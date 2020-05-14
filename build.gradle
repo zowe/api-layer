@@ -105,9 +105,9 @@ configurations {
     all*.exclude group: 'com.fasterxml.jackson.module', module: 'jackson-module-kotlin'
 }
 
-task buildBackendCore(dependsOn: [':gateway-service:build', ':discovery-service:build',
-                                  ':api-catalog-services:build', ':helloworld-service:build']) {
-    description "Build core backend components (no UI)"
+task buildCore(dependsOn: [':gateway-service:build', ':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
+                           ':discoverable-client:build', ':zaas-client:build']) {
+    description "Build core components"
     group "build"
 }
 
@@ -121,10 +121,37 @@ task runAllIntegrationTests(dependsOn: ":integration-tests:runAllIntegrationTest
     group "Integration tests"
 }
 
-task runCITests(dependsOn: ":integration-tests:runCITests") {
+task runIntegrationTestInstances(dependsOn: buildCore) {
+    doFirst {
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            ext.process = new ProcessBuilder()
+                .directory(projectDir)
+                .command("npm.cmd", "run", "api-layer")
+                .start()
+        } else {
+            ext.process = new ProcessBuilder()
+                .directory(projectDir)
+                .command("npm", "run", "api-layer", ">", "integration-instances.log")
+                .start()
+        }
+
+    }
+}
+
+task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTestInstances"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }
+
+task stopIntegrationTestInstances {
+    doLast {
+        if (tasks.runIntegrationTestInstances.process != null) {
+            tasks.runIntegrationTestInstances.process.destroy()
+        }
+    }
+}
+
+runCITests.finalizedBy stopIntegrationTestInstances
 
 task runMainFrameTests(dependsOn: ":integration-tests:runMainFrameTests") {
     description "Run only tests related to the MainFrame"

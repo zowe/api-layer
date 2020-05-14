@@ -73,7 +73,7 @@ properties(opts)
 
 pipeline {
     agent {
-        label 'apiml-jenkins-agent-swarm'
+        label 'ibm-jenkins-slave-nvm'
     }
 
     options {
@@ -85,23 +85,22 @@ pipeline {
     }
 
     stages {
-        stage('Build and unit test with coverage') {
+        stage ('Install') {
+            steps {
+                sh 'npm install -g pnpm@4.0'
+            }
+        }
+
+        stage('Build and Test') {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
-                            sh './gradlew --info --scan clean build coverage sonarqube -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD}'
+                            sh 'npm install'
+                            sh './gradlew --info --scan clean build coverage sonarqube runCITests -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD}'
                         }
                     }
                 }
-            }
-        }
-
-        stage ('Run Integration Tests') {
-            steps {
-                sh 'npm install'
-                sh 'npm run api-layer > integration-instances.log &'
-                sh './gradlew runCITests'
             }
         }
 
@@ -212,8 +211,6 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
-
-            archiveArtifacts artifacts: 'integration-instances.log'
         }
 
         success {
