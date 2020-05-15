@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/static")
+@RequestMapping("/static-api")
 @RequiredArgsConstructor
 public class StaticAPIRefreshController {
 
     private final StaticAPIService staticAPIService;
 
-    @PostMapping(value = "/api/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity refreshStaticApis() {
         StaticAPIResponse staticAPIResponse = staticAPIService.refresh();
         return ResponseEntity

@@ -20,7 +20,7 @@ export function refreshStaticApisError(error) {
 
 export function refreshedStaticApi() {
     const url =
-        `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static/api/refresh`;
+        `${process.env.REACT_APP_GATEWAY_URL}${process.env.REACT_APP_CATALOG_HOME}/static-api/refresh`;
     return dispatch => {
         fetch(url, {
             method: 'POST'

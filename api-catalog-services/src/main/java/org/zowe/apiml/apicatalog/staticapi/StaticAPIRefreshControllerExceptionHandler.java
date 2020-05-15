@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.RestClientException;
 import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
@@ -40,6 +41,22 @@ public class StaticAPIRefreshControllerExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.SERVICE_UNAVAILABLE)
+            .body(message.mapToView());
+    }
+
+    /**
+     * Could not handle http request
+     *
+     * @param exception RestClientException
+     * @return 500 status code if there is any exception with refresh api
+     */
+    @ExceptionHandler(RestClientException.class)
+    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(RestClientException exception) {
+        Message message = messageService.createMessage("org.zowe.apiml.apicatalog.StaticApiRefreshFailed",
+            exception);
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(message.mapToView());
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestClientException;
 import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -32,6 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = {StaticAPIRefreshController.class}, secure = false)
 public class StaticAPIRefreshControllerTest {
 
+    private static final String API_REFRSH_ENDPOINT = "/static-api/refresh";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -45,7 +48,7 @@ public class StaticAPIRefreshControllerTest {
             new ServiceNotFoundException("Exception")
         );
 
-        mockMvc.perform(post("/static/api/refresh"))
+        mockMvc.perform(post(API_REFRSH_ENDPOINT))
             .andExpect(jsonPath("$.messages", hasSize(1)))
             .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
             .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAC706E"))
@@ -55,12 +58,27 @@ public class StaticAPIRefreshControllerTest {
     }
 
     @Test
+    public void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() throws Exception {
+        when(staticAPIService.refresh()).thenThrow(
+            new RestClientException("Exception")
+        );
+
+        mockMvc.perform(post(API_REFRSH_ENDPOINT))
+            .andExpect(jsonPath("$.messages", hasSize(1)))
+            .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
+            .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAC707E"))
+            .andExpect(jsonPath("$.messages[0].messageContent").value("Static API refresh failed, caused by exception: org.springframework.web.client.RestClientException: Exception"))
+            .andExpect(jsonPath("$.messages[0].messageKey").value("org.zowe.apiml.apicatalog.StaticApiRefreshFailed"))
+            .andExpect(status().isInternalServerError());
+    }
+
+    @Test
     public void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() throws Exception {
         when(staticAPIService.refresh()).thenReturn(
             new StaticAPIResponse(200, "This is body")
         );
 
-        mockMvc.perform(post("/static/api/refresh"))
+        mockMvc.perform(post(API_REFRSH_ENDPOINT))
             .andExpect(status().isOk());
     }
 
