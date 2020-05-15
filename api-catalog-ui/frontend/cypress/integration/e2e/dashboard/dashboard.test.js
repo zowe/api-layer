@@ -43,20 +43,6 @@ describe('>>> Dashboard test', () => {
             .should('contain', 'The refresh of static APIs was successful!');
 
         cy.get('#dialog-10-content > footer > div > button').should('exist').click();
-        // TODO error case
-        // cy.server({ status: 503 });
-        // cy.route({
-        //     method: 'POST',
-        //     url: '/api/v1/apicatalog/discovery/api/v1/staticApi',
-        //     response: {
-        //         // simulate a redirect to another page
-        //         redirect: '/error'
-        //     },
-        //     // status: 503,
-        // }).as('staticApi');
-        // cy.get('#refresh-api-button').click();
-        //
-        // cy.wait('@staticApi', {timeout: 15000});
 
         cy.get('input[data-testid="search-bar"]')
             .as('search')

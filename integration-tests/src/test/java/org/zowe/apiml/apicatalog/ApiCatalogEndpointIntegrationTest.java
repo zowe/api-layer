@@ -15,6 +15,7 @@ import net.minidev.json.JSONArray;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,6 +30,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.http.HttpSecurityUtils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.LinkedHashMap;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -41,6 +43,7 @@ public class ApiCatalogEndpointIntegrationTest {
     private static final String GET_API_CATALOG_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/apicatalog/v1";
     private static final String GET_DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/discoverableclient/v1";
     private static final String INVALID_API_CATALOG_API_DOC_ENDPOINT = "/api/v1/apicatalog/apidoc/apicatalog/v2";
+    private static final String REFRESH_STATIC_APIS_ENDPOINT = "/api/v1/apicatalog/static-api/refresh";
 
     private String baseHost;
 
@@ -170,6 +173,17 @@ public class ApiCatalogEndpointIntegrationTest {
         assertEquals("/api/v1/apicatalog", swaggerBasePath);
     }
 
+    @Test
+    public void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
+        final HttpResponse response = getStaticApiRefreshResponse(REFRESH_STATIC_APIS_ENDPOINT, HttpStatus.SC_OK);
+
+        // When
+        final String jsonResponse = EntityUtils.toString(response.getEntity());
+        JSONArray errors = JsonPath.parse(jsonResponse).read("$.errors");
+
+        assertEquals("[]", errors.toString());
+    }
+
     // Execute the endpoint and check the response for a return code
     private HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
         HttpGet request = HttpRequestUtils.getRequest(endpoint);
@@ -184,4 +198,21 @@ public class ApiCatalogEndpointIntegrationTest {
 
         return response;
     }
+
+    // Execute the refresh static apis endpoint and check the response for a return code
+    private HttpResponse getStaticApiRefreshResponse(String endpoint, int returnCode) throws IOException {
+        URI uri = HttpRequestUtils.getUriFromGateway(endpoint);
+        HttpPost request = new HttpPost(uri);
+        String cookie = HttpSecurityUtils.getCookieForGateway();
+        HttpSecurityUtils.addCookie(request, cookie);
+
+        // When
+        HttpResponse response = HttpClientUtils.client().execute(request);
+
+        // Then
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(returnCode));
+
+        return response;
+    }
+
 }
