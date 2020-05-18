@@ -88,12 +88,14 @@ pipeline {
         stage ('Install') {
             steps {
                 sh 'npm install -g pnpm@4.0'
+                sh 'npm install'
+                sh 'cd api-layer/frontend && pnpm install'
             }
         }
 
         stage('Build and Test') {
             steps {
-                timeout(time: 20, unit: 'MINUTES') {
+                timeout(time: 30, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
                             sh 'npm install'
