@@ -89,7 +89,7 @@ pipeline {
             steps {
                 sh 'npm install -g pnpm@4.0'
                 sh 'npm install'
-                sh 'cd api-layer/frontend && pnpm install'
+                sh 'cd api-catalog-ui/frontend && pnpm install'
             }
         }
 
