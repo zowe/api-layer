@@ -138,7 +138,7 @@ task runIntegrationTestInstances(dependsOn: buildCore) {
     }
 }
 
-task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTestInstances"]) {
+task runCITests(dependsOn: [":integration-tests:runCITests", ":api-catalog-ui:runE2ETests", "runIntegrationTestInstances"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }

@@ -45,6 +45,12 @@ task runTests(type: NpmTask) {
     args = ['run', 'test']
 }
 
+task runE2ETests(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
+    group = 'integration tests'
+    description = "End to End Tests depending on the catalog ui"
+
+    args = ['run', 'cy:e2e:localhost']
+}
 
 task bundle(type: NpmTask) {
     inputs.dir('frontend/src').withPathSensitivity(PathSensitivity.RELATIVE)
