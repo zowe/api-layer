@@ -89,6 +89,7 @@ pipeline {
             steps {
                 sh 'npm install -g pnpm@4.0'
                 sh 'npm install'
+                sh 'cd api-catalog-ui/frontend && npm install'
                 sh 'cd api-catalog-ui/frontend && pnpm install'
             }
         }
