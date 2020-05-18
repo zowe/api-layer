@@ -88,6 +88,8 @@ pipeline {
         stage ('Install') {
             steps {
                 sh 'npm install -g pnpm@4.0'
+                sh 'npm install'
+                sh 'cd api-catalog-ui/frontend && pnpm install'
             }
         }
 
@@ -96,8 +98,6 @@ pipeline {
                 timeout(time: 30, unit: 'MINUTES') {
                     withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_PASSWORD')]) {
                         withSonarQubeEnv('sonarcloud-server') {
-                            sh 'npm install'
-                            sh 'cd api-catalog-ui/frontend && pnpm install'
                             sh './gradlew --info --scan build coverage sonarqube runCITests -Psonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN} -Pgradle.cache.push=true -Penabler=v1 -Partifactory_user=${ARTIFACTORY_USERNAME} -Partifactory_password=${ARTIFACTORY_PASSWORD}'
                         }
                     }
