@@ -11,7 +11,6 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -41,7 +40,6 @@ import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 
 import java.util.Collections;
-import java.util.Set;
 
 /**
  * Security configuration for Gateway
@@ -59,8 +57,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         "/application"
     };
 
-    private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
-
     private final ObjectMapper securityObjectMapper;
     private final AuthenticationService authenticationService;
     private final AuthConfigurationProperties authConfigurationProperties;
@@ -68,8 +64,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final SuccessfulQueryHandler successfulQueryHandler;
     private final SuccessfulTicketHandler successfulTicketHandler;
     private final AuthProviderInitializer authProviderInitializer;
-    @Qualifier("publicKeyCertificatesBase64")
-    private final Set<String> publicKeyCertificatesBase64;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -100,8 +94,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
             .and().x509()
-                .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(x509UserDetailsService())
 
             // logout endpoint
@@ -129,8 +121,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
             .and().x509()
-                .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(x509UserDetailsService())
 
             // cache controller
@@ -138,8 +128,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
             .and().x509()
-                .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(x509UserDetailsService())
 
             // add filters - login, query, ticket
@@ -224,12 +212,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("gatewayClient", "", Collections.emptyList());
-    }
-
-    private ApimlX509AuthenticationFilter apimlX509AuthenticationFilter() throws Exception {
-        ApimlX509AuthenticationFilter out = new ApimlX509AuthenticationFilter(publicKeyCertificatesBase64);
-        out.setAuthenticationManager(authenticationManager());
-        return out;
     }
 
     @Override
