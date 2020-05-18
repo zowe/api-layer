@@ -87,7 +87,7 @@ pipeline {
     stages {
         stage ('Install') {
             steps {
-                sh 'npm install -g pnpm@4.0'
+                sh 'npm install -g pnpm@4.0 react-scripts@3.4.0'
                 sh 'npm install'
                 sh 'cd api-catalog-ui/frontend && npm install'
                 sh 'cd api-catalog-ui/frontend && pnpm install'
