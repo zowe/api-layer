@@ -5,12 +5,6 @@
 function login() {
     cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
 
-    // This doesn't need to happen, if already logged in
-    let url = cy.url();
-    if(url.indexOf('login') === -1) {
-        return;
-    }
-
     const username = Cypress.env('username');
     const password = Cypress.env('password');
 
@@ -22,15 +16,10 @@ function login() {
     cy.get('@submitButton').click();
 }
 
-function goToDashboard() {
-    cy.visit(`${Cypress.env('catalogHomePage')}/#/dashboard`);
-}
-
 describe('>>> Detail page test', () => {
     it('Detail page test', () => {
 
         login();
-        goToDashboard();
 
         cy.contains('API Mediation Layer API').click();
 
@@ -47,7 +36,6 @@ describe('>>> Detail page test', () => {
     it('Should display the API Catalog service title, URL and description in Swagger', () => {
 
         login();
-        goToDashboard();
 
         cy.contains('API Mediation Layer API').click();
 
