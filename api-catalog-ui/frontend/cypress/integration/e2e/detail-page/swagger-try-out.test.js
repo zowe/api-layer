@@ -1,6 +1,12 @@
 function login() {
     cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
 
+    // This doesn't need to happen, if already logged in
+    let url = cy.url();
+    if(url.indexOf('login') === -1) {
+        return;
+    }
+
     const username = Cypress.env('username');
     const password = Cypress.env('password');
 
@@ -13,9 +19,7 @@ function login() {
 }
 
 function goToTile() {
-    cy.contains('API Mediation Layer API').click();
-
-    cy.url().should('contain', ('/tile/apimediationlayer'));
+    cy.visit(`${Cypress.env('catalogHomePage')}/#/tile/apimediationlayer/apicatalog`);
 }
 
 describe('>>> Swagger Test', () => {
