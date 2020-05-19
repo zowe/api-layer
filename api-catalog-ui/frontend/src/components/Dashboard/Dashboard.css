@@ -123,6 +123,7 @@ a {
 }
 
 #refresh-api-button {
+    margin: -48px 100px;
     float: right;
 }
 

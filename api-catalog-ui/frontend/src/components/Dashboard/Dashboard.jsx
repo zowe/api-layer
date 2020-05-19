@@ -36,15 +36,6 @@ export default class Dashboard extends Component {
         refreshedStaticApi();
     };
 
-    formatTimestamp = () => {
-        const { refreshTimestamp } = this.props;
-        let formattedTime;
-        if (refreshTimestamp !== undefined && refreshTimestamp !== null) {
-            formattedTime = new Date(refreshTimestamp).toString();
-        }
-        return formattedTime;
-    };
-
     getCorrectRefreshMessage = error => {
         let messageText;
         const errorMessages = require("../../error-messages.json");
@@ -65,7 +56,6 @@ export default class Dashboard extends Component {
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const isTrue = true;
         const isFalse = false;
-        let date = this.formatTimestamp();
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
         let refreshError = this.getCorrectRefreshMessage(refreshedStaticApisError);
@@ -116,33 +106,7 @@ export default class Dashboard extends Component {
                         </Dialog>
                 )
                 }
-                {date !== undefined && date !== null && (
-                    <React.Fragment>
-                        <Dialog
-                            variant="success"
-                            appSelector="#App"
-                            closeOnClickOutside={isFalse}
-                            hideOverlay={isTrue}
-                            modeless={isFalse}
-                            isOpen={refreshedStaticApisError===null}
-                        >
-                            <DialogHeader>
-                                <DialogTitle>Success</DialogTitle>
-                            </DialogHeader>
-                            <DialogBody>
-                                <Text>The refresh of static APIs was successful!</Text>
-                            </DialogBody>
-                            <DialogFooter>
-                                <DialogActions>
-                                    <Button size="medium" variant="success" onClick={this.closeDialog}>
-                                        Close
-                                    </Button>
-                                </DialogActions>
-                            </DialogFooter>
-                        </Dialog>
-                        <Text id="timestamp" element="h5" color="#58606e">The last static APIs refresh was done on {date}</Text>
-                    </React.Fragment>
-                )}
+
                 {!fetchTilesError && (
                     <div className="apis">
                         <div className="grid-container">

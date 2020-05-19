@@ -3,8 +3,13 @@ import {
     REFRESH_STATIC_APIS_ERROR,
     CLEAR_ERROR
 } from '../constants/refresh-static-apis-constants';
+import { toast } from 'react-toastify';
 
 export function refreshStaticApisSuccess() {
+    toast.success("The refresh of static APIs was successful!", {
+        closeOnClick: true,
+        autoClose: 2000,
+    });
     return {
         type: REFRESH_STATIC_APIS_SUCCESS,
         refreshTimestamp: Date.now()
