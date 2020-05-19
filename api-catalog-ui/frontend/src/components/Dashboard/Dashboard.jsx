@@ -66,6 +66,7 @@ export default class Dashboard extends Component {
 
         return (
             <div>
+                <Button id="refresh-api-button"size="medium" onClick={this.refreshStaticApis}>Refresh Static APIs</Button>
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">
@@ -75,9 +76,6 @@ export default class Dashboard extends Component {
                         {error}
                     </div>
                 )}
-                <div>
-                    <Button id="refresh-api-button"size="medium" onClick={this.refreshStaticApis}>Refresh Static APIs</Button>
-                </div>
                 {refreshedStaticApisError !== null &&
                 refreshedStaticApisError !== undefined &&
                 refreshedStaticApisError.status
