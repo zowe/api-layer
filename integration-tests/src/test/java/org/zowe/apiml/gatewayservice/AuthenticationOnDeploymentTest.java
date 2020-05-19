@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.util.categories.Flaky;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
@@ -51,6 +52,7 @@ public class AuthenticationOnDeploymentTest {
     }
 
     @Test
+    @Flaky
     public void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
