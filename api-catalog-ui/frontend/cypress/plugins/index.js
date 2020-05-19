@@ -14,16 +14,4 @@
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
-    on('before:browser:launch', (browser = {}, launchOptions) => {
-        // `args` is an array of all the arguments that will
-        // be passed to browsers when it launches
-
-        if (browser.family === 'chromium' && browser.name !== 'electron') {
-            // Disable usage of shared memory
-            launchOptions.args.push('--disable-dev-shm-usage');
-
-            // whatever you return here becomes the launchOptions
-            return launchOptions
-        }
-    })
 };
