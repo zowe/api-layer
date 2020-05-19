@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(controllers = {StaticAPIRefreshController.class}, secure = false)
 public class StaticAPIRefreshControllerTest {
 
-    private static final String API_REFRSH_ENDPOINT = "/static-api/refresh";
+    private static final String API_REFRESH_ENDPOINT = "/static-api/refresh";
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,7 +48,7 @@ public class StaticAPIRefreshControllerTest {
             new ServiceNotFoundException("Exception")
         );
 
-        mockMvc.perform(post(API_REFRSH_ENDPOINT))
+        mockMvc.perform(post(API_REFRESH_ENDPOINT))
             .andExpect(jsonPath("$.messages", hasSize(1)))
             .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
             .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAC706E"))
@@ -63,7 +63,7 @@ public class StaticAPIRefreshControllerTest {
             new RestClientException("Exception")
         );
 
-        mockMvc.perform(post(API_REFRSH_ENDPOINT))
+        mockMvc.perform(post(API_REFRESH_ENDPOINT))
             .andExpect(jsonPath("$.messages", hasSize(1)))
             .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
             .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAC707E"))
@@ -78,7 +78,7 @@ public class StaticAPIRefreshControllerTest {
             new StaticAPIResponse(200, "This is body")
         );
 
-        mockMvc.perform(post(API_REFRSH_ENDPOINT))
+        mockMvc.perform(post(API_REFRESH_ENDPOINT))
             .andExpect(status().isOk());
     }
 
