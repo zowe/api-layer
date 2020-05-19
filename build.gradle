@@ -143,16 +143,6 @@ task runCITests(dependsOn: [":integration-tests:runCITests", ":api-catalog-ui:ru
     group "Integration tests"
 }
 
-task stopIntegrationTestInstances {
-    doLast {
-        if (tasks.runIntegrationTestInstances.process != null) {
-            tasks.runIntegrationTestInstances.process.destroy()
-        }
-    }
-}
-
-runCITests.finalizedBy stopIntegrationTestInstances
-
 task runMainFrameTests(dependsOn: ":integration-tests:runMainFrameTests") {
     description "Run only tests related to the MainFrame"
     group "Integration tests"
