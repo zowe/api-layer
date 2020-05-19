@@ -38,7 +38,7 @@ devDependencies:
   concurrently: 4.1.0
   cors: 2.8.5
   cross-env: 5.2.0
-  cypress: 3.8.3
+  cypress: 4.5.0
   enzyme: 3.7.0
   enzyme-adapter-react-16: 1.7.0_e8f8bfbb711e8fd801435f0085a093dd
   eslint-config-prettier: 3.3.0
