@@ -212,6 +212,9 @@ pipeline {
                 reportFiles: 'index.html',
                 reportName: "Unit Tests Report - api-catalog-services"
             ])
+        }
+
+        failure {
             archiveArtifacts artifacts: 'api-catalog-ui/frontend/cypress/screenshots/*'
         }
 
