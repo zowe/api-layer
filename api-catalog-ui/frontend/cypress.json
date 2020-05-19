@@ -10,6 +10,6 @@
     "defaultCommandTimeout": 60000,
     "reporterOptions": {
         "mochaFile": "test-results/e2e/output-[hash].xml"
-    }
-
+    },
+    "video": false
 }
