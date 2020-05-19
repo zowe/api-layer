@@ -24,7 +24,7 @@ node {
 }
 
 task cleanBundle(type: Delete) {
-    delete 'bin', 'build', 'frontend/build', 'frontend/node_modules', 'tools/nodejs'
+    delete 'bin', 'build', 'frontend/build', 'tools/nodejs'
 }
 
 task startMockedBackend(type: NpmTask) {
