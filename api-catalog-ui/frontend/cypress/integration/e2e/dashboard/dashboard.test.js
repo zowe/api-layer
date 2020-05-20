@@ -36,12 +36,10 @@ describe('>>> Dashboard test', () => {
         cy.contains('Available API services').should('exist');
 
         cy.get('#refresh-api-button').should('exist').click();
-        cy.get('.css-k008qs').should('have.length.gte', 1);
-        cy.get('.css-k008qs > div > div > div > div > p')
+        cy.get('.Toastify').should('have.length.gte', 1);
+        cy.get('.Toastify > div> div')
             .should('have.length', 1)
             .should('contain', 'The refresh of static APIs was successful!');
-
-        cy.get('.css-k008qs > div > footer > div > button').should('exist').click();
 
         cy.get('input[data-testid="search-bar"]')
             .as('search')
