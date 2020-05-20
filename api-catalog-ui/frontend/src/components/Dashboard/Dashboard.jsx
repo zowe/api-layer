@@ -42,10 +42,10 @@ export default class Dashboard extends Component {
         if (error && error.status) {
             messageText = "Unexpected error, please try again later";
             if (error.status === 500) {
-                messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[6].messageText}`;
+                messageText = `(${errorMessages.messages[6].messageKey}) ${errorMessages.messages[6].messageText}`;
             }
             else if (error.status === 503) {
-                messageText = `(${errorMessages.messages[1].messageKey}) ${errorMessages.messages[5].messageText}`;
+                messageText = `(${errorMessages.messages[5].messageKey}) ${errorMessages.messages[5].messageText}`;
             }
         }
         return messageText;
