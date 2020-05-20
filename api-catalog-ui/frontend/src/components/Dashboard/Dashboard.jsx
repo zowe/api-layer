@@ -38,14 +38,21 @@ export default class Dashboard extends Component {
 
     getCorrectRefreshMessage = error => {
         let messageText;
+        if (error && !error.status && !error.messageNumber) {
+            messageText = error.toString();
+            messageText = "(ZWEAD702E) A problem occurred while parsing a static API definition file " + messageText;
+            return messageText;
+        }
         const errorMessages = require("../../error-messages.json");
-        if (error && error.status) {
+        if (error &&
+            error.messageNumber !== undefined &&
+            error.messageNumber !== null &&
+            error.messageType !== undefined &&
+            error.messageType !== null) {
             messageText = "Unexpected error, please try again later";
-            if (error.status === 500) {
-                messageText = `(${errorMessages.messages[6].messageKey}) ${errorMessages.messages[6].messageText}`;
-            }
-            else if (error.status === 503) {
-                messageText = `(${errorMessages.messages[5].messageKey}) ${errorMessages.messages[5].messageText}`;
+            const filter = errorMessages.messages.filter(x => x.messageKey != null && x.messageKey === error.messageNumber);
+            if (filter.length !== 0) {
+                messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
             }
         }
         return messageText;
@@ -76,9 +83,9 @@ export default class Dashboard extends Component {
                         {error}
                     </div>
                 )}
-                {refreshedStaticApisError !== null &&
+                {((refreshedStaticApisError !== null &&
                 refreshedStaticApisError !== undefined &&
-                refreshedStaticApisError.status
+                refreshedStaticApisError.status) || (refreshedStaticApisError && typeof refreshedStaticApisError === 'object'))
                 && (
                         <Dialog
                             variant="danger"

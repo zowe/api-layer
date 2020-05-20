@@ -30,6 +30,7 @@ export function refreshedStaticApi() {
         fetch(url, {
             method: 'POST'
         })
+            .then(res => res.json())
             .then(fetchHandler, error => dispatch(refreshStaticApisError(error)))
             .then(() => dispatch(refreshStaticApisSuccess()))
             .catch(error => {
@@ -47,9 +48,16 @@ export function clearError() {
 }
 
 function fetchHandler(res) {
-    if (res.status >= 400 && res.status < 600) {
-        return Promise.reject(res);
+    let errors = [];
+    if (res && !res.errors) {
+        return Promise.reject(res.messages[0]);
     }
-    return res.json();
+    else if (res && res.errors && res.errors.length !== 0) {
+        res.errors.forEach(function (item) {
+            errors.push(item.convertedText);
+        });
+        return Promise.reject(errors);
+    }
+    return res;
 }
 

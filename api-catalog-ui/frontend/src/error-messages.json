@@ -27,6 +27,10 @@
         {
             "messageKey": "ZWEAC707E",
             "messageText": "500 - Internal Server Error: Something went wrong and the static API refresh could not be performed"
+        },
+        {
+            "messageKey": "ZWEAG708E",
+            "messageText": "The request to the URL '/api/v1/apicatalog/static-api/refresh' has failed after retrying on the service instance. Caused by: java.net.ConnectException: Connection refused (Connection refused)"
         }
     ]
 
