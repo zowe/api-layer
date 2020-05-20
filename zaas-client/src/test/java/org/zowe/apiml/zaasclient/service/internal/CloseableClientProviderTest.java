@@ -109,43 +109,46 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() {
+    public void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+        ConfigProperties config = new ConfigProperties();
+        config.setTrustStorePassword("password");
+        config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
+        config.setTrustStoreType("PKCS12");
+        HttpsClientProvider provider = new HttpsClientProvider(config);
         ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
-            ConfigProperties config = new ConfigProperties();
-            config.setTrustStorePassword("password");
-            config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
-            config.setTrustStoreType("PKCS12");
-            new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
+            provider.getHttpsClientWithKeyStoreAndTrustStore();
         });
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS501E"));
     }
 
     @Test
-    public void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() {
+    public void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+        ConfigProperties config = new ConfigProperties();
+        config.setTrustStorePassword("password");
+        config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
+        config.setTrustStoreType("PKCS12");
+        config.setKeyStorePath("intentionallyInvalidPath");
+        config.setKeyStoreType("PKCS12");
+        HttpsClientProvider provider = new HttpsClientProvider(config);
         ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
-            ConfigProperties config = new ConfigProperties();
-            config.setTrustStorePassword("password");
-            config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
-            config.setTrustStoreType("PKCS12");
-            config.setKeyStorePath("intentionallyInvalidPath");
-            config.setKeyStoreType("PKCS12");
-            new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
+            provider.getHttpsClientWithKeyStoreAndTrustStore();
         });
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS503E"));
     }
 
     @Test
-    public void givenInvalidKeyStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() {
+    public void givenInvalidKeyStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+        ConfigProperties config = new ConfigProperties();
+        config.setTrustStorePassword("password");
+        config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
+        config.setTrustStoreType("PKCS12");
+        config.setKeyStorePath("src/test/resources/localhost.keystore.p12");
+        config.setKeyStoreType("invalidCryptoType");
+        HttpsClientProvider provider = new HttpsClientProvider(config);
         ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
-            ConfigProperties config = new ConfigProperties();
-            config.setTrustStorePassword("password");
-            config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
-            config.setTrustStoreType("PKCS12");
-            config.setKeyStorePath("src/test/resources/localhost.keystore.p12");
-            config.setKeyStoreType("invalidCryptoType");
-            new HttpsClientProvider(config).getHttpsClientWithKeyStoreAndTrustStore();
+            provider.getHttpsClientWithKeyStoreAndTrustStore();
         });
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS502E"));
