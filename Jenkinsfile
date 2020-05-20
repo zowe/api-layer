@@ -156,7 +156,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: ARTIFACTORY_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
                     sh '''
-                    sudo sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
+                    sed -i '/version=/ s/-SNAPSHOT/-'"$BRANCH_NAME"'-SNAPSHOT/' ./gradle.properties
                     ./gradlew publishAllVersions -Pzowe.deploy.username=$USERNAME -Pzowe.deploy.password=$PASSWORD  -Partifactory_user=$USERNAME -Partifactory_password=$PASSWORD -PpullRequest=$env.BRANCH_NAME
                     '''
                 }
