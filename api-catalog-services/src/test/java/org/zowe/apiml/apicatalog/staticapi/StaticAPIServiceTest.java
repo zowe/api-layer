@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class StaticAPIServiceTest {
+class StaticAPIServiceTest {
 
     private static final String REFRESH_ENDPOINT = "/discovery/api/v1/staticApi";
 
@@ -45,7 +45,7 @@ public class StaticAPIServiceTest {
 
 
     @Test
-    public void givenRefreshAPI_whenDiscoveryServiceCantBeInitialized_thenThrowServiceNotFoundException() {
+    void givenRefreshAPI_whenDiscoveryServiceCantBeInitialized_thenThrowServiceNotFoundException() {
         when(instanceRetrievalService.getInstanceInfo(CoreService.DISCOVERY.getServiceId()))
             .thenThrow(InstanceInitializationException.class);
 
@@ -57,7 +57,7 @@ public class StaticAPIServiceTest {
     }
 
     @Test
-    public void givenRefreshAPI_whenDiscoveryServiceIsNotAvailable_thenThrowServiceNotFoundException() {
+     void givenRefreshAPI_whenDiscoveryServiceIsNotAvailable_thenThrowServiceNotFoundException() {
         Exception exception = assertThrows(ServiceNotFoundException.class,
             () -> staticAPIService.refresh(),
             "Expected exception is not ServiceNotFoundException");
@@ -66,7 +66,7 @@ public class StaticAPIServiceTest {
     }
 
     @Test
-    public void givenRefreshAPIWithSecureDiscoveryService_whenRefreshEndpointPresentResponse_thenReturnApiResponseCodeWithBody() {
+    void givenRefreshAPIWithSecureDiscoveryService_whenRefreshEndpointPresentResponse_thenReturnApiResponseCodeWithBody() {
         InstanceInfo discoveryService = InstanceInfo.Builder.newBuilder()
             .setAppName(CoreService.DISCOVERY.getServiceId())
             .setHostName("localhost")
@@ -88,7 +88,7 @@ public class StaticAPIServiceTest {
     }
 
     @Test
-    public void givenRefreshAPIWithUnSecureDiscoveryService_whenRefreshEndpointPresentResponse_thenReturnApiResponseCodeWithBody() {
+    void givenRefreshAPIWithUnSecureDiscoveryService_whenRefreshEndpointPresentResponse_thenReturnApiResponseCodeWithBody() {
         InstanceInfo discoveryService = InstanceInfo.Builder.newBuilder()
             .setAppName(CoreService.DISCOVERY.getServiceId())
             .setHostName("localhost")

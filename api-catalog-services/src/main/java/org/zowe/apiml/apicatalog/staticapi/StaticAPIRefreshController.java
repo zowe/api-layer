@@ -24,7 +24,7 @@ public class StaticAPIRefreshController {
     private final StaticAPIService staticAPIService;
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity refreshStaticApis() {
+    public ResponseEntity<String> refreshStaticApis() {
         StaticAPIResponse staticAPIResponse = staticAPIService.refresh();
         return ResponseEntity
             .status(staticAPIResponse.getStatusCode())
