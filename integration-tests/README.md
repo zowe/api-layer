@@ -62,6 +62,10 @@ The Discovery Service in HTTP mode is not integrated within the pipeline. You ca
 3. Run Discovery Service and verify that you can login into the Discovery Service homepage by using basic authentication with Eureka credentials.
 4. Run your service and check that it is registered to Eureka.
 
+**Note:** API Catalog can call refresh of static API definitions on discovery service. Discovery service in HTTP mode protects it's endpoints with basic auth instead of client certificate. If you want this to work, you have to supply additional command line parameters to API Catalog at startup. Default values are `eureka:password`. The same set of parameters exist on Discovery service to configure the username and password for HTTP mode.
+
+    -Dapiml.discovery.userid=**** -Dapiml.discovery.password=****
+
 ## Running all tests (including slow)
 
 Run special integration tests for tests that need to be performed slowly such as when you need to test timeouts.

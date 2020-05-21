@@ -114,6 +114,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
+            .antMatchers("/static-api/**").authenticated()
             .antMatchers("/containers/**").authenticated()
             .antMatchers("/apidoc/**").authenticated()
             .antMatchers("/application/health", "/application/info").permitAll()
