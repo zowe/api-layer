@@ -61,7 +61,7 @@ eureka:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
         port: ${server.port}
-        securePort: ${server.port}
+        securePort: 0
         nonSecurePortEnabled: true
         securePortEnabled: false
         preferIpAddress: ${apiml.service.preferIpAddress}
@@ -107,6 +107,8 @@ eureka:
     instance:
         nonSecurePortEnabled: false
         securePortEnabled: true
+        port: 0
+        securePort: ${server.port}
         homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}/
         statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/info
         healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
