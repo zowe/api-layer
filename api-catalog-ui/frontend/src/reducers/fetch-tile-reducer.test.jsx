@@ -7,7 +7,6 @@ import {
     FETCH_TILES_SUCCESS,
     FETCH_TILES_RETRY,
 } from '../constants/catalog-tile-constants';
-import { fetchTilesFailed, fetchTilesStart, fetchTilesStop, fetchTilesSuccess } from '../actions/catalog-tile-actions';
 
 describe('>>> Tile reducer tests', () => {
     const sampleTile = {
