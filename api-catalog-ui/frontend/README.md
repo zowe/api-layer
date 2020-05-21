@@ -79,7 +79,7 @@ You can see the coverage in the terminal window or go to the `coverage/lcov-repo
 
 For local development run `npm run start:dev`.
 
-Using this command you will have an instance of catalog UI running on <http://localhost:3000/> using mocked backend for info updates.
+Using this command you will have an instance of catalog UI running on <https://localhost:3000/> using mocked backend for info updates.
 
 To configure variouse environment specific variables for development see [this env file](./.env.development);
 
@@ -111,8 +111,11 @@ All commands related to cypress start with cy.
 As of now the available ones are:
 
 `cy:open` - opens the interactive window with no environment variables set
+
 `cy:e2e:ci` - runs all test inside the e2e folder testing the instance in the baseURL env variable while using credential passed as parameters (This command should be used in the pipeline)
+
 `cy:e2e:localhost` - runs all test inside the e2e folder testing the localhost instance
+
 `cy:e2e:mocked-backend` - runs all test inside the /integration/integration folder; integration tests should run locally against mocked backend
 
 
