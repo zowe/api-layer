@@ -44,11 +44,7 @@ export default class Dashboard extends Component {
             return messageText;
         }
         const errorMessages = require("../../error-messages.json");
-        if (error &&
-            error.messageNumber !== undefined &&
-            error.messageNumber !== null &&
-            error.messageType !== undefined &&
-            error.messageType !== null) {
+        if (error && error.messageNumber && error.messageType) {
             messageText = "Unexpected error, please try again later";
             const filter = errorMessages.messages.filter(x => x.messageKey != null && x.messageKey === error.messageNumber);
             if (filter.length !== 0) {
