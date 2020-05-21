@@ -35,7 +35,6 @@ a {
 }
 
 .no-tiles-container {
-    margin-top: 2rem;
     margin-left: 2rem;
     text-align: left;
     overflow: hidden;
@@ -120,4 +119,9 @@ a {
             padding-right: 1rem;
         }
     }
+}
+
+#refresh-api-button {
+    margin: -48px 100px;
+    float: right;
 }

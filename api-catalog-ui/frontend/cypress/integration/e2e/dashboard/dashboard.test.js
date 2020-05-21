@@ -35,6 +35,12 @@ describe('>>> Dashboard test', () => {
         cy.get('input[data-testid="search-bar"]').should('exist');
         cy.contains('Available API services').should('exist');
 
+        cy.get('#refresh-api-button').should('exist').click();
+        cy.get('.Toastify').should('have.length.gte', 1);
+        cy.get('.Toastify > div> div')
+            .should('have.length', 1)
+            .should('contain', 'The refresh of static APIs was successful!');
+
         cy.get('input[data-testid="search-bar"]')
             .as('search')
             .type('API Mediation Layer API');
