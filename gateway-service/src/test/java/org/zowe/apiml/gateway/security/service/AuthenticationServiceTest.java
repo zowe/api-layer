@@ -38,6 +38,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
 import org.zowe.apiml.security.SecurityUtils;
@@ -566,6 +567,28 @@ public class AuthenticationServiceTest {
         verify(restTemplate, times(2)).delete(anyString(), anyString());
         verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
         verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
+    }
+
+    @Test
+    public void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
+        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie(cookieName, "jwt1"));
+        request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwt2");
+        Optional<String> token = authService.getJwtTokenFromRequest(request);
+        assertTrue(token.isPresent());
+        assertEquals("jwt1", token.get());
+    }
+
+    @Test
+    public void givenOtherCookiesAndJwtInHeader_whenGetJwtTokenFromRequest_thenTakeFromHeader() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie("cookie", "value"));
+        request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwt");
+        Optional<String> token = authService.getJwtTokenFromRequest(request);
+        assertTrue(token.isPresent());
+        assertEquals("jwt", token.get());
     }
 
     @Configuration
