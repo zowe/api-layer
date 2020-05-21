@@ -101,3 +101,10 @@ messages:
       text: "Service not located, %s"
       reason: "The service could not be found."
       action: "Check if the service is up and registered. If it is not registered, review the onboarding guide to ensure that all steps were completed."
+
+    - key: org.zowe.apiml.apicatalog.StaticApiRefreshFailed
+      number: ZWEAC707
+      type: ERROR
+      text: "Static API refresh failed, caused by exception: %s"
+      reason: "The Static API refresh could not be performed because of exception."
+      action: "Check the specific exception for troubleshooting."
