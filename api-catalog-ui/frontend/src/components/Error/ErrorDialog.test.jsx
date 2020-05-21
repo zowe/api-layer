@@ -21,4 +21,14 @@ describe('>>> ErrorDialog component tests', () => {
         );
         expect(wrapper.find('DialogBody').exists()).toEqual(true);
     });
+
+    it('should not render the ErrorDialog if there is not an error while refreshing apis', () => {
+        const wrapper = shallow(
+            <ErrorDialog
+                refreshedStaticApisError={null}
+                clearError={jest.fn()}
+            />
+        );
+        expect(wrapper.find('DialogBody').exists()).toEqual(false);
+    });
 });
