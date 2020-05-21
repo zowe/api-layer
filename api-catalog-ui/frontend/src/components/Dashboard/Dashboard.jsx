@@ -1,4 +1,4 @@
-import { Text, Button, Dialog, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogActions } from 'mineral-ui';
+import { Text, Button } from 'mineral-ui';
 import React, { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -6,13 +6,8 @@ import './Dashboard.css';
 import Tile from '../Tile/Tile';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
-
+import ErrorDialog from "../Error/ErrorDialog";
 export default class Dashboard extends Component {
-
-    closeDialog = () => {
-        const { clearError } = this.props;
-        clearError();
-    };
 
     componentDidMount() {
         const { fetchTilesStart, clearService } = this.props;
@@ -36,32 +31,11 @@ export default class Dashboard extends Component {
         refreshedStaticApi();
     };
 
-    getCorrectRefreshMessage = error => {
-        let messageText;
-        if (error && !error.status && !error.messageNumber) {
-            messageText = error.toString();
-            messageText = "(ZWEAD702E) A problem occurred while parsing a static API definition file " + messageText;
-            return messageText;
-        }
-        const errorMessages = require("../../error-messages.json");
-        if (error && error.messageNumber && error.messageType) {
-            messageText = "Unexpected error, please try again later";
-            const filter = errorMessages.messages.filter(x => x.messageKey != null && x.messageKey === error.messageNumber);
-            if (filter.length !== 0) {
-                messageText = `(${error.messageNumber}) ${filter[0].messageText}`;
-            }
-        }
-        return messageText;
-    };
-
     render() {
-        const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError } = this.props;
+        const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError, clearError } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
-        const isTrue = true;
-        const isFalse = false;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
-        let refreshError = this.getCorrectRefreshMessage(refreshedStaticApisError);
         if (fetchTilesError !== undefined && fetchTilesError !== null) {
             fetchTilesStop();
             error = formatError(fetchTilesError);
@@ -79,35 +53,7 @@ export default class Dashboard extends Component {
                         {error}
                     </div>
                 )}
-                {((refreshedStaticApisError !== null &&
-                refreshedStaticApisError !== undefined &&
-                refreshedStaticApisError.status) || (refreshedStaticApisError && typeof refreshedStaticApisError === 'object'))
-                && (
-                        <Dialog
-                            variant="danger"
-                            appSelector="#App"
-                            closeOnClickOutside={isFalse}
-                            hideOverlay={isTrue}
-                            modeless={isFalse}
-                            isOpen={refreshedStaticApisError!==null}
-                        >
-                            <DialogHeader>
-                                <DialogTitle>Error</DialogTitle>
-                            </DialogHeader>
-                            <DialogBody>
-                                <Text>{refreshError}</Text>
-                            </DialogBody>
-                            <DialogFooter>
-                                <DialogActions>
-                                    <Button size="medium" variant="danger" onClick={this.closeDialog}>
-                                        Close
-                                    </Button>
-                                </DialogActions>
-                            </DialogFooter>
-                        </Dialog>
-                )
-                }
-
+                    <ErrorDialog refreshedStaticApisError={refreshedStaticApisError} clearError={clearError}/>
                 {!fetchTilesError && (
                     <div className="apis">
                         <div className="grid-container">
