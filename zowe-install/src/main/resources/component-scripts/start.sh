@@ -27,7 +27,7 @@
 
 # API Mediation Layer Debug Mode
 # To activate `debug` mode, set LOG_LEVEL=debug (in lowercase)
-LOG_LEVEL=
+LOG_LEVEL=debug
 
 # If set append $ZWEAD_EXTERNAL_STATIC_DEF_DIRECTORIES to $STATIC_DEF_CONFIG_DIR
 APIML_STATIC_DEF=${STATIC_DEF_CONFIG_DIR}
