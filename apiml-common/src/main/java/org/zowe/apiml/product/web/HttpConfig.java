@@ -31,7 +31,6 @@ import org.zowe.apiml.security.SecurityUtils;
 import javax.annotation.PostConstruct;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import java.util.Set;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -85,8 +84,6 @@ public class HttpConfig {
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
-    private Set<String> publicKeyCertificatesBase64;
-
     @PostConstruct
     public void init() {
         try {
@@ -115,8 +112,6 @@ public class HttpConfig {
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient();
 
             factory.setSystemSslProperties();
-
-            publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         }
         catch (HttpsConfigError e) {
             System.exit(1); // NOSONAR
@@ -125,12 +120,6 @@ public class HttpConfig {
             apimlLog.log("org.zowe.apiml.common.unknownHttpsConfigError", e.getMessage());
             System.exit(1); // NOSONAR
         }
-    }
-
-    @Bean
-    @Qualifier("publicKeyCertificatesBase64")
-    public Set<String> publicKeyCertificatesBase64() {
-        return publicKeyCertificatesBase64;
     }
 
     @Bean
