@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve. We will handle it based on [Issue Management](https://github.com/zowe/api-layer/wiki)
+about: Create a report to help us improve. We will handle it based on [Issue Management](https://github.com/zowe/api-layer/wiki/Issue-management)
 title: ''
 labels: bug, new
 ---
@@ -24,7 +24,7 @@ If applicable, add server logs collected at the time of your problem.
 
 **Details**
  - Version and build number: [e.g. 0.4.4-SNAPSHOT build # 155]
- - Test environment: [e.g. A - see https://cawiki.ca.com/x/8hFALw for CA environments]
+ - Test environment: [either defined Zowe test environment: Marist (1, 2, 3), River, or your own environment: z/OS version and z/OSMF version]
 
 **API Catalog Web UI (in case of API Catalog issue):**
  - OS: [e.g. macOS, Windows]
@@ -38,4 +38,4 @@ If applicable, add server logs collected at the time of your problem.
 **Additional context**
 Add any other context about the problem here.
 
-https://github.com/zowe/api-layer/wiki/(WIP)-Issue-managements
+https://github.com/zowe/api-layer/wiki/Issue-management

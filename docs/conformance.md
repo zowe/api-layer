@@ -65,6 +65,8 @@ Tip: We strongly recommend all documentation be reviewed by a technical writer.
 
 Note: For more information, see [Zowe Authentication and Authorization Service](https://github.com/zowe/api-layer/wiki/Zowe-Authentication-and-Authorization-Service)
 
+//TODO find this piece of doc
+
 7. Service implementation should follow the [semantic versioning model](https://semver.org/)
    - At least the last two major versions must be supported by API services
    - The major service version must be supported for at least two years from its release

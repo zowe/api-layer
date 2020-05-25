@@ -27,6 +27,8 @@ If you are reporting a bug, please include:
 
 Look through the GitHub issues for bugs. Anything tagged with "bug" is open to whoever wants to implement it.
 
+//TODO we dont really have greatly described how to work with us on issues
+
 ### Write Documentation
 
 The code could always use more documentation, whether as part of the API docs, in documentation strings, 
@@ -89,7 +91,7 @@ Before you submit a pull request, check that it meets these guidelines:
     and [Good Commits](https://chris.beams.io/posts/git-commit/). 
     The information that you provide helps reviewer to understand the code and review your pull request faster. 
     It is helpful for understanding the code in future.
-2.  The pull request should include tests and code coverage for new code should be at least 60%. 
+2.  The pull request should include tests and code coverage for new code should be at least 80%. 
     Code coverage should not be lower than on master.
 3.  If the pull request adds functionality, the docs should be updated.
 4.  Execute all the available automated tests on your machine and on z/OS platform.
