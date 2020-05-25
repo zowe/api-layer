@@ -1,7 +1,7 @@
 ## How to set ciphers used in API ML services
 
 To set ciphers supported by the HTTPS servers in API ML services you need to set following property
-for all services (gateway, discovery service, and API catalog):
+for all services (Gateway, Discovery Service, and API catalog):
 
     -Dapiml.security.ssl.ciphers=<cipher-list>
 

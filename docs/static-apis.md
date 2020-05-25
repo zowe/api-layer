@@ -23,13 +23,16 @@ An example for z/OSMF is provided in [config/local/api-defs/zosmf-sample.yml](/c
 
 Static API definitions are loaded during the startup of Discovery Service.
 
-They can be refreshed later by issuing a POST request to `/discovery/api/v1/staticApi`. For example:
+They can be refreshed later in two ways:
+1. By navigating on the API Catalog UI and clicking on the `Refresh Static APIs` button which is located in the dashboard (https://localhost:10010/ui/v1/apicatalog/#/dashboard)
+2. By issuing a POST request to `/discovery/api/v1/staticApi`. For example:
 
     http -j -a eureka:password POST http://localhost:10011/discovery/api/v1/staticApi
 
-With HTTPS enabled you need to do:
+    With HTTPS enabled you need to do:
 
     http --cert=keystore/localhost/localhost.pem --verify=keystore/local_ca/localca.cer -j POST https://localhost:10011/discovery/api/v1/staticApi
+
 
 
 ## Diagnostics

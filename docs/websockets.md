@@ -11,16 +11,17 @@ Example:
     eureka:
         instance:
             metadata-map:
-                routes:
-                    ws_v1:
-                        gatewayUrl: "ws/v1"
-                        serviceUrl: /discoverableclient/ws
+                apiml:
+                    routes:
+                        ws_v1:
+                            gatewayUrl: "ws/v1"
+                            serviceUrl: /discoverableclient/ws
 
-This maps requests `wss://gatewayHost:port/ws/v1/serviceId/path` to `ws://serviceHost:port/discoverableclient/ws/path` where `serviceId` is the service ID of the service and `path` is the ramaining path segment in the URL.
+This maps requests `wss://gatewayHost:port/ws/v1/serviceId/path` to `ws://serviceHost:port/discoverableclient/ws/path` where `serviceId` is the service ID of the service and `path` is the remaining path segment in the URL.
 
 ## Security
 
-The API gateway is usually using TLS so the protocol is `wss`. The services can be using TLS and then the gateway will use `wss` to access them as well. If the service is not using TLS then the gateway will use `ws` protocol without TLS.
+The API Gateway is usually using TLS so the protocol is `wss`. The services can be using TLS and then the Gateway will use `wss` to access them as well. If the service is not using TLS then the gateway will use `ws` protocol without TLS.
 
 ## Diagnostics 
 
@@ -28,4 +29,4 @@ The list of active routed WebSocket sessions is available at new Actuator endpoi
 
 ## Limitations
 
-The error HTTP status codes can be different. The WebSocket session starts before the session between the gateway and the service is started. In case of failure to connect to the service, the WebSocket session is terminated with a WebSocket close code and reason text instead of HTTP error code.
+The error HTTP status codes can be different. The WebSocket session starts before the session between the Gateway and the service is started. In case of failure to connect to the service, the WebSocket session is terminated with a WebSocket close code and reason text instead of HTTP error code.

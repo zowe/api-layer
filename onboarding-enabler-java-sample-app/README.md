@@ -14,4 +14,4 @@ For more information, see [docs/local-configuration.md](docs/local-configuration
 
 You can see this application registered to the Catalog under the tile "Sample API Mediation Layer Applications".
 
-For an API request, use endpoints "/greeting" for a generic greeting or "greeting/{name}" for a greeting returning your input {name}.
+For an API request, use endpoints `/greeting` for a generic greeting or `greeting/{name}` for a greeting returning your input `{name}`.
