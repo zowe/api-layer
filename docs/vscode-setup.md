@@ -1,5 +1,3 @@
-//TODO outdated and incomplete
-
 # Visual Studio Code setup
 
 If you want to use Visual Studio Code to develop and debug then follow these steps:
