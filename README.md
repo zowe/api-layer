@@ -1,5 +1,3 @@
-//TODO will be removed soon
-
 # API Mediation Layer
 
 [Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)

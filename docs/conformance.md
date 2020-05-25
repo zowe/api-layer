@@ -63,9 +63,7 @@ Tip: We strongly recommend all documentation be reviewed by a technical writer.
    - Services must accept basic authentication - **minimum requirement**
    - Services should accept Zowe JWT token in the cookie - **preferred** (best practice)
 
-Note: For more information, see [Zowe Authentication and Authorization Service](https://github.com/zowe/api-layer/wiki/Zowe-Authentication-and-Authorization-Service)
-
-//TODO find this piece of doc
+Note: For more information, see [ZAAS Client](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-security.html#zaas-client)
 
 7. Service implementation should follow the [semantic versioning model](https://semver.org/)
    - At least the last two major versions must be supported by API services

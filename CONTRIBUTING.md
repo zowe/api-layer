@@ -27,8 +27,6 @@ If you are reporting a bug, please include:
 
 Look through the GitHub issues for bugs. Anything tagged with "bug" is open to whoever wants to implement it.
 
-//TODO we dont really have greatly described how to work with us on issues
-
 ### Write Documentation
 
 The code could always use more documentation, whether as part of the API docs, in documentation strings, 
