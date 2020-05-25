@@ -1,3 +1,5 @@
+//TODO will be removed soon
+
 # API Mediation Layer
 
 [Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
@@ -133,3 +135,4 @@ See [Adding Services to API Gateway without Code Changes](docs/static-apis.md).
 ## API Catalog UI
 
 For more information about the UI of the Catalog see its [README](api-catalog-ui/frontend/README.md).
+

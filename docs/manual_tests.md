@@ -1,3 +1,5 @@
+//TODO does this have enough value?
+
 # Manual Smoke Test Guideline
 
 We are currently working on our automated smoke tests. Until then the following manual testing procedure should be followed (takes only 2-3 minutes). They need to run against any supported environment:

@@ -1,3 +1,5 @@
+//TODO we are not using those
+
 # Architectural Decisions
 
 A place for lightweight documentation of API Mediation Layer project design decisions for public reference.

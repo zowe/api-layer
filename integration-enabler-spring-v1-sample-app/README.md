@@ -4,6 +4,8 @@ This is a sample Hello World application using the 'integration-enabler-spring-v
 
 # How to run
 
+*You need to build the project as a prerequsisite.*
+
 You can start the service using the following shell script:
 
 ```shell
