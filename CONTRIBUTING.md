@@ -85,21 +85,20 @@ Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1.  Review guidelines and advices [How to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request)
+1.  Review the guidelines for [how to write the perfect pull request](https://github.com/blog/1943-how-to-write-the-perfect-pull-request)
     and [Good Commits](https://chris.beams.io/posts/git-commit/). 
-    The information that you provide helps reviewer to understand the code and review your pull request faster. 
-    It is helpful for understanding the code in future.
-2.  The pull request should include tests and code coverage for new code should be at least 80%. 
+    The information that you provide helps the reviewer understand the code and review your pull request faster, and is helpful for understanding the code in the future.
+2.  The pull request should include tests. Code coverage for new code should be at least 80%. 
     Code coverage should not be lower than on master.
 3.  If the pull request adds functionality, the docs should be updated.
 4.  Execute all the available automated tests on your machine and on z/OS platform.
-5.  If the pull request adds or changes functionality that requires update of packaging or configuration, it needs to be tested on a test system installed from the Zowe PAX file and scripts in [zowe-install](/zowe-install) directory need to be updated.  
+5.  If the pull request adds or changes functionality that requires an update of packaging or configuration, it needs to be tested on a test system installed from the Zowe PAX file. Scripts in [zowe-install](/zowe-install) directory need to be updated.  
 
 
 Core Development Team
 =====================
 
-Members of core development team (<https://github.com/zowe/api-layer>) are
+Members of the core development team (<https://github.com/zowe/api-layer>) are
 allowed to create branches in the master repository.
 
 1.  Clone the repository locally (creates `api-layer` directory):
