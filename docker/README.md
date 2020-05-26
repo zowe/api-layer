@@ -36,7 +36,7 @@ To verify via
 
 The main purpose of the development image is to help the new developer set up 
 their environment with as little pain as possible. The built image is available
-via [Docker hub](https://hub.docker.com/repository/docker/jbalhar/api-layer-development)
+via [Docker hub](https://hub.docker.com/r/jbalhar/api-layer-development)
 
 The main goal of the image is to simplify running of all the types of the tests. To do so there is a script [_test](https://github.com/zowe/api-layer/blob/master/docker/development/_test) that can be run from anywhere in the system. 
 

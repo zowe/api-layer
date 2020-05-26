@@ -28,8 +28,6 @@
         "api-catalog-service-1": "java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.config.additional-location=file:./config/local-multi/api-catalog-service.yml",
         "discoverable-client-1": "java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local-multi/discoverable-client.yml",
         "test": "./gradlew runAllIntegrationTests",
-        "test-scripts": "mocha scripts",
-        "test-scripts-ci": "TEST_DIR=./scripts/test-results jenkins-mocha --no-coverage scripts",
         "//": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\"",
         "register-certificates-win": "echo \"for windows: to install sudo, run chocolatey.exe install sudo\" & sudo . cmd /C \"certutil -enterprise -delstore Root \"Zowe Development Instances Certificate Authority\"  &  certutil -enterprise -f -v -AddStore Root \"keystore/local_ca/localca.cer\" || pause\""
     },
