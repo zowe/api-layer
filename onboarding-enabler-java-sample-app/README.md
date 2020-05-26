@@ -2,7 +2,7 @@
 
 This is a sample Hello World application using Java Jersey that uses the 'onboarding-enabler-java' enabler.
 
-# How to Run with gradle
+# How to Run with Gradle
 
 You can start the service using the following command from the onboarding-enabler-java-sample-app directory:
 
