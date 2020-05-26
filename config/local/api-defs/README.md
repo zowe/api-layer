@@ -1,6 +1,6 @@
 ## Examples of static API definitions for local API Mediation Layer
 
-This directory provides few examples about how to add an existing REST API service without code changes.
+This directory provides a few examples of how to add an existing REST API service without code changes.
 
 - [staticclient.yml](staticclient.yml) - static definition of "discoverable-client" as "staticclient"
 - [zosmf-sample.yml](zosmf-sample.yml_) - sample of static definition for z/OSMF
