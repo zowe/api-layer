@@ -7,9 +7,9 @@
 
 The API Mediation Layer (API ML) provides a single point of access for mainframe service REST APIs. The API ML offers enterprise, cloud-like features such as high-availability, scalability, dynamic API discovery, consistent security, a single sign-on experience, and documentation. The API ML consists of three components: the Gateway, the Discovery Service, and the API Catalog. The API ML facilitates secure communication across loosely coupled microservices through the API Gateway. The Discovery Service enables you to determine the location and status of service instances running inside the API ML ecosystem. The API Catalog provides a user-friendly, easy-to-use interface to view all discovered services, their associated APIs, and Swagger documentation.
 
-For more information, see the API ML [Overview](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer).
-
-To learn more about changes to the API ML, consult the [CHANGELOG](CHANGELOG.md).
+**Notes:** 
+* For more information, see the API ML [Overview](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer).
+* To learn more about changes to the API ML, consult the [CHANGELOG](CHANGELOG.md).
 
 ## Contents
 
@@ -99,7 +99,7 @@ To set local environment properties for testing on your local machine including 
 
 If you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
 
-If you use Visual Studio Code, see [how to configure it](docs/vscode-setup.md) to develop and debug local configurations.
+If you use Visual Studio Code, see [how to configure Visual Studio Code](docs/vscode-setup.md) to develop and debug local configurations.
 
 ## Onboarding Services
 
@@ -107,7 +107,7 @@ For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://
 
 ## More Information
 
-| To learn about:                       | Refer here:                                                                                                                                                                             |
+| To learn about:                       | Refer to:                                                                                                                                                                             |
 |---------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Core Service - API Catalog            | [Zowe Docs](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)                                                                                                          |
 |       Core Service - API Catalog UI   | [README](api-catalog-ui/frontend/README.md), [Integration Test README](api-catalog-ui/frontend/src/integration-tests/README.md)       |
