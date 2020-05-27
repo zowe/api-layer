@@ -5,11 +5,11 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=coverage)](https://sonarcloud.io/dashboard?id=zowe_api-layer)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zowe_api-layer&metric=alert_status)](https://sonarcloud.io/dashboard?id=zowe_api-layer)
 
-The API Mediation Layer provides a single point of access for mainframe service REST APIs. The layer offers enterprise, cloud-like features such as high-availability, scalability, dynamic API discovery, consistent security, a single sign-on experience, and documentation. The API Mediation Layer facilitates secure communication across loosely coupled microservices through the API Gateway. The API Mediation Layer consists of three components: the Gateway, the Discovery Service, and the Catalog. The Gateway provides secure communication across loosely coupled API services. The Discovery Service enables you to determine the location and status of service instances running inside the API ML ecosystem. The Catalog provides an easy-to-use interface to view all discovered services, their associated APIs, and Swagger documentation in a user-friendly manner.
+The API Mediation Layer (API ML) provides a single point of access for mainframe service REST APIs. The API ML offers enterprise, cloud-like features such as high-availability, scalability, dynamic API discovery, consistent security, a single sign-on experience, and documentation. The API ML consists of three components: the Gateway, the Discovery Service, and the API Catalog. The API ML facilitates secure communication across loosely coupled microservices through the API Gateway. The Discovery Service enables you to determine the location and status of service instances running inside the API ML ecosystem. The API Catalog provides a user-friendly, easy-to-use interface to view all discovered services, their associated APIs, and Swagger documentation.
 
-[More information](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer)
+For more information, see the API ML [Overview](https://docs.zowe.org/stable/getting-started/overview.html#api-mediation-layer).
 
-To learn more about the changes consult [CHANGELOG](CHANGELOG.md)
+To learn more about changes to the API ML, consult the [CHANGELOG](CHANGELOG.md).
 
 ## Contents
 
@@ -28,18 +28,21 @@ To learn more about the changes consult [CHANGELOG](CHANGELOG.md)
 
 ### Prerequisites
 
-Following platform is required to run the API Mediation Layer:
+The following platform is required to run the API Mediation Layer:
 
 * Java SE Development Kit 8 
-(<https://jdk.java.net/java-se-ri/8-MR3> or 
-<http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html> or <https://www.ibm.com/developerworks/java/jdk/>)
+    * <https://jdk.java.net/java-se-ri/8-MR3> 
+    * <http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html> 
+    * <https://www.ibm.com/developerworks/java/jdk/>
 
-Following tools are required to build and develop API Mediation Layer:
+The following tools are required to build and develop the API Mediation Layer:
 
-* Node.js version 8.x and npm are required to be installed globally to be able to build the API Catalog UI
-(<https://nodejs.org/dist/latest-v8.x/>)
+* Node.js version 8.x and npm are required to be installed globally to build the API Catalog UI.
+    * <https://nodejs.org/dist/latest-v8.x/>
 
 ### Quick start
+
+**Follow these steps:**
 
 1. Install the package manager `pnpm` globally in order to build the project:
 
@@ -65,44 +68,42 @@ Following tools are required to build and develop API Mediation Layer:
    ./gradlew build
    ```
 
-5. Run all service on local machine:
+5. Run all service on your local machine:
 
   ```sh
    npm run api-layer
    ```
 
-Alternatively if you want to use Docker to use the api-layer consult the [README](docker/README.md)
-
+Alternatively, to use Docker to use the api-layer, consult the [Docker README](docker/README.md).
 
 ## Security
 
-The API Mediation Layer uses a dummy authentication provides as a default security provider for the development purposes. To log in, use `user` as username and password.
+The API Mediation Layer can use dummy credentials for development purposes. For development purposes, log in using the default setting `user` for the username, and again `user` as the password.   
 
-[Learn more about security here](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-security.html)
+For more information, see [API Mediation Layer Security](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-security.html).
 
 ## Run integration tests
 
-Follow the instructions in [Integration Tests](integration-tests/README.md) to run integration tests.
+To run integration tests, follow the instructions in [Integration Tests](integration-tests/README.md).
 
 ## Certificates
 
-For more information about how the certificates between APIML services are setup for localhost, see [TLS Certificates for localhost](keystore/README.md).
+For more information about how the certificates between API ML services are set up for localhost, see [TLS Certificates for localhost](keystore/README.md).
 
 ## Contributor guidelines
-
-Follow the guidelines in [Contributing](CONTRIBUTING.md) to add new functionality.
+To add new functionality, follow the guidelines in [Contributing](CONTRIBUTING.md).
 
 ## Local configuration of services
 
-Follow the guidelines in [Local Configuration](docs/local-configuration.md) to set local environment properties for testing on your local machine include HTTPS setup.
+To set local environment properties for testing on your local machine including HTTPS setup, follow the guidelines in [Local Configuration](docs/local-configuration.md).
 
-Also if you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
+If you use IntelliJ IDEA, see [learn how to configure Run Dashboard](docs/idea-setup.md) to use these local configurations.
 
 If you use Visual Studio Code, see [how to configure it](docs/vscode-setup.md) to develop and debug local configurations.
 
 ## Onboarding Services
 
-The guidelines to onboard services are available in the [Zowe Docs#Onboarding Overview](https://docs.zowe.org/stable/extend/extend-apiml/onboard-overview.html)
+For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://docs.zowe.org/stable/extend/extend-apiml/onboard-overview.html).
 
 ## More Information
 
