@@ -78,7 +78,7 @@ Alternatively if you want to use Docker to use the api-layer consult the [README
 
 The API Mediation Layer uses a dummy authentication provides as a default security provider for the development purposes. To log in, use `user` as username and password.
 
-[Learn more about security here](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-security.html#authentication-for-api-ml-services)
+[Learn more about security here](https://docs.zowe.org/stable/extend/extend-apiml/api-mediation-security.html)
 
 ## Run integration tests
 
