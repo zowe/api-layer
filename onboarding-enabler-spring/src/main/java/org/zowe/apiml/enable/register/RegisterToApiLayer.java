@@ -93,7 +93,7 @@ public class RegisterToApiLayer {
         } catch (ServiceDefinitionException e) {
             logger.log("org.zowe.apiml.enabler.registration.fail"
                 , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls(), e.toString());
-            log.debug(String.format("Service %s registration to API ML failed: ", config.getBaseUrl()), e);
+            log.error(String.format("Service %s registration to API ML failed: ", config.getBaseUrl()), e);
         }
     }
 }
