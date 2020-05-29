@@ -85,7 +85,7 @@ public class JwkToPublicKeyConverter {
 
     private PrivateKey generatePrivateKey() throws NoSuchAlgorithmException {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-        kpg.initialize(2048, new SecureRandom(new byte[] { 0 }));
+        kpg.initialize(2048);
         KeyPair kp = kpg.generateKeyPair();
         PrivateKey pvt = kp.getPrivate();
         return pvt;
