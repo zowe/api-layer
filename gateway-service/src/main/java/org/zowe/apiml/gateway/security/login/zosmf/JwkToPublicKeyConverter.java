@@ -24,7 +24,9 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 
 import com.nimbusds.jose.JOSEException;
@@ -56,8 +58,12 @@ public class JwkToPublicKeyConverter {
 
             ContentSigner signer = new JcaContentSignerBuilder("SHA256with" + privateKey.getAlgorithm())
                     .build(privateKey);
+            Date now = new Date();
+            Calendar c = Calendar.getInstance();
+            c.setTime(now);
+            c.add(Calendar.YEAR, 10);
             X509CertificateHolder x509CertificateHolder = new X509v3CertificateBuilder(new X500Name("CN=Zowe"),
-                    new BigInteger("0"), new Date(), new Date(), new X500Name("CN=Zowe"),
+                    new BigInteger("0"), now, c.getTime(), new X500Name("CN=z/OSMF JWT public key"),
                     (SubjectPublicKeyInfo) publicKey).build(signer);
 
             return certificateHolderToPem(x509CertificateHolder);
