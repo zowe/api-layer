@@ -87,8 +87,7 @@ public class JwkToPublicKeyConverter {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(2048);
         KeyPair kp = kpg.generateKeyPair();
-        PrivateKey pvt = kp.getPrivate();
-        return pvt;
+        return kp.getPrivate();
     }
 
     String convertFirstPublicKeyJwkToPublicKeyPem(String jwkJson) throws JOSEException, ParseException {
@@ -104,7 +103,6 @@ public class JwkToPublicKeyConverter {
         }
         s.append("\n");
         s.append("-----END PUBLIC KEY-----\n");
-        String pem = s.toString();
-        return pem;
+        return s.toString();
     }
 }
