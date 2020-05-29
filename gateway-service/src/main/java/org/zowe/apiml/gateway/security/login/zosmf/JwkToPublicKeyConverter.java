@@ -30,7 +30,10 @@ import java.util.Date;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
 
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -54,13 +57,14 @@ public class JwkToPublicKeyConverter {
 
             PrivateKey privateKey = generatePrivateKey();
 
-            ContentSigner signer = new JcaContentSignerBuilder("SHA256WITH" + privateKey.getAlgorithm())
+            ContentSigner signer = new JcaContentSignerBuilder("Sha256With" + privateKey.getAlgorithm())
                     .build(privateKey);
             Date now = new Date();
             Calendar c = Calendar.getInstance();
             c.setTime(now);
             c.add(Calendar.YEAR, 10);
-            X500Name name = new X500Name("CN=Zowe JWT Public Key");
+
+            X500Name name = new X500Name(new RDN[] {new RDN(BCStyle.CN, new DERPrintableString("Zowe JWT Public Key"))});
             X509CertificateHolder x509CertificateHolder = new X509v3CertificateBuilder(name,
                     new BigInteger(Long.toString(System.currentTimeMillis())), now, c.getTime(), name,
                     (SubjectPublicKeyInfo) publicKey).build(signer);
