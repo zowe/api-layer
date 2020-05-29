@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.staticapi;
 
-import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,11 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
-import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
-import org.zowe.apiml.util.EurekaUtils;
+import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
 import java.util.Base64;
 
@@ -31,7 +26,7 @@ import java.util.Base64;
 @RequiredArgsConstructor
 public class StaticAPIService {
 
-    private static final String REFRESH_ENDPOINT = "/discovery/api/v1/staticApi";
+    private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
     @Value("${apiml.discovery.userid:eureka}")
     private String eurekaUserid;
@@ -42,7 +37,7 @@ public class StaticAPIService {
     @Qualifier("restTemplateWithKeystore")
     private final RestTemplate restTemplate;
 
-    private final InstanceRetrievalService instanceRetrievalService;
+    private final DiscoveryConfigProperties discoveryConfigProperties;
 
     public StaticAPIResponse refresh() {
         String discoveryServiceUrl = getDiscoveryServiceUrl();
@@ -64,15 +59,6 @@ public class StaticAPIService {
     }
 
     private String getDiscoveryServiceUrl() {
-        try {
-            InstanceInfo discoveryInstance = instanceRetrievalService.getInstanceInfo(CoreService.DISCOVERY.getServiceId());
-            if (discoveryInstance == null) {
-                throw new ServiceNotFoundException("Discovery service could not be found");
-            }
-
-            return EurekaUtils.getUrl(discoveryInstance) + REFRESH_ENDPOINT;
-        }  catch (InstanceInitializationException ie) {
-            throw new ServiceNotFoundException("Discovery service instance could not be initialized");
-        }
+        return discoveryConfigProperties.getLocations().replace("/eureka", "") + REFRESH_ENDPOINT;
     }
 }
