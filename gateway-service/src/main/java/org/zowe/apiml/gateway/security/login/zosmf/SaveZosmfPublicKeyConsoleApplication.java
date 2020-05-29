@@ -42,7 +42,7 @@ public class SaveZosmfPublicKeyConsoleApplication {
         System.out.printf("Loading public key of z/OSMF at %s\n", jwkUrl);
         try {
             if (zosmfJwkToPublicKey.updateJwtPublicKeyFile(jwkUrl, filename)) {
-                System.out.printf("Public key of z/OSMF at stored to %s\n", filename);
+                System.out.printf("Public key of z/OSMF at stored as a certificate to %s\n", filename);
             }
         } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());  // NOSONAR: It is a console application

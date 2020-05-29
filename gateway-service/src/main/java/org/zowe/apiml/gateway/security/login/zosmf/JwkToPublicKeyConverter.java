@@ -19,7 +19,6 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -55,14 +54,15 @@ public class JwkToPublicKeyConverter {
 
             PrivateKey privateKey = generatePrivateKey();
 
-            ContentSigner signer = new JcaContentSignerBuilder("SHA256with" + privateKey.getAlgorithm())
+            ContentSigner signer = new JcaContentSignerBuilder("SHA256WITH" + privateKey.getAlgorithm())
                     .build(privateKey);
             Date now = new Date();
             Calendar c = Calendar.getInstance();
             c.setTime(now);
             c.add(Calendar.YEAR, 10);
-            X509CertificateHolder x509CertificateHolder = new X509v3CertificateBuilder(new X500Name("CN=Zowe"),
-                    new BigInteger("0"), now, c.getTime(), new X500Name("CN=z/OSMF JWT public key"),
+            X500Name name = new X500Name("CN=Zowe JWT Public Key");
+            X509CertificateHolder x509CertificateHolder = new X509v3CertificateBuilder(name,
+                    new BigInteger(Long.toString(System.currentTimeMillis())), now, c.getTime(), name,
                     (SubjectPublicKeyInfo) publicKey).build(signer);
 
             return certificateHolderToPem(x509CertificateHolder);
