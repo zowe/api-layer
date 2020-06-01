@@ -64,7 +64,12 @@ public class JwkToPublicKeyConverter {
             c.setTime(now);
             c.add(Calendar.YEAR, 10);
 
-            X500Name name = new X500Name(new RDN[] {new RDN(BCStyle.CN, new DERPrintableString("Zowe JWT Public Key"))});
+            X500Name name = new X500Name(new RDN[] { new RDN(BCStyle.CN, new DERPrintableString("Zowe JWT Public Key")),
+                    new RDN(BCStyle.OU, new DERPrintableString("API Mediation Layer")),
+                    new RDN(BCStyle.O, new DERPrintableString("Zowe")),
+                    new RDN(BCStyle.L, new DERPrintableString("Prague")),
+                    new RDN(BCStyle.ST, new DERPrintableString("Prague")),
+                    new RDN(BCStyle.C, new DERPrintableString("CZ")) });
             X509CertificateHolder x509CertificateHolder = new X509v3CertificateBuilder(name,
                     new BigInteger(Long.toString(System.currentTimeMillis())), now, c.getTime(), name,
                     (SubjectPublicKeyInfo) publicKey).build(signer);
