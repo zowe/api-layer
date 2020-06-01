@@ -15,6 +15,7 @@ import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.service.VirtualService;
 
 import java.util.List;
@@ -36,6 +37,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  * and responses are inspected. Implementation returns a debug header that describes the retries.
  * The test repeats calls until it sees that request has been retried from mentioned header.
  */
+@TestsNotMeantForZowe
 public class ServiceHaMode {
     private static final int TIMEOUT = 30;
 
