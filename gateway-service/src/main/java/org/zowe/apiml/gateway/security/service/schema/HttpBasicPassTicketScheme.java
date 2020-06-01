@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.service.schema;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
@@ -25,6 +24,7 @@ import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.util.CookieUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -35,10 +35,20 @@ import java.util.function.Supplier;
  * SAF and generating new authentication header in request.
  */
 @Component
-@RequiredArgsConstructor
 public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
+
     private final PassTicketService passTicketService;
     private final AuthConfigurationProperties authConfigurationProperties;
+    private final String cookieName;
+
+    public HttpBasicPassTicketScheme(
+        PassTicketService passTicketService,
+        AuthConfigurationProperties authConfigurationProperties
+    ) {
+        this.passTicketService = passTicketService;
+        this.authConfigurationProperties = authConfigurationProperties;
+        cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+    }
 
     @Override
     public AuthenticationScheme getScheme() {
@@ -71,7 +81,7 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         final long expiredAt = Math.min(before + authConfigurationProperties.getPassTicket().getTimeout() * 1000,
             token.getExpiration().getTime());
 
-        return new PassTicketCommand(value, expiredAt);
+        return new PassTicketCommand(value, cookieName, expiredAt);
     }
 
     @Value
@@ -80,13 +90,22 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
 
         private static final long serialVersionUID = 3941300386857998443L;
 
+        private static final String COOKIE_HEADER = "cookie";
+
         private final String authorizationValue;
+        private final String cookieName;
         private final long expireAt;
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
             context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
+            context.addZuulRequestHeader(COOKIE_HEADER,
+                CookieUtil.removeCookie(
+                    context.getZuulRequestHeaders().get(COOKIE_HEADER),
+                    cookieName
+                )
+            );
         }
 
         @Override
