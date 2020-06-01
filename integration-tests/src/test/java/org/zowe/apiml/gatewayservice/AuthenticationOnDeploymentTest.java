@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.Flaky;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
@@ -36,7 +37,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  * - credentials.user = user
  * - credentials.password = user
  */
-
+@TestsNotMeantForZowe
 public class AuthenticationOnDeploymentTest {
 
     private static final int TIMEOUT = 10;
