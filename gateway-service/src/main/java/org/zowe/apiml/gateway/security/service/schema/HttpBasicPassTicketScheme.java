@@ -13,6 +13,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
+import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.message.BasicHeader;
@@ -113,6 +114,15 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
             request.setHeader(
                 new BasicHeader(HttpHeaders.AUTHORIZATION, authorizationValue)
             );
+            Header header = request.getFirstHeader(COOKIE_HEADER);
+            if (header != null) {
+                request.setHeader(COOKIE_HEADER,
+                    CookieUtil.removeCookie(
+                        header.getValue(),
+                        cookieName
+                    )
+                );
+            }
         }
 
         @Override
