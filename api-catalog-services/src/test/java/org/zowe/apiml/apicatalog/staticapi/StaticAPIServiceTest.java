@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.staticapi;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,67 +16,33 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
-import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
-import org.zowe.apiml.util.EurekaUtils;
+import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
 import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StaticAPIServiceTest {
 
-    private static final String REFRESH_ENDPOINT = "/discovery/api/v1/staticApi";
+    private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
     @InjectMocks
     private StaticAPIService staticAPIService;
 
     @Mock
-    private InstanceRetrievalService instanceRetrievalService;
-
-    @Mock
     private RestTemplate restTemplate;
-
-
-    @Test
-    void givenRefreshAPI_whenDiscoveryServiceCantBeInitialized_thenThrowServiceNotFoundException() {
-        when(instanceRetrievalService.getInstanceInfo(CoreService.DISCOVERY.getServiceId()))
-            .thenThrow(InstanceInitializationException.class);
-
-        Exception exception = assertThrows(ServiceNotFoundException.class,
-            () -> staticAPIService.refresh(),
-            "Expected exception is not ServiceNotFoundException");
-
-        assertEquals("Discovery service instance could not be initialized", exception.getMessage());
-    }
-
-    @Test
-     void givenRefreshAPI_whenDiscoveryServiceIsNotAvailable_thenThrowServiceNotFoundException() {
-        Exception exception = assertThrows(ServiceNotFoundException.class,
-            () -> staticAPIService.refresh(),
-            "Expected exception is not ServiceNotFoundException");
-
-        assertEquals("Discovery service could not be found", exception.getMessage());
-    }
+    @Mock
+    private DiscoveryConfigProperties discoveryConfigProperties;
 
     @Test
     void givenRefreshAPIWithSecureDiscoveryService_whenRefreshEndpointPresentResponse_thenReturnApiResponseCodeWithBody() {
-        InstanceInfo discoveryService = InstanceInfo.Builder.newBuilder()
-            .setAppName(CoreService.DISCOVERY.getServiceId())
-            .setHostName("localhost")
-            .setSecurePort(8080).build();
+        String discoveryUrl = "https://localhost:60004/";
+        when(discoveryConfigProperties.getLocations()).thenReturn("https://localhost:60004/eureka/");
 
-        when(instanceRetrievalService.getInstanceInfo(CoreService.DISCOVERY.getServiceId()))
-            .thenReturn(discoveryService);
-
-        String discoveryUrl = getDiscoveryUrl(discoveryService);
         when(restTemplate.exchange(
-            discoveryUrl,
+            discoveryUrl + REFRESH_ENDPOINT,
             HttpMethod.POST, getHttpEntity(discoveryUrl), String.class))
             .thenReturn(new ResponseEntity<>("This is body", HttpStatus.OK));
 
@@ -89,29 +54,17 @@ class StaticAPIServiceTest {
 
     @Test
     void givenRefreshAPIWithUnSecureDiscoveryService_whenRefreshEndpointPresentResponse_thenReturnApiResponseCodeWithBody() {
-        InstanceInfo discoveryService = InstanceInfo.Builder.newBuilder()
-            .setAppName(CoreService.DISCOVERY.getServiceId())
-            .setHostName("localhost")
-            .setSecurePort(0)
-            .setPort(8080).build();
+        String discoveryUrl = "http://localhost:60004/";
+        when(discoveryConfigProperties.getLocations()).thenReturn("http://localhost:60004/eureka/");
 
-        when(instanceRetrievalService.getInstanceInfo(CoreService.DISCOVERY.getServiceId()))
-            .thenReturn(discoveryService);
-
-        String discoveryUrl = getDiscoveryUrl(discoveryService);
         when(restTemplate.exchange(
-            discoveryUrl,
+            discoveryUrl + REFRESH_ENDPOINT,
             HttpMethod.POST, getHttpEntity(discoveryUrl), String.class))
             .thenReturn(new ResponseEntity<>("This is body", HttpStatus.OK));
 
         StaticAPIResponse actualResponse = staticAPIService.refresh();
         StaticAPIResponse expectedResponse = new StaticAPIResponse(200, "This is body");
         assertEquals(expectedResponse, actualResponse);
-    }
-
-
-    private String getDiscoveryUrl(InstanceInfo instanceInfo) {
-        return EurekaUtils.getUrl(instanceInfo) + REFRESH_ENDPOINT;
     }
 
     private HttpEntity<?> getHttpEntity(String discoveryServiceUrl) {
