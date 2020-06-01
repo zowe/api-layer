@@ -76,7 +76,7 @@ public class EurekaInstanceConfigCreator {
 
         try {
             result.setMetadataMap(createMetadata(config));
-        } catch (MetadataValidationException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new ServiceDefinitionException("Service configuration failed to create service metadata: ", e);
         }
 
@@ -94,12 +94,16 @@ public class EurekaInstanceConfigCreator {
         }
 
         // fill routing metadata
-        for (Route route : config.getRoutes()) {
-            String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
-            String serviceUrl = route.getServiceUrl();
-            String key = gatewayUrl.replace("/", "-");
-            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
-            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
+        if (config.getRoutes() != null) {
+            for (Route route : config.getRoutes()) {
+                String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
+                String serviceUrl = route.getServiceUrl();
+                String key = gatewayUrl.replace("/", "-");
+                metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
+                metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
+            }
+        } else {
+            throw new MetadataValidationException("Routes configuration was not provided. Try add apiml.service.routes section.");
         }
 
         // fill tile metadata
@@ -111,6 +115,8 @@ public class EurekaInstanceConfigCreator {
                 metadata.put(CATALOG_TITLE, tile.getTitle());
                 metadata.put(CATALOG_DESCRIPTION, tile.getDescription());
             }
+        } else {
+            throw new MetadataValidationException("Tile configuration for API Catalog was not provided. Try add apiml.service.catalog.tile section.");
         }
 
         // fill service metadata

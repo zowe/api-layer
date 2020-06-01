@@ -82,12 +82,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         }
 
         EurekaClientConfig clientConfiguration = eurekaClientConfigProvider.config(config);
-        try {
-            ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
-            eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
-        } catch (RuntimeException rte) {
-            throw new ServiceDefinitionException("Registration was not successful due to unexpected RuntimeException: ", rte);
-        }
+        ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
+        eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
     }
 
     /**
