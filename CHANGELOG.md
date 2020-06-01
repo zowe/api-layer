@@ -10,6 +10,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 - Added logout endpoint api doc
 - Make jjwt only a test dependency
 - Fix order of fetching JWT from request
+- Implement request retrying for service instances
 
 ## `1.11.0`
 
