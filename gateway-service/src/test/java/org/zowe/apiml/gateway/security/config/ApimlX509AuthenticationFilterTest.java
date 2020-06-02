@@ -31,7 +31,7 @@ import java.util.HashSet;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class ApimlX509AuthenticationFilterTest {
+class ApimlX509AuthenticationFilterTest {
 
     private ServletRequest request;
     private ServletResponse response;
@@ -45,7 +45,7 @@ public class ApimlX509AuthenticationFilterTest {
     }
 
     @Test
-    public void givenNoCertificates_thenDontUpdate_whenCallFilter() throws IOException, ServletException {
+    void givenNoCertificates_thenDontUpdate_whenCallFilter() throws IOException, ServletException {
         ApimlX509AuthenticationFilter filter = new ApimlX509AuthenticationFilter(Collections.emptySet());
 
         filter.doFilter(request, response, chain);
@@ -70,7 +70,7 @@ public class ApimlX509AuthenticationFilterTest {
     }
 
     @Test
-    public void giveCertificates_thenRemoveForeign_whenCallFilter() throws IOException, ServletException {
+    void giveCertificates_thenRemoveForeign_whenCallFilter() throws IOException, ServletException {
         ApimlX509AuthenticationFilter filter = new ApimlX509AuthenticationFilter(new HashSet<>(Arrays.asList(
             correctBase64("apimlCert1"),
             correctBase64("apimlCert2")
