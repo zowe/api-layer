@@ -39,7 +39,7 @@ gitProperties {
 
 dependencies {
     implementation project(':onboarding-enabler-spring')
-
+    implementation project(':zaas-client')
     implementation libraries.springFox
     implementation libraries.spring_boot_starter
     implementation libraries.spring_boot_starter_actuator
