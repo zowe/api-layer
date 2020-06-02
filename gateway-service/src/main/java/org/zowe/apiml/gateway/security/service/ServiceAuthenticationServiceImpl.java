@@ -22,6 +22,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.gateway.cache.RetryIfExpired;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
@@ -101,7 +102,12 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     }
 
     @Override
-    @CacheEvict(value = CACHE_BY_SERVICE_ID, condition = "#result != null && #result.isExpired()")
+    @RetryIfExpired
+    @CacheEvict(
+        value = CACHE_BY_SERVICE_ID,
+        condition = "#result != null && #result.isExpired()",
+        keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
+    )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
         final Application application = discoveryClient.getApplication(serviceId);

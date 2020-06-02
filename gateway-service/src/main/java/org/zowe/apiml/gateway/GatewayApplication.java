@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway;
 
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.zowe.apiml.gateway.ribbon.GatewayRibbonConfig;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
@@ -43,6 +44,7 @@ import javax.annotation.Nonnull;
 @RibbonClients(defaultConfiguration = GatewayRibbonConfig.class)
 @EnableEurekaClient
 @EnableWebSocket
+@EnableAspectJAutoProxy
 public class GatewayApplication implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {

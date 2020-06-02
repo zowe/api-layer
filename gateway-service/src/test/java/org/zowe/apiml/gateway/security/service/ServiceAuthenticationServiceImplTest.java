@@ -14,6 +14,9 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.netflix.loadbalancer.reactive.ExecutionListener;
 import com.netflix.zuul.context.RequestContext;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,16 +24,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.Stubber;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
@@ -58,8 +61,10 @@ import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServi
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
     ServiceAuthenticationServiceImplTest.Context.class,
-    CacheConfig.class
+    CacheConfig.class,
+    RetryIfExpiredAspect.class
 })
+@EnableAspectJAutoProxy
 public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
     @Autowired
@@ -218,12 +223,9 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
 
         //AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
         AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) {
-                ((Supplier<?>) invocation.getArgument(1)).get();
-                return ok;
-            }
+        doAnswer(invocation -> {
+            ((Supplier<?>) invocation.getArgument(1)).get();
+            return ok;
         }).when(scheme).createCommand(any(), any());
         when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
 
@@ -281,7 +283,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
             .thenReturn(ac1);
 
         assertSame(ac1, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
-        verify(discoveryClient, times(1)).getApplication("s1");
+        verify(discoveryClient, times(2)).getApplication("s1");
 
         serviceAuthenticationService.evictCacheAllService();
         Mockito.reset(aas1);
@@ -289,9 +291,9 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         when(aas1.createCommand(eq(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid1")), any()))
             .thenReturn(ac2);
         assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
-        verify(discoveryClient, times(2)).getApplication("s1");
+        verify(discoveryClient, times(3)).getApplication("s1");
         assertSame(ac2, serviceAuthenticationService.getAuthenticationCommand("s1", "jwt"));
-        verify(discoveryClient, times(2)).getApplication("s1");
+        verify(discoveryClient, times(3)).getApplication("s1");
     }
 
     @Test
@@ -464,20 +466,46 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         verify(ac, times(1)).apply(any());
     }
 
+    @Test
+    public void givenServiceIdAndJwt_whenExpiringCommand_thenReturnNewOne() {
+        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        Application application = createApplication(
+            createInstanceInfo("instanceId", AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid")
+        );
+        doReturn(application).when(discoveryClient).getApplication("serviceId");
+        doReturn(scheme).when(authenticationSchemeFactory).getSchema(any());
+        AuthenticationCommandTest cmd = new AuthenticationCommandTest(false);
+        doReturn(cmd).when(scheme).createCommand(any(), any());
+
+        // first time, create and put into cache
+        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        verify(scheme, times(1)).createCommand(any(), any());
+
+        // second time, get from cache
+        assertSame(cmd, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        verify(scheme, times(1)).createCommand(any(), any());
+
+        // command expired, take new one
+        cmd.setExpired(true);
+        AuthenticationCommand cmd2 = new AuthenticationCommandTest(false);
+        reset(scheme);
+        doReturn(cmd2).when(scheme).createCommand(any(), any());
+        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        verify(scheme, times(1)).createCommand(any(), any());
+
+        // second command is cached now
+        assertSame(cmd2, serviceAuthenticationService.getAuthenticationCommand("serviceId", "jwt"));
+        verify(scheme, times(1)).createCommand(any(), any());
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
     public class AuthenticationCommandTest extends AuthenticationCommand {
 
         private static final long serialVersionUID = 8527412076986152763L;
 
         private boolean expired;
-
-        public AuthenticationCommandTest(boolean expired) {
-            this.expired = expired;
-        }
-
-        @Override
-        public boolean isExpired() {
-            return expired;
-        }
 
         @Override
         public void apply(InstanceInfo instanceInfo) {
