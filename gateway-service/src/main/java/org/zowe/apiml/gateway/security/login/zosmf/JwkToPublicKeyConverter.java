@@ -14,14 +14,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -75,9 +72,7 @@ public class JwkToPublicKeyConverter {
             Certificate caCertificate = keyStore.getCertificate(config.getKeyAlias());
             PrivateKey caPrivateKey = (PrivateKey) keyStore.getKey(config.getKeyAlias(),
                     config.getKeyPassword().toCharArray());
-            String publicKeyPem = convertFirstPublicKeyJwkToPublicKeyPem(jwkJson);
-            PEMParser pemParser = new PEMParser(new StringReader(publicKeyPem));
-            SubjectPublicKeyInfo publicKey = (SubjectPublicKeyInfo) pemParser.readObject();
+            SubjectPublicKeyInfo publicKey = extractPublicKey(jwkJson);
 
             ContentSigner signer = new JcaContentSignerBuilder("Sha256With" + caPrivateKey.getAlgorithm())
                     .build(caPrivateKey);
@@ -89,7 +84,7 @@ public class JwkToPublicKeyConverter {
             X500Name name = new X500Name(
                     new RDN[] { new RDN(BCStyle.CN, new DERPrintableString("Zowe JWT Public Key")) });
 
-            final JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+            JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
 
             X509CertificateHolder caX509Certificate = new X509CertificateHolder(caCertificate.getEncoded());
 
@@ -106,14 +101,20 @@ public class JwkToPublicKeyConverter {
 
             return certificateHolderToPem(x509CertificateHolder);
         } catch (ParseException | JOSEException | CertificateException | IOException | OperatorCreationException
-                | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException | SignatureException
-                | KeyStoreException | UnrecoverableKeyException e) {
+                | KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException e) {
             throw new JwkConversionError(e);
         }
     }
 
-    private String certificateHolderToPem(X509CertificateHolder x509CertificateHolder) throws CertificateException,
-            IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    private SubjectPublicKeyInfo extractPublicKey(String jwkJson) throws JOSEException, ParseException, IOException {
+        String publicKeyPem = convertFirstPublicKeyJwkToPublicKeyPem(jwkJson);
+        PEMParser pemParser = new PEMParser(new StringReader(publicKeyPem));
+        SubjectPublicKeyInfo publicKey = (SubjectPublicKeyInfo) pemParser.readObject();
+        return publicKey;
+    }
+
+    private String certificateHolderToPem(X509CertificateHolder x509CertificateHolder)
+            throws CertificateException, IOException {
         StringWriter sw = new StringWriter();
         Certificate cert = CertificateFactory.getInstance("X.509")
                 .generateCertificate(new ByteArrayInputStream(x509CertificateHolder.getEncoded()));
