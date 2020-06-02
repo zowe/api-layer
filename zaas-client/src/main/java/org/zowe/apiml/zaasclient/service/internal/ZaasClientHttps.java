@@ -29,7 +29,7 @@ public class ZaasClientHttps implements ZaasClient {
             HttpsClientProvider provider = new HttpsClientProvider(configProperties);
             String baseUrl = String.format("https://%s:%s%s", configProperties.getApimlHost(), configProperties.getApimlPort(),
                 configProperties.getApimlBaseUrl());
-
+            log.error("gatewayUrl: "+baseUrl);
             tokens = new TokenServiceHttpsJwt(provider, baseUrl, configProperties.getApimlHost());
             passTickets = new PassTicketServiceHttps(provider, baseUrl);
         } catch (ZaasConfigurationException e) {
