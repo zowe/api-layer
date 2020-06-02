@@ -27,7 +27,7 @@ import org.zowe.apiml.security.HttpsFactory;
  * java -cp gateway-service/build/libs/gateway-service.jar
  * -Dapiml.security.ssl.verifySslCertificatesOfServices=false
  * -Dloader.main=org.zowe.apiml.gateway.security.login.zosmf.SaveZosmfPublicKeyConsoleApplication
- * org.springframework.boot.loader.PropertiesLauncher https://zosmf:443 jwtsecret.pem
+ * org.springframework.boot.loader.PropertiesLauncher https://zosmf:443 jwtsecret.pem localca keystore/local_ca/localca.keystore.p12 PKCS12 local_ca_password local_ca_password
  */
 public class SaveZosmfPublicKeyConsoleApplication {
 
@@ -41,7 +41,7 @@ public class SaveZosmfPublicKeyConsoleApplication {
 
         System.out.printf("Loading public key of z/OSMF at %s\n", jwkUrl);
         try {
-            if (zosmfJwkToPublicKey.updateJwtPublicKeyFile(jwkUrl, filename)) {
+            if (zosmfJwkToPublicKey.updateJwtPublicKeyFile(jwkUrl, filename, args[2], args[3], args[4], args[5], args[6])) {
                 System.out.printf("Public key of z/OSMF at stored as a certificate to %s\n", filename);
             }
         } catch (FileNotFoundException e) {

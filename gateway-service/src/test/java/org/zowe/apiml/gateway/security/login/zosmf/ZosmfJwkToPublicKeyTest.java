@@ -29,15 +29,17 @@ public class ZosmfJwkToPublicKeyTest {
         RestTemplate restTemplate = mock(RestTemplate.class);
         String jwk = "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\",\"use\":\"sig\",\"kid\":\"ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg\",\"alg\":\"RS256\",\"n\":\"wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q\"}]}";
 
-        when(restTemplate.getForObject("https://zosmf:1433/jwt/ibm/api/zOSMFBuilder/jwk", String.class)).thenReturn(jwk);
+        when(restTemplate.getForObject("https://zosmf:1433/jwt/ibm/api/zOSMFBuilder/jwk", String.class))
+                .thenReturn(jwk);
 
         ZosmfJwkToPublicKey zosmfJwkToPublicKey = new ZosmfJwkToPublicKey(restTemplate);
 
         File f = File.createTempFile("jwt", null, new File(System.getProperty("java.io.tmpdir")));
         try {
             String filename = f.getName();
-            assertTrue(zosmfJwkToPublicKey.updateJwtPublicKeyFile("https://zosmf:1433", filename));
-            assertTrue(new String(Files.readAllBytes(Paths.get(filename))).contains("-----END CERTIFICATE-----"));
+            assertTrue(zosmfJwkToPublicKey.updateJwtPublicKeyFile("https://zosmf:1433", filename, "localca",
+                    "../keystore/local_ca/localca.keystore.p12", "PKCS12", "local_ca_password", "local_ca_password"));
+            assertTrue(new String(Files.readAllBytes(Paths.get(filename))).contains("-----"));
         } finally {
             f.delete();
         }

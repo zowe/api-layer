@@ -1,0 +1,40 @@
+#
+# Static definition for z/OSMF
+#
+# To skip adding service certificate or CA certificate to the truststore
+# of the API Gateway you need to see following setting in the
+# config/local/gateway-service.yml:
+#
+#   apiml:
+#       security:
+#           verifySslCertificatesOfServices: false
+#
+#  Then you can access z/OSMF via the API gateway:
+#
+#   http --verify=keystore/local_ca/localca.cer GET https://localhost:10010/api/{zosmf-service-id}/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
+#
+services:
+    - serviceId: zosmf                                            # unique lowercase ID of the service
+      title: IBM z/OSMF                                           # Title of the z/OSMF service in the API catalog
+      description: IBM z/OS Management Facility REST API service  # Description of the z/OSMF service in the API catalog
+      catalogUiTileId: zosmf                                      # ID of the API Catalog UI tile for z/OSMF services
+      instanceBaseUrls:                                           # list of base URLs for each instance
+        - https://usilca32.lvn.broadcom.net:1443/                 # scheme://hostname:port/contextPath
+      homePageRelativeUrl:                                        # Home page of the z/OSMF service
+      routes:
+        - gatewayUrl: api                                         # [api/ui/ws]/v{majorVersion}
+          serviceRelativeUrl: /                                   # relativePath that is added to baseUrl of an instance
+        - gatewayUrl: ui
+          serviceRelativeUrl: /
+      authentication:
+          scheme: zosmf                                           # This service expects z/OSMF LTPA token
+      apiInfo:                                                    # List of APIs provided by the z/OSMF service (currenly only one is supported):
+        - apiId: com.ibm.zosmf
+          gatewayUrl: api
+          version: 2.x.0
+          documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+
+catalogUiTiles:                                                   # z/OSMF services tile
+    zosmf:
+        title: z/OSMF services
+        description: IBM z/OS Management Facility REST services

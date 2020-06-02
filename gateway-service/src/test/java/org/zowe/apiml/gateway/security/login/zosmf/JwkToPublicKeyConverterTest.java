@@ -24,7 +24,11 @@ public class JwkToPublicKeyConverterTest {
     void exponentAndModulusAreConvertedToPublicKeyInCertificate() {
         String jwk = "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\",\"use\":\"sig\",\"kid\":\"ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg\",\"alg\":\"RS256\",\"n\":\"wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q\"}]}";
         JwkToPublicKeyConverter converter = new JwkToPublicKeyConverter();
-        assertTrue(converter.convertFirstPublicKeyJwkToPem(jwk).contains("-----END CERTIFICATE-----"));
+        assertTrue(
+                converter
+                        .convertFirstPublicKeyJwkToPem(jwk, "localca", "../keystore/local_ca/localca.keystore.p12",
+                                "PKCS12", "local_ca_password", "local_ca_password")
+                        .contains("-----END CERTIFICATE-----"));
     }
 
     @Test
@@ -35,4 +39,3 @@ public class JwkToPublicKeyConverterTest {
         assertEquals(expectedPublicKey, converter.convertFirstPublicKeyJwkToPublicKeyPem(jwk));
     }
 }
-
