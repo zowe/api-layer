@@ -109,8 +109,7 @@ public class JwkToPublicKeyConverter {
     private SubjectPublicKeyInfo extractPublicKey(String jwkJson) throws JOSEException, ParseException, IOException {
         String publicKeyPem = convertFirstPublicKeyJwkToPublicKeyPem(jwkJson);
         PEMParser pemParser = new PEMParser(new StringReader(publicKeyPem));
-        SubjectPublicKeyInfo publicKey = (SubjectPublicKeyInfo) pemParser.readObject();
-        return publicKey;
+        return (SubjectPublicKeyInfo) pemParser.readObject();
     }
 
     private String certificateHolderToPem(X509CertificateHolder x509CertificateHolder)
