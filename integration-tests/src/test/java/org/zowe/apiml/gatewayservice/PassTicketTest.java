@@ -315,7 +315,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void givenBearerJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+    void givenBearerJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         verifyPassTicketHeaders(
             given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken())
@@ -327,7 +327,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void givenCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+    void givenCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         verifyPassTicketHeaders(
             given()
                 .cookie(COOKIE, gatewayToken())
@@ -339,7 +339,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void givenBasicAuth_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+    void givenBasicAuth_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         verifyPassTicketHeaders(
             given()
                 .auth().preemptive().basic(USERNAME, PASSWORD)
@@ -351,7 +351,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void givenBothJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+    void givenBothJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         verifyPassTicketHeaders(
             given()
                 .cookie(COOKIE, gatewayToken())
@@ -364,7 +364,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void givenBasicAndCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
+    void givenBasicAndCookieJwt_whenUsePassticketsAuthenticationScheme_thenResultContainsPassticketAndNoJwt() {
         verifyPassTicketHeaders(
             given()
                 .auth().preemptive().basic(USERNAME, PASSWORD)
