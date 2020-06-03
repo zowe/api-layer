@@ -24,6 +24,8 @@ import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.MalformedURLException;
+
 
 @Slf4j
 @Component
@@ -90,7 +92,7 @@ public class RegisterToApiLayer {
             logger.log("org.zowe.apiml.enabler.registration.successful",
                 config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls());
             log.debug("Registering to API Mediation Layer with settings: {}", config.toString());
-        } catch (ServiceDefinitionException e) {
+        } catch (ServiceDefinitionException | MalformedURLException e) {
             logger.log("org.zowe.apiml.enabler.registration.fail"
                 , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls(), e.toString());
             log.debug(String.format("Service %s registration to API ML failed: ", config.getBaseUrl()), e);

@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import java.net.MalformedURLException;
 
 @Slf4j
 @WebListener
@@ -41,7 +42,7 @@ public class HelloJerseyListener implements ServletContextListener {
             if (config != null) {
                 apiMediationClient.register(config);
             }
-        } catch (ServiceDefinitionException e) {
+        } catch (ServiceDefinitionException | MalformedURLException e) {
             log.error("Service registration failed. Check log for previous errors: ", e);
         }
     }

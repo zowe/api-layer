@@ -13,6 +13,8 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import com.netflix.discovery.EurekaClient;
 
+import java.net.MalformedURLException;
+
 /**
  *  Defines {@link ApiMediationClient} methods for registering and unregistering REST service with API Mediation Layer
  *  Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient} which is
@@ -26,7 +28,7 @@ public interface ApiMediationClient {
      * @param config
      * @throws ServiceDefinitionException - checked exception encapsulating the real reason why registration has failed.
      */
-    void register(ApiMediationServiceConfig config) throws ServiceDefinitionException;
+    void register(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException;
 
     /**
      * Entry point for unregistering and clean up.

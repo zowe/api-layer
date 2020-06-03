@@ -13,7 +13,6 @@ package org.zowe.apiml.eurekaservice.client.util;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.config.*;
-import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.util.MapUtils;
 import org.zowe.apiml.util.UrlUtils;
@@ -27,21 +26,15 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaInstanceConfigCreator {
 
-    public EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException {
+    public EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException {
+        // todo validator
+        EurekaInstanceConfigValidator eurekaInstanceConfigValidator = new EurekaInstanceConfigValidator();
+        eurekaInstanceConfigValidator.validateConfiguration(config);
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
-        String hostname;
-        int port;
-        URL baseUrl;
-
-        try {
-            baseUrl = new URL(config.getBaseUrl());
-            hostname = baseUrl.getHost();
-            port = baseUrl.getPort();
-        } catch (MalformedURLException e) {
-            String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
-            throw new ServiceDefinitionException(message, e);
-        }
+        URL baseUrl = new URL(config.getBaseUrl());
+        String hostname = baseUrl.getHost();
+        int port = baseUrl.getPort();
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
         result.setAppname(config.getServiceId());
@@ -71,7 +64,7 @@ public class EurekaInstanceConfigCreator {
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
-                throw new ServiceDefinitionException(String.format("'%s' is not valid protocol for baseUrl property", protocol));
+                break;
         }
 
         try {
@@ -94,16 +87,12 @@ public class EurekaInstanceConfigCreator {
         }
 
         // fill routing metadata
-        if (config.getRoutes() != null) {
-            for (Route route : config.getRoutes()) {
-                String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
-                String serviceUrl = route.getServiceUrl();
-                String key = gatewayUrl.replace("/", "-");
-                metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
-                metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
-            }
-        } else {
-            throw new MetadataValidationException("Routes configuration was not provided. Try add apiml.service.routes section.");
+        for (Route route : config.getRoutes()) {
+            String gatewayUrl = UrlUtils.trimSlashes(route.getGatewayUrl());
+            String serviceUrl = route.getServiceUrl();
+            String key = gatewayUrl.replace("/", "-");
+            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_GATEWAY_URL), gatewayUrl);
+            metadata.put(String.format("%s.%s.%s", ROUTES, key, ROUTES_SERVICE_URL), serviceUrl);
         }
 
         // fill tile metadata
@@ -115,8 +104,6 @@ public class EurekaInstanceConfigCreator {
                 metadata.put(CATALOG_TITLE, tile.getTitle());
                 metadata.put(CATALOG_DESCRIPTION, tile.getDescription());
             }
-        } else {
-            throw new MetadataValidationException("Tile configuration for API Catalog was not provided. Try add apiml.service.catalog.tile section.");
         }
 
         // fill service metadata

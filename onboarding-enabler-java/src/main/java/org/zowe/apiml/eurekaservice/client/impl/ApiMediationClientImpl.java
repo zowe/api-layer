@@ -29,6 +29,8 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
 
+import java.net.MalformedURLException;
+
 
 /**
  * Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
@@ -76,7 +78,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
      * @throws ServiceDefinitionException
      */
     @Override
-    public synchronized void register(ApiMediationServiceConfig config) throws ServiceDefinitionException {
+    public synchronized void register(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException {
         if (eurekaClient != null) {
             throw new ServiceDefinitionException("EurekaClient was previously registered for this instance of ApiMediationClient. Call your ApiMediationClient unregister() method before attempting other registration.");
         }
@@ -128,6 +130,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                     .trustStorePassword(sslConfig.getTrustStorePassword());
             }
         } else {
+
+            //TODO should be moved to EurekaInstanceConfigValidator?
             throw new MetadataValidationException("SSL configuration was not provided. Try add apiml.service.ssl section.");
         }
         HttpsConfig httpsConfig = builder.build();
@@ -142,7 +146,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         return this.eurekaClientProvider.client(applicationInfoManager, clientConfig, args);
     }
 
-    private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException {
+    private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException {
         EurekaInstanceConfig eurekaInstanceConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(config);
         InstanceInfo instanceInformation = new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get();
         return new ApplicationInfoManager(eurekaInstanceConfig, instanceInformation);
