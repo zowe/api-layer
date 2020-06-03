@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.net.MalformedURLException;
 import java.util.*;
 
 import static org.hamcrest.core.Is.isA;
@@ -39,7 +40,7 @@ public class ApiMediationClientImplTest {
     public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
-    public void startEurekaClient() throws ServiceDefinitionException {
+    public void startEurekaClient() throws ServiceDefinitionException, MalformedURLException {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
         Authentication authentication = new Authentication("bypass", null);
@@ -83,8 +84,8 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badBaseUrlFormat() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
+    public void badBaseUrlFormat() throws ServiceDefinitionException, MalformedURLException {
+        exceptionRule.expect(MetadataValidationException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -98,7 +99,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     // It just tests that the https base configuration won't throw any exception.
-    public void httpsBaseUrlFormat() throws ServiceDefinitionException {
+    public void httpsBaseUrlFormat() throws ServiceDefinitionException, MalformedURLException {
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-service-configuration.yml");
@@ -118,8 +119,8 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void badProtocolForBaseUrl() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
+    public void badProtocolForBaseUrl() throws ServiceDefinitionException, MalformedURLException {
+        exceptionRule.expect(MetadataValidationException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -131,8 +132,8 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void testInitializationServiceDefinitionException() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
+    public void testInitializationServiceDefinitionException() throws ServiceDefinitionException, MalformedURLException {
+        exceptionRule.expect(MetadataValidationException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -147,9 +148,9 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void testInitializationRuntimeException() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
-        exceptionRule.expectCause(isA(NullPointerException.class));
+    public void testInitializationRuntimeException() throws ServiceDefinitionException, MalformedURLException {
+        exceptionRule.expect(MetadataValidationException.class);
+        exceptionRule.expectMessage("Routes configuration was not provided. Try to add apiml.service.routes section");
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -164,7 +165,7 @@ public class ApiMediationClientImplTest {
     }
 
     @Test
-    public void testInitialization_InvalidDocumentationUrl() throws ServiceDefinitionException {
+    public void testInitialization_InvalidDocumentationUrl() throws ServiceDefinitionException, MalformedURLException {
         exceptionRule.expect(ServiceDefinitionException.class);
         exceptionRule.expectCause(isA(MetadataValidationException.class));
 

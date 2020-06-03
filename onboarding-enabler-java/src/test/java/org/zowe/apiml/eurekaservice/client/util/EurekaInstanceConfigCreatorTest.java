@@ -15,6 +15,8 @@ import org.junit.Test;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
+import java.net.MalformedURLException;
+
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.Assert.assertThat;
 
@@ -24,7 +26,7 @@ public class EurekaInstanceConfigCreatorTest {
     private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
 
     @Test
-    public void givenYamlMetadata_whenParsedByJackson_shouldFlattenMetadataCorrectly() throws ServiceDefinitionException {
+    public void givenYamlMetadata_whenParsedByJackson_shouldFlattenMetadataCorrectly() throws ServiceDefinitionException, MalformedURLException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("service-configuration.yml");
         EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(testConfig);
 

@@ -13,6 +13,7 @@ package org.zowe.apiml.eurekaservice.client.util;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.config.*;
+import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.util.MapUtils;
 import org.zowe.apiml.util.UrlUtils;
@@ -27,9 +28,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 public class EurekaInstanceConfigCreator {
 
     public EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException {
-        // todo validator
         EurekaInstanceConfigValidator eurekaInstanceConfigValidator = new EurekaInstanceConfigValidator();
-        eurekaInstanceConfigValidator.validateConfiguration(config);
+        eurekaInstanceConfigValidator.validate(config);
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
         URL baseUrl = new URL(config.getBaseUrl());
@@ -69,7 +69,7 @@ public class EurekaInstanceConfigCreator {
 
         try {
             result.setMetadataMap(createMetadata(config));
-        } catch (IllegalArgumentException e) {
+        } catch (MetadataValidationException | IllegalArgumentException e) {
             throw new ServiceDefinitionException("Service configuration failed to create service metadata: ", e);
         }
 
