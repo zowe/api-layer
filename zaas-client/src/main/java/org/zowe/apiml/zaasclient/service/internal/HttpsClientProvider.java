@@ -89,6 +89,7 @@ class HttpsClientProvider implements CloseableClientProvider {
         try {
             tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             KeyStore trustStore = getKeystore(trustStorePath, trustStoreType, trustStorePassword);
+
             tmf.init(trustStore);
         } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException e) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
@@ -130,7 +131,7 @@ class HttpsClientProvider implements CloseableClientProvider {
 
     private SSLContext getSSLContext() throws ZaasConfigurationException {
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
             sslContext.init(
                 kmf != null ? kmf.getKeyManagers() : null,
                 tmf.getTrustManagers(),
