@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.client.configuration.ZaasClientConfig;
+import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
@@ -34,8 +34,8 @@ public class ZaasClientTestController {
 
     private ZaasClient zaasClient;
 
-    public ZaasClientTestController(ZaasClientConfig zaasClientConfig) throws ZaasConfigurationException {
-        zaasClient = new ZaasClientHttps(zaasClientConfig.getConfigProperties());
+    public ZaasClientTestController(ConfigProperties getConfigProperties) throws ZaasConfigurationException {
+        zaasClient = new ZaasClientHttps(getConfigProperties);
     }
 
     @PostMapping

@@ -58,6 +58,7 @@ class TokenServiceHttpsJwt implements TokenService {
 
     private ClientWithResponse loginWithCredentials(String userId, String password) throws Exception {
         CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
+        log.error(loginEndpoint);
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(new Credentials(userId, password));
@@ -154,12 +155,14 @@ class TokenServiceHttpsJwt implements TokenService {
         ClientWithResponse clientWithResponse = new ClientWithResponse();
 
         try {
+
             clientWithResponse = request.request();
 
             return token.extract(clientWithResponse.getResponse());
         } catch (ZaasClientException e) {
             throw e;
         } catch (IOException e) {
+            log.error(e.getMessage(), e.fillInStackTrace());
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, e);
