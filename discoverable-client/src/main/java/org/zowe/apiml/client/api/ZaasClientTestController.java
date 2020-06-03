@@ -44,7 +44,6 @@ public class ZaasClientTestController {
         try {
             String jwt = zaasClient.login(loginRequest.getUsername(), loginRequest.getPassword());
             return ResponseEntity.ok().body(jwt);
-
         } catch (ZaasClientException e) {
             return ResponseEntity.status(e.getErrorCode().getReturnCode()).body(e.getErrorCode().getMessage());
         }

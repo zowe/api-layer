@@ -58,13 +58,11 @@ class TokenServiceHttpsJwt implements TokenService {
 
     private ClientWithResponse loginWithCredentials(String userId, String password) throws Exception {
         CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
-        log.error(loginEndpoint);
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(new Credentials(userId, password));
         StringEntity entity = new StringEntity(json);
         httpPost.setEntity(entity);
-        log.error("crd: " + json);
         httpPost.setHeader("Content-type", "application/json");
         return new ClientWithResponse(client, client.execute(httpPost));
     }
@@ -130,7 +128,6 @@ class TokenServiceHttpsJwt implements TokenService {
     private String extractToken(CloseableHttpResponse response) throws ZaasClientException, IOException {
         String token = "";
         int httpResponseCode = response.getStatusLine().getStatusCode();
-        log.error("GWresponsecode: " + httpResponseCode);
         if (httpResponseCode == 204) {
             HeaderElement[] elements = response.getHeaders("Set-Cookie")[0].getElements();
             Optional<HeaderElement> apimlAuthCookie = Stream.of(elements)
@@ -163,7 +160,6 @@ class TokenServiceHttpsJwt implements TokenService {
         } catch (ZaasClientException e) {
             throw e;
         } catch (IOException e) {
-            log.error(e.getMessage(), e.fillInStackTrace());
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, e);
