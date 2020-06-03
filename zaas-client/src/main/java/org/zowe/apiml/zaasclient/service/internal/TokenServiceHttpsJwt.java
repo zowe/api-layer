@@ -130,6 +130,7 @@ class TokenServiceHttpsJwt implements TokenService {
     private String extractToken(CloseableHttpResponse response) throws ZaasClientException, IOException {
         String token = "";
         int httpResponseCode = response.getStatusLine().getStatusCode();
+        log.error("GWresponsecode: " + httpResponseCode);
         if (httpResponseCode == 204) {
             HeaderElement[] elements = response.getHeaders("Set-Cookie")[0].getElements();
             Optional<HeaderElement> apimlAuthCookie = Stream.of(elements)
