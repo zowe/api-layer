@@ -13,7 +13,6 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import com.netflix.discovery.EurekaClient;
 
-import java.net.MalformedURLException;
 
 /**
  *  Defines {@link ApiMediationClient} methods for registering and unregistering REST service with API Mediation Layer
