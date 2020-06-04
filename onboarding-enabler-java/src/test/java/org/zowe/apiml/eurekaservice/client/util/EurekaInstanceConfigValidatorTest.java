@@ -32,15 +32,6 @@ class EurekaInstanceConfigValidatorTest {
     }
 
     @Test
-    public void givenConfigurationWithInvalidProtocol_whenValidate_thenThrowException() throws ServiceDefinitionException {
-        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("bad-protocol-baseurl-service-configuration.yml");
-        Exception exception = assertThrows(MetadataValidationException.class,
-            () -> validator.validate(testConfig),
-            "Expected exception is not MetadataValidationException");
-        assertEquals("'ftp' is not valid protocol for baseUrl property", exception.getMessage());
-    }
-
-    @Test
     public void givenConfigurationWithInvalidSsl_whenValidate_thenThrowException() throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("bad-ssl-configuration.yml");
         Exception exception = assertThrows(MetadataValidationException.class,

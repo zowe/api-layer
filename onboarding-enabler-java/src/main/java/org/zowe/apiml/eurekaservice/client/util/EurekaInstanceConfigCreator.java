@@ -32,9 +32,18 @@ public class EurekaInstanceConfigCreator {
         eurekaInstanceConfigValidator.validate(config);
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
-        URL baseUrl = new URL(config.getBaseUrl());
-        String hostname = baseUrl.getHost();
-        int port = baseUrl.getPort();
+        String hostname;
+        int port;
+        URL baseUrl;
+
+        try {
+            baseUrl = new URL(config.getBaseUrl());
+            hostname = baseUrl.getHost();
+            port = baseUrl.getPort();
+        } catch (MalformedURLException e) {
+            String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
+            throw new MetadataValidationException(message, e);
+        }
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
         result.setAppname(config.getServiceId());
@@ -64,7 +73,7 @@ public class EurekaInstanceConfigCreator {
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
-                break;
+                throw new MetadataValidationException(String.format("'%s' is not valid protocol for baseUrl property", protocol));
         }
 
         try {
