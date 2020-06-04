@@ -28,7 +28,7 @@ public interface ApiMediationClient {
      * @param config
      * @throws ServiceDefinitionException - checked exception encapsulating the real reason why registration has failed.
      */
-    void register(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException;
+    void register(ApiMediationServiceConfig config) throws ServiceDefinitionException;
 
     /**
      * Entry point for unregistering and clean up.

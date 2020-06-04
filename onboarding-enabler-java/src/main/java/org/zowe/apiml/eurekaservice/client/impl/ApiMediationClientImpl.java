@@ -77,7 +77,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
      * @throws ServiceDefinitionException
      */
     @Override
-    public synchronized void register(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException {
+    public synchronized void register(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         if (eurekaClient != null) {
             throw new ServiceDefinitionException("EurekaClient was previously registered for this instance of ApiMediationClient. Call your ApiMediationClient unregister() method before attempting other registration.");
         }
@@ -141,7 +141,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         return this.eurekaClientProvider.client(applicationInfoManager, clientConfig, args);
     }
 
-    private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException {
+    private ApplicationInfoManager initializeApplicationInfoManager(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         EurekaInstanceConfig eurekaInstanceConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(config);
         InstanceInfo instanceInformation = new EurekaConfigBasedInstanceInfoProvider(eurekaInstanceConfig).get();
         return new ApplicationInfoManager(eurekaInstanceConfig, instanceInformation);

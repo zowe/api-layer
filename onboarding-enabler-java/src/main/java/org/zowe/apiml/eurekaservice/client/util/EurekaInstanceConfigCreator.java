@@ -27,7 +27,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaInstanceConfigCreator {
 
-    public EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException, MalformedURLException {
+    public EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         EurekaInstanceConfigValidator eurekaInstanceConfigValidator = new EurekaInstanceConfigValidator();
         eurekaInstanceConfigValidator.validate(config);
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
