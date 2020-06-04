@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -152,5 +153,11 @@ public class CloseableClientProviderTest {
         });
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS502E"));
+    }
+
+    @Test
+    public void testReplaceFourSlashes() {
+        String newUrl = HttpsClientProvider.replaceFourSlashes("safkeyring:////userId/keyRing");
+        assertEquals("safkeyring://userId/keyRing", newUrl);
     }
 }
