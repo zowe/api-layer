@@ -30,7 +30,7 @@ import static org.hamcrest.core.IsNot.not;
  * Purpose of this test is verify correct behavior of Zaas client
  * as a part of application running on mainframe
  */
-public class IntegratedZaasClientTest {
+class IntegratedZaasClientTest {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -48,7 +48,7 @@ public class IntegratedZaasClientTest {
      * configuration of SSL, specifically SAF keyring support.
      */
     @Test
-    public void loginWithValidCredentials() {
+    void loginWithValidCredentials() {
         URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/zaasClient");
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
@@ -68,7 +68,7 @@ public class IntegratedZaasClientTest {
      * configuration of SSL, specifically SAF keyring support.
      */
     @Test
-    public void invalidCredentials() {
+    void invalidCredentials() {
         URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/zaasClient");
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 

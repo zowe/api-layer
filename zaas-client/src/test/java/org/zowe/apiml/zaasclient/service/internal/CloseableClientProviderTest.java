@@ -156,7 +156,19 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void testReplaceFourSlashes() {
+    void givenInvalidTrustStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() {
+        ConfigProperties config = new ConfigProperties();
+        config.setTrustStorePassword("password");
+        config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
+        config.setTrustStoreType("invalidCryptoType");
+        ZaasConfigurationException zaasException = assertThrows(
+            ZaasConfigurationException.class, () -> new HttpsClientProvider(config)
+        );
+        assertThat(zaasException.getErrorCode().getId(), is("ZWEAS502E"));
+    }
+
+    @Test
+    void testReplaceFourSlashes() {
         String newUrl = HttpsClientProvider.replaceFourSlashes("safkeyring:////userId/keyRing");
         assertEquals("safkeyring://userId/keyRing", newUrl);
     }
