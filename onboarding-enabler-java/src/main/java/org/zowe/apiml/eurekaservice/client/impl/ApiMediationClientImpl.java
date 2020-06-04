@@ -28,8 +28,6 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
 
-import java.net.MalformedURLException;
-
 
 /**
  * Implements {@link ApiMediationClient} interface methods for registering and unregistering REST service with
