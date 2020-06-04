@@ -24,8 +24,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.net.MalformedURLException;
-
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -45,7 +43,7 @@ public class ApimlDisabledRegisterToApiLayerTest {
     private ApiMediationClient apiMediationClient;
 
     @Test
-    public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException, MalformedURLException {
+    public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
 
         assertNotNull("ApiMediationServiceConfig is null", apiMediationServiceConfig);
         assertNotNull("Ssl is null", apiMediationServiceConfig.getSsl());

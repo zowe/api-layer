@@ -23,8 +23,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.net.MalformedURLException;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
@@ -43,7 +41,7 @@ public class ApimlEnabledRegisterToApiLayerTest {
     private ApiMediationClient apiMediationClient;
 
     @Test
-    public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException, MalformedURLException {
+    public void testOnContextRefreshedEventEvent() throws ServiceDefinitionException {
         assertNotNull("ApiMediationServiceConfig is null", apiMediationServiceConfig);
         assertEquals("Service id is not equal", "discoverableclient2", apiMediationServiceConfig.getServiceId());
 
