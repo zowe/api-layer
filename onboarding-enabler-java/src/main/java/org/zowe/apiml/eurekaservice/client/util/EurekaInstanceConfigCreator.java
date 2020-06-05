@@ -28,6 +28,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 public class EurekaInstanceConfigCreator {
 
     public EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException {
+        EurekaInstanceConfigValidator eurekaInstanceConfigValidator = new EurekaInstanceConfigValidator();
+        eurekaInstanceConfigValidator.validate(config);
         ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
         String hostname;
@@ -40,7 +42,7 @@ public class EurekaInstanceConfigCreator {
             port = baseUrl.getPort();
         } catch (MalformedURLException e) {
             String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
-            throw new ServiceDefinitionException(message, e);
+            throw new MetadataValidationException(message, e);
         }
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
@@ -71,7 +73,7 @@ public class EurekaInstanceConfigCreator {
                 result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
-                throw new ServiceDefinitionException(String.format("'%s' is not valid protocol for baseUrl property", protocol));
+                throw new MetadataValidationException(String.format("'%s' is not valid protocol for baseUrl property", protocol));
         }
 
         try {

@@ -13,6 +13,7 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import com.netflix.discovery.EurekaClient;
 
+
 /**
  *  Defines {@link ApiMediationClient} methods for registering and unregistering REST service with API Mediation Layer
  *  Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient} which is
