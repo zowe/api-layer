@@ -11,17 +11,17 @@
 package org.zowe.apiml.eurekaservice.client.util;
 
 import com.netflix.appinfo.EurekaInstanceConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class EurekaInstanceConfigCreatorTest {
+class EurekaInstanceConfigCreatorTest {
 
     private ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
     private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
@@ -39,8 +39,8 @@ public class EurekaInstanceConfigCreatorTest {
         assertThat(translatedConfig.getMetadataMap(), hasEntry("customService.evenmorelevels.key5.key6.key7", "value7"));
     }
 
-    @org.junit.jupiter.api.Test
-    public void givenConfigurationWithInvalidProtocol_whenValidate_thenThrowException() throws ServiceDefinitionException {
+    @Test
+    void givenConfigurationWithInvalidProtocol_whenValidate_thenThrowException() throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("bad-protocol-baseurl-service-configuration.yml");
         Exception exception = assertThrows(MetadataValidationException.class,
             () -> eurekaInstanceConfigCreator.createEurekaInstanceConfig(testConfig),

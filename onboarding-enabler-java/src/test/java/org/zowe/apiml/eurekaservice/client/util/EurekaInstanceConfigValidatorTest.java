@@ -26,13 +26,13 @@ class EurekaInstanceConfigValidatorTest {
     private ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
 
     @Test
-    public void givenServiceConfiguration_whenConfigurationIsValid_thenValidate() throws ServiceDefinitionException {
+    void givenServiceConfiguration_whenConfigurationIsValid_thenValidate() throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("service-configuration.yml");
         assertDoesNotThrow(() -> validator.validate(testConfig));
     }
 
     @Test
-    public void givenConfigurationWithInvalidSsl_whenValidate_thenThrowException() throws ServiceDefinitionException {
+    void givenConfigurationWithInvalidSsl_whenValidate_thenThrowException() throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("bad-ssl-configuration.yml");
         Exception exception = assertThrows(MetadataValidationException.class,
             () -> validator.validate(testConfig),
@@ -41,7 +41,7 @@ class EurekaInstanceConfigValidatorTest {
     }
 
     @Test
-    public void givenSystemProperties_whenLoadFromFile_thenNoOverrideBySystemProp() throws Exception {
+    void givenSystemProperties_whenLoadFromFile_thenNoOverrideBySystemProp() throws Exception {
         System.setProperty("apiml.serviceId", "veronica");
 
         String internalFileName = "/service-configuration.yml";
@@ -53,7 +53,7 @@ class EurekaInstanceConfigValidatorTest {
     }
 
     @Test
-    public void givenSystemProperties_whenLoadFromContext_thenNotOverrideBySystemProp() throws Exception {
+    void givenSystemProperties_whenLoadFromContext_thenNotOverrideBySystemProp() throws Exception {
         System.setProperty("apiml.serviceId", "veronica");
         ServletContext context = new MockServletContext();
 
@@ -65,7 +65,7 @@ class EurekaInstanceConfigValidatorTest {
     }
 
     @Test
-    public void givenSystemProperties_whenLoadFromFileThatHasWildcardButPropsNotSetForMandatory_thenThrowException() throws Exception {
+    void givenSystemProperties_whenLoadFromFileThatHasWildcardButPropsNotSetForMandatory_thenThrowException() throws Exception {
         // ssl.keystore has wildcard but is not set, exception will be thrown
         System.setProperty("apiml.serviceId", "veronica");
         System.clearProperty("apiml.keystore");
@@ -77,7 +77,7 @@ class EurekaInstanceConfigValidatorTest {
     }
 
     @Test
-    public void givenSystemProperties_whenLoadFromFileThatHasWildcard_thenConfigOverridenBySystemProp() throws Exception {
+    void givenSystemProperties_whenLoadFromFileThatHasWildcard_thenConfigOverridenBySystemProp() throws Exception {
         System.setProperty("apiml.serviceId", "veronica");
         System.setProperty("prefix.description", "samantha");
         System.setProperty("apiml.keystore", "keystore");
