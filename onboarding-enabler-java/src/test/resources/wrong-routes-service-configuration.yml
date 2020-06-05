@@ -1,0 +1,45 @@
+serviceId: service
+title: HelloWorld Spring REST API
+description: POC for exposing a Spring REST API
+baseUrl: http://localhost:10021/hellospring
+serviceIpAddress: 127.0.0.1
+
+homePageRelativeUrl: /
+statusPageRelativeUrl: /application/info
+healthCheckRelativeUrl: /application/health
+
+discoveryServiceUrls:
+    - http://eureka:password@localhost:10011/eureka
+    - http://eureka:password@localhost:10011/eureka1
+
+routes:
+    - gatewayUrl: ${apiml.wrong}
+      serviceUrl:
+    - gatewayUrl: api/v1/api-doc
+      serviceUrl: /hellospring/api-doc
+
+
+ssl:
+    enabled: true
+    protocol: TLSv1.2
+    keyAlias: localhost
+    keyPassword: password
+    keyStore: ${apiml.keystore}
+    keyStorePassword: password
+    keyStoreType: PKCS12
+    trustStore: keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+    trustStoreType: PKCS12
+    ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+
+customMetadata:
+    key: value
+    customService.key1: value1
+    customService.key2: value2
+    customService:
+        key3: value3
+        key4: value4
+        evenmorelevels:
+            key5:
+                key6:
+                    key7: value7

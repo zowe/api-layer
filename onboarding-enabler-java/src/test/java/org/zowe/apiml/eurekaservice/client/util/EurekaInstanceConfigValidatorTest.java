@@ -89,4 +89,29 @@ class EurekaInstanceConfigValidatorTest {
         assertEquals("${prefix.description}", testConfig.getDescription());  // it allows you to specify arbitraty prefix, yet only apiml prefix is replaced
         assertEquals("${apiml.title}", testConfig.getTitle());  // it leaves the unreplaced prefixes
     }
+
+    @Test
+    void givenConfigurationWrongSsl_whenValidate_thenThrowException() throws Exception {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("wrong-routes-service-configuration.yml");
+        Exception exception = assertThrows(MetadataValidationException.class,
+            () -> validator.validate(testConfig),
+            "Expected exception is not MetadataValidationException");
+        assertEquals("Routes parameters are missing or were not replaced by the system properties.", exception.getMessage());
+    }
+
+    @Test
+    void givenConfigurationEmptyCatalog_whenValidate_thenLog() throws Exception {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("empty-catalog-service-configuration.yml");
+        validator.validate(testConfig);
+
+        assertEquals(null, testConfig.getCatalog());
+    }
+
+    @Test
+    void givenConfigurationEmptyApiInfo_whenValidate_thenLog() throws Exception {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("empty-apiinfo-service-configuration.yml");
+        validator.validate(testConfig);
+
+        assertEquals(null, testConfig.getApiInfo());
+    }
 }
