@@ -27,7 +27,7 @@ class EurekaInstanceConfigCreatorTest {
     private final EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
 
     @Test
-    public void givenYamlMetadata_whenParsedByJackson_shouldFlattenMetadataCorrectly() throws ServiceDefinitionException {
+    void givenYamlMetadata_whenParsedByJackson_shouldFlattenMetadataCorrectly() throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("service-configuration.yml");
         EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(testConfig);
 
