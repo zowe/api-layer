@@ -67,7 +67,6 @@ public class EurekaInstanceConfigValidator {
             isInvalid(ssl.getKeyStorePassword()) ||
             isInvalid(ssl.getKeyStore()) ||
             isInvalid(ssl.getKeyAlias()) ||
-            isInvalid(ssl.getCiphers()) ||
             isInvalid(ssl.getKeyStoreType()) ||
             isInvalid(ssl.getTrustStoreType()) ||
             isInvalid(ssl.getKeyPassword()) ||
