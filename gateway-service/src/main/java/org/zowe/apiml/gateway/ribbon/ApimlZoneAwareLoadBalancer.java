@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.ribbon;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 
 /**
@@ -23,6 +24,7 @@ import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
  *
  * @param <T> ussually Server class
  */
+@Slf4j
 public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T> {
 
     public static final String LOADBALANCED_INSTANCE_INFO_KEY = "apimlLoadBalancedInstanceInfo";
@@ -53,9 +55,12 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
      */
     @Override
     public Server chooseServer(Object key) {
+        log.error("ALL SERVER LIST: {}", this.allServerList.toString());
+        log.error("UP SERVER LIST: {}", this.upServerList.toString());
         Server server = super.chooseServer(key);
 
         if (server == null) {
+            log.error("NULL INSTANCE");
             return null;
         }
 
