@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -30,6 +31,7 @@ import static org.hamcrest.core.IsNot.not;
  * Purpose of this test is verify correct behavior of Zaas client
  * as a part of application running on mainframe
  */
+@TestsNotMeantForZowe
 class IntegratedZaasClientTest {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
