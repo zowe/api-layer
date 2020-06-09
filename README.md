@@ -1,4 +1,4 @@
-# API Mediation Layer
+# API Mediation Slayer
 
 [Build Status](https://wash.zowe.org:8443/job/API_Mediation/job/master/)
 
