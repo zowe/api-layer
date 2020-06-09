@@ -74,6 +74,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
     private final AuthenticationService authenticationService;
     private final CacheManager cacheManager;
+    private final CacheUtils cacheUtils;
 
     public Authentication getAuthentication(InstanceInfo instanceInfo) {
         final Map<String, String> metadata = instanceInfo.getMetadata();
@@ -148,7 +149,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
      */
     @Override
     public void evictCacheService(String serviceId) {
-        CacheUtils.evictSubset(cacheManager, CACHE_BY_SERVICE_ID, x -> StringUtils.equalsIgnoreCase((String) x.get(0), serviceId));
+        cacheUtils.evictSubset(cacheManager, CACHE_BY_SERVICE_ID, x -> StringUtils.equalsIgnoreCase((String) x.get(0), serviceId));
     }
 
     public class UniversalAuthenticationCommand extends AuthenticationCommand {

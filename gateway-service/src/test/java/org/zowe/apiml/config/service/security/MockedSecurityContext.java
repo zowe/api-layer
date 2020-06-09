@@ -18,6 +18,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
+import org.zowe.apiml.util.CacheUtils;
 
 import static org.mockito.Mockito.mock;
 
@@ -39,7 +40,7 @@ public class MockedSecurityContext {
     }
 
     @Bean
-    public ServiceAuthenticationService getServiceAuthenticationService(@Autowired CacheManager cacheManager) {
-        return new ServiceAuthenticationServiceImpl(getDiscoveryClient(), getAuthenticationSchemeFactory(), getAuthenticationService(), cacheManager);
+    public ServiceAuthenticationService getServiceAuthenticationService(@Autowired CacheManager cacheManager, CacheUtils cacheUtils) {
+        return new ServiceAuthenticationServiceImpl(getDiscoveryClient(), getAuthenticationSchemeFactory(), getAuthenticationService(), cacheManager, cacheUtils);
     }
 }
