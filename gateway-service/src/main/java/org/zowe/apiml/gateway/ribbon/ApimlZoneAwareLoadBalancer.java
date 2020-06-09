@@ -55,6 +55,7 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
      */
     @Override
     public Server chooseServer(Object key) {
+        log.error("KEY: {}", key.toString());
         log.error("ALL SERVER LIST: {}", this.allServerList.toString());
         log.error("UP SERVER LIST: {}", this.upServerList.toString());
         Server server = super.chooseServer(key);

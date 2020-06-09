@@ -75,6 +75,7 @@ eureka:
             defaultZone: ${apiml.discovery.allPeersUrls}
     server:
         useReadOnlyResponseCache: false
+        enable-self-preservation: false
 
 management:
     endpoints:
