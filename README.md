@@ -23,6 +23,7 @@ The API Mediation Layer (API ML) provides a single point of access for mainframe
   * [Local configuration of services](#local-configuration-of-services)
   * [Onboarding Services](#onboarding-services)
   * [More Information](#more-information)
+  * [Contact Us](#contact-us)
 
 ## Run API Mediation Layer locally
 
@@ -119,3 +120,6 @@ For guidelines to onboard services, see [Zowe Docs#Onboarding Overview](https://
 | Sample Service - Java Enabler         | [README](onboarding-enabler-java-sample-app/README.md)                                                                                                                                  |
 |       Sample Service - Spring Enabler | [README](integration-enabler-spring-v1-sample-app/README.md)                                                                                                                            |
 
+## Contact Us
+
+Get in touch using [Zowe Communication Channels](https://github.com/zowe/community/blob/master/README.md#communication-channels). You can find us in the `#zowe-api` channel on Slack.
