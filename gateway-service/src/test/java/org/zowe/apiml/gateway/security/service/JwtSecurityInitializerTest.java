@@ -9,14 +9,13 @@
  */
 package org.zowe.apiml.gateway.security.service;
 
+import org.zowe.apiml.config.service.security.MockedSecurityInitializer;
 import org.zowe.apiml.security.HttpsConfigError;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -29,12 +28,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "/application.yml")
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
-@Import(JwtSecurityInitializerTest.TestConfig.class)
+@Import(MockedSecurityInitializer.class)
 public class JwtSecurityInitializerTest {
 
     @Autowired
     private JwtSecurityInitializer jwtSecurityInitializer;
-
 
     @Test
     public void shouldExtractSecretAndPublicKey() {
@@ -65,16 +63,5 @@ public class JwtSecurityInitializerTest {
     public void testGetJwkPublicKey() {
         assertEquals("RSA", jwtSecurityInitializer.getJwkPublicKey().getKeyType().getValue());
     }
-
-    @SpringBootConfiguration
-    public static class TestConfig {
-
-        @Bean
-        public JwtSecurityInitializer jwtSecurityInitializer() {
-            return new JwtSecurityInitializer();
-        }
-
-    }
-
 }
 

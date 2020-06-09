@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.ribbon;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
@@ -20,10 +19,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.config.ribbon.IClientConfiguration;
 import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,23 +32,9 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-    ApimlZoneAwareLoadBalancerTest.Context.class
+    IClientConfiguration.class
 })
 class ApimlZoneAwareLoadBalancerTest {
-
-    @Configuration
-    public static class Context {
-        @Bean
-        public IClientConfig config() {
-            return  IClientConfig.Builder.newBuilder(DefaultClientConfigImpl.class, "apicatalog")
-                .withSecure(false)
-                .withFollowRedirects(false)
-                .withDeploymentContextBasedVipAddresses("apicatalog")
-                .withLoadBalancerEnabled(false)
-                .build();
-        }
-
-    }
 
     @Autowired
     IClientConfig config;

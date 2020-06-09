@@ -84,7 +84,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void badBaseUrlFormat() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
+        exceptionRule.expect(MetadataValidationException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -119,7 +119,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void badProtocolForBaseUrl() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
+        exceptionRule.expect(MetadataValidationException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -132,7 +132,7 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void testInitializationServiceDefinitionException() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
+        exceptionRule.expect(MetadataValidationException.class);
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
@@ -148,8 +148,8 @@ public class ApiMediationClientImplTest {
 
     @Test
     public void testInitializationRuntimeException() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
-        exceptionRule.expectCause(isA(NullPointerException.class));
+        exceptionRule.expect(MetadataValidationException.class);
+        exceptionRule.expectMessage("Routes configuration was not provided. Try to add apiml.service.routes section");
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 

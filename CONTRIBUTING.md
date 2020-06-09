@@ -1,6 +1,7 @@
 # Contribution Guidelines
 This document is a living summary of conventions and best practices for development within Zowe API Mediation Layer.
 
+  - [Contact Us](#contact-us)
   - [Understanding Modules](#understanding-modules)
   - [Pull Requests](#pull-requests)
   - [General Guidelines](#general-guidelines)
@@ -9,6 +10,10 @@ This document is a living summary of conventions and best practices for developm
   - [Testing Guidelines](#testing-guidelines)
   - [Build Process Guidelines](#build-process-guidelines)
   - [Documentation Guidelines](#documentation-guidelines)
+
+## Contact Us
+
+Get in touch using [Zowe Communication Channels](https://github.com/zowe/community/blob/master/README.md#communication-channels). You can find us in the `#zowe-api` channel on Slack.
 
 ## Understanding Modules
 

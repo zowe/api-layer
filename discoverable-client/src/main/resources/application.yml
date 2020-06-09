@@ -76,6 +76,8 @@ apiml:
         customMetadata:
             apiml:
                 enableUrlEncodedCharacters: true
+                gatewayPort: 10010
+                gatewayAuthEndpoint: /api/v1/gateway/auth
 
 server:
     port: ${apiml.service.port}

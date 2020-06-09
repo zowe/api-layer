@@ -24,7 +24,6 @@ import org.zowe.apiml.eurekaservice.client.EurekaClientProvider;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.config.Ssl;
 import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
-import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsFactory;
@@ -82,12 +81,8 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         }
 
         EurekaClientConfig clientConfiguration = eurekaClientConfigProvider.config(config);
-        try {
-            ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
-            eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
-        } catch (RuntimeException rte) {
-            throw new ServiceDefinitionException("Registration was not successful due to unexpected RuntimeException: ", rte);
-        }
+        ApplicationInfoManager infoManager = initializeApplicationInfoManager(config);
+        eurekaClient = initializeEurekaClient(infoManager, clientConfiguration, config);
     }
 
     /**
@@ -131,8 +126,6 @@ public class ApiMediationClientImpl implements ApiMediationClient {
                     .trustStoreType(sslConfig.getTrustStoreType())
                     .trustStorePassword(sslConfig.getTrustStorePassword());
             }
-        } else {
-            throw new MetadataValidationException("SSL configuration was not provided. Try add apiml.service.ssl section.");
         }
         HttpsConfig httpsConfig = builder.build();
 
