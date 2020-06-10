@@ -26,9 +26,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.concurrent.CountDownLatch;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -163,35 +163,8 @@ public class AuthenticationOnDeploymentTest {
             final VirtualService service1 = new VirtualService(serviceId, 5678);
             final VirtualService service2 = new VirtualService(serviceId, 5679)
         ) {
-            CountDownLatch countDownLatch = new CountDownLatch(2);
-
-            // service1 uses PassTickets, but it is stopped during a call. Retry call should be on service2
-            service1
-                .setAuthentication(new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid"))
-                .addServlet("error", "/test/*", new HttpServlet() {
-
-                    private static final long serialVersionUID = 4308864010267567500L;
-
-                    private int callCounter;
-
-                    @SneakyThrows
-                    @Override
-                    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-                        callCounter++;
-
-                        // verify transformation for PassTicket scheme
-                        assertEquals(1, callCounter);
-                        assertTrue(req.getHeader(HttpHeaders.AUTHORIZATION).startsWith("Basic "));
-                        assertNull(req.getCookies());
-                        assertEquals("Service1 wasn't called first",2, countDownLatch.getCount());
-
-                        countDownLatch.countDown();
-                        // stop service, there will be no response (Gateway will retry call)
-                        service1.stop();
-                    }
-                })
-                .start()
-                .waitForGatewayRegistration(1, TIMEOUT);
+            // service1 uses PassTickets, but it is stopped. Gateway retries call should be on service2
+            service1.zombie();
 
             /*
              service2 uses ByPass scheme, it check if previous call didn't remove a cookie (required for service2, not
@@ -203,24 +176,17 @@ public class AuthenticationOnDeploymentTest {
 
                     private static final long serialVersionUID = -8891890250560560219L;
 
-                    private int callCounter;
-
                     @Override
                     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-                        callCounter++;
-
                         // verify transformation for ByPass scheme
-                        assertEquals(1, callCounter);
                         assertNull(req.getHeader(HttpHeaders.AUTHORIZATION));
                         assertNotNull(req.getCookies());
                         assertEquals(1, req.getCookies().length);
                         Cookie cookie = req.getCookies()[0];
                         assertEquals(GATEWAY_TOKEN_COOKIE_NAME, cookie.getName());
                         assertEquals(jwt, cookie.getValue());
-                        assertEquals("Service1 wasn't called as second",1, countDownLatch.getCount());
 
-                        countDownLatch.countDown();
-                        resp.setStatus(SC_OK);
+                        resp.setStatus(SC_NO_CONTENT);
                     }
                 })
                 .start()
@@ -231,9 +197,7 @@ public class AuthenticationOnDeploymentTest {
             .when()
                 .get(DiscoveryUtils.getGatewayUrls().get(0) + "/api/v1/" + serviceId + "/test")
             .then()
-                .statusCode(is(SC_OK));
-
-            assertEquals("Gateway didn't call both services", 0, countDownLatch.getCount());
+                .statusCode(is(SC_NO_CONTENT));
         }
     }
 
