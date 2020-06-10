@@ -21,6 +21,7 @@ import org.zowe.apiml.gateway.security.service.AuthenticationServiceTest;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.util.CacheUtils;
 
 import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.gateway.security.service.AuthenticationServiceTest.ZOSMF;
@@ -63,10 +64,10 @@ public class MockedAuthenticationServiceContext {
     }
 
     @Bean
-    public AuthenticationService getAuthenticationService(CacheManager cacheManager) {
+    public AuthenticationService getAuthenticationService(CacheManager cacheManager, CacheUtils cacheUtils) {
         return new AuthenticationService(
             applicationContext, getAuthConfigurationProperties(), getJwtSecurityInitializer(),
-            getZosmfService(), getDiscoveryClient(), getRestTemplate(), cacheManager
+            getZosmfService(), getDiscoveryClient(), getRestTemplate(), cacheManager, cacheUtils
         );
     }
 }

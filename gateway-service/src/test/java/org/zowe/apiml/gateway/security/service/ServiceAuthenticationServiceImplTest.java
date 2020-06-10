@@ -42,6 +42,7 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.CacheUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Date;
@@ -93,7 +94,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         RequestContext.testSetCurrentContext(null);
         serviceAuthenticationService.evictCacheAllService();
 
-        serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(discoveryClient, authenticationSchemeFactory, authenticationService, cacheManager);
+        serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(discoveryClient, authenticationSchemeFactory, authenticationService, cacheManager, new CacheUtils());
     }
 
     @AfterEach

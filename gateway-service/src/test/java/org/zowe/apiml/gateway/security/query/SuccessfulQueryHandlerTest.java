@@ -30,6 +30,7 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.util.CacheUtils;
 
 import java.security.Key;
 import java.security.KeyPair;
@@ -78,7 +79,7 @@ public class SuccessfulQueryHandlerTest {
         ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
-            discoveryClient, restTemplate, cacheManager
+            discoveryClient, restTemplate, cacheManager, new CacheUtils()
         );
         when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);

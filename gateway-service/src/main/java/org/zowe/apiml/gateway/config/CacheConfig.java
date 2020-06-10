@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
+import org.zowe.apiml.util.CacheUtils;
 
 import javax.annotation.PostConstruct;
 
@@ -68,4 +69,8 @@ public class CacheConfig {
         return new CompositeKeyGeneratorWithoutLast();
     }
 
+    @Bean
+    public CacheUtils cacheUtils() {
+        return new CacheUtils();
+    }
 }
