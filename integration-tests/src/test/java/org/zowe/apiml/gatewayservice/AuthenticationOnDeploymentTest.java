@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.CountDownLatch;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -187,7 +186,6 @@ public class AuthenticationOnDeploymentTest {
                         assertEquals("Service1 wasn't called first",2, countDownLatch.getCount());
 
                         countDownLatch.countDown();
-                        resp.setStatus(SC_INTERNAL_SERVER_ERROR);
                         // stop service, there will be no response (Gateway will retry call)
                         service1.stop();
                     }
