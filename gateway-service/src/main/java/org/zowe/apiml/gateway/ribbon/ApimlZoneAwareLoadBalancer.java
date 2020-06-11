@@ -39,6 +39,10 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
         ServiceCacheEvictor serviceCacheEvictor
     ) {
         super(clientConfig, rule, ping, serverList, filter, serverListUpdater);
+
+        //TODO this is the root cause
+        //There are multiple load balancers but the cache evictor always updates only the latest load balancer
+        //That is why there is a brief window when other load balancers have open routes but don't have any services yet
         serviceCacheEvictor.setApimlZoneAwareLoadBalancer(this);
     }
 
@@ -55,7 +59,7 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
      */
     @Override
     public Server chooseServer(Object key) {
-        log.error("KEY: {}", key.toString());
+        log.error("KEY: {}, LB: {}", key.toString(), this.hashCode());
         log.error("ALL SERVER LIST: {}", this.allServerList.toString());
         log.error("UP SERVER LIST: {}", this.upServerList.toString());
         Server server = super.chooseServer(key);

@@ -9,13 +9,14 @@
  */
 package org.zowe.apiml.gateway.cache;
 
-import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
-import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
+import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.List;
  * This process evict evict caches two times, because not all reason to cache is dependent only by discovery client
  * updates.
  */
+@Slf4j
 @Component
 public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvict {
 
@@ -78,6 +80,7 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
                 toEvict.clear();
             }
 
+            log.error("UPDATING LIST OF SERVERS ON LB: {}", apimlZoneAwareLoadBalancer.hashCode());
             apimlZoneAwareLoadBalancer.serverChanged();
         }
     }
