@@ -136,4 +136,58 @@ public class AuthenticationOnDeploymentTest {
         }
     }
 
+    @Test
+    @Flaky
+    public void testRegisterUnregister() throws Exception {
+        final String jwt = gatewayToken();
+
+        try (
+            final VirtualService service1 = new VirtualService("regService", 5678)
+
+        ) {
+            // start first instance - without passTickets
+            service1
+                .addVerifyServlet()
+                .start()
+                .waitForGatewayRegistration(1, TIMEOUT);
+
+
+            // on each gateway make a call to service
+            service1.getGatewayVerifyUrls().forEach(x ->
+                given()
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                    .when().get(x + "/test")
+                    .then().statusCode(is(SC_OK))
+            );
+
+            // verify if each gateway sent request to service
+            service1.getGatewayVerifyUrls().forEach(gw ->
+                verifier.existAndClean(service1, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"))
+            );
+
+            // start second service (with passTicket authorization)
+
+
+            // on each gateway make calls (count same as instances) to service
+            service1.getGatewayVerifyUrls().forEach(x -> {
+                given()
+                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                    .when().get(x + "/test")
+                    .then().statusCode(is(SC_OK));
+            });
+
+
+
+            // stop first service without authentication
+            service1
+                .unregister()
+                .waitForGatewayUnregistering(1, TIMEOUT)
+                .stop();
+
+            // check second service, all called second one with passTicket, same url like service1 (removed)
+            service1.getGatewayVerifyUrls().forEach(gw ->
+                verifier.existAndClean(service1, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"))
+            );
+        }
+    }
 }

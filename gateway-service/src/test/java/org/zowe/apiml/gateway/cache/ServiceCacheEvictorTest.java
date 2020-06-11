@@ -10,11 +10,11 @@
 
 package org.zowe.apiml.gateway.cache;
 
-import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
-import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
 import com.netflix.discovery.CacheRefreshedEvent;
 import org.junit.Before;
 import org.junit.Test;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
+import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.Arrays;
@@ -38,7 +38,7 @@ public class ServiceCacheEvictorTest {
     @Before
     public void setUp() {
         serviceCacheEvictor = new ServiceCacheEvictor(apimlDiscoveryClient, serviceCacheEvicts);
-        serviceCacheEvictor.setApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer);
+        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer);
     }
 
     @Test
