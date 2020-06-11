@@ -10,8 +10,10 @@
 package org.zowe.apiml.gateway.security.service.schema;
 
 import com.netflix.zuul.context.RequestContext;
+import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.methods.HttpGet;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -28,7 +30,9 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Base64;
 import java.util.Calendar;
+import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -49,6 +53,11 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
     }
 
+    @AfterEach
+    public void tearDown() {
+        RequestContext.testSetCurrentContext(null);
+    }
+
     @Test
     public void testCreateCommand() {
         Calendar calendar = Calendar.getInstance();
@@ -64,8 +73,12 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
         RequestContext.testSetCurrentContext(requestContext);
         ac.apply(null);
 
-        assertEquals("Basic VVNFUk5BTUU6Wk9XRV9EVU1NWV9QQVNTX1RJQ0tFVF9BUFBMSURfVVNFUk5BTUVfMA==",  // USERNAME:ZOWE_DUMMY_PASS_TICKET_APPLID_USERNAME_0
-            requestContext.getZuulRequestHeaders().get("authorization"));
+        String authorizationValue = new String(
+            Base64.getDecoder().decode(
+                requestContext.getZuulRequestHeaders().get("authorization").split(" ")[1]
+            )
+        );
+        assertTrue(authorizationValue.startsWith("USERNAME:ZOWE_DUMMY_PASS_TICKET_APPLID_USERNAME_"));
 
         // JWT token expired one minute ago (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, -1);
@@ -144,7 +157,61 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     public void whenCallWithoutJwt_thenDoNothing() {
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> null);
-        assertSame(ac, AuthenticationCommand.EMPTY);
+        assertSame(AuthenticationCommand.EMPTY, ac);
+    }
+
+    private HttpBasicPassTicketScheme.PassTicketCommand getPassTicketCommand() {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.YEAR, 1);
+
+        Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
+        QueryResponse queryResponse = new QueryResponse("domain", USERNAME, new Date(), c.getTime(), QueryResponse.Source.ZOWE);
+        AuthenticationCommand out = httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse);
+        assertTrue(out instanceof HttpBasicPassTicketScheme.PassTicketCommand);
+        return (HttpBasicPassTicketScheme.PassTicketCommand) out;
+    }
+
+    @Test
+    void givenJwtInCookie_whenApply_thenJwtIsRemoved() {
+        AuthenticationCommand command = getPassTicketCommand();
+        RequestContext requestContext = new RequestContext();
+        requestContext.addZuulRequestHeader("cookie",
+            authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
+            "abc=def"
+        );
+        RequestContext.testSetCurrentContext(requestContext);
+
+        command.apply(null);
+
+        String cookies = requestContext.getZuulRequestHeaders().get("cookie");
+        assertEquals("abc=def", cookies);
+    }
+
+    @Test
+    void givenNoCookie_whenApplyToRequest_thenNoCookies() {
+        AuthenticationCommand command = getPassTicketCommand();
+        HttpRequest httpRequest = new HttpGet();
+
+        command.applyToRequest(httpRequest);
+
+        assertEquals(0, httpRequest.getHeaders("cookie").length);
+    }
+
+    @Test
+    void givenJwtInCookie_whenApplyToRequest_thenJwtIsRemoved() {
+        AuthenticationCommand command = getPassTicketCommand();
+        HttpRequest httpRequest = new HttpGet();
+        httpRequest.setHeader("cookie",
+            authConfigurationProperties.getCookieProperties().getCookieName() + "=jwt;" +
+            "abc=def"
+        );
+
+        command.applyToRequest(httpRequest);
+
+        Header[] headers = httpRequest.getHeaders("cookie");
+        assertNotNull(headers);
+        assertEquals(1, headers.length);
+        assertEquals("abc=def", headers[0].getValue());
     }
 
 }
