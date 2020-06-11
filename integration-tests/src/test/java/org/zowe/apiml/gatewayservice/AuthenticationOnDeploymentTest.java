@@ -106,7 +106,7 @@ public class AuthenticationOnDeploymentTest {
             service1.getGatewayVerifyUrls().forEach(gw -> {
                     verifier.existAndClean(service1, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"));
                     verifier.existAndClean(service2, x -> {
-                        assertNotNull( x.getHeader(HttpHeaders.AUTHORIZATION));
+                        assertNotNull(x.getHeader(HttpHeaders.AUTHORIZATION));
                         assertEquals("/verify/test", x.getRequestURI());
                         return true;
                     });
@@ -128,7 +128,7 @@ public class AuthenticationOnDeploymentTest {
             });
             service1.getGatewayVerifyUrls().forEach(gw -> {
                 verifier.existAndClean(service2, x -> {
-                    assertNotNull( x.getHeader(HttpHeaders.AUTHORIZATION));
+                    assertNotNull(x.getHeader(HttpHeaders.AUTHORIZATION));
                     assertEquals("/verify/test", x.getRequestURI());
                     return true;
                 });
