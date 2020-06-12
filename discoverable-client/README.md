@@ -1,7 +1,7 @@
 
 # Sample Discoverable client service
 
-This is a sample Spring Boot Hello World application, including swagger documentation, using 'integration-enabler-spring-v2' enabler.
+This is a sample Spring Boot Hello World application, including swagger documentation, using 'onboarding-enabler-spring-v2' enabler.
 
 # How to run
 

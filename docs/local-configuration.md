@@ -48,10 +48,10 @@ java -jar api-catalog-services/build/libs/api-catalog-services.jar --spring.conf
 java -jar discoverable-client/build/libs/discoverable-client.jar --spring.config.additional-location=file:./config/local/discoverable-client.yml
 ```
 
-### Sample Application - integration-enabler-spring-v1-sample-app
+### Sample Application - onboarding-enabler-spring-v1-sample-app
 
 ```shell
-java -jar integration-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.location=file:./config/local/integration-enabler-spring-v1-sample-app.yml
+java -jar onboarding-enabler-spring-v1-sample-app/build/libs/enabler-springboot-1.5.9.RELEASE-sample.jar --spring.config.location=file:./config/local/onboarding-enabler-spring-v1-sample-app.yml
 ```
 
 ### Sample Application - onboarding-enabler-java-sample-app

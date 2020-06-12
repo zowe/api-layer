@@ -3,7 +3,7 @@
     "info": {
         "description": "API of sample API service showing how to integrate a Spring Boot v2.x application\n\n[Swagger/OpenAPI JSON Document](https://ca3x.ca.com:10010/api/v1/api-doc/discoverableclient)",
         "version": "1.0.0",
-        "title": "Service Integration Enabler V2 Sample Application API"
+        "title": "Service Onboarding Enabler V2 Sample Application API"
     },
     "host": "https://ca3x.ca.com:10010",
     "basePath": "",

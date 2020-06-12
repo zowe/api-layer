@@ -39,19 +39,10 @@ task packageApiMediationZowe(type: Zip) {
         from "$buildDir/convert/validate.sh"
     }
 
-    into('scripts/') {
-        from "$buildDir/convert/api-mediation-start-catalog-template.sh"
-        from "$buildDir/convert/api-mediation-start-discovery-template.sh"
-        from "$buildDir/convert/api-mediation-start-gateway-template.sh"
-    }
-
 }
 
 packageApiMediationZowe.doFirst {
     List<File> scriptFiles =  new ArrayList<File>() {{
-        add(file('src/main/resources/scripts/api-mediation-start-catalog-template.sh'));
-        add(file('src/main/resources/scripts/api-mediation-start-discovery-template.sh'));
-        add(file('src/main/resources/scripts/api-mediation-start-gateway-template.sh'));
         add(file('src/main/resources/component-scripts/configure.sh'));
         add(file('src/main/resources/component-scripts/start.sh'));
         add(file('src/main/resources/component-scripts/validate.sh'));

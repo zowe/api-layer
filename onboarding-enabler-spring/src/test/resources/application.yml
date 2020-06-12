@@ -21,8 +21,8 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
         # Following values are default values that can be changed by user:
         serviceId: discoverableclient2
-        title: Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
-        description:  Sample API services to demonstrate Spring Integration Enabler
+        title: Service Spring Onboarding Enabler sample application API #©     #Copyright is for UTF8 encoding check
+        description:  Sample API services to demonstrate Spring Onboarding Enabler
         serviceIpAddress: 127.0.0.2
         catalog:
           tile:
