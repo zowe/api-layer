@@ -78,6 +78,9 @@ apiml:
                 enableUrlEncodedCharacters: true
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /api/v1/gateway/auth
+                connectTimeout: 5684
+                readTimeout: 75437
+                connectionManagerTimeout: 30000
 
 server:
     port: ${apiml.service.port}
