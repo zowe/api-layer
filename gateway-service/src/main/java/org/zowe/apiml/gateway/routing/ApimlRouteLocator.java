@@ -24,13 +24,13 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 
-class ApimlRouteLocator extends DiscoveryClientRouteLocator {
+public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final DiscoveryClient discovery;
     private final ZuulProperties properties;
     private final List<RoutedServicesUser> routedServicesUsers;
     private final EurekaMetadataParser eurekaMetadataParser;
 
-    ApimlRouteLocator(String servletPath,
+    public ApimlRouteLocator(String servletPath,
                       DiscoveryClient discovery,
                       ZuulProperties properties,
                       ServiceRouteMapper serviceRouteMapper,
