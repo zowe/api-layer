@@ -34,7 +34,7 @@ public class ApimlDiscoveryClientStub extends ApimlDiscoveryClient {
 
     @Override
     public Applications getApplications() {
-        if(applicationRegistry != null) {
+        if (applicationRegistry != null) {
             return applicationRegistry.getApplications();
         } else {
             return new Applications();

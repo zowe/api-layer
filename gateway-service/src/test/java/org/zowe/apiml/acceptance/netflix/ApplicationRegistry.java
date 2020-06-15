@@ -48,7 +48,7 @@ public class ApplicationRegistry {
         Application withMetadata = new Application(id);
 
         Map<String, String> metadata = new HashMap<>();
-        if(customMetadata) {
+        if (customMetadata) {
             metadata = createMetadata();
         }
         withMetadata.addInstance(getStandardInstance(metadata, id));
@@ -62,13 +62,22 @@ public class ApplicationRegistry {
 
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(new RoutedService("test", serviceRoute, ""));
-        if(this.routedServicesUsers != null) {
+        if (this.routedServicesUsers != null) {
             for (RoutedServicesUser routedServicesUser : routedServicesUsers) {
                 routedServicesUser.addRoutedServices(id, routedServices);
             }
         } else {
             servicesToAdd.add(new Services(id, routedServices));
         }
+    }
+
+    /**
+     * Remove all applications from internal mappings. This needs to be followed by adding new ones in order for the
+     * discovery infrastructure to work properly.
+     */
+    public void clearApplications() {
+        applicationsToReturn.clear();
+        zuulRouteLinkedHashMap.clear();
     }
 
     /**
@@ -98,9 +107,9 @@ public class ApplicationRegistry {
     public void setRoutedServices(List<RoutedServicesUser> routedServicesUsers) {
         this.routedServicesUsers = routedServicesUsers;
 
-        if(!servicesToAdd.isEmpty()) {
+        if (!servicesToAdd.isEmpty()) {
             for (RoutedServicesUser routedServicesUser : routedServicesUsers) {
-                for(Services services: servicesToAdd) {
+                for (Services services: servicesToAdd) {
                     routedServicesUser.addRoutedServices(services.id, services.routedServices);
                 }
             }
