@@ -64,7 +64,7 @@ public class ServiceCacheEvictorTest {
             verify(x, times(1)).evictCacheService("service1");
             verify(x, times(1)).evictCacheService("service2");
         });
-        verify(apimlZoneAwareLoadBalancer1, times(2)).updateListOfServers();
+        verify(apimlZoneAwareLoadBalancer1, times(1)).updateListOfServers();
 
         serviceCacheEvictor.evictCacheService("service3");
         serviceCacheEvictor.evictCacheAllService();

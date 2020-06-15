@@ -104,10 +104,10 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
     }
 
     private void updateLoadBalancer(String loadBalancerId) {
-       ApimlZoneAwareLoadBalancer loadBalancer = apimlZoneAwareLoadBalancer.get(loadBalancerId);
-       if(loadBalancer != null){
-           loadBalancer.updateListOfServers();
-       }
+        ApimlZoneAwareLoadBalancer loadBalancer = apimlZoneAwareLoadBalancer.get(loadBalancerId);
+        if (loadBalancer != null) {
+            loadBalancer.updateListOfServers();
+        }
     }
 
     @Value
