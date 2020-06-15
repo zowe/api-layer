@@ -73,6 +73,7 @@ public class AuthenticationService {
     private final EurekaClient discoveryClient;
     private final RestTemplate restTemplate;
     private final CacheManager cacheManager;
+    private final CacheUtils cacheUtils;
 
     // to force calling inside methods with aspects - ie. ehCache aspect
     private AuthenticationService meAsProxy;
@@ -268,7 +269,7 @@ public class AuthenticationService {
 
         final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
 
-        final Collection<String> invalidated = CacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
+        final Collection<String> invalidated = cacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {
             restTemplate.delete(url, invalidatedToken);
         }
@@ -338,27 +339,32 @@ public class AuthenticationService {
         }
     }
 
-    /**
-     * Get the JWT token from the authorization header in the http request
-     * <p>
-     * Order:
-     * 1. Authorization header
-     * 2. Cookie
-     *
-     * @param request the http request
-     * @return the JWT token
-     */
-    public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
+    private Optional<String> getJwtTokenFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
-        }
-
+        if (cookies == null) return Optional.empty();
         return Arrays.stream(cookies)
             .filter(cookie -> cookie.getName().equals(authConfigurationProperties.getCookieProperties().getCookieName()))
             .filter(cookie -> !cookie.getValue().isEmpty())
             .findFirst()
             .map(Cookie::getValue);
+    }
+
+    /**
+     * Get the JWT token from the authorization header in the http request
+     * <p>
+     * Order:
+     * 1. Cookie
+     * 2. Authorization header
+     *
+     * @param request the http request
+     * @return the JWT token
+     */
+    public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
+        Optional<String> fromCookie = getJwtTokenFromCookie(request);
+        if (!fromCookie.isPresent()) {
+            return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+        }
+        return fromCookie;
     }
 
     /**

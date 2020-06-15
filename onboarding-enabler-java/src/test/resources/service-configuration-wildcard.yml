@@ -1,0 +1,56 @@
+serviceId: ${apiml.serviceId}
+title: ${apiml.title}
+description: ${prefix.description}
+baseUrl: http://localhost:10021/hellospring
+serviceIpAddress: 127.0.0.1
+
+homePageRelativeUrl: /
+statusPageRelativeUrl: /application/info
+healthCheckRelativeUrl: /application/health
+
+discoveryServiceUrls:
+    - http://eureka:password@localhost:10011/eureka
+    - http://eureka:password@localhost:10011/eureka1
+
+routes:
+    - gatewayUrl: ${prefix.routes.gatewayUrl}
+      serviceUrl: /hellospring/api/v1
+    - gatewayUrl: api/v1/api-doc
+      serviceUrl: /hellospring/api-doc
+
+apiInfo:
+    - apiId: org.zowe.hellospring
+      gatewayUrl: api/v1
+      swaggerUrl: http://localhost:10021/hellospring/api-doc
+
+catalog:
+    tile:
+        id: helloworld-spring
+        title: HelloWorld Spring REST API
+        description: Proof of Concept application to demonstrate exposing a REST API in the MFaaS ecosystem
+        version: 1.0.0
+
+ssl:
+    enabled: true
+    protocol: TLSv1.2
+    keyAlias: localhost
+    keyPassword: password
+    keyStore: ${apiml.keystore}
+    keyStorePassword: password
+    keyStoreType: PKCS12
+    trustStore: keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+    trustStoreType: PKCS12
+    ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+
+customMetadata:
+    key: value
+    customService.key1: value1
+    customService.key2: value2
+    customService:
+        key3: value3
+        key4: value4
+        evenmorelevels:
+            key5:
+                key6:
+                    key7: value7

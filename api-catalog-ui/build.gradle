@@ -24,7 +24,7 @@ node {
 }
 
 task cleanBundle(type: Delete) {
-    delete 'bin', 'build', 'frontend/build', 'frontend/node_modules', 'tools/nodejs'
+    delete 'bin', 'build', 'frontend/build', 'tools/nodejs'
 }
 
 task startMockedBackend(type: NpmTask) {
@@ -43,6 +43,13 @@ task runTests(type: NpmTask) {
     group = 'testing'
     description = "UI JavaScript Test Coverage"
     args = ['run', 'test']
+}
+
+task runE2ETests(type: NpmTask, dependsOn: ':integration-tests:startUpCheck') {
+    group = 'integration tests'
+    description = "End to End Tests depending on the catalog ui"
+
+    args = ['run', 'cy:e2e:zowe-ci']
 }
 
 

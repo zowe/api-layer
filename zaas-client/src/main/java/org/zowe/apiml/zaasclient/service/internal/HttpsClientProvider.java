@@ -24,12 +24,15 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.*;
+import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
 
 @AllArgsConstructor
 class HttpsClientProvider implements CloseableClientProvider {
     private final RequestConfig requestConfig;
+
+    public static final String SAFKEYRING = "safkeyring";
 
     private TrustManagerFactory tmf;
     private KeyManagerFactory kmf;
@@ -85,9 +88,8 @@ class HttpsClientProvider implements CloseableClientProvider {
         throws ZaasConfigurationException {
         try {
             tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            KeyStore trustStore = KeyStore.getInstance(trustStoreType);
-            File trustFile = new File(trustStorePath);
-            trustStore.load(new FileInputStream(trustFile), trustStorePassword.toCharArray());
+            KeyStore trustStore = getKeystore(trustStorePath, trustStoreType, trustStorePassword);
+
             tmf.init(trustStore);
         } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException e) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
@@ -99,9 +101,7 @@ class HttpsClientProvider implements CloseableClientProvider {
     private void initializeKeyStoreManagerFactory() throws ZaasConfigurationException {
         try {
             kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-            File keyFile = new File(keyStorePath);
-            keyStore.load(new FileInputStream(keyFile), keyStorePassword.toCharArray());
+            KeyStore keyStore = getKeystore(keyStorePath, keyStoreType, keyStorePassword);
             kmf.init(keyStore, keyStorePassword.toCharArray());
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
@@ -110,9 +110,28 @@ class HttpsClientProvider implements CloseableClientProvider {
         }
     }
 
+    private KeyStore getKeystore(String uri, String keyStoreType, String storePassword) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+        InputStream correctInStream = getCorrectInputStream(uri);
+        keyStore.load(correctInStream, storePassword.toCharArray());
+        return keyStore;
+    }
+
+    private InputStream getCorrectInputStream(String uri) throws IOException {
+        if (uri.startsWith(SAFKEYRING + ":////")) {
+            URL url = new URL(replaceFourSlashes(uri));
+            return url.openStream();
+        }
+        return new FileInputStream(new File(uri));
+    }
+
+    public static String replaceFourSlashes(String storeUri) {
+        return storeUri == null ? null : storeUri.replaceFirst("////", "//");
+    }
+
     private SSLContext getSSLContext() throws ZaasConfigurationException {
         try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
             sslContext.init(
                 kmf != null ? kmf.getKeyManagers() : null,
                 tmf.getTrustManagers(),

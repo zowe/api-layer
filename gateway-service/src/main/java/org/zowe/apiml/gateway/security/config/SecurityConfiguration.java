@@ -100,8 +100,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
             .and().x509()
-                .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
                 .userDetailsService(x509UserDetailsService())
 
             // logout endpoint
@@ -222,14 +220,29 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             );
     }
 
-    private UserDetailsService x509UserDetailsService() {
-        return username -> new User("gatewayClient", "", Collections.emptyList());
-    }
-
+    /**
+     * The problem the squad was trying to solve:
+     *   For certain endpoints the Gateway should accept only certificates issued by API Mediation Layer. The key reason
+     *   is that these endpoints leverage the Gateway certificate as an authentication method for the downstream service
+     *   This certificate has stronger priviliges and as such the Gateway need to be more careful with who can use it.
+     *
+     * This solution is risky as it removes the certificates from the chain from all subsequent processing.
+     * Despite this it seems to be the simplest solution to the problem.
+     * While exploring the topic, the API squad explored following possibilities without any results:
+     * 1) As this is more linked to the authentication, move it to the CertificateAuthenticationProvider and distinguish
+     *    authentication based on the provided certificates - This doesn't work as the CertificateAuthenticationProvider
+     *    is never used
+     * 2) Move the logic to decide whether the client which is signed by the Gateway client certificate should be used
+     *    into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
+     */
     private ApimlX509AuthenticationFilter apimlX509AuthenticationFilter() throws Exception {
         ApimlX509AuthenticationFilter out = new ApimlX509AuthenticationFilter(publicKeyCertificatesBase64);
         out.setAuthenticationManager(authenticationManager());
         return out;
+    }
+
+    private UserDetailsService x509UserDetailsService() {
+        return username -> new User("gatewayClient", "", Collections.emptyList());
     }
 
     @Override

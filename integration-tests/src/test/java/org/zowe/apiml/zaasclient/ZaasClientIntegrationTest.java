@@ -220,9 +220,9 @@ public class ZaasClientIntegrationTest {
     }
 
     @Test
-    public void givenValidTokenButInvalidApplicationId_whenPassTicketIsRequested_thenExceptionIsThrown() {
+    public void givenValidTokenButInvalidApplicationId_whenPassTicketIsRequested_thenExceptionIsThrown() throws ZaasClientException {
+        String token = tokenService.login(USERNAME, PASSWORD);
         assertThrows(ZaasClientException.class, () -> {
-            String token = tokenService.login(USERNAME, PASSWORD);
             String emptyApplicationId = "";
             tokenService.passTicket(token, emptyApplicationId);
         });

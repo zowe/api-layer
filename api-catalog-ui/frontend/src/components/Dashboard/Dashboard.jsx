@@ -1,4 +1,4 @@
-import { Text } from 'mineral-ui';
+import { Text, Button } from 'mineral-ui';
 import React, { Component } from 'react';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -6,8 +6,9 @@ import './Dashboard.css';
 import Tile from '../Tile/Tile';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
-
+import ErrorDialog from "../Error/ErrorDialog";
 export default class Dashboard extends Component {
+
     componentDidMount() {
         const { fetchTilesStart, clearService } = this.props;
         clearService();
@@ -25,8 +26,13 @@ export default class Dashboard extends Component {
         filterText(value);
     };
 
+    refreshStaticApis = () => {
+        const { refreshedStaticApi } = this.props;
+        refreshedStaticApi();
+    };
+
     render() {
-        const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop } = this.props;
+        const { tiles, history, searchCriteria, isLoading, fetchTilesError, fetchTilesStop, refreshedStaticApisError, clearError } = this.props;
         const hasSearchCriteria = searchCriteria !== undefined && searchCriteria !== null && searchCriteria.length > 0;
         const hasTiles = !fetchTilesError && tiles && tiles.length > 0;
         let error = null;
@@ -34,8 +40,10 @@ export default class Dashboard extends Component {
             fetchTilesStop();
             error = formatError(fetchTilesError);
         }
+
         return (
             <div>
+                <Button id="refresh-api-button"size="medium" onClick={this.refreshStaticApis}>Refresh Static APIs</Button>
                 <Spinner isLoading={isLoading} />
                 {fetchTilesError && (
                     <div className="no-tiles-container">
@@ -45,6 +53,7 @@ export default class Dashboard extends Component {
                         {error}
                     </div>
                 )}
+                    <ErrorDialog refreshedStaticApisError={refreshedStaticApisError} clearError={clearError}/>
                 {!fetchTilesError && (
                     <div className="apis">
                         <div className="grid-container">

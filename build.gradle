@@ -138,20 +138,10 @@ task runIntegrationTestInstances(dependsOn: buildCore) {
     }
 }
 
-task runCITests(dependsOn: [":integration-tests:runCITests", "runIntegrationTestInstances"]) {
+task runCITests(dependsOn: [":integration-tests:runCITests", ":api-catalog-ui:runE2ETests", "runIntegrationTestInstances"]) {
     description "Run Integration Test Without MF Dependencies"
     group "Integration tests"
 }
-
-task stopIntegrationTestInstances {
-    doLast {
-        if (tasks.runIntegrationTestInstances.process != null) {
-            tasks.runIntegrationTestInstances.process.destroy()
-        }
-    }
-}
-
-runCITests.finalizedBy stopIntegrationTestInstances
 
 task runMainFrameTests(dependsOn: ":integration-tests:runMainFrameTests") {
     description "Run only tests related to the MainFrame"

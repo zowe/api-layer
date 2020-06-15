@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway.error.check;
 
+import org.springframework.context.annotation.Import;
+import org.zowe.apiml.config.error.check.MessageServiceConfiguration;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.gateway.error.ErrorUtils;
@@ -17,7 +19,6 @@ import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,8 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -42,6 +41,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
+@Import(MessageServiceConfiguration.class)
 public class SecurityTokenErrorCheckTest {
 
     private static SecurityTokenErrorCheck securityTokenErrorCheck;
@@ -95,15 +95,6 @@ public class SecurityTokenErrorCheckTest {
 
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage<>("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
-    }
-
-    @Configuration
-    static class ContextConfiguration {
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/gateway-messages.yml");
-        }
     }
 }
 

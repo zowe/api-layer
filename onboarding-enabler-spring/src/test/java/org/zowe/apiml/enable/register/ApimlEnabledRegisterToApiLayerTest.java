@@ -35,9 +35,6 @@ import static org.mockito.Mockito.*;
 public class ApimlEnabledRegisterToApiLayerTest {
 
     @Autowired
-    private RegisterToApiLayer registerToApiLayer;
-
-    @Autowired
     private ApiMediationServiceConfig apiMediationServiceConfig;
 
     @MockBean

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -57,6 +58,7 @@ public class RequestInfoController {
 
         setCerts(httpServletRequest, out);
         setHeaders(httpServletRequest, out);
+        setCookie(httpServletRequest, out);
         setContent(httpServletRequest, out);
 
         return out; // NOSONAR
@@ -87,6 +89,13 @@ public class RequestInfoController {
         }
     }
 
+    private void setCookie(HttpServletRequest httpServletRequest, RequestInfo requestInfo) {
+        if (httpServletRequest.getCookies() == null) return;
+        for (Cookie cookie : httpServletRequest.getCookies()) {
+            requestInfo.cookies.put(cookie.getName(), cookie.getValue());
+        }
+    }
+
     private void setContent(HttpServletRequest httpServletRequest, RequestInfo requestInfo) throws IOException {
         requestInfo.content = CharStreams.toString(httpServletRequest.getReader());
     }
@@ -103,6 +112,9 @@ public class RequestInfoController {
 
         @ApiModelProperty(value = "Requests header in the original request")
         private Map<String, String> headers = new HashMap<>();
+
+        @ApiModelProperty(value = "Requests cookie in the original request")
+        private Map<String, String> cookies = new HashMap<>();
 
         @ApiModelProperty(value = "Text content in the original request")
         private String content;

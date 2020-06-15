@@ -25,6 +25,8 @@ import java.util.Set;
 /**
  * This filter extends authentication via certificate. It removes all certificates signature from request which are not
  * related to private key using to request signing.
+ *
+ * Be careful with usage as later on it means that the set of original certificates won't be available.
  */
 @RequiredArgsConstructor
 public class ApimlX509AuthenticationFilter extends X509AuthenticationFilter {

@@ -1,0 +1,142 @@
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: INFO
+        org.springframework: WARN
+        org.apache.catalina: WARN
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery.DiscoveryClient: OFF
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+
+spring:
+    application:
+        name: ${apiml.service.serviceId}
+    mvc:
+        throw-exception-if-no-handler-found: true
+    output:
+        ansi:
+            enabled: detect
+
+apiml:
+    enabled: true
+    service:
+        serviceId: discoverableclient
+        title: Service Spring Integration Enabler sample application API
+        description:  Sample API services to demonstrate Spring Integration Enabler
+
+        discoveryServiceUrls: https://localhost:10011/eureka/
+
+        scheme: https
+        serviceIpAddress: 127.0.0.1
+        hostname: localhost
+        port: 10012
+        baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+        contextPath: /${apiml.service.serviceId}
+
+        homePageRelativeUrl: ${apiml.service.contextPath}
+        statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
+        healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
+
+        routes:
+            -   gateway-url: "ui/v1"
+                service-url: ${apiml.service.contextPath}
+            -   gateway-url: "api/v1"
+                service-url: ${apiml.service.contextPath}/api/v1
+            -   gateway-url: "ws/v1"
+                service-url: ${apiml.service.contextPath}/ws
+        apiInfo:
+            -   apiId: org.zowe.discoverableclient
+                version: 1.0.0
+                gatewayUrl: api/v1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                documentationUrl: https://www.zowe.org
+        catalog:
+            tile:
+                id: cademoapps
+                title: Sample API Mediation Layer Applications
+                description: Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem
+                version: 1.0.1
+        ssl:
+            enabled: true
+            verifySslCertificatesOfServices: true
+            ciphers: ${server.ssl.ciphers}
+            protocol: ${server.ssl.protocol}
+            keyStoreType: ${server.ssl.keyStoreType}
+            trustStoreType: ${server.ssl.trustStoreType}
+
+            keyAlias: ${server.ssl.keyAlias}
+            keyPassword: ${server.ssl.keyPassword}
+            keyStore: ${server.ssl.keyStore}
+            keyStorePassword: ${server.ssl.keyStorePassword}
+            trustStore: ${server.ssl.trustStore}
+            trustStorePassword: ${server.ssl.trustStorePassword}
+        customMetadata:
+            apiml:
+                enableUrlEncodedCharacters: true
+
+server:
+    port: ${apiml.service.port}
+
+    servlet:
+        contextPath: /${apiml.service.serviceId}
+
+    ssl:
+        enabled: true
+        clientAuth: want
+        protocol: TLSv1.2
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: ../keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: ../keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+
+    compression:
+        mime-types: image/png
+        enabled: true
+        min-response-size: 500
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,routes
+    health:
+        defaults:
+            enabled: false
+
+---
+spring:
+    profiles: diag
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+
+---
+spring:
+    profiles: dev
+    profiles.include:
+        diag
+
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: DEBUG
+        org.springframework: INFO
+        org.apache.catalina: INFO
+        com.netflix: INFO
+
+logbackServiceName: ZWEADC1
+

@@ -10,19 +10,28 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
+import lombok.SneakyThrows;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
+import org.zowe.apiml.util.categories.Flaky;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.service.DiscoveryUtils;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
@@ -35,7 +44,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  * - credentials.user = user
  * - credentials.password = user
  */
-
+@TestsNotMeantForZowe
 public class AuthenticationOnDeploymentTest {
 
     private static final int TIMEOUT = 10;
@@ -51,12 +60,14 @@ public class AuthenticationOnDeploymentTest {
     }
 
     @Test
+    @Flaky
     public void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
+        final String serviceId = "multipleAuthentication".toLowerCase();
 
         try (
-            final VirtualService service1 = new VirtualService("testService1", 5678);
-            final VirtualService service2 = new VirtualService("testService1", 5679)
+            final VirtualService service1 = new VirtualService(serviceId, 5678);
+            final VirtualService service2 = new VirtualService(serviceId, 5679)
         ) {
             // start first instance - without passTickets
             service1
@@ -130,6 +141,63 @@ public class AuthenticationOnDeploymentTest {
                     return true;
                 });
             });
+        }
+    }
+
+    /**
+     * The idea of this test is check the case when Gateway uses retry call and if each call's headers are correct.
+     * Scheme PassTicket removes cookies and i.e. ByPass should leave cookie in the call.
+     *
+     * Test start two instances of a service with different authentication scheme (PassTicket and ByPass). Gateway will
+     * try call first service (with PassTicket). For the call cookie should be removed. This call will failed and
+     * the Gateway will make retry to call second instance. It uses ByPass, so cookie should be in the headers. Test
+     * checks if first call haven't changed request to make correct second call.
+     */
+    @Test
+    @SneakyThrows
+    void givenJwtInCookie_whenPassTicketFailed_thenSecondServiceWithByPassIsCalledCorrectly() {
+        final String jwt = gatewayToken();
+        final String serviceId = "fromPassTicketToByPassService".toLowerCase();
+
+        try (
+            final VirtualService service1 = new VirtualService(serviceId, 5678);
+            final VirtualService service2 = new VirtualService(serviceId, 5679)
+        ) {
+            // service1 uses PassTickets, but it is stopped. Gateway retries call should be on service2
+            service1.zombie();
+
+            /*
+             service2 uses ByPass scheme, it check if previous call didn't remove a cookie (required for service2, not
+             for service1)
+             */
+            service2
+                .setAuthentication(new Authentication(AuthenticationScheme.BYPASS, null))
+                .addServlet("error", "/test/*", new HttpServlet() {
+
+                    private static final long serialVersionUID = -8891890250560560219L;
+
+                    @Override
+                    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+                        // verify transformation for ByPass scheme
+                        assertNull(req.getHeader(HttpHeaders.AUTHORIZATION));
+                        assertNotNull(req.getCookies());
+                        assertEquals(1, req.getCookies().length);
+                        Cookie cookie = req.getCookies()[0];
+                        assertEquals(GATEWAY_TOKEN_COOKIE_NAME, cookie.getName());
+                        assertEquals(jwt, cookie.getValue());
+
+                        resp.setStatus(SC_NO_CONTENT);
+                    }
+                })
+                .start()
+                .waitForGatewayRegistration(2, TIMEOUT);
+
+            given()
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+            .when()
+                .get(DiscoveryUtils.getGatewayUrls().get(0) + "/api/v1/" + serviceId + "/test")
+            .then()
+                .statusCode(is(SC_NO_CONTENT));
         }
     }
 

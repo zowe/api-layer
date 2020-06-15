@@ -22,6 +22,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.gateway.cache.RetryIfExpired;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
@@ -73,6 +74,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     private final AuthenticationSchemeFactory authenticationSchemeFactory;
     private final AuthenticationService authenticationService;
     private final CacheManager cacheManager;
+    private final CacheUtils cacheUtils;
 
     public Authentication getAuthentication(InstanceInfo instanceInfo) {
         final Map<String, String> metadata = instanceInfo.getMetadata();
@@ -101,7 +103,12 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
     }
 
     @Override
-    @CacheEvict(value = CACHE_BY_SERVICE_ID, condition = "#result != null && #result.isExpired()")
+    @RetryIfExpired
+    @CacheEvict(
+        value = CACHE_BY_SERVICE_ID,
+        condition = "#result != null && #result.isExpired()",
+        keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR
+    )
     @Cacheable(value = CACHE_BY_SERVICE_ID, keyGenerator = CacheConfig.COMPOSITE_KEY_GENERATOR)
     public AuthenticationCommand getAuthenticationCommand(String serviceId, String jwtToken) {
         final Application application = discoveryClient.getApplication(serviceId);
@@ -142,7 +149,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
      */
     @Override
     public void evictCacheService(String serviceId) {
-        CacheUtils.evictSubset(cacheManager, CACHE_BY_SERVICE_ID, x -> StringUtils.equalsIgnoreCase((String) x.get(0), serviceId));
+        cacheUtils.evictSubset(cacheManager, CACHE_BY_SERVICE_ID, x -> StringUtils.equalsIgnoreCase((String) x.get(0), serviceId));
     }
 
     public class UniversalAuthenticationCommand extends AuthenticationCommand {

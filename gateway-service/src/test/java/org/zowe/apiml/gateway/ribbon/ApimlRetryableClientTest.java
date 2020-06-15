@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.ribbon;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.Server;
@@ -23,10 +22,9 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.config.ribbon.IClientConfiguration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -36,22 +34,9 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-    ApimlRetryableClientTest.Context.class
+    IClientConfiguration.class
 })
 class ApimlRetryableClientTest {
-
-    @Configuration
-    public static class Context {
-        @Bean
-        public IClientConfig config() {
-            return  IClientConfig.Builder.newBuilder(DefaultClientConfigImpl.class, "apicatalog")
-                .withSecure(false)
-                .withFollowRedirects(false)
-                .withDeploymentContextBasedVipAddresses("apicatalog")
-                .withLoadBalancerEnabled(false)
-                .build();
-        }
-    }
 
     @Autowired
     IClientConfig config;

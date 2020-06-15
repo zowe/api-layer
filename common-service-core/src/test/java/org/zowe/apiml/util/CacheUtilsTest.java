@@ -9,6 +9,7 @@ package org.zowe.apiml.util;/*
  */
 
 import net.sf.ehcache.Element;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -30,7 +31,13 @@ import static org.mockito.Mockito.*;
 @PrepareForTest(net.sf.ehcache.Cache.class)
 public class CacheUtilsTest {
 
+    private CacheUtils underTest;
     private int removeCounter;
+
+    @Before
+    public void setUp() {
+        underTest = new CacheUtils();
+    }
 
     @Test
     public void testEvictSubset() {
@@ -55,7 +62,7 @@ public class CacheUtilsTest {
         when(ehCache2.getKeys()).thenReturn(keys);
 
         try {
-            CacheUtils.evictSubset(cacheManager, "missing", x -> true);
+            underTest.evictSubset(cacheManager, "missing", x -> true);
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("Unknown cache"));
@@ -64,7 +71,7 @@ public class CacheUtilsTest {
 
         // not EhCache - clean all, dont use keyPredicate
         verify(cache1, never()).clear();
-        CacheUtils.evictSubset(cacheManager, "cache1", x -> false);
+        underTest.evictSubset(cacheManager, "cache1", x -> false);
         verify(cache1, times(1)).clear();
 
         final Answer<Boolean> answer = invocation -> {
@@ -77,16 +84,16 @@ public class CacheUtilsTest {
 
         assertEquals(0, removeCounter);
         // in all cases remove entries without CompositeKey
-        CacheUtils.evictSubset(cacheManager, "cache2", x -> false);
+        underTest.evictSubset(cacheManager, "cache2", x -> false);
         assertEquals(1, removeCounter);
         verify(ehCache2, times(1)).remove(keys.get(0));
 
-        CacheUtils.evictSubset(cacheManager, "cache2", x -> x.equals(0, "test"));
+        underTest.evictSubset(cacheManager, "cache2", x -> x.equals(0, "test"));
         assertEquals(3, removeCounter);
         verify(ehCache2, times(2)).remove(keys.get(0));
         verify(ehCache2, times(1)).remove(keys.get(1));
 
-        CacheUtils.evictSubset(cacheManager, "cache2", x -> (Integer) x.get(1) > 10);
+        underTest.evictSubset(cacheManager, "cache2", x -> (Integer) x.get(1) > 10);
         assertEquals(5, removeCounter);
         verify(ehCache2, times(3)).remove(keys.get(0));
         verify(ehCache2, times(1)).remove(keys.get(3));
@@ -97,7 +104,7 @@ public class CacheUtilsTest {
         CacheManager cacheManager = mock(CacheManager.class);
         IllegalArgumentException iae = Assertions.assertThrows(
             IllegalArgumentException.class,
-            () -> CacheUtils.getAllRecords(cacheManager, "unknownCacheName")
+            () -> underTest.getAllRecords(cacheManager, "unknownCacheName")
         );
         assertEquals("Unknown cache unknownCacheName", iae.getMessage());
     }
@@ -110,7 +117,7 @@ public class CacheUtilsTest {
         when(cache.getNativeCache()).thenReturn(new Object());
         IllegalArgumentException iae = Assertions.assertThrows(
             IllegalArgumentException.class,
-            () -> CacheUtils.getAllRecords(cacheManager, "knownCacheName")
+            () -> underTest.getAllRecords(cacheManager, "knownCacheName")
         );
         assertTrue(iae.getMessage().startsWith("Unsupported type of cache : "));
     }
@@ -140,7 +147,7 @@ public class CacheUtilsTest {
         when(ehCache.getKeys()).thenReturn(keys);
         when(ehCache.getAll(keys)).thenReturn(convert(entries));
 
-        Collection<String> values = CacheUtils.getAllRecords(cacheManager, "knownCacheName");
+        Collection<String> values = underTest.getAllRecords(cacheManager, "knownCacheName");
         assertNotNull(values);
         assertEquals(3, values.size());
         assertTrue(values.contains("a"));

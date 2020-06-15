@@ -63,7 +63,6 @@ class TokenServiceHttpsJwt implements TokenService {
         String json = mapper.writeValueAsString(new Credentials(userId, password));
         StringEntity entity = new StringEntity(json);
         httpPost.setEntity(entity);
-
         httpPost.setHeader("Content-type", "application/json");
         return new ClientWithResponse(client, client.execute(httpPost));
     }
@@ -154,6 +153,7 @@ class TokenServiceHttpsJwt implements TokenService {
         ClientWithResponse clientWithResponse = new ClientWithResponse();
 
         try {
+
             clientWithResponse = request.request();
 
             return token.extract(clientWithResponse.getResponse());
