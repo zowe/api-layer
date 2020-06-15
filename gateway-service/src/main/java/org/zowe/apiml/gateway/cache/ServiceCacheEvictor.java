@@ -85,7 +85,7 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
             if (!evictAll && toEvict.isEmpty()) return;
             if (evictAll) {
                 serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
-                apimlZoneAwareLoadBalancer.values().forEach(ApimlZoneAwareLoadBalancer::serverChanged);
+                apimlZoneAwareLoadBalancer.values().forEach(ApimlZoneAwareLoadBalancer::updateListOfServers);
                 evictAll = false;
                 return;
             } else {
@@ -99,9 +99,15 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
     private void updateCorrectLoadBalancer() {
         while (!loadBalancerIDsForRefresh.isEmpty()) {
             String loadBalancerId = loadBalancerIDsForRefresh.poll();
-            apimlZoneAwareLoadBalancer.get(loadBalancerId).serverChanged();
+            updateLoadBalancer(loadBalancerId);
         }
+    }
 
+    private void updateLoadBalancer(String loadBalancerId) {
+       ApimlZoneAwareLoadBalancer loadBalancer = apimlZoneAwareLoadBalancer.get(loadBalancerId);
+       if(loadBalancer != null){
+           loadBalancer.updateListOfServers();
+       }
     }
 
     @Value
@@ -111,7 +117,6 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
 
         public void evict() {
             serviceCacheEvicts.forEach(x -> x.evictCacheService(serviceId));
-            apimlZoneAwareLoadBalancer.get(serviceId).serverChanged();
         }
 
 

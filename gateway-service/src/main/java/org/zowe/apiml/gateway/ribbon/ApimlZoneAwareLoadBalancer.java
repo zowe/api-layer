@@ -43,13 +43,6 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
     }
 
     /**
-     * Update list of servers, to handle services in right way
-     */
-    public void serverChanged() {
-        updateListOfServers();
-    }
-
-    /**
      * This method stores the instance info of chosen instance in the RequestContext for later usage, for
      * example by authentication logic
      */
