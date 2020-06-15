@@ -11,8 +11,8 @@
 package org.zowe.apiml.gateway.cache;
 
 import com.netflix.discovery.CacheRefreshedEvent;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
@@ -24,37 +24,47 @@ import static org.mockito.Mockito.*;
 
 public class ServiceCacheEvictorTest {
 
-    private ServiceCacheEvictor serviceCacheEvictor;
-
     private ApimlDiscoveryClient apimlDiscoveryClient = mock(ApimlDiscoveryClient.class);
 
-    private ApimlZoneAwareLoadBalancer<?> apimlZoneAwareLoadBalancer = mock(ApimlZoneAwareLoadBalancer.class);
+    private ApimlZoneAwareLoadBalancer<?> apimlZoneAwareLoadBalancer1 = mock(ApimlZoneAwareLoadBalancer.class);
+    private ApimlZoneAwareLoadBalancer<?> apimlZoneAwareLoadBalancer2 = mock(ApimlZoneAwareLoadBalancer.class);
+    private ApimlZoneAwareLoadBalancer<?> apimlZoneAwareLoadBalancer3 = mock(ApimlZoneAwareLoadBalancer.class);
+    private ApimlZoneAwareLoadBalancer<?> apimlZoneAwareLoadBalancer4 = mock(ApimlZoneAwareLoadBalancer.class);
 
     private List<ServiceCacheEvict> serviceCacheEvicts = Arrays.asList(
         mock(ServiceCacheEvict.class),
         mock(ServiceCacheEvict.class)
     );
 
-    @Before
+    ServiceCacheEvictor serviceCacheEvictor = mock(ServiceCacheEvictor.class);
+
+    @BeforeEach
     public void setUp() {
         serviceCacheEvictor = new ServiceCacheEvictor(apimlDiscoveryClient, serviceCacheEvicts);
-        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer);
+        when(apimlZoneAwareLoadBalancer1.getName()).thenReturn("service1");
+        when(apimlZoneAwareLoadBalancer2.getName()).thenReturn("service2");
+        when(apimlZoneAwareLoadBalancer3.getName()).thenReturn("service3");
+        when(apimlZoneAwareLoadBalancer4.getName()).thenReturn("service4");
+        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer1);
+        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer2);
+        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer3);
+        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer4);
     }
 
     @Test
     public void testService() {
         serviceCacheEvictor.onEvent(mock(CacheRefreshedEvent.class));
-        verify(apimlZoneAwareLoadBalancer, never()).serverChanged();
+        verify(apimlZoneAwareLoadBalancer1, never()).serverChanged();
 
         serviceCacheEvictor.evictCacheService("service1");
-        serviceCacheEvictor.evictCacheService("service1");
         serviceCacheEvictor.evictCacheService("service2");
+        serviceCacheEvictor.enqueueLoadBalancer("service1");
         serviceCacheEvictor.onEvent(mock(CacheRefreshedEvent.class));
         serviceCacheEvicts.forEach(x -> {
             verify(x, times(1)).evictCacheService("service1");
             verify(x, times(1)).evictCacheService("service2");
         });
-        verify(apimlZoneAwareLoadBalancer, times(1)).serverChanged();
+        verify(apimlZoneAwareLoadBalancer1, times(2)).serverChanged();
 
         serviceCacheEvictor.evictCacheService("service3");
         serviceCacheEvictor.evictCacheAllService();
@@ -64,7 +74,7 @@ public class ServiceCacheEvictorTest {
             verify(x, never()).evictCacheService("service3");
             verify(x, times(1)).evictCacheAllService();
         });
-        verify(apimlZoneAwareLoadBalancer, times(2)).serverChanged();
+        verify(apimlZoneAwareLoadBalancer3, times(1)).serverChanged();
     }
 
 }

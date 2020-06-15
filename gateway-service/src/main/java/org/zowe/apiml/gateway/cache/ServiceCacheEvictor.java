@@ -13,6 +13,7 @@ import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
@@ -21,8 +22,8 @@ import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class is responsible for evicting cache after new registry is loaded. This avoid race condition. Scenario is:
@@ -36,13 +37,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * updates.
  */
 @Component
+@Slf4j
 public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvict {
 
     private List<ServiceCacheEvict> serviceCacheEvicts;
 
     private boolean evictAll = false;
     private HashSet<ServiceRef> toEvict = new HashSet<>();
-
+    private LinkedBlockingQueue<String> loadBalancerIDsForRefresh = new LinkedBlockingQueue<>();
     private Map<String, ApimlZoneAwareLoadBalancer> apimlZoneAwareLoadBalancer = new ConcurrentHashMap<>();
 
     public ServiceCacheEvictor(
@@ -55,9 +57,16 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
     }
 
     public void addApimlZoneAwareLoadBalancer(ApimlZoneAwareLoadBalancer apimlZoneAwareLoadBalancer) {
-        String loadBalancerName = apimlZoneAwareLoadBalancer.getName() != null ?
-            apimlZoneAwareLoadBalancer.getName() : UUID.randomUUID().toString();
+        String loadBalancerName = apimlZoneAwareLoadBalancer.getName();
         this.apimlZoneAwareLoadBalancer.put(loadBalancerName, apimlZoneAwareLoadBalancer);
+    }
+
+    public void enqueueLoadBalancer(String loadBalancerID) {
+        try {
+            loadBalancerIDsForRefresh.put(loadBalancerID);
+        } catch (InterruptedException e) {
+            log.error("Error enqueuing load balancer ID for refresh " + e.getMessage());
+        }
     }
 
     public synchronized void evictCacheService(String serviceId) {
@@ -76,13 +85,23 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
             if (!evictAll && toEvict.isEmpty()) return;
             if (evictAll) {
                 serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
+                apimlZoneAwareLoadBalancer.values().forEach(ApimlZoneAwareLoadBalancer::serverChanged);
                 evictAll = false;
+                return;
             } else {
                 toEvict.forEach(ServiceRef::evict);
                 toEvict.clear();
             }
-            apimlZoneAwareLoadBalancer.values().forEach(ApimlZoneAwareLoadBalancer::serverChanged);
+            updateCorrectLoadBalancer();
         }
+    }
+
+    private void updateCorrectLoadBalancer() {
+        while (!loadBalancerIDsForRefresh.isEmpty()) {
+            String loadBalancerId = loadBalancerIDsForRefresh.poll();
+            apimlZoneAwareLoadBalancer.get(loadBalancerId).serverChanged();
+        }
+
     }
 
     @Value
@@ -92,6 +111,7 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
 
         public void evict() {
             serviceCacheEvicts.forEach(x -> x.evictCacheService(serviceId));
+            apimlZoneAwareLoadBalancer.get(serviceId).serverChanged();
         }
 
 

@@ -12,11 +12,12 @@ package org.zowe.apiml.gateway.controllers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.mockito.Mock;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.Arrays;
@@ -39,9 +40,13 @@ public class CacheServiceControllerTest {
     @Mock
     private ApimlDiscoveryClient discoveryClient;
 
+    @Mock
+    private ServiceCacheEvictor serviceCacheEvictor;
+
     @BeforeEach
     public void setUp() {
-        CacheServiceController cacheServiceController = new CacheServiceController(Arrays.asList(service1, service2), discoveryClient);
+        CacheServiceController cacheServiceController = new CacheServiceController(
+            Arrays.asList(service1, service2), discoveryClient, serviceCacheEvictor);
         mockMvc = MockMvcBuilders.standaloneSetup(cacheServiceController).build();
     }
 

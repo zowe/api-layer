@@ -36,7 +36,7 @@ import static org.mockito.Mockito.mock;
 @ContextConfiguration(classes = {
     ApimlZoneAwareLoadBalancerTest.Context.class
 })
-class ApimlZoneAwareLoadBalancerTest {
+public class ApimlZoneAwareLoadBalancerTest {
 
     @Configuration
     public static class Context {

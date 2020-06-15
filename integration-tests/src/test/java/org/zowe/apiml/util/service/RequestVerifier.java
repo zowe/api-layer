@@ -121,12 +121,6 @@ public class RequestVerifier {
             return list.get(0);
         }
 
-        public Enumeration<String> getHeaders(String name) {
-            List list = headersData.get(name);
-            if (list == null) list = Collections.emptyList();
-            return Collections.enumeration(list);
-        }
-
     }
 
 }
