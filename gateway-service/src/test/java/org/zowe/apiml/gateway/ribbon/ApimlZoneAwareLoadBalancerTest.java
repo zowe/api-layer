@@ -34,7 +34,7 @@ import static org.mockito.Mockito.mock;
 @ContextConfiguration(classes = {
     IClientConfiguration.class
 })
-public class ApimlZoneAwareLoadBalancerTest {
+class ApimlZoneAwareLoadBalancerTest {
 
     @Autowired
     IClientConfig config;
