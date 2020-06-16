@@ -83,7 +83,7 @@ public class ApiMediationLayerStartupChecker {
             log.debug("Gateway is {}", isGatewayUp ? "UP" : "DOWN");
 
             boolean isAllInstancesUp = allInstancesUp(documentContext);
-            log.debug("All instances is {}", isAllInstancesUp ? "UP" : "DOWN");
+            log.debug("All instances are {}", isAllInstancesUp ? "UP" : "DOWN");
 
             boolean isTestApplicationUp = testApplicationUp(documentContext);
             log.debug("Discoverableclient is {}", isTestApplicationUp ? "UP" : "DOWN");

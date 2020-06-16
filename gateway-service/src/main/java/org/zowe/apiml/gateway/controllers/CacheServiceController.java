@@ -9,12 +9,12 @@
  */
 package org.zowe.apiml.gateway.controllers;
 
-import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.List;

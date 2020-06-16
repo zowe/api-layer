@@ -10,7 +10,7 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
-import lombok.SneakyThrows;
+import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,20 +18,18 @@ import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.Flaky;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.service.DiscoveryUtils;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
@@ -63,11 +61,10 @@ public class AuthenticationOnDeploymentTest {
     @Flaky
     public void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
-        final String serviceId = "multipleAuthentication".toLowerCase();
 
         try (
-            final VirtualService service1 = new VirtualService(serviceId, 5678);
-            final VirtualService service2 = new VirtualService(serviceId, 5679)
+            final VirtualService service1 = new VirtualService("testService", 5678);
+            final VirtualService service2 = new VirtualService("testService", 5679)
         ) {
             // start first instance - without passTickets
             service1
@@ -114,7 +111,7 @@ public class AuthenticationOnDeploymentTest {
             service1.getGatewayVerifyUrls().forEach(gw -> {
                     verifier.existAndClean(service1, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"));
                     verifier.existAndClean(service2, x -> {
-                        assertNotNull( x.getHeader(HttpHeaders.AUTHORIZATION));
+                        assertNotNull(x.getHeader(HttpHeaders.AUTHORIZATION));
                         assertEquals("/verify/test", x.getRequestURI());
                         return true;
                     });
@@ -136,7 +133,7 @@ public class AuthenticationOnDeploymentTest {
             });
             service1.getGatewayVerifyUrls().forEach(gw -> {
                 verifier.existAndClean(service2, x -> {
-                    assertNotNull( x.getHeader(HttpHeaders.AUTHORIZATION));
+                    assertNotNull(x.getHeader(HttpHeaders.AUTHORIZATION));
                     assertEquals("/verify/test", x.getRequestURI());
                     return true;
                 });
@@ -144,61 +141,47 @@ public class AuthenticationOnDeploymentTest {
         }
     }
 
-    /**
-     * The idea of this test is check the case when Gateway uses retry call and if each call's headers are correct.
-     * Scheme PassTicket removes cookies and i.e. ByPass should leave cookie in the call.
-     *
-     * Test start two instances of a service with different authentication scheme (PassTicket and ByPass). Gateway will
-     * try call first service (with PassTicket). For the call cookie should be removed. This call will failed and
-     * the Gateway will make retry to call second instance. It uses ByPass, so cookie should be in the headers. Test
-     * checks if first call haven't changed request to make correct second call.
-     */
     @Test
-    @SneakyThrows
-    void givenJwtInCookie_whenPassTicketFailed_thenSecondServiceWithByPassIsCalledCorrectly() {
-        final String jwt = gatewayToken();
-        final String serviceId = "fromPassTicketToByPassService".toLowerCase();
+    @Flaky
+    void testReregistration() throws Exception {
 
         try (
-            final VirtualService service1 = new VirtualService(serviceId, 5678);
-            final VirtualService service2 = new VirtualService(serviceId, 5679)
+            final VirtualService service1 = new VirtualService("testService1", 5678);
+            final VirtualService service2 = new VirtualService("testService1", 5679);
+            final VirtualService service4 = new VirtualService("testService1", 5678)
         ) {
-            // service1 uses PassTickets, but it is stopped. Gateway retries call should be on service2
-            service1.zombie();
+            List<VirtualService> serviceList = Arrays.asList(service1, service2);
 
-            /*
-             service2 uses ByPass scheme, it check if previous call didn't remove a cookie (required for service2, not
-             for service1)
-             */
-            service2
-                .setAuthentication(new Authentication(AuthenticationScheme.BYPASS, null))
-                .addServlet("error", "/test/*", new HttpServlet() {
+            serviceList.forEach(s -> {
+                try {
+                    s.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
+                } catch (IOException | LifecycleException e) {
+                    e.printStackTrace();
+                }
+            });
 
-                    private static final long serialVersionUID = -8891890250560560219L;
+            serviceList.forEach(s -> {
+                try {
+                    s.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
+                } catch (LifecycleException e) {
+                    e.printStackTrace();
+                }
+            });
+//            register service with the same name
+            service4.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
+            // on each gateway make a call to service
+            service4.getGatewayVerifyUrls().forEach(x ->
+                given()
+                    .when().get(x + "/test")
+                    .then().statusCode(is(SC_OK))
+            );
 
-                    @Override
-                    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-                        // verify transformation for ByPass scheme
-                        assertNull(req.getHeader(HttpHeaders.AUTHORIZATION));
-                        assertNotNull(req.getCookies());
-                        assertEquals(1, req.getCookies().length);
-                        Cookie cookie = req.getCookies()[0];
-                        assertEquals(GATEWAY_TOKEN_COOKIE_NAME, cookie.getName());
-                        assertEquals(jwt, cookie.getValue());
+            // verify if each gateway sent request to service
+            service4.getGatewayVerifyUrls().forEach(gw ->
+                verifier.existAndClean(service4, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"))
+            );
+            service4.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
 
-                        resp.setStatus(SC_NO_CONTENT);
-                    }
-                })
-                .start()
-                .waitForGatewayRegistration(2, TIMEOUT);
-
-            given()
-                .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-            .when()
-                .get(DiscoveryUtils.getGatewayUrls().get(0) + "/api/v1/" + serviceId + "/test")
-            .then()
-                .statusCode(is(SC_NO_CONTENT));
         }
     }
-
 }
