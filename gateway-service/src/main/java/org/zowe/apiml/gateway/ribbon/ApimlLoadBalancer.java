@@ -23,11 +23,11 @@ import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
  *
  * @param <T> ussually Server class
  */
-public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T> {
+public class ApimlLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T> {
 
     public static final String LOADBALANCED_INSTANCE_INFO_KEY = "apimlLoadBalancedInstanceInfo";
 
-    public ApimlZoneAwareLoadBalancer(
+    public ApimlLoadBalancer(
         IClientConfig clientConfig,
         IRule rule,
         IPing ping,
@@ -37,7 +37,7 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
         ServiceCacheEvictor serviceCacheEvictor
     ) {
         super(clientConfig, rule, ping, serverList, filter, serverListUpdater);
-        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(this);
+        serviceCacheEvictor.registerLoadBalancer(this);
     }
 
     /**

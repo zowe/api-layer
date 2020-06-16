@@ -28,7 +28,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY;
+import static org.zowe.apiml.gateway.ribbon.ApimlLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY;
 
 class ServiceAuthenticationDecoratorTest {
 
