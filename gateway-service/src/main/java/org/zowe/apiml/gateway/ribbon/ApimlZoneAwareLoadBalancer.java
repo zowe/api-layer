@@ -37,7 +37,7 @@ public class ApimlZoneAwareLoadBalancer<T extends Server> extends ZoneAwareLoadB
         ServiceCacheEvictor serviceCacheEvictor
     ) {
         super(clientConfig, rule, ping, serverList, filter, serverListUpdater);
-        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(this);
+        serviceCacheEvictor.registerLoadBalancer(this);
     }
 
     /**

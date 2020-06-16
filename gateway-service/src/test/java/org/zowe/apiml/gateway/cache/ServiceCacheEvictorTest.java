@@ -45,10 +45,10 @@ class ServiceCacheEvictorTest {
         when(apimlZoneAwareLoadBalancer2.getName()).thenReturn("service2");
         when(apimlZoneAwareLoadBalancer3.getName()).thenReturn("service3");
         when(apimlZoneAwareLoadBalancer4.getName()).thenReturn("service4");
-        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer1);
-        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer2);
-        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer3);
-        serviceCacheEvictor.addApimlZoneAwareLoadBalancer(apimlZoneAwareLoadBalancer4);
+        serviceCacheEvictor.registerLoadBalancer(apimlZoneAwareLoadBalancer1);
+        serviceCacheEvictor.registerLoadBalancer(apimlZoneAwareLoadBalancer2);
+        serviceCacheEvictor.registerLoadBalancer(apimlZoneAwareLoadBalancer3);
+        serviceCacheEvictor.registerLoadBalancer(apimlZoneAwareLoadBalancer4);
     }
 
     @Test

@@ -12,10 +12,10 @@ package org.zowe.apiml.gateway.cache;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
+import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import lombok.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
-import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.HashSet;
@@ -40,7 +40,7 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
 
     private boolean evictAll = false;
     private HashSet<ServiceRef> toEvict = new HashSet<>();
-    private Map<String, ApimlZoneAwareLoadBalancer> apimlZoneAwareLoadBalancer = new ConcurrentHashMap<>();
+    private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
 
     public ServiceCacheEvictor(
         ApimlDiscoveryClient apimlDiscoveryClient,
@@ -51,9 +51,9 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
         this.serviceCacheEvicts.remove(this);
     }
 
-    public void addApimlZoneAwareLoadBalancer(ApimlZoneAwareLoadBalancer apimlZoneAwareLoadBalancer) {
-        String loadBalancerName = apimlZoneAwareLoadBalancer.getName();
-        this.apimlZoneAwareLoadBalancer.put(loadBalancerName, apimlZoneAwareLoadBalancer);
+    public void registerLoadBalancer(DynamicServerListLoadBalancer loadBalancer) {
+        String loadBalancerName = loadBalancer.getName();
+        loadBalancerRegistry.put(loadBalancerName, loadBalancer);
     }
 
 
@@ -73,13 +73,13 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
             if (!evictAll && toEvict.isEmpty()) return;
             if (evictAll) {
                 serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
-                apimlZoneAwareLoadBalancer.values().forEach(ApimlZoneAwareLoadBalancer::updateListOfServers);
+                loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
                 evictAll = false;
             } else {
                 toEvict.forEach(ServiceRef::evict);
                 toEvict.clear();
             }
-            apimlZoneAwareLoadBalancer.values().forEach(ApimlZoneAwareLoadBalancer::updateListOfServers);
+            loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
         }
     }
 
