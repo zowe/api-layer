@@ -5,7 +5,7 @@ logging:
         org.zowe.apiml.discovery.GatewayNotifier: OFF
         org.springframework: WARN
         com.netflix: WARN
-        com.netflix.discovery: DEBUG
+        com.netflix.discovery: ERROR
         com.netflix.config: ERROR
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
