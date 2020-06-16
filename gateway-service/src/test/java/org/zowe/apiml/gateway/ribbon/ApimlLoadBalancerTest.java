@@ -55,7 +55,7 @@ class ApimlLoadBalancerTest {
     }
 
     @Test
-    public void givenNoServerList_whenChooseServer_thenSetNothing() {
+    void givenNoServerList_whenChooseServer_thenSetNothing() {
         underTest.chooseServer("anotherInstance");
 
         RequestContext context = RequestContext.getCurrentContext();
@@ -63,7 +63,7 @@ class ApimlLoadBalancerTest {
     }
 
     @Test
-    public void givenServerList_whenChooseServer_thenSetChosenInstanceInfoToRequestContext() {
+    void givenServerList_whenChooseServer_thenSetChosenInstanceInfoToRequestContext() {
         InstanceInfo info = InstanceInfo.Builder.newBuilder()
             .setAppName("appname")
             .setInstanceId("instance")
@@ -77,7 +77,7 @@ class ApimlLoadBalancerTest {
     }
 
     @Test
-    public void givenUnexpectedServerImplementation_whenChooseServer_thenFailFast() {
+    void givenUnexpectedServerImplementation_whenChooseServer_thenFailFast() {
         underTest.addServer(new Server("localhost", 69));
 
         assertThrows(IllegalStateException.class, () -> underTest.chooseServer("instance"));
