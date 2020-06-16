@@ -22,7 +22,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-public class ServiceCacheEvictorTest {
+class ServiceCacheEvictorTest {
 
     private ApimlDiscoveryClient apimlDiscoveryClient = mock(ApimlDiscoveryClient.class);
 
@@ -52,7 +52,7 @@ public class ServiceCacheEvictorTest {
     }
 
     @Test
-    public void testService() {
+    void testService() {
         serviceCacheEvictor.onEvent(mock(CacheRefreshedEvent.class));
         verify(apimlZoneAwareLoadBalancer1, never()).updateListOfServers();
 

@@ -143,7 +143,7 @@ public class AuthenticationOnDeploymentTest {
 
     @Test
     @Flaky
-    public void testReregistration() throws Exception {
+    void testReregistration() throws Exception {
 
         try (
             final VirtualService service1 = new VirtualService("testService1", 5677);
