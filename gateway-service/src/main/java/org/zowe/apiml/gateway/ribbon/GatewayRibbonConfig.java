@@ -65,7 +65,7 @@ public class GatewayRibbonConfig {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
-        return new ApimlZoneAwareLoadBalancer<>(config, rule, ping, serverList,
+        return new ApimlLoadBalancer<>(config, rule, ping, serverList,
             serverListFilter, serverListUpdater, serviceCacheEvictor);
     }
 
