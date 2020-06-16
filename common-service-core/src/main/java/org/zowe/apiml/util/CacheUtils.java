@@ -21,9 +21,7 @@ import java.util.stream.Collectors;
 /**
  * This utils offer base operation with cache, which can be shared to multiple codes.
  */
-public final class CacheUtils {
-
-    private CacheUtils() {}
+public class CacheUtils {
 
     /**
      * This method evict a part of cache by condition on key if method use composite keys. It cannot be used on cache
@@ -58,7 +56,7 @@ public final class CacheUtils {
      * @param cacheName name of cache
      * @param keyPredicate condition to filter keys to evict
      */
-    public static void evictSubset(CacheManager cacheManager, String cacheName, Predicate<CompositeKey> keyPredicate) {
+    public void evictSubset(CacheManager cacheManager, String cacheName, Predicate<CompositeKey> keyPredicate) {
         final Cache cache = cacheManager.getCache(cacheName);
         if (cache == null) throw new IllegalArgumentException("Unknown cache " + cacheName);
         final Object nativeCache = cache.getNativeCache();
@@ -89,14 +87,19 @@ public final class CacheUtils {
      * @param <T> type of stored elements
      * @return collection with all stored records
      */
-    public static <T> List<T> getAllRecords(CacheManager cacheManager, String cacheName) {
+    public <T> List<T> getAllRecords(CacheManager cacheManager, String cacheName) {
         final Cache cache = cacheManager.getCache(cacheName);
         if (cache == null) throw new IllegalArgumentException("Unknown cache " + cacheName);
 
         final Object nativeCache = cache.getNativeCache();
         if (nativeCache instanceof net.sf.ehcache.Cache) {
             final net.sf.ehcache.Cache ehCache = (net.sf.ehcache.Cache) nativeCache;
-            return (List<T>) ehCache.getAll(ehCache.getKeys()).values().stream().map(Element::getObjectValue).collect(Collectors.toList());
+
+            return (List<T>) ehCache.getAll(ehCache.getKeys())
+                .values()
+                .stream()
+                .map(Element::getObjectValue)
+                .collect(Collectors.toList());
         } else {
             throw new IllegalArgumentException("Unsupported type of cache : " + nativeCache.getClass());
         }

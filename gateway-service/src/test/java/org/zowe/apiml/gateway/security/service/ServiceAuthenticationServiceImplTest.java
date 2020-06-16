@@ -28,11 +28,10 @@ import org.mockito.stubbing.Stubber;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.config.service.security.MockedSecurityContext;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.schema.*;
@@ -43,6 +42,7 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.CacheUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Date;
@@ -60,7 +60,7 @@ import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServi
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
-    ServiceAuthenticationServiceImplTest.Context.class,
+    MockedSecurityContext.class,
     CacheConfig.class,
     RetryIfExpiredAspect.class
 })
@@ -94,7 +94,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         RequestContext.testSetCurrentContext(null);
         serviceAuthenticationService.evictCacheAllService();
 
-        serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(discoveryClient, authenticationSchemeFactory, authenticationService, cacheManager);
+        serviceAuthenticationServiceImpl = new ServiceAuthenticationServiceImpl(discoveryClient, authenticationSchemeFactory, authenticationService, cacheManager, new CacheUtils());
     }
 
     @AfterEach
@@ -514,31 +514,6 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
         @Override
         public boolean isRequiredValidJwt() {
             return false;
-        }
-
-    }
-
-    @Configuration
-    public static class Context {
-
-        @Bean
-        public EurekaClient getDiscoveryClient() {
-            return mock(EurekaClient.class);
-        }
-
-        @Bean
-        public AuthenticationSchemeFactory getAuthenticationSchemeFactory() {
-            return mock(AuthenticationSchemeFactory.class);
-        }
-
-        @Bean
-        public AuthenticationService getAuthenticationService() {
-            return mock(AuthenticationService.class);
-        }
-
-        @Bean
-        public ServiceAuthenticationService getServiceAuthenticationService(@Autowired CacheManager cacheManager) {
-            return new ServiceAuthenticationServiceImpl(getDiscoveryClient(), getAuthenticationSchemeFactory(), getAuthenticationService(), cacheManager);
         }
 
     }

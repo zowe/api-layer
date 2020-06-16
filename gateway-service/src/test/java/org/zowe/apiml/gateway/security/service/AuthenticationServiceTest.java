@@ -15,7 +15,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.shared.Application;
 import io.jsonwebtoken.*;
-import net.sf.ehcache.Element;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,21 +22,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.*;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.config.service.security.MockedAuthenticationServiceContext;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
@@ -47,6 +43,7 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
 import javax.servlet.http.Cookie;
@@ -62,13 +59,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {
     CacheConfig.class,
-    AuthenticationServiceTest.Context.class
+    MockedAuthenticationServiceContext.class
 })
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(net.sf.ehcache.Cache.class)
 public class AuthenticationServiceTest {
 
-    private static final String ZOSMF = "zosmf";
+    public static final String ZOSMF = "zosmf";
     private static final String ZOSMF_HOSTNAME = "zosmfhostname";
     private static final int ZOSMF_PORT = 1433;
 
@@ -100,7 +97,7 @@ public class AuthenticationServiceTest {
     @Autowired
     private DiscoveryClient discoveryClient;
 
-    private static ObjectMapper securityObjectMapper = new ObjectMapper();
+    public static ObjectMapper securityObjectMapper = new ObjectMapper();
 
     private void mockJwtSecurityInitializer() {
         reset(restTemplate);
@@ -367,7 +364,7 @@ public class AuthenticationServiceTest {
     private AuthenticationService getSpiedAuthenticationService(ZosmfServiceV2 spiedZosmfService) {
         AuthenticationService out = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
-            spiedZosmfService, discoveryClient, restTemplate, mock(CacheManager.class)
+            spiedZosmfService, discoveryClient, restTemplate, mock(CacheManager.class), mock(CacheUtils.class)
         );
         ReflectionTestUtils.setField(out, "meAsProxy", out);
         return spy(out);
@@ -492,7 +489,7 @@ public class AuthenticationServiceTest {
         class AuthenticationServiceExceptionHanlderTest extends AuthenticationService {
 
             AuthenticationServiceExceptionHanlderTest() {
-                super(null, null, null, null, null, null, null);
+                super(null, null, null, null, null, null, null, null);
             }
 
             @Override
@@ -543,21 +540,17 @@ public class AuthenticationServiceTest {
         when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
         when(discoveryClient.getApplication("gateway")).thenReturn(application);
 
-        Map<Object, Element> mapCache = new HashMap<>();
-        mapCache.put("a", new Element("a", "a"));
-        mapCache.put("b", new Element("b", "b"));
-
         ApplicationContext applicationContext = mock(ApplicationContext.class);
-        CacheManager cacheManager = mock(CacheManager.class);
-        Cache cache = mock(Cache.class);
-        net.sf.ehcache.Cache ehCache = PowerMockito.mock(net.sf.ehcache.Cache.class);
-        when(ehCache.getAll(any())).thenReturn(mapCache);
-        when(cache.getNativeCache()).thenReturn(ehCache);
-        when(cacheManager.getCache(anyString())).thenReturn(cache);
+
+        CacheUtils cacheUtils = mock(CacheUtils.class);
+        List<Object> elementsInCache = new ArrayList<>();
+        elementsInCache.add("a");
+        elementsInCache.add("b");
+        when(cacheUtils.getAllRecords(any(), any())).thenReturn(elementsInCache);
 
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, getSpiedZosmfService(),
-            discoveryClient, restTemplate, cacheManager
+            discoveryClient, restTemplate, mock(CacheManager.class), cacheUtils
         );
 
         when(applicationContext.getBean(AuthenticationService.class)).thenReturn(authenticationService);
@@ -590,53 +583,4 @@ public class AuthenticationServiceTest {
         assertTrue(token.isPresent());
         assertEquals("jwt", token.get());
     }
-
-    @Configuration
-    public static class Context {
-
-        @Autowired
-        private ApplicationContext applicationContext;
-
-        @Bean
-        public AuthConfigurationProperties getAuthConfigurationProperties() {
-            final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
-            authConfigurationProperties.setZosmfServiceId(ZOSMF);
-            return authConfigurationProperties;
-        }
-
-        @Bean
-        public JwtSecurityInitializer getJwtSecurityInitializer() {
-            return mock(JwtSecurityInitializer.class);
-        }
-
-        @Bean
-        public RestTemplate getRestTemplate() {
-            return mock(RestTemplate.class);
-        }
-
-        @Bean
-        public DiscoveryClient getDiscoveryClient() {
-            return mock(DiscoveryClient.class);
-        }
-
-        @Bean
-        public ZosmfServiceV2 getZosmfService() {
-            return new ZosmfServiceV2(
-                getAuthConfigurationProperties(),
-                getDiscoveryClient(),
-                getRestTemplate(),
-                securityObjectMapper
-            );
-        }
-
-        @Bean
-        public AuthenticationService getAuthenticationService(CacheManager cacheManager) {
-            return new AuthenticationService(
-                applicationContext, getAuthConfigurationProperties(), getJwtSecurityInitializer(),
-                getZosmfService(), getDiscoveryClient(), getRestTemplate(), cacheManager
-            );
-        }
-
-    }
-
 }

@@ -45,14 +45,6 @@ task packageApiMediationZowe(type: Zip) {
         from "$buildDir/convert/api-mediation-start-gateway-template.sh"
     }
 
-    into('apiml-auth/') {
-        from "$buildDir/convert/pluginDefinition.json"
-    }
-
-    into('apiml-auth/lib/') {
-        from "$buildDir/convert/apimlAuth.js"
-        from "$buildDir/convert/tokenInjector.js"
-    }
 }
 
 packageApiMediationZowe.doFirst {
@@ -60,9 +52,6 @@ packageApiMediationZowe.doFirst {
         add(file('src/main/resources/scripts/api-mediation-start-catalog-template.sh'));
         add(file('src/main/resources/scripts/api-mediation-start-discovery-template.sh'));
         add(file('src/main/resources/scripts/api-mediation-start-gateway-template.sh'));
-        add(file('../apiml-auth/pluginDefinition.json'));
-        add(file('../apiml-auth/lib/apimlAuth.js'));
-        add(file('../apiml-auth/lib/tokenInjector.js'));
         add(file('src/main/resources/component-scripts/configure.sh'));
         add(file('src/main/resources/component-scripts/start.sh'));
         add(file('src/main/resources/component-scripts/validate.sh'));
