@@ -24,8 +24,8 @@ apiml:
     enabled: true
     service:
         serviceId: discoverableclient
-        title: Service Spring Integration Enabler sample application API
-        description:  Sample API services to demonstrate Spring Integration Enabler
+        title: Service Spring Onboarding Enabler sample application API
+        description:  Sample API services to demonstrate Spring Onboarding Enabler
 
         discoveryServiceUrls: https://localhost:10011/eureka/
 

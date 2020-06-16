@@ -20,6 +20,6 @@ For each of the available services:
     1. ApiCatalogApplication - api-catalog-service
     2. DiscoverableClientSampleApplication - discoverable-client
     3. DiscoveryServiceApplication - discovery-service
-    4. EnablerV1SampleApplication - integration-enabler-spring-v1-sample-app
+    4. EnablerV1SampleApplication - onboarding-enabler-spring-v1-sample-app
     5. GatewayApplication - gateway-service
 4. Run the service

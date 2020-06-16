@@ -21,8 +21,8 @@ apiml:
     enabled: true
     service:
         serviceId: enablerv1sampleapp
-        title: Service Integration Enabler V1 Sample App (Spring Boot 1.x) # Service Spring Integration Enabler sample application API #©     #Copyright is for UTF8 encoding check
-        description:  Sample Spring Boot 1.x REST API Application using the APIML Integration Enabler for Spring Boot 1.x # Sample API services to demonstrate Spring Integration Enabler
+        title: Service Onboarding Enabler V1 Sample App (Spring Boot 1.x) # Service Spring Onboarding Enabler sample application API #©     #Copyright is for UTF8 encoding check
+        description:  Sample Spring Boot 1.x REST API Application using the APIML Onboarding Enabler for Spring Boot 1.x # Sample API services to demonstrate Spring Onboarding Enabler
 
         discoveryServiceUrls: https://localhost:10011/eureka/
 
