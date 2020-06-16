@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
@@ -34,7 +33,6 @@ public class CacheServiceController {
 
     private final List<ServiceCacheEvict> toEvict;
     private final ApimlDiscoveryClient discoveryClient;
-    private ServiceCacheEvictor serviceCacheEvictor;
 
     @DeleteMapping(path = "")
     public void evictAll() {
@@ -44,7 +42,6 @@ public class CacheServiceController {
 
     @DeleteMapping(path = "/{serviceId}")
     public void evict(@PathVariable("serviceId") String serviceId) {
-        serviceCacheEvictor.enqueueLoadBalancer(serviceId);
         toEvict.forEach(s -> s.evictCacheService(serviceId));
         discoveryClient.fetchRegistry();
     }

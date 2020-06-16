@@ -58,7 +58,6 @@ public class ServiceCacheEvictorTest {
 
         serviceCacheEvictor.evictCacheService("service1");
         serviceCacheEvictor.evictCacheService("service2");
-        serviceCacheEvictor.enqueueLoadBalancer("service1");
         serviceCacheEvictor.onEvent(mock(CacheRefreshedEvent.class));
         serviceCacheEvicts.forEach(x -> {
             verify(x, times(1)).evictCacheService("service1");
@@ -74,7 +73,7 @@ public class ServiceCacheEvictorTest {
             verify(x, never()).evictCacheService("service3");
             verify(x, times(1)).evictCacheAllService();
         });
-        verify(apimlZoneAwareLoadBalancer3, times(1)).updateListOfServers();
+        verify(apimlZoneAwareLoadBalancer3, times(3)).updateListOfServers();
     }
 
 }

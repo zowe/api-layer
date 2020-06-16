@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
@@ -40,13 +39,11 @@ public class CacheServiceControllerTest {
     @Mock
     private ApimlDiscoveryClient discoveryClient;
 
-    @Mock
-    private ServiceCacheEvictor serviceCacheEvictor;
 
     @BeforeEach
     public void setUp() {
         CacheServiceController cacheServiceController = new CacheServiceController(
-            Arrays.asList(service1, service2), discoveryClient, serviceCacheEvictor);
+            Arrays.asList(service1, service2), discoveryClient);
         mockMvc = MockMvcBuilders.standaloneSetup(cacheServiceController).build();
     }
 

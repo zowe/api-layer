@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class is responsible for evicting cache after new registry is loaded. This avoid race condition. Scenario is:
@@ -44,7 +43,6 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
 
     private boolean evictAll = false;
     private HashSet<ServiceRef> toEvict = new HashSet<>();
-    private LinkedBlockingQueue<String> loadBalancerIDsForRefresh = new LinkedBlockingQueue<>();
     private Map<String, ApimlZoneAwareLoadBalancer> apimlZoneAwareLoadBalancer = new ConcurrentHashMap<>();
 
     public ServiceCacheEvictor(
@@ -61,13 +59,6 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
         this.apimlZoneAwareLoadBalancer.put(loadBalancerName, apimlZoneAwareLoadBalancer);
     }
 
-    public void enqueueLoadBalancer(String loadBalancerID) {
-        try {
-            loadBalancerIDsForRefresh.put(loadBalancerID);
-        } catch (InterruptedException e) {
-            log.error("Error enqueuing load balancer ID for refresh " + e.getMessage());
-        }
-    }
 
     public synchronized void evictCacheService(String serviceId) {
         if (evictAll) return;
@@ -87,28 +78,14 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
                 serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
                 apimlZoneAwareLoadBalancer.values().forEach(ApimlZoneAwareLoadBalancer::updateListOfServers);
                 evictAll = false;
-                return;
             } else {
                 toEvict.forEach(ServiceRef::evict);
                 toEvict.clear();
             }
-            updateCorrectLoadBalancer();
+            apimlZoneAwareLoadBalancer.values().forEach(ApimlZoneAwareLoadBalancer::updateListOfServers);
         }
     }
 
-    private void updateCorrectLoadBalancer() {
-        while (!loadBalancerIDsForRefresh.isEmpty()) {
-            String loadBalancerId = loadBalancerIDsForRefresh.poll();
-            updateLoadBalancer(loadBalancerId);
-        }
-    }
-
-    private void updateLoadBalancer(String loadBalancerId) {
-        ApimlZoneAwareLoadBalancer loadBalancer = apimlZoneAwareLoadBalancer.get(loadBalancerId);
-        if (loadBalancer != null) {
-            loadBalancer.updateListOfServers();
-        }
-    }
 
     @Value
     private class ServiceRef {
