@@ -211,7 +211,7 @@ pipeline {
             archiveArtifacts artifacts: 'discoverable-client/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'discovery-service/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'gateway-service/build/libs/**/*.jar'
-            archiveArtifacts artifacts: 'integration-enabler-spring-v1-sample-app/build/libs/**/*.jar'
+            archiveArtifacts artifacts: 'onboarding-enabler-spring-v1-sample-app/build/libs/**/*.jar'
             archiveArtifacts artifacts: 'api-layer.tar.gz'
 
             withCredentials([usernamePassword(credentialsId: 'zowe-robot-github', usernameVariable: 'ZOWE_GITHUB_USERID', passwordVariable: 'ZOWE_GITHUB_APIKEY')]) {
