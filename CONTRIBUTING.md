@@ -51,6 +51,7 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 
 Consider the following when you create or respond to pull requests:
 
+- Every pull request must have associated issue in [api-layer repository](https://github.com/zowe/api-layer/issues/) and link to it
 - Pull request reviewers should be assigned to a squad team member.
 - Use a draft pull request for work in progress that you want to build on the CICD pipeline.
 - Anyone can comment on a pull request to request a delay on merging or to get questions answered.
