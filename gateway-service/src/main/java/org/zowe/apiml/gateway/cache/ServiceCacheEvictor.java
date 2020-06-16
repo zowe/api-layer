@@ -31,12 +31,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * b. gateways evict caches and start with mirroring of discovery into discoveryClient
  * 2. now is possible cache again data with old settings from discovery service, because fetching new is asynchronous
  * 3. after make fetching this beans is notified from discovery client and evict caches again
- * <p>
+ *
  * This process evict evict caches two times, because not all reason to cache is dependent only by discovery client
  * updates.
  */
 @Component
-@Slf4j
 public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvict {
 
     private List<ServiceCacheEvict> serviceCacheEvicts;
