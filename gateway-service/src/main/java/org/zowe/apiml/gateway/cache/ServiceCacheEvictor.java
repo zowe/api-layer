@@ -13,7 +13,6 @@ import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
@@ -31,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * b. gateways evict caches and start with mirroring of discovery into discoveryClient
  * 2. now is possible cache again data with old settings from discovery service, because fetching new is asynchronous
  * 3. after make fetching this beans is notified from discovery client and evict caches again
- *
  * This process evict evict caches two times, because not all reason to cache is dependent only by discovery client
  * updates.
  */
