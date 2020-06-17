@@ -2,23 +2,6 @@ spring.profiles.include: diag
 logging:
     level:
         ROOT: TRACE
-        org.zowe.apiml: TRACE
-        org.springframework: TRACE
-        com.netflix: TRACE
-        com.netflix.discovery: TRACE
-        com.netflix.config: TRACE
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: TRACE
-        com.netflix.discovery.DiscoveryClient: TRACE
-        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: TRACE
-        org.springframework.web.socket: TRACE
-        org.zowe.apiml.gateway.ws: TRACE
-        org.zowe.apiml.gateway.error: TRACE
-        org.eclipse.jetty: TRACE
-        org.springframework.web.servlet.PageNotFound: TRACE
-        net.sf.ehcache: TRACE
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: TRACE
-        # New Config
-        org.apache: TRACE #org.apache.catalina, org.apache.coyote, org.apache.tomcat
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
