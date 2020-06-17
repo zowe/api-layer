@@ -157,7 +157,7 @@ public class CorsPerServiceTest {
     void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() throws Exception {
         // There is request to the southbound server and the CORS headers are properly set on the response
         mockValid200HttpResponse();
-        applicationRegistry.setCurrentApplication("serviceid1");
+        applicationRegistry.setCurrentApplication("/serviceid1/test");
         discoveryClient.createRefreshCacheEvent();
         // Preflight request
         given()
