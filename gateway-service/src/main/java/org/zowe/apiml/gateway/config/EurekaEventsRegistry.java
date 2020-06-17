@@ -17,16 +17,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.zowe.apiml.gateway.metadata.service.MetadataProcessor;
 
+import java.util.List;
+
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
 public class EurekaEventsRegistry {
 
     private final EurekaClient eurekaClient;
-    private final MetadataProcessor processor;
+    private final List<MetadataProcessor> processors;
 
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        eurekaClient.registerEventListener(processor);
+        processors.forEach(eurekaClient::registerEventListener);
     }
 }
