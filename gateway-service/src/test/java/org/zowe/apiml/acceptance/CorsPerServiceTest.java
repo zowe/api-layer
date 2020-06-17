@@ -82,19 +82,33 @@ public class CorsPerServiceTest {
     }
 
     @Test
-    void givenDefaultConfiguration_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() {
-        // There is no request to the southbound server
+    // Verify the header to allow CORS isn't set
+    // Verify there was no call to southbound service
+    void givenDefaultConfiguration_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+        applicationRegistry.setCurrentApplication("/serviceid2/test");
+
+        given()
+            .header(new Header("Origin", "https://foo.bar.org"))
+            .header(new Header("Access-Control-Request-Method", "POST"))
+            .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
+        .when()
+            .get(basePath + "serviceid2/test")
+        .then()
+            .statusCode(is(SC_OK))
+            .header("Access-Control-Allow-Origin", is(nullValue()));
+
+        verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
     }
 
     @Test
     void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() {
         // There is no request to the southbound server for preflight
-        // There is requset to the southbound server for the second request
+        // There is request to the southbound server for the second request
     }
 
     @Test
     void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() {
-        // There is request to the southbound server
+        // There is request to the southbound server and the CORS headers are properly set on the response
     }
 
     // The case for downstream headers will be?
