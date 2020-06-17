@@ -131,6 +131,9 @@ public class ApplicationRegistry {
         metadata.put("apiml.connectTimeout", "5000");
         metadata.put("apiml.readTimeout", "5000");
         metadata.put("apiml.connectionManagerTimeout", "5000");
+        metadata.put("apiml.corsEnabled","true");
+        metadata.put("apiml.routes","/test");
+
         return metadata;
     }
 

@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.metadata.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -36,24 +35,30 @@ public class CorsMetadataProcessor extends MetadataProcessor {
     }
 
     protected void checkInstanceInfo(InstanceInfo instanceInfo) {
-        String serviceId = instanceInfo.getVIPAddress();
         Map<String, String> metadata = instanceInfo.getMetadata();
+
         if (metadata != null) {
+            String serviceId = instanceInfo.getVIPAddress();
             setCorsConfiguration(serviceId, metadata);
         }
     }
 
     public void setCorsConfiguration(String serviceId, Map<String, String> metadata) {
-        String corsConfiguration = metadata.get("apiml.corsConfiguration");
-        if (!Strings.isEmpty(corsConfiguration)) {
+        String isCorsEnabled = metadata.get("apiml.corsEnabled");
+        if (Boolean.parseBoolean(isCorsEnabled)) {
             if (this.corsConfigurationSource instanceof UrlBasedCorsConfigurationSource) {
                 UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
-                final CorsConfiguration config = new CorsConfiguration().applyPermitDefaultValues();
+                final CorsConfiguration config = new CorsConfiguration();
                 config.setAllowCredentials(true);
+                config.addAllowedOrigin(CorsConfiguration.ALL);
+                config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
                 config.setAllowedMethods(allowedCorsHttpMethods);
-                cors.registerCorsConfiguration("/api/v1/" + serviceId.toLowerCase() + "/*", config);
+                metadata.entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith("apiml.routes"))
+                    .forEach(entry ->
+                        cors.registerCorsConfiguration("/" + serviceId + entry.getValue(), config));
             }
-
+            System.out.println("");
         }
     }
 }

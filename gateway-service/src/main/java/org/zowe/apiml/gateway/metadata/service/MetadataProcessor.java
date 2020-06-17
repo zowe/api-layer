@@ -41,7 +41,6 @@ public abstract class MetadataProcessor implements EurekaEventListener {
         Set<InstanceInfo> infoSet = applications.stream()
             .flatMap(application -> application.getInstances().stream())
             .collect(Collectors.toSet());
-
         infoSet.forEach(this::checkInstanceInfo);
     }
 

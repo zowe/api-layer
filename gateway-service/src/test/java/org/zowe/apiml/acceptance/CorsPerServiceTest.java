@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 
 import java.io.IOException;
@@ -63,6 +64,8 @@ public class CorsPerServiceTest {
 
     @LocalServerPort
     private int port;
+    @Autowired
+    ApimlDiscoveryClientStub discoveryClient;
 
     @BeforeEach
     public void setBasePath() {
@@ -71,6 +74,7 @@ public class CorsPerServiceTest {
         applicationRegistry.clearApplications();
         applicationRegistry.addApplication("/serviceid2/test", "/serviceid2/**", "serviceid2", false);
         applicationRegistry.addApplication("/serviceid1/test", "/serviceid1/**", "serviceid1",true);
+
     }
 
     @Test
@@ -153,8 +157,8 @@ public class CorsPerServiceTest {
     void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() throws Exception {
         // There is request to the southbound server and the CORS headers are properly set on the response
         mockValid200HttpResponse();
-        applicationRegistry.setCurrentApplication("/serviceid1/test");
-
+        applicationRegistry.setCurrentApplication("serviceid1");
+        discoveryClient.createRefreshCacheEvent();
         // Preflight request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
@@ -162,7 +166,7 @@ public class CorsPerServiceTest {
             .get(basePath + "serviceid1/test")
         .then()
             .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("*"));
+            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
 
         // The actual request is passed to the southbound service
         verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));

@@ -164,8 +164,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     CorsConfigurationSource corsConfigurationSource() {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         if (corsEnabled) {
-            final CorsConfiguration config = new CorsConfiguration().applyPermitDefaultValues();
+            final CorsConfiguration config = new CorsConfiguration();
             config.setAllowCredentials(true);
+            config.addAllowedOrigin(CorsConfiguration.ALL);
+            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods());
             source.registerCorsConfiguration("/api/v1/gateway/**", config);
         }
