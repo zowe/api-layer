@@ -17,24 +17,22 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 
 import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 
-@AcceptanceTest
-/**
+/*
  * Verify default state
  *    - With pre-flight request
  *       The No Access Control Allow Origin header
@@ -45,15 +43,21 @@ import static org.mockito.Mockito.*;
  *      - Verify that the downstream headers for CORS are ignored
  *    - Without pre-flight request
  *      - Verify that the downstream headers for CORS are ignored
+ *
+ *  The case for downstream headers will be?
+ *     With disabled by default not much.
+ *     Is there case when disabled cors would mean that we will have to change it?
+ *     When allowed the headers are also irelevant as the headers adds no behavior
+ *  What can the headers do?
+ *  If the pre-flight request comes and we
  */
+@AcceptanceTest
 public class CorsPerServiceTest {
     private String basePath;
 
     @Autowired
     @Qualifier("mockProxy")
     CloseableHttpClient mockClient;
-    @Autowired
-    ApimlDiscoveryClientStub discoveryClient;
     @Autowired
     ApplicationRegistry applicationRegistry;
 
@@ -145,17 +149,24 @@ public class CorsPerServiceTest {
 
     @Test
     // There is request to the southbound server for the request
-    //
-    void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() {
+    // The CORS header is properly set.
+    void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() throws Exception {
         // There is request to the southbound server and the CORS headers are properly set on the response
-    }
+        mockValid200HttpResponse();
+        applicationRegistry.setCurrentApplication("/serviceid1/test");
 
-    // The case for downstream headers will be?
-    //    With disabled by default not much.
-    //    Is there case when disabled cors would mean that we will have to change it?
-    //    When allowed the headers are also irelevant as the headers adds no behavior
-    // What can the headers do?
-    // If the pre-flight request comes and we
+        // Preflight request
+        given()
+            .header(new Header("Origin", "https://foo.bar.org"))
+        .when()
+            .get(basePath + "serviceid1/test")
+        .then()
+            .statusCode(is(SC_OK))
+            .header("Access-Control-Allow-Origin", is("*"));
+
+        // The actual request is passed to the southbound service
+        verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
+    }
 
     private void mockValid200HttpResponse() throws IOException {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
