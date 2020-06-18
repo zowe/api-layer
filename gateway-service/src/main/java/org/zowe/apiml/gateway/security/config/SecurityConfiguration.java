@@ -11,7 +11,6 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +33,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
@@ -67,6 +65,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         "/api/v1/gateway",
         "/application"
     };
+
+    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/api/v1/gateway/**", "/gateway/version");
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
@@ -166,25 +166,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     CorsConfigurationSource corsConfigurationSource() {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         final CorsConfiguration config = new CorsConfiguration();
-        String path = "/**";
+        List<String> pathsToEnable;
         if (corsEnabled) {
             config.setAllowCredentials(true);
             config.addAllowedOrigin(CorsConfiguration.ALL);
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods());
-            path = "/api/v1/gateway/**";
-            source.registerCorsConfiguration("/gateway/version", config);
+            pathsToEnable = CORS_ENABLED_ENDPOINTS;
+        } else {
+            pathsToEnable = Collections.singletonList("/**");
         }
-        source.registerCorsConfiguration(path, config);
+        pathsToEnable.forEach(path -> {
+            source.registerCorsConfiguration(path, config);
+        });
         return source;
-    }
-
-    @Bean
-    @Autowired
-    public CorsFilter corsFilter(CorsConfigurationSource corsConfigurationSource) {
-        final UrlBasedCorsConfigurationSource source = (UrlBasedCorsConfigurationSource) corsConfigurationSource;
-
-        return new CorsFilter(source);
     }
 
     @Bean
@@ -304,7 +299,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         web.ignoring()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.PUBLIC_KEYS_PATH + "/**");
     }
-
 
 
 }
