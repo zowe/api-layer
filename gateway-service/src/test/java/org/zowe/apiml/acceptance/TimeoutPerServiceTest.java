@@ -33,11 +33,11 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
     void givenDefaultConfiguration_whenRequestIsCreated_thenTheTimeoutsAreTakenFromDefaultConfig() throws IOException {
         mockValid200HttpResponse();
-        applicationRegistry.setCurrentApplication("/serviceid2/test");
+        applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
 
         when()
-            .get(basePath + "serviceid2/test")
-            .then()
+            .get(basePath + serviceWithDefaultConfiguration.getPath())
+        .then()
             .statusCode(is(SC_OK));
 
         assertConfigurationTimeouts(30 * SECOND);
@@ -46,12 +46,12 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
     void givenOverwriteOfConfiguration_whenRequestIsCreated_thenTheTimeoutIsOverriden() throws IOException { // No overwrite happened here
         mockValid200HttpResponse();
-        applicationRegistry.setCurrentApplication("/serviceid1/test");
+        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
 
         discoveryClient.createRefreshCacheEvent();
         when()
-            .get(basePath + "serviceid1/test")
-            .then()
+            .get(basePath + serviceWithCustomConfiguration.getPath())
+        .then()
             .statusCode(is(SC_OK));
 
         assertConfigurationTimeouts(5 * SECOND);
@@ -62,14 +62,14 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
         mockValid200HttpResponse();
 
         // Properly set configuration for service with custom Timeout configuration
-        applicationRegistry.setCurrentApplication("/serviceid1/test");
+        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
         discoveryClient.createRefreshCacheEvent();
         // Tell the infrastructure to work with the request for serviceid
-        applicationRegistry.setCurrentApplication("/serviceid2/test");
+        applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
 
         when()
-            .get(basePath + "serviceid2/test")
-            .then()
+            .get(basePath + serviceWithDefaultConfiguration.getPath())
+        .then()
             .statusCode(is(SC_OK));
 
         assertConfigurationTimeouts(30 * SECOND);

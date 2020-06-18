@@ -21,6 +21,6 @@ public class AcceptanceTestWithBasePath {
 
     @BeforeEach
     public void setBasePath() {
-        basePath = String.format("https://localhost:%d/", port);
+        basePath = String.format("https://localhost:%d", port);
     }
 }

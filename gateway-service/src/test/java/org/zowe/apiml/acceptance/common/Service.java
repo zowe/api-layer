@@ -18,4 +18,8 @@ public class Service {
     private final String id;
     private final String locationPattern;
     private final String serviceRoute;
+
+    public String getPath() {
+        return id;
+    }
 }
