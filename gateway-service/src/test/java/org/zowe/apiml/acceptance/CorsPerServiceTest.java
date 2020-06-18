@@ -14,6 +14,7 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -113,6 +114,31 @@ public class CorsPerServiceTest {
             .header("Access-Control-Allow-Origin", is(nullValue()));
 
         verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
+    }
+
+    @Test
+    void givenDefaultConfiguration_whenRequestComes_thenIfTheSouthboundServiceSetsCorsHeadersTheHeadersAreRemoved() throws Exception {
+        applicationRegistry.setCurrentApplication("/serviceid2/test");
+        mockValid200HttpResponseWithHeaders(new org.apache.http.Header[]{
+             new BasicHeader("Access-Control-Allow-Origin", "*")
+        });
+
+        given()
+            .header(new Header("Origin", "https://foo.bar.org"))
+            .header(new Header("Access-Control-Request-Method", "POST"))
+            .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
+        .when()
+            .get(basePath + "serviceid2/test")
+        .then()
+            .statusCode(is(SC_OK))
+            .header("Access-Control-Allow-Origin", is(nullValue()));
+    }
+
+    private void mockValid200HttpResponseWithHeaders(org.apache.http.Header[] headers) throws IOException {
+        CloseableHttpResponse response = mock(CloseableHttpResponse.class);
+        Mockito.when(response.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, ""));
+        Mockito.when(response.getAllHeaders()).thenReturn(headers);
+        Mockito.when(mockClient.execute(any())).thenReturn(response);
     }
 
     @Test
