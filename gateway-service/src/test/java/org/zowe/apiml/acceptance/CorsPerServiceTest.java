@@ -93,7 +93,7 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() throws Exception {
         mockValid200HttpResponse();
         applicationRegistry.setCurrentApplication("/serviceid1/test");
-
+        discoveryClient.createRefreshCacheEvent();
         // Preflight request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
