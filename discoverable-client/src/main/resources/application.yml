@@ -78,6 +78,7 @@ apiml:
                 enableUrlEncodedCharacters: true
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /api/v1/gateway/auth
+                corsEnabled: false
 
 server:
     port: ${apiml.service.port}

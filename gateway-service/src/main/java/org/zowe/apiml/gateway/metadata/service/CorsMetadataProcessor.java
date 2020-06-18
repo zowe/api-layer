@@ -45,20 +45,21 @@ public class CorsMetadataProcessor extends MetadataProcessor {
 
     public void setCorsConfiguration(String serviceId, Map<String, String> metadata) {
         String isCorsEnabled = metadata.get("apiml.corsEnabled");
-        if (Boolean.parseBoolean(isCorsEnabled)) {
+
             if (this.corsConfigurationSource instanceof UrlBasedCorsConfigurationSource) {
                 UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
                 final CorsConfiguration config = new CorsConfiguration();
-                config.setAllowCredentials(true);
-                config.addAllowedOrigin(CorsConfiguration.ALL);
-                config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-                config.setAllowedMethods(allowedCorsHttpMethods);
+                if (Boolean.parseBoolean(isCorsEnabled)) {
+                    config.setAllowCredentials(true);
+                    config.addAllowedOrigin(CorsConfiguration.ALL);
+                    config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+                    config.setAllowedMethods(allowedCorsHttpMethods);
+                }
                 metadata.entrySet().stream()
                     .filter(entry -> entry.getKey().startsWith("apiml.routes"))
                     .forEach(entry ->
-                        cors.registerCorsConfiguration("/" + serviceId + entry.getValue(), config));
-            }
-            System.out.println("");
+                        cors.registerCorsConfiguration( "/" + entry.getValue()  + "/"+ serviceId.toLowerCase()+ "/**", config));
+
         }
     }
 }
