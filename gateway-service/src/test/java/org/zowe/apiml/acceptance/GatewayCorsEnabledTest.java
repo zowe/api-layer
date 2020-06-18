@@ -11,6 +11,7 @@ package org.zowe.apiml.acceptance;
 
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
@@ -23,6 +24,7 @@ import static org.hamcrest.Matchers.is;
 // TODO: Update and properly Mock or Stub needed dependencies
 @AcceptanceTest
 @ActiveProfiles("test")
+@DirtiesContext
 public class GatewayCorsEnabledTest extends AcceptanceTestWithBasePath {
     // The behavior for gateway endpoints is the same isn't it?
     // Is there any simple request?

@@ -13,6 +13,7 @@ import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
@@ -45,6 +46,7 @@ import static org.mockito.Mockito.*;
  */
 @AcceptanceTest
 @ActiveProfiles("test")
+@DirtiesContext
 public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
         // Verify the header to allow CORS isn't set
