@@ -12,6 +12,8 @@ package org.zowe.apiml.acceptance;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;

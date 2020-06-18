@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance;
+package org.zowe.apiml.acceptance.common;
 
 import org.apache.http.Header;
 import org.apache.http.ProtocolVersion;
@@ -30,11 +30,11 @@ import static org.mockito.Mockito.mock;
 public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @Autowired
     @Qualifier("mockProxy")
-    CloseableHttpClient mockClient;
+    protected CloseableHttpClient mockClient;
     @Autowired
-    ApimlDiscoveryClientStub discoveryClient;
+    protected ApimlDiscoveryClientStub discoveryClient;
     @Autowired
-    ApplicationRegistry applicationRegistry;
+    protected ApplicationRegistry applicationRegistry;
 
     @BeforeEach
     public void prepareApplications() {
