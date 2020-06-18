@@ -138,8 +138,8 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
             .options(basePath + "serviceid1/test")
         .then()
             .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("*"))
-            .header("Access-Control-Allow-Methods", is("POST, OPTIONS"))
+            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"))
+            .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,DELETE,PUT,OPTIONS"))
             .header("Access-Control-Allow-Headers", is("origin, x-requested-with"));
 
         // The preflight request isn't passed to the southbound service
@@ -152,7 +152,7 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
             .post(basePath + "serviceid1/test")
         .then()
             .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is(nullValue()));
+            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
 
         // The actual request is passed to the southbound service
         verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
