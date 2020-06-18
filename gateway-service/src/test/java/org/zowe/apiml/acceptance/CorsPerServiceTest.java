@@ -47,7 +47,8 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
     // Verify the header to allow CORS isn't set
     // Verify there was no call to southbound service
-    void givenDefaultConfiguration_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+    // TODO: Set property on Gateway
+    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
         applicationRegistry.setCurrentApplication("/serviceid2/test");
         mockValid200HttpResponse();
 
@@ -67,7 +68,8 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
     // Verify the header to allow CORS isn't set
     // Verify there was no call to southbound service
-    void givenDefaultConfiguration_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+    // TODO: Set property on Gateway
+    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
         applicationRegistry.setCurrentApplication("/serviceid2/test");
         mockValid200HttpResponse();
 
@@ -85,7 +87,7 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     }
 
     @Test
-    void givenDefaultConfiguration_whenRequestComes_thenIfTheSouthboundServiceSetsCorsHeadersTheHeadersAreRemoved() throws Exception {
+    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenRequestComes_thenIfTheSouthboundServiceSetsCorsHeadersTheHeadersAreRemoved() throws Exception {
         applicationRegistry.setCurrentApplication("/serviceid2/test");
         mockValid200HttpResponseWithHeaders(new org.apache.http.Header[]{
              new BasicHeader("Access-Control-Allow-Origin", "*")
@@ -100,6 +102,24 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is(nullValue()));
+    }
+
+    @Test
+    void givenCorsIsntDelegatedToGateway_whenRequestComes_thenTheRequestIsPassedToTheSouthboundAndResponseIsReturned() throws Exception {
+        applicationRegistry.setCurrentApplication("/serviceid2/test");
+        mockValid200HttpResponse();
+
+        given()
+            .header(new Header("Origin", "https://foo.bar.org"))
+            .header(new Header("Access-Control-Request-Method", "POST"))
+            .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
+        .when()
+            .get(basePath + "serviceid2/test")
+        .then()
+            .statusCode(is(SC_OK))
+            .header("Access-Control-Allow-Origin", is(nullValue()));
+
+        verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
     }
 
     @Test
