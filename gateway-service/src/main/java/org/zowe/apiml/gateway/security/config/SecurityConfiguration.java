@@ -194,7 +194,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         ));
     }
 
-
     /**
      * Processes /login requests
      */

@@ -33,9 +33,6 @@ public class GatewayCorsEnabledTest extends AcceptanceTestWithBasePath {
     // Where does it differ? Just in the way the behavior is handled?
     //   Ti definitely behaves differently in what is called and how. It will require
 
-    @Value("${apiml.service.corsEnabled}")
-    String cors;
-
     // Basically from external point of view we have the same requests, but we don't need to prepare applications and
     // we need to prepare other services, probably zOSMF
 
@@ -49,7 +46,7 @@ public class GatewayCorsEnabledTest extends AcceptanceTestWithBasePath {
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
         .when()
-            .options(basePath + "api/v1/gateway/auth/login")
+            .options(basePath + "/api/v1/gateway/auth/login")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin","https://foo.bar.org")
@@ -60,7 +57,7 @@ public class GatewayCorsEnabledTest extends AcceptanceTestWithBasePath {
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
         .when()
-            .post(basePath + "api/v1/gateway/auth/login")
+            .get(basePath + "/api/v1/gateway/version")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", "https://foo.bar.org");
@@ -74,10 +71,11 @@ public class GatewayCorsEnabledTest extends AcceptanceTestWithBasePath {
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
         .when()
-            .get(basePath + "api/v1/gateway/auth/login")
+            .get(basePath + "/api/v1/gateway/auth/login")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is("*"));
     }
+
 
 }
