@@ -10,18 +10,14 @@
 package org.zowe.apiml.acceptance;
 
 import io.restassured.http.Header;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 
 // TODO: Parametrize for all the gateway endpoints
 // TODO: Update and properly Mock or Stub needed dependencies
@@ -46,36 +42,23 @@ public class GatewayCorsEnabledTest extends AcceptanceTestWithBasePath {
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
         .when()
-            .options(basePath + "/api/v1/gateway/auth/login")
+            .options(basePath + "/gateway/version")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin","https://foo.bar.org")
-            .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,DELETE,PUT,OPTIONS"))
-            .header("Access-Control-Allow-Headers", is("origin, x-requested-with"));
+            .header("Access-Control-Allow-Methods", "GET,HEAD,POST,DELETE,PUT,OPTIONS")
+            .header("Access-Control-Allow-Headers", "origin, x-requested-with");
 
         // Actual request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
         .when()
-            .get(basePath + "/api/v1/gateway/version")
+            .get(basePath + "/gateway/version")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", "https://foo.bar.org");
     }
 
-    @Test @Disabled
-    // The CORS header is properly set.
-    // TODO: Is there any gateway related service with simple request?
-    void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() throws Exception {
-        // Simple CORS request
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-        .when()
-            .get(basePath + "/api/v1/gateway/auth/login")
-        .then()
-            .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("*"));
-    }
 
 
 }

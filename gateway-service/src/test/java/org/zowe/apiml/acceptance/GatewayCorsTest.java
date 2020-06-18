@@ -48,16 +48,15 @@ public class GatewayCorsTest extends AcceptanceTestWithBasePath {
             .header("Access-Control-Allow-Origin", is(nullValue()));
     }
 
-    @Test @Disabled
+    @Test
     // Verify the header to allow CORS isn't set
-    // TODO: Is there any gateway related service with simple request?
     void givenDefaultConfiguration_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
         .when()
-            .post(basePath + "/api/v1/gateway/auth/login")
+            .get(basePath + "/gateway/version")
         .then()
             .statusCode(is(SC_FORBIDDEN))
             .header("Access-Control-Allow-Origin", is(nullValue()));

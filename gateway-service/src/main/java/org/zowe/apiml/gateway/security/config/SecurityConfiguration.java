@@ -173,6 +173,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods());
             path = "/api/v1/gateway/**";
+            source.registerCorsConfiguration("/gateway/version", config);
         }
         source.registerCorsConfiguration(path, config);
         return source;
