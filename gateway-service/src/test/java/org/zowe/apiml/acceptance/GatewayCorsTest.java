@@ -41,7 +41,7 @@ public class GatewayCorsTest extends AcceptanceTestWithBasePath {
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
         .when()
-            .options(basePath + "api/v1/gateway/auth/login")
+            .options(basePath + "/api/v1/gateway/auth/login")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is(nullValue()));
@@ -56,7 +56,7 @@ public class GatewayCorsTest extends AcceptanceTestWithBasePath {
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
         .when()
-            .post(basePath + "api/v1/gateway/auth/login")
+            .post(basePath + "/api/v1/gateway/auth/login")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is(nullValue()));
@@ -82,7 +82,7 @@ public class GatewayCorsTest extends AcceptanceTestWithBasePath {
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
         .when()
-            .post(basePath + "api/v1/gateway/auth/login")
+            .post(basePath + "/api/v1/gateway/auth/login")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is(nullValue()));
@@ -96,7 +96,7 @@ public class GatewayCorsTest extends AcceptanceTestWithBasePath {
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
         .when()
-            .get(basePath + "api/v1/gateway/auth/login")
+            .get(basePath + "/api/v1/gateway/auth/login")
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is("*"));
