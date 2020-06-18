@@ -49,6 +49,7 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     // Verify there was no call to southbound service
     void givenDefaultConfiguration_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
         applicationRegistry.setCurrentApplication("/serviceid2/test");
+        mockValid200HttpResponse();
 
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
@@ -68,6 +69,7 @@ public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     // Verify there was no call to southbound service
     void givenDefaultConfiguration_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
         applicationRegistry.setCurrentApplication("/serviceid2/test");
+        mockValid200HttpResponse();
 
         given()
             .header(new Header("Origin", "https://foo.bar.org"))

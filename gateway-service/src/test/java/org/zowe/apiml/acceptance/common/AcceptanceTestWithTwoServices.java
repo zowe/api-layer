@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.acceptance.common;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.apache.http.Header;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -36,11 +38,14 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     @Autowired
     protected ApplicationRegistry applicationRegistry;
 
+    protected Service serviceWithDefaultConfiguration = new Service("/serviceid2/test", "/serviceid2/**", "serviceid2");
+    protected Service serviceWithCustomConfiguration = new Service("/serviceid1/test", "/serviceid1/**", "serviceid1");
+
     @BeforeEach
     public void prepareApplications() {
         applicationRegistry.clearApplications();
-        applicationRegistry.addApplication("/serviceid2/test", "/serviceid2/**", "serviceid2", false);
-        applicationRegistry.addApplication("/serviceid1/test", "/serviceid1/**", "serviceid1",true);
+        applicationRegistry.addApplication(serviceWithDefaultConfiguration, false);
+        applicationRegistry.addApplication(serviceWithCustomConfiguration,true);
     }
 
     protected void mockValid200HttpResponse() throws IOException {

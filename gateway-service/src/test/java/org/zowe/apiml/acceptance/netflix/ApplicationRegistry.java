@@ -14,6 +14,7 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
+import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
@@ -38,12 +39,14 @@ public class ApplicationRegistry {
     /**
      * Add new route to a service.
      *
-     * @param id Id of the service
-     * @param locationPattern Pattern of the path solved by the service
-     * @param serviceRoute Service route path extracted from the URL
+     * @param service Details of the service to be registered in the Gateway
      * @param customMetadata Whether the custom metadata should be provided for given service.
      */
-    public void addApplication(String id, String locationPattern, String serviceRoute, boolean customMetadata) {
+    public void addApplication(Service service, boolean customMetadata) {
+        String id = service.getId();
+        String locationPattern = service.getLocationPattern();
+        String serviceRoute = service.getServiceRoute();
+
         Applications applications = new Applications();
         Application withMetadata = new Application(id);
 

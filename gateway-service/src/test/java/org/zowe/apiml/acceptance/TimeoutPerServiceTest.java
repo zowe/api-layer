@@ -28,6 +28,8 @@ import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
 public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
+    private int SECOND = 1000;
+
     @Test
     void givenDefaultConfiguration_whenRequestIsCreated_thenTheTimeoutsAreTakenFromDefaultConfig() throws IOException {
         mockValid200HttpResponse();
@@ -38,7 +40,7 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
             .then()
             .statusCode(is(SC_OK));
 
-        assertConfigurationTimeouts(30000);
+        assertConfigurationTimeouts(30 * SECOND);
     }
 
     @Test
@@ -52,7 +54,7 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
             .then()
             .statusCode(is(SC_OK));
 
-        assertConfigurationTimeouts(5000);
+        assertConfigurationTimeouts(5 * SECOND);
     }
 
     @Test
@@ -70,7 +72,7 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
             .then()
             .statusCode(is(SC_OK));
 
-        assertConfigurationTimeouts(30000);
+        assertConfigurationTimeouts(30 * SECOND);
     }
 
     private void assertConfigurationTimeouts(int timeout) throws IOException {
