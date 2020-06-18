@@ -54,30 +54,7 @@ import static org.mockito.Mockito.*;
  *  If the pre-flight request comes and we
  */
 @AcceptanceTest
-public class CorsPerServiceTest {
-    private String basePath;
-
-    @Autowired
-    @Qualifier("mockProxy")
-    CloseableHttpClient mockClient;
-    @Autowired
-    ApplicationRegistry applicationRegistry;
-
-    @LocalServerPort
-    private int port;
-    @Autowired
-    ApimlDiscoveryClientStub discoveryClient;
-
-    @BeforeEach
-    public void setBasePath() {
-        basePath = String.format("https://localhost:%d/", port);
-
-        applicationRegistry.clearApplications();
-        applicationRegistry.addApplication("/serviceid2/test", "/serviceid2/**", "serviceid2", false);
-        applicationRegistry.addApplication("/serviceid1/test", "/serviceid1/**", "serviceid1",true);
-
-    }
-
+public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
     // Verify the header to allow CORS isn't set
     // Verify there was no call to southbound service
@@ -132,13 +109,6 @@ public class CorsPerServiceTest {
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is(nullValue()));
-    }
-
-    private void mockValid200HttpResponseWithHeaders(org.apache.http.Header[] headers) throws IOException {
-        CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-        Mockito.when(response.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, ""));
-        Mockito.when(response.getAllHeaders()).thenReturn(headers);
-        Mockito.when(mockClient.execute(any())).thenReturn(response);
     }
 
     @Test
@@ -196,12 +166,5 @@ public class CorsPerServiceTest {
 
         // The actual request is passed to the southbound service
         verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
-    }
-
-    private void mockValid200HttpResponse() throws IOException {
-        CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-        Mockito.when(response.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, ""));
-        Mockito.when(response.getAllHeaders()).thenReturn(new org.apache.http.Header[]{});
-        Mockito.when(mockClient.execute(any())).thenReturn(response);
     }
 }

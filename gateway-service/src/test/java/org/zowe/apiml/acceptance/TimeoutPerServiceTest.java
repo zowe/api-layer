@@ -9,23 +9,11 @@
  */
 package org.zowe.apiml.acceptance;
 
-import org.apache.http.Header;
-import org.apache.http.ProtocolVersion;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicStatusLine;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
-import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 
 import java.io.IOException;
 
@@ -33,32 +21,11 @@ import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
-public class TimeoutPerServiceTest {
-    private String basePath;
-
-    @Autowired @Qualifier("mockProxy")
-    CloseableHttpClient mockClient;
-    @Autowired
-    ApimlDiscoveryClientStub discoveryClient;
-    @Autowired
-    ApplicationRegistry applicationRegistry;
-
-    @LocalServerPort
-    private int port;
-
-    @BeforeEach
-    public void setBasePath() {
-        basePath = String.format("https://localhost:%d/", port);
-
-        applicationRegistry.clearApplications();
-        applicationRegistry.addApplication("/serviceid2/test", "/serviceid2/**", "serviceid2", false);
-        applicationRegistry.addApplication("/serviceid1/test", "/serviceid1/**", "serviceid1",true);
-    }
-
+public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
     void givenDefaultConfiguration_whenRequestIsCreated_thenTheTimeoutsAreTakenFromDefaultConfig() throws IOException {
         mockValid200HttpResponse();
@@ -113,12 +80,5 @@ public class TimeoutPerServiceTest {
 
         assertThat(configuration.getConnectTimeout(), is(timeout));
         assertThat(configuration.getSocketTimeout(), is(timeout));
-    }
-
-    private void mockValid200HttpResponse() throws IOException {
-        CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-        Mockito.when(response.getStatusLine()).thenReturn(new BasicStatusLine(new ProtocolVersion("http", 1, 1), 200, ""));
-        Mockito.when(response.getAllHeaders()).thenReturn(new Header[]{});
-        Mockito.when(mockClient.execute(any())).thenReturn(response);
     }
 }

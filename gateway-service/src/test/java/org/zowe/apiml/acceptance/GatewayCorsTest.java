@@ -10,10 +10,8 @@
 package org.zowe.apiml.acceptance;
 
 import io.restassured.http.Header;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.web.server.LocalServerPort;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -23,18 +21,7 @@ import static org.hamcrest.Matchers.nullValue;
 // TODO: Parametrize for all the gateway endpoints
 // TODO: Update and properly Mock or Stub needed dependencies
 @AcceptanceTest
-public class GatewayCorsTest {
-
-    private String basePath;
-
-    @LocalServerPort
-    private int port;
-
-    @BeforeEach
-    public void setBasePath() {
-        basePath = String.format("https://localhost:%d/", port);
-    }
-
+public class GatewayCorsTest extends AcceptanceTestWithBasePath {
     // The behavior for gateway endpoints is the same isn't it?
     // Is there any simple request?
     // Where does it differ? Just in the way the behavior is handled?
