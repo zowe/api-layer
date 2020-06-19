@@ -127,7 +127,7 @@ public class ApplicationRegistry {
 
     private Map<String, String> createMetadata(boolean addTimeout,boolean corsEnabled) {
         Map<String, String> metadata = new HashMap<>();
-        if(addTimeout){
+        if (addTimeout) {
             metadata.put("apiml.connectTimeout", "5000");
             metadata.put("apiml.readTimeout", "5000");
             metadata.put("apiml.connectionManagerTimeout", "5000");
