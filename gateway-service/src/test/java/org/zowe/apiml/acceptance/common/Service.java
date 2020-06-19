@@ -20,6 +20,6 @@ public class Service {
     private final String serviceRoute;
 
     public String getPath() {
-        return id;
+        return "/" + id + "/test";
     }
 }
