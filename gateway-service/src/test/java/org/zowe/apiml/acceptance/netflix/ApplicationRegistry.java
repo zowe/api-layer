@@ -54,10 +54,9 @@ public class ApplicationRegistry {
 
         withMetadata.addInstance(getStandardInstance(metadata, id));
         applications.addApplication(withMetadata);
-
-        ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(id, locationPattern);
-        route.setUrl(id);
-        zuulRouteLinkedHashMap.put(id, route);
+        ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(locationPattern, service.getId());
+        route.setUrl(service.getPath());
+        zuulRouteLinkedHashMap.put(locationPattern, route);
 
         applicationsToReturn.put(id, applications);
 
