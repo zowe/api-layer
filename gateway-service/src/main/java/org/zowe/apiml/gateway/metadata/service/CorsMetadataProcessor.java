@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,7 @@ public class CorsMetadataProcessor extends MetadataProcessor {
     private final EurekaApplications applications;
     private final CorsConfigurationSource corsConfigurationSource;
     private final List<String> allowedCorsHttpMethods;
+    private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
 
 
     @Override
@@ -60,10 +62,9 @@ public class CorsMetadataProcessor extends MetadataProcessor {
                 config.setAllowedMethods(allowedCorsHttpMethods);
             }
             metadata.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith("apiml.routes"))
+                .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
                     cors.registerCorsConfiguration("/" + entry.getValue() + "/" + serviceId.toLowerCase() + "/**", config));
-
         }
     }
 }
