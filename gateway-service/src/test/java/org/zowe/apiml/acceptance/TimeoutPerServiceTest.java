@@ -37,7 +37,7 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
 
         when()
             .get(basePath + serviceWithDefaultConfiguration.getPath())
-        .then()
+            .then()
             .statusCode(is(SC_OK));
 
         assertConfigurationTimeouts(30 * SECOND);
@@ -51,7 +51,7 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
         discoveryClient.createRefreshCacheEvent();
         when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
+            .then()
             .statusCode(is(SC_OK));
 
         assertConfigurationTimeouts(5 * SECOND);
@@ -69,7 +69,7 @@ public class TimeoutPerServiceTest extends AcceptanceTestWithTwoServices {
 
         when()
             .get(basePath + serviceWithDefaultConfiguration.getPath())
-        .then()
+            .then()
             .statusCode(is(SC_OK));
 
         assertConfigurationTimeouts(30 * SECOND);

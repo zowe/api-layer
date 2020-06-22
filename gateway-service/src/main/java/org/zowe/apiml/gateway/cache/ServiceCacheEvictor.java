@@ -9,26 +9,27 @@
  */
 package org.zowe.apiml.gateway.cache;
 
-import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
-import org.zowe.apiml.gateway.ribbon.ApimlZoneAwareLoadBalancer;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
+import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import lombok.Value;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class is responsible for evicting cache after new registry is loaded. This avoid race condition. Scenario is:
  * 1. discovery service changed
- *  a. about change is notified all gateways
- *  b. gateways evict caches and start with mirroring of discovery into discoveryClient
+ * a. about change is notified all gateways
+ * b. gateways evict caches and start with mirroring of discovery into discoveryClient
  * 2. now is possible cache again data with old settings from discovery service, because fetching new is asynchronous
  * 3. after make fetching this beans is notified from discovery client and evict caches again
- *
  * This process evict evict caches two times, because not all reason to cache is dependent only by discovery client
  * updates.
  */
@@ -39,8 +40,7 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
 
     private boolean evictAll = false;
     private HashSet<ServiceRef> toEvict = new HashSet<>();
-
-    private ApimlZoneAwareLoadBalancer apimlZoneAwareLoadBalancer;
+    private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
 
     public ServiceCacheEvictor(
         ApimlDiscoveryClient apimlDiscoveryClient,
@@ -51,9 +51,11 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
         this.serviceCacheEvicts.remove(this);
     }
 
-    public void setApimlZoneAwareLoadBalancer(ApimlZoneAwareLoadBalancer apimlZoneAwareLoadBalancer) {
-        this.apimlZoneAwareLoadBalancer = apimlZoneAwareLoadBalancer;
+    public void registerLoadBalancer(DynamicServerListLoadBalancer loadBalancer) {
+        String loadBalancerName = loadBalancer.getName();
+        loadBalancerRegistry.put(loadBalancerName, loadBalancer);
     }
+
 
     public synchronized void evictCacheService(String serviceId) {
         if (evictAll) return;
@@ -69,18 +71,18 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
     public synchronized void onEvent(EurekaEvent event) {
         if (event instanceof CacheRefreshedEvent) {
             if (!evictAll && toEvict.isEmpty()) return;
-
             if (evictAll) {
                 serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
+                loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
                 evictAll = false;
             } else {
                 toEvict.forEach(ServiceRef::evict);
                 toEvict.clear();
             }
-
-            apimlZoneAwareLoadBalancer.serverChanged();
+            loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
         }
     }
+
 
     @Value
     private class ServiceRef {
@@ -90,6 +92,7 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
         public void evict() {
             serviceCacheEvicts.forEach(x -> x.evictCacheService(serviceId));
         }
+
 
     }
 
