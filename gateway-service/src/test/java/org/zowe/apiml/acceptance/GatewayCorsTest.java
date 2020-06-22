@@ -10,7 +10,6 @@
 package org.zowe.apiml.acceptance;
 
 import io.restassured.http.Header;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
@@ -18,27 +17,15 @@ import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-// TODO: Parametrize for all the gateway endpoints
-// TODO: Update and properly Mock or Stub needed dependencies
 @AcceptanceTest
 @DirtiesContext
 public class GatewayCorsTest extends AcceptanceTestWithBasePath {
-    // The behavior for gateway endpoints is the same isn't it?
-    // Is there any simple request?
-    // Where does it differ? Just in the way the behavior is handled?
-    //   Ti definitely behaves differently in what is called and how. It will require
-
-
-    // Basically from external point of view we have the same requests, but we don't need to prepare applications and
-    // we need to prepare other services, probably zOSMF
-
     @Test
     // Verify the header to allow CORS isn't set
-    void givenDefaultConfiguration_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+    void givenDefaultConfiguration_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() {
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
             .header(new Header("Access-Control-Request-Method", "POST"))
@@ -52,7 +39,7 @@ public class GatewayCorsTest extends AcceptanceTestWithBasePath {
 
     @Test
     // Verify the header to allow CORS isn't set
-    void givenDefaultConfiguration_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+    void givenDefaultConfiguration_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() {
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
             .header(new Header("Access-Control-Request-Method", "POST"))
@@ -63,7 +50,4 @@ public class GatewayCorsTest extends AcceptanceTestWithBasePath {
             .statusCode(is(SC_FORBIDDEN))
             .header("Access-Control-Allow-Origin", is(nullValue()));
     }
-
-
-
 }
