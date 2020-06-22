@@ -14,6 +14,7 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
+import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
@@ -38,25 +39,23 @@ public class ApplicationRegistry {
     /**
      * Add new route to a service.
      *
-     * @param id Id of the service
-     * @param locationPattern Pattern of the path solved by the service
-     * @param serviceRoute Service route path extracted from the URL
-     * @param customMetadata Whether the custom metadata should be provided for given service.
+     * @param service Details of the service to be registered in the Gateway
+     * @param addTimeout Whether the custom metadata should be provided for given service.
      */
-    public void addApplication(String id, String locationPattern, String serviceRoute, boolean customMetadata) {
+    public void addApplication(Service service, boolean addTimeout, boolean corsEnabled) {
+        String id = service.getId();
+        String locationPattern = service.getLocationPattern();
+        String serviceRoute = service.getServiceRoute();
+
         Applications applications = new Applications();
         Application withMetadata = new Application(id);
 
-        Map<String, String> metadata = new HashMap<>();
-        if (customMetadata) {
-            metadata = createMetadata();
-        }
+        Map<String, String> metadata = createMetadata(addTimeout, corsEnabled);
+
         withMetadata.addInstance(getStandardInstance(metadata, id));
         applications.addApplication(withMetadata);
-
-        ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(id, locationPattern);
-        route.setUrl(id);
-        zuulRouteLinkedHashMap.put(id, route);
+        ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(locationPattern, service.getId());
+        zuulRouteLinkedHashMap.put(locationPattern, route);
 
         applicationsToReturn.put(id, applications);
 
@@ -126,13 +125,19 @@ public class ApplicationRegistry {
             .build();
     }
 
-    private Map<String, String> createMetadata() {
+    private Map<String, String> createMetadata(boolean addTimeout,boolean corsEnabled) {
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("apiml.connectTimeout", "5000");
-        metadata.put("apiml.readTimeout", "5000");
-        metadata.put("apiml.connectionManagerTimeout", "5000");
+        if (addTimeout) {
+            metadata.put("apiml.connectTimeout", "5000");
+            metadata.put("apiml.readTimeout", "5000");
+            metadata.put("apiml.connectionManagerTimeout", "5000");
+        }
+        metadata.put("apiml.corsEnabled",String.valueOf(corsEnabled));
+        metadata.put("apiml.routes.gateway-url","/");
+
         return metadata;
     }
+
 
     @RequiredArgsConstructor
     private class Services {
