@@ -12,6 +12,8 @@ package org.zowe.apiml.gateway.security.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,9 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
@@ -40,7 +45,9 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -58,6 +65,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         "/api/v1/gateway",
         "/application"
     };
+
+    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/api/v1/gateway/**", "/gateway/version");
+
+    @Value("${apiml.service.corsEnabled:false}")
+    private boolean corsEnabled;
 
     private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
 
@@ -79,6 +91,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+            .cors().and()
             .csrf().disable()
             .headers()
             .httpStrictTransportSecurity().disable()
@@ -100,7 +113,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, authConfigurationProperties.getGatewayTicketEndpoint()).authenticated()
             .and().x509()
-                .userDetailsService(x509UserDetailsService())
+            .userDetailsService(x509UserDetailsService())
 
             // logout endpoint
             .and()
@@ -127,18 +140,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
             .and().x509()
-                .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(x509UserDetailsService())
+            .x509AuthenticationFilter(apimlX509AuthenticationFilter())
+            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+            .userDetailsService(x509UserDetailsService())
 
             // cache controller
             .and()
             .authorizeRequests()
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
             .and().x509()
-                .x509AuthenticationFilter(apimlX509AuthenticationFilter())
-                .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
-                .userDetailsService(x509UserDetailsService())
+            .x509AuthenticationFilter(apimlX509AuthenticationFilter())
+            .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
+            .userDetailsService(x509UserDetailsService())
 
             // add filters - login, query, ticket
             .and()
@@ -147,6 +160,32 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration config = new CorsConfiguration();
+        List<String> pathsToEnable;
+        if (corsEnabled) {
+            config.setAllowCredentials(true);
+            config.addAllowedOrigin(CorsConfiguration.ALL);
+            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+            config.setAllowedMethods(allowedCorsHttpMethods());
+            pathsToEnable = CORS_ENABLED_ENDPOINTS;
+        } else {
+            pathsToEnable = Collections.singletonList("/**");
+        }
+        pathsToEnable.forEach(path -> source.registerCorsConfiguration(path, config));
+        return source;
+    }
+
+    @Bean
+    List<String> allowedCorsHttpMethods() {
+        return Collections.unmodifiableList(Arrays.asList(
+            HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
+            HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
+        ));
     }
 
     /**
@@ -222,18 +261,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     /**
      * The problem the squad was trying to solve:
-     *   For certain endpoints the Gateway should accept only certificates issued by API Mediation Layer. The key reason
-     *   is that these endpoints leverage the Gateway certificate as an authentication method for the downstream service
-     *   This certificate has stronger priviliges and as such the Gateway need to be more careful with who can use it.
-     *
+     * For certain endpoints the Gateway should accept only certificates issued by API Mediation Layer. The key reason
+     * is that these endpoints leverage the Gateway certificate as an authentication method for the downstream service
+     * This certificate has stronger priviliges and as such the Gateway need to be more careful with who can use it.
+     * <p>
      * This solution is risky as it removes the certificates from the chain from all subsequent processing.
      * Despite this it seems to be the simplest solution to the problem.
      * While exploring the topic, the API squad explored following possibilities without any results:
      * 1) As this is more linked to the authentication, move it to the CertificateAuthenticationProvider and distinguish
-     *    authentication based on the provided certificates - This doesn't work as the CertificateAuthenticationProvider
-     *    is never used
+     * authentication based on the provided certificates - This doesn't work as the CertificateAuthenticationProvider
+     * is never used
      * 2) Move the logic to decide whether the client which is signed by the Gateway client certificate should be used
-     *    into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
+     * into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
      */
     private ApimlX509AuthenticationFilter apimlX509AuthenticationFilter() throws Exception {
         ApimlX509AuthenticationFilter out = new ApimlX509AuthenticationFilter(publicKeyCertificatesBase64);
@@ -258,5 +297,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         web.ignoring()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.PUBLIC_KEYS_PATH + "/**");
     }
+
 
 }
