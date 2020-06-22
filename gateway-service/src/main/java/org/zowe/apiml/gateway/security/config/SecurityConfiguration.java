@@ -176,9 +176,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         } else {
             pathsToEnable = Collections.singletonList("/**");
         }
-        pathsToEnable.forEach(path -> {
-            source.registerCorsConfiguration(path, config);
-        });
+        pathsToEnable.forEach(path -> source.registerCorsConfiguration(path, config));
         return source;
     }
 

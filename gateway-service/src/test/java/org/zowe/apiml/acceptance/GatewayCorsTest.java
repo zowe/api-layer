@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 @AcceptanceTest
 @DirtiesContext
-public class GatewayCorsTest extends AcceptanceTestWithBasePath {
+class GatewayCorsTest extends AcceptanceTestWithBasePath {
     @Test
     // Verify the header to allow CORS isn't set
     void givenDefaultConfiguration_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() {

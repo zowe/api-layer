@@ -20,21 +20,10 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
-// TODO: Parametrize for all the gateway endpoints
-// TODO: Update and properly Mock or Stub needed dependencies
 @AcceptanceTest
 @ActiveProfiles("test")
 @DirtiesContext
-public class GatewayCorsEnabledTest extends AcceptanceTestWithBasePath {
-    // The behavior for gateway endpoints is the same isn't it?
-    // Is there any simple request?
-    // Where does it differ? Just in the way the behavior is handled?
-    //   Ti definitely behaves differently in what is called and how. It will require
-
-    // Basically from external point of view we have the same requests, but we don't need to prepare applications and
-    // we need to prepare other services, probably zOSMF
-
-
+class GatewayCorsEnabledTest extends AcceptanceTestWithBasePath {
     @Test
     // The CORS headers are properly set on the request
     void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() throws Exception {

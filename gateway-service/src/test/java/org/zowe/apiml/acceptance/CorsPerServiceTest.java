@@ -47,7 +47,7 @@ import static org.mockito.Mockito.*;
 @AcceptanceTest
 @ActiveProfiles("test")
 @DirtiesContext
-public class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
+class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
         // Verify the header to allow CORS isn't set
         // Verify there was no call to southbound service
