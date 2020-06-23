@@ -34,12 +34,13 @@ public class ApplicationRegistry {
 
     private List<Services> servicesToAdd = new ArrayList<>();
 
-    public ApplicationRegistry() {}
+    public ApplicationRegistry() {
+    }
 
     /**
      * Add new route to a service.
      *
-     * @param service Details of the service to be registered in the Gateway
+     * @param service    Details of the service to be registered in the Gateway
      * @param addTimeout Whether the custom metadata should be provided for given service.
      */
     public void addApplication(Service service, boolean addTimeout, boolean corsEnabled) {
@@ -81,6 +82,7 @@ public class ApplicationRegistry {
 
     /**
      * Sets which application should be returned for all the callers looking up the service.
+     *
      * @param currentApplication Id of the application.
      */
     public void setCurrentApplication(String currentApplication) {
@@ -108,7 +110,7 @@ public class ApplicationRegistry {
 
         if (!servicesToAdd.isEmpty()) {
             for (RoutedServicesUser routedServicesUser : routedServicesUsers) {
-                for (Services services: servicesToAdd) {
+                for (Services services : servicesToAdd) {
                     routedServicesUser.addRoutedServices(services.id, services.routedServices);
                 }
             }
@@ -125,16 +127,16 @@ public class ApplicationRegistry {
             .build();
     }
 
-    private Map<String, String> createMetadata(boolean addTimeout,boolean corsEnabled) {
+    private Map<String, String> createMetadata(boolean addRibbonConfig, boolean corsEnabled) {
         Map<String, String> metadata = new HashMap<>();
-        if (addTimeout) {
+        if (addRibbonConfig) {
             metadata.put("apiml.connectTimeout", "5000");
             metadata.put("apiml.readTimeout", "5000");
             metadata.put("apiml.connectionManagerTimeout", "5000");
+            metadata.put("apiml.okToRetryOnAllOperations", "true");
         }
-        metadata.put("apiml.corsEnabled",String.valueOf(corsEnabled));
-        metadata.put("apiml.routes.gateway-url","/");
-        metadata.put("apiml.okToRetryOnAllOperations","true");
+        metadata.put("apiml.corsEnabled", String.valueOf(corsEnabled));
+        metadata.put("apiml.routes.gateway-url", "/");
         return metadata;
     }
 
