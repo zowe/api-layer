@@ -34,30 +34,26 @@ public class RibbonMetadataProcessor extends MetadataProcessor {
         String serviceId = instanceInfo.getVIPAddress();
         Map<String, String> metadata = instanceInfo.getMetadata();
         if (metadata != null) {
-            setConnectTimeout(serviceId, metadata);
-            setReadTimeout(serviceId, metadata);
-            setConnectionManagerTimeout(serviceId, metadata);
+            setIfExistsAndIsNumeric(serviceId + ".ribbon.ConnectTimeout",
+                metadata.get("apiml.connectTimeout"));
+            setIfExistsAndIsNumeric(serviceId + ".ribbon.ReadTimeout",
+                metadata.get("apiml.readTimeout"));
+            setIfExistsAndIsNumeric(serviceId + ".ribbon.ConnectionManagerTimeout",
+                metadata.get("apiml.connectionManagerTimeout"));
+            setIfExists(serviceId + ".ribbon.OkToRetryOnAllOperations",
+                metadata.get("apiml.okToRetryOnAllOperations"));
         }
     }
 
-    public void setConnectTimeout(String serviceId, Map<String, String> metadata) {
-        String connectTimeout = metadata.get("apiml.connectTimeout");
-        if (!Strings.isEmpty(connectTimeout) && StringUtils.isNumeric(connectTimeout)) {
-            System.setProperty(serviceId + ".ribbon.ConnectTimeout", connectTimeout);
+    void setIfExistsAndIsNumeric(String key, String value) {
+        if (!Strings.isEmpty(value) && StringUtils.isNumeric(value)) {
+            System.setProperty(key, value);
         }
     }
 
-    public void setReadTimeout(String serviceId, Map<String, String> metadata) {
-        String readTimeout = metadata.get("apiml.readTimeout");
-        if (!Strings.isEmpty(readTimeout) && StringUtils.isNumeric(readTimeout)) {
-            System.setProperty(serviceId + ".ribbon.ReadTimeout", readTimeout);
-        }
-    }
-
-    public void setConnectionManagerTimeout(String serviceId, Map<String, String> metadata) {
-        String connectionManagerTimeout = metadata.get("apiml.connectionManagerTimeout");
-        if (!Strings.isEmpty(connectionManagerTimeout) && StringUtils.isNumeric(connectionManagerTimeout)) {
-            System.setProperty(serviceId + ".ribbon.ConnectionManagerTimeout", connectionManagerTimeout);
+    void setIfExists(String key, String value) {
+        if (!Strings.isEmpty(value)) {
+            System.setProperty(key, value);
         }
     }
 }

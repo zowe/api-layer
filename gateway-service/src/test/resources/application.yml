@@ -98,7 +98,8 @@ ribbon:
     ConnectionManagerTimeout: ${apiml.gateway.timeoutMillis}
     MaxAutoRetries: 0
     MaxAutoRetriesNextServer: 5
-    OkToRetryOnAllOperations: true
+    retryableStatusCodes: 503
+    OkToRetryOnAllOperations: false
     GZipPayload: false # this stops Gateway from deflating gzip responses from services
 
 http:
