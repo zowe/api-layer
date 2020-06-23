@@ -134,7 +134,7 @@ public class ApplicationRegistry {
         }
         metadata.put("apiml.corsEnabled",String.valueOf(corsEnabled));
         metadata.put("apiml.routes.gateway-url","/");
-
+        metadata.put("apiml.okToRetryOnAllOperations","true");
         return metadata;
     }
 
