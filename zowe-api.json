@@ -56,6 +56,10 @@
                     "target": "apidef/zosmf.yml",
                     "binary": true
                 },
+                "../api-layer-deploy/zosmf-evil.yml": {
+                    "target": "apidef/zosmf-evil.yml",
+                    "binary": true
+                },
                 "apiml-common/src/test/resources/zowe.version/zowe-manifest.json": {
                     "target": "zowe-manifest.json",
                     "binary": true

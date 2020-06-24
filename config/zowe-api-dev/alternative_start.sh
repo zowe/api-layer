@@ -80,7 +80,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java -Xms16m -Xmx512m -Xquickstart \
     -Denvironment.gatewayHostname=${ZOWE_EXPLORER_HOST} \
     -Denvironment.eurekaUserId=eureka \
     -Denvironment.eurekaPassword=password \
-    -Dapiml.security.auth.zosmfServiceId=zosmfca32 \
+    -Dapiml.security.auth.zosmfServiceId=zosmf \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=${ZOWE_IP_ADDRESS} \
@@ -110,7 +110,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart -X
     -Denvironment.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.gateway.timeoutMillis=30000 \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES} \
-    -Dapiml.security.auth.zosmfServiceId=zosmfca32 \
+    -Dapiml.security.auth.zosmfServiceId=zosmf \
     -Dapiml.zoweManifest=${ZOWE_MANIFEST} \
     -Dserver.address=${ZOWE_IP_ADDRESS} \
     -Dserver.ssl.enabled=true \
@@ -123,9 +123,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart -X
     -Dserver.ssl.trustStoreType=${KEYSTORE_TYPE} \
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dapiml.service.allowEncodedSlashes=true \
-    -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/a/apimtst/IRRRacf.jar \
-    org.springframework.boot.loader.PropertiesLauncher &
+    -Dapiml.service.corsEnabled=true \
+    -jar ${ROOT_DIR}"/components/api-mediation/gateway-service.jar" &
 echo "starting DC"
 DISCOVERABLECLIENT_CODE=DC
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERABLECLIENT_CODE} java -Xms32m -Xmx256m -Xquickstart \
@@ -147,10 +146,3 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERABLECLIENT_CODE} java -Xms32m -Xmx256m -Xqu
     -Dapiml.service.preferIpAddress=false \
     -jar ${ROOT_DIR}"/components/api-mediation/discoverable-client.jar" &
 echo "Done"
-
-//TODO
-Running API Mediation Layer
-.: start.sh 2: FSUM7351 not found
-.: start.sh 12: FSUM7351 not found
-.: start.sh 27: FSUM7351 not found
-.: start.sh 31: FSUM7351 not found
