@@ -69,6 +69,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
 
+    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
+    private String ignoredHeadersWhenCorsEnabled;
+
     private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
 
     private final ObjectMapper securityObjectMapper;
@@ -183,8 +186,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private void addCorsRelatedIgnoredHeaders() {
         zuulProperties.setIgnoredHeaders(new HashSet<>(
-            Arrays.asList(("Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin," +
-                "Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials").split(","))
+            Arrays.asList((ignoredHeadersWhenCorsEnabled).split(","))
         ));
     }
 
