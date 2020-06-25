@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance;
+package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -141,64 +141,6 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
             .header(new Header("Origin", "https://foo.bar.org"))
         .when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
-            .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
-
-        // The actual request is passed to the southbound service
-        verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
-    }
-
-    @Test
-    // There is request to the southbound server for the request
-    // The CORS header is properly set.
-    void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSetAndOnlyTheOnesByGateway() throws Exception {
-        // There is request to the southbound server and the CORS headers are properly set on the response
-        mockValid200HttpResponseWithAddedCors();
-        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        discoveryClient.createRefreshCacheEvent();
-
-        // Preflight request
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-        .when()
-            .get(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
-            .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
-
-        // The actual request is passed to the southbound service
-        verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
-    }
-
-    @Test
-        // There is no request to the southbound server for preflight
-        // There is request to the southbound server for the second request
-    void givenCorsIsAllowedForSpecificService_whenTheServiceIsSet_thenCorsHeadersAreSetAndOnlyTheOnesByGateway() throws Exception {
-        mockValid200HttpResponseWithAddedCors();
-        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        discoveryClient.createRefreshCacheEvent();
-        // Preflight request
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-            .header(new Header("Access-Control-Request-Method", "POST"))
-            .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-        .when()
-            .options(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
-            .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"))
-            .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,DELETE,PUT,OPTIONS"))
-            .header("Access-Control-Allow-Headers", is("origin, x-requested-with"));
-
-        // The preflight request isn't passed to the southbound service
-        verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
-
-        // Actual request
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-        .when()
-            .post(basePath + serviceWithCustomConfiguration.getPath())
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
