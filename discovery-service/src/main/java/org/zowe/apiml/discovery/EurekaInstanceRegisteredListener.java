@@ -10,13 +10,13 @@
 package org.zowe.apiml.discovery;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.apache.commons.lang.StringUtils;
-import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
-import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
+import org.zowe.apiml.discovery.metadata.MetadataTranslationService;
 import org.zowe.apiml.util.EurekaUtils;
 
 import java.util.Map;
@@ -48,11 +48,17 @@ public class EurekaInstanceRegisteredListener {
             /**
              * meanwhile gateway was down, another Gateway could receive logout, those invalidated credentials should
              * be distributed to this new Gateway
-              */
+             */
             gatewayNotifier.distributeInvalidatedCredentials(instanceInfo.getInstanceId());
         }
         // ie. new instance can have different authentication (than other one), this is reason to evict caches on gateway
         gatewayNotifier.serviceUpdated(serviceId, instanceInfo.getInstanceId());
+    }
+
+    @EventListener
+    public void listen(EurekaStatusUpdateEvent event) {
+        final String serviceId = EurekaUtils.getServiceIdFromInstanceId(event.getInstanceId());
+        gatewayNotifier.serviceUpdated(serviceId, event.getInstanceId());
     }
 
 }

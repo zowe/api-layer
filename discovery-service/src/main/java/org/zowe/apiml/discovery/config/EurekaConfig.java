@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.discovery.config;
 
+import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
@@ -32,10 +33,11 @@ public class EurekaConfig {
         EurekaClientConfig clientConfig,
         ServerCodecs serverCodecs,
         EurekaClient eurekaClient,
-        InstanceRegistryProperties instanceRegistryProperties)
+        InstanceRegistryProperties instanceRegistryProperties,
+        ApplicationContext appCntx)
     {
         eurekaClient.getApplications(); // force initialization
-        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties);
+        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, instanceRegistryProperties,appCntx);
     }
 
 }

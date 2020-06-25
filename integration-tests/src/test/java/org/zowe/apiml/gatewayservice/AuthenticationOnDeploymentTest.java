@@ -10,20 +10,16 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
-import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.actuate.health.Status;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.Flaky;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -146,41 +142,34 @@ public class AuthenticationOnDeploymentTest {
     void testReregistration() throws Exception {
 
         try (
-            final VirtualService service1 = new VirtualService("testService1", 5678);
-            final VirtualService service2 = new VirtualService("testService1", 5679);
-            final VirtualService service4 = new VirtualService("testService1", 5678)
+            final VirtualService service1 = new VirtualService("testService2", 5678);
+            final VirtualService service2 = new VirtualService("testService2", 5679);
+            final VirtualService service4 = new VirtualService("testService2", 5678)
         ) {
-            List<VirtualService> serviceList = Arrays.asList(service1, service2);
 
-            serviceList.forEach(s -> {
-                try {
-                    s.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
-                } catch (IOException | LifecycleException e) {
-                    e.printStackTrace();
-                }
-            });
+            service1.addVerifyServlet()
+                .start(Status.UP.toString()).waitForGatewayRegistration(1, TIMEOUT);
+            service2.addVerifyServlet()
+                .start(Status.OUT_OF_SERVICE.toString()).waitForGatewayRegistration(1, TIMEOUT);
 
-            serviceList.forEach(s -> {
-                try {
-                    s.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
-                } catch (LifecycleException e) {
-                    e.printStackTrace();
-                }
-            });
 //            register service with the same name
-            service4.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
+
             // on each gateway make a call to service
-            service4.getGatewayVerifyUrls().forEach(x ->
+            service2.getGatewayVerifyUrls().forEach(x ->
                 given()
                     .when().get(x + "/test")
                     .then().statusCode(is(SC_OK))
             );
 
+            service1.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
+            service2.start(Status.UP.toString()).waitForGatewayRegistration(1, TIMEOUT);
+
             // verify if each gateway sent request to service
-            service4.getGatewayVerifyUrls().forEach(gw ->
+            service2.getGatewayVerifyUrls().forEach(gw ->
                 verifier.existAndClean(service4, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"))
             );
-            service4.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
+            service2.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
+
 
         }
     }
