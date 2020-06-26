@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.acceptance;
+package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 @AcceptanceTest
 @DirtiesContext
-class GatewayCorsTest extends AcceptanceTestWithBasePath {
+class GatewaySpecificEndpointsCorsDisabledTest extends AcceptanceTestWithBasePath {
     @Test
     // Verify the header to allow CORS isn't set
     void givenDefaultConfiguration_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() {

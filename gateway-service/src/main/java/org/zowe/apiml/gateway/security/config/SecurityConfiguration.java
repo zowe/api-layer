@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -45,10 +46,7 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Security configuration for Gateway
@@ -71,6 +69,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
 
+    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
+    private String ignoredHeadersWhenCorsEnabled;
+
     private static final String EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME = "CN=(.*?)(?:,|$)";
 
     private final ObjectMapper securityObjectMapper;
@@ -82,6 +83,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final AuthProviderInitializer authProviderInitializer;
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
+    private final ZuulProperties zuulProperties;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -168,6 +170,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         final CorsConfiguration config = new CorsConfiguration();
         List<String> pathsToEnable;
         if (corsEnabled) {
+            addCorsRelatedIgnoredHeaders();
+
             config.setAllowCredentials(true);
             config.addAllowedOrigin(CorsConfiguration.ALL);
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
@@ -178,6 +182,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         }
         pathsToEnable.forEach(path -> source.registerCorsConfiguration(path, config));
         return source;
+    }
+
+    private void addCorsRelatedIgnoredHeaders() {
+        zuulProperties.setIgnoredHeaders(new HashSet<>(
+            Arrays.asList((ignoredHeadersWhenCorsEnabled).split(","))
+        ));
     }
 
     @Bean
