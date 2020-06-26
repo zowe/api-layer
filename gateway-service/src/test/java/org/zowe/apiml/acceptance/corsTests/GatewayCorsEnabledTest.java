@@ -12,6 +12,7 @@ package org.zowe.apiml.acceptance.corsTests;
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -20,6 +21,8 @@ import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 
@@ -101,13 +104,40 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
         // Actual request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
-            .when()
+        .when()
             .post(basePath + serviceWithCustomConfiguration.getPath())
-            .then()
+        .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
 
         // The actual request is passed to the southbound service
         verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
+    }
+
+    @Test
+    void givenCorsIsEnabled_whenRequestWithOriginComes_thenOriginIsntPassedToSouthbound() throws Exception {
+        // There is request to the southbound server and the CORS headers are properly set on the response
+        mockValid200HttpResponseWithAddedCors();
+        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
+        discoveryClient.createRefreshCacheEvent();
+
+        // Simple request
+        given()
+            .header(new Header("Origin", "https://foo.bar.org"))
+        .when()
+            .get(basePath + serviceWithCustomConfiguration.getPath())
+        .then()
+            .statusCode(is(SC_OK))
+            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
+
+        // The actual request is passed to the southbound service
+        verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
+
+        ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
+        verify(mockClient, times(1)).execute(captor.capture());
+
+        HttpUriRequest toVerify = captor.getValue();
+        org.apache.http.Header[] originHeaders = toVerify.getHeaders("Origin");
+        assertThat(originHeaders, arrayWithSize(0));
     }
 }
