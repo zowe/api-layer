@@ -18,6 +18,7 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
+import org.springframework.context.ApplicationContext;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -30,9 +31,9 @@ import java.lang.reflect.Method;
 /**
  * This implementation of instance registry is solving known problem in Eureka. Discovery service notify about change
  * in services before it does it. From this reason listener can try to use services before they are really registered.
- *
+ * <p>
  * At least implementation with reflection of register and cancel should be removed after finish task in Eureka:
- *
+ * <p>
  * #2659 Race condition with registration events in Eureka server
  * https://github.com/spring-cloud/spring-cloud-netflix/issues/2659
  */
@@ -48,20 +49,24 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private MethodHandle register3ArgsMethodHandle;
     private MethodHandle cancelMethodHandle;
 
+    private ApplicationContext appCntx;
+
     public ApimlInstanceRegistry(
         EurekaServerConfig serverConfig,
         EurekaClientConfig clientConfig,
         ServerCodecs serverCodecs,
         EurekaClient eurekaClient,
-        InstanceRegistryProperties instanceRegistryProperties
+        InstanceRegistryProperties instanceRegistryProperties,
+        ApplicationContext appCntx
     ) {
         super(serverConfig, clientConfig, serverCodecs, eurekaClient,
             instanceRegistryProperties.getExpectedNumberOfClientsSendingRenews(),
             instanceRegistryProperties.getDefaultOpenForTrafficCount()
         );
-
+        this.appCntx = appCntx;
         init();
     }
+
 
     /**
      * Prepare method handlers to overridden methods to reimplement methods in InstanceRegistry, which contains a race
@@ -179,4 +184,10 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
     }
 
+    @Override
+    public boolean statusUpdate(String appName, String instanceId, InstanceInfo.InstanceStatus newStatus, String lastDirtyTimestamp, boolean isReplication) {
+        boolean isUpdated = super.statusUpdate(appName, instanceId, newStatus, lastDirtyTimestamp, isReplication);
+        this.appCntx.publishEvent(new EurekaStatusUpdateEvent(this, appName, instanceId));
+        return isUpdated;
+    }
 }

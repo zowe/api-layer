@@ -128,7 +128,28 @@ public class VirtualService implements AutoCloseable {
         instanceId = InetAddress.getLocalHost().getHostName() + ":" + serviceId + ":" + getPort();
 
         // register into discovery service and start heart beating
-        register();
+        register(Status.UP.toString());
+        healthService = new HealthService(renewalIntervalInSecs);
+
+        started = true;
+
+        return this;
+    }
+
+    /**
+     * To start tomcat and register service
+     *
+     * @return this instance to next command
+     * @throws IOException        problem with socket
+     * @throws LifecycleException Tomcat exception
+     */
+    public VirtualService start(String status) throws IOException, LifecycleException {
+        // start Tomcat to get listening port
+        tomcat.start();
+        instanceId = InetAddress.getLocalHost().getHostName() + ":" + serviceId + ":" + getPort();
+
+        // register into discovery service and start heart beating
+        register(status);
         healthService = new HealthService(renewalIntervalInSecs);
 
         started = true;
@@ -359,7 +380,7 @@ public class VirtualService implements AutoCloseable {
         return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
     }
 
-    private void register() throws UnknownHostException {
+    private void register(String status) throws UnknownHostException {
         addDefaultRouteIfMissing();
 
         given().when()
@@ -371,7 +392,7 @@ public class VirtualService implements AutoCloseable {
                     .put("vipAddress", serviceId)
                     .put("app", serviceId)
                     .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
-                    .put("status", Status.UP.toString())
+                    .put("status", status)
                     .put("port", new JSONObject()
                         .put("$", getPort())
                         .put("@enabled", "true")

@@ -146,10 +146,11 @@ public class AuthenticationOnDeploymentTest {
     void testReregistration() throws Exception {
 
         try (
-            final VirtualService service1 = new VirtualService("testService1", 5678);
-            final VirtualService service2 = new VirtualService("testService1", 5679);
-            final VirtualService service4 = new VirtualService("testService1", 5678)
+            final VirtualService service1 = new VirtualService("testService3", 5678);
+            final VirtualService service2 = new VirtualService("testService3", 5679);
+            final VirtualService service4 = new VirtualService("testService3", 5678)
         ) {
+
             List<VirtualService> serviceList = Arrays.asList(service1, service2);
 
             serviceList.forEach(s -> {
@@ -181,6 +182,7 @@ public class AuthenticationOnDeploymentTest {
                 verifier.existAndClean(service4, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"))
             );
             service4.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
+
 
         }
     }
