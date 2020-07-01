@@ -10,13 +10,14 @@
 package org.zowe.apiml.enable.config;
 
 import com.netflix.appinfo.EurekaInstanceConfig;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
@@ -29,7 +30,7 @@ import org.zowe.apiml.message.core.MessageService;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@SpringBootTest
+@RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @EnableApiDiscovery
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {RegisterToApiLayer.class, EnableApiDiscoveryConfig.class})
@@ -65,11 +66,11 @@ public class EnableApiDiscoveryConfigTest {
     }
 
     @Test
-    void givenYamlMetadata_whenIpAddressIsPreferred_thenUseIpAddress() throws ServiceDefinitionException {
+    public void givenYamlMetadata_whenIpAddressIsPreferred_thenUseIpAddress() throws ServiceDefinitionException {
         EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
         EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(apiMediationServiceConfig);
         assertEquals(translatedConfig.getHomePageUrl(), "https://127.0.0.1:10043/discoverableclient2");
-        assertEquals(translatedConfig.getHostName(true),"127.0.0.1");
+        assertEquals(translatedConfig.getHostName(true), "127.0.0.1");
     }
 
 }

@@ -40,7 +40,7 @@ class EurekaInstanceConfigCreatorTest {
     }
 
     @Test
-    void givenYamlMetadata_whenIpAddressIsPrefered_thenUseIpAddress() throws ServiceDefinitionException {
+    void givenYamlMetadata_whenIpAddressIsPreferred_thenUseIpAddress() throws ServiceDefinitionException {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("service-configuration-prefer-ip.yml");
         EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(testConfig);
         assertEquals(translatedConfig.getHomePageUrl(), "http://127.0.0.1:10021/");

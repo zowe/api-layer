@@ -9,14 +9,15 @@
  */
 package org.zowe.apiml.enable.register;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 
-@SpringBootTest
+@RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @EnableApiDiscovery
 @DirtiesContext

@@ -2,7 +2,7 @@ serviceId: service
 title: HelloWorld Spring REST API
 description: POC for exposing a Spring REST API
 baseUrl: http://localhost:10021/hellospring
-serviceIpAddress: 127.0.0.1
+
 preferIpAddress: true
 
 homePageRelativeUrl: /
