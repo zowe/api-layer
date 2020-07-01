@@ -23,6 +23,8 @@ spring:
 apiml:
     enabled: true
     service:
+        preferIpAddress: true
+
         serviceId: discoverableclient
         title: Service Spring Onboarding Enabler sample application API
         description:  Sample API services to demonstrate Spring Onboarding Enabler
@@ -30,8 +32,8 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
 
         scheme: https
-        serviceIpAddress: 127.0.0.1
-        hostname: localhost
+
+        hostname: 127.0.0.1
         port: 10012
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
         contextPath: /${apiml.service.serviceId}
@@ -143,3 +145,4 @@ logging:
         com.netflix: INFO
 
 logbackServiceName: ZWEADC1
+

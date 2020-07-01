@@ -44,6 +44,10 @@ public class EurekaInstanceConfigCreator {
             String message = String.format("baseUrl: [%s] is not valid URL", config.getBaseUrl());
             throw new MetadataValidationException(message, e);
         }
+        if (config.isPreferIpAddress()) {
+            hostname = config.getServiceIpAddress();
+            config.setBaseUrl(baseUrl.getProtocol() + "://" + hostname + ":" + port);
+        }
 
         result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
         result.setAppname(config.getServiceId());

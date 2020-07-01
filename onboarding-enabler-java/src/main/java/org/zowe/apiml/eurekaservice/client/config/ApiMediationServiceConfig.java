@@ -11,7 +11,10 @@ package org.zowe.apiml.eurekaservice.client.config;
 
 import lombok.*;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
+import org.zowe.apiml.exception.ServiceDefinitionException;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 
@@ -217,9 +220,18 @@ public class ApiMediationServiceConfig {
      */
     private Ssl ssl;
 
+
+    private boolean preferIpAddress;
+
+
     /**
      *  Generic attribute for adding arbitrary metadata to either configure Api Mediation Layer or for consumption by other
      *  services or service instances
      */
     private Map<String, Object> customMetadata;
+
+    @PostConstruct
+    public void setIpAddressIfNotPresents ()throws ServiceDefinitionException {
+        ApiMediationServiceConfigReader.setServiceIpAddress(this);
+    }
 }

@@ -9,14 +9,38 @@
  */
 package org.zowe.apiml.enable.config;
 
+import com.netflix.appinfo.EurekaInstanceConfig;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.ConfigFileApplicationContextInitializer;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.zowe.apiml.enable.EnableApiDiscovery;
+import org.zowe.apiml.enable.register.RegisterToApiLayer;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
+import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-
+@SpringBootTest
+@EnableAutoConfiguration
+@EnableApiDiscovery
+@ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class, classes = {RegisterToApiLayer.class, EnableApiDiscoveryConfig.class})
 public class EnableApiDiscoveryConfigTest {
+
+
+    @Autowired
+    private ApiMediationServiceConfig apiMediationServiceConfig;
+
+    @MockBean
+    private ApiMediationClient apiMediationClient;
 
     @Test
     public void messageServiceDiscovery() {
@@ -33,4 +57,19 @@ public class EnableApiDiscoveryConfigTest {
 
         assertTrue(message.mapToLogMessage().contains(correctMessage));
     }
+
+
+    @Test
+    public void resolveServiceIpAddressIfNotProvidedInConfiguration() {
+        assertEquals("127.0.0.1", apiMediationServiceConfig.getServiceIpAddress());
+    }
+
+    @Test
+    void givenYamlMetadata_whenIpAddressIsPreferred_thenUseIpAddress() throws ServiceDefinitionException {
+        EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
+        EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(apiMediationServiceConfig);
+        assertEquals(translatedConfig.getHomePageUrl(), "https://127.0.0.1:10043/discoverableclient2");
+        assertEquals(translatedConfig.getHostName(true),"127.0.0.1");
+    }
+
 }
