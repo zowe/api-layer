@@ -230,6 +230,10 @@ public class ApiMediationServiceConfig {
      */
     private Map<String, Object> customMetadata;
 
+    /**
+     * IP address is resolved this way, so it can be used with any Java EE compatible IoC containers
+     * @throws ServiceDefinitionException
+     */
     @PostConstruct
     public void setIpAddressIfNotPresents ()throws ServiceDefinitionException {
         ApiMediationServiceConfigReader.setServiceIpAddress(this);
