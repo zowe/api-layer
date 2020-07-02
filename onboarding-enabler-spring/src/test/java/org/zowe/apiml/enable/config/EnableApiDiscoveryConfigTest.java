@@ -69,8 +69,8 @@ public class EnableApiDiscoveryConfigTest {
     public void givenYamlMetadata_whenIpAddressIsPreferred_thenUseIpAddress() throws ServiceDefinitionException {
         EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
         EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(apiMediationServiceConfig);
-        assertEquals(translatedConfig.getHomePageUrl(), "https://127.0.0.1:10043/discoverableclient2");
-        assertEquals(translatedConfig.getHostName(true), "127.0.0.1");
+        assertEquals("https://127.0.0.1:10043/discoverableclient2", translatedConfig.getHomePageUrl());
+        assertEquals("127.0.0.1", translatedConfig.getHostName(true));
     }
 
 }
