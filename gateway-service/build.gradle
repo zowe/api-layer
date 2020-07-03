@@ -91,7 +91,12 @@ dependencies {
     runtime libraries.jjwt_jackson
 }
 
-bootJar.archiveName = "${bootJar.baseName}.jar"
+bootJar {
+    archiveFileName = "gateway-service.jar"
+    manifest {
+        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+    }
+}
 
 bootRun {
     if (project.hasProperty('args')) {

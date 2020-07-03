@@ -69,7 +69,12 @@ dependencies {
     testCompile libraries.spring_boot_starter_test
 }
 
-bootJar.archiveName = "${bootJar.baseName}.jar"
+bootJar {
+    archiveName "api-catalog-services.jar"
+    manifest {
+        attributes 'Main-Class': 'org.springframework.boot.loader.PropertiesLauncher'
+    }
+}
 
 def uiModule = "${project(':api-catalog-ui').projectDir}"
 
