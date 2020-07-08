@@ -5,7 +5,7 @@
         </encoder>
     </appender>
     <logger name="com.jayway.jsonpath.internal.path.CompiledPath" level="OFF" />
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

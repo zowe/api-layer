@@ -14,6 +14,7 @@ import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.actuate.health.Status;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.Flaky;
@@ -22,6 +23,7 @@ import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,7 +47,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 @TestsNotMeantForZowe
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 10;
+    private static final int TIMEOUT = 3;
 
     private RequestVerifier verifier;
 
@@ -183,6 +185,86 @@ public class AuthenticationOnDeploymentTest {
             );
             service4.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
 
+
+        }
+    }
+
+    @Test
+    @Flaky
+    void testServiceStatus() throws Exception {
+
+        String serviceId = "testservice4";
+        String host = InetAddress.getLocalHost().getHostName();
+
+        List<Integer> ports = Arrays.asList(5679, 5680);
+
+        try (
+            final VirtualService service1 = new VirtualService(serviceId, 5678);
+            final VirtualService service2 = new VirtualService(serviceId, 5679);
+            final VirtualService service3 = new VirtualService(serviceId, 5680);
+            final VirtualService service4 = new VirtualService(serviceId, 5678)
+        ) {
+
+            List<VirtualService> serviceList = Arrays.asList(service1, service2, service3);
+
+            service1.addVerifyServlet().start(Status.OUT_OF_SERVICE.toString());
+            service2.addVerifyServlet().start(Status.OUT_OF_SERVICE.toString());
+            service3.addVerifyServlet().start(Status.OUT_OF_SERVICE.toString());
+            for (int i = 0; i < 4; i++) {
+
+                System.out.println("Counter: " + i);
+                given().when()
+                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678 + "/status?value=UP")
+                    .then().statusCode(SC_OK);
+
+                service1.getGatewayVerifyUrls().forEach(x ->
+                    given()
+                        .when().get(x + "/test")
+                        .then().statusCode(is(SC_OK))
+                );
+
+//                unregister service1
+                given().when().delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678).then().statusCode(SC_OK);
+
+//                set service2 UP
+                given().when()
+                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5679 + "/status?value=UP")
+                    .then().statusCode(SC_OK);
+
+//                call service2
+                service2.getGatewayVerifyUrls().forEach(x ->
+                    given()
+                        .when().get(x + "/test")
+                        .then().body(is("")).statusCode(is(SC_OK))
+                );
+
+//                set service3 UP
+                given().when()
+                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5680 + "/status?value=UP")
+                    .then().statusCode(SC_OK);
+
+//                call service3
+                service3.getGatewayVerifyUrls().forEach(x ->
+                    given()
+                        .when().get(x + "/test")
+                        .then().statusCode(is(SC_OK))
+                );
+
+                service1.start("OUT_OF_SERVICE");
+                Thread.sleep(40);
+                ports.forEach(port -> {
+                    given().when()
+                        .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + port + "/status?value=OUT_OF_SERVICE")
+                        .then().statusCode(SC_OK);
+                });
+            }
+            serviceList.forEach(s -> {
+                try {
+                    s.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
+                } catch (LifecycleException e) {
+                    e.printStackTrace();
+                }
+            });
 
         }
     }

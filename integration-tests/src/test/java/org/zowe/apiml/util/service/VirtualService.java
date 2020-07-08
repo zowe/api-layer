@@ -380,7 +380,7 @@ public class VirtualService implements AutoCloseable {
         return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
     }
 
-    private void register(String status) throws UnknownHostException {
+    public void register(String status) throws UnknownHostException {
         addDefaultRouteIfMissing();
 
         given().when()
@@ -393,6 +393,7 @@ public class VirtualService implements AutoCloseable {
                     .put("app", serviceId)
                     .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
                     .put("status", status)
+                    .put("overriddenstatus", status)
                     .put("port", new JSONObject()
                         .put("$", getPort())
                         .put("@enabled", "true")
