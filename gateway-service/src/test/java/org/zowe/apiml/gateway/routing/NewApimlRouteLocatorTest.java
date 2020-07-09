@@ -42,8 +42,8 @@ class NewApimlRouteLocatorTest {
     }
 
     @Test
-    void givenStandardServiceWithMultipleRoutes_whenLocateRoutes_thenExpectedRoutesLocated() {
-
+    void givenOneServiceWithMultipleRoutes_whenLocateRoutes_thenTwoRoutesLocated() {
+        //given
         Map<String,String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
@@ -69,9 +69,9 @@ class NewApimlRouteLocatorTest {
         when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
         when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
             Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, metadata)));
-
+        //when
         Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
-
+        //then
         assertEquals(expectedRoutesMap, zuulRouteMap);
     }
 }

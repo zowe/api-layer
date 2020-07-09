@@ -20,7 +20,6 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -40,19 +39,16 @@ public class NewApimlRouteLocator extends SimpleRouteLocator {
     @VisibleForTesting
     protected Map<String, ZuulProperties.ZuulRoute> locateRoutes() {
         log.debug("Locating routes from Discovery client");
-
         Map<String, ZuulProperties.ZuulRoute> routesMap = new HashMap<>();
 
-        List<String> serviceIds = discoveryClient.getServices();
-        for(String serviceId: serviceIds) {
-            routesMap.putAll(locateServiceRoutes(serviceId));
-        }
+        discoveryClient.getServices().forEach( serviceId ->
+             routesMap.putAll(createServiceRoutes(serviceId))
+        );
 
         return routesMap;
     }
 
-    private Map<String, ZuulProperties.ZuulRoute> locateServiceRoutes(String serviceId) {
-
+    private Map<String, ZuulProperties.ZuulRoute> createServiceRoutes(String serviceId) {
         Map<String, ZuulProperties.ZuulRoute> routesMap = new HashMap<>();
 
         discoveryClient.getInstances(serviceId).stream()
@@ -60,20 +56,21 @@ public class NewApimlRouteLocator extends SimpleRouteLocator {
             .flatMap(
                 metadata -> metadataParser.parseToListRoute(metadata).stream()
             ).forEach( routedService -> {
-                    routesMap.putAll(createIndividualRoute(serviceId, routedService));
+                    routesMap.putAll(createRoute(serviceId, routedService));
             });
 
         return  routesMap;
     }
 
-    private Map<String, ZuulProperties.ZuulRoute> createIndividualRoute(String serviceId, RoutedService routedService) {
+    private Map<String, ZuulProperties.ZuulRoute> createRoute(String serviceId, RoutedService routedService) {
         Map<String, ZuulProperties.ZuulRoute> routesMap = new HashMap<>();
-        //strategy
+
+        //ready for strategy
         String routeKey = "/" + routedService.getGatewayUrl() + "/" + serviceId + "/**";
         ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(routeKey, serviceId);
         routesMap.put(routeKey, route);
-
         log.debug("ServiceId: {}, RouteId: {}, Created Route: {}", serviceId, routedService.getSubServiceId(), route);
+
         return routesMap;
     }
 }
