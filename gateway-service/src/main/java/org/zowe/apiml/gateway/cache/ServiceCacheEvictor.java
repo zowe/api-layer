@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.cache;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
-import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import lombok.Value;
 import org.springframework.cloud.netflix.zuul.filters.RefreshableRouteLocator;
 import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
@@ -22,8 +21,6 @@ import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class is responsible for evicting cache after new registry is loaded. This avoid race condition. Scenario is:
@@ -60,8 +57,6 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
     }
 
 
-
-
     public synchronized void evictCacheService(String serviceId) {
         if (evictAll) return;
         toEvict.add(new ServiceRef(serviceId));
@@ -78,13 +73,11 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
             if (!evictAll && toEvict.isEmpty()) return;
             if (evictAll) {
                 serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
-//                loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
                 evictAll = false;
             } else {
                 toEvict.forEach(ServiceRef::evict);
                 toEvict.clear();
             }
-
             refreshRouts(event);
         }
     }

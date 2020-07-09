@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.ribbon;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
+import org.zowe.apiml.gateway.metadata.service.DiscoveryClientEventListener;
 import org.zowe.apiml.gateway.routing.ApimlRouteLocator;
 
 /**
@@ -35,10 +35,10 @@ public class ApimlLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T
         ServerList<T> serverList,
         ServerListFilter<T> filter,
         ServerListUpdater serverListUpdater,
-        ApimlRouteLocator apimlRouteLocator
+        DiscoveryClientEventListener discoveryClientEventListener
     ) {
         super(clientConfig, rule, ping, serverList, filter, serverListUpdater);
-        apimlRouteLocator.registerLoadBalancer(this);
+        discoveryClientEventListener.registerLoadBalancer(this);
     }
 
     /**

@@ -45,7 +45,7 @@ public class ApimlRetryableClient extends RetryableRibbonLoadBalancingHttpClient
     @Override
     public ServiceInstance choose(String serviceId) {
         super.choose(serviceId);
-        if(!RequestContextUtils.getInstanceInfo().isPresent()){
+        if (!RequestContextUtils.getInstanceInfo().isPresent()) {
             System.out.println("");
         }
         return new EurekaDiscoveryClient.EurekaServiceInstance(

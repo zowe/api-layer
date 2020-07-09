@@ -20,7 +20,7 @@ import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpCl
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
+import org.zowe.apiml.gateway.metadata.service.DiscoveryClientEventListener;
 import org.zowe.apiml.gateway.routing.ApimlRouteLocator;
 
 /**
@@ -61,12 +61,13 @@ public class GatewayRibbonConfig {
     @Autowired
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
-                                            IRule rule, IPing ping, ServerListUpdater serverListUpdater, ApimlRouteLocator apimlRouteLocator) {
+                                            IRule rule, IPing ping, ServerListUpdater serverListUpdater,
+                                            DiscoveryClientEventListener discoveryClientEventListener) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
         return new ApimlLoadBalancer<>(config, rule, ping, serverList,
-            serverListFilter, serverListUpdater, apimlRouteLocator);
+            serverListFilter, serverListUpdater, discoveryClientEventListener);
     }
 
 }

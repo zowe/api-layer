@@ -219,12 +219,12 @@ public class AuthenticationOnDeploymentTest {
                         .then().statusCode(SC_OK);
                 });
                 System.out.println("3 OUT_OF_SERVICE");
-                Thread.sleep(2000);
+                Thread.sleep(1000);
                 given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678 + "/status?value=UP")
                     .then().statusCode(SC_OK);
                 System.out.println("1 UP 2 OUT_OF_SERVICE");
-                Thread.sleep(2000);
+                Thread.sleep(1000);
                 service1.getGatewayVerifyUrls().forEach(x ->
                     given()
                         .when().get(x + "/test")
@@ -235,7 +235,7 @@ public class AuthenticationOnDeploymentTest {
                 given().when().delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678).then().statusCode(SC_OK);
 
                 System.out.println(" 2 OUT_OF_SERVICE");
-                Thread.sleep(2000);
+                Thread.sleep(1000);
 //                set service2 UP
                 given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5679 + "/status?value=UP")
@@ -243,7 +243,7 @@ public class AuthenticationOnDeploymentTest {
 
 //                call service2
                 System.out.println("1 UP 1 OUT_OF_SERVICE");
-                Thread.sleep(2000);
+                Thread.sleep(1000);
                 service2.getGatewayVerifyUrls().forEach(x ->
                     given()
                         .when().get(x + "/test")
@@ -257,7 +257,7 @@ public class AuthenticationOnDeploymentTest {
 
 //                call service3
                 System.out.println("2 UP");
-                Thread.sleep(2000);
+                Thread.sleep(1000);
                 service3.getGatewayVerifyUrls().forEach(x ->
                     given()
                         .when().get(x + "/test")
@@ -266,7 +266,7 @@ public class AuthenticationOnDeploymentTest {
 
                 service1.start("UP");
                 System.out.println("3 UP");
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             }
 
         }

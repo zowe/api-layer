@@ -10,24 +10,27 @@
 package org.zowe.apiml.gateway.config;
 
 import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.netflix.zuul.filters.RefreshableRouteLocator;
-import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
+import org.springframework.cloud.netflix.zuul.ZuulServerAutoConfiguration;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
+import org.zowe.apiml.gateway.metadata.service.DiscoveryClientEventListener;
 
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
@@ -42,14 +45,11 @@ import java.util.List;
 public class DiscoveryClientConfig {
     private final ApplicationContext context;
     private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
-    private final List<RefreshableRouteLocator> refreshableRouteLocators;
-    private final ZuulHandlerMapping zuulHandlerMapping;
 
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     public ApimlDiscoveryClient eurekaClient(ApplicationInfoManager manager,
                                              EurekaClientConfig config,
-                                             EurekaInstanceConfig instance,
                                              @Autowired(required = false) HealthCheckHandler healthCheckHandler
     ) {
         ApplicationInfoManager appManager;
@@ -61,12 +61,14 @@ public class DiscoveryClientConfig {
         final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
 
-//        discoveryClientClient.registerEventListener(event -> {
-//            if (event instanceof CacheRefreshedEvent) {
-//                refreshableRouteLocators.forEach(RefreshableRouteLocator::refresh);
-//                zuulHandlerMapping.setDirty(true);
-//            }
-//        });
         return discoveryClientClient;
     }
+
+
+
+    @Bean
+    public ApplicationListener<ApplicationEvent> loadBalancerEventListener() {
+        return new DiscoveryClientEventListener();
+    }
+
 }

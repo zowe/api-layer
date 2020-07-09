@@ -49,12 +49,7 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
 
-    private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
 
-    public void registerLoadBalancer(DynamicServerListLoadBalancer loadBalancer) {
-        String loadBalancerName = loadBalancer.getName();
-        loadBalancerRegistry.put(loadBalancerName, loadBalancer);
-    }
 
     /**
      * Suppressing warnings instead of resolving them to match the original class
@@ -63,7 +58,7 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     @Override
     @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S1075", "squid:S3776"})
     protected LinkedHashMap<String, ZuulProperties.ZuulRoute> locateRoutes() {
-        loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
+
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>(super.locateRoutes());
         if (this.discovery != null) {
             Map<String, ZuulProperties.ZuulRoute> staticServices = new LinkedHashMap<>();
