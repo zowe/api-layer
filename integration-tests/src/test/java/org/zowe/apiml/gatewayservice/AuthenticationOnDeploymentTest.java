@@ -196,7 +196,7 @@ public class AuthenticationOnDeploymentTest {
         String serviceId = "testservice4";
         String host = InetAddress.getLocalHost().getHostName();
 
-        List<Integer> ports = Arrays.asList(5679, 5680);
+        List<Integer> ports = Arrays.asList(5678, 5679, 5680);
 
         try (
             final VirtualService service1 = new VirtualService(serviceId, 5678);
@@ -210,13 +210,21 @@ public class AuthenticationOnDeploymentTest {
             service1.addVerifyServlet().start(Status.OUT_OF_SERVICE.toString());
             service2.addVerifyServlet().start(Status.OUT_OF_SERVICE.toString());
             service3.addVerifyServlet().start(Status.OUT_OF_SERVICE.toString());
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 10; i++) {
 
                 System.out.println("Counter: " + i);
+                ports.forEach(port ->{
+                    given().when()
+                        .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + port + "/status?value=OUT_OF_SERVICE")
+                        .then().statusCode(SC_OK);
+                });
+                System.out.println("3 OUT_OF_SERVICE");
+//                Thread.sleep(2000);
                 given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678 + "/status?value=UP")
                     .then().statusCode(SC_OK);
-
+                System.out.println("1 UP 2 OUT_OF_SERVICE");
+//                Thread.sleep(4000);
                 service1.getGatewayVerifyUrls().forEach(x ->
                     given()
                         .when().get(x + "/test")
@@ -226,12 +234,16 @@ public class AuthenticationOnDeploymentTest {
 //                unregister service1
                 given().when().delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678).then().statusCode(SC_OK);
 
+                System.out.println(" 2 OUT_OF_SERVICE");
+//                Thread.sleep(4000);
 //                set service2 UP
                 given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5679 + "/status?value=UP")
                     .then().statusCode(SC_OK);
 
 //                call service2
+                System.out.println("1 UP 1 OUT_OF_SERVICE");
+//                Thread.sleep(4000);
                 service2.getGatewayVerifyUrls().forEach(x ->
                     given()
                         .when().get(x + "/test")
@@ -244,27 +256,18 @@ public class AuthenticationOnDeploymentTest {
                     .then().statusCode(SC_OK);
 
 //                call service3
+                System.out.println("2 UP");
+//                Thread.sleep(4000);
                 service3.getGatewayVerifyUrls().forEach(x ->
                     given()
                         .when().get(x + "/test")
                         .then().statusCode(is(SC_OK))
                 );
 
-                service1.start("OUT_OF_SERVICE");
-                Thread.sleep(40);
-                ports.forEach(port -> {
-                    given().when()
-                        .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + port + "/status?value=OUT_OF_SERVICE")
-                        .then().statusCode(SC_OK);
-                });
+                service1.start("UP");
+                System.out.println("3 UP");
+//                Thread.sleep(4000);
             }
-            serviceList.forEach(s -> {
-                try {
-                    s.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
-                } catch (LifecycleException e) {
-                    e.printStackTrace();
-                }
-            });
 
         }
     }

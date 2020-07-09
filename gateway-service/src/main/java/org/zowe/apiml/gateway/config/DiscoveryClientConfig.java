@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gateway.config;
 
-import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
@@ -26,6 +25,7 @@ import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 
 import java.util.List;
 
@@ -61,12 +61,12 @@ public class DiscoveryClientConfig {
         final ApimlDiscoveryClient discoveryClientClient = new ApimlDiscoveryClient(appManager, config, this.optionalArgs, this.context);
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
 
-        discoveryClientClient.registerEventListener(event -> {
-            if (event instanceof CacheRefreshedEvent) {
-                refreshableRouteLocators.forEach(RefreshableRouteLocator::refresh);
-                zuulHandlerMapping.setDirty(true);
-            }
-        });
+//        discoveryClientClient.registerEventListener(event -> {
+//            if (event instanceof CacheRefreshedEvent) {
+//                refreshableRouteLocators.forEach(RefreshableRouteLocator::refresh);
+//                zuulHandlerMapping.setDirty(true);
+//            }
+//        });
         return discoveryClientClient;
     }
 }

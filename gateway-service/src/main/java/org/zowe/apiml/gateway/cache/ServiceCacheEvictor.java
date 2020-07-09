@@ -14,6 +14,8 @@ import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import lombok.Value;
+import org.springframework.cloud.netflix.zuul.filters.RefreshableRouteLocator;
+import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
@@ -38,17 +40,24 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
 
     private List<ServiceCacheEvict> serviceCacheEvicts;
 
+    private final List<RefreshableRouteLocator> refreshableRouteLocators;
+    private final ZuulHandlerMapping zuulHandlerMapping;
+
     private boolean evictAll = false;
     private HashSet<ServiceRef> toEvict = new HashSet<>();
     private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
 
     public ServiceCacheEvictor(
         ApimlDiscoveryClient apimlDiscoveryClient,
-        List<ServiceCacheEvict> serviceCacheEvicts
+        List<ServiceCacheEvict> serviceCacheEvicts,
+        List<RefreshableRouteLocator> refreshableRouteLocators,
+        ZuulHandlerMapping zuulHandlerMapping
     ) {
         apimlDiscoveryClient.registerEventListener(this);
         this.serviceCacheEvicts = serviceCacheEvicts;
         this.serviceCacheEvicts.remove(this);
+        this.refreshableRouteLocators = refreshableRouteLocators;
+        this.zuulHandlerMapping = zuulHandlerMapping;
     }
 
     public void registerLoadBalancer(DynamicServerListLoadBalancer loadBalancer) {
@@ -80,6 +89,14 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
                 toEvict.clear();
             }
             loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
+            refreshRouts(event);
+        }
+    }
+
+    public void refreshRouts(EurekaEvent event) {
+        if (event instanceof CacheRefreshedEvent) {
+            refreshableRouteLocators.forEach(RefreshableRouteLocator::refresh);
+            zuulHandlerMapping.setDirty(true);
         }
     }
 

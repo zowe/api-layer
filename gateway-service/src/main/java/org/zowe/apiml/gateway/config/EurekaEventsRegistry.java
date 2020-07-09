@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.config;
 
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.EurekaEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -25,7 +26,7 @@ import java.util.List;
 public class EurekaEventsRegistry {
 
     private final EurekaClient eurekaClient;
-    private final List<MetadataProcessor> processors;
+    private final List<EurekaEventListener> processors;
 
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
