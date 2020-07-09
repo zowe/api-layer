@@ -37,7 +37,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 /**
  * This test suite must be run with HTTPS on and Certificate validation ON for Discovery service
  */
-public class EurekaInstancesIntegrationTest {
+class EurekaInstancesIntegrationTest {
 
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
@@ -62,7 +62,7 @@ public class EurekaInstancesIntegrationTest {
     //@formatter:off
     // /eureka endpoints
     @Test
-    public void testEurekaEndpoints_whenProvidedCertificate() throws Exception {
+    void testEurekaEndpoints_whenProvidedCertificate() throws Exception {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
         .when()
@@ -72,7 +72,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void testEurekaEndpoints_whenProvidedNothing() throws Exception {
+    void testEurekaEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
         .when()
@@ -83,7 +83,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void testEurekaEndpoints_whenProvidedBasicAuthentication() throws Exception {
+    void testEurekaEndpoints_whenProvidedBasicAuthentication() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
             .auth().basic(username, password)
@@ -95,7 +95,7 @@ public class EurekaInstancesIntegrationTest {
 
     // Gateway is discovered
     @Test
-    public void testGatewayIsDiscoveredByEureka() throws Exception {
+    void testGatewayIsDiscoveredByEureka() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
@@ -107,7 +107,7 @@ public class EurekaInstancesIntegrationTest {
 
     // /application health,info endpoints
     @Test
-    public void testApplicationInfoEndpoints_whenProvidedNothing() throws Exception {
+    void testApplicationInfoEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
         .when()
@@ -117,7 +117,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void testApplicationHealthEndpoints_whenProvidedNothing() throws Exception {
+    void testApplicationHealthEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
         .when()
@@ -128,7 +128,7 @@ public class EurekaInstancesIntegrationTest {
 
     // /application endpoints
     @Test
-    public void testApplicationBeansEndpoints_whenProvidedNothing() throws Exception {
+    void testApplicationBeansEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
         .when()
@@ -202,7 +202,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void testDiscoveryEndpoints_whenProvidedCertification() throws Exception {
+    void testDiscoveryEndpoints_whenProvidedCertification() throws Exception {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         given()
         .when()
@@ -213,7 +213,7 @@ public class EurekaInstancesIntegrationTest {
 
     // root & ui
     @Test
-    public void testUIEndpoints_whenProvidedNothing() throws Exception {
+    void testUIEndpoints_whenProvidedNothing() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         given()
         .when()
@@ -276,7 +276,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void verifyHttpHeadersOnApi() throws Exception {
+    void verifyHttpHeadersOnApi() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         Map<String, String> expectedHeaders = new HashMap<>();
         expectedHeaders.put("X-Content-Type-Options", "nosniff");
@@ -300,7 +300,7 @@ public class EurekaInstancesIntegrationTest {
     }
 
     @Test
-    public void verifyHttpHeadersOnEureka() throws Exception {
+    void verifyHttpHeadersOnEureka() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         Map<String, String> expectedHeaders = new HashMap<>();
         expectedHeaders.put("X-Content-Type-Options", "nosniff");

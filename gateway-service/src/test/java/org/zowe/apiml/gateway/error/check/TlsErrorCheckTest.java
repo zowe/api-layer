@@ -41,7 +41,7 @@ public class TlsErrorCheckTest {
     }
 
     @Test
-    public void testZuulHandshakeException() {
+    void testZuulHandshakeException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         ZuulException exc = new ZuulException(new SSLHandshakeException(TEST_MESSAGE),

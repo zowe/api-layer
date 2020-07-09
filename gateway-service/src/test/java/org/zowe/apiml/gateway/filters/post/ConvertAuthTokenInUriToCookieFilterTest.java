@@ -29,13 +29,13 @@ public class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequest
             authConfigurationProperties);
 
     @Test
-    public void doesNotDoAnythingWhenThereIsNoParam() {
+    void doesNotDoAnythingWhenThereIsNoParam() {
         this.filter.run();
         assertFalse(ctx.getResponse().getHeaderNames().contains("Set-Cookie"));
     }
 
     @Test
-    public void doesNotDoAnythingWhenThereIsAnotherParam() {
+    void doesNotDoAnythingWhenThereIsAnotherParam() {
         Map<String, List<String>> params = new HashMap<>();
         params.put("someParameter", Collections.singletonList("value"));
         ctx.setRequestQueryParams(params);
@@ -44,7 +44,7 @@ public class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequest
     }
 
     @Test
-    public void setsCookieForCorrectParameter() {
+    void setsCookieForCorrectParameter() {
         ctx.setRequest(new MockHttpServletRequest("GET", "/api/v1/service"));
         Map<String, List<String>> params = new HashMap<>();
         params.put(authConfigurationProperties.getCookieProperties().getCookieName(),
@@ -57,7 +57,7 @@ public class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequest
     }
 
     @Test
-    public void setsLocationToDashboardForApiCatalog() {
+    void setsLocationToDashboardForApiCatalog() {
         ctx.setRequest(new MockHttpServletRequest("GET", "/api/v1/apicatalog/"));
         Map<String, List<String>> params = new HashMap<>();
         params.put(authConfigurationProperties.getCookieProperties().getCookieName(),

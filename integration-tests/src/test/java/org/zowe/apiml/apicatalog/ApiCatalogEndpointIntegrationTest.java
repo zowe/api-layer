@@ -56,7 +56,7 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
-    public void whenGetContainerStatuses_thenResponseWithAtLeastOneUp() throws Exception {
+    void whenGetContainerStatuses_thenResponseWithAtLeastOneUp() throws Exception {
         final HttpResponse response = getResponse(GET_ALL_CONTAINERS_ENDPOINT, HttpStatus.SC_OK);
 
         // When
@@ -71,7 +71,7 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
-    public void whenCatalogApiDoc_thenResponseOK() throws Exception {
+    void whenCatalogApiDoc_thenResponseOK() throws Exception {
         final HttpResponse response = getResponse(GET_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 
         // When
@@ -144,7 +144,7 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
-    public void whenMisSpeltContainersEndpoint_thenNotFoundResponseWithAPIMessage() throws Exception {
+    void whenMisSpeltContainersEndpoint_thenNotFoundResponseWithAPIMessage() throws Exception {
         HttpResponse response = getResponse(INVALID_CONTAINER_ENDPOINT, HttpStatus.SC_NOT_FOUND);
         final String htmlResponse = EntityUtils.toString(response.getEntity());
         Document doc = Jsoup.parse(htmlResponse);
@@ -158,12 +158,12 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
-    public void whenMisSpeltStatusUpdateEndpoint_thenNotFoundResponse() throws Exception {
+    void whenMisSpeltStatusUpdateEndpoint_thenNotFoundResponse() throws Exception {
         getResponse(INVALID_STATUS_UPDATES_ENDPOINT, HttpStatus.SC_NOT_FOUND);
     }
 
     @Test
-    public void whenInvalidApiDocVersion_thenReturnFirstDoc() throws Exception {
+    void whenInvalidApiDocVersion_thenReturnFirstDoc() throws Exception {
         final HttpResponse response = getResponse(INVALID_API_CATALOG_API_DOC_ENDPOINT, HttpStatus.SC_OK);
 
         // When
@@ -174,7 +174,7 @@ public class ApiCatalogEndpointIntegrationTest {
     }
 
     @Test
-    public void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
+    void whenCallStaticApiRefresh_thenResponseOk() throws IOException {
         final HttpResponse response = getStaticApiRefreshResponse(REFRESH_STATIC_APIS_ENDPOINT, HttpStatus.SC_OK);
 
         // When

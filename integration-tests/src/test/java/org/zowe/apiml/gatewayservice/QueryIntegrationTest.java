@@ -44,7 +44,7 @@ public class QueryIntegrationTest {
 
     //@formatter:off
     @Test
-    public void doQueryWithValidTokenFromHeader() {
+    void doQueryWithValidTokenFromHeader() {
         given()
              .header("Authorization", "Bearer " + token)
         .when()
@@ -55,7 +55,7 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    public void doQueryWithValidTokenFromCookie() {
+    void doQueryWithValidTokenFromCookie() {
         given()
             .cookie(COOKIE, token)
         .when()
@@ -66,7 +66,7 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    public void doQueryWithInvalidTokenFromHeader() {
+    void doQueryWithInvalidTokenFromHeader() {
         String invalidToken = "1234";
         String expectedMessage = "Token is not valid for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
 
@@ -83,7 +83,7 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    public void doQueryWithInvalidTokenFromCookie() {
+    void doQueryWithInvalidTokenFromCookie() {
         String invalidToken = "1234";
         String expectedMessage = "Token is not valid for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
 
@@ -99,7 +99,7 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    public void doQueryWithoutHeaderOrCookie() {
+    void doQueryWithoutHeaderOrCookie() {
         String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
 
         given()
@@ -113,7 +113,7 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    public void doQueryWithWrongAuthType() {
+    void doQueryWithWrongAuthType() {
         String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
 
         given()
@@ -128,7 +128,7 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    public void doQueryWithWrongCookieName() {
+    void doQueryWithWrongCookieName() {
         String invalidCookie = "badCookie";
         String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
 
@@ -144,7 +144,7 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    public void doQueryWithEmptyHeader() {
+    void doQueryWithEmptyHeader() {
         String emptyToken = " ";
         String expectedMessage = "No authorization token provided for URL '" + BASE_PATH + QUERY_ENDPOINT + "'";
 
@@ -160,7 +160,7 @@ public class QueryIntegrationTest {
     }
 
     @Test
-    public void doQueryWithWrongHttpMethod() {
+    void doQueryWithWrongHttpMethod() {
         String expectedMessage = "Authentication method 'POST' is not supported for URL '" +
             BASE_PATH + QUERY_ENDPOINT + "'";
 

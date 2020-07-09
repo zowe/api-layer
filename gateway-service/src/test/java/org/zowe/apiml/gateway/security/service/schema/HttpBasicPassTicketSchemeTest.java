@@ -59,7 +59,7 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     }
 
     @Test
-    public void testCreateCommand() {
+    void testCreateCommand() {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
         QueryResponse queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
@@ -103,7 +103,7 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     }
 
     @Test
-    public void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
+    void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
         PassTicketService passTicketService = mock(PassTicketService.class);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
 
@@ -126,12 +126,12 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     }
 
     @Test
-    public void returnsCorrectScheme() {
+    void returnsCorrectScheme() {
         assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, httpBasicPassTicketScheme.getScheme());
     }
 
     @Test
-    public void getExceptionWhenUserIdNotValid() {
+    void getExceptionWhenUserIdNotValid() {
         String applId = "APPLID";
 
         Calendar calendar = Calendar.getInstance();
@@ -144,7 +144,7 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     }
 
     @Test
-    public void testIsRequiredValidJwt() {
+    void testIsRequiredValidJwt() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, 1);
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
@@ -154,7 +154,7 @@ public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTes
     }
 
     @Test
-    public void whenCallWithoutJwt_thenDoNothing() {
+    void whenCallWithoutJwt_thenDoNothing() {
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> null);
         assertSame(AuthenticationCommand.EMPTY, ac);

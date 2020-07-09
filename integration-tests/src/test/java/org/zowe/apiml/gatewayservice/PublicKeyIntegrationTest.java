@@ -65,7 +65,7 @@ public class PublicKeyIntegrationTest {
     }
 
     @Test
-    public void testAllPublicKeys() throws ParseException {
+    void testAllPublicKeys() throws ParseException {
         String response = given()
             .when()
             .get(GATEWAY_URL + ALL_PUBLIC_KEY_ENDPOINT)
@@ -78,7 +78,7 @@ public class PublicKeyIntegrationTest {
     }
 
     @Test
-    public void testCurrentPublicKeys() throws ParseException {
+    void testCurrentPublicKeys() throws ParseException {
         String response = given()
             .when()
             .get(GATEWAY_URL + CURRENT_PUBLIC_KEY_ENDPOINT)

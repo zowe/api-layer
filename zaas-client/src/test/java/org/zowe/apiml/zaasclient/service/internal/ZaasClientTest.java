@@ -110,7 +110,7 @@ public class ZaasClientTest {
     }
 
     @Test
-    public void givenValidCredentials_whenLoginApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
+    void givenValidCredentials_whenLoginApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
         when(tokens.login(anyString(), anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
         assertThrows(ZaasClientException.class, () -> {
@@ -119,7 +119,7 @@ public class ZaasClientTest {
     }
 
     @Test
-    public void givenValidToken_whenLoginApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
+    void givenValidToken_whenLoginApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
         when(tokens.login(anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
         assertThrows(ZaasClientException.class, () -> {
@@ -128,7 +128,7 @@ public class ZaasClientTest {
     }
 
     @Test
-    public void givenValidToken_whenQueryApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
+    void givenValidToken_whenQueryApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
         when(tokens.query(anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
         assertThrows(ZaasClientException.class, () -> {
@@ -137,7 +137,7 @@ public class ZaasClientTest {
     }
 
     @Test
-    public void givenValidTokenApplId_whenPassTicketApiIsCalled_thenRaisedClientExceptionIsRethrown() throws Exception {
+    void givenValidTokenApplId_whenPassTicketApiIsCalled_thenRaisedClientExceptionIsRethrown() throws Exception {
         when(passTickets.passTicket(anyString(), anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
         assertThrows(ZaasClientException.class, () -> {
@@ -146,7 +146,7 @@ public class ZaasClientTest {
     }
 
     @Test
-    public void givenInvalidKeyConfiguration_whenPassTicketApiIsCalled_thenRaisedConfigurationExceptionIsRethrown() throws Exception {
+    void givenInvalidKeyConfiguration_whenPassTicketApiIsCalled_thenRaisedConfigurationExceptionIsRethrown() throws Exception {
         when(passTickets.passTicket(anyString(), anyString())).thenThrow(
             new ZaasConfigurationException(IO_CONFIGURATION_ISSUE)
         );

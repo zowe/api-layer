@@ -18,7 +18,7 @@ import javax.servlet.RequestDispatcher;
 
 public class ErrorUtilsTest {
     @Test
-    public void testGetErrorStatus() {
+    void testGetErrorStatus() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         assertEquals(500, ErrorUtils.getErrorStatus(request));
 
@@ -27,7 +27,7 @@ public class ErrorUtilsTest {
     }
 
     @Test
-    public void testGetErrorMessage() {
+    void testGetErrorMessage() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         assertEquals(ErrorUtils.UNEXPECTED_ERROR_OCCURRED, ErrorUtils.getErrorMessage(request));
@@ -37,7 +37,7 @@ public class ErrorUtilsTest {
     }
 
     @Test
-    public void testGetGatewayUri() {
+    void testGetGatewayUri() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         assertEquals(null, ErrorUtils.getGatewayUri(request));

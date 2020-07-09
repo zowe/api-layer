@@ -37,7 +37,7 @@ public class GatewayHealthIndicatorTest {
     }
 
     @Test
-    public void testStatusIsUpWhenCatalogAndDiscoveryAreAvailable() {
+    void testStatusIsUpWhenCatalogAndDiscoveryAreAvailable() {
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
@@ -53,7 +53,7 @@ public class GatewayHealthIndicatorTest {
     }
 
     @Test
-    public void testStatusIsDownWhenDiscoveryIsNotAvailable() {
+    void testStatusIsDownWhenDiscoveryIsNotAvailable() {
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));

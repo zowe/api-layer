@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ZoweJwtSchemeTest {
 
     @Test
-    public void testScheme() {
+    void testScheme() {
         ZoweJwtScheme scheme = new ZoweJwtScheme();
         assertFalse(scheme.isDefault());
         assertEquals(AuthenticationScheme.ZOWE_JWT, scheme.getScheme());

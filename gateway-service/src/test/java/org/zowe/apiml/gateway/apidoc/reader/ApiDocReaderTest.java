@@ -22,7 +22,7 @@ public class ApiDocReaderTest {
 
 
     @Test
-    public void givenFileLocationAsANull_whenLoadIsCalled_thenThrowApiDocReaderException() {
+    void givenFileLocationAsANull_whenLoadIsCalled_thenThrowApiDocReaderException() {
         Exception exception = assertThrows(ApiDocReaderException.class,
             () -> apiDocReader.load(null),
             "Expected exception is not ApiDocReaderException");
@@ -32,7 +32,7 @@ public class ApiDocReaderTest {
 
 
     @Test
-    public void givenEmptyFileLocation_whenLoadIsCalled_thenThrowApiDocReaderException() {
+    void givenEmptyFileLocation_whenLoadIsCalled_thenThrowApiDocReaderException() {
         Exception exception = assertThrows(ApiDocReaderException.class,
             () -> apiDocReader.load(""),
             "Expected exception is not ApiDocReaderException");
@@ -42,7 +42,7 @@ public class ApiDocReaderTest {
 
 
     @Test
-    public void givenFileLocation_whenFileIsNotExist_thenThrowApiDocReaderException() {
+    void givenFileLocation_whenFileIsNotExist_thenThrowApiDocReaderException() {
         ApiDocReader apiDocReader = new ApiDocReader();
         Exception exception = assertThrows(ApiDocReaderException.class,
             () -> apiDocReader.load("invalid-path.json"),
@@ -52,7 +52,7 @@ public class ApiDocReaderTest {
     }
 
     @Test
-    public void givenFileLocationWithInvalidJsonContent_whenLoadIsCalled_thenThrowApiDocReaderException() {
+    void givenFileLocationWithInvalidJsonContent_whenLoadIsCalled_thenThrowApiDocReaderException() {
         Exception exception = assertThrows(ApiDocReaderException.class,
             () -> apiDocReader.load("api-doc-invalid-content.json"),
             "Expected exception is not ApiDocReaderException");
@@ -61,7 +61,7 @@ public class ApiDocReaderTest {
     }
 
     @Test
-    public void givenFileLocationWithValidJsonContent_whenLoadIsCalled_thenOpenApiShouldMatchWithJsonContent()
+    void givenFileLocationWithValidJsonContent_whenLoadIsCalled_thenOpenApiShouldMatchWithJsonContent()
         throws IOException {
 
         String actualOpenApi = apiDocReader.load("api-doc.json");
@@ -72,7 +72,7 @@ public class ApiDocReaderTest {
     }
 
     @Test
-    public void givenFileLocationNameWithSpaces_whenFileExists_thenOpenApiShouldMatchWithJsonContent()
+    void givenFileLocationNameWithSpaces_whenFileExists_thenOpenApiShouldMatchWithJsonContent()
         throws IOException {
 
         String actualOpenApi = apiDocReader.load(" api-doc.json ");
