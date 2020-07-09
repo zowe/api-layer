@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gateway.routing;
 
+import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
@@ -23,6 +24,7 @@ import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final DiscoveryClient discovery;
@@ -40,10 +42,19 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
         this.properties = properties;
         this.routedServicesUsers = routedServicesUsers;
         this.eurekaMetadataParser = new EurekaMetadataParser();
+
     }
 
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
+
+
+    private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
+
+    public void registerLoadBalancer(DynamicServerListLoadBalancer loadBalancer) {
+        String loadBalancerName = loadBalancer.getName();
+        loadBalancerRegistry.put(loadBalancerName, loadBalancer);
+    }
 
     /**
      * Suppressing warnings instead of resolving them to match the original class
@@ -52,6 +63,7 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     @Override
     @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S1075", "squid:S3776"})
     protected LinkedHashMap<String, ZuulProperties.ZuulRoute> locateRoutes() {
+        loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>(super.locateRoutes());
         if (this.discovery != null) {
             Map<String, ZuulProperties.ZuulRoute> staticServices = new LinkedHashMap<>();

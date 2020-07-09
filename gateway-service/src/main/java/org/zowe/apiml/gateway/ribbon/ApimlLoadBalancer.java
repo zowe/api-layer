@@ -13,6 +13,7 @@ import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
 import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
+import org.zowe.apiml.gateway.routing.ApimlRouteLocator;
 
 /**
  * Custom implementation of load balancer. This implementation register on creating into ServiceCacheEvictor. It allows
@@ -34,10 +35,10 @@ public class ApimlLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T
         ServerList<T> serverList,
         ServerListFilter<T> filter,
         ServerListUpdater serverListUpdater,
-        ServiceCacheEvictor serviceCacheEvictor
+        ApimlRouteLocator apimlRouteLocator
     ) {
         super(clientConfig, rule, ping, serverList, filter, serverListUpdater);
-        serviceCacheEvictor.registerLoadBalancer(this);
+        apimlRouteLocator.registerLoadBalancer(this);
     }
 
     /**

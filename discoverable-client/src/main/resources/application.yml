@@ -23,7 +23,7 @@ spring:
 apiml:
     enabled: true
     service:
-        preferIpAddress: false
+        preferIpAddress: true
 
         serviceId: discoverableclient
         title: Service Spring Onboarding Enabler sample application API

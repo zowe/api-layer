@@ -45,7 +45,6 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
 
     private boolean evictAll = false;
     private HashSet<ServiceRef> toEvict = new HashSet<>();
-    private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
 
     public ServiceCacheEvictor(
         ApimlDiscoveryClient apimlDiscoveryClient,
@@ -60,10 +59,7 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
         this.zuulHandlerMapping = zuulHandlerMapping;
     }
 
-    public void registerLoadBalancer(DynamicServerListLoadBalancer loadBalancer) {
-        String loadBalancerName = loadBalancer.getName();
-        loadBalancerRegistry.put(loadBalancerName, loadBalancer);
-    }
+
 
 
     public synchronized void evictCacheService(String serviceId) {
@@ -82,13 +78,13 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
             if (!evictAll && toEvict.isEmpty()) return;
             if (evictAll) {
                 serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
-                loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
+//                loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
                 evictAll = false;
             } else {
                 toEvict.forEach(ServiceRef::evict);
                 toEvict.clear();
             }
-            loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
+
             refreshRouts(event);
         }
     }
