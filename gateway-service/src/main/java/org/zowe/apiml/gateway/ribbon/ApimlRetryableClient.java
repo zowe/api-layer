@@ -38,7 +38,6 @@ public class ApimlRetryableClient extends RetryableRibbonLoadBalancingHttpClient
      * a {@link RibbonLoadBalancerClient.RibbonServer} that is not fit for our use. Namely, it's getUri() method always returns http scheme, causing the
      * retryable client to always call http. We have stored the instance info from the load balancer in the context
      * so we recreate EurekaServiceInstance here, which correctly resolves whether instance is http or https when asked.
-     *
      * @param serviceId
      * @return EurekaServiceInstance
      */
