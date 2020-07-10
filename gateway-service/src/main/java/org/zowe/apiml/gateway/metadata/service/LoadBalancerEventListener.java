@@ -10,10 +10,7 @@
 package org.zowe.apiml.gateway.metadata.service;
 
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
-import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -21,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Order(10)
-public class LoadBalancerEventListener implements ApplicationListener<ApplicationEvent> {
 public class LoadBalancerEventListener extends RefreshEventListener {
 
     private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
