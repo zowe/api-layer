@@ -50,6 +50,6 @@ class ServiceNotFoundCheckTest {
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage<>("org.zowe.apiml.common.endPointNotFound", MessageType.ERROR, "ZWEAM104E", "The endpoint you are looking for 'serviceId' could not be located")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.common.endPointNotFound", MessageType.ERROR, "ZWEAM104E", "The endpoint you are looking for 'serviceId' could not be located")));
     }
 }

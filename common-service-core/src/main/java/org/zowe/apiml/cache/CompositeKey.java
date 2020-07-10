@@ -9,11 +9,11 @@
  */
 package org.zowe.apiml.cache;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * CompositeKey replace default class using in cache org.springframework.cache.interceptor.SimpleKey. Original
@@ -42,7 +42,7 @@ public class CompositeKey implements Serializable {
     }
 
     public boolean equals(int i, Object o) {
-        return ObjectUtils.equals(this.values[i], o);
+        return Objects.equals(this.values[i], o);
     }
 
     public int size() {

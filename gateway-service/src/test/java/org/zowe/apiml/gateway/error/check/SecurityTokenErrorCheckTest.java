@@ -75,7 +75,7 @@ class SecurityTokenErrorCheckTest {
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage<>("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
     }
 
     @Test
@@ -94,7 +94,7 @@ class SecurityTokenErrorCheckTest {
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage<>("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
     }
 }
 

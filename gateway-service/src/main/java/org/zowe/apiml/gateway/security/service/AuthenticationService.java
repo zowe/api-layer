@@ -188,8 +188,9 @@ public class AuthenticationService {
 
     private Claims validateAndParseLocalJwtToken(String jwtToken) {
         try {
-            return Jwts.parser()
+            return Jwts.parserBuilder()
                 .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
+                .build()
                 .parseClaimsJws(jwtToken)
                 .getBody();
         } catch (RuntimeException exception) {
