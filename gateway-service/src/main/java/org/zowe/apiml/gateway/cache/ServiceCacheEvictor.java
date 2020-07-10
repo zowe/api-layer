@@ -76,7 +76,7 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
     @Value
     private class ServiceRef {
 
-        private final String serviceId;
+        String serviceId;
 
         public void evict() {
             serviceCacheEvicts.forEach(x -> x.evictCacheService(serviceId));

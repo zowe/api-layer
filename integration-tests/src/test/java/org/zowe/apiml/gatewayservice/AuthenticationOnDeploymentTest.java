@@ -14,7 +14,6 @@ import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Status;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.Flaky;
@@ -96,12 +95,10 @@ public class AuthenticationOnDeploymentTest {
                 .waitForGatewayRegistration(2, TIMEOUT);
 
             // on each gateway make calls (count same as instances) to service
-            service1.getGatewayVerifyUrls().forEach(x -> {
-                given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                    .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
+            service1.getGatewayVerifyUrls().forEach(x -> given()
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                .when().get(x + "/test")
+                .then().statusCode(is(SC_OK)));
             service2.getGatewayVerifyUrls().forEach(x -> {
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
@@ -210,18 +207,15 @@ public class AuthenticationOnDeploymentTest {
             service3.addVerifyServlet().start();
             for (int i = 0; i < 10; i++) {
 
-                System.out.println("Counter: " + i);
                 ports.forEach(port -> {
                     given().when()
                         .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + port + "/status?value=OUT_OF_SERVICE")
                         .then().statusCode(SC_OK);
                 });
-                System.out.println("3 OUT_OF_SERVICE");
                 Thread.sleep(100);
                 given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678 + "/status?value=UP")
                     .then().statusCode(SC_OK);
-                System.out.println("1 UP 2 OUT_OF_SERVICE");
                 Thread.sleep(100);
                 service1.getGatewayVerifyUrls().forEach(x ->
                     given()
@@ -232,7 +226,6 @@ public class AuthenticationOnDeploymentTest {
 //                unregister service1
                 given().when().delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678).then().statusCode(SC_OK);
 
-                System.out.println(" 2 OUT_OF_SERVICE");
                 Thread.sleep(100);
 //                set service2 UP
                 given().when()
@@ -240,7 +233,6 @@ public class AuthenticationOnDeploymentTest {
                     .then().statusCode(SC_OK);
 
 //                call service2
-                System.out.println("1 UP 1 OUT_OF_SERVICE");
                 Thread.sleep(100);
                 service2.getGatewayVerifyUrls().forEach(x ->
                     given()
@@ -254,7 +246,6 @@ public class AuthenticationOnDeploymentTest {
                     .then().statusCode(SC_OK);
 
 //                call service3
-                System.out.println("2 UP");
                 Thread.sleep(100);
                 service3.getGatewayVerifyUrls().forEach(x ->
                     given()
@@ -263,7 +254,6 @@ public class AuthenticationOnDeploymentTest {
                 );
 
                 service1.start("UP");
-                System.out.println("3 UP");
                 Thread.sleep(100);
             }
 
