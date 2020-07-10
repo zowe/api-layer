@@ -26,6 +26,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.IOException;
@@ -56,7 +57,7 @@ class TokenServiceHttpsJwt implements TokenService {
             this::extractToken);
     }
 
-    private ClientWithResponse loginWithCredentials(String userId, String password) throws Exception {
+    private ClientWithResponse loginWithCredentials(String userId, String password) throws ZaasConfigurationException, IOException  {
         CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
@@ -74,7 +75,7 @@ class TokenServiceHttpsJwt implements TokenService {
             this::extractToken);
     }
 
-    private ClientWithResponse loginWithHeader(String authorizationHeader) throws Exception {
+    private ClientWithResponse loginWithHeader(String authorizationHeader) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
@@ -88,7 +89,7 @@ class TokenServiceHttpsJwt implements TokenService {
             this::extractZaasToken);
     }
 
-    private ClientWithResponse queryWithJwtToken(String jwtToken) throws Exception {
+    private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
         BasicCookieStore cookieStore = prepareCookieWithToken(jwtToken);
         CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore(cookieStore);
         HttpGet httpGet = new HttpGet(queryEndpoint);
@@ -188,6 +189,6 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     interface Operation {
-        ClientWithResponse request() throws Exception;
+        ClientWithResponse request() throws ZaasConfigurationException, IOException;
     }
 }

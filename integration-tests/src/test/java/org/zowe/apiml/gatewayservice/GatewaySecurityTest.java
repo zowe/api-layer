@@ -50,7 +50,7 @@ public class GatewaySecurityTest {
 
     //@formatter:off
     @Test
-    public void accessProtectedEndpointWithoutCredentials() {
+    void accessProtectedEndpointWithoutCredentials() {
         given()
         .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
@@ -84,7 +84,7 @@ public class GatewaySecurityTest {
     }
 
     @Test
-    public void accessProtectedEndpointWithInvalidToken() {
+    void accessProtectedEndpointWithInvalidToken() {
         String invalidToken = "badToken";
 
         given()
@@ -97,7 +97,7 @@ public class GatewaySecurityTest {
 
 
     @Test
-    public void accessProtectedEndpointWithInvalidCredentials() {
+    void accessProtectedEndpointWithInvalidCredentials() {
         given()
             .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
         .when()
@@ -107,7 +107,7 @@ public class GatewaySecurityTest {
     }
 
     @Test
-    public void verifyHttpHeaders() {
+    void verifyHttpHeaders() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         Map<String, String> expectedHeaders = new HashMap<>();

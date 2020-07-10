@@ -73,7 +73,7 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void givenSingleInstance_WhenNotConfigured_ShouldFilter() {
+    void givenSingleInstance_WhenNotConfigured_ShouldFilter() {
         List<ServiceInstance> instanceList = new ArrayList<>();
         instanceList.add(serviceInstanceWithoutConfiguration);
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(instanceList);
@@ -82,7 +82,7 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void givenSingleInstance_WhenConfigured_ShouldNotFilter() {
+    void givenSingleInstance_WhenConfigured_ShouldNotFilter() {
         List<ServiceInstance> instanceList = new ArrayList<>();
         instanceList.add(serviceInstanceWithConfiguration);
         when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(instanceList);
@@ -91,19 +91,19 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void shouldReturnFilterType() {
+    void shouldReturnFilterType() {
         String filterType = this.filter.filterType();
         assertEquals("pre", filterType);
     }
 
     @Test
-    public void shouldReturnFilterOrder() {
+    void shouldReturnFilterOrder() {
         int filterOrder = this.filter.filterOrder();
         assertEquals(7, filterOrder);
     }
 
     @Test
-    public void givenMultipleInstances_WhenMixedSetup_ShouldBePesimistic() {
+    void givenMultipleInstances_WhenMixedSetup_ShouldBePesimistic() {
         List<ServiceInstance> instanceList = new ArrayList<>();
         instanceList.add(serviceInstanceWithoutConfiguration);
         instanceList.add(serviceInstanceWithConfiguration);
@@ -113,7 +113,7 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void shouldRejectRequestsWithEncodedCharacters() {
+    void shouldRejectRequestsWithEncodedCharacters() {
         RequestContext context = RequestContext.getCurrentContext();
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setRequestURI("/He%2f%2f0%2dwor%2fd");
@@ -125,7 +125,7 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void shouldAllowRequestsWithoutEncodedCharacters() {
+    void shouldAllowRequestsWithoutEncodedCharacters() {
         RequestContext context = RequestContext.getCurrentContext();
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setRequestURI("/HelloWorld");
@@ -137,7 +137,7 @@ public class EncodedCharactersFilterTest {
     }
 
     @Test
-    public void shouldPassNullRequest() {
+    void shouldPassNullRequest() {
         RequestContext context = RequestContext.getCurrentContext();
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setRequestURI(null);

@@ -61,7 +61,7 @@ public class SecurityTokenErrorCheckTest {
 
 
     @Test
-    public void shouldReturnCauseMessageWhenTokenExpireException() {
+    void shouldReturnCauseMessageWhenTokenExpireException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         TokenExpireException tokenExpireException = new TokenExpireException("TOKEN_EXPIRE");
 
@@ -79,7 +79,7 @@ public class SecurityTokenErrorCheckTest {
     }
 
     @Test
-    public void shouldReturnCauseMessageWhenTokenNotValidException() {
+    void shouldReturnCauseMessageWhenTokenNotValidException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         TokenNotValidException tokenNotValidException = new TokenNotValidException("TOKEN_NOT_VALID");
 

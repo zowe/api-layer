@@ -34,7 +34,7 @@ public class InMemoryUserDetailsServiceTest {
     }
 
     @Test
-    public void shouldEncodePasswordAndReturnFoundUsername() {
+    void shouldEncodePasswordAndReturnFoundUsername() {
         Mockito.when(encoder.encode("user")).thenReturn("hashcodeUser");
 
         UserDetails userDetails = inMemoryUserDetailsService.loadUserByUsername("user");
@@ -48,7 +48,7 @@ public class InMemoryUserDetailsServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfUsernameNotFound() {
+    void shouldThrowExceptionIfUsernameNotFound() {
         Exception exception = assertThrows(UsernameNotFoundException.class,
             () -> inMemoryUserDetailsService.loadUserByUsername("andrea"),
             "Expected exception is not UsernameNotFoundException");

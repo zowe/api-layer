@@ -179,7 +179,7 @@ public class PassTicketTest {
     }
 
     @Test
-    public void doTicketWithInvalidMethod() {
+    void doTicketWithInvalidMethod() {
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" + TICKET_ENDPOINT + "'";
 
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -196,7 +196,7 @@ public class PassTicketTest {
     }
 
     @Test
-    public void doTicketWithoutCertificate() {
+    void doTicketWithoutCertificate() {
         String jwt = gatewayToken();
         TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
 
@@ -211,7 +211,7 @@ public class PassTicketTest {
     }
 
     @Test
-    public void doTicketWithoutToken() {
+    void doTicketWithoutToken() {
         String expectedMessage = "No authorization token provided for URL '" + TICKET_ENDPOINT + "'";
 
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
@@ -228,7 +228,7 @@ public class PassTicketTest {
     }
 
     @Test
-    public void doTicketWithInvalidCookie() {
+    void doTicketWithInvalidCookie() {
         String jwt = "invalidToken";
         String expectedMessage = "Token is not valid for URL '" + TICKET_ENDPOINT + "'";
 
@@ -247,7 +247,7 @@ public class PassTicketTest {
     }
 
     @Test
-    public void doTicketWithInvalidHeader() {
+    void doTicketWithInvalidHeader() {
         String jwt = "invalidToken";
         String expectedMessage = "Token is not valid for URL '" + TICKET_ENDPOINT + "'";
 
@@ -266,7 +266,7 @@ public class PassTicketTest {
     }
 
     @Test
-    public void doTicketWithoutApplicationName() {
+    void doTicketWithoutApplicationName() {
         String expectedMessage = "The 'applicationName' parameter name is missing.";
 
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());

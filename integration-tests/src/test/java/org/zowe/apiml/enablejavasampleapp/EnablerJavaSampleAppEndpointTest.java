@@ -36,7 +36,7 @@ public class EnablerJavaSampleAppEndpointTest {
     }
 
     @Test
-    public void shouldGetUI() {
+    void shouldGetUI() {
         URI uri = HttpRequestUtils.getUriFromGateway(UI_V1_PATH);
 
         given()
@@ -48,7 +48,7 @@ public class EnablerJavaSampleAppEndpointTest {
     }
 
     @Test
-    public void shouldGetApplicationInfo() {
+    void shouldGetApplicationInfo() {
         URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_PATH);
 
         given()
@@ -61,7 +61,7 @@ public class EnablerJavaSampleAppEndpointTest {
 
 
     @Test
-    public void shouldGetHealth() {
+    void shouldGetHealth() {
         URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
         given()
@@ -74,7 +74,7 @@ public class EnablerJavaSampleAppEndpointTest {
     }
 
     @Test
-    public void shouldGetGreeting() {
+    void shouldGetGreeting() {
         URI uri = HttpRequestUtils.getUriFromGateway(GREETING_PATH);
 
         given()
@@ -86,7 +86,7 @@ public class EnablerJavaSampleAppEndpointTest {
     }
 
     @Test
-    public void shouldGetGreetingWithName() {
+    void shouldGetGreetingWithName() {
         URI uri = HttpRequestUtils.getUriFromGateway(GREETING_WITH_NAME_PATH);
 
         given()

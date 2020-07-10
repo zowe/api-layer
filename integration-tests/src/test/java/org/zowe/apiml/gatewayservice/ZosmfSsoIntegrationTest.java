@@ -66,7 +66,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    public void doZosmfCallWithValidCookie() {
+    void doZosmfCallWithValidCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
 
@@ -82,7 +82,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    public void doZosmfCallWithValidLtpaCookie() {
+    void doZosmfCallWithValidLtpaCookie() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
 
@@ -100,7 +100,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    public void doZosmfCallWithValidBasicHeader() {
+    void doZosmfCallWithValidBasicHeader() {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
 
@@ -116,7 +116,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    public void doZosmfCallWithInvalidToken() {
+    void doZosmfCallWithInvalidToken() {
         String invalidToken = "token";
         String expectedMessage = "Token is not valid";
 
@@ -130,7 +130,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    public void doZosmfCallWithInvalidCookie() {
+    void doZosmfCallWithInvalidCookie() {
         String invalidToken = "token";
         String expectedMessage = "Token is not valid";
 
@@ -144,7 +144,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    public void doZosmfCallWithoutToken() {
+    void doZosmfCallWithoutToken() {
         given()
             .header("X-CSRF-ZOSMF-HEADER", "zosmf")
         .when()
@@ -154,7 +154,7 @@ public class ZosmfSsoIntegrationTest {
     }
 
     @Test
-    public void doZosmfCallWithEmptyHeader() {
+    void doZosmfCallWithEmptyHeader() {
         String emptyToken = " ";
 
         given()
@@ -168,7 +168,7 @@ public class ZosmfSsoIntegrationTest {
 
 
     @Test
-    public void doZosmfCallWithEmptyCookie() {
+    void doZosmfCallWithEmptyCookie() {
         String emptyToken = "";
 
         given()

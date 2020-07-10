@@ -36,7 +36,7 @@ public class WebSocketRoutedSessionTest {
     }
 
     @Test
-    public void givenValidServerAndClientSession_whenTheDetailsAreRequested_thenTheDetailsAreReturnedAsStrings() throws Exception {
+    void givenValidServerAndClientSession_whenTheDetailsAreRequested_thenTheDetailsAreReturnedAsStrings() throws Exception {
         String sessionId = "123";
         String clientUriPath = "ws://localhost:8080/petstore";
         String serverUriPath = "ws://gateway:8080/petstore";

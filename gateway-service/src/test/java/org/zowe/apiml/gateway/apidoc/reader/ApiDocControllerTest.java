@@ -48,7 +48,7 @@ public class ApiDocControllerTest {
     }
 
     @Test
-    public void callApiDocEndpoint() throws Exception {
+    void callApiDocEndpoint() throws Exception {
         String expectedOpenApi = JsonReaderUtil.getJsonStringFromResource("api-doc.json");
         Mockito.when(apiDocReader.load(any())).thenReturn(expectedOpenApi);
 

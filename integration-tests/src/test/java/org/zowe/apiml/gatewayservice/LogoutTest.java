@@ -47,7 +47,7 @@ public class LogoutTest {
     }
 
     @Test
-    public void testLogout() {
+    void testLogout() {
         // make login
         String jwt = SecurityUtils.gatewayToken();
 

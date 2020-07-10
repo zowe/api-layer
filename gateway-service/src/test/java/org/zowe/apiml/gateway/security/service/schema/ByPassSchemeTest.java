@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 public class ByPassSchemeTest {
 
     @Test
-    public void testScheme() {
+    void testScheme() {
         ByPassScheme scheme = new ByPassScheme();
         assertTrue(scheme.isDefault());
         assertEquals(AuthenticationScheme.BYPASS, scheme.getScheme());
@@ -34,7 +34,7 @@ public class ByPassSchemeTest {
     }
 
     @Test
-    public void testApplyToRequest() {
+    void testApplyToRequest() {
         HttpRequest request = mock(HttpRequest.class);
         ByPassScheme scheme = new ByPassScheme();
         AuthenticationCommand cmd = scheme.createCommand(null, null);

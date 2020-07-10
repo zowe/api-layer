@@ -40,7 +40,7 @@ public class ServiceNotFoundCheckTest {
     }
 
     @Test
-    public void givenNotFoundZuulException_whenTheRequestIsProcessed_then404IsReturned() {
+    void givenNotFoundZuulException_whenTheRequestIsProcessed_then404IsReturned() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         ZuulException exc = new ZuulException(new NotFound(), HttpStatus.NOT_FOUND.value(), "serviceId");
 

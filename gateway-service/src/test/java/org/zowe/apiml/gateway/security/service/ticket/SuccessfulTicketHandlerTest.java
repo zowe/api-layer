@@ -51,7 +51,7 @@ public class SuccessfulTicketHandlerTest {
     }
 
     @Test
-    public void shouldReturnDummyPassTicket() throws JsonProcessingException, UnsupportedEncodingException {
+    void shouldReturnDummyPassTicket() throws JsonProcessingException, UnsupportedEncodingException {
         httpServletRequest.setContent(mapper.writeValueAsBytes(new TicketRequest(APPLICATION_NAME)));
 
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
@@ -63,7 +63,7 @@ public class SuccessfulTicketHandlerTest {
     }
 
     @Test
-    public void shouldFailWhenNoApplicationName() throws UnsupportedEncodingException, JsonProcessingException {
+    void shouldFailWhenNoApplicationName() throws UnsupportedEncodingException, JsonProcessingException {
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
@@ -82,7 +82,7 @@ public class SuccessfulTicketHandlerTest {
     }
 
     @Test
-    public void shouldFailWhenGenerationFails() throws JsonProcessingException, UnsupportedEncodingException {
+    void shouldFailWhenGenerationFails() throws JsonProcessingException, UnsupportedEncodingException {
         httpServletRequest.setContent(mapper.writeValueAsBytes(new TicketRequest(UNKNOWN_APPLID)));
 
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);

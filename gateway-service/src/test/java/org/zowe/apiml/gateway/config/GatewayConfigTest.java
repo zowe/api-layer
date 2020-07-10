@@ -21,7 +21,7 @@ public class GatewayConfigTest {
     private static final String SCHEME = "https";
 
     @Test
-    public void shouldReturnGatewayProperties() {
+    void shouldReturnGatewayProperties() {
         GatewayConfigProperties gatewayConfigProperties = new GatewayConfig().getGatewayConfigProperties(HOST, PORT, SCHEME);
         assertEquals(HOST + ":" + PORT, gatewayConfigProperties.getHostname());
         assertEquals(SCHEME, gatewayConfigProperties.getScheme());

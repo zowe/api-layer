@@ -34,7 +34,7 @@ public class TokenAuthenticationProviderTest {
     }
 
     @Test
-    public void authenticateWithValidToken() {
+    void authenticateWithValidToken() {
         TokenAuthentication tokenAuthentication = new TokenAuthentication("token");
 
         when(tokenService.validateJwtToken(tokenAuthentication)).thenReturn(tokenAuthentication);
@@ -45,7 +45,7 @@ public class TokenAuthenticationProviderTest {
     }
 
     @Test
-    public void supportsAuthentication() {
+    void supportsAuthentication() {
         TokenAuthenticationProvider authenticationProvider = new TokenAuthenticationProvider(tokenService);
 
         assertTrue(authenticationProvider.supports(TokenAuthentication.class));

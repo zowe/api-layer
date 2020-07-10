@@ -48,7 +48,7 @@ public class CacheServiceControllerTest {
     }
 
     @Test
-    public void testEvictAll() throws Exception {
+    void testEvictAll() throws Exception {
         verify(service1, never()).evictCacheAllService();
         verify(service2, never()).evictCacheAllService();
         verify(discoveryClient, never()).fetchRegistry();
@@ -61,7 +61,7 @@ public class CacheServiceControllerTest {
     }
 
     @Test
-    public void testEvict() throws Exception {
+    void testEvict() throws Exception {
         verify(service1, never()).evictCacheService(any());
         verify(service2, never()).evictCacheService(any());
         verify(discoveryClient, never()).fetchRegistry();

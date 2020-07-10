@@ -24,7 +24,7 @@ import javax.servlet.RequestDispatcher;
 
 public class InternalServerErrorControllerTest {
     @Test
-    public void testGenericError() {
+    void testGenericError() {
         MessageService messageService = new YamlMessageService();
         InternalServerErrorController errorController = new InternalServerErrorController(messageService);
 

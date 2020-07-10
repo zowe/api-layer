@@ -65,7 +65,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticate() {
+    void shouldCallAuthenticationManagerAuthenticate() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
@@ -80,7 +80,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldRejectHttpMethods() {
+    void shouldRejectHttpMethods() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
@@ -91,7 +91,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldRejectIfTokenIsNotPresent() {
+    void shouldRejectIfTokenIsNotPresent() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
@@ -101,7 +101,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldRejectIfNotAuthenticatedByCertficate() {
+    void shouldRejectIfNotAuthenticatedByCertficate() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
