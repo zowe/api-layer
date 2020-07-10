@@ -38,7 +38,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 
 @Slf4j
-public class PassTicketTest {
+class PassTicketTest {
 
     private final static EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
     private final static GatewayServiceConfiguration GATEWAY_SERVICE_CONFIGURATION =
@@ -60,7 +60,7 @@ public class PassTicketTest {
     private final static String REQUEST_INFO_ENDPOINT = "/request";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
@@ -68,7 +68,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void accessServiceWithCorrectPassTicket() {
+    void accessServiceWithCorrectPassTicket() {
         String jwt = gatewayToken();
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
@@ -82,7 +82,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void accessServiceWithIncorrectApplId() {
+    void accessServiceWithIncorrectApplId() {
         String jwt = gatewayToken();
         given()
             .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
@@ -97,7 +97,7 @@ public class PassTicketTest {
     //@formatter:off
     @Test
     @TestsNotMeantForZowe
-    public void accessServiceWithIncorrectToken() {
+    void accessServiceWithIncorrectToken() {
         String jwt = "nonsense";
         String expectedMessage = "Token is not valid";
 
@@ -115,7 +115,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void doTicketWithValidCookieAndCertificate() {
+    void doTicketWithValidCookieAndCertificate() {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String jwt = gatewayToken();
         log.info(APPLICATION_NAME);
@@ -148,7 +148,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void doTicketWithValidHeaderAndCertificate() {
+    void doTicketWithValidHeaderAndCertificate() {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
         String jwt = gatewayToken();
         TicketRequest ticketRequest = new TicketRequest(APPLICATION_NAME);
@@ -283,7 +283,7 @@ public class PassTicketTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void doTicketWithInvalidApplicationName() {
+    void doTicketWithInvalidApplicationName() {
         String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
 
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());

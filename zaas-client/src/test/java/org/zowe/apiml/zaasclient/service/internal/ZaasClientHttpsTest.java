@@ -49,7 +49,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ZaasClientHttpsTest {
+class ZaasClientHttpsTest {
     private TokenService tokenService;
     private PassTicketService passTicketService;
 
@@ -74,7 +74,7 @@ public class ZaasClientHttpsTest {
     private static final String EMPTY_STRING = "";
 
     @BeforeEach
-    public void setupMethod() throws Exception {
+    void setupMethod() throws Exception {
         httpsClientProvider = mock(HttpsClientProvider.class);
         statusLine = mock(StatusLine.class);
         headerElement = mock(HeaderElement.class);
@@ -224,7 +224,7 @@ public class ZaasClientHttpsTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidUsernamePassword")
-    public void giveInvalidCredentials_whenLoginIsRequested_thenProperExceptionIsRaised(int statusCode,
+    void giveInvalidCredentials_whenLoginIsRequested_thenProperExceptionIsRaised(int statusCode,
                                                                                         String username, String password,
                                                                                         ZaasClientErrorCodes expectedCode) {
         prepareResponse(statusCode);
@@ -270,7 +270,7 @@ public class ZaasClientHttpsTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidAuthHeaders")
-    public void doLoginWithAuthHeaderInValidUsername(int statusCode, String authHeader, ZaasClientErrorCodes expectedCode) {
+    void doLoginWithAuthHeaderInValidUsername(int statusCode, String authHeader, ZaasClientErrorCodes expectedCode) {
         prepareResponse(statusCode);
 
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));

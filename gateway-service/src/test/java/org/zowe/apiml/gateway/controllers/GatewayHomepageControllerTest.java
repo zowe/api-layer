@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class GatewayHomepageControllerTest {
+class GatewayHomepageControllerTest {
     private AuthConfigurationProperties authConfigurationProperties;
     private DiscoveryClient discoveryClient;
 
@@ -40,7 +40,7 @@ public class GatewayHomepageControllerTest {
     private final String AUTHORIZATION_SERVICE_ID = "zosmf";
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         discoveryClient = mock(DiscoveryClient.class);
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.setProvider("DUMMY");

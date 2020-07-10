@@ -41,20 +41,20 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 
-public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
+class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
     private static final String USERNAME = "USERNAME";
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private HttpBasicPassTicketScheme httpBasicPassTicketScheme;
 
     @BeforeEach
-    public void init() {
+    void init() {
         PassTicketService passTicketService = new PassTicketService();
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearEverythingDown() {
         RequestContext.testSetCurrentContext(null);
     }
 

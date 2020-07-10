@@ -21,12 +21,12 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.REQUEST_URI_KEY;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
-public class LocationFilterTest {
+class LocationFilterTest {
 
     private LocationFilter filter;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         this.filter = new LocationFilter();
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();

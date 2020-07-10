@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { HttpClientProxyConfig.class, HttpClientProxyConfigTest.Config.class })
-public class HttpClientProxyConfigTest {
+class HttpClientProxyConfigTest {
 
     static CloseableHttpClient client1 = mock(CloseableHttpClient.class);
     static CloseableHttpClient client2 = mock(CloseableHttpClient.class);

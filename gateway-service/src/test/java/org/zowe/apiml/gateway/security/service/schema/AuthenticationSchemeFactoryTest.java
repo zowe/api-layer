@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
+class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     private static final AuthenticationCommand COMMAND = mock(AuthenticationCommand.class);
 

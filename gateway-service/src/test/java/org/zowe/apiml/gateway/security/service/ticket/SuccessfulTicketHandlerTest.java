@@ -31,7 +31,7 @@ import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX;
 
 
-public class SuccessfulTicketHandlerTest {
+class SuccessfulTicketHandlerTest {
     private static final String TOKEN = "token";
     private static final String USER = "user";
     private static final String APPLICATION_NAME = "app";
@@ -45,7 +45,7 @@ public class SuccessfulTicketHandlerTest {
     private final TokenAuthentication tokenAuthentication = new TokenAuthentication(USER, TOKEN);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         httpServletResponse.setStatus(HttpStatus.EXPECTATION_FAILED.value());
         assertNotEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
     }

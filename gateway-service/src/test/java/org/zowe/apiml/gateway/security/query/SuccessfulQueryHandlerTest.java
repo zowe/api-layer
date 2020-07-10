@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class SuccessfulQueryHandlerTest {
+class SuccessfulQueryHandlerTest {
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private SuccessfulQueryHandler successfulQueryHandler;
@@ -65,7 +65,7 @@ public class SuccessfulQueryHandlerTest {
     private CacheManager cacheManager;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
         AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();

@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 
-public class ByPassSchemeTest {
+class ByPassSchemeTest {
 
     @Test
     void testScheme() {

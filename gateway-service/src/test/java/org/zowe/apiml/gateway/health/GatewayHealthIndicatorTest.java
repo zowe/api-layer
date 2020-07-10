@@ -24,14 +24,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class GatewayHealthIndicatorTest {
+class GatewayHealthIndicatorTest {
 
     private static final String ZOSMF = "zosmf";
 
     private AuthConfigurationProperties authConfigurationProperties;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
     }

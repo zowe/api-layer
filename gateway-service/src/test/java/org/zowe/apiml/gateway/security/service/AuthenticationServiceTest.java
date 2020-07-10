@@ -123,7 +123,7 @@ public class AuthenticationServiceTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         mockJwtSecurityInitializer();
     }
 

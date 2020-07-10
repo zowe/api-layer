@@ -33,7 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
-public class PageRedirectionFilterTest {
+class PageRedirectionFilterTest {
 
     private static final String SERVICE_ID = "discovered-service";
     private static final String TARGET_SERVER_HOST = "hostA.test.com";
@@ -49,7 +49,7 @@ public class PageRedirectionFilterTest {
     private MockHttpServletResponse response = null;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         discoveryClient = mock(DiscoveryClient.class);
 
         RequestContext ctx = RequestContext.getCurrentContext();

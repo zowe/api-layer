@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-public class AuthControllerTest {
+class AuthControllerTest {
 
     private AuthController authController;
     private MockMvc mockMvc;
@@ -51,7 +51,7 @@ public class AuthControllerTest {
     private JWK jwk1, jwk2, jwk3;
 
     @BeforeEach
-    public void setUp() throws ParseException {
+    void setUp() throws ParseException {
         authController = new AuthController(authenticationService, jwtSecurityInitializer, zosmfServiceFacade);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 

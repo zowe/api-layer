@@ -40,7 +40,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 
 @ExtendWith(MockitoExtension.class)
-public class EncodedCharactersFilterTest {
+class EncodedCharactersFilterTest {
 
     private EncodedCharactersFilter filter;
 
@@ -56,12 +56,12 @@ public class EncodedCharactersFilterTest {
     DiscoveryClient discoveryClient;
 
     @BeforeAll
-    public static void initMessageService() {
+    static void initMessageService() {
         messageService = new YamlMessageService("/gateway-log-messages.yml");
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         filter = new EncodedCharactersFilter(discoveryClient, messageService);
         serviceInstanceWithConfiguration.getMetadata().put(METADATA_KEY, "true");
         serviceInstanceWithoutConfiguration.getMetadata().put(METADATA_KEY, "false");

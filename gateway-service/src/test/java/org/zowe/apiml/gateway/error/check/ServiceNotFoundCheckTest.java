@@ -30,11 +30,11 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class ServiceNotFoundCheckTest {
+class ServiceNotFoundCheckTest {
     private ErrorCheck underTest;
 
     @BeforeEach
-    public void prepareCheckUnderTest() {
+    void prepareCheckUnderTest() {
         MonitoringHelper.initMocks();
         underTest = new ServiceNotFoundCheck(new YamlMessageService());
     }

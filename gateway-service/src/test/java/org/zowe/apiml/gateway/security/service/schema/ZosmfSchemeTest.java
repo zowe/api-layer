@@ -41,7 +41,7 @@ import static org.mockito.Mockito.*;
 import static org.zowe.apiml.gateway.security.service.schema.ZosmfScheme.ZosmfCommand.COOKIE_HEADER;
 
 @ExtendWith(MockitoExtension.class)
-public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
+class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Mock
     private AuthenticationService authenticationService;
@@ -59,7 +59,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     private ZosmfScheme scheme;
 
     @BeforeEach
-    public void prepareContextForTests() {
+    void prepareContextForTests() {
         Calendar calendar = Calendar.getInstance();
         authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
         queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);

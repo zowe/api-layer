@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.*;
 import static org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE;
 
-public class ZaasClientTest {
+class ZaasClientTest {
     private ZaasClient underTest;
     private TokenService tokens;
     private PassTicketService passTickets;
@@ -41,7 +41,7 @@ public class ZaasClientTest {
     private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         tokens = mock(TokenService.class);
         passTickets = mock(PassTicketService.class);
 
@@ -66,7 +66,7 @@ public class ZaasClientTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidUsernamePassword")
-    public void givenFullyInvalidCredentials_whenLoggingIn_thenExceptionIsRaised(String username, String password) {
+    void givenFullyInvalidCredentials_whenLoggingIn_thenExceptionIsRaised(String username, String password) {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> {
             underTest.login(username, password);
         });
@@ -80,7 +80,7 @@ public class ZaasClientTest {
 
     @ParameterizedTest
     @MethodSource("provideNullEmptyArguments")
-    public void givenFullyInvalidAuthorizationHeader_whenLoggingIn_thenExceptionIsRaised(String authorizationHeader) {
+    void givenFullyInvalidAuthorizationHeader_whenLoggingIn_thenExceptionIsRaised(String authorizationHeader) {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> {
             underTest.login(authorizationHeader);
         });
@@ -99,7 +99,7 @@ public class ZaasClientTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidPassTicketSource")
-    public void givenFullyInvalidApplicationId_whenGettingPassticket_thenExceptionIsRaised(String token,
+    void givenFullyInvalidApplicationId_whenGettingPassticket_thenExceptionIsRaised(String token,
                                                                                            String applicationId,
                                                                                            ZaasClientErrorCodes errorCode) {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> {

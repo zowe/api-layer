@@ -45,7 +45,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ZaasClientIntegrationTest {
+class ZaasClientIntegrationTest {
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -104,7 +104,7 @@ public class ZaasClientIntegrationTest {
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         configProperties = ConfigReaderZaasClient.getConfigProperties();
         tokenService = new ZaasClientHttps(configProperties);
     }
@@ -128,7 +128,7 @@ public class ZaasClientIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidUsernamePassword")
-    public void giveInvalidCredentials_whenLoginIsRequested_thenProperExceptionIsRaised(String username, String password, ZaasClientErrorCodes expectedCode) {
+    void giveInvalidCredentials_whenLoginIsRequested_thenProperExceptionIsRaised(String username, String password, ZaasClientErrorCodes expectedCode) {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(username, password));
 
         assertThatExceptionContainValidCode(exception, expectedCode);
@@ -149,7 +149,7 @@ public class ZaasClientIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("provideInvalidAuthHeaders")
-    public void doLoginWithAuthHeaderInValidUsername(String authHeader, ZaasClientErrorCodes expectedCode) {
+    void doLoginWithAuthHeaderInValidUsername(String authHeader, ZaasClientErrorCodes expectedCode) {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.login(authHeader));
 
         assertThatExceptionContainValidCode(exception, expectedCode);

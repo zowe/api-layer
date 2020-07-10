@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @TestPropertySource(locations = "/application.yml")
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 @Import(MockedSecurityInitializer.class)
-public class JwtSecurityInitializerTest {
+class JwtSecurityInitializerTest {
 
     @Autowired
     private JwtSecurityInitializer jwtSecurityInitializer;

@@ -16,7 +16,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.RequestDispatcher;
 
-public class ErrorUtilsTest {
+class ErrorUtilsTest {
     @Test
     void testGetErrorStatus() {
         MockHttpServletRequest request = new MockHttpServletRequest();

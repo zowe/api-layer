@@ -16,7 +16,7 @@ import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class ZoweJwtSchemeTest {
+class ZoweJwtSchemeTest {
 
     @Test
     void testScheme() {

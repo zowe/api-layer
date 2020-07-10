@@ -21,13 +21,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class InMemoryUserDetailsServiceTest {
+class InMemoryUserDetailsServiceTest {
 
     private static BCryptPasswordEncoder encoder;
     private static InMemoryUserDetailsService inMemoryUserDetailsService;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         MonitoringHelper.initMocks();
         encoder = Mockito.mock(BCryptPasswordEncoder.class);
         inMemoryUserDetailsService = new InMemoryUserDetailsService(encoder);

@@ -42,7 +42,7 @@ import static org.junit.Assert.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
 @Import(MessageServiceConfiguration.class)
-public class SecurityTokenErrorCheckTest {
+class SecurityTokenErrorCheckTest {
 
     private static SecurityTokenErrorCheck securityTokenErrorCheck;
 
@@ -50,12 +50,12 @@ public class SecurityTokenErrorCheckTest {
     private MessageService messageService;
 
     @BeforeAll
-    public static void initMocks() {
+    static void initMocks() {
         MonitoringHelper.initMocks();
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         securityTokenErrorCheck = new SecurityTokenErrorCheck(messageService);
     }
 

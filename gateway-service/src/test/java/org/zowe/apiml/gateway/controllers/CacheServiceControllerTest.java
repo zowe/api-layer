@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-public class CacheServiceControllerTest {
+class CacheServiceControllerTest {
 
     private MockMvc mockMvc;
 
@@ -41,7 +41,7 @@ public class CacheServiceControllerTest {
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         CacheServiceController cacheServiceController = new CacheServiceController(
             Arrays.asList(service1, service2), discoveryClient);
         mockMvc = MockMvcBuilders.standaloneSetup(cacheServiceController).build();

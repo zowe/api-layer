@@ -19,7 +19,7 @@ import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 
 import static org.mockito.Mockito.*;
 
-public class AuthProviderInitializerTest {
+class AuthProviderInitializerTest {
 
     private DummyAuthenticationProvider dummyAuthenticationProvider;
     private TokenAuthenticationProvider tokenAuthenticationProvider;
@@ -27,7 +27,7 @@ public class AuthProviderInitializerTest {
     private CertificateAuthenticationProvider certificateAuthenticationProvider;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         dummyAuthenticationProvider = mock(DummyAuthenticationProvider.class);
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);
         zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);

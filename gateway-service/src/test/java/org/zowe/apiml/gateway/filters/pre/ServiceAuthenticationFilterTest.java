@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 @ExtendWith(MockitoExtension.class)
-public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
+class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @Mock
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;

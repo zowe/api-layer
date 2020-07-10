@@ -22,7 +22,7 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
 
-public class ZosmfJwkToPublicKeyTest {
+class ZosmfJwkToPublicKeyTest {
 
     @Test
     void zosmfJwkIsConvertedToPublicKey() throws IOException {

@@ -65,7 +65,7 @@ import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServi
     RetryIfExpiredAspect.class
 })
 @EnableAspectJAutoProxy
-public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
+class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
     @Autowired
     private EurekaClient discoveryClient;
@@ -88,7 +88,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     private ServiceAuthenticationServiceImpl serviceAuthenticationServiceImpl;
 
     @BeforeEach
-    public void init() {
+    void init() {
         lockAndClearRequestContext();
         MockitoAnnotations.initMocks(this);
         RequestContext.testSetCurrentContext(null);
@@ -98,7 +98,7 @@ public class ServiceAuthenticationServiceImplTest extends CurrentRequestContextT
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         unlockRequestContext();
     }
 

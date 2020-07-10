@@ -14,7 +14,7 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import static org.junit.Assert.assertEquals;
 
-public class GatewayConfigTest {
+class GatewayConfigTest {
 
     private static final String HOST = "hostA";
     private static final String PORT = "8888";

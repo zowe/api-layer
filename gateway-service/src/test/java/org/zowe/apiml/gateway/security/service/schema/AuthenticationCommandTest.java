@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 
-public class AuthenticationCommandTest {
+class AuthenticationCommandTest {
 
     @Test
     void testEmptyCommand() {

@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class QueryFilterTest {
+class QueryFilterTest {
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private QueryFilter queryFilter;
@@ -54,7 +54,7 @@ public class QueryFilterTest {
     private AuthenticationService authenticationService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         queryFilter = new QueryFilter("TEST_ENDPOINT",
             authenticationSuccessHandler,
             authenticationFailureHandler,

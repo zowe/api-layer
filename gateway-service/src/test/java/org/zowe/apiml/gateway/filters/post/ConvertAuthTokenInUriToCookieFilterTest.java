@@ -22,7 +22,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContextTest {
+class ConvertAuthTokenInUriToCookieFilterTest extends CleanCurrentRequestContextTest {
 
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private final ConvertAuthTokenInUriToCookieFilter filter = new ConvertAuthTokenInUriToCookieFilter(

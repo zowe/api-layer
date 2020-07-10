@@ -16,7 +16,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ApiDocReaderTest {
+class ApiDocReaderTest {
 
     private final ApiDocReader apiDocReader = new ApiDocReader();
 

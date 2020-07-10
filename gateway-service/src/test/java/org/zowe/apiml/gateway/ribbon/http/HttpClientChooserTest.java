@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.gateway.security.service.schema.ByPassScheme.AUTHENTICATION_SCHEME_BY_PASS_KEY;
 
-public class HttpClientChooserTest {
+class HttpClientChooserTest {
 
 
     CloseableHttpClient clientWithoutCertificate = mock(CloseableHttpClient.class);

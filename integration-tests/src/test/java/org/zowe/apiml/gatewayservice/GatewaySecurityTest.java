@@ -30,7 +30,7 @@ import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class GatewaySecurityTest {
+class GatewaySecurityTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
@@ -44,7 +44,7 @@ public class GatewaySecurityTest {
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
@@ -61,7 +61,7 @@ public class GatewaySecurityTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
+    void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
         .when()
@@ -72,7 +72,7 @@ public class GatewaySecurityTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
+    void loginToGatewayAndAccessProtectedEndpointWithCookie() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         given()

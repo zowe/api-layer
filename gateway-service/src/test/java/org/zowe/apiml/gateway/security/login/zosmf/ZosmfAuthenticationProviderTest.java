@@ -49,7 +49,7 @@ import java.util.EnumMap;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class ZosmfAuthenticationProviderTest {
+class ZosmfAuthenticationProviderTest {
 
     private static final String USERNAME = "user";
     private static final String PASSWORD = "password";
@@ -80,7 +80,7 @@ public class ZosmfAuthenticationProviderTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(USERNAME, PASSWORD);
         authConfigurationProperties = new AuthConfigurationProperties();
         discovery = mock(DiscoveryClient.class);
