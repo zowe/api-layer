@@ -40,8 +40,7 @@ import java.util.stream.StreamSupport;
 @Slf4j
 @RestController
 @RequestMapping("/")
-@Api(tags = {"API Catalog"},
-    description = "Current state information")
+@Api(tags = {"API Catalog"})
 public class ApiCatalogController {
 
     private final CachedProductFamilyService cachedProductFamilyService;
