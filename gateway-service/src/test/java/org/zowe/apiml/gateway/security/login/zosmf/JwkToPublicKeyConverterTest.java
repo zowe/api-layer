@@ -27,7 +27,7 @@ class JwkToPublicKeyConverterTest {
         assertTrue(
                 converter
                         .convertFirstPublicKeyJwkToPem(jwk, "localca", "../keystore/local_ca/localca.keystore.p12",
-                                "PKCS12", "local_ca_password", "local_ca_password")
+                            "PKCS12", "local_ca_password".toCharArray(), "local_ca_password".toCharArray())
                         .contains("-----END CERTIFICATE-----"));
     }
 

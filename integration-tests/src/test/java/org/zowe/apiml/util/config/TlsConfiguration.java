@@ -20,11 +20,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TlsConfiguration {
     private String keyAlias;
-    private String keyPassword;
+    private char[] keyPassword;
     private String keyStoreType;
     private String keyStore;
-    private String keyStorePassword;
+    private char[] keyStorePassword;
     private String trustStoreType;
     private String trustStore;
-    private String trustStorePassword;
+    private char[] trustStorePassword;
 }

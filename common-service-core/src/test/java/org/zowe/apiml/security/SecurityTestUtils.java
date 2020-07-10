@@ -18,7 +18,7 @@ import static org.junit.Assert.fail;
 
 @Slf4j
 public class SecurityTestUtils {
-    private static final String STORE_PASSWORD = "password"; // NOSONAR
+    private static final char[] STORE_PASSWORD = "password".toCharArray(); // NOSONAR
 
     public static HttpsConfig.HttpsConfigBuilder correctHttpsSettings() {
         return SecurityTestUtils.correctHttpsKeyStoreSettings()

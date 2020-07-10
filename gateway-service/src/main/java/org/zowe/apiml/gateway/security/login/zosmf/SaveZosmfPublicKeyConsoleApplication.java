@@ -41,7 +41,9 @@ public class SaveZosmfPublicKeyConsoleApplication {
 
         System.out.printf("Loading public key of z/OSMF at %s\n", jwkUrl);
         try {
-            if (zosmfJwkToPublicKey.updateJwtPublicKeyFile(jwkUrl, filename, args[2], args[3], args[4], args[5], args[6])) {
+            if (zosmfJwkToPublicKey.updateJwtPublicKeyFile(
+                jwkUrl, filename, args[2], args[3], args[4], args[5].toCharArray(), args[6].toCharArray())
+            ) {
                 System.out.printf("Public key of z/OSMF at stored as a certificate to %s\n", filename);
             }
         } catch (FileNotFoundException e) {
@@ -71,7 +73,8 @@ public class SaveZosmfPublicKeyConsoleApplication {
                 .getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true").equalsIgnoreCase("false");
 
         HttpsConfig httpsConfig = HttpsConfig.builder().protocol(protocol).trustStore(trustStore)
-                .trustStoreType(trustStoreType).trustStorePassword(trustStorePassword)
+                .trustStoreType(trustStoreType)
+                .trustStorePassword(trustStorePassword == null ? null : trustStorePassword.toCharArray())
                 .trustStoreRequired(verifySslCertificatesOfServices)
                 .verifySslCertificatesOfServices(verifySslCertificatesOfServices).build();
         return httpsConfig;

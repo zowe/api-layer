@@ -57,21 +57,20 @@ public class JwkToPublicKeyConverter {
      * public key is from JWK. The certificate signed by the provided CA.
      *
      * @param caAlias            Alias of the key with the CA.
-     * @param caKeystore         Keystore where the CA is stored.
+     * @param caKeyStore         Keystore where the CA is stored.
      * @param caKeyStoreType     Type of the keystore (e. g. "pkcs12").
      * @param caKeyStorePassword The password to the key store.
      * @param caKeyPassword      The password to the private key of the CA.
      */
     public String convertFirstPublicKeyJwkToPem(String jwkJson, String caAlias, String caKeyStore,
-            String caKeyStoreType, String caKeyStorePassword, String caKeyPassword) {
+            String caKeyStoreType, char[] caKeyStorePassword, char[] caKeyPassword) {
         try {
             HttpsConfig config = HttpsConfig.builder().keyAlias(caAlias).keyStore(caKeyStore)
                     .keyStoreType(caKeyStoreType).keyStorePassword(caKeyStorePassword).keyPassword(caKeyPassword)
                     .build();
             KeyStore keyStore = SecurityUtils.loadKeyStore(config);
             Certificate caCertificate = keyStore.getCertificate(config.getKeyAlias());
-            PrivateKey caPrivateKey = (PrivateKey) keyStore.getKey(config.getKeyAlias(),
-                    config.getKeyPassword().toCharArray());
+            PrivateKey caPrivateKey = (PrivateKey) keyStore.getKey(config.getKeyAlias(), config.getKeyPassword());
             SubjectPublicKeyInfo publicKey = extractPublicKey(jwkJson);
 
             ContentSigner signer = new JcaContentSignerBuilder("Sha256With" + caPrivateKey.getAlgorithm())

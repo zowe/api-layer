@@ -68,7 +68,7 @@ public class SecurityUtils {
         if (config.getKeyStore() != null) {
             try {
                 KeyStore ks = loadKeyStore(config);
-                char[] keyPasswordInChars = config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray();
+                char[] keyPasswordInChars = config.getKeyPassword();
                 final Key key;
                 if (config.getKeyAlias() != null) {
                     key = ks.getKey(config.getKeyAlias(), keyPasswordInChars);
@@ -185,7 +185,7 @@ public class SecurityUtils {
         if (config.getKeyStore() != null) {
             try {
                 KeyStore ks = loadKeyStore(config);
-                char[] keyPasswordInChars = config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray();
+                char[] keyPasswordInChars = config.getKeyPassword();
                 Key key = null;
                 for (Enumeration<String> e = ks.aliases(); e.hasMoreElements(); ) {
                     String alias = e.nextElement();
@@ -227,7 +227,7 @@ public class SecurityUtils {
             File keyStoreFile = new File(config.getKeyStore());
             inputStream = new FileInputStream(keyStoreFile);
         }
-        ks.load(inputStream, config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray());
+        ks.load(inputStream, config.getKeyStorePassword());
         return ks;
     }
 

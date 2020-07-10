@@ -18,8 +18,8 @@ public class ConfigProperties {
     private String apimlBaseUrl;
     private String keyStoreType;
     private String keyStorePath;
-    private String keyStorePassword;
+    private char[] keyStorePassword;
     private String trustStoreType;
     private String trustStorePath;
-    private String trustStorePassword;
+    private char[] trustStorePassword;
 }
