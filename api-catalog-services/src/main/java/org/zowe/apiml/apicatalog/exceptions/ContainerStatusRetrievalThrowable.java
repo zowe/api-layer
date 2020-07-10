@@ -9,9 +9,9 @@
  */
 package org.zowe.apiml.apicatalog.exceptions;
 
-public class ContainerStatusRetrievalException extends Throwable {
+public class ContainerStatusRetrievalThrowable extends Throwable {
 
-    public ContainerStatusRetrievalException(Throwable e) {
+    public ContainerStatusRetrievalThrowable(Throwable e) {
         super(e);
     }
 }

@@ -9,7 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
+import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
@@ -69,7 +69,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiDocForServices() throws ContainerStatusRetrievalException {
+    public void whenGetSingleContainer_thenPopulateApiDocForServices() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -90,7 +90,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
+    public void whenGetSingleContainer_thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
