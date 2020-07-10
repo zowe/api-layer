@@ -57,6 +57,8 @@ public class ServiceDefinitionProcessor {
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
 
+    private static final String errorParsingStaticDefinitionData = "org.zowe.apiml.discovery.errorParsingStaticDefinitionData";
+
     public ServiceDefinitionProcessor() {
     }
 
@@ -143,11 +145,11 @@ public class ServiceDefinitionProcessor {
         try {
             return mapper.readValue(ymlData, Definition.class);
         } catch (UnrecognizedPropertyException e) {
-            final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName, e.getOriginalMessage());
+            final Message msg = apimlLog.log(errorParsingStaticDefinitionData, ymlFileName, e.getOriginalMessage());
             context.getErrors().add(msg);
             return null;
         } catch (IOException e) {
-            final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName, e.getMessage());
+            final Message msg = apimlLog.log(errorParsingStaticDefinitionData, ymlFileName, e.getMessage());
             context.getErrors().add(msg);
             return null;
         }
@@ -173,13 +175,13 @@ public class ServiceDefinitionProcessor {
                 try {
                     metadata = createMetadata(so, null, null);
                 } catch (ServiceDefinitionException e) {
-                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName, e.getMessage());
+                    final Message msg = apimlLog.log(errorParsingStaticDefinitionData, ymlFileName, e.getMessage());
                     context.getErrors().add(msg);
                 }
                 final ServiceOverride.Mode mode = Optional.ofNullable(so.getMode()).orElse(ServiceOverride.Mode.UPDATE);
                 final ServiceOverrideData sod = new ServiceOverrideData(mode, metadata);
                 if (context.getAdditionalServiceMetadata().put(so.getServiceId(), sod) != null) {
-                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName,
+                    final Message msg = apimlLog.log(errorParsingStaticDefinitionData, ymlFileName,
                         String.format("Additional service metadata of %s in processing file %s were replaced for duplicities", so.getServiceId(), ymlFileName));
                     context.getErrors().add(msg);
                 }
@@ -191,7 +193,7 @@ public class ServiceDefinitionProcessor {
         if (service.getCatalogUiTileId() != null) {
             final CatalogUiTile tile = tiles.get(service.getCatalogUiTileId());
             if (tile == null) {
-                final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName,
+                final Message msg = apimlLog.log(errorParsingStaticDefinitionData, ymlFileName,
                     String.format("The API Catalog UI tile ID %s is invalid. The service %s will not have API Catalog UI tile", service.getCatalogUiTileId(), service.getServiceId()));
                 context.getErrors().add(msg);
             } else {
@@ -223,7 +225,7 @@ public class ServiceDefinitionProcessor {
 
             return output;
         } catch (ServiceDefinitionException e) {
-            final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorParsingStaticDefinitionData", ymlFileName, e.getMessage());
+            final Message msg = apimlLog.log(errorParsingStaticDefinitionData, ymlFileName, e.getMessage());
             context.getErrors().add(msg);
         }
 
