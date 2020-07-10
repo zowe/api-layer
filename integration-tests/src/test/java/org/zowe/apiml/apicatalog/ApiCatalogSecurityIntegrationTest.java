@@ -69,7 +69,7 @@ public class ApiCatalogSecurityIntegrationTest {
 
     //@formatter:off
     @Test
-    void accessProtectedEndpointWithoutCredentials() {
+    public void accessProtectedEndpointWithoutCredentials() {
         String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
 
         given()
@@ -84,7 +84,7 @@ public class ApiCatalogSecurityIntegrationTest {
     }
 
     @Test
-    void accessProtectedEndpointWithBasicAuth() {
+    public void accessProtectedEndpointWithBasicAuth() {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
         .when()
@@ -95,7 +95,7 @@ public class ApiCatalogSecurityIntegrationTest {
     }
 
     @Test
-    void loginToGatewayAndAccessProtectedEndpointWithCookie() {
+    public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         given()
@@ -108,7 +108,7 @@ public class ApiCatalogSecurityIntegrationTest {
     }
 
     @Test
-    void accessProtectedEndpointWithInvalidBasicAuth() {
+    public void accessProtectedEndpointWithInvalidBasicAuth() {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
 
         given()
@@ -122,7 +122,7 @@ public class ApiCatalogSecurityIntegrationTest {
     }
 
     @Test
-    void accessProtectedEndpointWithInvalidCookieCatalog() {
+    public void accessProtectedEndpointWithInvalidCookieCatalog() {
         String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
         String invalidToken = "nonsense";
 
@@ -139,7 +139,7 @@ public class ApiCatalogSecurityIntegrationTest {
     }
 
     @Test
-    void accessProtectedEndpointWithInvalidCookieGateway() {
+    public void accessProtectedEndpointWithInvalidCookieGateway() {
         String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID + endpoint + "'";
         String invalidToken = "nonsense";
 
