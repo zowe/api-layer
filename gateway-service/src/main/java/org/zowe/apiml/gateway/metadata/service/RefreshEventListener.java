@@ -17,15 +17,15 @@ public abstract class RefreshEventListener implements ApplicationListener<Applic
 
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
-        if(isRefreshEvent(event)){
+        if (isRefreshEvent(event)) {
             refresh();
         }
     }
 
-    abstract void refresh();
+    public abstract void refresh();
 
 
-    boolean isRefreshEvent(ApplicationEvent event){
-      return event instanceof HeartbeatEvent;
+    boolean isRefreshEvent(ApplicationEvent event) {
+        return event instanceof HeartbeatEvent;
     }
 }

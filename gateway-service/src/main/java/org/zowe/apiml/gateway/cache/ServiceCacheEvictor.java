@@ -9,12 +9,9 @@
  */
 package org.zowe.apiml.gateway.cache;
 
-import com.netflix.discovery.CacheRefreshedEvent;
-import com.netflix.discovery.EurekaEvent;
-import com.netflix.discovery.EurekaEventListener;
 import lombok.Value;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
+import org.zowe.apiml.gateway.metadata.service.RefreshEventListener;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
 import java.util.HashSet;
@@ -31,7 +28,7 @@ import java.util.List;
  * updates.
  */
 @Component
-public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvict {
+public class ServiceCacheEvictor extends RefreshEventListener implements ServiceCacheEvict {
 
     private List<ServiceCacheEvict> serviceCacheEvicts;
 
@@ -39,10 +36,8 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
     private HashSet<ServiceRef> toEvict = new HashSet<>();
 
     public ServiceCacheEvictor(
-        ApimlDiscoveryClient apimlDiscoveryClient,
         List<ServiceCacheEvict> serviceCacheEvicts
     ) {
-        apimlDiscoveryClient.registerEventListener(this);
         this.serviceCacheEvicts = serviceCacheEvicts;
         this.serviceCacheEvicts.remove(this);
     }
@@ -59,16 +54,14 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
     }
 
     @Override
-    public synchronized void onEvent(EurekaEvent event) {
-        if (event instanceof CacheRefreshedEvent) {
-            if (!evictAll && toEvict.isEmpty()) return;
-            if (evictAll) {
-                serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
-                evictAll = false;
-            } else {
-                toEvict.forEach(ServiceRef::evict);
-                toEvict.clear();
-            }
+    public synchronized void refresh() {
+        if (!evictAll && toEvict.isEmpty()) return;
+        if (evictAll) {
+            serviceCacheEvicts.forEach(ServiceCacheEvict::evictCacheAllService);
+            evictAll = false;
+        } else {
+            toEvict.forEach(ServiceRef::evict);
+            toEvict.clear();
         }
     }
 
