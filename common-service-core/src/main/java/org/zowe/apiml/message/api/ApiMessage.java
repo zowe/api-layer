@@ -12,9 +12,7 @@ package org.zowe.apiml.message.api;
 import org.zowe.apiml.message.core.MessageType;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.EqualsAndHashCode;
-import lombok.Setter;
-
-import java.util.List;
+import lombok.Setter;;
 
 /**
  * User facing messages that can be provided with API responses.
@@ -25,7 +23,7 @@ import java.util.List;
 @Setter
 @EqualsAndHashCode
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ApiMessage<T> {
+public class ApiMessage {
 
     private MessageType messageType;
     private String messageNumber;
@@ -33,7 +31,6 @@ public class ApiMessage<T> {
     private String messageAction;
     private String messageReason;
     private String messageKey;
-    private List<T> messageParameters;
     private String messageInstanceId;
     private String messageComponent;
     private String messageSource;
@@ -95,13 +92,6 @@ public class ApiMessage<T> {
      */
     public String getMessageKey() {
         return messageKey;
-    }
-
-    /**
-     * Optional error message parameters. Used for formatting of localized messages.
-     */
-    public List<T> getMessageParameters() {
-        return messageParameters;
     }
 
     /**
