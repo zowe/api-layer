@@ -9,12 +9,6 @@
  */
 package org.zowe.apiml.gateway.routing;
 
-import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.product.routing.RoutedServices;
-import org.zowe.apiml.product.routing.RoutedServicesUser;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -22,9 +16,13 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.util.StringUtils;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.product.routing.RoutedServices;
+import org.zowe.apiml.product.routing.RoutedServicesUser;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final DiscoveryClient discovery;
@@ -33,10 +31,10 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final EurekaMetadataParser eurekaMetadataParser;
 
     public ApimlRouteLocator(String servletPath,
-                      DiscoveryClient discovery,
-                      ZuulProperties properties,
-                      ServiceRouteMapper serviceRouteMapper,
-                      List<RoutedServicesUser> routedServicesUsers) {
+                             DiscoveryClient discovery,
+                             ZuulProperties properties,
+                             ServiceRouteMapper serviceRouteMapper,
+                             List<RoutedServicesUser> routedServicesUsers) {
         super(servletPath, discovery, properties, serviceRouteMapper, null);
         this.discovery = discovery;
         this.properties = properties;
@@ -47,8 +45,6 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
 
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
-
-
 
 
     /**

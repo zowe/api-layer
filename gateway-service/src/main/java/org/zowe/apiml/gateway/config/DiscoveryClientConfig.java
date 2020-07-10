@@ -13,24 +13,15 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.netflix.zuul.ZuulServerAutoConfiguration;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
-import org.zowe.apiml.gateway.metadata.service.DiscoveryClientEventListener;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
@@ -62,13 +53,6 @@ public class DiscoveryClientConfig {
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
 
         return discoveryClientClient;
-    }
-
-
-
-    @Bean
-    public ApplicationListener<ApplicationEvent> loadBalancerEventListener() {
-        return new DiscoveryClientEventListener();
     }
 
 }

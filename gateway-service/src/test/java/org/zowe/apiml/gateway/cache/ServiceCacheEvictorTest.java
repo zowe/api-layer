@@ -45,10 +45,6 @@ class ServiceCacheEvictorTest {
         when(apimlLoadBalancer2.getName()).thenReturn("service2");
         when(apimlLoadBalancer3.getName()).thenReturn("service3");
         when(apimlLoadBalancer4.getName()).thenReturn("service4");
-        serviceCacheEvictor.registerLoadBalancer(apimlLoadBalancer1);
-        serviceCacheEvictor.registerLoadBalancer(apimlLoadBalancer2);
-        serviceCacheEvictor.registerLoadBalancer(apimlLoadBalancer3);
-        serviceCacheEvictor.registerLoadBalancer(apimlLoadBalancer4);
     }
 
     @Test
@@ -63,7 +59,6 @@ class ServiceCacheEvictorTest {
             verify(x, times(1)).evictCacheService("service1");
             verify(x, times(1)).evictCacheService("service2");
         });
-        verify(apimlLoadBalancer1, times(1)).updateListOfServers();
 
         serviceCacheEvictor.evictCacheService("service3");
         serviceCacheEvictor.evictCacheAllService();
@@ -73,7 +68,6 @@ class ServiceCacheEvictorTest {
             verify(x, never()).evictCacheService("service3");
             verify(x, times(1)).evictCacheAllService();
         });
-        verify(apimlLoadBalancer3, times(3)).updateListOfServers();
     }
 
 }

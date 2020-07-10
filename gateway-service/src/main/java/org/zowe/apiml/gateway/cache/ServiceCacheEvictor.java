@@ -13,8 +13,6 @@ import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import lombok.Value;
-import org.springframework.cloud.netflix.zuul.filters.RefreshableRouteLocator;
-import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
@@ -37,23 +35,16 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
 
     private List<ServiceCacheEvict> serviceCacheEvicts;
 
-    private final List<RefreshableRouteLocator> refreshableRouteLocators;
-    private final ZuulHandlerMapping zuulHandlerMapping;
-
     private boolean evictAll = false;
     private HashSet<ServiceRef> toEvict = new HashSet<>();
 
     public ServiceCacheEvictor(
         ApimlDiscoveryClient apimlDiscoveryClient,
-        List<ServiceCacheEvict> serviceCacheEvicts,
-        List<RefreshableRouteLocator> refreshableRouteLocators,
-        ZuulHandlerMapping zuulHandlerMapping
+        List<ServiceCacheEvict> serviceCacheEvicts
     ) {
         apimlDiscoveryClient.registerEventListener(this);
         this.serviceCacheEvicts = serviceCacheEvicts;
         this.serviceCacheEvicts.remove(this);
-        this.refreshableRouteLocators = refreshableRouteLocators;
-        this.zuulHandlerMapping = zuulHandlerMapping;
     }
 
 
@@ -78,14 +69,6 @@ public class ServiceCacheEvictor implements EurekaEventListener, ServiceCacheEvi
                 toEvict.forEach(ServiceRef::evict);
                 toEvict.clear();
             }
-            refreshRouts(event);
-        }
-    }
-
-    public void refreshRouts(EurekaEvent event) {
-        if (event instanceof CacheRefreshedEvent) {
-            refreshableRouteLocators.forEach(RefreshableRouteLocator::refresh);
-            zuulHandlerMapping.setDirty(true);
         }
     }
 

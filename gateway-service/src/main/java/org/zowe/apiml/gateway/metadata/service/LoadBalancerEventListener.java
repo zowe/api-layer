@@ -9,26 +9,21 @@
  */
 package org.zowe.apiml.gateway.metadata.service;
 
-import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.loadbalancer.DynamicServerListLoadBalancer;
-import lombok.AllArgsConstructor;
 import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
-import org.springframework.cloud.netflix.zuul.filters.RefreshableRouteLocator;
-import org.springframework.cloud.netflix.zuul.web.ZuulHandlerMapping;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@DependsOn({"ribbonMetadataProcessor"})
-public class DiscoveryClientEventListener implements ApplicationListener<ApplicationEvent>, EurekaEventListener {
+@DependsOn({"zuulRefreshRoutesListener"})
+public class LoadBalancerEventListener implements ApplicationListener<ApplicationEvent>, EurekaEventListener {
 
     private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
 
@@ -45,7 +40,6 @@ public class DiscoveryClientEventListener implements ApplicationListener<Applica
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof HeartbeatEvent) {
-            HeartbeatEvent e = (HeartbeatEvent) event;
             loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
         }
     }
