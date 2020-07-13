@@ -21,7 +21,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-public class RefreshEventListenerTest {
+class RefreshEventListenerTest {
 
     CorsMetadataProcessor corsMetadataProcessor = mock(CorsMetadataProcessor.class);
     DynamicServerListLoadBalancer loadBalancer = mock(DynamicServerListLoadBalancer.class);

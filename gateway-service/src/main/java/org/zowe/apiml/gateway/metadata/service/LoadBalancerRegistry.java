@@ -20,16 +20,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @Order(10)
 public class LoadBalancerRegistry extends RefreshEventListener {
 
-    private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
+    private Map<String, DynamicServerListLoadBalancer> registry = new ConcurrentHashMap<>();
 
     public void registerLoadBalancer(DynamicServerListLoadBalancer loadBalancer) {
         String loadBalancerName = loadBalancer.getName();
-        loadBalancerRegistry.put(loadBalancerName, loadBalancer);
+        registry.put(loadBalancerName, loadBalancer);
     }
 
     @Override
     public void refresh() {
-        loadBalancerRegistry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
+        registry.values().forEach(DynamicServerListLoadBalancer::updateListOfServers);
     }
 
 }
