@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.ribbon;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import org.zowe.apiml.gateway.metadata.service.LoadBalancerEventListener;
+import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 
 /**
  * Custom implementation of load balancer. This implementation register on creating into ServiceCacheEvictor. It allows
@@ -34,10 +34,10 @@ public class ApimlLoadBalancer<T extends Server> extends ZoneAwareLoadBalancer<T
         ServerList<T> serverList,
         ServerListFilter<T> filter,
         ServerListUpdater serverListUpdater,
-        LoadBalancerEventListener loadBalancerEventListener
+        LoadBalancerRegistry loadBalancerRegistry
     ) {
         super(clientConfig, rule, ping, serverList, filter, serverListUpdater);
-        loadBalancerEventListener.registerLoadBalancer(this);
+        loadBalancerRegistry.registerLoadBalancer(this);
     }
 
     /**

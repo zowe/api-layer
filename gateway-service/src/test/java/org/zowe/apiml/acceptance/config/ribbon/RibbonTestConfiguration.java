@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.acceptance.netflix.ApimlLoadBalancerStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
-import org.zowe.apiml.gateway.metadata.service.LoadBalancerEventListener;
+import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.AbortingRetryListener;
 import org.zowe.apiml.gateway.ribbon.ApimlRetryableClient;
 import org.zowe.apiml.gateway.ribbon.ApimlRibbonRetryFactory;
@@ -66,12 +66,12 @@ public class RibbonTestConfiguration {
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
                                             IRule rule, IPing ping, ServerListUpdater serverListUpdater,
-                                            LoadBalancerEventListener loadBalancerEventListener, ApplicationRegistry applicationRegistry) {
+                                            LoadBalancerRegistry loadBalancerRegistry, ApplicationRegistry applicationRegistry) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
         return new ApimlLoadBalancerStub(config, rule, ping, serverList,
-            serverListFilter, serverListUpdater, loadBalancerEventListener, applicationRegistry);
+            serverListFilter, serverListUpdater, loadBalancerRegistry, applicationRegistry);
     }
 
 }

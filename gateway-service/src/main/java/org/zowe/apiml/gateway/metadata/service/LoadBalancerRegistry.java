@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Order(10)
-public class LoadBalancerEventListener extends RefreshEventListener {
+public class LoadBalancerRegistry extends RefreshEventListener {
 
     private Map<String, DynamicServerListLoadBalancer> loadBalancerRegistry = new ConcurrentHashMap<>();
 

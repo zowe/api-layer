@@ -10,8 +10,13 @@
 package org.zowe.apiml.gateway.metadata.service;
 
 import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
+import org.springframework.cloud.client.discovery.event.InstanceRegisteredEvent;
+import org.springframework.cloud.client.discovery.event.ParentHeartbeatEvent;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.cloud.netflix.zuul.RoutesRefreshedEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 public abstract class RefreshEventListener implements ApplicationListener<ApplicationEvent> {
 
@@ -26,6 +31,11 @@ public abstract class RefreshEventListener implements ApplicationListener<Applic
 
 
     boolean isRefreshEvent(ApplicationEvent event) {
-        return event instanceof HeartbeatEvent;
+        return event instanceof RoutesRefreshedEvent
+            || event instanceof ContextRefreshedEvent
+            || event instanceof RefreshScopeRefreshedEvent
+            || event instanceof InstanceRegisteredEvent
+            || event instanceof ParentHeartbeatEvent
+            || event instanceof HeartbeatEvent;
     }
 }

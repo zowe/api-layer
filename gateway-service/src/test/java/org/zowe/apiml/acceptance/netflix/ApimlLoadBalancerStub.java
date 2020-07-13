@@ -12,15 +12,15 @@ package org.zowe.apiml.acceptance.netflix;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.loadbalancer.*;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledServer;
-import org.zowe.apiml.gateway.metadata.service.LoadBalancerEventListener;
+import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.ApimlLoadBalancer;
 import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 
 public class ApimlLoadBalancerStub extends ApimlLoadBalancer {
     private ApplicationRegistry applicationRegistry;
 
-    public ApimlLoadBalancerStub(IClientConfig clientConfig, IRule rule, IPing ping, ServerList serverList, ServerListFilter filter, ServerListUpdater serverListUpdater, LoadBalancerEventListener loadBalancerEventListener, ApplicationRegistry applicationRegistry) {
-        super(clientConfig, rule, ping, serverList, filter, serverListUpdater, loadBalancerEventListener);
+    public ApimlLoadBalancerStub(IClientConfig clientConfig, IRule rule, IPing ping, ServerList serverList, ServerListFilter filter, ServerListUpdater serverListUpdater, LoadBalancerRegistry loadBalancerRegistry, ApplicationRegistry applicationRegistry) {
+        super(clientConfig, rule, ping, serverList, filter, serverListUpdater, loadBalancerRegistry);
 
         this.applicationRegistry = applicationRegistry;
     }

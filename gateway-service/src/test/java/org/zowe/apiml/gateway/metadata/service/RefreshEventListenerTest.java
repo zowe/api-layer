@@ -25,15 +25,15 @@ public class RefreshEventListenerTest {
 
     CorsMetadataProcessor corsMetadataProcessor = mock(CorsMetadataProcessor.class);
     DynamicServerListLoadBalancer loadBalancer = mock(DynamicServerListLoadBalancer.class);
-    LoadBalancerEventListener loadBalancerEventListener = mock(LoadBalancerEventListener.class);
+    LoadBalancerRegistry loadBalancerRegistry = mock(LoadBalancerRegistry.class);
     List<ApplicationListener<ApplicationEvent>> applicationListeners;
 
     @BeforeEach
     void setUp() {
         when(loadBalancer.getName()).thenReturn("LB");
-        loadBalancerEventListener = new LoadBalancerEventListener();
-        loadBalancerEventListener.registerLoadBalancer(loadBalancer);
-        applicationListeners = Arrays.asList(corsMetadataProcessor, loadBalancerEventListener);
+        loadBalancerRegistry = new LoadBalancerRegistry();
+        loadBalancerRegistry.registerLoadBalancer(loadBalancer);
+        applicationListeners = Arrays.asList(corsMetadataProcessor, loadBalancerRegistry);
     }
 
     @Test

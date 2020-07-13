@@ -26,9 +26,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -207,56 +210,61 @@ public class AuthenticationOnDeploymentTest {
             service1.addVerifyServlet().start();
             service2.addVerifyServlet().start();
             service3.addVerifyServlet().start();
-            for (int i = 0; i < 10; i++) {
+            String verifyUrl = service1.getGatewayVerifyUrls().get(0);
+            for (int i = 0; i < 5; i++) {
 
-                ports.forEach(port -> {
+                ports.forEach(port -> await().atMost(5, TimeUnit.SECONDS).until(() ->
                     given().when()
                         .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + port + "/status?value=OUT_OF_SERVICE")
-                        .then().statusCode(SC_OK);
-                });
-                Thread.sleep(100);
-                given().when()
-                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678 + "/status?value=UP")
-                    .then().statusCode(SC_OK);
-                Thread.sleep(100);
-                service1.getGatewayVerifyUrls().forEach(x ->
-                    given()
-                        .when().get(x + "/test")
-                        .then().body(is("")).statusCode(is(SC_OK))
+                        .then().extract().statusCode() == SC_OK
+                ));
+
+                await().atMost(5, TimeUnit.SECONDS).until(() ->
+                    given().when()
+                        .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678 + "/status?value=UP")
+                        .then().extract().statusCode() == SC_OK
                 );
+
+                await().atMost(5, TimeUnit.SECONDS).until(() ->
+                    given()
+                        .when().get(verifyUrl + "/test")
+                        .then().extract().statusCode() == SC_OK
+                );
+
 
 //                unregister service1
-                given().when().delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678).then().statusCode(SC_OK);
+                await().atMost(5, TimeUnit.SECONDS).until(() ->
+                    given().when()
+                        .delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678)
+                        .then().extract().statusCode() == SC_OK
+                );
 
-                Thread.sleep(100);
 //                set service2 UP
-                given().when()
+                await().atMost(5, TimeUnit.SECONDS).until(() -> given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5679 + "/status?value=UP")
-                    .then().statusCode(SC_OK);
+                    .then().extract().statusCode() == SC_OK);
 
 //                call service2
-                Thread.sleep(100);
-                service2.getGatewayVerifyUrls().forEach(x ->
-                    given()
-                        .when().get(x + "/test")
-                        .then().body(is("")).statusCode(is(SC_OK))
-                );
+                await().atMost(5, TimeUnit.SECONDS).until(() -> given()
+                    .when().get(verifyUrl + "/test")
+                    .then().extract().statusCode() == SC_OK);
 
 //                set service3 UP
-                given().when()
+                await().atMost(5, TimeUnit.SECONDS).until(() -> given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5680 + "/status?value=UP")
-                    .then().statusCode(SC_OK);
+                    .then().extract().statusCode() == SC_OK);
 
 //                call service3
-                Thread.sleep(100);
-                service3.getGatewayVerifyUrls().forEach(x ->
-                    given()
-                        .when().get(x + "/test")
-                        .then().body(is("")).statusCode(is(SC_OK))
+                await().atMost(5, TimeUnit.SECONDS).until(
+                    () -> given()
+                        .when().get(verifyUrl + "/test")
+                        .then().extract().statusCode() == SC_OK
                 );
 
-                service1.start("UP");
-                Thread.sleep(100);
+                await().atMost(5, TimeUnit.SECONDS).until(
+                    () -> service1.postRegistration("UP")
+                        .then().extract().statusCode() == SC_NO_CONTENT
+                );
             }
 
         }
