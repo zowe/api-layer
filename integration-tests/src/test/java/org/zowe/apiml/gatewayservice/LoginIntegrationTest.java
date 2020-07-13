@@ -50,7 +50,7 @@ public class LoginIntegrationTest {
 
     //@formatter:off
     @Test
-    public void doLoginWithValidBodyLoginRequest() {
+    void doLoginWithValidBodyLoginRequest() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
         Cookie cookie = given()
@@ -78,7 +78,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithValidHeader() {
+    void doLoginWithValidHeader() {
         String token = given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
             .contentType(JSON)
@@ -100,7 +100,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithInvalidCredentialsInLoginRequest() {
+    void doLoginWithInvalidCredentialsInLoginRequest() {
         String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
@@ -118,7 +118,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithInvalidCredentialsInHeader() {
+    void doLoginWithInvalidCredentialsInHeader() {
         String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
@@ -136,7 +136,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithoutCredentials() {
+    void doLoginWithoutCredentials() {
         String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
@@ -151,7 +151,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithInvalidLoginRequest() {
+    void doLoginWithInvalidLoginRequest() {
         String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
@@ -172,7 +172,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithWrongHttpMethod() {
+    void doLoginWithWrongHttpMethod() {
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 

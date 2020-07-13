@@ -19,11 +19,9 @@ import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
@@ -61,7 +59,6 @@ import static org.mockito.Mockito.*;
     CacheConfig.class,
     MockedAuthenticationServiceContext.class
 })
-@RunWith(PowerMockRunner.class)
 @PrepareForTest(net.sf.ehcache.Cache.class)
 public class AuthenticationServiceTest {
 
@@ -126,12 +123,12 @@ public class AuthenticationServiceTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         mockJwtSecurityInitializer();
     }
 
     @Test
-    public void shouldCreateJwtToken() {
+    void shouldCreateJwtToken() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
         assertFalse(jwtToken.isEmpty());
@@ -139,7 +136,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWithNullSecret() {
+    void shouldThrowExceptionWithNullSecret() {
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(null);
         assertThrows(
             IllegalArgumentException.class,
@@ -148,7 +145,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldValidateJwtToken() {
+    void shouldValidateJwtToken() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
         TokenAuthentication token = new TokenAuthentication(jwtToken);
@@ -160,7 +157,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenTokenIsInvalid() {
+    void shouldThrowExceptionWhenTokenIsInvalid() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         String brokenToken = jwtToken + "not";
         TokenAuthentication token = new TokenAuthentication(brokenToken);
@@ -171,7 +168,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenTokenIsExpired() {
+    void shouldThrowExceptionWhenTokenIsExpired() {
         TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
         assertThrows(
             TokenExpireException.class,
@@ -180,7 +177,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenOccurUnexpectedException() {
+    void shouldThrowExceptionWhenOccurUnexpectedException() {
         assertThrows(
             TokenNotValidException.class,
             () -> authService.validateJwtToken((String) null)
@@ -188,7 +185,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenOccurUnexpectedException2() {
+    void shouldThrowExceptionWhenOccurUnexpectedException2() {
         assertThrows(
             TokenNotValidException.class,
             () -> authService.validateJwtToken((TokenAuthentication) null)
@@ -196,7 +193,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldParseJwtTokenAsQueryResponse() {
+    void shouldParseJwtTokenAsQueryResponse() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
         String dateNow = new Date().toString().substring(0, 16);
@@ -211,7 +208,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReadJwtTokenFromRequestCookie() {
+    void shouldReadJwtTokenFromRequestCookie() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
 
@@ -226,7 +223,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldExtractJwtFromRequestHeader() {
+    void shouldExtractJwtFromRequestHeader() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer ");
@@ -241,13 +238,13 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldReadLtpaTokenFromJwtToken() {
+    void shouldReadLtpaTokenFromJwtToken() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         assertEquals(LTPA, authService.getLtpaTokenWithValidation(jwtToken));
     }
 
     @Test
-    public void shouldThrowExceptionWhenTokenIsInvalidWhileExtractingLtpa() {
+    void shouldThrowExceptionWhenTokenIsInvalidWhileExtractingLtpa() {
         String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
         String brokenToken = jwtToken + "not";
         assertThrows(
@@ -257,7 +254,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
+    void shouldThrowExceptionWhenTokenIsExpiredWhileExtractingLtpa() {
         assertThrows(
             TokenExpireException.class,
             () -> authService.getLtpaTokenWithValidation(createExpiredJwtToken(privateKey))
@@ -284,7 +281,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void invalidateToken() {
+    void invalidateToken() {
         TokenAuthentication tokenAuthentication;
 
         String jwt1 = authService.createJwtToken("user1", "domain1", "ltpa1");
@@ -321,7 +318,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void invalidateTokenCache() {
+    void invalidateTokenCache() {
         String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
         String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
 
@@ -371,7 +368,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void invalidateZosmfJwtToken() {
+    void invalidateZosmfJwtToken() {
         final String token = "zosmfJwtToken";
         final String url = zosmfUrl + "/zosmf/services/authenticate";
 
@@ -394,7 +391,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void invalidateZosmfLtpaToken() {
+    void invalidateZosmfLtpaToken() {
         final String jwtToken = "zosmfJwtToken";
         final String ltpaToken = "zosmfLtpaToken";
         final String url = zosmfUrl + "/zosmf/services/authenticate";
@@ -417,7 +414,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testValidateZosmfJwtToken() {
+    void testValidateZosmfJwtToken() {
         final String jwtToken = "jwtTokenSource";
         final String userId = "userIdSource";
         final QueryResponse queryResponse = new QueryResponse("domain", userId, new Date(), new Date(), QueryResponse.Source.ZOSMF);
@@ -441,7 +438,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testCreateTokenAuthentication() {
+    void testCreateTokenAuthentication() {
         Consumer<TokenAuthentication> assertTokenAuthentication = x -> {
             assertNotNull(x);
             assertTrue(x.isAuthenticated());
@@ -459,7 +456,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testGetLtpaTokenException() {
+    void testGetLtpaTokenException() {
         for (String jwtToken : new String[] {"header.body.sign", "wrongJwtToken", ""}) {
             try {
                 authService.getLtpaToken(jwtToken);
@@ -471,7 +468,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testCreateJwtTokenUserExpire() {
+    void testCreateJwtTokenUserExpire() {
         String jwt1 = authService.createJwtToken("user", "domain", "ltpaToken");
         String jwt2 = authService.createJwtToken("expire", "domain", "ltpaToken");
 
@@ -485,7 +482,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testHandleJwtParserException() {
+    void testHandleJwtParserException() {
         class AuthenticationServiceExceptionHanlderTest extends AuthenticationService {
 
             AuthenticationServiceExceptionHanlderTest() {
@@ -516,13 +513,13 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testDistributeInvalidateNotFoundApplication() {
+    void testDistributeInvalidateNotFoundApplication() {
         when(discoveryClient.getApplication("gateway")).thenReturn(null);
         assertFalse(authService.distributeInvalidate("instanceId"));
     }
 
     @Test
-    public void testDistributeInvalidateNotFoundInstance() {
+    void testDistributeInvalidateNotFoundInstance() {
         Application application = mock(Application.class);
         when(application.getByInstanceId("instanceId")).thenReturn(null);
 
@@ -531,7 +528,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void testDistributeInvalidateSuccess() {
+    void testDistributeInvalidateSuccess() {
         reset(restTemplate);
 
         InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1000, 1433);
@@ -563,7 +560,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
+    void givenJwtInCookieAndHeader_whenGetJwtTokenFromRequest_thenPreferCookie() {
         String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
 
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -575,7 +572,7 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    public void givenOtherCookiesAndJwtInHeader_whenGetJwtTokenFromRequest_thenTakeFromHeader() {
+    void givenOtherCookiesAndJwtInHeader_whenGetJwtTokenFromRequest_thenTakeFromHeader() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setCookies(new Cookie("cookie", "value"));
         request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwt");

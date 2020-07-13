@@ -86,7 +86,7 @@ public class ZosmfAuthenticationTest {
     }
 
     @Test
-    public void testNoContent() throws Exception {
+    void testNoContent() throws Exception {
         try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
@@ -106,7 +106,7 @@ public class ZosmfAuthenticationTest {
     }
 
     @Test
-    public void testOldAuthenticationEndpoint() throws Exception {
+    void testOldAuthenticationEndpoint() throws Exception {
         try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
@@ -127,7 +127,7 @@ public class ZosmfAuthenticationTest {
     }
 
     @Test
-    public void testOldAuthenticationEndpointInvalid() throws Exception {
+    void testOldAuthenticationEndpointInvalid() throws Exception {
         try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
@@ -148,7 +148,7 @@ public class ZosmfAuthenticationTest {
     }
 
     @Test
-    public void testNewAuthenticationEndpointLtpa() throws Exception {
+    void testNewAuthenticationEndpointLtpa() throws Exception {
         try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
@@ -173,7 +173,7 @@ public class ZosmfAuthenticationTest {
     }
 
     @Test
-    public void testNewAuthenticationEndpointJwt() throws Exception {
+    void testNewAuthenticationEndpointJwt() throws Exception {
         try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(
@@ -198,7 +198,7 @@ public class ZosmfAuthenticationTest {
     }
 
     @Test
-    public void testNewAuthenticationEndpointInvalid() throws Exception {
+    void testNewAuthenticationEndpointInvalid() throws Exception {
         try (VirtualService zosmf = new VirtualService(ZOSMF_ID, 5678)) {
             zosmf
                 .addServlet("info", "/zosmf/info", new AuthServletGet(

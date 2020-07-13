@@ -26,7 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-public class CacheServiceControllerTest {
+class CacheServiceControllerTest {
 
     private MockMvc mockMvc;
 
@@ -41,14 +41,14 @@ public class CacheServiceControllerTest {
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         CacheServiceController cacheServiceController = new CacheServiceController(
             Arrays.asList(service1, service2), discoveryClient);
         mockMvc = MockMvcBuilders.standaloneSetup(cacheServiceController).build();
     }
 
     @Test
-    public void testEvictAll() throws Exception {
+    void testEvictAll() throws Exception {
         verify(service1, never()).evictCacheAllService();
         verify(service2, never()).evictCacheAllService();
         verify(discoveryClient, never()).fetchRegistry();
@@ -61,7 +61,7 @@ public class CacheServiceControllerTest {
     }
 
     @Test
-    public void testEvict() throws Exception {
+    void testEvict() throws Exception {
         verify(service1, never()).evictCacheService(any());
         verify(service2, never()).evictCacheService(any());
         verify(discoveryClient, never()).fetchRegistry();

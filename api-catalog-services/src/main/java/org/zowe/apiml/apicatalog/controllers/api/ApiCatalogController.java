@@ -10,7 +10,7 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import io.swagger.annotations.Authorization;
-import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
+import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
@@ -40,8 +40,7 @@ import java.util.stream.StreamSupport;
 @Slf4j
 @RestController
 @RequestMapping("/")
-@Api(tags = {"API Catalog"},
-    description = "Current state information")
+@Api(tags = {"API Catalog"})
 public class ApiCatalogController {
 
     private final CachedProductFamilyService cachedProductFamilyService;
@@ -76,7 +75,7 @@ public class ApiCatalogController {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         }
     )
-    public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalException {
+    public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
         try {
             Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
@@ -89,7 +88,7 @@ public class ApiCatalogController {
             }
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
-            throw new ContainerStatusRetrievalException(e);
+            throw new ContainerStatusRetrievalThrowable(e);
         }
     }
 
@@ -105,7 +104,7 @@ public class ApiCatalogController {
             @Authorization("LoginBasicAuth"), @Authorization("CookieAuth")
         }
     )
-    public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
+    public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
             List<APIContainer> apiContainers = new ArrayList<>();
             APIContainer containerById = cachedProductFamilyService.getContainerById(id);
@@ -125,7 +124,7 @@ public class ApiCatalogController {
             }
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
-            throw new ContainerStatusRetrievalException(e);
+            throw new ContainerStatusRetrievalThrowable(e);
         }
     }
 

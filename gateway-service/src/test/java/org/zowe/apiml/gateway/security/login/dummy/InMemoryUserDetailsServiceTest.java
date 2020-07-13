@@ -21,20 +21,20 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class InMemoryUserDetailsServiceTest {
+class InMemoryUserDetailsServiceTest {
 
     private static BCryptPasswordEncoder encoder;
     private static InMemoryUserDetailsService inMemoryUserDetailsService;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         MonitoringHelper.initMocks();
         encoder = Mockito.mock(BCryptPasswordEncoder.class);
         inMemoryUserDetailsService = new InMemoryUserDetailsService(encoder);
     }
 
     @Test
-    public void shouldEncodePasswordAndReturnFoundUsername() {
+    void shouldEncodePasswordAndReturnFoundUsername() {
         Mockito.when(encoder.encode("user")).thenReturn("hashcodeUser");
 
         UserDetails userDetails = inMemoryUserDetailsService.loadUserByUsername("user");
@@ -48,7 +48,7 @@ public class InMemoryUserDetailsServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfUsernameNotFound() {
+    void shouldThrowExceptionIfUsernameNotFound() {
         Exception exception = assertThrows(UsernameNotFoundException.class,
             () -> inMemoryUserDetailsService.loadUserByUsername("andrea"),
             "Expected exception is not UsernameNotFoundException");

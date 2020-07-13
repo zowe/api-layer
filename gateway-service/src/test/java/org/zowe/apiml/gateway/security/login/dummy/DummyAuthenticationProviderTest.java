@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-public class DummyAuthenticationProviderTest {
+class DummyAuthenticationProviderTest {
 
     private static final String PRINCIPAL = "user";
     private static final String USERNAME = "user";
@@ -35,7 +35,7 @@ public class DummyAuthenticationProviderTest {
     private static DummyAuthenticationProvider dummyAuthenticationProvider;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         MonitoringHelper.initMocks();
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
         UserDetailsService userDetailsService = new InMemoryUserDetailsService(encoder);
@@ -45,7 +45,7 @@ public class DummyAuthenticationProviderTest {
 
 
     @Test
-    public void shouldReturnDummyToken() {
+    void shouldReturnDummyToken() {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, USERNAME);
         Authentication returnedTokenAuthentication = dummyAuthenticationProvider.authenticate(usernamePasswordAuthentication);
 
@@ -56,7 +56,7 @@ public class DummyAuthenticationProviderTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfTokenNotValid() {
+    void shouldThrowExceptionIfTokenNotValid() {
         Exception exception = assertThrows(AuthenticationServiceException.class,
             () -> dummyAuthenticationProvider.authenticate(null),
             "Expected exception is not AuthenticationServiceException");
@@ -64,7 +64,7 @@ public class DummyAuthenticationProviderTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfCredentialsAreNull() {
+    void shouldThrowExceptionIfCredentialsAreNull() {
         UsernamePasswordAuthenticationToken usernamePasswordAuthentication = new UsernamePasswordAuthenticationToken(PRINCIPAL, "sdsd");
 
         Exception exception = assertThrows(BadCredentialsException.class,

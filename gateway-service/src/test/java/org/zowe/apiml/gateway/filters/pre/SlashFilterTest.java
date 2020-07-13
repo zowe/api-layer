@@ -22,12 +22,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PROXY_KEY;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
-public class SlashFilterTest {
+class SlashFilterTest {
 
     private SlashFilter filter;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() {
         this.filter = new SlashFilter();
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
@@ -40,7 +40,7 @@ public class SlashFilterTest {
     }
 
     @Test
-    public void responseIsModified() throws Exception {
+    void responseIsModified() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         this.filter.run();
         String location = "";
@@ -56,19 +56,19 @@ public class SlashFilterTest {
     }
 
     @Test
-    public void shouldReturnFilterType() {
+    void shouldReturnFilterType() {
         String filterType = this.filter.filterType();
         assertEquals("pre", filterType);
     }
 
     @Test
-    public void shouldReturnFilterOrder() {
+    void shouldReturnFilterOrder() {
         int filterOrder = this.filter.filterOrder();
         assertEquals(9, filterOrder);
     }
 
     @Test
-    public void proxyStartsWithSlash() throws Exception {
+    void proxyStartsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "/ui/service");
         this.filter.run();
@@ -85,7 +85,7 @@ public class SlashFilterTest {
     }
 
     @Test
-    public void proxyEndsWithSlash() throws Exception {
+    void proxyEndsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "ui/service/");
         this.filter.run();
@@ -102,7 +102,7 @@ public class SlashFilterTest {
     }
 
     @Test
-    public void proxyIsNull() throws Exception {
+    void proxyIsNull() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, null);
         this.filter.run();
@@ -119,7 +119,7 @@ public class SlashFilterTest {
     }
 
     @Test
-    public void proxyIsEmpty() throws Exception {
+    void proxyIsEmpty() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "");
         this.filter.run();
@@ -136,12 +136,12 @@ public class SlashFilterTest {
     }
 
     @Test
-    public void shouldFilterUI() throws Exception {
+    void shouldFilterUI() {
         assertEquals(true, this.filter.shouldFilter());
     }
 
     @Test
-    public void shouldNotFilterAPI() throws Exception {
+    void shouldNotFilterAPI() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setRequestURI("/api/v1/service");
@@ -151,7 +151,7 @@ public class SlashFilterTest {
     }
 
     @Test
-    public void shouldNotFilterWhenItEndsWithSlash() throws Exception {
+    void shouldNotFilterWhenItEndsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setRequestURI("/ui/service/");
@@ -160,14 +160,14 @@ public class SlashFilterTest {
     }
 
     @Test
-    public void serviceIdIsNull() throws Exception {
+    void serviceIdIsNull() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, null);
         assertEquals(false, this.filter.shouldFilter());
     }
 
     @Test
-    public void serviceIdIsEmpty() throws Exception {
+    void serviceIdIsEmpty() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "");
         assertEquals(false, this.filter.shouldFilter());

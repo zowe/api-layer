@@ -29,11 +29,11 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
-public class ServiceDefinitionProcessorTest {
+class ServiceDefinitionProcessorTest {
     private ServiceDefinitionProcessor serviceDefinitionProcessor;
 
     @BeforeEach
-    public void prepareServiceDefinitionProcessor() {
+    void prepareServiceDefinitionProcessor() {
         MessageService messages = new YamlMessageService();
         messages.loadMessages("/discovery-log-messages.yml");
         ApimlLogger logger = new ApimlLogger(ServiceDefinitionProcessor.class, messages);
@@ -58,7 +58,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testProcessServicesDataWithTwoRoutes() {
+    void testProcessServicesDataWithTwoRoutes() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -90,7 +90,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testProcessServicesDataWithEmptyHomepage() {
+    void testProcessServicesDataWithEmptyHomepage() {
         String routedServiceYamlEmptyRelativeUrls = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -119,7 +119,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenUnknownFieldInTheStaticDefinition_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenUnknownFieldInTheStaticDefinition_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         StaticRegistrationResult result = processServicesData("something: value");
 
         assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
@@ -129,7 +129,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testFileInsteadOfDirectoryForDefinitions() throws URISyntaxException {
+    void testFileInsteadOfDirectoryForDefinitions() throws URISyntaxException {
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(
             Paths.get(ClassLoader.getSystemResource("api-defs/staticclient.yml").toURI()).toAbsolutePath().toString());
 
@@ -137,7 +137,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenMalformedUrlAmongBaseUrls_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenMalformedUrlAmongBaseUrls_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -151,7 +151,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenUnsupportedSchemaAmongBaseUrls_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenUnsupportedSchemaAmongBaseUrls_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -165,7 +165,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenNoHostnameInBaseUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenNoHostnameInBaseUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -179,7 +179,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenInvalidDocumentationUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenInvalidDocumentationUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -201,7 +201,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenBaseInstanceUrlHasNoPort_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenBaseInstanceUrlHasNoPort_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -215,7 +215,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testServiceWithCatalogMetadata() {
+    void testServiceWithCatalogMetadata() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -236,7 +236,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testServiceWithCustomMetadata() {
+    void testServiceWithCustomMetadata() {
         String yaml =
             "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
@@ -273,7 +273,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenListAmongCustomMetadata_whenDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenListAmongCustomMetadata_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -298,7 +298,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenUndefinedInstanceBaseUrls_whenDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenUndefinedInstanceBaseUrls_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -319,7 +319,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenNoInstanceInBaseUrls_whenDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenNoInstanceInBaseUrls_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -341,7 +341,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenInstanceWithoutServiceId_whenDefinitionIsLoaded_thenErrorIsReturned() {
+    void givenInstanceWithoutServiceId_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: \n" +
@@ -385,7 +385,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void givenInstanceDefinitionWithoutInstanceBaseUrls_whenStaticDefinitionIsProcessed_thenErrorIsReturned() {
+    void givenInstanceDefinitionWithoutInstanceBaseUrls_whenStaticDefinitionIsProcessed_thenErrorIsReturned() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -422,7 +422,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testCreateInstancesWithMultipleYmls() {
+    void testCreateInstancesWithMultipleYmls() {
         String yaml =
             "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
@@ -473,7 +473,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testEnableUnsecurePortIfHttp() {
+    void testEnableUnsecurePortIfHttp() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -498,7 +498,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void shouldGenerateMetadataIfApiInfoIsNotNUll() {
+    void shouldGenerateMetadataIfApiInfoIsNotNUll() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      catalogUiTileId: static\n" +
@@ -539,7 +539,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void shouldGiveErrorIfTileIdIsInvalid() {
+    void shouldGiveErrorIfTileIdIsInvalid() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      catalogUiTileId: adajand\n" +
@@ -568,7 +568,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testFindServicesWithTwoDirectories() {
+    void testFindServicesWithTwoDirectories() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         String pathTwo = ClassLoader.getSystemResource("ext-config/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";" + pathTwo);
@@ -577,7 +577,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testFindServicesWithOneDirectory() {
+    void testFindServicesWithOneDirectory() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne);
 
@@ -585,7 +585,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testFindServicesWithSecondEmptyDirectory() {
+    void testFindServicesWithSecondEmptyDirectory() {
         String pathOne = ClassLoader.getSystemResource("api-defs/").getPath();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(pathOne + ";");
 
@@ -593,7 +593,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testProcessServicesDataWithAuthenticationMetadata() {
+    void testProcessServicesDataWithAuthenticationMetadata() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -610,7 +610,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testProcessServicesDataWithInvalidAuthenticationScheme() {
+    void testProcessServicesDataWithInvalidAuthenticationScheme() {
         String routedServiceYaml = "services:\n" +
             "    - serviceId: casamplerestapiservice\n" +
             "      instanceBaseUrls:\n" +
@@ -624,7 +624,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testAdditionalServiceMetadata() {
+    void testAdditionalServiceMetadata() {
         String routedServiceYaml =
             "additionalServiceMetadata:\n" +
             "    - serviceId: testService\n" +
@@ -676,7 +676,7 @@ public class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    public void testAdditionalServiceMetadataMulti() {
+    void testAdditionalServiceMetadataMulti() {
         String routedServiceYaml =
             "additionalServiceMetadata:\n" +
             "    - serviceId: service1\n" +

@@ -30,17 +30,17 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class ServiceNotFoundCheckTest {
+class ServiceNotFoundCheckTest {
     private ErrorCheck underTest;
 
     @BeforeEach
-    public void prepareCheckUnderTest() {
+    void prepareCheckUnderTest() {
         MonitoringHelper.initMocks();
         underTest = new ServiceNotFoundCheck(new YamlMessageService());
     }
 
     @Test
-    public void givenNotFoundZuulException_whenTheRequestIsProcessed_then404IsReturned() {
+    void givenNotFoundZuulException_whenTheRequestIsProcessed_then404IsReturned() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         ZuulException exc = new ZuulException(new NotFound(), HttpStatus.NOT_FOUND.value(), "serviceId");
 
@@ -50,6 +50,6 @@ public class ServiceNotFoundCheckTest {
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage<>("org.zowe.apiml.common.endPointNotFound", MessageType.ERROR, "ZWEAM104E", "The endpoint you are looking for 'serviceId' could not be located")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.common.endPointNotFound", MessageType.ERROR, "ZWEAM104E", "The endpoint you are looking for 'serviceId' could not be located")));
     }
 }

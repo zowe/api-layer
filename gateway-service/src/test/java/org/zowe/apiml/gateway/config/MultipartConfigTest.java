@@ -16,9 +16,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MultipartConfigTest {
+class MultipartConfigTest {
     @Test
-    public void shouldDoPutRequestAndReturnTrue() {
+    void shouldDoPutRequestAndReturnTrue() {
         MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/api/v1/");
         request.setContentType("multipart/");
         MultipartConfig multipartConfig = new MultipartConfig();
@@ -26,7 +26,7 @@ public class MultipartConfigTest {
     }
 
     @Test
-    public void shouldDoGetRequestAndReturnFalse() {
+    void shouldDoGetRequestAndReturnFalse() {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/");
         request.setContentType("multipart/");
         MultipartConfig multipartConfig = new MultipartConfig();

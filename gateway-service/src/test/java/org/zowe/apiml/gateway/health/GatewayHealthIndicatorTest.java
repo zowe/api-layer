@@ -24,20 +24,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class GatewayHealthIndicatorTest {
+class GatewayHealthIndicatorTest {
 
     private static final String ZOSMF = "zosmf";
 
     private AuthConfigurationProperties authConfigurationProperties;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.setZosmfServiceId(ZOSMF);
     }
 
     @Test
-    public void testStatusIsUpWhenCatalogAndDiscoveryAreAvailable() {
+    void testStatusIsUpWhenCatalogAndDiscoveryAreAvailable() {
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
@@ -53,7 +53,7 @@ public class GatewayHealthIndicatorTest {
     }
 
     @Test
-    public void testStatusIsDownWhenDiscoveryIsNotAvailable() {
+    void testStatusIsDownWhenDiscoveryIsNotAvailable() {
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));

@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { HttpClientProxyConfig.class, HttpClientProxyConfigTest.Config.class })
-public class HttpClientProxyConfigTest {
+class HttpClientProxyConfigTest {
 
     static CloseableHttpClient client1 = mock(CloseableHttpClient.class);
     static CloseableHttpClient client2 = mock(CloseableHttpClient.class);
@@ -50,12 +50,12 @@ public class HttpClientProxyConfigTest {
     CloseableHttpClient httpClientProxy;
 
     @Test
-    public void dummyAutowireTest() {
+    void dummyAutowireTest() {
         assertThat(httpClientProxy, is(not(nullValue())));
     }
 
     @Test
-    public void givenProxyInTestEnv_whenMethodCalled_thenInvoked() throws IOException {
+    void givenProxyInTestEnv_whenMethodCalled_thenInvoked() throws IOException {
         httpClientProxy.execute(mock(HttpUriRequest.class));
         verify(client1, times(1)).execute(any());
         verify(client2, times(0)).execute(any());

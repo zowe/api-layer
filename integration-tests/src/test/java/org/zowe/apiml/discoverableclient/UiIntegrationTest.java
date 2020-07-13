@@ -20,10 +20,10 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class UiIntegrationTest {
+class UiIntegrationTest {
     @Test
     @TestsNotMeantForZowe
-    public void shouldCallDiscoverableUiWithSlashAtPathEnd() throws Exception {
+    void shouldCallDiscoverableUiWithSlashAtPathEnd() throws Exception {
         // Given
         HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient/");
 
@@ -36,7 +36,7 @@ public class UiIntegrationTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd() throws Exception {
+    void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd() throws Exception {
         // Given
         HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient");
 

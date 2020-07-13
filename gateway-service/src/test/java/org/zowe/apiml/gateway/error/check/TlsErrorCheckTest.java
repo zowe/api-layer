@@ -29,19 +29,19 @@ import javax.net.ssl.SSLHandshakeException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class TlsErrorCheckTest {
+class TlsErrorCheckTest {
     private static final String TEST_MESSAGE = "Hello";
     private static InternalServerErrorController errorController;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         MonitoringHelper.initMocks();
         MessageService messageService = new YamlMessageService();
         errorController = new InternalServerErrorController(messageService);
     }
 
     @Test
-    public void testZuulHandshakeException() {
+    void testZuulHandshakeException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         ZuulException exc = new ZuulException(new SSLHandshakeException(TEST_MESSAGE),

@@ -9,7 +9,8 @@
  */
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
+import org.springframework.http.HttpStatus;
+import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
@@ -26,15 +27,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.BDDMockito.given;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class ApiCatalogControllerTests {
+    private final String pathToContainers = "/containers";
 
     @Mock
     private CachedServicesService cachedServicesService;
@@ -63,13 +62,38 @@ public class ApiCatalogControllerTests {
         RestAssuredMockMvc.standaloneSetup(apiCatalogController);
         RestAssuredMockMvc.given().
             when().
-            get("/containers").
+            get(pathToContainers).
             then().
             statusCode(200);
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiDocForServices() throws ContainerStatusRetrievalException {
+    public void givenNoContainersAreAvailable_whenAllContainersAreRequested_thenReturnNoContent() {
+        given(cachedProductFamilyService.getAllContainers()).willReturn(null);
+
+        RestAssuredMockMvc.standaloneSetup(apiCatalogController);
+        RestAssuredMockMvc.given().
+        when().
+            get(pathToContainers).
+        then().
+            statusCode(HttpStatus.NO_CONTENT.value());
+    }
+
+    @Test
+    public void givenContainerWithGivenIdIsUnavailable_whenRequested_thenReturnOk() {
+        String containerId = "service1";
+        given(cachedProductFamilyService.getContainerById(containerId)).willReturn(null);
+
+        RestAssuredMockMvc.standaloneSetup(apiCatalogController);
+        RestAssuredMockMvc.given().
+        when().
+            get( pathToContainers + "/" + containerId).
+        then().
+            statusCode(HttpStatus.OK.value());
+    }
+
+    @Test
+    public void whenGetSingleContainer_thenPopulateApiDocForServices() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 
@@ -90,7 +114,7 @@ public class ApiCatalogControllerTests {
     }
 
     @Test
-    public void whenGetSingleContainer_thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
+    public void whenGetSingleContainer_thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
         Application service1 = new Application("service-1");
         service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
 

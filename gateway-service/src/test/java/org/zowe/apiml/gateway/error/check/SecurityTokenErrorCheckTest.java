@@ -42,7 +42,7 @@ import static org.junit.Assert.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
 @Import(MessageServiceConfiguration.class)
-public class SecurityTokenErrorCheckTest {
+class SecurityTokenErrorCheckTest {
 
     private static SecurityTokenErrorCheck securityTokenErrorCheck;
 
@@ -50,18 +50,18 @@ public class SecurityTokenErrorCheckTest {
     private MessageService messageService;
 
     @BeforeAll
-    public static void initMocks() {
+    static void initMocks() {
         MonitoringHelper.initMocks();
     }
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         securityTokenErrorCheck = new SecurityTokenErrorCheck(messageService);
     }
 
 
     @Test
-    public void shouldReturnCauseMessageWhenTokenExpireException() {
+    void shouldReturnCauseMessageWhenTokenExpireException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         TokenExpireException tokenExpireException = new TokenExpireException("TOKEN_EXPIRE");
 
@@ -75,11 +75,11 @@ public class SecurityTokenErrorCheckTest {
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage<>("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.expiredToken", MessageType.ERROR, "ZWEAG103E", "Token is expired")));
     }
 
     @Test
-    public void shouldReturnCauseMessageWhenTokenNotValidException() {
+    void shouldReturnCauseMessageWhenTokenNotValidException() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         TokenNotValidException tokenNotValidException = new TokenNotValidException("TOKEN_NOT_VALID");
 
@@ -94,7 +94,7 @@ public class SecurityTokenErrorCheckTest {
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
-        assertThat(actualMessageList, hasItem(new ApiMessage<>("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
     }
 }
 

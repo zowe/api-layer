@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-public class AuthControllerTest {
+class AuthControllerTest {
 
     private AuthController authController;
     private MockMvc mockMvc;
@@ -51,7 +51,7 @@ public class AuthControllerTest {
     private JWK jwk1, jwk2, jwk3;
 
     @BeforeEach
-    public void setUp() throws ParseException {
+    void setUp() throws ParseException {
         authController = new AuthController(authenticationService, jwtSecurityInitializer, zosmfServiceFacade);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
 
@@ -61,7 +61,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void invalidateJwtToken() throws Exception {
+    void invalidateJwtToken() throws Exception {
         when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
         this.mockMvc.perform(delete("/gateway/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
 
@@ -75,7 +75,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void distributeInvalidate() throws Exception {
+    void distributeInvalidate() throws Exception {
         when(authenticationService.distributeInvalidate("instance/1")).thenReturn(true);
         this.mockMvc.perform(get("/gateway/auth/distribute/instance/1")).andExpect(status().is(SC_OK));
 
@@ -102,7 +102,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void testGetAllPublicKeys() throws Exception {
+    void testGetAllPublicKeys() throws Exception {
         initPublicKeys(true);
         JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2, jwk3));
         this.mockMvc.perform(get("/gateway/auth/keys/public/all"))
@@ -111,7 +111,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void testGetActivePublicKeys_useZoweJwt() throws Exception {
+    void testGetActivePublicKeys_useZoweJwt() throws Exception {
         initPublicKeys(true);
         authController.setUseZosmfJwtToken(false);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));
@@ -121,7 +121,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void testGetActivePublicKeys_useBoth() throws Exception {
+    void testGetActivePublicKeys_useBoth() throws Exception {
         initPublicKeys(true);
         authController.setUseZosmfJwtToken(true);
         JWKSet jwkSet = new JWKSet(Arrays.asList(jwk1, jwk2));
@@ -131,7 +131,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    public void testGetActivePublicKeys_missingZosmf() throws Exception {
+    void testGetActivePublicKeys_missingZosmf() throws Exception {
         initPublicKeys(false);
         authController.setUseZosmfJwtToken(true);
         JWKSet jwkSet = new JWKSet(Collections.singletonList(jwk3));

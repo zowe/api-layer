@@ -25,16 +25,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TokenAuthenticationProviderTest {
+class TokenAuthenticationProviderTest {
     private AuthenticationService tokenService;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         tokenService = mock(AuthenticationService.class);
     }
 
     @Test
-    public void authenticateWithValidToken() {
+    void authenticateWithValidToken() {
         TokenAuthentication tokenAuthentication = new TokenAuthentication("token");
 
         when(tokenService.validateJwtToken(tokenAuthentication)).thenReturn(tokenAuthentication);
@@ -45,7 +45,7 @@ public class TokenAuthenticationProviderTest {
     }
 
     @Test
-    public void supportsAuthentication() {
+    void supportsAuthentication() {
         TokenAuthenticationProvider authenticationProvider = new TokenAuthenticationProvider(tokenService);
 
         assertTrue(authenticationProvider.supports(TokenAuthentication.class));

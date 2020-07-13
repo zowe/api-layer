@@ -23,20 +23,20 @@ import java.net.URI;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
-public class MultipartPutIntegrationTest {
+class MultipartPutIntegrationTest {
     private static final String MULTIPART_PATH = "/api/v1/discoverableclient/multipart";
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 
     @BeforeAll
-    public static void beforeClass() {
+    static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     //@formatter:off
     @Test
     @TestsNotMeantForZowe
-    public void shouldDoPutRequestAndMatchReturnBody() {
+    void shouldDoPutRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
         given().
@@ -52,7 +52,7 @@ public class MultipartPutIntegrationTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void shouldDoPostRequestAndMatchReturnBody() {
+    void shouldDoPostRequestAndMatchReturnBody() {
         RestAssured.registerParser("text/plain", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH);
         given().
