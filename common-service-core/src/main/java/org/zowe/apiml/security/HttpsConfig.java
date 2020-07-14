@@ -19,13 +19,13 @@ import lombok.Value;
 public class HttpsConfig {
     @Builder.Default private String protocol = "TLSv1.2";
     @Builder.Default private String trustStore = null;
-    @Builder.Default private String trustStorePassword = null;
+    @Builder.Default private char[] trustStorePassword = null;
     @Builder.Default private String trustStoreType = "PKCS12";
     @Builder.Default private boolean trustStoreRequired = false;
     @Builder.Default private String keyAlias = null;
     @Builder.Default private String keyStore = null;
-    @Builder.Default private String keyStorePassword = null;
-    @Builder.Default private String keyPassword = null;
+    @Builder.Default private char[] keyStorePassword = null;
+    @Builder.Default private char[] keyPassword = null;
     @Builder.Default private String keyStoreType = "PKCS12";
     @Builder.Default private boolean clientAuth = false;
     @Builder.Default private boolean verifySslCertificatesOfServices = true;

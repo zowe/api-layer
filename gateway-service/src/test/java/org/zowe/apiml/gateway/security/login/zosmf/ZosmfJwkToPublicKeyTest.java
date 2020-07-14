@@ -38,7 +38,8 @@ class ZosmfJwkToPublicKeyTest {
         try {
             String filename = f.getName();
             assertTrue(zosmfJwkToPublicKey.updateJwtPublicKeyFile("https://zosmf:1433", filename, "localca",
-                    "../keystore/local_ca/localca.keystore.p12", "PKCS12", "local_ca_password", "local_ca_password"));
+                "../keystore/local_ca/localca.keystore.p12", "PKCS12",
+                "local_ca_password".toCharArray(), "local_ca_password".toCharArray()));
             assertTrue(new String(Files.readAllBytes(Paths.get(filename))).contains("-----"));
         } finally {
             f.delete();

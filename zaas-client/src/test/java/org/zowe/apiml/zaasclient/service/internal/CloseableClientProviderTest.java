@@ -31,7 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class CloseableClientProviderTest {
+
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
+    private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
+
     private ConfigProperties configProperties;
     private HttpsClientProvider httpsClientProvider;
 
@@ -53,10 +56,12 @@ public class CloseableClientProviderTest {
                 properties.setApimlPort(configProp.getProperty("APIML_PORT"));
                 properties.setApimlBaseUrl(configProp.getProperty("APIML_BASE_URL"));
                 properties.setKeyStorePath(configProp.getProperty("KEYSTOREPATH"));
-                properties.setKeyStorePassword(configProp.getProperty("KEYSTOREPASSWORD"));
+                String keyStorePassword = configProp.getProperty("KEYSTOREPASSWORD");
+                properties.setKeyStorePassword(keyStorePassword == null ? null : keyStorePassword.toCharArray());
                 properties.setKeyStoreType(configProp.getProperty("KEYSTORETYPE"));
                 properties.setTrustStorePath(configProp.getProperty("TRUSTSTOREPATH"));
-                properties.setTrustStorePassword(configProp.getProperty("TRUSTSTOREPASSWORD"));
+                String trustStorePassword = configProp.getProperty("TRUSTSTOREPASSWORD");
+                properties.setTrustStorePassword(trustStorePassword == null ? null : trustStorePassword.toCharArray());
                 properties.setTrustStoreType(configProp.getProperty("TRUSTSTORETYPE"));
             }
         } catch (IOException e) {
@@ -112,7 +117,7 @@ public class CloseableClientProviderTest {
     @Test
     void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword("password");
+        config.setTrustStorePassword(PASSWORD);
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("PKCS12");
         HttpsClientProvider provider = new HttpsClientProvider(config);
@@ -126,7 +131,7 @@ public class CloseableClientProviderTest {
     @Test
     void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword("password");
+        config.setTrustStorePassword(PASSWORD);
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("PKCS12");
         config.setKeyStorePath("intentionallyInvalidPath");
@@ -142,7 +147,7 @@ public class CloseableClientProviderTest {
     @Test
     void givenInvalidKeyStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword("password");
+        config.setTrustStorePassword(PASSWORD);
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("PKCS12");
         config.setKeyStorePath("src/test/resources/localhost.keystore.p12");
@@ -158,7 +163,7 @@ public class CloseableClientProviderTest {
     @Test
     void givenInvalidTrustStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() {
         ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword("password");
+        config.setTrustStorePassword(PASSWORD);
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("invalidCryptoType");
         ZaasConfigurationException zaasException = assertThrows(

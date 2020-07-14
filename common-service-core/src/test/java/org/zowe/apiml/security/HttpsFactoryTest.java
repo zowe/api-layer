@@ -94,7 +94,7 @@ public class HttpsFactoryTest {
 
     @Test(expected = HttpsConfigError.class)
     public void wrongKeyPasswordConfigurationShouldFail() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.keyPassword(INCORRECT_PARAMETER_VALUE).build();
+        HttpsConfig httpsConfig = httpsConfigBuilder.keyPassword(INCORRECT_PARAMETER_VALUE.toCharArray()).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         SSLContext sslContext = httpsFactory.createSslContext();
         assertNull(sslContext);
@@ -102,7 +102,7 @@ public class HttpsFactoryTest {
 
     @Test(expected = HttpsConfigError.class)
     public void specificIncorrectAliasShouldFail() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.trustStorePassword(INCORRECT_PARAMETER_VALUE).build();
+        HttpsConfig httpsConfig = httpsConfigBuilder.trustStorePassword(INCORRECT_PARAMETER_VALUE.toCharArray()).build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         SSLContext sslContext = httpsFactory.createSslContext();
         assertNull(sslContext);
@@ -123,11 +123,11 @@ public class HttpsFactoryTest {
         httpsFactory.setSystemSslProperties();
 
         assertEquals(SecurityUtils.replaceFourSlashes(httpsConfig.getKeyStore()), System.getProperty("javax.net.ssl.keyStore"));
-        assertEquals(httpsConfig.getKeyStorePassword(), System.getProperty("javax.net.ssl.keyStorePassword"));
+        assertEquals(String.valueOf(httpsConfig.getKeyStorePassword()), System.getProperty("javax.net.ssl.keyStorePassword"));
         assertEquals(httpsConfig.getKeyStoreType(), System.getProperty("javax.net.ssl.keyStoreType"));
 
         assertEquals(SecurityUtils.replaceFourSlashes(httpsConfig.getTrustStore()), System.getProperty("javax.net.ssl.trustStore"));
-        assertEquals(httpsConfig.getTrustStorePassword(), System.getProperty("javax.net.ssl.trustStorePassword"));
+        assertEquals(String.valueOf(httpsConfig.getTrustStorePassword()), System.getProperty("javax.net.ssl.trustStorePassword"));
         assertEquals(httpsConfig.getTrustStoreType(), System.getProperty("javax.net.ssl.trustStoreType"));
     }
 

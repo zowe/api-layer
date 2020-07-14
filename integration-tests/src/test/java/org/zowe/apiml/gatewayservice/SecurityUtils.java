@@ -101,12 +101,12 @@ public class SecurityUtils {
             SSLContext sslContext = SSLContexts.custom()
                 .loadKeyMaterial(
                     new File(tlsConfiguration.getKeyStore()),
-                    tlsConfiguration.getKeyStorePassword() != null ? tlsConfiguration.getKeyStorePassword().toCharArray() : null,
-                    tlsConfiguration.getKeyPassword() != null ? tlsConfiguration.getKeyPassword().toCharArray() : null,
+                    tlsConfiguration.getKeyStorePassword(),
+                    tlsConfiguration.getKeyPassword(),
                     (aliases, socket) -> tlsConfiguration.getKeyAlias())
                 .loadTrustMaterial(
                     new File(tlsConfiguration.getTrustStore()),
-                    tlsConfiguration.getTrustStorePassword() != null ? tlsConfiguration.getTrustStorePassword().toCharArray() : null)
+                    tlsConfiguration.getTrustStorePassword())
                 .build();
             SSLSocketFactoryAdapter sslSocketFactory = new SSLSocketFactoryAdapter(new SSLConnectionSocketFactory(sslContext, new DefaultHostnameVerifier()));
             return SSLConfig.sslConfig().with().sslSocketFactory(sslSocketFactory);

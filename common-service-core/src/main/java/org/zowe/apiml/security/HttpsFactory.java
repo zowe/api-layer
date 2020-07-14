@@ -119,11 +119,10 @@ public class HttpsFactory {
                 log.info("Loading trust store file: " + config.getTrustStore());
                 File trustStoreFile = new File(config.getTrustStore());
 
-                sslContextBuilder.loadTrustMaterial(trustStoreFile, config.getTrustStorePassword().toCharArray());
+                sslContextBuilder.loadTrustMaterial(trustStoreFile, config.getTrustStorePassword());
             } else {
                 log.info("Loading trust store key ring: " + config.getTrustStore());
-                sslContextBuilder.loadTrustMaterial(keyRingUrl(config.getTrustStore()),
-                        config.getTrustStorePassword() == null ? null : config.getTrustStorePassword().toCharArray());
+                sslContextBuilder.loadTrustMaterial(keyRingUrl(config.getTrustStore()), config.getTrustStorePassword());
             }
         } else {
             if (config.isTrustStoreRequired()) {
@@ -174,17 +173,14 @@ public class HttpsFactory {
         }
         log.info("Loading key store file: " + config.getKeyStore());
         File keyStoreFile = new File(config.getKeyStore());
-        sslContextBuilder.loadKeyMaterial(keyStoreFile,
-                config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
-                config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray());
+        sslContextBuilder.loadKeyMaterial(keyStoreFile, config.getKeyStorePassword(), config.getKeyPassword());
     }
 
     private void loadKeyringMaterial(SSLContextBuilder sslContextBuilder) throws UnrecoverableKeyException,
             NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
         log.info("Loading trust key ring: " + config.getKeyStore());
-        sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()),
-                config.getKeyStorePassword() == null ? null : config.getKeyStorePassword().toCharArray(),
-                config.getKeyPassword() == null ? null : config.getKeyPassword().toCharArray(), null);
+        sslContextBuilder.loadKeyMaterial(keyRingUrl(config.getKeyStore()),config.getKeyStorePassword(),
+                config.getKeyPassword(), null);
     }
 
     private synchronized SSLContext createSecureSslContext() {
@@ -241,11 +237,13 @@ public class HttpsFactory {
 
     public void setSystemSslProperties() {
         setSystemProperty("javax.net.ssl.keyStore", SecurityUtils.replaceFourSlashes(config.getKeyStore()));
-        setSystemProperty("javax.net.ssl.keyStorePassword", config.getKeyStorePassword());
+        setSystemProperty("javax.net.ssl.keyStorePassword",
+            config.getKeyStorePassword() == null ? null : String.valueOf(config.getKeyStorePassword()));
         setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
 
         setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.replaceFourSlashes(config.getTrustStore()));
-        setSystemProperty("javax.net.ssl.trustStorePassword", config.getTrustStorePassword());
+        setSystemProperty("javax.net.ssl.trustStorePassword",
+            config.getTrustStorePassword() == null ? null : String.valueOf(config.getTrustStorePassword()));
         setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
     }
 

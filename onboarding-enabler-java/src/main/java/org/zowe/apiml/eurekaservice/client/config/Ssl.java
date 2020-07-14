@@ -27,17 +27,17 @@ public class Ssl {
 
     private String keyAlias;
 
-    private String keyPassword;
+    private char[] keyPassword;
 
     private String keyStore;
 
-    private String keyStorePassword;
+    private char[] keyStorePassword;
 
     private String keyStoreType;
 
     private String trustStore;
 
-    private String trustStorePassword;
+    private char[] trustStorePassword;
 
     private String trustStoreType;
 }
