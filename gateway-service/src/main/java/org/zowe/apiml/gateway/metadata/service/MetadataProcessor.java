@@ -12,8 +12,6 @@
 package org.zowe.apiml.gateway.metadata.service;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaEvent;
-import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.shared.Application;
 
 import java.util.List;
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
  * (connectionTimeout, readTimeout and connectionManagerTimeout) as system properties
  */
 
-public abstract class MetadataProcessor implements EurekaEventListener {
+public abstract class MetadataProcessor extends RefreshEventListener {
 
 
     abstract List<Application> getApplications();
@@ -45,7 +43,8 @@ public abstract class MetadataProcessor implements EurekaEventListener {
     }
 
     @Override
-    public void onEvent(EurekaEvent event) {
+    public void refresh() {
         process(getApplications());
     }
+
 }

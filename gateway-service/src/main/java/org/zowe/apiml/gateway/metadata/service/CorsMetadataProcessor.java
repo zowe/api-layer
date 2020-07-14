@@ -13,6 +13,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -25,6 +26,7 @@ import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
+@Order(15)
 public class CorsMetadataProcessor extends MetadataProcessor {
 
     @Value("${apiml.service.corsEnabled:false}")

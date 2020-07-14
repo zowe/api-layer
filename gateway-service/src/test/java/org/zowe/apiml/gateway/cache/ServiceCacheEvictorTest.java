@@ -10,10 +10,9 @@
 
 package org.zowe.apiml.gateway.cache;
 
-import com.netflix.discovery.CacheRefreshedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
+import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
 import org.zowe.apiml.gateway.ribbon.ApimlLoadBalancer;
 import org.zowe.apiml.gateway.security.service.ServiceCacheEvict;
 
@@ -23,8 +22,6 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 class ServiceCacheEvictorTest {
-
-    private ApimlDiscoveryClient apimlDiscoveryClient = mock(ApimlDiscoveryClient.class);
 
     private ApimlLoadBalancer<?> apimlLoadBalancer1 = mock(ApimlLoadBalancer.class);
     private ApimlLoadBalancer<?> apimlLoadBalancer2 = mock(ApimlLoadBalancer.class);
@@ -40,40 +37,31 @@ class ServiceCacheEvictorTest {
 
     @BeforeEach
     public void setUp() {
-        serviceCacheEvictor = new ServiceCacheEvictor(apimlDiscoveryClient, serviceCacheEvicts);
+        serviceCacheEvictor = new ServiceCacheEvictor(serviceCacheEvicts);
         when(apimlLoadBalancer1.getName()).thenReturn("service1");
         when(apimlLoadBalancer2.getName()).thenReturn("service2");
         when(apimlLoadBalancer3.getName()).thenReturn("service3");
         when(apimlLoadBalancer4.getName()).thenReturn("service4");
-        serviceCacheEvictor.registerLoadBalancer(apimlLoadBalancer1);
-        serviceCacheEvictor.registerLoadBalancer(apimlLoadBalancer2);
-        serviceCacheEvictor.registerLoadBalancer(apimlLoadBalancer3);
-        serviceCacheEvictor.registerLoadBalancer(apimlLoadBalancer4);
     }
 
     @Test
     void testService() {
-        serviceCacheEvictor.onEvent(mock(CacheRefreshedEvent.class));
-        verify(apimlLoadBalancer1, never()).updateListOfServers();
 
         serviceCacheEvictor.evictCacheService("service1");
         serviceCacheEvictor.evictCacheService("service2");
-        serviceCacheEvictor.onEvent(mock(CacheRefreshedEvent.class));
+        serviceCacheEvictor.onApplicationEvent(new HeartbeatEvent("", ""));
         serviceCacheEvicts.forEach(x -> {
             verify(x, times(1)).evictCacheService("service1");
             verify(x, times(1)).evictCacheService("service2");
         });
-        verify(apimlLoadBalancer1, times(1)).updateListOfServers();
-
         serviceCacheEvictor.evictCacheService("service3");
         serviceCacheEvictor.evictCacheAllService();
         serviceCacheEvictor.evictCacheService("service4");
-        serviceCacheEvictor.onEvent(mock(CacheRefreshedEvent.class));
+        serviceCacheEvictor.refresh();
         serviceCacheEvicts.forEach(x -> {
             verify(x, never()).evictCacheService("service3");
             verify(x, times(1)).evictCacheAllService();
         });
-        verify(apimlLoadBalancer3, times(3)).updateListOfServers();
     }
 
 }

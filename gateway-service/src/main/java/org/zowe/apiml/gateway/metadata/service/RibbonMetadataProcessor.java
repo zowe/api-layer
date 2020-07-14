@@ -14,6 +14,7 @@ import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Order(20)
 public class RibbonMetadataProcessor extends MetadataProcessor {
 
     private final EurekaApplications applications;

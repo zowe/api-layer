@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.util.service;
 
+import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -53,42 +54,42 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  * It is recommended to use try-with-resource to be sure, service will be unregistered on the end, ie.:
  * <p>
  * try (final VirtualService service = new VirtualService("testService")) {
- *      service
- *          // add same servlet and setting of service
- *          .start()
- *          // you should wait until service is registered, usually registration is faster, but for sure - registration
- *          // contains many asynchronous steps
- *          .waitForGatewayRegistration(1, TIMEOUT);
- *      // use service
- *  }
- *
- *  If you want to unregister service during the test, you can do that like this:
- *
- *  service1
- *      .unregister()
- *      // similar to registration, unregister contains same asynchronous steps
- *      .waitForGatewayUnregistering(1, TIMEOUT)
- *      .stop();
- *
- *  If you want to simulate crashed service that does not deregister you can call:
- *
- *  service1.zombie();
- *
- *  VirtualService allow to you add custom servlets for checking, but few are implemented yet:
- *  - HeaderServlet
- *      - register with addGetHeaderServlet({header})
- *      - it will response content of header with name {header} on /header/{header}
+ * service
+ * // add same servlet and setting of service
+ * .start()
+ * // you should wait until service is registered, usually registration is faster, but for sure - registration
+ * // contains many asynchronous steps
+ * .waitForGatewayRegistration(1, TIMEOUT);
+ * // use service
+ * }
+ * <p>
+ * If you want to unregister service during the test, you can do that like this:
+ * <p>
+ * service1
+ * .unregister()
+ * // similar to registration, unregister contains same asynchronous steps
+ * .waitForGatewayUnregistering(1, TIMEOUT)
+ * .stop();
+ * <p>
+ * If you want to simulate crashed service that does not deregister you can call:
+ * <p>
+ * service1.zombie();
+ * <p>
+ * VirtualService allow to you add custom servlets for checking, but few are implemented yet:
+ * - HeaderServlet
+ * - register with addGetHeaderServlet({header})
+ * - it will response content of header with name {header} on /header/{header}
  * - VerifyServlet
- *      - register with addVerifyServlet
- *      - it allows to store all request on path /verify/* and then make asserts on them
- *      - see also method getGatewayVerifyUrls
+ * - register with addVerifyServlet
+ * - it allows to store all request on path /verify/* and then make asserts on them
+ * - see also method getGatewayVerifyUrls
  * - InstanceServlet
- *      - automatically created
- *      - return instanceId in the body at /application/instance
- *      - it is used for checking of gateways (see waitForGatewayRegistration and waitForGatewayUnregistering)
+ * - automatically created
+ * - return instanceId in the body at /application/instance
+ * - it is used for checking of gateways (see waitForGatewayRegistration and waitForGatewayUnregistering)
  * - HealthServlet
- *      - automatically created
- *      - to check state of service from discovery service (see /application/health)
+ * - automatically created
+ * - to check state of service from discovery service (see /application/health)
  */
 @Slf4j
 public class VirtualService implements AutoCloseable {
@@ -380,10 +381,16 @@ public class VirtualService implements AutoCloseable {
         return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
     }
 
-    private void register(String status) throws UnknownHostException {
+    public void register(String status) throws UnknownHostException {
         addDefaultRouteIfMissing();
 
-        given().when()
+        postRegistration(status).then().statusCode(SC_NO_CONTENT);
+
+        registered = true;
+    }
+
+    public Response postRegistration(String status) throws UnknownHostException {
+        return given().when()
             .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
             .body(new JSONObject()
                 .put("instance", new JSONObject()
@@ -393,6 +400,7 @@ public class VirtualService implements AutoCloseable {
                     .put("app", serviceId)
                     .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
                     .put("status", status)
+                    .put("overriddenstatus", status)
                     .put("port", new JSONObject()
                         .put("$", getPort())
                         .put("@enabled", "true")
@@ -413,10 +421,7 @@ public class VirtualService implements AutoCloseable {
                     .put("metadata", metadata)
                 ).toString()
             )
-            .post(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}", serviceId)
-            .then().statusCode(SC_NO_CONTENT);
-
-        registered = true;
+            .post(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}", serviceId);
     }
 
     /**
