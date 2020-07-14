@@ -34,10 +34,10 @@ public class JwtSecurityInitializer {
     private String keyStore;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")
-    private String keyStorePassword;
+    private char[] keyStorePassword;
 
     @Value("${server.ssl.keyPassword:#{null}}")
-    private String keyPassword;
+    private char[] keyPassword;
 
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;

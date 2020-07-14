@@ -196,7 +196,7 @@ public class ApiMediationServiceConfigReader {
         return serviceConfig;
     }
 
-    private void setServiceIpAddress(ApiMediationServiceConfig serviceConfig) throws ServiceDefinitionException {
+    public static void setServiceIpAddress(ApiMediationServiceConfig serviceConfig) throws ServiceDefinitionException {
         // Set instance ipAddress if required by Eureka and not set in the configuration files
         if ((serviceConfig != null) && (serviceConfig.getServiceIpAddress() == null)) {
             String urlString = serviceConfig.getBaseUrl();

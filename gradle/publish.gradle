@@ -2,10 +2,13 @@ ext.springBootEnabler = 'onboarding-enabler-spring'
 ext.javaEnabler = 'onboarding-enabler-java'
 
 ext.javaLibraries = [
+    'api-catalog-services',
     'common-service-core',
     'apiml-utility',
     'apiml-common',
     'apiml-security-common',
+    'discovery-service',
+    'gateway-service',
     'security-service-client-spring',
     'zaas-client'
 ]

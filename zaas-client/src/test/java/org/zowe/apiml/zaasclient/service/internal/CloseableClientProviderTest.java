@@ -31,7 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 public class CloseableClientProviderTest {
+
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
+    private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
+
     private ConfigProperties configProperties;
     private HttpsClientProvider httpsClientProvider;
 
@@ -53,10 +56,12 @@ public class CloseableClientProviderTest {
                 properties.setApimlPort(configProp.getProperty("APIML_PORT"));
                 properties.setApimlBaseUrl(configProp.getProperty("APIML_BASE_URL"));
                 properties.setKeyStorePath(configProp.getProperty("KEYSTOREPATH"));
-                properties.setKeyStorePassword(configProp.getProperty("KEYSTOREPASSWORD"));
+                String keyStorePassword = configProp.getProperty("KEYSTOREPASSWORD");
+                properties.setKeyStorePassword(keyStorePassword == null ? null : keyStorePassword.toCharArray());
                 properties.setKeyStoreType(configProp.getProperty("KEYSTORETYPE"));
                 properties.setTrustStorePath(configProp.getProperty("TRUSTSTOREPATH"));
-                properties.setTrustStorePassword(configProp.getProperty("TRUSTSTOREPASSWORD"));
+                String trustStorePassword = configProp.getProperty("TRUSTSTOREPASSWORD");
+                properties.setTrustStorePassword(trustStorePassword == null ? null : trustStorePassword.toCharArray());
                 properties.setTrustStoreType(configProp.getProperty("TRUSTSTORETYPE"));
             }
         } catch (IOException e) {
@@ -67,12 +72,12 @@ public class CloseableClientProviderTest {
 
     //tests
     @Test
-    public void testGetHttpClientWithTrustStore() throws ZaasConfigurationException {
+    void testGetHttpClientWithTrustStore() throws ZaasConfigurationException {
         assertNotNull(httpsClientProvider.getHttpsClientWithTrustStore());
     }
 
     @Test
-    public void testGetHttpClientWithTrustStoreWithCookies() throws ZaasConfigurationException {
+    void testGetHttpClientWithTrustStoreWithCookies() throws ZaasConfigurationException {
         BasicCookieStore cookieStore = new BasicCookieStore();
         BasicClientCookie cookie = new BasicClientCookie("apimlAuthenticationToken", "token");
         cookie.setDomain(configProperties.getApimlHost());
@@ -83,12 +88,12 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void testGetHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
+    void testGetHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
         assertNotNull(httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore());
     }
 
     @Test
-    public void givenNullTrustStore_whenTheClientIsConstructed_thenExceptionsIsThrown() {
+    void givenNullTrustStore_whenTheClientIsConstructed_thenExceptionsIsThrown() {
         ZaasConfigurationException zaasException =
             assertThrows(ZaasConfigurationException.class, () -> new HttpsClientProvider(new ConfigProperties()));
 
@@ -98,7 +103,7 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void giveInvalidTrustStorePath_whenTheClientIsConstructed_thenExceptionsIsThrown() {
+    void giveInvalidTrustStorePath_whenTheClientIsConstructed_thenExceptionsIsThrown() {
         ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
             ConfigProperties config = new ConfigProperties();
             config.setTrustStorePath("intentionallyInvalidPath");
@@ -110,9 +115,9 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+    void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword("password");
+        config.setTrustStorePassword(PASSWORD);
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("PKCS12");
         HttpsClientProvider provider = new HttpsClientProvider(config);
@@ -124,9 +129,9 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+    void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword("password");
+        config.setTrustStorePassword(PASSWORD);
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("PKCS12");
         config.setKeyStorePath("intentionallyInvalidPath");
@@ -140,9 +145,9 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void givenInvalidKeyStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+    void givenInvalidKeyStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword("password");
+        config.setTrustStorePassword(PASSWORD);
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("PKCS12");
         config.setKeyStorePath("src/test/resources/localhost.keystore.p12");
@@ -158,7 +163,7 @@ public class CloseableClientProviderTest {
     @Test
     void givenInvalidTrustStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() {
         ConfigProperties config = new ConfigProperties();
-        config.setTrustStorePassword("password");
+        config.setTrustStorePassword(PASSWORD);
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("invalidCryptoType");
         ZaasConfigurationException zaasException = assertThrows(

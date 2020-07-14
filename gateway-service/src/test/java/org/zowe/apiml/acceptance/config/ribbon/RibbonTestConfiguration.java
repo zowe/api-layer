@@ -20,9 +20,9 @@ import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpCl
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.zowe.apiml.acceptance.netflix.ApimlZoneAwareLoadBalancerStub;
+import org.zowe.apiml.acceptance.netflix.ApimlLoadBalancerStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
+import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 import org.zowe.apiml.gateway.ribbon.AbortingRetryListener;
 import org.zowe.apiml.gateway.ribbon.ApimlRetryableClient;
 import org.zowe.apiml.gateway.ribbon.ApimlRibbonRetryFactory;
@@ -66,12 +66,12 @@ public class RibbonTestConfiguration {
     public ILoadBalancer ribbonLoadBalancer(IClientConfig config,
                                             ServerList<Server> serverList, ServerListFilter<Server> serverListFilter,
                                             IRule rule, IPing ping, ServerListUpdater serverListUpdater,
-                                            ServiceCacheEvictor serviceCacheEvictor, ApplicationRegistry applicationRegistry) {
+                                            LoadBalancerRegistry loadBalancerRegistry, ApplicationRegistry applicationRegistry) {
         if (this.propertiesFactory.isSet(ILoadBalancer.class, ribbonClientName)) {
             return this.propertiesFactory.get(ILoadBalancer.class, config, ribbonClientName);
         }
-        return new ApimlZoneAwareLoadBalancerStub(config, rule, ping, serverList,
-            serverListFilter, serverListUpdater, serviceCacheEvictor, applicationRegistry);
+        return new ApimlLoadBalancerStub(config, rule, ping, serverList,
+            serverListFilter, serverListUpdater, loadBalancerRegistry, applicationRegistry);
     }
 
 }

@@ -29,13 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @TestPropertySource(locations = "/application.yml")
 @ContextConfiguration(initializers = ConfigFileApplicationContextInitializer.class)
 @Import(MockedSecurityInitializer.class)
-public class JwtSecurityInitializerTest {
+class JwtSecurityInitializerTest {
 
     @Autowired
     private JwtSecurityInitializer jwtSecurityInitializer;
 
     @Test
-    public void shouldExtractSecretAndPublicKey() {
+    void shouldExtractSecretAndPublicKey() {
         jwtSecurityInitializer.init();
         assertEquals("RSA", jwtSecurityInitializer.getJwtSecret().getAlgorithm());
         assertEquals("RSA", jwtSecurityInitializer.getJwtPublicKey().getAlgorithm());
@@ -44,7 +44,7 @@ public class JwtSecurityInitializerTest {
     }
 
     @Test
-    public void shouldThrowExceptionIfTheKeysAreNull() {
+    void shouldThrowExceptionIfTheKeysAreNull() {
         jwtSecurityInitializer = new JwtSecurityInitializer();
         Exception exception = assertThrows(HttpsConfigError.class,
             () -> jwtSecurityInitializer.init(),
@@ -54,13 +54,13 @@ public class JwtSecurityInitializerTest {
     }
 
     @Test
-    public void shouldReturnSignatureAlgorithm() {
+    void shouldReturnSignatureAlgorithm() {
         jwtSecurityInitializer.init();
         assertEquals(SignatureAlgorithm.RS256, jwtSecurityInitializer.getSignatureAlgorithm());
     }
 
     @Test
-    public void testGetJwkPublicKey() {
+    void testGetJwkPublicKey() {
         assertEquals("RSA", jwtSecurityInitializer.getJwkPublicKey().getKeyType().getValue());
     }
 }

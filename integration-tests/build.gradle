@@ -140,7 +140,8 @@ task runAllIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
-            'AdditionalLocalTest'
+            'AdditionalLocalTest',
+            'NotForMainframeTest'
         )
     }
     outputs.upToDateWhen { false }

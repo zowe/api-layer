@@ -12,7 +12,7 @@ apiml:
         serviceId: discoverableclient  # Service ID of this service
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10012  # Default port for discoverable-client service
-        serviceIpAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+          # IP address that is advertised in Eureka. Default is valid only for localhost
         discoveryServiceUrls: https://localhost:10011/eureka/
 
 server:

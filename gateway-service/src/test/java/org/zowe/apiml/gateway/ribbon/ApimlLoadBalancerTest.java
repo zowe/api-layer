@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.config.ribbon.IClientConfiguration;
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
+import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.mock;
 @ContextConfiguration(classes = {
     IClientConfiguration.class
 })
-class ApimlZoneAwareLoadBalancerTest {
+class ApimlLoadBalancerTest {
 
     @Autowired
     IClientConfig config;
@@ -44,26 +44,26 @@ class ApimlZoneAwareLoadBalancerTest {
     ServerListUpdater serverListUpdater = mock(ServerListUpdater.class);
     ServerList<Server> serverList = mock(ServerList.class);
     ServerListFilter<Server> serverListFilter = mock(ServerListFilter.class);
-    ServiceCacheEvictor serviceCacheEvictor = mock(ServiceCacheEvictor.class);
-    ApimlZoneAwareLoadBalancer underTest;
+    LoadBalancerRegistry loadBalancerRegistry = mock(LoadBalancerRegistry.class);
+    ApimlLoadBalancer underTest;
 
     @BeforeEach
     void setUp() {
         RequestContext.getCurrentContext().clear();
-        underTest = new ApimlZoneAwareLoadBalancer(config, rule, ping, serverList,
-            serverListFilter, serverListUpdater, serviceCacheEvictor);
+        underTest = new ApimlLoadBalancer(config, rule, ping, serverList,
+            serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
 
     @Test
-    public void givenNoServerList_whenChooseServer_thenSetNothing() {
+    void givenNoServerList_whenChooseServer_thenSetNothing() {
         underTest.chooseServer("anotherInstance");
 
         RequestContext context = RequestContext.getCurrentContext();
-        assertThat(context.get(ApimlZoneAwareLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY), is(nullValue()));
+        assertThat(context.get(ApimlLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY), is(nullValue()));
     }
 
     @Test
-    public void givenServerList_whenChooseServer_thenSetChosenInstanceInfoToRequestContext() {
+    void givenServerList_whenChooseServer_thenSetChosenInstanceInfoToRequestContext() {
         InstanceInfo info = InstanceInfo.Builder.newBuilder()
             .setAppName("appname")
             .setInstanceId("instance")
@@ -73,11 +73,11 @@ class ApimlZoneAwareLoadBalancerTest {
         underTest.chooseServer("instance");
 
         RequestContext context = RequestContext.getCurrentContext();
-        assertThat(context.get(ApimlZoneAwareLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY), is(info));
+        assertThat(context.get(ApimlLoadBalancer.LOADBALANCED_INSTANCE_INFO_KEY), is(info));
     }
 
     @Test
-    public void givenUnexpectedServerImplementation_whenChooseServer_thenFailFast() {
+    void givenUnexpectedServerImplementation_whenChooseServer_thenFailFast() {
         underTest.addServer(new Server("localhost", 69));
 
         assertThrows(IllegalStateException.class, () -> underTest.chooseServer("instance"));

@@ -23,14 +23,16 @@ spring:
 apiml:
     enabled: true
     service:
+        preferIpAddress: false
+
         serviceId: discoverableclient
-        title: Service Spring Integration Enabler sample application API
-        description:  Sample API services to demonstrate Spring Integration Enabler
+        title: Service Spring Onboarding Enabler sample application API
+        description:  Sample API services to demonstrate Spring Onboarding Enabler
 
         discoveryServiceUrls: https://localhost:10011/eureka/
 
         scheme: https
-        serviceIpAddress: 127.0.0.1
+
         hostname: localhost
         port: 10012
         baseUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
@@ -78,6 +80,7 @@ apiml:
                 enableUrlEncodedCharacters: true
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /api/v1/gateway/auth
+                corsEnabled: false
 
 server:
     port: ${apiml.service.port}
@@ -142,3 +145,4 @@ logging:
         com.netflix: INFO
 
 logbackServiceName: ZWEADC1
+

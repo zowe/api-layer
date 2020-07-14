@@ -34,7 +34,7 @@ class WebSocketActuatorEndpointTest {
     }
 
     @Test
-    public void givenExistingRoute_whenTheStatusOfRoutesIsRequested_thenTheListIsReturned() {
+    void givenExistingRoute_whenTheStatusOfRoutesIsRequested_thenTheListIsReturned() {
         Map<String, WebSocketRoutedSession> routedSessions = new HashMap<>();
         WebSocketRoutedSession validSession = mock(WebSocketRoutedSession.class);
         when(validSession.getClientId()).thenReturn("12");

@@ -12,6 +12,7 @@ package org.zowe.apiml.util.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +20,9 @@ import java.util.Objects;
 
 @Slf4j
 public class ConfigReader {
+
+    private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
+
     private static volatile EnvironmentConfiguration instance;
 
     public static EnvironmentConfiguration environmentConfiguration() {
@@ -42,13 +46,13 @@ public class ConfigReader {
 
                         TlsConfiguration tlsConfiguration = TlsConfiguration.builder()
                             .keyAlias("localhost")
-                            .keyPassword("password")
+                            .keyPassword(PASSWORD)
                             .keyStoreType("PKCS12")
                             .keyStore("../keystore/localhost/localhost.keystore.p12")
-                            .keyStorePassword("password")
+                            .keyStorePassword(PASSWORD)
                             .trustStoreType("PKCS12")
                             .trustStore("../keystore/localhost/localhost.truststore.p12")
-                            .trustStorePassword("password")
+                            .trustStorePassword(PASSWORD)
                             .build();
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "zosmf");
@@ -96,15 +100,21 @@ public class ConfigReader {
         zosmfConfiguration.setServiceId(System.getProperty("zosmf.serviceId", zosmfConfiguration.getServiceId()));
     }
 
+    private static char[] getSystemPropertyCharArray(String name, char[] defaultValue) {
+        String value = System.getProperty(name);
+        if (StringUtils.isEmpty(value)) return defaultValue;
+        return  value.toCharArray();
+    }
+
     private static void setTlsConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
         TlsConfiguration tlsConfiguration = configuration.getTlsConfiguration();
         tlsConfiguration.setKeyAlias(System.getProperty("tlsConfiguration.keyAlias", tlsConfiguration.getKeyAlias()));
-        tlsConfiguration.setKeyPassword(System.getProperty("tlsConfiguration.keyPassword", tlsConfiguration.getKeyPassword()));
+        tlsConfiguration.setKeyPassword(getSystemPropertyCharArray("tlsConfiguration.keyPassword", tlsConfiguration.getKeyPassword()));
         tlsConfiguration.setKeyStore(System.getProperty("tlsConfiguration.keyStore", tlsConfiguration.getKeyStore()));
         tlsConfiguration.setKeyStoreType(System.getProperty("tlsConfiguration.keyStoreType", tlsConfiguration.getKeyStoreType()));
-        tlsConfiguration.setKeyPassword(System.getProperty("tlsConfiguration.keyStorePassword", tlsConfiguration.getKeyStorePassword()));
+        tlsConfiguration.setKeyPassword(getSystemPropertyCharArray("tlsConfiguration.keyStorePassword", tlsConfiguration.getKeyStorePassword()));
         tlsConfiguration.setTrustStoreType(System.getProperty("tlsConfiguration.trustStoreType", tlsConfiguration.getTrustStoreType()));
         tlsConfiguration.setTrustStore(System.getProperty("tlsConfiguration.trustStore", tlsConfiguration.getTrustStore()));
-        tlsConfiguration.setTrustStorePassword(System.getProperty("tlsConfiguration.trustStorePassword", tlsConfiguration.getTrustStorePassword()));
+        tlsConfiguration.setTrustStorePassword(getSystemPropertyCharArray("tlsConfiguration.trustStorePassword", tlsConfiguration.getTrustStorePassword()));
     }
 }

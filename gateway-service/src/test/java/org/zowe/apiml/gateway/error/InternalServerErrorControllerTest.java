@@ -22,9 +22,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.servlet.RequestDispatcher;
 
-public class InternalServerErrorControllerTest {
+class InternalServerErrorControllerTest {
     @Test
-    public void testGenericError() {
+    void testGenericError() {
         MessageService messageService = new YamlMessageService();
         InternalServerErrorController errorController = new InternalServerErrorController(messageService);
 

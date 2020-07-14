@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.metadata.service;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,13 +22,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 
-class MetadataProcessorTest {
+class RibbonMetadataProcessorTest {
 
     private MetadataProcessor metadataProcessor;
 
     @BeforeEach
     void setMetadataProcessor() {
-        metadataProcessor = new MetadataProcessor(mock(EurekaApplications.class));
+        metadataProcessor = new RibbonMetadataProcessor(mock(EurekaApplications.class));
     }
 
     @Test
@@ -61,10 +60,9 @@ class MetadataProcessorTest {
 
     @Test
     void givenMockedEvent_whenOnEvent_thenCallProcess() {
-        EurekaEvent event = mock(EurekaEvent.class);
-        MetadataProcessor metadataProcessor = new MetadataProcessor(mock(EurekaApplications.class));
+        MetadataProcessor metadataProcessor = new RibbonMetadataProcessor(mock(EurekaApplications.class));
         MetadataProcessor spyProcessor = spy(metadataProcessor);
-        spyProcessor.onEvent(event);
+        spyProcessor.refresh();
 
         verify(spyProcessor, times(1)).process(any());
     }

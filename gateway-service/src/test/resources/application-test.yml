@@ -1,0 +1,227 @@
+spring.profiles.include: diag
+logging:
+    level:
+        ROOT: TRACE
+
+apiml:
+    # The `apiml` node contains API Mediation Layer specific configuration
+    service:
+        # The `apiml.service` node contains information required by any APIML service
+        id: gateway  # Service ID of this service. It is fixed for APIML API Gateway
+        hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
+        # Default is valid only for localhost
+        port: 10010  # Default port name for gateway service
+        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        scheme: https  # "https" or "http"
+        preferIpAddress: false
+        allowEncodedSlashes: false
+        discoveryServiceUrls: https://localhost:10011/eureka/
+        corsEnabled: true
+    gateway:
+        # The `apiml.gateway` node contains gateway-service only configuration
+        hostname: ${apiml.service.hostname}  # The hostname for other services to access the gateway. For example Catalog uses
+          # for transforming the URLs in DVIPA mode.
+          # In Zowe, this is the same as apiml.service.hostname. Zowe has one Gateway
+        # and is all run from single host.
+        # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
+        # properly.
+        timeoutMillis: 30000  # Timeout for connection to the services
+    security:
+        ssl:
+            verifySslCertificatesOfServices: true
+            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        auth:
+            provider: dummy
+            zosmfServiceId: zosmf  # Replace me with the correct z/OSMF service id
+            passTicket:
+                timeout: 360 # [s] - default timeout to expire (z/OS has 10 mins as default)
+            jwtKeyAlias: jwtSecret
+        zosmf:
+            useJwtToken: true # if true and z/OSMF returns JWT token use it, otherwise create Zowe JWT token with LTPA token from z/OSMF, default is true
+
+spring:
+    application:
+        name: ${apiml.service.id}
+    cloud:
+        client:
+            hostname: ${apiml.service.hostname}
+            ipAddress: ${apiml.service.ipAddress}
+    mvc:
+        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
+        favicon:
+            enabled: false
+    output:
+        ansi:
+            enabled: detect
+    cache:
+        ehcache:
+            config: classpath:ehcache.xml
+    main:
+        allow-bean-definition-overriding: true
+        banner-mode: ${apiml.banner:"off"}
+
+server:
+    address: ${apiml.service.ipAddress}
+    port: ${apiml.service.port}
+    ssl:
+        enabled: true
+        clientAuth: want
+        protocol: TLSv1.2
+        enabled-protocols: TLSv1.2
+        ciphers: ${apiml.security.ssl.ciphers}
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+        keyStore: ../keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyPassword: password
+        keyAlias: localhost
+        trustStore: ../keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+
+zuul:
+    sslHostnameValidationEnabled: false
+    addProxyHeaders: false
+    traceRequestBody: true
+    ignoreSecurityHeaders: false
+    includeDebugHeader: false
+    sensitiveHeaders: Expires,Date
+    ignoredPatterns:
+        - /ws/**
+    host:
+        connectTimeoutMillis: ${apiml.gateway.timeoutMillis}
+        socketTimeoutMillis: ${apiml.gateway.timeoutMillis}
+    forceOriginalQueryStringEncoding: true
+    retryable: true
+
+ribbon:
+    ConnectTimeout: ${apiml.gateway.timeoutMillis}
+    ReadTimeout: ${apiml.gateway.timeoutMillis}
+    ConnectionManagerTimeout: ${apiml.gateway.timeoutMillis}
+    MaxAutoRetries: 0
+    MaxAutoRetriesNextServer: 5
+    OkToRetryOnAllOperations: true
+    GZipPayload: false # this stops Gateway from deflating gzip responses from services
+
+http:
+    connection:
+        timeout: ${apiml.gateway.timeoutMillis}
+    socket:
+        timeout: ${apiml.gateway.timeoutMillis}
+
+hystrix:
+    command:
+        default:
+            fallback:
+                enabled: false
+            circuitBreaker:
+                enabled: false
+            execution:
+                timeout:
+                    enabled: false
+                isolation:
+                    thread:
+                        timeoutInMilliseconds: ${apiml.gateway.timeoutMillis}
+                    strategy: SEMAPHORE
+                    semaphore:
+                        maxConcurrentRequests: 100000
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info
+    health:
+        defaults:
+            enabled: false
+    endpoint:
+        health:
+            showDetails: always
+
+eureka:
+    instance:
+        hostname: ${apiml.service.hostname}
+        ipAddress: ${apiml.service.ipAddress}
+        port: ${server.port}
+        securePort: ${server.port}
+        nonSecurePortEnabled: false # must be set to false if you are using SSL
+        securePortEnabled: ${server.ssl.enabled}
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        homePageUrl: ${apiml.service.scheme}://${apiml.gateway.hostname}:${apiml.service.port}/
+        statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        metadata-map:
+            apiml:
+                catalog:
+                    tile:
+                        id: apimediationlayer
+                        title:  API Mediation Layer API
+                        description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                        version: 1.0.0
+                routes:
+                    api_v1:
+                        gatewayUrl: /api/v1
+                        serviceUrl: /gateway
+                apiInfo:
+                    - apiId: org.zowe.apiml.gateway
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                      documentationUrl: https://zowe.github.io/docs-site/
+                service:
+                    title: API Gateway
+                    description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
+    client:
+        fetchRegistry: false
+        registerWithEureka: false
+        region: default
+        serviceUrl:
+            defaultZone: ${apiml.service.discoveryServiceUrls}
+        healthcheck:
+            enabled: true
+
+---
+spring:
+    profiles: debug
+    mvc:
+        throw-exception-if-no-handler-found: true
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,routes,loggers
+
+logging:
+    level:
+        ROOT: INFO
+        org.zowe.apiml: DEBUG
+        org.springframework: INFO
+        org.apache: INFO
+        org.apache.http: DEBUG
+        com.netflix: INFO
+        org.hibernate: INFO
+        org.springframework.web.servlet.PageNotFound: WARN
+        net.sf.ehcache: INFO
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
+
+---
+spring:
+    profiles: diag
+
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
+zuul.debug.request: true
+---
+spring:
+    profiles: dev
+    profiles.include:
+        - debug
+        - diag
+
+logbackServiceName: ZWEAGW1

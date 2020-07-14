@@ -24,8 +24,7 @@ import java.util.Map;
 
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.isA;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class ApiMediationServiceConfigReaderTest {
 
@@ -72,19 +71,19 @@ public class ApiMediationServiceConfigReaderTest {
 
         assertNotNull(apiMediationServiceConfig);
         assertEquals("../keystore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore());
-        assertEquals("password2", apiMediationServiceConfig.getSsl().getTrustStorePassword());
+        assertArrayEquals("password2".toCharArray(), apiMediationServiceConfig.getSsl().getTrustStorePassword());
 
         apiMediationServiceConfig = new ApiMediationServiceConfigReader().mergeConfigurations(apimlServcieConfig1, null);
         assertNotNull(apiMediationServiceConfig);
         assertEquals(apiMediationServiceConfig, apimlServcieConfig1);
         assertEquals("keystore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore());
-        assertEquals("password", apiMediationServiceConfig.getSsl().getTrustStorePassword());
+        assertArrayEquals("password".toCharArray(), apiMediationServiceConfig.getSsl().getTrustStorePassword());
 
         apiMediationServiceConfig = new ApiMediationServiceConfigReader().mergeConfigurations(null, apimlServcieConfig2);
         assertNotNull(apiMediationServiceConfig);
         assertEquals(apiMediationServiceConfig, apimlServcieConfig2);
         assertEquals("../keystore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore());
-        assertEquals("password2", apiMediationServiceConfig.getSsl().getTrustStorePassword());
+        assertArrayEquals("password2".toCharArray(), apiMediationServiceConfig.getSsl().getTrustStorePassword());
     }
 
     @Test
@@ -99,9 +98,9 @@ public class ApiMediationServiceConfigReaderTest {
         assertEquals("hellozowe", apiMediationServiceConfig.getServiceId());
         assertEquals("hello-zowe", apiMediationServiceConfig.getCatalog().getTile().getId());
         assertEquals("../keystore/localhost/localhost.keystore.p12", apiMediationServiceConfig.getSsl().getKeyStore());
-        assertEquals("password1", apiMediationServiceConfig.getSsl().getKeyStorePassword());
+        assertArrayEquals("password1".toCharArray(), apiMediationServiceConfig.getSsl().getKeyStorePassword());
         assertEquals("../truststore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore());
-        assertEquals("password2", apiMediationServiceConfig.getSsl().getTrustStorePassword());
+        assertArrayEquals("password2".toCharArray(), apiMediationServiceConfig.getSsl().getTrustStorePassword());
     }
 
     @Test
@@ -114,9 +113,9 @@ public class ApiMediationServiceConfigReaderTest {
         assertEquals("hellopje", apiMediationServiceConfig.getServiceId());
         assertEquals("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", apiMediationServiceConfig.getSsl().getCiphers());
         assertEquals("keystore/localhost/localhost.keystore.p12", apiMediationServiceConfig.getSsl().getKeyStore());
-        assertEquals("password", apiMediationServiceConfig.getSsl().getKeyStorePassword());
+        assertArrayEquals("password".toCharArray(), apiMediationServiceConfig.getSsl().getKeyStorePassword());
         assertEquals("keystore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore());
-        assertEquals("password", apiMediationServiceConfig.getSsl().getTrustStorePassword());
+        assertArrayEquals("password".toCharArray(), apiMediationServiceConfig.getSsl().getTrustStorePassword());
     }
 
     @Test

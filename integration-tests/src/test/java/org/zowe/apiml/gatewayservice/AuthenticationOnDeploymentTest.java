@@ -10,28 +10,31 @@
 package org.zowe.apiml.gatewayservice;
 
 import io.restassured.RestAssured;
-import lombok.SneakyThrows;
+import org.apache.catalina.LifecycleException;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.auth.Authentication;
 import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.Flaky;
+import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
-import org.zowe.apiml.util.service.DiscoveryUtils;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 
 /**
@@ -47,7 +50,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
 @TestsNotMeantForZowe
 public class AuthenticationOnDeploymentTest {
 
-    private static final int TIMEOUT = 10;
+    private static final int TIMEOUT = 3;
 
     private RequestVerifier verifier;
 
@@ -63,11 +66,10 @@ public class AuthenticationOnDeploymentTest {
     @Flaky
     public void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
-        final String serviceId = "multipleAuthentication".toLowerCase();
 
         try (
-            final VirtualService service1 = new VirtualService(serviceId, 5678);
-            final VirtualService service2 = new VirtualService(serviceId, 5679)
+            final VirtualService service1 = new VirtualService("testService", 5678);
+            final VirtualService service2 = new VirtualService("testService", 5679)
         ) {
             // start first instance - without passTickets
             service1
@@ -97,12 +99,10 @@ public class AuthenticationOnDeploymentTest {
                 .waitForGatewayRegistration(2, TIMEOUT);
 
             // on each gateway make calls (count same as instances) to service
-            service1.getGatewayVerifyUrls().forEach(x -> {
-                given()
-                    .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-                    .when().get(x + "/test")
-                    .then().statusCode(is(SC_OK));
-            });
+            service1.getGatewayVerifyUrls().forEach(x -> given()
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                .when().get(x + "/test")
+                .then().statusCode(is(SC_OK)));
             service2.getGatewayVerifyUrls().forEach(x -> {
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
@@ -114,7 +114,7 @@ public class AuthenticationOnDeploymentTest {
             service1.getGatewayVerifyUrls().forEach(gw -> {
                     verifier.existAndClean(service1, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"));
                     verifier.existAndClean(service2, x -> {
-                        assertNotNull( x.getHeader(HttpHeaders.AUTHORIZATION));
+                        assertNotNull(x.getHeader(HttpHeaders.AUTHORIZATION));
                         assertEquals("/verify/test", x.getRequestURI());
                         return true;
                     });
@@ -136,7 +136,7 @@ public class AuthenticationOnDeploymentTest {
             });
             service1.getGatewayVerifyUrls().forEach(gw -> {
                 verifier.existAndClean(service2, x -> {
-                    assertNotNull( x.getHeader(HttpHeaders.AUTHORIZATION));
+                    assertNotNull(x.getHeader(HttpHeaders.AUTHORIZATION));
                     assertEquals("/verify/test", x.getRequestURI());
                     return true;
                 });
@@ -144,61 +144,129 @@ public class AuthenticationOnDeploymentTest {
         }
     }
 
-    /**
-     * The idea of this test is check the case when Gateway uses retry call and if each call's headers are correct.
-     * Scheme PassTicket removes cookies and i.e. ByPass should leave cookie in the call.
-     *
-     * Test start two instances of a service with different authentication scheme (PassTicket and ByPass). Gateway will
-     * try call first service (with PassTicket). For the call cookie should be removed. This call will failed and
-     * the Gateway will make retry to call second instance. It uses ByPass, so cookie should be in the headers. Test
-     * checks if first call haven't changed request to make correct second call.
-     */
     @Test
-    @SneakyThrows
-    void givenJwtInCookie_whenPassTicketFailed_thenSecondServiceWithByPassIsCalledCorrectly() {
-        final String jwt = gatewayToken();
-        final String serviceId = "fromPassTicketToByPassService".toLowerCase();
+    @Flaky
+    void testReregistration() throws Exception {
 
         try (
-            final VirtualService service1 = new VirtualService(serviceId, 5678);
-            final VirtualService service2 = new VirtualService(serviceId, 5679)
+            final VirtualService service1 = new VirtualService("testService3", 5678);
+            final VirtualService service2 = new VirtualService("testService3", 5679);
+            final VirtualService service4 = new VirtualService("testService3", 5678)
         ) {
-            // service1 uses PassTickets, but it is stopped. Gateway retries call should be on service2
-            service1.zombie();
 
-            /*
-             service2 uses ByPass scheme, it check if previous call didn't remove a cookie (required for service2, not
-             for service1)
-             */
-            service2
-                .setAuthentication(new Authentication(AuthenticationScheme.BYPASS, null))
-                .addServlet("error", "/test/*", new HttpServlet() {
+            List<VirtualService> serviceList = Arrays.asList(service1, service2);
 
-                    private static final long serialVersionUID = -8891890250560560219L;
+            serviceList.forEach(s -> {
+                try {
+                    s.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
+                } catch (IOException | LifecycleException e) {
+                    e.printStackTrace();
+                }
+            });
 
-                    @Override
-                    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
-                        // verify transformation for ByPass scheme
-                        assertNull(req.getHeader(HttpHeaders.AUTHORIZATION));
-                        assertNotNull(req.getCookies());
-                        assertEquals(1, req.getCookies().length);
-                        Cookie cookie = req.getCookies()[0];
-                        assertEquals(GATEWAY_TOKEN_COOKIE_NAME, cookie.getName());
-                        assertEquals(jwt, cookie.getValue());
+            serviceList.forEach(s -> {
+                try {
+                    s.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
+                } catch (LifecycleException e) {
+                    e.printStackTrace();
+                }
+            });
+//            register service with the same name
+            service4.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
+            // on each gateway make a call to service
+            service4.getGatewayVerifyUrls().forEach(x ->
+                given()
+                    .when().get(x + "/test")
+                    .then().statusCode(is(SC_OK))
+            );
 
-                        resp.setStatus(SC_NO_CONTENT);
-                    }
-                })
-                .start()
-                .waitForGatewayRegistration(2, TIMEOUT);
+            // verify if each gateway sent request to service
+            service4.getGatewayVerifyUrls().forEach(gw ->
+                verifier.existAndClean(service4, x -> x.getHeader(HttpHeaders.AUTHORIZATION) == null && x.getRequestURI().equals("/verify/test"))
+            );
+            service4.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
 
-            given()
-                .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-            .when()
-                .get(DiscoveryUtils.getGatewayUrls().get(0) + "/api/v1/" + serviceId + "/test")
-            .then()
-                .statusCode(is(SC_NO_CONTENT));
+
         }
     }
 
+    @Test
+    @Flaky
+    @NotForMainframeTest
+    void testServiceStatus() throws Exception {
+
+        String serviceId = "testservice4";
+        String host = InetAddress.getLocalHost().getHostName();
+
+        List<Integer> ports = Arrays.asList(5678, 5679, 5680);
+
+        try (
+            final VirtualService service1 = new VirtualService(serviceId, 5678);
+            final VirtualService service2 = new VirtualService(serviceId, 5679);
+            final VirtualService service3 = new VirtualService(serviceId, 5680)
+        ) {
+
+
+            service1.addVerifyServlet().start();
+            service2.addVerifyServlet().start();
+            service3.addVerifyServlet().start();
+            String verifyUrl = service1.getGatewayVerifyUrls().get(0);
+            for (int i = 0; i < 5; i++) {
+
+                ports.forEach(port -> await().atMost(5, TimeUnit.SECONDS).until(() ->
+                    given().when()
+                        .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + port + "/status?value=OUT_OF_SERVICE")
+                        .then().extract().statusCode() == SC_OK
+                ));
+
+                await().atMost(5, TimeUnit.SECONDS).until(() ->
+                    given().when()
+                        .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678 + "/status?value=UP")
+                        .then().extract().statusCode() == SC_OK
+                );
+
+                await().atMost(5, TimeUnit.SECONDS).until(() ->
+                    given()
+                        .when().get(verifyUrl + "/test")
+                        .then().extract().statusCode() == SC_OK
+                );
+
+
+//                unregister service1
+                await().atMost(5, TimeUnit.SECONDS).until(() ->
+                    given().when()
+                        .delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678)
+                        .then().extract().statusCode() == SC_OK
+                );
+
+//                set service2 UP
+                await().atMost(5, TimeUnit.SECONDS).until(() -> given().when()
+                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5679 + "/status?value=UP")
+                    .then().extract().statusCode() == SC_OK);
+
+//                call service2
+                await().atMost(5, TimeUnit.SECONDS).until(() -> given()
+                    .when().get(verifyUrl + "/test")
+                    .then().extract().statusCode() == SC_OK);
+
+//                set service3 UP
+                await().atMost(5, TimeUnit.SECONDS).until(() -> given().when()
+                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5680 + "/status?value=UP")
+                    .then().extract().statusCode() == SC_OK);
+
+//                call service3
+                await().atMost(5, TimeUnit.SECONDS).until(
+                    () -> given()
+                        .when().get(verifyUrl + "/test")
+                        .then().extract().statusCode() == SC_OK
+                );
+
+                await().atMost(5, TimeUnit.SECONDS).until(
+                    () -> service1.postRegistration("UP")
+                        .then().extract().statusCode() == SC_NO_CONTENT
+                );
+            }
+
+        }
+    }
 }

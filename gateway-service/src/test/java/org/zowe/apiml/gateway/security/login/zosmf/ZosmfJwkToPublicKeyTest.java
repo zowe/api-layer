@@ -22,10 +22,10 @@ import java.nio.file.Paths;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
 
-public class ZosmfJwkToPublicKeyTest {
+class ZosmfJwkToPublicKeyTest {
 
     @Test
-    public void zosmfJwkIsConvertedToPublicKey() throws IOException {
+    void zosmfJwkIsConvertedToPublicKey() throws IOException {
         RestTemplate restTemplate = mock(RestTemplate.class);
         String jwk = "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\",\"use\":\"sig\",\"kid\":\"ozG_ySMHRsVQFmN1mVBeS-WtCupY1r-K7ewben09IBg\",\"alg\":\"RS256\",\"n\":\"wRdwksGIAR2A4cHsoOsYcGp5AmQl5ZjF5xIPXeyjkaLHmNTMvjixdWso1ecVlVeg_6pIXzMRhmOvmjXjz1PLfI2GD3drmeqsStjISWdDfH_rIQCYc9wYbWIZ3bQ0wFRDaVpZ6iOZ2iNcIevvZQKNw9frJthKSMM52JtsgwrgN--Ub2cKWioU_d52SC2SfDzOdnChqlU7xkqXwKXSUqcGM92A35dJJXkwbZhAHnDy5FST1HqYq27MOLzBkChw1bJQHZtlSqkxcHPxphnnbFKQmwRVUvyC5kfBemX-7Mzp1wDogt5lGvBAf3Eq8rFxaevAke327rM7q2KqO_LDMN2J-Q\"}]}";
 
@@ -38,7 +38,8 @@ public class ZosmfJwkToPublicKeyTest {
         try {
             String filename = f.getName();
             assertTrue(zosmfJwkToPublicKey.updateJwtPublicKeyFile("https://zosmf:1433", filename, "localca",
-                    "../keystore/local_ca/localca.keystore.p12", "PKCS12", "local_ca_password", "local_ca_password"));
+                "../keystore/local_ca/localca.keystore.p12", "PKCS12",
+                "local_ca_password".toCharArray(), "local_ca_password".toCharArray()));
             assertTrue(new String(Files.readAllBytes(Paths.get(filename))).contains("-----"));
         } finally {
             f.delete();

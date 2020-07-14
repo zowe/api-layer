@@ -21,14 +21,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WebSocketRoutedSessionTest {
+class WebSocketRoutedSessionTest {
     private WebSocketSession clientSession;
     private WebSocketSession serverSession;
 
     private WebSocketRoutedSession underTest;
 
     @BeforeEach
-    public void prepareSessionUnderTest() {
+    void prepareSessionUnderTest() {
         clientSession = mock(WebSocketSession.class);
         serverSession = mock(WebSocketSession.class);
 
@@ -36,7 +36,7 @@ public class WebSocketRoutedSessionTest {
     }
 
     @Test
-    public void givenValidServerAndClientSession_whenTheDetailsAreRequested_thenTheDetailsAreReturnedAsStrings() throws Exception {
+    void givenValidServerAndClientSession_whenTheDetailsAreRequested_thenTheDetailsAreReturnedAsStrings() throws Exception {
         String sessionId = "123";
         String clientUriPath = "ws://localhost:8080/petstore";
         String serverUriPath = "ws://gateway:8080/petstore";

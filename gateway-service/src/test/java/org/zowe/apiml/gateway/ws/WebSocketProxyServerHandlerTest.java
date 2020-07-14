@@ -65,7 +65,7 @@ class WebSocketProxyServerHandlerTest {
      * Proper WebSocketSession is stored.
      */
     @Test
-    public void givenValidRoute_whenTheConnectionIsEstablished_thenTheValidSessionIsStoredInternally() throws Exception {
+    void givenValidRoute_whenTheConnectionIsEstablished_thenTheValidSessionIsStoredInternally() throws Exception {
         RoutedServices routesForSpecificValidService = mock(RoutedServices.class);
         when(routesForSpecificValidService.findServiceByGatewayUrl("ws/1"))
             .thenReturn(new RoutedService("api-v1", "api/v1", "/api-v1/api/v1"));
@@ -103,7 +103,7 @@ class WebSocketProxyServerHandlerTest {
      * The WebSocketSession is closed
      */
     @Test
-    public void givenInvalidURI_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsNotAcceptable() throws Exception {
+    void givenInvalidURI_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsNotAcceptable() throws Exception {
         WebSocketSession establishedSession = mock(WebSocketSession.class);
         when(establishedSession.isOpen()).thenReturn(true);
         when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/invalidUrl"));
@@ -122,7 +122,7 @@ class WebSocketProxyServerHandlerTest {
      * The WebSocketSession is closed
      */
     @Test
-    public void givenInvalidRoute_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsNotAcceptable() throws Exception {
+    void givenInvalidRoute_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsNotAcceptable() throws Exception {
         WebSocketSession establishedSession = mock(WebSocketSession.class);
         when(establishedSession.isOpen()).thenReturn(true);
         when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/api/v1/non_existent_service/api/v1"));
@@ -144,7 +144,7 @@ class WebSocketProxyServerHandlerTest {
      * Proper WebSocketSession is stored.
      */
     @Test
-    public void givenNoInstanceOfTheServiceIsInTheRepository_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsServiceRestarted() throws Exception {
+    void givenNoInstanceOfTheServiceIsInTheRepository_whenTheConnectionIsEstablished_thenTheSocketIsClosedAsServiceRestarted() throws Exception {
         WebSocketSession establishedSession = mock(WebSocketSession.class);
         when(establishedSession.isOpen()).thenReturn(true);
         when(establishedSession.getUri()).thenReturn(new URI("wss://gatewayHost:1443/api/v1/api-v1/api/v1"));
@@ -159,7 +159,7 @@ class WebSocketProxyServerHandlerTest {
     }
 
     @Test
-    public void givenValidSession_whenTheConnectionIsClosed_thenTheSessionIsClosedAndRemovedFromRepository() throws Exception {
+    void givenValidSession_whenTheConnectionIsClosed_thenTheSessionIsClosedAndRemovedFromRepository() throws Exception {
         CloseStatus normalClose = CloseStatus.NORMAL;
         WebSocketSession establishedSession = mock(WebSocketSession.class);
         String validSessionId = "123";
@@ -173,7 +173,7 @@ class WebSocketProxyServerHandlerTest {
     }
 
     @Test
-    public void givenValidSession_whenTheMessageIsReceived_thenTheMessageIsPassedToTheSession() throws Exception {
+    void givenValidSession_whenTheMessageIsReceived_thenTheMessageIsPassedToTheSession() throws Exception {
         WebSocketSession establishedSession = mock(WebSocketSession.class);
         String validSessionId = "123";
         when(establishedSession.getId()).thenReturn(validSessionId);

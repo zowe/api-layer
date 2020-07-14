@@ -42,7 +42,7 @@ public class ApiCatalogHttpHeadersIntegrationTest {
     }
 
     @Test
-    public void verifyHttpHeaders() {
+    void verifyHttpHeaders() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         Map<String, String> expectedHeaders = new HashMap<>();

@@ -34,7 +34,7 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | docker                                   | Tool - Dev Docker Container        |
 | docs                                     | Documentation                      |
 | gateway-service                          | Core Service - Gateway Service     |
-| integration-enabler-spring-v1-sample-app | Sample Service - Spring Enabler    |
+| onboarding-enabler-spring-v1-sample-app | Sample Service - Spring Enabler    |
 | integration-tests                        | Test - Integration test            |
 | keystore                                 | Config - Local TLS config          |
 | onboarding-enabler-java                  | APIML SDK - Java Enabler           |

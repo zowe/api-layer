@@ -41,7 +41,7 @@ import static org.mockito.Mockito.*;
 import static org.zowe.apiml.gateway.security.service.schema.ZosmfScheme.ZosmfCommand.COOKIE_HEADER;
 
 @ExtendWith(MockitoExtension.class)
-public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
+class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
 
     @Mock
     private AuthenticationService authenticationService;
@@ -59,7 +59,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     private ZosmfScheme scheme;
 
     @BeforeEach
-    public void prepareContextForTests() {
+    void prepareContextForTests() {
         Calendar calendar = Calendar.getInstance();
         authentication = new Authentication(AuthenticationScheme.ZOSMF, null);
         queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
@@ -74,7 +74,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenNoToken_whenCreateCommand_thenDontAddZuulHeader() {
+    void givenNoToken_whenCreateCommand_thenDontAddZuulHeader() {
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.empty());
 
         zosmfScheme.createCommand(authentication, () -> queryResponse).apply(null);
@@ -84,7 +84,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenRequestWithNoCookie_whenCreateCommand_thenAddOnlyLtpaCookie() {
+    void givenRequestWithNoCookie_whenCreateCommand_thenAddOnlyLtpaCookie() {
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken1"));
         when(authenticationService.getLtpaTokenWithValidation("jwtToken1")).thenReturn("ltpa1");
         when(authenticationService.parseJwtToken("jwtToken1")).thenReturn(queryResponse);
@@ -96,7 +96,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenRequestWithSetCookie_whenCreateCommand_thenAppendSetCookie() {
+    void givenRequestWithSetCookie_whenCreateCommand_thenAppendSetCookie() {
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken2"));
         when(authenticationService.getLtpaTokenWithValidation("jwtToken2")).thenReturn("ltpa2");
         when(authenticationService.parseJwtToken("jwtToken2")).thenReturn(queryResponse);
@@ -108,7 +108,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenNotValidToken_whenCreateCommand_thenThrowTokenNotValidException() {
+    void givenNotValidToken_whenCreateCommand_thenThrowTokenNotValidException() {
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken3"));
         when(authenticationService.getLtpaTokenWithValidation("jwtToken3")).thenThrow(new TokenNotValidException("Token is not valid"));
         when(authenticationService.parseJwtToken("jwtToken3")).thenReturn(queryResponse);
@@ -121,7 +121,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenExpiredToken_whenCreateCommand_thenThrowJwtTokenException() {
+    void givenExpiredToken_whenCreateCommand_thenThrowJwtTokenException() {
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.of("jwtToken3"));
         when(authenticationService.getLtpaTokenWithValidation("jwtToken3")).thenThrow(new JwtException("Token is expired"));
         when(authenticationService.parseJwtToken("jwtToken3")).thenReturn(queryResponse);
@@ -134,12 +134,12 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenZosmfScheme_whenGetScheme_thenReturnScheme() {
+    void givenZosmfScheme_whenGetScheme_thenReturnScheme() {
         assertEquals(AuthenticationScheme.ZOSMF, scheme.getScheme());
     }
 
     @Test
-    public void givenNoToken_whenCreateCommand_thenTestCommandExpiration() {
+    void givenNoToken_whenCreateCommand_thenTestCommandExpiration() {
         AuthenticationCommand command = scheme.createCommand(null, () -> null);
 
         assertNull(ReflectionTestUtils.getField(command, "expireAt"));
@@ -147,7 +147,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenTokenWithoutExpiration_whenCreateCommand_thenTestCommandExpiration() {
+    void givenTokenWithoutExpiration_whenCreateCommand_thenTestCommandExpiration() {
         QueryResponse queryResponse = new QueryResponse();
 
         AuthenticationCommand command = scheme.createCommand(null, () -> queryResponse);
@@ -157,7 +157,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenTokenWithExpiration_whenCreateCommand_thenTestCommandExpiration() {
+    void givenTokenWithExpiration_whenCreateCommand_thenTestCommandExpiration() {
         QueryResponse queryResponse = new QueryResponse();
         queryResponse.setExpiration(new Date(123L));
 
@@ -177,7 +177,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenTokenExpiredOneSecAgo_whenCreateCommand_thenTestCommandExpiration() {
+    void givenTokenExpiredOneSecAgo_whenCreateCommand_thenTestCommandExpiration() {
         QueryResponse queryResponse = prepareQueryResponseForTime(-1);
 
         AuthenticationCommand command = scheme.createCommand(null, () -> queryResponse);
@@ -186,7 +186,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenTokenThatWillExpireInOneSec_whenCreateCommand_thenTestCommandExpiration() {
+    void givenTokenThatWillExpireInOneSec_whenCreateCommand_thenTestCommandExpiration() {
         QueryResponse queryResponse = prepareQueryResponseForTime(2);
 
         AuthenticationCommand command = scheme.createCommand(null, () -> queryResponse);
@@ -195,7 +195,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenZosmfToken_whenCreateCommand_thenTestJwtToken() {
+    void givenZosmfToken_whenCreateCommand_thenTestJwtToken() {
         AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);
         when(cookieProperties.getCookieName()).thenReturn("apimlAuthenticationToken");
         when(authConfigurationProperties.getCookieProperties()).thenReturn(cookieProperties);
@@ -215,7 +215,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenNoJwtToken_whenCreateCommand_thenExpectValidJwtRequired() {
+    void givenNoJwtToken_whenCreateCommand_thenExpectValidJwtRequired() {
         AuthenticationCommand command = scheme.createCommand(new Authentication(AuthenticationScheme.ZOSMF, null), () -> null);
 
         assertTrue(command.isRequiredValidJwt());
@@ -228,7 +228,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenRequestWithSetCookie_whenApplyToRequest_thenAppendSetCookie() {
+    void givenRequestWithSetCookie_whenApplyToRequest_thenAppendSetCookie() {
         HttpRequest httpRequest = new HttpGet("/test/request");
         httpRequest.setHeader(COOKIE_HEADER, "cookie1=1");
         prepareAuthenticationService("ltpa2");
@@ -239,7 +239,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenRequestWithNoCookie_whenApplyToRequest_thenAppendSetCookie() {
+    void givenRequestWithNoCookie_whenApplyToRequest_thenAppendSetCookie() {
         HttpRequest httpRequest = new HttpGet("/test/request");
         prepareAuthenticationService("ltpa1");
 
@@ -249,7 +249,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenRequest_whenApplyToRequest_thenSetAuthHeaderToNull() {
+    void givenRequest_whenApplyToRequest_thenSetAuthHeaderToNull() {
         HttpRequest httpRequest = new HttpGet("/test/request");
         prepareAuthenticationService("ltpa1");
 
@@ -259,7 +259,7 @@ public class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    public void givenZosmfToken_whenApplyToRequest_thenTestJwtToken() {
+    void givenZosmfToken_whenApplyToRequest_thenTestJwtToken() {
         Calendar calendar = Calendar.getInstance();
         QueryResponse queryResponse = new QueryResponse("domain", "username", calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOSMF);
         AuthConfigurationProperties.CookieProperties cookieProperties = mock(AuthConfigurationProperties.CookieProperties.class);

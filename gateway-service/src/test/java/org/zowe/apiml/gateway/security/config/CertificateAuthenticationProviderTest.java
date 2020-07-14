@@ -8,7 +8,7 @@ package org.zowe.apiml.gateway.security.config;/*
  * Copyright Contributors to the Zowe Project.
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -17,10 +17,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
-public class CertificateAuthenticationProviderTest {
+class CertificateAuthenticationProviderTest {
 
     @Test
-    public void authenticate() {
+    void authenticate() {
         CertificateAuthenticationProvider cap = new CertificateAuthenticationProvider();
         Authentication authentication = mock(Authentication.class);
         cap.authenticate(authentication);
@@ -28,7 +28,7 @@ public class CertificateAuthenticationProviderTest {
     }
 
     @Test
-    public void supports() {
+    void supports() {
         CertificateAuthenticationProvider cap = new CertificateAuthenticationProvider();
         assertTrue(cap.supports(PreAuthenticatedAuthenticationToken.class));
         assertFalse(cap.supports(AuthenticationProvider.class));

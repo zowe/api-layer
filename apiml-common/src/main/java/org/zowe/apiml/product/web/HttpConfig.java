@@ -44,7 +44,7 @@ public class HttpConfig {
     private String trustStore;
 
     @Value("${server.ssl.trustStorePassword:#{null}}")
-    private String trustStorePassword;
+    private char[] trustStorePassword;
 
     @Value("${server.ssl.trustStoreType:PKCS12}")
     private String trustStoreType;
@@ -56,10 +56,10 @@ public class HttpConfig {
     private String keyStore;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")
-    private String keyStorePassword;
+    private char[] keyStorePassword;
 
     @Value("${server.ssl.keyPassword:#{null}}")
-    private String keyPassword;
+    private char[] keyPassword;
 
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
@@ -137,14 +137,14 @@ public class HttpConfig {
     public SslContextFactory jettySslContextFactory() {
         SslContextFactory sslContextFactory = new SslContextFactory(SecurityUtils.replaceFourSlashes(keyStore));
         sslContextFactory.setProtocol(protocol);
-        sslContextFactory.setKeyStorePassword(keyStorePassword);
+        sslContextFactory.setKeyStorePassword(keyStorePassword == null ? null : String.valueOf(keyStorePassword));
         sslContextFactory.setKeyStoreType(keyStoreType);
         sslContextFactory.setCertAlias(keyAlias);
 
         if (trustStore != null) {
             sslContextFactory.setTrustStorePath(SecurityUtils.replaceFourSlashes(trustStore));
             sslContextFactory.setTrustStoreType(trustStoreType);
-            sslContextFactory.setTrustStorePassword(trustStorePassword);
+            sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
         }
         log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
 

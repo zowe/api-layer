@@ -14,14 +14,14 @@ import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import static org.junit.Assert.assertEquals;
 
-public class GatewayConfigTest {
+class GatewayConfigTest {
 
     private static final String HOST = "hostA";
     private static final String PORT = "8888";
     private static final String SCHEME = "https";
 
     @Test
-    public void shouldReturnGatewayProperties() {
+    void shouldReturnGatewayProperties() {
         GatewayConfigProperties gatewayConfigProperties = new GatewayConfig().getGatewayConfigProperties(HOST, PORT, SCHEME);
         assertEquals(HOST + ":" + PORT, gatewayConfigProperties.getHostname());
         assertEquals(SCHEME, gatewayConfigProperties.getScheme());

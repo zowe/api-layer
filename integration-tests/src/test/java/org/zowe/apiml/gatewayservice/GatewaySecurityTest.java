@@ -30,7 +30,7 @@ import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-public class GatewaySecurityTest {
+class GatewaySecurityTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
@@ -44,13 +44,13 @@ public class GatewaySecurityTest {
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     //@formatter:off
     @Test
-    public void accessProtectedEndpointWithoutCredentials() {
+    void accessProtectedEndpointWithoutCredentials() {
         given()
         .when()
             .get(String.format("%s://%s:%d%s", SCHEME, HOST, PORT, PROTECTED_ENDPOINT))
@@ -61,7 +61,7 @@ public class GatewaySecurityTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
+    void loginToGatewayAndAccessProtectedEndpointWithBasicAuthentication() {
         given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
         .when()
@@ -72,7 +72,7 @@ public class GatewaySecurityTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void loginToGatewayAndAccessProtectedEndpointWithCookie() {
+    void loginToGatewayAndAccessProtectedEndpointWithCookie() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         given()
@@ -84,7 +84,7 @@ public class GatewaySecurityTest {
     }
 
     @Test
-    public void accessProtectedEndpointWithInvalidToken() {
+    void accessProtectedEndpointWithInvalidToken() {
         String invalidToken = "badToken";
 
         given()
@@ -97,7 +97,7 @@ public class GatewaySecurityTest {
 
 
     @Test
-    public void accessProtectedEndpointWithInvalidCredentials() {
+    void accessProtectedEndpointWithInvalidCredentials() {
         given()
             .auth().preemptive().basic(INVALID_USERNAME, INVALID_PASSWORD)
         .when()
@@ -107,7 +107,7 @@ public class GatewaySecurityTest {
     }
 
     @Test
-    public void verifyHttpHeaders() {
+    void verifyHttpHeaders() {
         String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
 
         Map<String, String> expectedHeaders = new HashMap<>();

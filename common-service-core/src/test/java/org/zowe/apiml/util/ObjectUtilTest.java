@@ -52,13 +52,6 @@ public class ObjectUtilTest {
         ObjectUtil.requireNotEmpty(" ", "Parameter can't be empty");
     }
 
-    @Test
-    public void testGetThisClass() {
-        Class aClass = ObjectUtil.getThisClass();
-        assertNotNull(aClass);
-        assertEquals(this.getClass().getSimpleName(), aClass.getSimpleName());
-    }
-
     private ThreadLocal<Map<String, String>> threadContext = new ThreadLocal();
 
     @Test

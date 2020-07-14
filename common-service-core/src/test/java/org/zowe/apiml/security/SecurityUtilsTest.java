@@ -61,7 +61,7 @@ public class SecurityUtilsTest {
 
     @Test(expected = HttpsConfigError.class)
     public void testLoadKeyWithIncorrectKeyPassword() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).keyPassword(WRONG_PARAMETER).build();
+        HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(JWT_KEY_ALIAS).keyPassword(WRONG_PARAMETER.toCharArray()).build();
         Key secretKey = SecurityUtils.loadKey(httpsConfig);
         assertNull(secretKey);
     }
@@ -90,7 +90,7 @@ public class SecurityUtilsTest {
 
     @Test(expected = HttpsConfigError.class)
     public void testFindPrivateKeyByPublicWithIncorrectKeyPassword() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.keyPassword(WRONG_PARAMETER).build();
+        HttpsConfig httpsConfig = httpsConfigBuilder.keyPassword(WRONG_PARAMETER.toCharArray()).build();
         byte[] publicKey = loadPublicKeyFromFile();
         Key secretKey = SecurityUtils.findPrivateKeyByPublic(httpsConfig, publicKey);
         assertNull(secretKey);

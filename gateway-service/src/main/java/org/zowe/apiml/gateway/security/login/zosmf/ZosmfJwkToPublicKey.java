@@ -34,7 +34,7 @@ public class ZosmfJwkToPublicKey {
      * @throws FileNotFoundException when the filename is invalid
      */
     public boolean updateJwtPublicKeyFile(String zosmfUrl, String filename, String caAlias, String caKeyStore,
-    String caKeyStoreType, String caKeyStorePassword, String caKeyPassword) throws FileNotFoundException {
+    String caKeyStoreType, char[] caKeyStorePassword, char[] caKeyPassword) throws FileNotFoundException {
         try {
             String jwkJson = restTemplateWithoutKeystore.getForObject(zosmfUrl + "/jwt/ibm/api/zOSMFBuilder/jwk",
                     String.class);

@@ -24,8 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/apidoc")
-@Api(tags = {"API Documentation"},
-    description = "Service documentation")
+@Api(tags = {"API Documentation"})
 public class CatalogApiDocController {
 
     private final APIServiceStatusService apiServiceStatusService;

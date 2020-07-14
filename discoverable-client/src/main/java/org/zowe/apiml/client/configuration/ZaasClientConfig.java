@@ -30,7 +30,7 @@ public class ZaasClientConfig {
     private String keyStorePath;
 
     @Value("${apiml.service.ssl.keyStorePassword}")
-    private String keyStorePassword;
+    private char[] keyStorePassword;
 
     @Value("${apiml.service.ssl.keyStoreType}")
     private String keyStoreType;
@@ -39,7 +39,7 @@ public class ZaasClientConfig {
     private String trustStorePath;
 
     @Value("${apiml.service.ssl.trustStorePassword}")
-    private String trustStorePassword;
+    private char[] trustStorePassword;
 
     @Value("${apiml.service.ssl.trustStoreType}")
     private String trustStoreType;

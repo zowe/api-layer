@@ -21,12 +21,12 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.REQUEST_URI_KEY;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
-public class LocationFilterTest {
+class LocationFilterTest {
 
     private LocationFilter filter;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         this.filter = new LocationFilter();
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
@@ -46,7 +46,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void urlNotDefinedInMetadataIsNotModified() {
+    void urlNotDefinedInMetadataIsNotModified() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "service1");
         ctx.set(PROXY_KEY, "service1");
@@ -55,14 +55,14 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void urlDefinedInMetadataIsModified() {
+    void urlDefinedInMetadataIsModified() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         this.filter.run();
         assertEquals("/service/v1/path", ctx.get(REQUEST_URI_KEY));
     }
 
     @Test
-    public void requestURIStartsWithoutSlash() {
+    void requestURIStartsWithoutSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(REQUEST_URI_KEY, "path");
         this.filter.run();
@@ -70,7 +70,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void proxyStartsWithSlash() {
+    void proxyStartsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "/api/v2/service");
         this.filter.run();
@@ -78,7 +78,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void proxyEndsWithSlash() {
+    void proxyEndsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "api/v2/service/");
         this.filter.run();
@@ -86,7 +86,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void serviceIdIsEmpty() {
+    void serviceIdIsEmpty() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "");
         this.filter.run();
@@ -94,7 +94,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void serviceIdIsNull() {
+    void serviceIdIsNull() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, null);
         this.filter.run();
@@ -102,7 +102,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void proxyIsEmpty() {
+    void proxyIsEmpty() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "");
         this.filter.run();
@@ -110,7 +110,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void proxyIsNull() {
+    void proxyIsNull() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, null);
         this.filter.run();
@@ -118,7 +118,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void requestPathIsEmpty() {
+    void requestPathIsEmpty() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(REQUEST_URI_KEY, "");
         this.filter.run();
@@ -126,7 +126,7 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void requestPathIsNull() {
+    void requestPathIsNull() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(REQUEST_URI_KEY, null);
         this.filter.run();
@@ -134,25 +134,25 @@ public class LocationFilterTest {
     }
 
     @Test
-    public void shouldReturnFilterType() {
+    void shouldReturnFilterType() {
         String filterType = this.filter.filterType();
         assertEquals("pre", filterType);
     }
 
     @Test
-    public void shouldFilterShouldReturnTrue() {
+    void shouldFilterShouldReturnTrue() {
         Boolean filterFlag = this.filter.shouldFilter();
         assertEquals(true, filterFlag);
     }
 
     @Test
-    public void shouldReturnFilterOrder() {
+    void shouldReturnFilterOrder() {
         int filterOrder = this.filter.filterOrder();
         assertEquals(8, filterOrder);
     }
 
     @Test
-    public void normalizeOriginalPathShouldReturnEmptyString() {
+    void normalizeOriginalPathShouldReturnEmptyString() {
         LocationFilter filter = new LocationFilter();
         final RequestContext ctx = RequestContext.getCurrentContext();
         RoutedServices routedServices = new RoutedServices();
