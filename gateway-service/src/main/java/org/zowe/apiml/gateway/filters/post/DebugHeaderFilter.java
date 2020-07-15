@@ -49,15 +49,9 @@ public class DebugHeaderFilter extends ZuulFilter {
     @Override
     public Object run() {
         String debug = convertToPrettyPrintString(Debug.getRoutingDebug());
-        String debug2 = Debug.getRequestDebug().stream().collect(Collectors.joining("|"));
-        String debug3 = convertToPrettyPrintString(Debug.getRequestDebug());
         String reqInfo = RequestContext.getCurrentContext().getFilterExecutionSummary().toString();
-        String reqInfo2 = RequestContextUtils.getDebugInfo();
-        String reqInfo3 = RequestContextUtils.getInstanceInfo().toString();
-        log.info("\n\n\nBoy if this msg dont show up\n\n\n");
-        log.debug("\n\n\nTest deubg statement\n\n\n");
-        log.warn("\n\n\n---TIM---- Additional request info: \n********** \nreqInfo\n{} \nreqInfo2\n{} \nreqInfo3\n{}\n**********\n", reqInfo, reqInfo2, reqInfo3);
-        log.warn("\n\n\n---TIM----Debug.getRoutingDebug(): \n********** \n{}\nDebug.getRequestDebug(): \n{}", debug, debug3);
+        log.debug("Filter Execution Summary: " + reqInfo);
+        log.debug("RoutingDebug: " + debug);
         log.debug("RibbonRetryDebug: " + RequestContextUtils.getDebugInfo());
         RequestContext.getCurrentContext().addZuulResponseHeader(
             "ZuulFilterDebug", Debug.getRoutingDebug().stream().collect(Collectors.joining("|")));
