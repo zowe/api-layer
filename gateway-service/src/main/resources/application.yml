@@ -21,6 +21,8 @@ logging:
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
+    routing:
+        mode: new
     service:
         # The `apiml.service` node contains information required by any APIML service
         id: gateway  # Service ID of this service. It is fixed for APIML API Gateway

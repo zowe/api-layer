@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.routing;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientRouteLocator;
@@ -73,6 +74,7 @@ public class ApimlRoutingConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "apiml.routing.mode", havingValue = "default")
     @Autowired
     public DiscoveryClientRouteLocator discoveryClientRouteLocator(DiscoveryClient discovery,
                                                                    ZuulProperties zuulProperties,
@@ -86,5 +88,21 @@ public class ApimlRoutingConfig {
         zuulProperties.setDecodeUrl(false);
 
         return new ApimlRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "apiml.routing.mode", havingValue = "new")
+    @Autowired
+    public DiscoveryClientRouteLocator apimlClientRouteLocator(DiscoveryClient discoveryClient,
+                                                ZuulProperties zuulProperties,
+                                                WebSocketProxyServerHandler webSocketProxyServerHandler,
+                                                PageRedirectionFilter pageRedirectionFilter) {
+        //TODO isn't this done by spring automatically?
+        List<RoutedServicesUser> routedServicesUsers = new ArrayList<>();
+        routedServicesUsers.add(locationFilter());
+        routedServicesUsers.add(webSocketProxyServerHandler);
+        routedServicesUsers.add(pageRedirectionFilter);
+        zuulProperties.setDecodeUrl(false);
+        return new NewApimlRouteLocator("", zuulProperties, discoveryClient, routedServicesUsers);
     }
 }
