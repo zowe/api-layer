@@ -122,6 +122,9 @@ public class HttpsWebSecurityConfig {
     @Order(3)
     public class FilterChainBasicAuthOrTokenOrCert extends AbstractWebSecurityConfigurer {
 
+        @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+        private boolean verifySslCertificatesOfServices;
+
         @Override
         protected void configure(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(gatewayLoginProvider);
@@ -133,10 +136,11 @@ public class HttpsWebSecurityConfig {
             baseConfigure(http.antMatcher("/discovery/**"))
                 .addFilterBefore(basicFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(cookieFilter(authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                .httpBasic().realmName(DISCOVERY_REALM)
-                .and()
-                .authorizeRequests().anyRequest().authenticated()
-                .and().x509().userDetailsService(x509UserDetailsService());
+                .httpBasic().realmName(DISCOVERY_REALM);
+            if (verifySslCertificatesOfServices) {
+                http.authorizeRequests().anyRequest().authenticated().and()
+                .x509().userDetailsService(x509UserDetailsService());
+            }
         }
     }
 
