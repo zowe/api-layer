@@ -21,9 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class StatusCodeController {
 
-    /**
-     * Gets a greeting for anyone.
-     */
+
     @GetMapping(value = "/api/v1/status-code")
     @ApiOperation(value = "Parametrized status code",
         tags = {"Other Operations"})
@@ -32,9 +30,6 @@ public class StatusCodeController {
         return ResponseEntity.status(statusCode).body("status code: " + statusCode);
     }
 
-    /**
-     * Gets a greeting for anyone.
-     */
     @PostMapping(value = "/api/v1/status-code")
     @ApiOperation(value = "Parametrized status code",
         tags = {"Other Operations"})
