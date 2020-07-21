@@ -64,7 +64,6 @@ apiml:
         ssl:
             enabled: true
             verifySslCertificatesOfServices: true
-            ciphers: ${server.ssl.ciphers}
             protocol: ${server.ssl.protocol}
             keyStoreType: ${server.ssl.keyStoreType}
             trustStoreType: ${server.ssl.trustStoreType}
