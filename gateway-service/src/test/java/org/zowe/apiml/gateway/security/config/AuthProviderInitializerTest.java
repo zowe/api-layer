@@ -19,7 +19,7 @@ import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 
 import static org.mockito.Mockito.*;
 
-public class AuthProviderInitializerTest {
+class AuthProviderInitializerTest {
 
     private DummyAuthenticationProvider dummyAuthenticationProvider;
     private TokenAuthenticationProvider tokenAuthenticationProvider;
@@ -27,7 +27,7 @@ public class AuthProviderInitializerTest {
     private CertificateAuthenticationProvider certificateAuthenticationProvider;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         dummyAuthenticationProvider = mock(DummyAuthenticationProvider.class);
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);
         zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
@@ -35,7 +35,7 @@ public class AuthProviderInitializerTest {
     }
 
     @Test
-    public void testConfigure_whenProviderIsDummy() {
+    void testConfigure_whenProviderIsDummy() {
         String authProvider = LoginProvider.DUMMY.toString();
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
@@ -52,7 +52,7 @@ public class AuthProviderInitializerTest {
     }
 
     @Test
-    public void testConfigure_whenProviderIsZOSMF() {
+    void testConfigure_whenProviderIsZOSMF() {
         String authProvider = LoginProvider.ZOSMF.toString();
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
@@ -69,7 +69,7 @@ public class AuthProviderInitializerTest {
     }
 
     @Test
-    public void testConfigure_whenProviderIsUnexpectedString() {
+    void testConfigure_whenProviderIsUnexpectedString() {
         String authProvider = "unexpectedProvider";
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(

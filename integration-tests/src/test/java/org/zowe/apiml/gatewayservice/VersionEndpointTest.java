@@ -41,7 +41,7 @@ public class VersionEndpointTest {
     }
 
     @Test
-    public void shouldCallVersionEndpointAndReceivedVersion() {
+    void shouldCallVersionEndpointAndReceivedVersion() {
         given()
             .when()
             .get(requestString)

@@ -16,6 +16,7 @@ import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,6 +30,9 @@ public class EurekaApplications {
 
     public List<Application> getRegistered() {
         Applications applications = eurekaClient.getApplications();
+        if (applications == null) {
+            return Collections.emptyList();
+        }
         return applications.getRegisteredApplications();
     }
 }

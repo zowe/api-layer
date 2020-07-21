@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.config.ribbon.IClientConfiguration;
-import org.zowe.apiml.gateway.cache.ServiceCacheEvictor;
+import org.zowe.apiml.gateway.metadata.service.LoadBalancerRegistry;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -44,14 +44,14 @@ class ApimlLoadBalancerTest {
     ServerListUpdater serverListUpdater = mock(ServerListUpdater.class);
     ServerList<Server> serverList = mock(ServerList.class);
     ServerListFilter<Server> serverListFilter = mock(ServerListFilter.class);
-    ServiceCacheEvictor serviceCacheEvictor = mock(ServiceCacheEvictor.class);
+    LoadBalancerRegistry loadBalancerRegistry = mock(LoadBalancerRegistry.class);
     ApimlLoadBalancer underTest;
 
     @BeforeEach
     void setUp() {
         RequestContext.getCurrentContext().clear();
         underTest = new ApimlLoadBalancer(config, rule, ping, serverList,
-            serverListFilter, serverListUpdater, serviceCacheEvictor);
+            serverListFilter, serverListUpdater, loadBalancerRegistry);
     }
 
     @Test

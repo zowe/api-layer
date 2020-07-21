@@ -104,7 +104,7 @@ public class AuthenticationService {
             .setExpiration(new Date(expiration))
             .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
             .setId(UUID.randomUUID().toString())
-            .signWith(jwtSecurityInitializer.getSignatureAlgorithm(), jwtSecurityInitializer.getJwtSecret())
+            .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm())
             .compact();
     }
 
@@ -188,8 +188,9 @@ public class AuthenticationService {
 
     private Claims validateAndParseLocalJwtToken(String jwtToken) {
         try {
-            return Jwts.parser()
+            return Jwts.parserBuilder()
                 .setSigningKey(jwtSecurityInitializer.getJwtPublicKey())
+                .build()
                 .parseClaimsJws(jwtToken)
                 .getBody();
         } catch (RuntimeException exception) {
@@ -324,7 +325,8 @@ public class AuthenticationService {
 
         // parse to claims and construct QueryResponse
         try {
-            Claims claims = Jwts.parser()
+            Claims claims = Jwts.parserBuilder()
+                .build()
                 .parseClaimsJwt(withoutSign)
                 .getBody();
             return new QueryResponse(
@@ -391,7 +393,8 @@ public class AuthenticationService {
 
         // parse to claims and construct QueryResponse
         try {
-            return Jwts.parser()
+            return Jwts.parserBuilder()
+                .build()
                 .parseClaimsJwt(withoutSign)
                 .getBody()
                 .get(LTPA_CLAIM_NAME, String.class);

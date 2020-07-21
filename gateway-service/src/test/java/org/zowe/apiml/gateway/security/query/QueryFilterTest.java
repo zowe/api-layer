@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class QueryFilterTest {
+class QueryFilterTest {
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
     private QueryFilter queryFilter;
@@ -54,7 +54,7 @@ public class QueryFilterTest {
     private AuthenticationService authenticationService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         queryFilter = new QueryFilter("TEST_ENDPOINT",
             authenticationSuccessHandler,
             authenticationFailureHandler,
@@ -65,7 +65,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldCallAuthenticationManagerAuthenticate() {
+    void shouldCallAuthenticationManagerAuthenticate() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
@@ -80,7 +80,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldRejectHttpMethods() {
+    void shouldRejectHttpMethods() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
@@ -91,7 +91,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldRejectIfTokenIsNotPresent() {
+    void shouldRejectIfTokenIsNotPresent() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
@@ -101,7 +101,7 @@ public class QueryFilterTest {
     }
 
     @Test
-    public void shouldRejectIfNotAuthenticatedByCertficate() {
+    void shouldRejectIfNotAuthenticatedByCertficate() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();

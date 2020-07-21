@@ -1,6 +1,12 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.13.0`
+
+- Add CORS Headers Support 
+- Option to set connection timeout for service
+- SAF Keyrings support for ZAAS Client
+- Spring Boot enabler configuration validation
 
 ## `1.12.0`
 

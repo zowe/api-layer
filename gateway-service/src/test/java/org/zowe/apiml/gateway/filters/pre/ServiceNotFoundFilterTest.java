@@ -36,7 +36,7 @@ class ServiceNotFoundFilterTest {
     }
 
     @Test
-    public void givenThereIsNoServiceId_whenTheUserRequestsThePath_then404IsProperlyReturned() {
+    void givenThereIsNoServiceId_whenTheUserRequestsThePath_then404IsProperlyReturned() {
         when(provider.context()).thenReturn(new RequestContext());
 
         Boolean ignoreThisFilter = underTest.shouldFilter();
@@ -49,7 +49,7 @@ class ServiceNotFoundFilterTest {
     }
 
     @Test
-    public void givenThereIsValidServiceId_whenTheUserRequestsThePath_thenThisFilterIsIgnored() {
+    void givenThereIsValidServiceId_whenTheUserRequestsThePath_thenThisFilterIsIgnored() {
         RequestContext context = new RequestContext();
         context.set(SERVICE_ID_KEY, "validServiceId");
         when(provider.context()).thenReturn(context);
@@ -59,7 +59,7 @@ class ServiceNotFoundFilterTest {
     }
 
     @Test
-    public void givenValidSetup_whenTheFilterIsCreated_thenTheCorrectConfigurationParametersAreProvided() {
+    void givenValidSetup_whenTheFilterIsCreated_thenTheCorrectConfigurationParametersAreProvided() {
         assertThat(underTest.filterOrder(), is(PRE_DECORATION_FILTER_ORDER + 1));
         assertThat(underTest.filterType(), is(PRE_TYPE));
     }

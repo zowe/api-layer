@@ -16,10 +16,10 @@ import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class ZoweJwtSchemeTest {
+class ZoweJwtSchemeTest {
 
     @Test
-    public void testScheme() {
+    void testScheme() {
         ZoweJwtScheme scheme = new ZoweJwtScheme();
         assertFalse(scheme.isDefault());
         assertEquals(AuthenticationScheme.ZOWE_JWT, scheme.getScheme());

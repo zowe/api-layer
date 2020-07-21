@@ -12,6 +12,8 @@ package org.zowe.apiml.gateway.error.check;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.error.ErrorUtils;
 import org.zowe.apiml.gateway.error.InternalServerErrorController;
 import org.zowe.apiml.message.api.ApiMessageView;
@@ -19,8 +21,6 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import com.netflix.zuul.exception.ZuulException;
 import com.netflix.zuul.monitoring.MonitoringHelper;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -31,7 +31,7 @@ public class TimeoutErrorCheckTest {
     private static final String TEST_MESSAGE = "Hello";
     private static InternalServerErrorController errorController;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         MonitoringHelper.initMocks();
         MessageService messageService = new YamlMessageService();
@@ -45,7 +45,7 @@ public class TimeoutErrorCheckTest {
     }
 
     @Test
-    public void testZuulTimeoutError() {
+    void testZuulTimeoutError() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         ZuulException exc = new ZuulException(new Exception(TEST_MESSAGE), HttpStatus.GATEWAY_TIMEOUT.value(), null);
@@ -56,7 +56,7 @@ public class TimeoutErrorCheckTest {
     }
 
     @Test
-    public void testZuulTimeoutErrorWithoutCause() {
+    void testZuulTimeoutErrorWithoutCause() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         ZuulException exc = new ZuulException("", HttpStatus.GATEWAY_TIMEOUT.value(), "TEST");
@@ -68,7 +68,7 @@ public class TimeoutErrorCheckTest {
     }
 
     @Test
-    public void testZuulSocketTimeoutError() {
+    void testZuulSocketTimeoutError() {
         MockHttpServletRequest request = new MockHttpServletRequest();
 
         ZuulException exc = new ZuulException(new SocketTimeoutException(TEST_MESSAGE),

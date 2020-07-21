@@ -31,7 +31,7 @@ import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.ZOWE_DUMMY_PASS_TICKET_PREFIX;
 
 
-public class SuccessfulTicketHandlerTest {
+class SuccessfulTicketHandlerTest {
     private static final String TOKEN = "token";
     private static final String USER = "user";
     private static final String APPLICATION_NAME = "app";
@@ -45,13 +45,13 @@ public class SuccessfulTicketHandlerTest {
     private final TokenAuthentication tokenAuthentication = new TokenAuthentication(USER, TOKEN);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         httpServletResponse.setStatus(HttpStatus.EXPECTATION_FAILED.value());
         assertNotEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
     }
 
     @Test
-    public void shouldReturnDummyPassTicket() throws JsonProcessingException, UnsupportedEncodingException {
+    void shouldReturnDummyPassTicket() throws JsonProcessingException, UnsupportedEncodingException {
         httpServletRequest.setContent(mapper.writeValueAsBytes(new TicketRequest(APPLICATION_NAME)));
 
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
@@ -63,7 +63,7 @@ public class SuccessfulTicketHandlerTest {
     }
 
     @Test
-    public void shouldFailWhenNoApplicationName() throws UnsupportedEncodingException, JsonProcessingException {
+    void shouldFailWhenNoApplicationName() throws UnsupportedEncodingException, JsonProcessingException {
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
         assertEquals(MediaType.APPLICATION_JSON_UTF8_VALUE, httpServletResponse.getContentType());
@@ -82,7 +82,7 @@ public class SuccessfulTicketHandlerTest {
     }
 
     @Test
-    public void shouldFailWhenGenerationFails() throws JsonProcessingException, UnsupportedEncodingException {
+    void shouldFailWhenGenerationFails() throws JsonProcessingException, UnsupportedEncodingException {
         httpServletRequest.setContent(mapper.writeValueAsBytes(new TicketRequest(UNKNOWN_APPLID)));
 
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);

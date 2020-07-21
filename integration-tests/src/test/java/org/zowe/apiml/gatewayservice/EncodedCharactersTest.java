@@ -58,7 +58,7 @@ public class EncodedCharactersTest {
     }
 
     @Test
-    public void shouldCallCatalogServiceWithEncodedCharacterAndReject() {
+    void shouldCallCatalogServiceWithEncodedCharacterAndReject() {
         final String encodedURI = "/api/v1/apicatalog/gf%2fd/testcall";
 
         given()
@@ -71,7 +71,7 @@ public class EncodedCharactersTest {
     }
 
     @Test
-    public void shouldCallServiceWithGatewayNotAllowingAndReject() {
+    void shouldCallServiceWithGatewayNotAllowingAndReject() {
         final String encodedURI = "/api/v1/apicatalog/gf%2fd/testcall";
 
         given()

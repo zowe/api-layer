@@ -35,7 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @TestsNotMeantForZowe
-public class WebSocketProxyTest {
+class WebSocketProxyTest {
     private GatewayServiceConfiguration serviceConfiguration;
 
     private final static int WAIT_TIMEOUT_MS = 10000;
@@ -43,7 +43,7 @@ public class WebSocketProxyTest {
     private final static String HEADER_URL = "/ws/v1/discoverableclient/header";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     }
 
@@ -95,7 +95,7 @@ public class WebSocketProxyTest {
 
     @Test
     @WebsocketTest
-    public void shouldRouteWebSocketSession() throws Exception {
+    void shouldRouteWebSocketSession() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 1);
 
@@ -110,7 +110,7 @@ public class WebSocketProxyTest {
 
     @Test
     @WebsocketTest
-    public void shouldRouteHeaders() throws Exception {
+    void shouldRouteHeaders() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
         headers.add("X-Test", "value");
@@ -128,7 +128,7 @@ public class WebSocketProxyTest {
 
     @Test
     @WebsocketTest
-    public void shouldCloseSessionAfterClientServerCloses() throws Exception {
+    void shouldCloseSessionAfterClientServerCloses() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL), response, 2);
 
@@ -142,7 +142,7 @@ public class WebSocketProxyTest {
 
     @Test
     @WebsocketTest
-    public void shouldFailIfPathIsNotCorrect() throws Exception {
+    void shouldFailIfPathIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl(UPPERCASE_URL + "bad"), response, 1);
 
@@ -156,7 +156,7 @@ public class WebSocketProxyTest {
 
     @Test
     @WebsocketTest
-    public void shouldFailIfServiceIsNotCorrect() throws Exception {
+    void shouldFailIfServiceIsNotCorrect() throws Exception {
         final StringBuilder response = new StringBuilder();
         WebSocketSession session = appendingWebSocketSession(
                 discoverableClientGatewayUrl("/ws/v1/wrong-service/uppercase"), response, 1);
@@ -171,7 +171,7 @@ public class WebSocketProxyTest {
 
     @Test
     @WebsocketTest
-    public void shouldFailIfUrlFormatIsNotCorrent() throws Exception {
+    void shouldFailIfUrlFormatIsNotCorrent() throws Exception {
         final StringBuilder response = new StringBuilder();
         appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), response, 1);
 

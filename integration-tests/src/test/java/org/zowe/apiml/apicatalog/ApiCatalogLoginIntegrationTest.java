@@ -51,7 +51,7 @@ public class ApiCatalogLoginIntegrationTest {
 
     //@formatter:off
     @Test
-    public void doLoginWithValidBodyLoginRequest() {
+    void doLoginWithValidBodyLoginRequest() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
         Cookie cookie = given()
@@ -79,7 +79,7 @@ public class ApiCatalogLoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithValidHeader() {
+    void doLoginWithValidHeader() {
         String token = given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
             .contentType(JSON)
@@ -101,7 +101,7 @@ public class ApiCatalogLoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithInvalidCredentialsInLoginRequest() {
+    void doLoginWithInvalidCredentialsInLoginRequest() {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
@@ -119,7 +119,7 @@ public class ApiCatalogLoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithInvalidCredentialsInHeader() {
+    void doLoginWithInvalidCredentialsInHeader() {
         String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
@@ -137,7 +137,7 @@ public class ApiCatalogLoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithoutCredentials() {
+    void doLoginWithoutCredentials() {
         String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
             CATALOG_SERVICE_ID + LOGIN_ENDPOINT + "'";
 
@@ -152,7 +152,7 @@ public class ApiCatalogLoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithInvalidLoginRequest() {
+    void doLoginWithInvalidLoginRequest() {
         String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
             CATALOG_SERVICE_ID + LOGIN_ENDPOINT + "'";
 
@@ -173,7 +173,7 @@ public class ApiCatalogLoginIntegrationTest {
     }
 
     @Test
-    public void doLoginWithWrongHttpMethod() {
+    void doLoginWithWrongHttpMethod() {
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
             CATALOG_SERVICE_ID + LOGIN_ENDPOINT + "'";
 

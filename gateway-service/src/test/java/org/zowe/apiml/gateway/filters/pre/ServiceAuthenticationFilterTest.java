@@ -36,7 +36,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 @ExtendWith(MockitoExtension.class)
-public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
+class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextTest {
 
     @Mock
     private ServiceAuthenticationServiceImpl serviceAuthenticationService;
@@ -51,14 +51,14 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     private AuthenticationService authenticationService;
 
     @Test
-    public void testConfig() {
+    void testConfig() {
         assertEquals("pre", serviceAuthenticationFilter.filterType());
         assertEquals(10, serviceAuthenticationFilter.filterOrder());
         assertTrue(serviceAuthenticationFilter.shouldFilter());
     }
 
     @Test
-    public void testRun() {
+    void testRun() {
         Mockito.when(serviceAuthenticationService.getAuthenticationCommand(anyString(), any())).thenReturn(command);
 
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -115,7 +115,7 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void givenValidJwt_whenTokenRequired_thenCallThrought() {
+    void givenValidJwt_whenTokenRequired_thenCallThrought() {
         String jwtToken = "invalidJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doReturn(new TokenAuthentication("user", jwtToken)).when(authenticationService).validateJwtToken(jwtToken);
@@ -128,7 +128,7 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void givenValidJwt_whenTokenRequired_thenRejected() {
+    void givenValidJwt_whenTokenRequired_thenRejected() {
         String jwtToken = "validJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doReturn(TokenAuthentication.createAuthenticated("user", jwtToken)).when(authenticationService).validateJwtToken(jwtToken);
@@ -141,7 +141,7 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void givenValidJwt_whenCommandFailed_thenInternalError() {
+    void givenValidJwt_whenCommandFailed_thenInternalError() {
         String jwtToken = "validJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doThrow(new RuntimeException()).when(cmd).apply(null);
@@ -163,7 +163,7 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void givenExpiredJwt_thenCallThrought() {
+    void givenExpiredJwt_thenCallThrought() {
         String jwtToken = "expiredJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         doThrow(new TokenExpireException("Token is expired.")).when(authenticationService).validateJwtToken(jwtToken);
@@ -176,7 +176,7 @@ public class ServiceAuthenticationFilterTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void givenInvalidJwt_whenAuthenticationException_thenReject() {
+    void givenInvalidJwt_whenAuthenticationException_thenReject() {
         String jwtToken = "unparsableJwtToken";
         AuthenticationCommand cmd = createJwtValidationCommand(jwtToken);
         AuthenticationException ae = mock(AuthenticationException.class);

@@ -29,14 +29,14 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @Slf4j
 @TestsNotMeantForZowe
-public class GatewayTimeoutTest {
+class GatewayTimeoutTest {
     private static final String API_V1_GREETING_URI = "/api/v1/discoverableclient/greeting";
     private static final int DEFAULT_TIMEOUT = 30000;
 
     @Test
     @SlowTests
     @SuppressWarnings("squid:S1160")
-    public void shouldCallLongButBelowTimeoutRequest() throws IOException {
+    void shouldCallLongButBelowTimeoutRequest() throws IOException {
         // Given
         HttpGet request = createGreetingRequestWithDelay(DEFAULT_TIMEOUT - 1000);
 
@@ -50,7 +50,7 @@ public class GatewayTimeoutTest {
     @Test
     @SlowTests
     @SuppressWarnings("squid:S1160")
-    public void shouldTimeoutRequestWithGatewayTimeoutHttpResponseCode() throws IOException {
+    void shouldTimeoutRequestWithGatewayTimeoutHttpResponseCode() throws IOException {
         // Given
         HttpGet request = createGreetingRequestWithDelay(DEFAULT_TIMEOUT + 1000);
 

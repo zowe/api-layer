@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class GatewayHomepageControllerTest {
+class GatewayHomepageControllerTest {
     private AuthConfigurationProperties authConfigurationProperties;
     private DiscoveryClient discoveryClient;
 
@@ -40,7 +40,7 @@ public class GatewayHomepageControllerTest {
     private final String AUTHORIZATION_SERVICE_ID = "zosmf";
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         discoveryClient = mock(DiscoveryClient.class);
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.setProvider("DUMMY");
@@ -57,7 +57,7 @@ public class GatewayHomepageControllerTest {
 
 
     @Test
-    public void givenBuildVersionNull_whenHomePageCalled_thenBuildInfoShouldStaticText() {
+    void givenBuildVersionNull_whenHomePageCalled_thenBuildInfoShouldStaticText() {
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
@@ -67,7 +67,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenSpecificBuildVersion_whenHomePageCalled_thenBuildInfoShouldBeGivenVersionAndNumber() {
+    void givenSpecificBuildVersion_whenHomePageCalled_thenBuildInfoShouldBeGivenVersionAndNumber() {
         BuildInfo buildInfo = mock(BuildInfo.class);
 
         Properties buildProperties = new Properties();
@@ -89,13 +89,13 @@ public class GatewayHomepageControllerTest {
 
 
     @Test
-    public void givenBuildInfo_whenHomePageCalled_thenHomePageShouldReturnHomeLiteral() {
+    void givenBuildInfo_whenHomePageCalled_thenHomePageShouldReturnHomeLiteral() {
         String redirectedPage = gatewayHomepageController.home(new ConcurrentModel());
         assertEquals("home", redirectedPage, "Expected page is not 'home'");
     }
 
     @Test
-    public void givenApiCatalogWithNullInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenApiCatalogWithNullInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
@@ -103,7 +103,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
+    void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
         discoveryReturnValidApiCatalog();
         when(discoveryClient.getInstances(AUTHORIZATION_SERVICE_ID)).thenReturn(Collections.EMPTY_LIST);
 
@@ -114,7 +114,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenApiCatalogWithEmptyInstancesWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
+    void givenApiCatalogWithEmptyInstancesWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
         when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(Collections.EMPTY_LIST);
         when(discoveryClient.getInstances(AUTHORIZATION_SERVICE_ID)).thenReturn(Collections.EMPTY_LIST);
 
@@ -125,7 +125,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenApiCatalogWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenApiCatalogWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
         discoveryReturnValidZosmfAuthorizationInstance();
         when(discoveryClient.getInstances(API_CATALOG_ID)).thenReturn(Collections.EMPTY_LIST);
 
@@ -136,7 +136,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenApiCatalogInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
         discoveryReturnValidZosmfAuthorizationInstance();
         discoveryReturnValidApiCatalog();
 
@@ -181,7 +181,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenDiscoveryServiceWithNullInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenDiscoveryServiceWithNullInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
@@ -193,7 +193,7 @@ public class GatewayHomepageControllerTest {
 
 
     @Test
-    public void givenDiscoveryServiceWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenDiscoveryServiceWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
         when(discoveryClient.getInstances("apicatalog")).thenReturn(Collections.EMPTY_LIST);
 
         Model model = new ConcurrentModel();
@@ -206,7 +206,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenDiscoveryServiceWithOneInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenDiscoveryServiceWithOneInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
         ServiceInstance serviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
             "host", 10000, true);
 
@@ -222,7 +222,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenDiscoveryServiceWithMoreThanOneInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenDiscoveryServiceWithMoreThanOneInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
         ServiceInstance serviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
             "host", 10000, true);
 
@@ -239,7 +239,7 @@ public class GatewayHomepageControllerTest {
 
 
     @Test
-    public void givenDummyProvider_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenDummyProvider_whenHomePageCalled_thenHomePageModelShouldContain() {
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
 
@@ -250,7 +250,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenZOSMFProviderWithNullInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenZOSMFProviderWithNullInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
         authConfigurationProperties.setProvider("zosmf");
         authConfigurationProperties.setZosmfServiceId("zosmf");
 
@@ -264,7 +264,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenZOSMFProviderWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenZOSMFProviderWithEmptyInstances_whenHomePageCalled_thenHomePageModelShouldContain() {
         when(discoveryClient.getInstances("zosmf")).thenReturn(Collections.EMPTY_LIST);
 
         authConfigurationProperties.setProvider("zosmf");
@@ -280,7 +280,7 @@ public class GatewayHomepageControllerTest {
     }
 
     @Test
-    public void givenZOSMFProviderWithOneInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
+    void givenZOSMFProviderWithOneInstance_whenHomePageCalled_thenHomePageModelShouldContain() {
         ServiceInstance serviceInstance = new DefaultServiceInstance("instanceId", "serviceId",
             "host", 10000, true);
         when(discoveryClient.getInstances("zosmf")).thenReturn(

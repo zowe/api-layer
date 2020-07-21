@@ -33,7 +33,7 @@ public class ApiTransformationConfig {
 
     @Bean
     public Function<String, AbstractApiDocService> beanApiDocFactory() {
-        return content -> abstractApiDocService(content);
+        return this::abstractApiDocService;
     }
 
 

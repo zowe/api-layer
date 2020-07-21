@@ -33,7 +33,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
-public class PageRedirectionFilterTest {
+class PageRedirectionFilterTest {
 
     private static final String SERVICE_ID = "discovered-service";
     private static final String TARGET_SERVER_HOST = "hostA.test.com";
@@ -49,7 +49,7 @@ public class PageRedirectionFilterTest {
     private MockHttpServletResponse response = null;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         discoveryClient = mock(DiscoveryClient.class);
 
         RequestContext ctx = RequestContext.getCurrentContext();
@@ -66,7 +66,7 @@ public class PageRedirectionFilterTest {
     }
 
     @Test
-    public void givenStatusCode302_whenShouldFilterCalled_thenPassFromFilter() {
+    void givenStatusCode302_whenShouldFilterCalled_thenPassFromFilter() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.setResponseStatusCode(302);
         assertTrue(filter.shouldFilter());
@@ -74,7 +74,7 @@ public class PageRedirectionFilterTest {
 
 
     @Test
-    public void sameServerAndUrlMatched() throws Exception {
+    void sameServerAndUrlMatched() throws Exception {
         RoutedService currentService = new RoutedService("ui", "ui", "/");
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(currentService);
@@ -102,7 +102,7 @@ public class PageRedirectionFilterTest {
 
 
     @Test
-    public void sameServerAndUrlNotMatched() {
+    void sameServerAndUrlNotMatched() {
         String serviceUrl = "/discoverableclient/api/v1";
         RoutedService currentService = new RoutedService("api-v1", "api/v1", serviceUrl);
         RoutedServices routedServices = new RoutedServices();
@@ -131,7 +131,7 @@ public class PageRedirectionFilterTest {
 
 
     @Test
-    public void hostRegisteredAndUrlMatched() throws Exception {
+    void hostRegisteredAndUrlMatched() throws Exception {
         //route for current service
         RoutedService currentService = new RoutedService("ui", "ui", "/");
         RoutedServices routedServices = new RoutedServices();
@@ -171,7 +171,7 @@ public class PageRedirectionFilterTest {
 
 
     @Test
-    public void differentServerAndHostPortNotInDSAndLocationContainsGatewayURL() {
+    void differentServerAndHostPortNotInDSAndLocationContainsGatewayURL() {
         //route for current service
         RoutedService currentService = new RoutedService("ui", "ui", "/");
         RoutedServices routedServices = new RoutedServices();
@@ -210,7 +210,7 @@ public class PageRedirectionFilterTest {
 
 
     @Test
-    public void serviceUrlEndWithSlash() throws Exception {
+    void serviceUrlEndWithSlash() throws Exception {
         String serviceUrl = "/discoverableclient";
         RoutedService currentService = new RoutedService("ui-v1", "ui/v1", serviceUrl + "/");
         RoutedServices routedServices = new RoutedServices();
@@ -239,7 +239,7 @@ public class PageRedirectionFilterTest {
 
 
     @Test
-    public void shouldUrlCached() throws Exception {
+    void shouldUrlCached() throws Exception {
         //run filter the first time to put url to cache
         String serviceUrl = "/discoverableclient";
         RoutedService currentService = new RoutedService("ui-v1", "ui/v1", serviceUrl);

@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-public class ApiDocControllerTest {
+class ApiDocControllerTest {
 
     private MockMvc mockMvc;
 
@@ -42,13 +42,13 @@ public class ApiDocControllerTest {
     private ApiDocReader apiDocReader;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         ApiDocController apiDocController = new ApiDocController(apiDocReader);
         mockMvc = MockMvcBuilders.standaloneSetup(apiDocController).build();
     }
 
     @Test
-    public void callApiDocEndpoint() throws Exception {
+    void callApiDocEndpoint() throws Exception {
         String expectedOpenApi = JsonReaderUtil.getJsonStringFromResource("api-doc.json");
         Mockito.when(apiDocReader.load(any())).thenReturn(expectedOpenApi);
 

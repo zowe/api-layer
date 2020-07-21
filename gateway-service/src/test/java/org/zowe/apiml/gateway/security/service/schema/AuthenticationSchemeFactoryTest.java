@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
+class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextTest {
 
     private static final AuthenticationCommand COMMAND = mock(AuthenticationCommand.class);
 
@@ -51,7 +51,7 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void testInit() {
+    void testInit() {
         // happy day
         new AuthenticationSchemeFactory(
             mock(AuthenticationService.class),
@@ -112,7 +112,7 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void testGetSchema() {
+    void testGetSchema() {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
             mock(AuthenticationService.class),
             Arrays.asList(
@@ -130,7 +130,7 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void testGetAuthenticationCommand() {
+    void testGetAuthenticationCommand() {
         final AbstractAuthenticationScheme byPass = spy(createScheme(AuthenticationScheme.BYPASS, true));
         final AbstractAuthenticationScheme passTicket = spy(createScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET, false));
 
@@ -180,7 +180,7 @@ public class AuthenticationSchemeFactoryTest extends CleanCurrentRequestContextT
     }
 
     @Test
-    public void testUnknownScheme() {
+    void testUnknownScheme() {
         AuthenticationSchemeFactory asf = new AuthenticationSchemeFactory(
             mock(AuthenticationService.class),
             Arrays.asList(

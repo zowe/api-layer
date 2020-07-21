@@ -67,12 +67,12 @@ public class CloseableClientProviderTest {
 
     //tests
     @Test
-    public void testGetHttpClientWithTrustStore() throws ZaasConfigurationException {
+    void testGetHttpClientWithTrustStore() throws ZaasConfigurationException {
         assertNotNull(httpsClientProvider.getHttpsClientWithTrustStore());
     }
 
     @Test
-    public void testGetHttpClientWithTrustStoreWithCookies() throws ZaasConfigurationException {
+    void testGetHttpClientWithTrustStoreWithCookies() throws ZaasConfigurationException {
         BasicCookieStore cookieStore = new BasicCookieStore();
         BasicClientCookie cookie = new BasicClientCookie("apimlAuthenticationToken", "token");
         cookie.setDomain(configProperties.getApimlHost());
@@ -83,12 +83,12 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void testGetHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
+    void testGetHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
         assertNotNull(httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore());
     }
 
     @Test
-    public void givenNullTrustStore_whenTheClientIsConstructed_thenExceptionsIsThrown() {
+    void givenNullTrustStore_whenTheClientIsConstructed_thenExceptionsIsThrown() {
         ZaasConfigurationException zaasException =
             assertThrows(ZaasConfigurationException.class, () -> new HttpsClientProvider(new ConfigProperties()));
 
@@ -98,7 +98,7 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void giveInvalidTrustStorePath_whenTheClientIsConstructed_thenExceptionsIsThrown() {
+    void giveInvalidTrustStorePath_whenTheClientIsConstructed_thenExceptionsIsThrown() {
         ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
             ConfigProperties config = new ConfigProperties();
             config.setTrustStorePath("intentionallyInvalidPath");
@@ -110,7 +110,7 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+    void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
         config.setTrustStorePassword("password");
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
@@ -124,7 +124,7 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+    void givenInvalidKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
         config.setTrustStorePassword("password");
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
@@ -140,7 +140,7 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    public void givenInvalidKeyStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
+    void givenInvalidKeyStoreType_whenTheClientIsConstructed_thenExceptionIsThrown() throws ZaasConfigurationException {
         ConfigProperties config = new ConfigProperties();
         config.setTrustStorePassword("password");
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");

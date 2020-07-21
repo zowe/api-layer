@@ -40,7 +40,7 @@ import static org.springframework.http.HttpHeaders.LOCATION;
  * <li>Checks the Location in response header, verify that it has been tranformed to gateway url</li>
  * </ol>
  */
-public class PageRedirectionTest {
+class PageRedirectionTest {
     private final String EUREKA_APP = "/eureka/apps";
     private final String SERVICE_ID = "staticclient";
     private final String BASE_URL = "/discoverableclient";
@@ -64,7 +64,7 @@ public class PageRedirectionTest {
      */
     @Test
     @TestsNotMeantForZowe
-    public void apiRouteOfDiscoverableClient() {
+    void apiRouteOfDiscoverableClient() {
         String apiRelativeUrl = "/api/v1";
         String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, BASE_URL, apiRelativeUrl, "/greeting");
         String transformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_PREFIX, "/" + SERVICE_ID, "/greeting");
@@ -86,7 +86,7 @@ public class PageRedirectionTest {
      */
     @Test
     @TestsNotMeantForZowe
-    public void wsRouteOfDiscoverableClient() {
+    void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
         String wsPrefix = "/ws/v1";
@@ -109,7 +109,7 @@ public class PageRedirectionTest {
      */
     @Test
     @TestsNotMeantForZowe
-    public void uiRouteOfDiscoverableClient() {
+    void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
         String uiPrefix = "/ui/v1";
         String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, uiPrefix, "/" + SERVICE_ID);
