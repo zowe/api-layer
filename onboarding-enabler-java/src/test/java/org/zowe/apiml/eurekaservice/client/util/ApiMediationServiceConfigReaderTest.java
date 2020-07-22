@@ -111,7 +111,6 @@ public class ApiMediationServiceConfigReaderTest {
         ApiMediationServiceConfig apiMediationServiceConfig = new ApiMediationServiceConfigReader().mergeConfigurations(apimlServcieConfig1, apimlServcieConfig2);
         assertNotNull(apiMediationServiceConfig);
         assertEquals("hellopje", apiMediationServiceConfig.getServiceId());
-        assertEquals("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", apiMediationServiceConfig.getSsl().getCiphers());
         assertEquals("keystore/localhost/localhost.keystore.p12", apiMediationServiceConfig.getSsl().getKeyStore());
         assertArrayEquals("password".toCharArray(), apiMediationServiceConfig.getSsl().getKeyStorePassword());
         assertEquals("keystore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore());
