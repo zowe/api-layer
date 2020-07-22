@@ -46,8 +46,7 @@ public class ApiMediationClientImplTest {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
         Authentication authentication = new Authentication("bypass", null);
-        Ssl ssl = new Ssl(false, false, "TLSv1.2", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
-            "localhost", PASSWORD,
+        Ssl ssl = new Ssl(false, false, "TLSv1.2", "localhost", PASSWORD,
             "../keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
             "../keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
         List<Route> routes = new ArrayList<>();

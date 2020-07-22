@@ -23,8 +23,6 @@ public class Ssl {
 
     private String protocol;
 
-    private String ciphers;
-
     private String keyAlias;
 
     private char[] keyPassword;
