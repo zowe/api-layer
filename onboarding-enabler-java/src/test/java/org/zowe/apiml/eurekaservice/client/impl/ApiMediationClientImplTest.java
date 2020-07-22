@@ -35,6 +35,9 @@ import static org.mockito.Mockito.when;
 
 
 public class ApiMediationClientImplTest {
+
+    private static final char[] PASSWORD = "password".toCharArray();
+
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
@@ -44,9 +47,9 @@ public class ApiMediationClientImplTest {
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
         Authentication authentication = new Authentication("bypass", null);
         Ssl ssl = new Ssl(false, false, "TLSv1.2", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
-            "localhost", "password",
-            "../keystore/localhost/localhost.keystore.p12", "password", "PKCS12",
-            "../keystore/localhost/localhost.truststore.p12", "password", "PKCS12");
+            "localhost", PASSWORD,
+            "../keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
+            "../keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
         List<Route> routes = new ArrayList<>();
         Route apiRoute = new Route("api/v1", "/hellospring/api/v1");
         Route apiDocRoute = new Route("api/v1/api-doc", "/hellospring/api-doc");

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
+import com.google.common.primitives.Chars;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.config.Route;
@@ -23,6 +24,9 @@ import java.util.List;
  */
 @Slf4j
 public class EurekaInstanceConfigValidator {
+
+    private static final String UNSET_VALUE_STRING = "{apiml.";
+    private static final char[] UNSET_VALUE_CHAR_ARRAY = UNSET_VALUE_STRING.toCharArray();
 
     /**
      * Validation method that validates mandatory and non-mandatory parameters
@@ -76,6 +80,11 @@ public class EurekaInstanceConfigValidator {
     }
 
     private boolean isInvalid(String value) {
-        return value == null || value.isEmpty() || value.contains("{apiml.");
+        return value == null || value.isEmpty() || value.contains(UNSET_VALUE_STRING);
     }
+
+    private boolean isInvalid(char[] value) {
+        return value == null || value.length == 0 || Chars.indexOf(value, UNSET_VALUE_CHAR_ARRAY) >= 0;
+    }
+
 }

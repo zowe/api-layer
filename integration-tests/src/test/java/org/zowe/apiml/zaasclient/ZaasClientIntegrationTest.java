@@ -90,10 +90,9 @@ class ZaasClientIntegrationTest {
 
         File keyStoreFile = new File(configProperties.getKeyStorePath());
         inputStream = new FileInputStream(keyStoreFile);
-        ks.load(inputStream, configProperties.getKeyStorePassword() == null ? null : configProperties.getKeyStorePassword().toCharArray());
+        ks.load(inputStream, configProperties.getKeyStorePassword());
 
-        return ks.getKey("jwtsecret",
-            configProperties.getKeyStorePassword() == null ? null : configProperties.getKeyStorePassword().toCharArray());
+        return ks.getKey("jwtsecret", configProperties.getKeyStorePassword());
     }
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {

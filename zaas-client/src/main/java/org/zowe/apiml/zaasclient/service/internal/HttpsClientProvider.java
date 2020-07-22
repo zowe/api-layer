@@ -39,7 +39,7 @@ class HttpsClientProvider implements CloseableClientProvider {
 
     // KeyStore is initialized only in the case of PassTicket handling.
     //     It can be null, if passticket functionality not used.
-    private final String keyStorePassword;
+    private final char[] keyStorePassword;
     private final String keyStoreType;
     private String keyStorePath;
 
@@ -84,7 +84,7 @@ class HttpsClientProvider implements CloseableClientProvider {
             .build();
     }
 
-    private void initializeTrustManagerFactory(String trustStorePath, String trustStoreType, String trustStorePassword)
+    private void initializeTrustManagerFactory(String trustStorePath, String trustStoreType, char[] trustStorePassword)
         throws ZaasConfigurationException {
         try {
             tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -102,7 +102,7 @@ class HttpsClientProvider implements CloseableClientProvider {
         try {
             kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             KeyStore keyStore = getKeystore(keyStorePath, keyStoreType, keyStorePassword);
-            kmf.init(keyStore, keyStorePassword.toCharArray());
+            kmf.init(keyStore, keyStorePassword);
         } catch (NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyStoreException e) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
         } catch (IOException e) {
@@ -110,10 +110,10 @@ class HttpsClientProvider implements CloseableClientProvider {
         }
     }
 
-    private KeyStore getKeystore(String uri, String keyStoreType, String storePassword) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
+    private KeyStore getKeystore(String uri, String keyStoreType, char[] storePassword) throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
         KeyStore keyStore = KeyStore.getInstance(keyStoreType);
         InputStream correctInStream = getCorrectInputStream(uri);
-        keyStore.load(correctInStream, storePassword.toCharArray());
+        keyStore.load(correctInStream, storePassword);
         return keyStore;
     }
 

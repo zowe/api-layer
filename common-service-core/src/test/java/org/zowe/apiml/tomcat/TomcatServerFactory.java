@@ -42,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class TomcatServerFactory {
     private static final String SERVLET_NAME = "hello";
-    private static final String STORE_PASSWORD = "password";  // NOSONAR
+    private static final char[] STORE_PASSWORD = "password".toCharArray();  // NOSONAR
 
     public Tomcat startTomcat(HttpsConfig httpsConfig) throws IOException {
         Tomcat tomcat = new Tomcat();
@@ -79,12 +79,16 @@ public class TomcatServerFactory {
         httpsConnector.setSecure(true);
         httpsConnector.setScheme("https");
         httpsConnector.setAttribute("clientAuth",
-                Boolean.toString(httpsConfig.isClientAuth() && httpsConfig.isVerifySslCertificatesOfServices()));
+            Boolean.toString(httpsConfig.isClientAuth() && httpsConfig.isVerifySslCertificatesOfServices()));
         httpsConnector.setAttribute("keystoreFile", httpsConfig.getKeyStore());
-        httpsConnector.setAttribute("keystorePass", httpsConfig.getKeyStorePassword());
+        httpsConnector.setAttribute("keystorePass",
+            httpsConfig.getKeyStorePassword() == null ? null : String.valueOf(httpsConfig.getKeyStorePassword())
+        );
         if (httpsConfig.isClientAuth()) {
             httpsConnector.setAttribute("truststoreFile", httpsConfig.getTrustStore());
-            httpsConnector.setAttribute("truststorePass", httpsConfig.getTrustStorePassword());
+            httpsConnector.setAttribute("truststorePass",
+                httpsConfig.getTrustStorePassword() == null ? null : String.valueOf(httpsConfig.getTrustStorePassword())
+            );
         }
         httpsConnector.setAttribute("sslProtocol", httpsConfig.getProtocol());
         httpsConnector.setAttribute("SSLEnabled", true);

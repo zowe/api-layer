@@ -124,10 +124,9 @@ class ZaasClientHttpsTest {
 
         File keyStoreFile = new File(configProperties.getKeyStorePath());
         inputStream = new FileInputStream(keyStoreFile);
-        ks.load(inputStream, configProperties.getKeyStorePassword() == null ? null : configProperties.getKeyStorePassword().toCharArray());
+        ks.load(inputStream, configProperties.getKeyStorePassword());
 
-        return ks.getKey("jwtsecret",
-            configProperties.getKeyStorePassword() == null ? null : configProperties.getKeyStorePassword().toCharArray());
+        return ks.getKey("jwtsecret", configProperties.getKeyStorePassword());
     }
 
     // TODO: Change to the way used in enablers.
@@ -143,10 +142,12 @@ class ZaasClientHttpsTest {
                 configProperties.setApimlPort(configProp.getProperty("APIML_PORT"));
                 configProperties.setApimlBaseUrl(configProp.getProperty("APIML_BASE_URL"));
                 configProperties.setKeyStorePath(configProp.getProperty("KEYSTOREPATH"));
-                configProperties.setKeyStorePassword(configProp.getProperty("KEYSTOREPASSWORD"));
+                String keyStorePassword = configProp.getProperty("KEYSTOREPASSWORD");
+                configProperties.setKeyStorePassword(keyStorePassword == null ? null : keyStorePassword.toCharArray());
                 configProperties.setKeyStoreType(configProp.getProperty("KEYSTORETYPE"));
                 configProperties.setTrustStorePath(configProp.getProperty("TRUSTSTOREPATH"));
-                configProperties.setTrustStorePassword(configProp.getProperty("TRUSTSTOREPASSWORD"));
+                String trustStorePassword = configProp.getProperty("TRUSTSTOREPASSWORD");
+                configProperties.setTrustStorePassword(trustStorePassword == null ? null : trustStorePassword.toCharArray());
                 configProperties.setTrustStoreType(configProp.getProperty("TRUSTSTORETYPE"));
             }
         } catch (IOException e) {

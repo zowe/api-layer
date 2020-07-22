@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DiscoverableClientSampleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="api-layer.discoverable-client.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.client.DiscoverableClientSampleApplication" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <additionalParameters>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="spring.config.additional-location" />
+        <option name="value" value="file:./config/local/discoverable-client.yml" />
+      </param>
+    </additionalParameters>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
