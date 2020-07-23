@@ -9,16 +9,18 @@
  */
 package org.zowe.apiml.eurekaservice.client;
 
+import com.netflix.appinfo.InstanceInfo;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import com.netflix.discovery.EurekaClient;
 
 
 /**
- *  Defines {@link ApiMediationClient} methods for registering and unregistering REST service with API Mediation Layer
- *  Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient} which is
- *  stored in a member variable for later use. The client instance is internally used during unregistering.
- *  Getter method is provided for accessing the instance.
+ * Defines {@link ApiMediationClient} methods for registering and unregistering REST service with API Mediation Layer
+ * Discovery service. Registration method creates an instance of {@link com.netflix.discovery.EurekaClient} which is
+ * stored in a member variable for later use. The client instance is internally used during unregistering.
+ * Getter method is provided for accessing the instance. isRegistered method is provided to indicate if the client
+ * has successfully registered with the Discovery Service.
  */
 public interface ApiMediationClient {
     /**
@@ -40,4 +42,12 @@ public interface ApiMediationClient {
      * @return
      */
     EurekaClient getEurekaClient();
+
+    /**
+     * @return boolean indicating if the Eureka client is registered with the Discovery Service.
+     */
+    default boolean isRegistered() {
+        EurekaClient eurekaClient = getEurekaClient();
+        return eurekaClient != null && eurekaClient.getInstanceRemoteStatus() != InstanceInfo.InstanceStatus.UNKNOWN;
+    }
 }
