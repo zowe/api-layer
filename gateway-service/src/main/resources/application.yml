@@ -67,6 +67,7 @@ spring:
         banner-mode: ${apiml.banner:"off"}
 
 server:
+    max-http-header-size: 48000
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     ssl:
@@ -217,6 +218,7 @@ management:
             base-path: /application
             exposure:
                 include: "*"
+
 zuul.debug.request: true
 ---
 spring:
