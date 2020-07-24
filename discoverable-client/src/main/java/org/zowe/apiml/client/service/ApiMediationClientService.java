@@ -24,7 +24,6 @@ import java.util.List;
 @Service
 public class ApiMediationClientService {
     private final ApiMediationClient apiMediationClient;
-    private final ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
     private static final char[] PASSWORD = "password".toCharArray();
 
 
