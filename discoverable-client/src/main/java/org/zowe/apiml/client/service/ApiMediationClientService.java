@@ -34,8 +34,8 @@ public class ApiMediationClientService {
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Client", "Application that demonstrates API Mediation registration", "1.0.1"));
         Authentication authentication = new Authentication("bypass", null);
         Ssl ssl = new Ssl(true, true, "TLSv1.2", "localhost", PASSWORD,
-            "keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
-            "keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
+            "../keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
+            "../keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
         List<Route> routes = new ArrayList<>();
         Route apiRoute = new Route("api/v1", "/registrationTest/api/v1");
         routes.add(apiRoute);

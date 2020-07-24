@@ -10,7 +10,6 @@
 package org.zowe.apiml.client.api;
 
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,19 +17,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.service.ApiMediationClientService;
-import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.core.Is.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = {ApiMediationClientTestController.class})
 public class ApiMediationClientTestControllerTest {
     private static final String MEDIATION_CLIENT_URI = "/api/v1/apiMediationClient";
-
-    private final ExpectedException exceptionRule = ExpectedException.none();
 
     @Autowired
     private MockMvc mockMvc;
@@ -43,13 +40,6 @@ public class ApiMediationClientTestControllerTest {
         this.mockMvc.perform(
             post(MEDIATION_CLIENT_URI))
             .andExpect(status().isOk());
-    }
-
-    @Test
-    public void registerTest_duplicate() throws ServiceDefinitionException {
-        exceptionRule.expect(ServiceDefinitionException.class);
-        apiMediationClientService.register();
-        apiMediationClientService.register();
     }
 
     @Test
@@ -69,7 +59,7 @@ public class ApiMediationClientTestControllerTest {
     }
 
     @Test
-    public void isRegisteredTestService_notRegistered() throws Exception {
+    public void isRegisteredTestService_notRegistered() {
         assertFalse(apiMediationClientService.isRegistered());
     }
 }
