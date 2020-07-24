@@ -66,13 +66,13 @@ public class EurekaInstanceConfigValidator {
             throw new MetadataValidationException("SSL configuration was not provided. Try add apiml.service.ssl section.");
         }
         if (isInvalid(ssl.getProtocol()) ||
-            isInvalid(ssl.getTrustStorePassword()) ||
             isInvalid(ssl.getTrustStore()) ||
-            isInvalid(ssl.getKeyStorePassword()) ||
             isInvalid(ssl.getKeyStore()) ||
             isInvalid(ssl.getKeyAlias()) ||
             isInvalid(ssl.getKeyStoreType()) ||
             isInvalid(ssl.getTrustStoreType()) ||
+            (isInvalid(ssl.getTrustStorePassword()) && !ssl.getTrustStoreType().equals("JCERACFKS")) ||
+            (isInvalid(ssl.getKeyStorePassword()) && !ssl.getKeyStoreType().equals("JCERACFKS")) ||
             isInvalid(ssl.getKeyPassword()) ||
             ssl.getEnabled() == null) {
             throw new MetadataValidationException("SSL parameters are missing or were not replaced by the system properties.");
