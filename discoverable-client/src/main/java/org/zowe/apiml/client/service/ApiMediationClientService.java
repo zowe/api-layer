@@ -14,7 +14,6 @@ import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.eurekaservice.client.config.*;
 import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
-import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ import java.util.List;
 public class ApiMediationClientService {
     private final ApiMediationClient apiMediationClient;
     private static final char[] PASSWORD = "password".toCharArray();
-
 
     public ApiMediationClientService() {
         apiMediationClient = new ApiMediationClientImpl();
