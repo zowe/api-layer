@@ -14,9 +14,7 @@ import com.netflix.zuul.context.RequestContext;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.apache.http.Header;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
-import org.apache.http.message.BasicHeader;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.PassTicketException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
@@ -100,7 +98,6 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
         @Override
         public void apply(InstanceInfo instanceInfo) {
             final RequestContext context = RequestContext.getCurrentContext();
-            context.addZuulRequestHeader(HttpHeaders.AUTHORIZATION, authorizationValue);
             context.addZuulRequestHeader(COOKIE_HEADER,
                 CookieUtil.removeCookie(
                     context.getZuulRequestHeaders().get(COOKIE_HEADER),
@@ -111,9 +108,6 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
 
         @Override
         public void applyToRequest(HttpRequest request) {
-            request.setHeader(
-                new BasicHeader(HttpHeaders.AUTHORIZATION, authorizationValue)
-            );
             Header header = request.getFirstHeader(COOKIE_HEADER);
             if (header != null) {
                 request.setHeader(COOKIE_HEADER,

@@ -30,7 +30,6 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -41,25 +40,25 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_USER;
 
-class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
+public class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
     private static final String USERNAME = "USERNAME";
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
     private HttpBasicPassTicketScheme httpBasicPassTicketScheme;
 
     @BeforeEach
-    void init() {
+    public void init() {
         PassTicketService passTicketService = new PassTicketService();
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
     }
 
     @AfterEach
-    void tearEverythingDown() {
+    public void tearDown() {
         RequestContext.testSetCurrentContext(null);
     }
 
     @Test
-    void testCreateCommand() {
+    public void testCreateCommand() {
         Calendar calendar = Calendar.getInstance();
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "APPLID");
         QueryResponse queryResponse = new QueryResponse("domain", USERNAME, calendar.getTime(), calendar.getTime(), QueryResponse.Source.ZOWE);
@@ -72,13 +71,6 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
         requestContext.setRequest(request);
         RequestContext.testSetCurrentContext(requestContext);
         ac.apply(null);
-
-        String authorizationValue = new String(
-            Base64.getDecoder().decode(
-                requestContext.getZuulRequestHeaders().get("authorization").split(" ")[1]
-            )
-        );
-        assertTrue(authorizationValue.startsWith("USERNAME:ZOWE_DUMMY_PASS_TICKET_APPLID_USERNAME_"));
 
         // JWT token expired one minute ago (command expired also if JWT token expired)
         calendar.add(Calendar.MINUTE, -1);
@@ -103,7 +95,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
+    public void givenRequest_whenApplyToRequest_thenSetsAuthorizationBasic() throws IRRPassTicketGenerationException {
         PassTicketService passTicketService = mock(PassTicketService.class);
         httpBasicPassTicketScheme = new HttpBasicPassTicketScheme(passTicketService, authConfigurationProperties);
 
@@ -119,19 +111,16 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
 
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> queryResponse);
         ac.applyToRequest(httpRequest);
-        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION).length, is(not(0)));
-        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION), hasItemInArray(hasToString(
-            "Authorization: Basic VVNFUk5BTUU6SEk=" // USERNAME:HI
-        )));
+        assertThat(httpRequest.getHeaders(HttpHeaders.AUTHORIZATION).length, is(0));
     }
 
     @Test
-    void returnsCorrectScheme() {
+    public void returnsCorrectScheme() {
         assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, httpBasicPassTicketScheme.getScheme());
     }
 
     @Test
-    void getExceptionWhenUserIdNotValid() {
+    public void getExceptionWhenUserIdNotValid() {
         String applId = "APPLID";
 
         Calendar calendar = Calendar.getInstance();
@@ -144,7 +133,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void testIsRequiredValidJwt() {
+    public void testIsRequiredValidJwt() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, 1);
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
@@ -154,7 +143,7 @@ class HttpBasicPassTicketSchemeTest extends CleanCurrentRequestContextTest {
     }
 
     @Test
-    void whenCallWithoutJwt_thenDoNothing() {
+    public void whenCallWithoutJwt_thenDoNothing() {
         Authentication authentication = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid");
         AuthenticationCommand ac = httpBasicPassTicketScheme.createCommand(authentication, () -> null);
         assertSame(AuthenticationCommand.EMPTY, ac);
