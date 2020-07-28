@@ -34,6 +34,9 @@ services:
         - apiId: com.ibm.zosmf
           gatewayUrl: api/v1
           documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+      customMetadata:
+          apiml:
+              enableUrlEncodedCharacters: true
 catalogUiTiles:
     zosmf:
         title: z/OSMF services

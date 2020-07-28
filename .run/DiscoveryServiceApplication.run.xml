@@ -1,0 +1,27 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DiscoveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <module name="api-layer.discovery-service.main" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.discovery.DiscoveryServiceApplication" />
+    <option name="ACTIVE_PROFILES" value="https" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <additionalParameters>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="spring.config.additional-location" />
+        <option name="value" value="file:./config/local/discovery-service.yml" />
+      </param>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="apiml.discovery.staticApiDefinitionsDirectories" />
+        <option name="value" value="config/local/api-defs;../api-defs" />
+      </param>
+      <param>
+        <option name="name" value="spring.profiles.include" />
+        <option name="value" value="debug" />
+      </param>
+    </additionalParameters>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

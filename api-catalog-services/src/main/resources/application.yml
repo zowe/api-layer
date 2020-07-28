@@ -56,7 +56,6 @@ apiml:
 
     security:
         ssl:
-            ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
             sslEnabled: true
             protocol: TLSv1.2
             trustStore: ${environment.truststore}
@@ -86,7 +85,7 @@ server:
         enabled: ${apiml.security.ssl.sslEnabled}
         protocol: ${apiml.security.ssl.protocol}
         enabled-protocols: TLSv1.2
-        ciphers:  ${apiml.security.ssl.ciphers}
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
         trustStore: ${apiml.security.ssl.trustStore}
         trustStoreType: ${apiml.security.ssl.trustStoreType}
         trustStorePassword: ${apiml.security.ssl.trustStorePassword}

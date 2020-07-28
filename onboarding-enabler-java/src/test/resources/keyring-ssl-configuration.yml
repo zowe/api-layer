@@ -1,6 +1,6 @@
-serviceId: ${apiml.serviceId}
-title: ${apiml.title}
-description: ${prefix.description}
+serviceId: service
+title: HelloWorld Spring REST API
+description: POC for exposing a Spring REST API
 baseUrl: http://localhost:10021/hellospring
 serviceIpAddress: 127.0.0.1
 
@@ -13,7 +13,7 @@ discoveryServiceUrls:
     - http://eureka:password@localhost:10011/eureka1
 
 routes:
-    - gatewayUrl: ${prefix.routes.gatewayUrl}
+    - gatewayUrl: api/v1
       serviceUrl: /hellospring/api/v1
     - gatewayUrl: api/v1/api-doc
       serviceUrl: /hellospring/api-doc
@@ -35,12 +35,10 @@ ssl:
     protocol: TLSv1.2
     keyAlias: localhost
     keyPassword: password
-    keyStore: ${apiml.keystore}
-    keyStorePassword: password
-    keyStoreType: PKCS12
+    keyStore: keystore/localhost/localhost.keystore.p12
+    keyStoreType: JCERACFKS
     trustStore: keystore/localhost/localhost.truststore.p12
-    trustStorePassword: password
-    trustStoreType: PKCS12
+    trustStoreType: JCERACFKS
 
 customMetadata:
     key: value
@@ -53,3 +51,4 @@ customMetadata:
             key5:
                 key6:
                     key7: value7
+
