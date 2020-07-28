@@ -124,7 +124,8 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java -Xms32m -Xmx256m -Xquickstart -X
     -Dserver.ssl.trustStorePassword=${KEYSTORE_PASSWORD} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dapiml.service.corsEnabled=true \
-    -jar ${ROOT_DIR}"/components/api-mediation/gateway-service.jar" &
+    -cp ${ROOT_DIR}"/components/api-mediation/gateway-service.jar":/usr/include/java_classes/IRRRacf.jar \
+    org.springframework.boot.loader.PropertiesLauncher &
 echo "starting DC"
 DISCOVERABLECLIENT_CODE=DC
 _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERABLECLIENT_CODE} java -Xms32m -Xmx256m -Xquickstart \

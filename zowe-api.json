@@ -10,7 +10,7 @@
                 "target": "components/api-mediation/discovery-service.jar",
                 "binary": true
             },
-            "gateway-service/build/libs/gateway-service-thin.jar": {
+            "gateway-service/build/libs/gateway-service.jar": {
                 "target": "components/api-mediation/gateway-service.jar",
                 "binary": true
             },
@@ -56,8 +56,8 @@
                     "target": "apidef/zosmf.yml",
                     "binary": true
                 },
-                "../api-layer-deploy/zosmf-evil.yml": {
-                    "target": "apidef/zosmf-evil.yml",
+                "../api-defs2/dc-passticket.yml": {
+                    "target": "apidef/dc-passticket.yml",
                     "binary": true
                 },
                 "apiml-common/src/test/resources/zowe.version/zowe-manifest.json": {
