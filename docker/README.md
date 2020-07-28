@@ -43,7 +43,7 @@ The main goal of the image is to simplify running of all the types of the tests.
 To download and run the container it is necessary to install the [Docker Engine](https://www.docker.com/) first. The following commands start new instance of the container and log you into the bash with root privileges. The last line then updates the version of the api-layer and run the unit tests, integration tests and end to end tests. 
 
 ```
-docker run --rm --name api-layer -d jbalhar/api-layer-development:1.0.1 /sbin/my_init
+docker run --rm --name api-layer -d jbalhar/api-layer-development:1.13.1 /sbin/my_init
 docker exec api-layer bash _test
 ```
 

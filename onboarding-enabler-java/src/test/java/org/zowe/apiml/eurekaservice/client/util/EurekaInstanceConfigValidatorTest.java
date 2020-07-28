@@ -73,7 +73,7 @@ class EurekaInstanceConfigValidatorTest {
         Exception exception = assertThrows(MetadataValidationException.class,
             () -> validator.validate(testConfig),
             "Expected exception is not MetadataValidationException");
-        assertEquals("SSL parameters are missing or were not replaced by the system properties.", exception.getMessage());
+        assertEquals("SSL parameters ** keyStore ** are missing or were not replaced by the system properties.", exception.getMessage());
     }
 
     @Test
@@ -91,12 +91,12 @@ class EurekaInstanceConfigValidatorTest {
     }
 
     @Test
-    void givenConfigurationWrongSsl_whenValidate_thenThrowException() throws Exception {
+    void givenConfigurationWrongRoutes_whenValidate_thenThrowException() throws Exception {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("wrong-routes-service-configuration.yml");
         Exception exception = assertThrows(MetadataValidationException.class,
             () -> validator.validate(testConfig),
             "Expected exception is not MetadataValidationException");
-        assertEquals("Routes parameters are missing or were not replaced by the system properties.", exception.getMessage());
+        assertEquals("Routes parameters  ** gatewayUrl, serviceUrl ** are missing or were not replaced by the system properties.", exception.getMessage());
     }
 
     @Test
@@ -113,5 +113,20 @@ class EurekaInstanceConfigValidatorTest {
         validator.validate(testConfig);
 
         assertEquals(null, testConfig.getApiInfo());
+    }
+
+    @Test
+    void givenConfigurationWithMissingSslParams_whenValidate_thenThrowException() throws Exception {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("missing-ssl-configuration.yml");
+        Exception exception = assertThrows(MetadataValidationException.class,
+            () -> validator.validate(testConfig),
+            "Expected exception is not MetadataValidationException");
+        assertEquals("SSL parameters ** protocol, trustStore, keyStore, keyAlias, keyStoreType, trustStoreType, trustStorePassword, keyStorePassword, keyPassword, enabled ** are missing or were not replaced by the system properties.", exception.getMessage());
+    }
+
+    @Test
+    void givenConfigurationWithKeyring_whenOtherConfigurationIsValid_thenValidate() throws Exception {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("keyring-ssl-configuration.yml");
+        assertDoesNotThrow(() -> validator.validate(testConfig));
     }
 }

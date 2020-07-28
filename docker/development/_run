@@ -1,12 +1,20 @@
+#!/bin/bash
 export NVM_DIR="$HOME/.nvm" \
     && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  \
     && [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  \
     && nvm use v12.16.1
 
-# Update and build
+# Update
 cd /var/src/api-layer
 git fetch
 git pull
+
+# Install dependencies
+cd /var/src/api-layer/api-catalog-ui/frontend
+pnpm install
+
+# Build
+cd /var/src/api-layer
 ./gradlew clean build
 
 # Run integration tests and local instances of the services
