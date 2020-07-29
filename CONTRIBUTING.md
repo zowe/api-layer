@@ -7,6 +7,7 @@ This document is a living summary of conventions and best practices for developm
   - [General Guidelines](#general-guidelines)
   - [Code Guidelines](#code-guidelines)
   - [File Naming Guidelines](#file-naming-guidelines)
+  - [Branch Naming Guidelines](#branch-naming-guidelines)
   - [Testing Guidelines](#testing-guidelines)
   - [Build Process Guidelines](#build-process-guidelines)
   - [Documentation Guidelines](#documentation-guidelines)
@@ -94,6 +95,30 @@ Follow Java file, class and package naming conventions
 Master package should be `org.zowe.apiml`
 Subpackage names are single lowercase words, named by feature. For example `security`,`message`,`config`
 Keep the hierarchy shallow
+
+## Branch Naming Guidelines
+
+We are following branch naming scheme:
+
+`<team-tag>/<work-tag>/<name-tag>`
+
+ - team-tag
+ 
+We are Rest In aPi team so we use `rip`. You can use tag of your team or your personal handle.
+
+ - work-tag
+ 
+Represents a codified and searchable reference to problem that the branch solves. For Github issues, you would use `GH` prefix and `Github issue number`.
+
+ - name-tag
+ 
+You have most flexibility here, but please keep the name short and relevant.
+
+_Example:_
+
+`rip/US32154/feature-you-always-wanted`
+
+`rip/GH666/really-hard-to-reproduce-defect`
 
 ## Testing Guidelines
 
