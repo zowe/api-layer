@@ -17,7 +17,7 @@ public class AcceptanceTestWithBasePath {
     protected String basePath;
 
     @LocalServerPort
-    private int port;
+    protected int port;
 
     @BeforeEach
     public void setBasePath() {
