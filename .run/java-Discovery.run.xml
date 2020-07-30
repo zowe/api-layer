@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="java-Discovery" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.zowe.apiml.discovery.DiscoveryServiceApplication" />
+    <module name="api-layer.discovery-service.main" />
+    <shortenClasspath name="CLASSPATH_FILE" />
+    <option name="VM_PARAMETERS" value="-Dspring.profiles.active=https -Dspring.config.additional-location=file:./config/local/discovery-service.yml" />
+    <option name="WORKING_DIRECTORY" value="$ContentRoot$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
