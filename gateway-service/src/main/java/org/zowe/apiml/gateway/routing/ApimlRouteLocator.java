@@ -79,7 +79,7 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
                 List<ServiceInstance> serviceInstances = this.discovery.getInstances(serviceId);
                 if (serviceInstances == null || serviceInstances.isEmpty()) {
                     apimlLog.log("org.zowe.apiml.gateway.instanceNotFound", serviceId);
-                    break;
+                    continue;
                 }
 
                 RoutedServices routedServices = new RoutedServices();
