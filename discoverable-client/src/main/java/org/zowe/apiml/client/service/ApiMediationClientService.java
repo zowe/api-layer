@@ -43,7 +43,7 @@ public class ApiMediationClientService {
         this.dcConfig = dcConfig;
     }
 
-    public void register() throws ServiceDefinitionException {
+    public boolean register() throws ServiceDefinitionException {
         ApiInfo apiInfo = new ApiInfo(SERVICE_ID, GATEWAY_URL, "1.0.0", null, null);
         Authentication authentication = new Authentication("bypass", null);
         Ssl ssl = new Ssl(dcConfig.isSslEnabled(), dcConfig.isVerifyCerts(), dcConfig.getSslProtocol(), dcConfig.getKeyAlias(),
@@ -68,10 +68,12 @@ public class ApiMediationClientService {
             .serviceIpAddress("0.0.0.0") //use hostname instead of IP address
             .build();
         apiMediationClient.register(apiConfig);
+        return true; // indicates success, successful unless exception thrown. Used to assert success in unit tests.
     }
 
-    public void unregister() {
+    public boolean unregister() {
         apiMediationClient.unregister();
+        return true; // indicates success, successful unless exception thrown. Used to assert success in unit tests.
     }
 
     public boolean isRegistered() {

@@ -26,6 +26,7 @@ import org.zowe.apiml.client.model.DiscoverableClientConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 
 @RunWith(SpringRunner.class)
 @TestPropertySource(locations = "/application.yml")
@@ -48,7 +49,7 @@ public class ApiMediationClientServiceTest {
 
     @Test
     public void registerTest() throws ServiceDefinitionException {
-        apiMediationClientService.register();
+        assertTrue(apiMediationClientService.register());
     }
 
     @Test
@@ -65,12 +66,12 @@ public class ApiMediationClientServiceTest {
 
     @Test
     public void unregisterTest() {
-        apiMediationClientService.unregister();
+        assertTrue(apiMediationClientService.unregister());
     }
 
     @Test
     public void unregisterTest_notRegistered() {
-        apiMediationClientService.unregister();
+        assertTrue(apiMediationClientService.unregister());
     }
 
     @Configuration
