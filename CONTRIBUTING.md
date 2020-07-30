@@ -98,27 +98,32 @@ Keep the hierarchy shallow
 
 ## Branch Naming Guidelines
 
-We are following branch naming scheme:
+There are two ways to name new branches to simplify orientation. One is used for the work on the Github issues and one is used for small contributions that doesn't deserve opening of the issue.  
 
-`<team-tag>/<work-tag>/<name-tag>`
+GitHub Issues: `<team-tag>/<work-tag>/<name-tag>` an example would be: `rip/GH752/per_service_timeout_options`
+
+Small personal contributions: `private/<person-tag>/<name-tag>` an example would be: `private/jb892003/temporarily_disable_e2e_tests` 
 
  - team-tag
  
-We are Rest In aPi team so we use `rip`. You can use tag of your team or your personal handle.
+The team contributing on the Broadcom side for example is names Rest In aPi and so the `rip` is used. If there isn't a team involved, use your personal Github handle e.g. `balhar-jakub` or `jandadav`
 
  - work-tag
  
-Represents a codified and searchable reference to problem that the branch solves. For Github issues, you would use `GH` prefix and `Github issue number`.
+Represents a codified and searchable reference to problem that the branch solves. For Github issues, you would use `GH` prefix and `Github issue number`. 
+
+ - person-tag
+ 
+Represents a unique identifier for specific person. The good candidate is the Github handle such as `balhar-jakub` or `jandadav`.
 
  - name-tag
  
-You have most flexibility here, but please keep the name short and relevant.
+Please keep the name short and relevant.
 
-_Example:_
+_Further Examples:_
 
-`rip/US32154/feature-you-always-wanted`
-
-`rip/GH666/really-hard-to-reproduce-defect`
+ - `rip/GH666/really-hard-to-reproduce-defect`
+ - `private/balhar-jakub/feature-you-always-wanted`
 
 ## Testing Guidelines
 
