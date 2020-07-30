@@ -120,11 +120,6 @@ Represents a unique identifier for specific person. The good candidate is the Gi
  
 Please keep the name short and relevant.
 
-_Further Examples:_
-
- - `rip/GH666/really-hard-to-reproduce-defect`
- - `private/balhar-jakub/feature-you-always-wanted`
-
 ## Testing Guidelines
 
 - Core team uses TDD practices.
