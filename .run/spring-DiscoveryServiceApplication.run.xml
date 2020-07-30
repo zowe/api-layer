@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="DiscoveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration name="spring-DiscoveryServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="api-layer.discovery-service.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.discovery.DiscoveryServiceApplication" />
     <option name="ACTIVE_PROFILES" value="https" />
