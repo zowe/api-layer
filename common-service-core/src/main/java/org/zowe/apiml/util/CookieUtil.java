@@ -18,6 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 @UtilityClass
 public final class CookieUtil {
 
+    public static final String COOKIE_HEADER = "cookie";
+
     /**
      * It replace or add cookie into header string value (see header with name "Cookie").
      *
@@ -73,7 +75,7 @@ public final class CookieUtil {
         }
 
         if (!changed) return cookieHeader;
-        return sb.toString();
+        return (sb.length() > 0) ? sb.toString() : null;
     }
 
 }

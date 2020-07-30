@@ -30,6 +30,8 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static org.zowe.apiml.util.CookieUtil.COOKIE_HEADER;
+
 /**
  * This bean provide LTPA token into request. It get LTPA from JWT token (value is set on logon) and distribute it as
  * cookie.
@@ -59,8 +61,6 @@ public class ZosmfScheme implements AbstractAuthenticationScheme {
     public class ZosmfCommand extends AuthenticationCommand {
 
         private static final long serialVersionUID = 2284037230674275720L;
-
-        public static final String COOKIE_HEADER = "cookie";
 
         private final Long expireAt;
 

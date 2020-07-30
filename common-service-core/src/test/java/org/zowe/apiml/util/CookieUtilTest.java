@@ -33,9 +33,9 @@ public class CookieUtilTest {
     public void removeCookie() {
         String c = "a=1;b=2";
         assertSame(c, CookieUtil.removeCookie(c, "c"));
-        assertEquals("", CookieUtil.removeCookie("a=b", "a"));
+        assertNull(CookieUtil.removeCookie("a=b", "a"));
         assertEquals("a=1;c=3", CookieUtil.removeCookie("a=1;b=2;c=3", "b"));
-        assertEquals("", CookieUtil.removeCookie("a=1;a=2;a=3", "a"));
+        assertNull(CookieUtil.removeCookie("a=1;a=2;a=3", "a"));
     }
 
 }

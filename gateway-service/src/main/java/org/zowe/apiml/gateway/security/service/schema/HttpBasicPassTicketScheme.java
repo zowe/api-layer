@@ -31,6 +31,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.function.Supplier;
 
+import static org.zowe.apiml.util.CookieUtil.COOKIE_HEADER;
+
 /**
  * This bean support PassTicket. Bean is responsible for getting PassTicket from
  * SAF and generating new authentication header in request.
@@ -90,8 +92,6 @@ public class HttpBasicPassTicketScheme implements AbstractAuthenticationScheme {
     public static class PassTicketCommand extends AuthenticationCommand {
 
         private static final long serialVersionUID = 3941300386857998443L;
-
-        private static final String COOKIE_HEADER = "cookie";
 
         private final String authorizationValue;
         private final String cookieName;
