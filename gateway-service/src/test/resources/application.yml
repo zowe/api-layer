@@ -79,7 +79,7 @@ server:
 
 zuul:
     sslHostnameValidationEnabled: false
-    addProxyHeaders: false
+    addProxyHeaders: true
     traceRequestBody: true
     ignoreSecurityHeaders: false
     includeDebugHeader: false
