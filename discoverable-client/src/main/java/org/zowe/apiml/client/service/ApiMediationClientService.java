@@ -9,54 +9,65 @@
  */
 package org.zowe.apiml.client.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.client.model.DiscoverableClientConfig;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
-import org.zowe.apiml.eurekaservice.client.config.*;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.config.Authentication;
+import org.zowe.apiml.eurekaservice.client.config.Route;
+import org.zowe.apiml.eurekaservice.client.config.Ssl;
 import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
+/**
+ * Service that allows a new {@link com.netflix.discovery.EurekaClient} to be registered and un-registered via ApiMediationClientImpl instance.
+ * This service uses its own {@link com.netflix.discovery.EurekaClient} so that registration can be tested without affecting other services in
+ * the Discoverable Client.
+ */
 @Service
 public class ApiMediationClientService {
-    private final ApiMediationClient apiMediationClient;
-    private static final char[] PASSWORD = "password".toCharArray();
+    private static final String PORT = "10013";
+    private static final String SERVICE_ID = "registrationTest";
+    private static final String GATEWAY_URL = "api/v1";
 
-    public ApiMediationClientService() {
+    private final DiscoverableClientConfig dcConfig;
+
+    private final ApiMediationClient apiMediationClient;
+
+    public ApiMediationClientService(@Autowired DiscoverableClientConfig dcConfig) {
         apiMediationClient = new ApiMediationClientImpl();
+        this.dcConfig = dcConfig;
     }
 
     public void register() throws ServiceDefinitionException {
-        ApiInfo apiInfo = new ApiInfo("org.zowe.discoverableclient.registrationTest", "api/v1", "1.0.0", "https://localhost:10013/dummy", null);
-        Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Client", "Application that demonstrates API Mediation registration", "1.0.1"));
+        ApiInfo apiInfo = new ApiInfo(SERVICE_ID, GATEWAY_URL, "1.0.0", null, null);
         Authentication authentication = new Authentication("bypass", null);
-        Ssl ssl = new Ssl(true, true, "TLSv1.2", "localhost", PASSWORD,
-            "../keystore/localhost/localhost.keystore.p12", PASSWORD, "PKCS12",
-            "../keystore/localhost/localhost.truststore.p12", PASSWORD, "PKCS12");
-        List<Route> routes = new ArrayList<>();
-        Route apiRoute = new Route("api/v1", "/registrationTest/api/v1");
-        routes.add(apiRoute);
+        Ssl ssl = new Ssl(dcConfig.isSslEnabled(), dcConfig.isVerifyCerts(), dcConfig.getSslProtocol(), dcConfig.getKeyAlias(),
+            dcConfig.getKeyPassword().toCharArray(), dcConfig.getKeyStore(), dcConfig.getKeyStorePassword().toCharArray(),
+            dcConfig.getKeyStoreType(), dcConfig.getTrustStore(), dcConfig.getTrustStorePassword().toCharArray(), dcConfig.getTrustStoreType());
+        Route apiRoute = new Route(GATEWAY_URL, "/" + SERVICE_ID + "/" + GATEWAY_URL);
 
-        ApiMediationServiceConfig config = ApiMediationServiceConfig.builder()
+        ApiMediationServiceConfig apiConfig = ApiMediationServiceConfig.builder()
             .apiInfo(Collections.singletonList(apiInfo))
-            .catalog(catalogUiTile)
             .authentication(authentication)
-            .routes(routes)
-            .description("Example for API Mediation registration")
-            .title("API Mediation Registration")
-            .serviceId("registrationTest")
-            .baseUrl("https://localhost:10013")
+            .routes(Collections.singletonList(apiRoute))
+            .description("Example for API Mediation Client registration")
+            .title("API Mediation Client Registration")
+            .serviceId(SERVICE_ID)
+            .baseUrl(dcConfig.getScheme() + "://" + dcConfig.getHostname() + ":" + PORT)
             .healthCheckRelativeUrl("")
             .homePageRelativeUrl("")
             .statusPageRelativeUrl("")
-            .discoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka"))
+            .discoveryServiceUrls(dcConfig.getDiscoveryServiceUrls())
             .ssl(ssl)
-            .serviceIpAddress("127.0.0.1")
+            .preferIpAddress(false)
+            .serviceIpAddress("0.0.0.0") //use hostname instead of IP address
             .build();
-        apiMediationClient.register(config);
+        apiMediationClient.register(apiConfig);
     }
 
     public void unregister() {
