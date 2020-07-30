@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="java-Gateway" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+    <option name="MAIN_CLASS_NAME" value="org.zowe.apiml.gateway.GatewayApplication" />
+    <module name="api-layer.gateway-service.main" />
+    <shortenClasspath name="CLASSPATH_FILE" />
+    <option name="VM_PARAMETERS" value="-Dspring.config.additional-location=file:./config/local/gateway-service.yml" />
+    <option name="WORKING_DIRECTORY" value="$ContentRoot$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

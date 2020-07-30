@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="DiscoverableClientSampleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration name="spring-DiscoverableClientSampleApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="api-layer.discoverable-client.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.client.DiscoverableClientSampleApplication" />
     <option name="ALTERNATIVE_JRE_PATH" />
