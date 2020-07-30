@@ -34,6 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.config.service.security.MockedSecurityContext;
 import org.zowe.apiml.gateway.cache.RetryIfExpiredAspect;
 import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.security.service.schema.*;
 import org.zowe.apiml.gateway.utils.CurrentRequestContextTest;
 import org.zowe.apiml.security.common.auth.Authentication;
@@ -86,6 +87,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
      * secondary instance to check protected methods
      */
     private ServiceAuthenticationServiceImpl serviceAuthenticationServiceImpl;
+
 
     @BeforeEach
     void init() {
@@ -145,6 +147,37 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
         ii = createInstanceInfo("instance2", (AuthenticationScheme) null, null);
         assertEquals(new Authentication(), serviceAuthenticationServiceImpl.getAuthentication(ii));
+    }
+
+    @Test
+    void test_When_validJwtInCookieWithPassTicketAuthentication_then_setInstanceInfoInRequestContext_and_return_PassTicketCommand() {
+        QueryResponse qr1 = new QueryResponse("domain", "userId",
+            Date.valueOf(LocalDate.of(1900, 1, 1)),
+            Date.valueOf(LocalDate.of(2100, 1, 1)),
+            QueryResponse.Source.ZOWE
+        );
+        when(authenticationService.parseJwtToken("jwt01")).thenReturn(qr1);
+
+        Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
+        InstanceInfo ii1 = createInstanceInfo("inst01", a1);
+
+        Application application = createApplication(ii1);
+        when(discoveryClient.getApplication(application.getName())).thenReturn(application);
+
+        AbstractAuthenticationScheme scheme = mock(HttpBasicPassTicketScheme.class);
+        when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
+        when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(scheme);
+
+        AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
+        when(scheme.createCommand(eq(a1), argThat(x -> Objects.equals(x.get(), qr1)))).thenReturn(acValid);
+
+        AuthenticationCommand ac = serviceAuthenticationServiceImpl.getAuthenticationCommand(application.getName(), "jwt01");
+        assertNotNull(ac);
+        assertNotEquals(AuthenticationCommand.EMPTY, ac);
+        assertNotNull(RequestContextUtils.getInstanceInfo());
+        assertTrue(RequestContext.getCurrentContext().get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand);
+
+        assertEquals(ii1, RequestContextUtils.getInstanceInfo().get());
     }
 
     @Test
@@ -391,7 +424,7 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
 
     private <T> T getUnProxy(T springClass) throws Exception {
         if (springClass instanceof  Advised) {
-            return (T) ((Advised) springClass).getTargetSource().getTarget();
+            return (T) (((Advised) springClass).getTargetSource().getTarget());
         }
         return springClass;
     }

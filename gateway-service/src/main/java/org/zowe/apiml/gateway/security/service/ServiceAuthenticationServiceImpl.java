@@ -126,7 +126,7 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
                 found = auth;
 
                 RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, new ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand());
-                RequestContextUtils.setInstanceInfo((instance));
+                RequestContextUtils.setInstanceInfo(instance);
             } else if (!found.equals(auth)) {
                 // if next record is different, authentication cannot be determined before load balancer
                 return loadBalancerCommand;
