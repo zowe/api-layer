@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ApiCatalogApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration name="spring-ApiCatalogApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="api-layer.api-catalog-services.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.apicatalog.ApiCatalogApplication" />
     <option name="ALTERNATIVE_JRE_PATH" />

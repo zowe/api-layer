@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration name="spring-GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="api-layer.gateway-service.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
     <option name="ALTERNATIVE_JRE_PATH" />
