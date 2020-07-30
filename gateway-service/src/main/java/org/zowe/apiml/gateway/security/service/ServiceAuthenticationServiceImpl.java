@@ -24,6 +24,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.cache.RetryIfExpired;
 import org.zowe.apiml.gateway.config.CacheConfig;
+import org.zowe.apiml.gateway.ribbon.RequestContextUtils;
 import org.zowe.apiml.gateway.security.service.schema.AbstractAuthenticationScheme;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationSchemeFactory;
@@ -123,6 +124,9 @@ public class ServiceAuthenticationServiceImpl implements ServiceAuthenticationSe
             if (found == null) {
                 // this is the first record
                 found = auth;
+
+                RequestContext.getCurrentContext().set(AUTHENTICATION_COMMAND_KEY, new ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand());
+                RequestContextUtils.setInstanceInfo((instance));
             } else if (!found.equals(auth)) {
                 // if next record is different, authentication cannot be determined before load balancer
                 return loadBalancerCommand;
