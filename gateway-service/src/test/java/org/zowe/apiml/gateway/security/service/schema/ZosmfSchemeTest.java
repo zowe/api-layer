@@ -38,7 +38,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.gateway.security.service.schema.ZosmfScheme.ZosmfCommand.COOKIE_HEADER;
+import static org.zowe.apiml.util.CookieUtil.COOKIE_HEADER;
 
 @ExtendWith(MockitoExtension.class)
 class ZosmfSchemeTest extends CleanCurrentRequestContextTest {
