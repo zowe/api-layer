@@ -150,6 +150,42 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
     }
 
     @Test
+    void test_When_validJwtInCookieWithPassTicketAuthentication_then_setInstanceInfoInRequestContext_and_return_PassTicketCommand_spy() {
+        AuthenticationCommand ok = new AuthenticationCommandTest(false);
+
+        Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
+        Authentication a2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid02");
+
+        InstanceInfo ii1 = createInstanceInfo("inst01", a1);
+        InstanceInfo ii2 = createInstanceInfo("inst01", a2);
+
+        AbstractAuthenticationScheme scheme = mock(AbstractAuthenticationScheme.class);
+        doAnswer(invocation -> {
+            ((Supplier<?>) invocation.getArgument(1)).get();
+            return ok;
+        }).when(scheme).createCommand(any(), any());
+        when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
+
+        ServiceAuthenticationService sas = spy(serviceAuthenticationServiceImpl);
+
+        // just one instance
+        Application application = createApplication(ii1);
+        when(discoveryClient.getApplication("svr01")).thenReturn(application);
+        assertSame(ok, sas.getAuthenticationCommand("svr01", "jwt01"));
+
+        // multiple same instances
+        application = createApplication(ii1, ii1, ii1);
+        when(discoveryClient.getApplication("svr02")).thenReturn(application);
+        assertSame(ok, sas.getAuthenticationCommand("svr02", "jwt02"));
+
+        // multiple different instances
+        reset(discoveryClient);
+        application = createApplication(ii1, ii2);
+        when(discoveryClient.getApplication("svr03")).thenReturn(application);
+        assertTrue(sas.getAuthenticationCommand("svr03", "jwt03") instanceof ServiceAuthenticationServiceImpl.LoadBalancerAuthenticationCommand);
+    }
+
+    @Test
     void test_When_validJwtInCookieWithPassTicketAuthentication_then_setInstanceInfoInRequestContext_and_return_PassTicketCommand() {
         QueryResponse qr1 = new QueryResponse("domain", "userId",
             Date.valueOf(LocalDate.of(1900, 1, 1)),
@@ -161,23 +197,55 @@ class ServiceAuthenticationServiceImplTest extends CurrentRequestContextTest {
         Authentication a1 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid01");
         InstanceInfo ii1 = createInstanceInfo("inst01", a1);
 
-        Application application = createApplication(ii1);
-        when(discoveryClient.getApplication(application.getName())).thenReturn(application);
+        Application application1 = createApplication(ii1);
+        when(discoveryClient.getApplication(application1.getName())).thenReturn(application1);
 
-        AbstractAuthenticationScheme scheme = mock(HttpBasicPassTicketScheme.class);
-        when(authenticationSchemeFactory.getSchema(any())).thenReturn(scheme);
-        when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(scheme);
+        AbstractAuthenticationScheme passTicketScheme = mock(HttpBasicPassTicketScheme.class);
+        when(authenticationSchemeFactory.getSchema(any())).thenReturn(passTicketScheme);
+        when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(passTicketScheme);
 
-        AuthenticationCommand acValid = spy(new AuthenticationCommandTest(false));
-        when(scheme.createCommand(eq(a1), argThat(x -> Objects.equals(x.get(), qr1)))).thenReturn(acValid);
+        AuthenticationCommand acValid1 = spy(new AuthenticationCommandTest(false));
+        when(passTicketScheme.createCommand(eq(a1), argThat(x -> Objects.equals(x.get(), qr1)))).thenReturn(acValid1);
 
-        AuthenticationCommand ac = serviceAuthenticationServiceImpl.getAuthenticationCommand(application.getName(), "jwt01");
-        assertNotNull(ac);
-        assertNotEquals(AuthenticationCommand.EMPTY, ac);
+        AuthenticationCommand ac1 = serviceAuthenticationServiceImpl.getAuthenticationCommand(application1.getName(), "jwt01");
+        assertNotNull(ac1);
+        assertNotEquals(AuthenticationCommand.EMPTY, ac1);
         assertNotNull(RequestContextUtils.getInstanceInfo());
         assertTrue(RequestContext.getCurrentContext().get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand);
-
         assertEquals(ii1, RequestContextUtils.getInstanceInfo().get());
+
+        ac1.apply(ii1);
+        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get("cookie"));
+
+        QueryResponse qr2 = new QueryResponse("domain", "userId",
+            Date.valueOf(LocalDate.of(1900, 1, 1)),
+            Date.valueOf(LocalDate.of(2100, 1, 1)),
+            QueryResponse.Source.ZOWE
+        );
+        when(authenticationService.parseJwtToken("jwt02")).thenReturn(qr1);
+
+        Authentication a2 = new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, "applid02");
+        InstanceInfo ii2 = createInstanceInfo("inst01", a2);
+
+        Application application2 = createApplication(ii1, ii2);
+        when(discoveryClient.getApplication(application2.getName())).thenReturn(application2);
+
+        //AbstractAuthenticationScheme scheme = mock(HttpBasicPassTicketScheme.class);
+        when(authenticationSchemeFactory.getSchema(any())).thenReturn(passTicketScheme);
+        when(authenticationSchemeFactory.getSchema(AuthenticationScheme.HTTP_BASIC_PASSTICKET)).thenReturn(passTicketScheme);
+
+        AuthenticationCommand acValid2 = spy(new AuthenticationCommandTest(false));
+        when(passTicketScheme.createCommand(eq(a1), argThat(x -> Objects.equals(x.get(), qr1)))).thenReturn(acValid2);
+
+        AuthenticationCommand ac2 = serviceAuthenticationServiceImpl.getAuthenticationCommand(application1.getName(), "jwt02");
+        assertNotNull(ac2);
+        assertNotEquals(AuthenticationCommand.EMPTY, ac2);
+        assertNotNull(RequestContextUtils.getInstanceInfo());
+        assertTrue(RequestContext.getCurrentContext().get(AUTHENTICATION_COMMAND_KEY) instanceof ServiceAuthenticationServiceImpl.UniversalAuthenticationCommand);
+        assertEquals(ii1, RequestContextUtils.getInstanceInfo().get());
+
+        ac2.apply(ii1);
+        assertNull(RequestContext.getCurrentContext().getZuulRequestHeaders().get("cookie"));
     }
 
     @Test
