@@ -32,10 +32,13 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final List<RoutedServicesUser> routedServicesUserList;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
+    private RoutedServicesNotifier routedServicesNotifier;
+
     public NewApimlRouteLocator(String servletPath, ZuulProperties properties, DiscoveryClient discoveryClient, List<RoutedServicesUser> routedServicesUserList) {
         super(servletPath, discoveryClient, properties, null, null);
         this.discoveryClient = discoveryClient;
         this.routedServicesUserList = routedServicesUserList;
+        routedServicesNotifier = new RoutedServicesNotifier(routedServicesUserList);
     }
 
 
@@ -47,14 +50,14 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>();
 
         discoveryClient.getServices().forEach( serviceId ->
-             routesMap.putAll(createServiceRoutesAndUpdateRouteUsers(serviceId))
+             routesMap.putAll(createServiceRoutes(serviceId))
         );
 
+        routedServicesNotifier.notifyAndFlush();
         return routesMap;
     }
 
-    //TODO decouple route creation from route user updating
-    private Map<String, ZuulProperties.ZuulRoute> createServiceRoutesAndUpdateRouteUsers(String serviceId) {
+    private Map<String, ZuulProperties.ZuulRoute> createServiceRoutes(String serviceId) {
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>();
 
         RoutedServices routedServices = new RoutedServices();
@@ -64,16 +67,15 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
             .flatMap(
                 metadata -> metadataParser.parseToListRoute(metadata).stream()
             ).forEach( routedService -> {
-                    routesMap.putAll(createRoute(serviceId, routedService));
+                    routesMap.putAll(buildRoute(serviceId, routedService));
                     routedServices.addRoutedService(routedService);
             });
 
-        routedServicesUserList.forEach(s -> s.addRoutedServices(serviceId, routedServices));
+        routedServicesNotifier.addRoutedServices(serviceId, routedServices);
         return  routesMap;
     }
 
-    //returns map as it's ready for strategy pattern to be adopted and multiple routes produced
-    private Map<String, ZuulProperties.ZuulRoute> createRoute(String serviceId, RoutedService routedService) {
+    private Map<String, ZuulProperties.ZuulRoute> buildRoute(String serviceId, RoutedService routedService) {
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>();
 
         String routeKey = "/" + routedService.getGatewayUrl() + "/" + serviceId + "/**";
