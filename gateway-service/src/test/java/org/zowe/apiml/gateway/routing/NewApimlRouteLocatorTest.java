@@ -18,11 +18,7 @@ import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.zowe.apiml.gateway.filters.pre.LocationFilter;
-import org.zowe.apiml.product.routing.RoutedServicesUser;
-
 import java.util.*;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -36,14 +32,11 @@ class NewApimlRouteLocatorTest {
     EurekaDiscoveryClient eurekaDiscoveryClient;
 
     @Mock
-    LocationFilter locationFilter;
-
-    private List<RoutedServicesUser> routedServicesUserList = new ArrayList<>();
+    RoutedServicesNotifier routedServicesNotifier;
 
     @BeforeEach
     void setup() {
-        routedServicesUserList.add(locationFilter);
-        underTest = new NewApimlRouteLocator("", new ZuulProperties(), eurekaDiscoveryClient, routedServicesUserList);
+        underTest = new NewApimlRouteLocator("", new ZuulProperties(), eurekaDiscoveryClient, routedServicesNotifier);
     }
 
     @Test
@@ -81,26 +74,10 @@ class NewApimlRouteLocatorTest {
     }
 
     @Test
-    void givenServiceWithRoute_whenRouteLocated_thenRoutedServiceUsersUpdated() {
-        //given
-        Map<String,String> metadata = new HashMap<>();
-        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
-        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
-
-        ZuulProperties.ZuulRoute expectedRoute = new ZuulProperties.ZuulRoute();
-        expectedRoute.setId("api/v1/service");
-        expectedRoute.setPath("/api/v1/service/**");
-        expectedRoute.setServiceId("service");
-
-        LinkedHashMap<String, ZuulProperties.ZuulRoute> expectedRoutesMap = new LinkedHashMap();
-        expectedRoutesMap.put("/api/v1/service/**", expectedRoute);
-
-        when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
-        when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
-            Collections.singletonList(new DefaultServiceInstance("service", "localhost", 80, false, metadata)));
+    void whenRouteLocated_thenNotifierInvoked() {
         //when
         Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
         //then
-        verify(locationFilter, times(1)).addRoutedServices(eq("service"), any());
+        verify(routedServicesNotifier,times(1)).notifyAndFlush();
     }
 }

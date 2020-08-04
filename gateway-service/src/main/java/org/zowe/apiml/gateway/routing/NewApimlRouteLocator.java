@@ -19,29 +19,22 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
-import org.zowe.apiml.product.routing.RoutedServicesUser;
-
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
 public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
 
     private final DiscoveryClient discoveryClient;
-    private final List<RoutedServicesUser> routedServicesUserList;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
     private RoutedServicesNotifier routedServicesNotifier;
 
-    public NewApimlRouteLocator(String servletPath, ZuulProperties properties, DiscoveryClient discoveryClient, List<RoutedServicesUser> routedServicesUserList) {
+    public NewApimlRouteLocator(String servletPath, ZuulProperties properties, DiscoveryClient discoveryClient, RoutedServicesNotifier notifier) {
         super(servletPath, discoveryClient, properties, null, null);
         this.discoveryClient = discoveryClient;
-        this.routedServicesUserList = routedServicesUserList;
-        routedServicesNotifier = new RoutedServicesNotifier(routedServicesUserList);
+        routedServicesNotifier = notifier;
     }
-
-
 
     @Override
     @VisibleForTesting

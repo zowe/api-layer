@@ -85,7 +85,6 @@ public class ApimlRoutingConfig {
         routedServicesUsers.add(locationFilter());
         routedServicesUsers.add(webSocketProxyServerHandler);
         routedServicesUsers.add(pageRedirectionFilter);
-        zuulProperties.setDecodeUrl(false);
 
         return new ApimlRouteLocator("", discovery, zuulProperties, serviceRouteMapper, routedServicesUsers);
     }
@@ -95,14 +94,15 @@ public class ApimlRoutingConfig {
     @Autowired
     public DiscoveryClientRouteLocator apimlClientRouteLocator(DiscoveryClient discoveryClient,
                                                 ZuulProperties zuulProperties,
-                                                WebSocketProxyServerHandler webSocketProxyServerHandler,
-                                                PageRedirectionFilter pageRedirectionFilter) {
-        //TODO isn't this done by spring automatically?
-        List<RoutedServicesUser> routedServicesUsers = new ArrayList<>();
-        routedServicesUsers.add(locationFilter());
-        routedServicesUsers.add(webSocketProxyServerHandler);
-        routedServicesUsers.add(pageRedirectionFilter);
-        zuulProperties.setDecodeUrl(false);
-        return new NewApimlRouteLocator("", zuulProperties, discoveryClient, routedServicesUsers);
+                                                RoutedServicesNotifier routedServicesNotifier) {
+        return new NewApimlRouteLocator("", zuulProperties, discoveryClient, routedServicesNotifier);
     }
+
+    @Bean
+    @ConditionalOnProperty(name = "apiml.routing.mode", havingValue = "new")
+    @Autowired
+    public RoutedServicesNotifier routedServicesNotifier(List<RoutedServicesUser> routedServicesUserList) {
+        return new RoutedServicesNotifier(routedServicesUserList);
+    }
+
 }

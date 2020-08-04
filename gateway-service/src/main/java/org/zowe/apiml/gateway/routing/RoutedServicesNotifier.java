@@ -26,7 +26,6 @@ public class RoutedServicesNotifier {
         this.routedServicesUserList = routedServicesUserList;
     }
 
-
     public void notifyAndFlush() {
         routedServicesUserList.forEach(routedServicesUser ->
             buffer.forEach(routedServicesUser::addRoutedServices)
