@@ -29,8 +29,8 @@ public class EurekaInstanceConfigValidator {
     private static final String UNSET_VALUE_STRING = "{apiml.";
     private static final char[] UNSET_VALUE_CHAR_ARRAY = UNSET_VALUE_STRING.toCharArray();
 
-    private List<String> missingSslParameters = new ArrayList<>();
-    private List<String> missingRoutesParameters = new ArrayList<>();
+    private final List<String> missingSslParameters = new ArrayList<>();
+    private final List<String> missingRoutesParameters = new ArrayList<>();
 
     /**
      * Validation method that validates mandatory and non-mandatory parameters
@@ -60,10 +60,10 @@ public class EurekaInstanceConfigValidator {
         }
         routes.forEach(route -> {
             if (isInvalid(route.getGatewayUrl())) {
-                createListOfMissingRoutesParameters("gatewayUrl", missingRoutesParameters);
+                addParameterToProblemsList("gatewayUrl", missingRoutesParameters);
             }
             if (isInvalid(route.getServiceUrl())) {
-                createListOfMissingRoutesParameters("serviceUrl", missingRoutesParameters);
+                addParameterToProblemsList("serviceUrl", missingRoutesParameters);
             }
             if (!missingRoutesParameters.isEmpty()) {
                 throw new MetadataValidationException(String.format("Routes parameters  ** %s ** are missing or were not replaced by the system properties.", String.join(", ", missingRoutesParameters)));
@@ -76,40 +76,40 @@ public class EurekaInstanceConfigValidator {
             throw new MetadataValidationException("SSL configuration was not provided. Try add apiml.service.ssl section.");
         }
         if (isInvalid(ssl.getProtocol())) {
-            createListOfMissingSslParameters("protocol", missingSslParameters);
+            addParameterToProblemsList("protocol", missingSslParameters);
         }
         if (isInvalid(ssl.getTrustStore())) {
-            createListOfMissingSslParameters("trustStore", missingSslParameters);
+            addParameterToProblemsList("trustStore", missingSslParameters);
         }
         if (isInvalid(ssl.getKeyStore())) {
-            createListOfMissingSslParameters("keyStore", missingSslParameters);
+            addParameterToProblemsList("keyStore", missingSslParameters);
         }
         if (isInvalid(ssl.getKeyAlias())) {
-            createListOfMissingSslParameters("keyAlias", missingSslParameters);
+            addParameterToProblemsList("keyAlias", missingSslParameters);
         }
         if (isInvalid(ssl.getKeyStoreType())) {
-            createListOfMissingSslParameters("keyStoreType", missingSslParameters);
+            addParameterToProblemsList("keyStoreType", missingSslParameters);
         }
         if (isInvalid(ssl.getTrustStoreType())) {
-            createListOfMissingSslParameters("trustStoreType", missingSslParameters);
+            addParameterToProblemsList("trustStoreType", missingSslParameters);
         }
         if (isInvalid(ssl.getTrustStorePassword())) {
             if (isInvalid(ssl.getTrustStoreType()) ||
                 (!isInvalid(ssl.getTrustStoreType()) && !ssl.getTrustStoreType().equals("JCERACFKS"))) {
-                createListOfMissingSslParameters("trustStorePassword", missingSslParameters);
+                addParameterToProblemsList("trustStorePassword", missingSslParameters);
             }
         }
         if (isInvalid(ssl.getKeyStorePassword())) {
             if (isInvalid(ssl.getKeyStoreType()) ||
                 (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals("JCERACFKS"))) {
-                createListOfMissingSslParameters("keyStorePassword", missingSslParameters);
+                addParameterToProblemsList("keyStorePassword", missingSslParameters);
             }
         }
         if (isInvalid(ssl.getKeyPassword())) {
-            createListOfMissingSslParameters("keyPassword", missingSslParameters);
+            addParameterToProblemsList("keyPassword", missingSslParameters);
         }
         if (ssl.getEnabled() == null) {
-            createListOfMissingSslParameters("enabled", missingSslParameters);
+            addParameterToProblemsList("enabled", missingSslParameters);
         }
         if (!missingSslParameters.isEmpty()) {
             throw new MetadataValidationException(String.format("SSL parameters ** %s ** are missing or were not replaced by the system properties.", String.join(", ", missingSslParameters)));
@@ -124,12 +124,7 @@ public class EurekaInstanceConfigValidator {
         return value == null || value.length == 0 || Chars.indexOf(value, UNSET_VALUE_CHAR_ARRAY) >= 0;
     }
 
-    private void createListOfMissingSslParameters(String parameter, List parameters) {
-        parameters.add(parameter);
+    private void addParameterToProblemsList(String parameter, List<String> problemParameters){
+        problemParameters.add(parameter);
     }
-
-    private void createListOfMissingRoutesParameters(String parameter, List parameters) {
-        parameters.add(parameter);
-    }
-
 }
