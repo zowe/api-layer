@@ -14,6 +14,7 @@ package org.zowe.apiml.gateway.security.login;
  */
 public enum LoginProvider {
     ZOSMF("zosmf"),
+    SAF("saf"),
     DUMMY("dummy");
 
     private final String value;

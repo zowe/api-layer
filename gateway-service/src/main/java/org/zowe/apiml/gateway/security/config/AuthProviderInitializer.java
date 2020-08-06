@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.config;
 
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
+import org.zowe.apiml.gateway.security.login.saf.ZosAuthenticationProvider;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -32,6 +33,7 @@ public class AuthProviderInitializer {
 
     private final DummyAuthenticationProvider dummyAuthenticationProvider;
     private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
+    private final ZosAuthenticationProvider zosAuthenticationProvider;
 
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     private final CertificateAuthenticationProvider certificateAuthenticationProvider;
@@ -40,11 +42,13 @@ public class AuthProviderInitializer {
                                    ZosmfAuthenticationProvider zosmfAuthenticationProvider,
                                    TokenAuthenticationProvider tokenAuthenticationProvider,
                                    CertificateAuthenticationProvider certificateAuthenticationProvider,
+                                   ZosAuthenticationProvider zosAuthenticationProvider,
                                    @Value("${apiml.security.auth.provider:zosmf}") String authProvider) {
         this.dummyAuthenticationProvider = dummyAuthenticationProvider;
         this.zosmfAuthenticationProvider = zosmfAuthenticationProvider;
         this.tokenAuthenticationProvider = tokenAuthenticationProvider;
         this.certificateAuthenticationProvider = certificateAuthenticationProvider;
+        this.zosAuthenticationProvider = zosAuthenticationProvider;
         this.authProvider = authProvider;
     }
 
@@ -59,6 +63,8 @@ public class AuthProviderInitializer {
         LoginProvider provider = getLoginProvider();
         if (provider.equals(LoginProvider.ZOSMF)) {
             auth.authenticationProvider(zosmfAuthenticationProvider);
+        } else if (provider.equals(LoginProvider.SAF)) {
+            auth.authenticationProvider(zosAuthenticationProvider);
         } else if (provider.equals(LoginProvider.DUMMY)) {
             apimlLog.log("org.zowe.apiml.security.loginEndpointInDummyMode");
             auth.authenticationProvider(dummyAuthenticationProvider);
