@@ -31,22 +31,21 @@ public class EurekaInstanceConfigValidator {
 
     private final List<String> missingSslParameters = new ArrayList<>();
     private final List<String> missingRoutesParameters = new ArrayList<>();
+    private final List<String> poorlyFormedRelativeUrlParameters = new ArrayList<>();
 
     /**
      * Validation method that validates mandatory and non-mandatory parameters
+     *
      * @param config
      * @throws MetadataValidationException if the validation fails
      */
     public void validate(ApiMediationServiceConfig config) {
         validateRoutes(config.getRoutes());
         validateSsl(config.getSsl());
+        validateUrls(config);
 
         if (config.getCatalog() == null) {
             log.warn("The API Catalog UI tile configuration is not provided. Try to add apiml.service.catalog.tile section.");
-        }
-
-        if (isInvalid(config.getHomePageRelativeUrl())) {
-            log.warn("The home page URL is not provided. Try to add apiml.service.homePageRelativeUrl property or check its value.");
         }
 
         if (config.getApiInfo() == null || config.getApiInfo().isEmpty()) {
@@ -116,6 +115,50 @@ public class EurekaInstanceConfigValidator {
         }
     }
 
+    private void validateUrls(ApiMediationServiceConfig config) {
+        validateHomePageRelativeUrl(config);
+
+        if (isPoorlyFormedRelativeUrl(config.getHealthCheckRelativeUrl())) {
+            addParameterToProblemsList("healthCheckRelativeUrl", poorlyFormedRelativeUrlParameters);
+        }
+
+        if (isPoorlyFormedRelativeUrl(config.getStatusPageRelativeUrl())) {
+            addParameterToProblemsList("statusPageRelativeUrl", poorlyFormedRelativeUrlParameters);
+        }
+
+        if (isPoorlyFormedRelativeUrl(config.getContextPath())) {
+            addParameterToProblemsList("contextPath", poorlyFormedRelativeUrlParameters);
+        }
+
+        if (!poorlyFormedRelativeUrlParameters.isEmpty()) {
+            log.warn(String.format("Relative URL parameters ** %s ** don't begin with '/' which often causes malformed URLs.", String.join(", ", poorlyFormedRelativeUrlParameters)));
+        }
+
+        if (config.getBaseUrl() != null && config.getBaseUrl().endsWith("/")) {
+            log.warn("The baseUrl parameter ends with a trailing '/'. This often causes malformed URLs when relative URLs are used.");
+        }
+
+        if (config.getContextPath() != null && config.getContextPath().endsWith("/")) {
+            log.warn("The contextPath parameter ends with a trailing '/'. This often causes malformed URLs when relative URLs are used.");
+        }
+    }
+
+    private void validateHomePageRelativeUrl(ApiMediationServiceConfig config) {
+        String homePageUrl = config.getHomePageRelativeUrl();
+        if (isInvalid(homePageUrl) && config.getRoutes().stream().noneMatch(route -> route.getGatewayUrl().toLowerCase().startsWith("ui"))) {
+            // Some applications may not require a home page, so don't log a warning that the home page URL doesn't exist
+            // unless there is a gateway UI URL, which indicates there should have been a home page URL.
+            log.warn("The home page URL is not provided. Try to add apiml.service.homePageRelativeUrl property or check its value.");
+        } else if (isPoorlyFormedRelativeUrl(homePageUrl)) {
+            addParameterToProblemsList("homePageRelativeUrl", poorlyFormedRelativeUrlParameters);
+        }
+    }
+
+    private boolean isPoorlyFormedRelativeUrl(String url) {
+        // URL not existing **is not** poorly formed. A check for it existing should be done elsewhere.
+        return url != null && !url.startsWith("/");
+    }
+
     private boolean isInvalid(String value) {
         return value == null || value.isEmpty() || value.contains(UNSET_VALUE_STRING);
     }
@@ -124,7 +167,7 @@ public class EurekaInstanceConfigValidator {
         return value == null || value.length == 0 || Chars.indexOf(value, UNSET_VALUE_CHAR_ARRAY) >= 0;
     }
 
-    private void addParameterToProblemsList(String parameter, List<String> problemParameters){
+    private void addParameterToProblemsList(String parameter, List<String> problemParameters) {
         problemParameters.add(parameter);
     }
 }
