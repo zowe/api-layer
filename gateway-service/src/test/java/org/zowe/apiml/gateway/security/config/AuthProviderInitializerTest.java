@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
+import org.zowe.apiml.gateway.security.login.saf.ZosAuthenticationProvider;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 
@@ -25,6 +26,7 @@ class AuthProviderInitializerTest {
     private TokenAuthenticationProvider tokenAuthenticationProvider;
     private ZosmfAuthenticationProvider zosmfAuthenticationProvider;
     private CertificateAuthenticationProvider certificateAuthenticationProvider;
+    private ZosAuthenticationProvider zosAuthenticationProvider;
 
     @BeforeEach
     void setup() {
@@ -32,6 +34,7 @@ class AuthProviderInitializerTest {
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);
         zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
         certificateAuthenticationProvider = mock(CertificateAuthenticationProvider.class);
+        zosAuthenticationProvider = mock(ZosAuthenticationProvider.class);
     }
 
     @Test
@@ -40,7 +43,7 @@ class AuthProviderInitializerTest {
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
             dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, authProvider
+            certificateAuthenticationProvider, zosAuthenticationProvider, authProvider
         );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
@@ -57,7 +60,7 @@ class AuthProviderInitializerTest {
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
             dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, authProvider
+            certificateAuthenticationProvider, zosAuthenticationProvider, authProvider
         );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
@@ -74,7 +77,7 @@ class AuthProviderInitializerTest {
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
             dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, authProvider
+            certificateAuthenticationProvider, zosAuthenticationProvider, authProvider
         );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
