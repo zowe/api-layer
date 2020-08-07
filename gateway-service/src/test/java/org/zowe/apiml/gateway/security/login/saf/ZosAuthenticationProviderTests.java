@@ -15,11 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.zowe.apiml.gateway.security.login.saf.MockPlatformUser.*;
 
-public class ZosAuthenticationProviderTests {
+class ZosAuthenticationProviderTests {
     private static ZosAuthenticationProvider provider = new ZosAuthenticationProvider();
     private UsernamePasswordAuthenticationToken VALID_TOKEN = new UsernamePasswordAuthenticationToken(VALID_USERID,
         VALID_PASSWORD);
@@ -27,7 +28,7 @@ public class ZosAuthenticationProviderTests {
         INVALID_PASSWORD);
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         provider.afterPropertiesSet();
     }
 
@@ -41,11 +42,12 @@ public class ZosAuthenticationProviderTests {
     @Test
     void validAuthenticationOnOnValidCredentials() {
         Authentication authentication = provider.authenticate(VALID_TOKEN);
-        assertEquals(authentication.getPrincipal(), VALID_USERID);
+        assertThat(VALID_USERID, is(authentication.getPrincipal()));
     }
 
     @Test
     void supportsUsernamePasswordAuthenticationToken() {
-        provider.supports(VALID_TOKEN.getClass());
+        boolean supportsValidToken = provider.supports(VALID_TOKEN.getClass());
+        assertThat(supportsValidToken, is(true));
     }
 }

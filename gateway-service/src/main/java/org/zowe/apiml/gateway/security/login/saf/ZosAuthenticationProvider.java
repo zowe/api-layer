@@ -32,7 +32,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     private Environment environment;
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         String userid = authentication.getName();
         String password = authentication.getCredentials().toString();
         PlatformReturned returned = getPlatformUser().authenticate(userid, password);
