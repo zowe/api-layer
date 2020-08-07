@@ -14,14 +14,8 @@ import org.springframework.security.core.AuthenticationException;
 public class ZosAuthenticationException extends AuthenticationException {
 
     private static final long serialVersionUID = 6652673387938170807L;
-    private final PlatformReturned platformReturned;
 
     public ZosAuthenticationException(String message, PlatformReturned platformReturned) {
         super(message);
-        this.platformReturned = platformReturned;
-    }
-
-    public PlatformReturned getPlatformReturned() {
-        return platformReturned;
     }
 }
