@@ -14,5 +14,5 @@ public interface PlatformClassFactory {
 
     Class<?> getPlatformReturnedClass() throws ClassNotFoundException;
 
-	Object getPlatformUser();
+    Object getPlatformUser();
 }
