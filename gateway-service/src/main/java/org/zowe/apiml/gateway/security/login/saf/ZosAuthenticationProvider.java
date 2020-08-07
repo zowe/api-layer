@@ -54,7 +54,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         if (platformUser == null) {
             if ((environment != null) && Arrays.asList(environment.getActiveProfiles()).contains("zos")) {
                 platformUser = new SafPlatformUser(new SafPlatformClassFactory());
