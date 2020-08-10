@@ -1,6 +1,12 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.14.0`
+
+- Prevent crashing of API ML on setting of null routes
+- Add support to the X-Forwarded-* Headers
+- Improve validator of configuration in enablers
+
 ## `1.13.0`
 
 - Add CORS Headers Support 
