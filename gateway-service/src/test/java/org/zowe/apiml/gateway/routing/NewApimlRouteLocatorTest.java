@@ -18,7 +18,12 @@ import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import java.util.*;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
@@ -40,9 +45,9 @@ class NewApimlRouteLocatorTest {
     }
 
     @Test
-    void givenOneServiceWithMultipleRoutes_whenLocateRoutes_thenTwoRoutesLocated() {
+    void givenOneServiceWithMultipleRoutes_whenLocateRoutes_thenTwoRoutesLocatedWithBothPathFormats() {
         //given
-        Map<String,String> metadata = new HashMap<>();
+        Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
 
@@ -51,8 +56,15 @@ class NewApimlRouteLocatorTest {
         expectedRoute.setPath("/api/v1/service/**");
         expectedRoute.setServiceId("service");
 
-        LinkedHashMap<String, ZuulProperties.ZuulRoute> expectedRoutesMap = new LinkedHashMap();
+        LinkedHashMap<String, ZuulProperties.ZuulRoute> expectedRoutesMap = new LinkedHashMap<>();
         expectedRoutesMap.put("/api/v1/service/**", expectedRoute);
+
+        expectedRoute = new ZuulProperties.ZuulRoute();
+        expectedRoute.setId("service/api/v1");
+        expectedRoute.setPath("/service/api/v1/**");
+        expectedRoute.setServiceId("service");
+
+        expectedRoutesMap.put("/service/api/v1/**", expectedRoute);
 
         metadata.put(ROUTES + ".ws-v1." + ROUTES_GATEWAY_URL, "ws/v1");
         metadata.put(ROUTES + ".ws-v1." + ROUTES_SERVICE_URL, "/");
@@ -63,6 +75,13 @@ class NewApimlRouteLocatorTest {
         expectedRoute.setServiceId("service");
 
         expectedRoutesMap.put("/ws/v1/service/**", expectedRoute);
+
+        expectedRoute = new ZuulProperties.ZuulRoute();
+        expectedRoute.setId("service/ws/v1");
+        expectedRoute.setPath("/service/ws/v1/**");
+        expectedRoute.setServiceId("service");
+
+        expectedRoutesMap.put("/service/ws/v1/**", expectedRoute);
 
         when(eurekaDiscoveryClient.getServices()).thenReturn(Collections.singletonList("service"));
         when(eurekaDiscoveryClient.getInstances("service")).thenReturn(
@@ -78,6 +97,6 @@ class NewApimlRouteLocatorTest {
         //when
         Map<String, ZuulProperties.ZuulRoute> zuulRouteMap = underTest.locateRoutes();
         //then
-        verify(routedServicesNotifier,times(1)).notifyAndFlush();
+        verify(routedServicesNotifier, times(1)).notifyAndFlush();
     }
 }
