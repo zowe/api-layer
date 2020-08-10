@@ -3,9 +3,9 @@
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 ## `1.14.0`
 
-- Prevent crashing of API ML on setting of null routes ([#767](https://github.com/zowe/api-layer/pull/767))
+- Prevent crashing of API ML when null routes are set ([#767](https://github.com/zowe/api-layer/pull/767))
 - Add support to the X-Forwarded-* Headers ([#769](https://github.com/zowe/api-layer/pull/769))
-- Improve validator of configuration in enablers ([#760](https://github.com/zowe/api-layer/pull/760))
+- Improve the configuration validator for the enablers to improve message specificity when one or more parameters required for setup are missing. ([#760](https://github.com/zowe/api-layer/pull/760))
 
 ## `1.13.0`
 
