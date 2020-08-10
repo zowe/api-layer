@@ -9,12 +9,13 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import org.zowe.apiml.util.UrlUtils;
-import org.zowe.apiml.product.routing.RoutedServices;
-import org.zowe.apiml.product.routing.RoutedServicesUser;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
+import org.zowe.apiml.product.routing.RoutedServicesUser;
+import org.zowe.apiml.util.UrlUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,8 +61,7 @@ public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
                 int i = proxy.lastIndexOf('/');
 
                 if (i > 0) {
-                    String route = proxy.substring(0, i);
-                    String originalPath = normalizeOriginalPath(routedServices.findServiceByGatewayUrl(route).getServiceUrl());
+                    String originalPath = normalizeOriginalPath(getService(routedServices, proxy).getServiceUrl());
                     context.set(REQUEST_URI_KEY, originalPath + requestPath);
                     log.debug("Routing: The request was routed to {}", originalPath + requestPath);
                 }
@@ -73,6 +73,18 @@ public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
         }
 
         return null;
+    }
+
+    private RoutedService getService(RoutedServices routedServices, String proxy) {
+        // Try to find service by route using old API path format /{typeOfService}/{version}/{serviceId}
+        String route = proxy.substring(0, proxy.lastIndexOf('/'));
+        RoutedService service = routedServices.findServiceByGatewayUrl(route);
+        if (service == null) {
+            // If not found, try by route using new API path format /{serviceId}/{typeOfService}/{version}
+            route = proxy.substring(proxy.indexOf('/') + 1);
+            service = routedServices.findServiceByGatewayUrl(route);
+        }
+        return service;
     }
 
     public void addRoutedServices(String serviceId, RoutedServices routedServices) {
