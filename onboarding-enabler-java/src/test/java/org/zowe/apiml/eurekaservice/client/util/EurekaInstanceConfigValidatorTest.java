@@ -22,8 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EurekaInstanceConfigValidatorTest {
 
-    private EurekaInstanceConfigValidator validator = new EurekaInstanceConfigValidator();
-    private ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
+    private final EurekaInstanceConfigValidator validator = new EurekaInstanceConfigValidator();
+    private final ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
 
     @Test
     void givenServiceConfiguration_whenConfigurationIsValid_thenValidate() throws ServiceDefinitionException {
@@ -104,7 +104,7 @@ class EurekaInstanceConfigValidatorTest {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("empty-catalog-service-configuration.yml");
         validator.validate(testConfig);
 
-        assertEquals(null, testConfig.getCatalog());
+        assertNull(testConfig.getCatalog());
     }
 
     @Test
@@ -112,7 +112,7 @@ class EurekaInstanceConfigValidatorTest {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("empty-apiinfo-service-configuration.yml");
         validator.validate(testConfig);
 
-        assertEquals(null, testConfig.getApiInfo());
+        assertNull(testConfig.getApiInfo());
     }
 
     @Test
