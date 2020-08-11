@@ -16,22 +16,14 @@ import org.zowe.apiml.util.categories.MainframeDependentTests;
 /**
  * Test that when valid credentials are provided the SAF authentication provider will accept them and the valid token
  * will be produced.
- *
+ * <p>
  * Also verify that the invalid credentials will be properly rejected.
  */
 @MainframeDependentTests
 public class SafAuthenticationLoginIntegrationTest extends Login {
     @BeforeAll
-    static void switchToSafProvider() {
-        // Change the configuration via the configuration Management provided by the Spring
-        System.out.println("Switch to SAF");
-
-        // Store the default authentication provider and then go back to it.
-
-    }
-
-    @AfterAll
-    static void switchToZosmfProvider() {
-        System.out.println("Switch to zOSMF");
+    static void switchToTestedProvider() {
+        currentProvider = loadCurrentProvider();
+        switchProvider("saf");
     }
 }

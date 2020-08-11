@@ -9,6 +9,12 @@
  */
 package org.zowe.apiml.gatewayservice.authentication;
 
-public class DummyAuthenticationLoginIntegrationTest extends Login {
+import org.junit.jupiter.api.BeforeAll;
 
+public class DummyAuthenticationLoginIntegrationTest extends Login {
+    @BeforeAll
+    static void switchToTestedProvider() {
+        currentProvider = loadCurrentProvider();
+        switchProvider("dummy");
+    }
 }

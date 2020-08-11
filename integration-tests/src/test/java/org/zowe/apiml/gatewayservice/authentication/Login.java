@@ -14,6 +14,7 @@ import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -30,16 +31,43 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
 public class Login {
-    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-    private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
-    private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
-    private final static String BASE_PATH = "/api/v1/gateway";
+    protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
+    protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
+    protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
+    protected final static String BASE_PATH = "/api/v1/gateway";
+    protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/api/v1/gateway/authentication", SCHEME, HOST, PORT, BASE_PATH);
+    protected static String currentProvider;
+
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
+
+    protected static String loadCurrentProvider() {
+        return given()
+        .when()
+            .get(authenticationEndpointPath)
+        .then()
+            .statusCode(is(SC_OK))
+            .extract().body().jsonPath().getString("provider");
+    }
+
+    protected static void switchProvider(String provider) {
+        given()
+            .contentType(JSON)
+            .body("{\"provider\": \"" + provider + "\"}")
+            .when()
+            .post(String.format("%s://%s:%d%s/api/v1/gateway/authentication", SCHEME, HOST, PORT, BASE_PATH))
+            .then()
+            .statusCode(is(SC_OK));
+    }
+
+    @AfterAll
+    static void switchToOriginalProvider() {
+        switchProvider(currentProvider);
+    }
 
     @BeforeEach
     public void setUp() {

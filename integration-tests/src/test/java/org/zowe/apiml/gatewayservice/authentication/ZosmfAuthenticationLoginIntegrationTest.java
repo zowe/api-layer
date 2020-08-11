@@ -9,8 +9,14 @@
  */
 package org.zowe.apiml.gatewayservice.authentication;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
 @MainframeDependentTests
 public class ZosmfAuthenticationLoginIntegrationTest extends Login {
+    @BeforeAll
+    static void switchToTestedProvider() {
+        currentProvider = loadCurrentProvider();
+        switchProvider("zosmf");
+    }
 }
