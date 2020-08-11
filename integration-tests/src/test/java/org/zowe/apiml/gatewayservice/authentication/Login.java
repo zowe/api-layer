@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gatewayservice;
+package org.zowe.apiml.gatewayservice.authentication;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -23,17 +23,16 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
-public class LoginIntegrationTest {
+public class Login {
+    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     private final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
-    private final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     private final static String BASE_PATH = "/api/v1/gateway";
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
@@ -50,7 +49,7 @@ public class LoginIntegrationTest {
 
     //@formatter:off
     @Test
-    void doLoginWithValidBodyLoginRequest() {
+    void givenValidCredentialsInBody_whenUserAuthenticates_thenTheValidTokenIsProduced() {
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
         Cookie cookie = given()
@@ -63,22 +62,18 @@ public class LoginIntegrationTest {
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
 
-        assertTrue(cookie.isHttpOnly());
+        assertThat(cookie.isHttpOnly(), is(true));
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1));
 
         int i = cookie.getValue().lastIndexOf('.');
         String untrustedJwtString = cookie.getValue().substring(0, i + 1);
-        Claims claims = Jwts.parser()
-            .parseClaimsJwt(untrustedJwtString)
-            .getBody();
-
-        assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(USERNAME));
+        Claims claims = parseJwtString(untrustedJwtString);
+        assertThatTokenIsValid(claims);
     }
 
     @Test
-    void doLoginWithValidHeader() {
+    void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced() {
         String token = given()
             .auth().preemptive().basic(USERNAME, PASSWORD)
             .contentType(JSON)
@@ -91,16 +86,23 @@ public class LoginIntegrationTest {
 
         int i = token.lastIndexOf('.');
         String untrustedJwtString = token.substring(0, i + 1);
-        Claims claims = Jwts.parser()
-            .parseClaimsJwt(untrustedJwtString)
-            .getBody();
+        Claims claims = parseJwtString(untrustedJwtString);
+        assertThatTokenIsValid(claims);
+    }
 
+    private void assertThatTokenIsValid(Claims claims) {
         assertThat(claims.getId(), not(isEmptyString()));
         assertThat(claims.getSubject(), is(USERNAME));
     }
 
+    private Claims parseJwtString(String untrustedJwtString) {
+        return Jwts.parserBuilder().build()
+            .parseClaimsJwt(untrustedJwtString)
+            .getBody();
+    }
+
     @Test
-    void doLoginWithInvalidCredentialsInLoginRequest() {
+    void givenInvalidCredentialsInBody_whenUserAuthenticates_thenUnauthorizedIsReturned() {
         String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
@@ -118,7 +120,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    void doLoginWithInvalidCredentialsInHeader() {
+    void givenInvalidCredentialsInHeader_whenUserAuthenticates_thenUnauthorizedIsReturned() {
         String expectedMessage = "Invalid username or password for URL '" + BASE_PATH + LOGIN_ENDPOINT + "'";
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
@@ -136,7 +138,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    void doLoginWithoutCredentials() {
+    void givenNoCredentials_whenUserAuthenticates_then400IsReturned() {
         String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
@@ -151,7 +153,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    void doLoginWithInvalidLoginRequest() {
+    void givenCredentialsInTheWrongJsonFormat_whenUserAuthenticates_then400IsReturned() {
         String expectedMessage = "Authorization header is missing, or request body is missing or invalid for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
@@ -172,7 +174,7 @@ public class LoginIntegrationTest {
     }
 
     @Test
-    void doLoginWithWrongHttpMethod() {
+    void givenValidCredentialsInJsonBody_whenUserAuthenticatesViaGetMethod_then405IsReturned() {
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
