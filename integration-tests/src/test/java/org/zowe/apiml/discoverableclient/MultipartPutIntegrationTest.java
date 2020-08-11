@@ -24,7 +24,8 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 
 class MultipartPutIntegrationTest {
-    private static final String MULTIPART_PATH = "/api/v1/discoverableclient/multipart";
+    private static final String MULTIPART_PATH = "/discoverableclient/api/v1/multipart";
+    private static final String MULTIPART_PATH_OLD_FORMAT = "/api/v1/discoverableclient/multipart";
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
 
@@ -63,6 +64,37 @@ class MultipartPutIntegrationTest {
             body("fileName", equalTo("example.txt")).
             body("fileType", equalTo("application/octet-stream")).
         when().
+            post(uri);
+    }
+    @Test
+    @TestsNotMeantForZowe
+    void shouldDoPutRequestAndMatchReturnBody_OldPathFormat() {
+        RestAssured.registerParser("text/plain", Parser.JSON);
+        URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH_OLD_FORMAT);
+        given().
+            contentType("multipart/form-data").
+            multiPart(new File(classLoader.getResource(configFileName).getFile())).
+            expect().
+            statusCode(200).
+            body("fileName", equalTo("example.txt")).
+            body("fileType", equalTo("application/octet-stream")).
+            when().
+            put(uri);
+    }
+
+    @Test
+    @TestsNotMeantForZowe
+    void shouldDoPostRequestAndMatchReturnBody_OldPathFormat() {
+        RestAssured.registerParser("text/plain", Parser.JSON);
+        URI uri = HttpRequestUtils.getUriFromGateway(MULTIPART_PATH_OLD_FORMAT);
+        given().
+            contentType("multipart/form-data").
+            multiPart(new File(classLoader.getResource(configFileName).getFile())).
+            expect().
+            statusCode(200).
+            body("fileName", equalTo("example.txt")).
+            body("fileType", equalTo("application/octet-stream")).
+            when().
             post(uri);
     }
 

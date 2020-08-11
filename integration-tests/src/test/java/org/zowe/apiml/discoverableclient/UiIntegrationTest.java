@@ -25,7 +25,7 @@ class UiIntegrationTest {
     @TestsNotMeantForZowe
     void shouldCallDiscoverableUiWithSlashAtPathEnd() throws Exception {
         // Given
-        HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient/");
+        HttpGet request = HttpRequestUtils.getRequest("/discoverableclient/ui/v1/");
 
         // When
         final HttpResponse response = HttpClientUtils.client().execute(request);
@@ -38,7 +38,7 @@ class UiIntegrationTest {
     @TestsNotMeantForZowe
     void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd() throws Exception {
         // Given
-        HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient");
+        HttpGet request = HttpRequestUtils.getRequest("/discoverableclient/ui/v1");
 
         // When
         final HttpResponse response = HttpClientUtils.client(true).execute(request);
@@ -47,4 +47,29 @@ class UiIntegrationTest {
         assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
     }
 
+    @Test
+    @TestsNotMeantForZowe
+    void shouldCallDiscoverableUiWithSlashAtPathEnd_OldPathFormat() throws Exception {
+        // Given
+        HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient/");
+
+        // When
+        final HttpResponse response = HttpClientUtils.client().execute(request);
+
+        // Then
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_OK));
+    }
+
+    @Test
+    @TestsNotMeantForZowe
+    void shouldRedirectToDiscoverableUiWithoutSlashAtPathEnd_OldPathFormat() throws Exception {
+        // Given
+        HttpGet request = HttpRequestUtils.getRequest("/ui/v1/discoverableclient");
+
+        // When
+        final HttpResponse response = HttpClientUtils.client(true).execute(request);
+
+        // Then
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(HttpStatus.SC_MOVED_TEMPORARILY));
+    }
 }
