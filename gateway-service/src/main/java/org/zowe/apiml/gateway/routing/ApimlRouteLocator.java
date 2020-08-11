@@ -149,7 +149,7 @@ public class ApimlRouteLocator extends DiscoveryClientRouteLocator {
                 metadata -> eurekaMetadataParser.parseToListRoute(metadata).stream()
             )
             .forEach(routedService -> {
-                // Currently support two API path formats. Old: /{typeOfService}/{version}/{serviceId}. New: /{serviceId}/{version}/{typeOfService}
+                // Currently support two API path formats. Old: /{typeOfService}/{version}/{serviceId}. New: /{serviceId}/{version}/{typeOfService} //NOSONAR
                 keys.add("/" + routedService.getGatewayUrl() + "/" + mapRouteToService(serviceId) + "/**");
                 keys.add("/" + mapRouteToService(serviceId) + "/" + routedService.getGatewayUrl() + "/**");
                 routes.addRoutedService(routedService);

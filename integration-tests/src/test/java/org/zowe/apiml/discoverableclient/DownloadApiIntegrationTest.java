@@ -29,7 +29,7 @@ public class DownloadApiIntegrationTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void shouldSendGetRequestAndDownloadCompressedImage() {
+    void shouldSendGetRequestAndDownloadCompressedImage() {
         RestAssured.registerParser("image/png", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/get-file");
         given().
@@ -46,7 +46,7 @@ public class DownloadApiIntegrationTest {
 
     @Test
     @TestsNotMeantForZowe
-    public void shouldSendGetRequestAndDownloadCompressedImage_OldPathFormat() {
+    void shouldSendGetRequestAndDownloadCompressedImage_OldPathFormat() {
         RestAssured.registerParser("image/png", Parser.JSON);
         URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/get-file");
         given().

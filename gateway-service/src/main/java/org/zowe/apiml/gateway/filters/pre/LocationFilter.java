@@ -76,11 +76,11 @@ public class LocationFilter extends ZuulFilter implements RoutedServicesUser {
     }
 
     private RoutedService getService(RoutedServices routedServices, String proxy) {
-        // Try to find service by route using old API path format /{typeOfService}/{version}/{serviceId}
+        // Try to find service by route using old API path format /{typeOfService}/{version}/{serviceId} //NOSONAR
         String route = proxy.substring(0, proxy.lastIndexOf('/'));
         RoutedService service = routedServices.findServiceByGatewayUrl(route);
         if (service == null) {
-            // If not found, try by route using new API path format /{serviceId}/{typeOfService}/{version}
+            // If not found, try by route using new API path format /{serviceId}/{typeOfService}/{version} //NOSONAR
             route = proxy.substring(proxy.indexOf('/') + 1);
             service = routedServices.findServiceByGatewayUrl(route);
         }

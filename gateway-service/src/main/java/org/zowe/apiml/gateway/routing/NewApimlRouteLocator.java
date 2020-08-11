@@ -70,7 +70,7 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
     }
 
     private Map<String, ZuulProperties.ZuulRoute> buildRoute(String serviceId, RoutedService routedService) {
-        // Currently support two API path formats. Old: /{typeOfService}/{version}/{serviceId}. New: /{serviceId}/{version}/{typeOfService}
+        // Currently support two API path formats. Old: /{typeOfService}/{version}/{serviceId}. New: /{serviceId}/{version}/{typeOfService} //NOSONAR
 
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>();
 
