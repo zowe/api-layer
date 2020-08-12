@@ -48,23 +48,26 @@ public class RoutedServices {
         int maxSize = 0;
 
         for (Map.Entry<String, RoutedService> serviceEntry : routedService.entrySet()) {
-            if (!type.equals(ServiceType.ALL)
-                && !serviceEntry.getKey().toLowerCase().startsWith(type.name().toLowerCase())) {
-                continue;
-            }
-
-            RoutedService value = serviceEntry.getValue();
-            int size = value.getServiceUrl().length();
-            //Remove last slash for service url
-            String routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
-            if (size > maxSize &&
-                serviceUrl.toLowerCase().startsWith(routeServiceUrl)) {
-                result = value;
-                maxSize = size;
+            if (isServiceTypeMatch(serviceEntry, type)) {
+                RoutedService value = serviceEntry.getValue();
+                int size = value.getServiceUrl().length();
+                //Remove last slash for service url
+                String routeServiceUrl = UrlUtils.removeLastSlash(value.getServiceUrl().toLowerCase());
+                if (size > maxSize &&
+                    serviceUrl.toLowerCase().startsWith(routeServiceUrl)) {
+                    result = value;
+                    maxSize = size;
+                }
             }
         }
 
         return result;
+    }
+
+    private boolean isServiceTypeMatch(Map.Entry<String, RoutedService> serviceEntry, ServiceType type) {
+        String serviceEntryKey = serviceEntry.getKey().toLowerCase();
+        String typeName = type.name().toLowerCase();
+        return type.equals(ServiceType.ALL) || serviceEntryKey.startsWith(typeName);
     }
 
     @Override

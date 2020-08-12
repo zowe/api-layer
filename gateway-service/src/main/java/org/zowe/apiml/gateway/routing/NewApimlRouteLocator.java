@@ -19,6 +19,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.DiscoveryClientR
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
     private final DiscoveryClient discoveryClient;
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
-    private RoutedServicesNotifier routedServicesNotifier;
+    private final RoutedServicesNotifier routedServicesNotifier;
 
     public NewApimlRouteLocator(String servletPath, ZuulProperties properties, DiscoveryClient discoveryClient, RoutedServicesNotifier notifier) {
         super(servletPath, discoveryClient, properties, null, null);
@@ -69,12 +70,19 @@ public class NewApimlRouteLocator extends DiscoveryClientRouteLocator {
     }
 
     private Map<String, ZuulProperties.ZuulRoute> buildRoute(String serviceId, RoutedService routedService) {
+        // Currently support two API path formats. Old: /{typeOfService}/{version}/{serviceId}. New: /{serviceId}/{version}/{typeOfService} //NOSONAR
+
         LinkedHashMap<String, ZuulProperties.ZuulRoute> routesMap = new LinkedHashMap<>();
 
-        String routeKey = "/" + routedService.getGatewayUrl() + "/" + serviceId + "/**";
-        ZuulProperties.ZuulRoute route = new ZuulProperties.ZuulRoute(routeKey, serviceId);
-        routesMap.put(routeKey, route);
-        log.debug("ServiceId: {}, RouteId: {}, Created Route: {}", serviceId, routedService.getSubServiceId(), route);
+        String routeKeyOldFormat = "/" + routedService.getGatewayUrl() + "/" + serviceId + "/**";
+        ZuulProperties.ZuulRoute routeOldFormat = new ZuulProperties.ZuulRoute(routeKeyOldFormat, serviceId);
+
+        String routeKeyNewFormat = "/" + serviceId + "/" + routedService.getGatewayUrl() + "/**";
+        ZuulProperties.ZuulRoute routeNewFormat = new ZuulProperties.ZuulRoute(routeKeyNewFormat, serviceId);
+
+        routesMap.put(routeKeyOldFormat, routeOldFormat);
+        routesMap.put(routeKeyNewFormat, routeNewFormat);
+        log.debug("ServiceId: {}, RouteId: {}, Created Routes: New Format: {} | Old Format: {}", serviceId, routedService.getSubServiceId(), routeNewFormat, routeOldFormat);
 
         return routesMap;
     }

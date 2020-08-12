@@ -58,7 +58,7 @@ describe('>>> Detail page test', () => {
 
         cy.get('#root > div > div.content > div.detail-page > div.content-description-container > div > div:nth-child(2) > div > span > span > a')
             .should('have.attr', 'href')
-            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/ui/v1/apicatalog`);
+            .should('contain', `${baseUrl.match(/^https?:\/\/([^/?#]+)(?:[/?#]|$)/i)[1]}/apicatalog/ui/v1`);
 
         cy.get('pre.version').should('contain', '1.0.0');
 

@@ -33,11 +33,13 @@ import static org.hamcrest.core.IsNot.not;
  */
 @TestsNotMeantForZowe
 class IntegratedZaasClientTest {
-
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
+
+    private final static URI ZAAS_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/zaasClient");
+    private final static URI ZAAS_CLIENT_URI_OLD_FORMAT = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/zaasClient");
 
     @BeforeEach
     public void setUp() {
@@ -51,14 +53,13 @@ class IntegratedZaasClientTest {
      */
     @Test
     void loginWithValidCredentials() {
-        URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/zaasClient");
         LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
         given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(uri)
+            .post(ZAAS_CLIENT_URI)
             .then()
             .statusCode(is(SC_OK))
             .body(not(isEmptyString()));
@@ -71,14 +72,41 @@ class IntegratedZaasClientTest {
      */
     @Test
     void invalidCredentials() {
-        URI uri = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/zaasClient");
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
         given()
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(uri)
+            .post(ZAAS_CLIENT_URI)
+            .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .body(is("Invalid username or password"));
+    }
+
+    @Test
+    void loginWithValidCredentials_OldPathFormat() {
+        LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
+
+        given()
+            .contentType(JSON)
+            .body(loginRequest)
+            .when()
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT)
+            .then()
+            .statusCode(is(SC_OK))
+            .body(not(isEmptyString()));
+    }
+
+    @Test
+    void invalidCredentials_OldPathFormat() {
+        LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
+
+        given()
+            .contentType(JSON)
+            .body(loginRequest)
+            .when()
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT)
             .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(is("Invalid username or password"));

@@ -84,8 +84,8 @@ public class TransformService {
         return String.format("%s://%s/%s/%s%s",
             gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(),
-            route.getGatewayUrl(),
             serviceId,
+            route.getGatewayUrl(),
             endPoint);
     }
 
