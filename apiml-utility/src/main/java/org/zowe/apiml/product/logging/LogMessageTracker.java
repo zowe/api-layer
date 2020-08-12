@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-//TODO assert on format?
-
 /**
  * Class that contains the content made by a given logger.
  * Utility functions are available to search for and confirm general or specific log entries and events.
@@ -72,7 +70,7 @@ public class LogMessageTracker {
      * @return true if and only if the list contains an ILoggingEvent with content matching the given regex.
      */
     public boolean contains(Pattern regex) {
-        return logAppender.list.stream().anyMatch(event -> regex.matcher(event.getMessage()).find());
+        return logAppender.list.stream().anyMatch(event -> regex.matcher(event.getFormattedMessage()).find());
     }
 
     /**
@@ -90,7 +88,7 @@ public class LogMessageTracker {
      */
     public boolean contains(Pattern regex, Level level) {
         return logAppender.list.stream().anyMatch(
-            event -> regex.matcher(event.getMessage()).find()
+            event -> regex.matcher(event.getFormattedMessage()).find()
                 && event.getLevel().equals(level));
     }
 
@@ -109,7 +107,7 @@ public class LogMessageTracker {
      */
     public List<ILoggingEvent> search(Pattern regex) {
         return logAppender.list.stream()
-            .filter(event -> regex.matcher(event.getMessage()).find())
+            .filter(event -> regex.matcher(event.getFormattedMessage()).find())
             .collect(Collectors.toList());
     }
 
@@ -128,7 +126,7 @@ public class LogMessageTracker {
      */
     public List<ILoggingEvent> search(Pattern regex, Level level) {
         return logAppender.list.stream()
-            .filter(event -> regex.matcher(event.getMessage()).find()
+            .filter(event -> regex.matcher(event.getFormattedMessage()).find()
                 && event.getLevel().equals(level))
             .collect(Collectors.toList());
     }

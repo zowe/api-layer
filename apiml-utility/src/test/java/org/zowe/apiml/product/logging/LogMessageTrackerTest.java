@@ -70,6 +70,14 @@ public class LogMessageTrackerTest {
     }
 
     @Test
+    void testFormattedMessage() {
+        log.info("This is a {} log message.", "formatted");
+        assertEquals(6, logMessageTracker.countEvents());
+        assertTrue(logMessageTracker.contains("This is a formatted log message."));
+        assertEquals(1, logMessageTracker.search("This is a formatted log message.").size());
+    }
+
+    @Test
     void testCleanup() {
         // Test LogMessageTracker doesn't keep logs after running LogMessageTracker.clear in @AfterEach method
         assertEquals(5, logMessageTracker.countEvents());
