@@ -42,7 +42,7 @@ public class RequestInfoIntegrationTest {
     }
 
     private static String getGatewayUrl() {
-        return HttpRequestUtils.getUriFromGateway("/api/v1/dcbypass/request").toString();
+        return HttpRequestUtils.getUriFromGateway("/dcbypass/api/v1/request").toString();
     }
 
     public static Stream<Arguments> getInputs() {

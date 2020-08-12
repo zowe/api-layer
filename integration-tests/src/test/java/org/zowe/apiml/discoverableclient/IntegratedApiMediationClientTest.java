@@ -27,7 +27,8 @@ import static org.hamcrest.Matchers.is;
 
 @TestsNotMeantForZowe
 class IntegratedApiMediationClientTest {
-    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/apiMediationClient");
+    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/apiMediationClient");
+    private static final URI MEDIATION_CLIENT_URI_OLD_FORMAT = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/apiMediationClient");
 
     @BeforeAll
     static void beforeClass() {
@@ -36,37 +37,58 @@ class IntegratedApiMediationClientTest {
 
     @Test
     void shouldBeUnregisteredBeforeRegistration() {
-        requestIsRegistered(false);
+        requestIsRegistered(false, MEDIATION_CLIENT_URI);
     }
 
     @Test
     @SlowTests
     void shouldBeRegisteredAfterRegistration() {
-        requestToRegister();
-        requestIsRegistered(true);
+        requestToRegister(MEDIATION_CLIENT_URI);
+        requestIsRegistered(true, MEDIATION_CLIENT_URI);
 
-        requestToUnregister();
+        requestToUnregister(MEDIATION_CLIENT_URI);
     }
 
     @Test
     @SlowTests
     void shouldNotBeRegisteredAfterUnregistration() {
-        requestToRegister();
-        requestToUnregister();
+        requestToRegister(MEDIATION_CLIENT_URI);
+        requestToUnregister(MEDIATION_CLIENT_URI);
     }
 
-    private void requestIsRegistered(boolean expectedRegistrationState) {
+    @Test
+    void shouldBeUnregisteredBeforeRegistration_OldPathFormat() {
+        requestIsRegistered(false, MEDIATION_CLIENT_URI_OLD_FORMAT);
+    }
+
+    @Test
+    @SlowTests
+    void shouldBeRegisteredAfterRegistration_OldPathFormat() {
+        requestToRegister(MEDIATION_CLIENT_URI_OLD_FORMAT);
+        requestIsRegistered(true, MEDIATION_CLIENT_URI_OLD_FORMAT);
+
+        requestToUnregister(MEDIATION_CLIENT_URI_OLD_FORMAT);
+    }
+
+    @Test
+    @SlowTests
+    void shouldNotBeRegisteredAfterUnregistration_OldPathFormat() {
+        requestToRegister(MEDIATION_CLIENT_URI_OLD_FORMAT);
+        requestToUnregister(MEDIATION_CLIENT_URI_OLD_FORMAT);
+    }
+
+    private void requestIsRegistered(boolean expectedRegistrationState, URI uri) {
         // It can take some time for (un)registration to complete
         await().atMost(5, MINUTES).pollDelay(0, SECONDS).pollInterval(1, SECONDS)
-            .until(() -> registeredStateAsExpected(expectedRegistrationState));
+            .until(() -> registeredStateAsExpected(expectedRegistrationState, uri));
     }
 
-    private boolean registeredStateAsExpected(boolean expectedRegistrationState) {
+    private boolean registeredStateAsExpected(boolean expectedRegistrationState, URI uri) {
         try {
             given()
-            .when()
-                .get(MEDIATION_CLIENT_URI)
-            .then()
+                .when()
+                .get(uri)
+                .then()
                 .statusCode(is(SC_OK))
                 .body("isRegistered", is(expectedRegistrationState));
             return true;
@@ -75,19 +97,19 @@ class IntegratedApiMediationClientTest {
         }
     }
 
-    private void requestToRegister() {
+    private void requestToRegister(URI uri) {
         given()
-        .when()
-            .post(MEDIATION_CLIENT_URI)
-        .then()
+            .when()
+            .post(uri)
+            .then()
             .statusCode(is(SC_OK));
     }
 
-    private void requestToUnregister() {
+    private void requestToUnregister(URI uri) {
         given()
-        .when()
-            .delete(MEDIATION_CLIENT_URI)
-        .then()
+            .when()
+            .delete(uri)
+            .then()
             .statusCode(is(SC_OK));
     }
 }

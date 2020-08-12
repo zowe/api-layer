@@ -24,7 +24,19 @@ import static org.junit.Assert.assertThat;
 public class GreetingApiIntegrationTest {
     @Test
     @TestsNotMeantForZowe
-    public void shouldCallDiscoverableServiceApi() throws Exception {
+    void shouldCallDiscoverableServiceApi() throws Exception {
+        // When
+        final HttpResponse response = HttpRequestUtils.getResponse("/discoverableclient/api/v1/greeting", SC_OK);
+        final String jsonResponse = EntityUtils.toString(response.getEntity());
+        DocumentContext jsonContext = JsonPath.parse(jsonResponse);
+        String content = jsonContext.read("$.content");
+
+        // Then
+        assertThat(content, equalTo("Hello, world!"));
+    }
+    @Test
+    @TestsNotMeantForZowe
+    void shouldCallDiscoverableServiceApi_OldPathFormat() throws Exception {
         // When
         final HttpResponse response = HttpRequestUtils.getResponse("/api/v1/discoverableclient/greeting", SC_OK);
         final String jsonResponse = EntityUtils.toString(response.getEntity());

@@ -60,8 +60,8 @@ public class TransformServiceTest {
         String expectedUrl = String.format("%s://%s/%s/%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
-            UI_PREFIX,
-            SERVICE_ID);
+            SERVICE_ID,
+            UI_PREFIX);
         assertEquals(expectedUrl, actualUrl);
     }
 
@@ -98,8 +98,8 @@ public class TransformServiceTest {
         String expectedUrl = String.format("%s://%s/%s/%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
-            WS_PREFIX,
-            SERVICE_ID);
+            SERVICE_ID,
+            WS_PREFIX);
         assertEquals(expectedUrl, actualUrl);
     }
 
@@ -119,8 +119,8 @@ public class TransformServiceTest {
         String expectedUrl = String.format("%s://%s/%s/%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
-            API_PREFIX,
-            SERVICE_ID);
+            SERVICE_ID,
+            API_PREFIX);
         assertEquals(expectedUrl, actualUrl);
     }
 
@@ -182,8 +182,8 @@ public class TransformServiceTest {
         String expectedUrl = String.format("%s://%s/%s/%s%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
-            WS_PREFIX,
             SERVICE_ID,
+            WS_PREFIX,
             "/");
         assertEquals(expectedUrl, actualUrl);
     }
@@ -203,8 +203,8 @@ public class TransformServiceTest {
         String expectedUrl = String.format("%s://%s/%s/%s%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
-            UI_PREFIX,
             SERVICE_ID,
+            UI_PREFIX,
             "/test");
         assertEquals(expectedUrl, actualUrl);
     }
@@ -225,8 +225,8 @@ public class TransformServiceTest {
         String expectedUrl = String.format("%s://%s/%s/%s%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
-            UI_PREFIX,
             SERVICE_ID,
+            UI_PREFIX,
             path);
         assertEquals(expectedUrl, actualUrl);
     }
