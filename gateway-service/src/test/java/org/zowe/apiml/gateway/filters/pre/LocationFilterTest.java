@@ -31,7 +31,7 @@ class LocationFilterTest {
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
         ctx.set(REQUEST_URI_KEY, "/path");
-        ctx.set(PROXY_KEY, "api/v1/service");
+        ctx.set(PROXY_KEY, "service/api/v1");
         ctx.set(SERVICE_ID_KEY, "service");
         RoutedServices routedServices = new RoutedServices();
         routedServices.addRoutedService(
@@ -62,6 +62,14 @@ class LocationFilterTest {
     }
 
     @Test
+    void urlDefinedInMetadataIsModified_OldProxyFormat() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.set(PROXY_KEY, "api/v1/service");
+        this.filter.run();
+        assertEquals("/service/v1/path", ctx.get(REQUEST_URI_KEY));
+    }
+
+    @Test
     void requestURIStartsWithoutSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(REQUEST_URI_KEY, "path");
@@ -72,6 +80,14 @@ class LocationFilterTest {
     @Test
     void proxyStartsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.set(PROXY_KEY, "/service/api/v2");
+        this.filter.run();
+        assertEquals("/service/v2/path", ctx.get(REQUEST_URI_KEY));
+    }
+
+    @Test
+    void proxyStartsWithSlash_OldProxyFormat() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "/api/v2/service");
         this.filter.run();
         assertEquals("/service/v2/path", ctx.get(REQUEST_URI_KEY));
@@ -79,6 +95,14 @@ class LocationFilterTest {
 
     @Test
     void proxyEndsWithSlash() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.set(PROXY_KEY, "service/api/v2/");
+        this.filter.run();
+        assertEquals("/service/v2/path", ctx.get(REQUEST_URI_KEY));
+    }
+
+    @Test
+    void proxyEndsWithSlash_OldProxyFormat() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "api/v2/service/");
         this.filter.run();

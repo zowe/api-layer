@@ -44,7 +44,7 @@ class PageRedirectionTest {
     private final String EUREKA_APP = "/eureka/apps";
     private final String SERVICE_ID = "staticclient";
     private final String BASE_URL = "/discoverableclient";
-    private final String API_PREFIX = "/api/v1";
+    private final String API_POSTFIX = "/api/v1";
 
     private String gatewayScheme;
     private String gatewayHost;
@@ -60,14 +60,14 @@ class PageRedirectionTest {
     }
 
     /**
-     * Test api instance of staticclient
+     * Test api instance of staticclient in new path format of /{serviceId}/{typeOfService}/{version}
      */
     @Test
     @TestsNotMeantForZowe
     void apiRouteOfDiscoverableClient() {
         String apiRelativeUrl = "/api/v1";
         String location = String.format("%s://%s:%d%s%s%s", dcScheme, dcHost, dcPort, BASE_URL, apiRelativeUrl, "/greeting");
-        String transformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_PREFIX, "/" + SERVICE_ID, "/greeting");
+        String transformedLocation = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, API_POSTFIX, "/greeting");
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -82,15 +82,15 @@ class PageRedirectionTest {
     }
 
     /**
-     * Test ws instance of staticclient
+     * Test ws instance of staticclient in new path format of /{serviceId}/{typeOfService}/{version}
      */
     @Test
     @TestsNotMeantForZowe
     void wsRouteOfDiscoverableClient() {
         String wsRelativeUrl = "/ws";
         String location = String.format("%s://%s:%d%s%s", dcScheme, dcHost, dcPort, BASE_URL, wsRelativeUrl);
-        String wsPrefix = "/ws/v1";
-        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, wsPrefix, "/" + SERVICE_ID);
+        String wsPostfix = "/ws/v1";
+        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, wsPostfix);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -105,14 +105,14 @@ class PageRedirectionTest {
     }
 
     /**
-     * Test ui instance of staticclient
+     * Test ui instance of staticclient in new path format of /{serviceId}/{typeOfService}/{version}
      */
     @Test
     @TestsNotMeantForZowe
     void uiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, BASE_URL);
-        String uiPrefix = "/ui/v1";
-        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, uiPrefix, "/" + SERVICE_ID);
+        String uiPostfix = "/ui/v1";
+        String transformedLocation = String.format("%s://%s:%d%s%s", gatewayScheme, gatewayHost, gatewayPort, "/" + SERVICE_ID, uiPostfix);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -138,7 +138,7 @@ class PageRedirectionTest {
         RestAssured.port = gatewayPort;
         RestAssured.useRelaxedHTTPSValidation();
 
-        requestUrl = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_PREFIX, "/" + SERVICE_ID, "/redirect");
+        requestUrl = String.format("%s://%s:%d%s%s%s", gatewayScheme, gatewayHost, gatewayPort, API_POSTFIX, "/" + SERVICE_ID, "/redirect");
     }
 
     /**
@@ -179,7 +179,7 @@ class PageRedirectionTest {
     }
 
 
-    class RedirectLocation {
+    static class RedirectLocation {
 
         private String location;
 

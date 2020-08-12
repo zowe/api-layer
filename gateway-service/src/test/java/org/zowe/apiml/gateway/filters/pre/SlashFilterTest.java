@@ -31,17 +31,34 @@ class SlashFilterTest {
         this.filter = new SlashFilter();
         RequestContext ctx = RequestContext.getCurrentContext();
         ctx.clear();
-        ctx.set(PROXY_KEY, "ui/service");
+        ctx.set(PROXY_KEY, "/service/ui");
         ctx.set(SERVICE_ID_KEY, "service");
         ctx.setResponse(new MockHttpServletResponse());
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-        mockRequest.setRequestURI("/ui/service");
+        mockRequest.setRequestURI("/service/ui");
         ctx.setRequest(mockRequest);
     }
 
     @Test
     void responseIsModified() {
         final RequestContext ctx = RequestContext.getCurrentContext();
+        this.filter.run();
+        String location = "";
+        List<Pair<String, String>> zuulResponseHeaders = ctx.getZuulResponseHeaders();
+        if (zuulResponseHeaders != null) {
+            for (Pair<String, String> header : zuulResponseHeaders) {
+                if (header.first().equals("Location"))
+                    location = header.second();
+            }
+        }
+        assertEquals("/service/ui/", location);
+        assertEquals(302, ctx.getResponseStatusCode());
+    }
+
+    @Test
+    void responseIsModified_OldPathFormat() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        setRequestContextToOldPathFormat(ctx);
         this.filter.run();
         String location = "";
         List<Pair<String, String>> zuulResponseHeaders = ctx.getZuulResponseHeaders();
@@ -70,6 +87,24 @@ class SlashFilterTest {
     @Test
     void proxyStartsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.set(PROXY_KEY, "/service/ui");
+        this.filter.run();
+        String location = "";
+        List<Pair<String, String>> zuulResponseHeaders = ctx.getZuulResponseHeaders();
+        if (zuulResponseHeaders != null) {
+            for (Pair<String, String> header : zuulResponseHeaders) {
+                if (header.first().equals("Location"))
+                    location = header.second();
+            }
+        }
+        assertEquals("/service/ui/", location);
+        assertEquals(302, ctx.getResponseStatusCode());
+    }
+
+    @Test
+    void proxyStartsWithSlash_OldPathFormat() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        setRequestContextToOldPathFormat(ctx);
         ctx.set(PROXY_KEY, "/ui/service");
         this.filter.run();
         String location = "";
@@ -87,6 +122,24 @@ class SlashFilterTest {
     @Test
     void proxyEndsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.set(PROXY_KEY, "service/ui/");
+        this.filter.run();
+        String location = "";
+        List<Pair<String, String>> zuulResponseHeaders = ctx.getZuulResponseHeaders();
+        if (zuulResponseHeaders != null) {
+            for (Pair<String, String> header : zuulResponseHeaders) {
+                if (header.first().equals("Location"))
+                    location = header.second();
+            }
+        }
+        assertEquals("/service/ui/", location);
+        assertEquals(302, ctx.getResponseStatusCode());
+    }
+
+    @Test
+    void proxyEndsWithSlash_OldPathFormat() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        setRequestContextToOldPathFormat(ctx);
         ctx.set(PROXY_KEY, "ui/service/");
         this.filter.run();
         String location = "";
@@ -106,7 +159,7 @@ class SlashFilterTest {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, null);
         this.filter.run();
-        Boolean isLocation = false;
+        boolean isLocation = false;
         List<Pair<String, String>> zuulResponseHeaders = ctx.getZuulResponseHeaders();
         if (zuulResponseHeaders != null) {
             for (Pair<String, String> header : zuulResponseHeaders) {
@@ -114,7 +167,7 @@ class SlashFilterTest {
                     isLocation = true;
             }
         }
-        assertEquals(false, isLocation);
+        assertFalse(isLocation);
         assertEquals(500, ctx.getResponseStatusCode());
     }
 
@@ -123,7 +176,7 @@ class SlashFilterTest {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(PROXY_KEY, "");
         this.filter.run();
-        Boolean isLocation = false;
+        boolean isLocation = false;
         List<Pair<String, String>> zuulResponseHeaders = ctx.getZuulResponseHeaders();
         if (zuulResponseHeaders != null) {
             for (Pair<String, String> header : zuulResponseHeaders) {
@@ -131,46 +184,73 @@ class SlashFilterTest {
                     isLocation = true;
             }
         }
-        assertEquals(false, isLocation);
+        assertFalse(isLocation);
         assertEquals(500, ctx.getResponseStatusCode());
     }
 
     @Test
     void shouldFilterUI() {
-        assertEquals(true, this.filter.shouldFilter());
+        assertTrue(this.filter.shouldFilter());
     }
 
     @Test
     void shouldNotFilterAPI() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-        mockRequest.setRequestURI("/api/v1/service");
-        ctx.set(PROXY_KEY, "api/v1/service");
+        mockRequest.setRequestURI("/service/api/v1");
+        ctx.set(PROXY_KEY, "/service/api/v1");
         ctx.setRequest(mockRequest);
-        assertEquals(false, this.filter.shouldFilter());
+        assertFalse(this.filter.shouldFilter());
+    }
+
+    @Test
+    void shouldNotFilterAPI_OldPathFormat() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        setRequestContextToOldPathFormat(ctx);
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.setRequestURI("/api/v1/service");
+        ctx.set(PROXY_KEY, "/api/v1/service");
+        ctx.setRequest(mockRequest);
+        assertFalse(this.filter.shouldFilter());
     }
 
     @Test
     void shouldNotFilterWhenItEndsWithSlash() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.setRequestURI("/service/ui/");
+        ctx.setRequest(mockRequest);
+        assertFalse(this.filter.shouldFilter());
+    }
+
+    @Test
+    void shouldNotFilterWhenItEndsWithSlash_OldPathFormat() {
+        final RequestContext ctx = RequestContext.getCurrentContext();
+        setRequestContextToOldPathFormat(ctx);
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
         mockRequest.setRequestURI("/ui/service/");
         ctx.setRequest(mockRequest);
-        assertEquals(false, this.filter.shouldFilter());
+        assertFalse(this.filter.shouldFilter());
     }
 
     @Test
     void serviceIdIsNull() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, null);
-        assertEquals(false, this.filter.shouldFilter());
+        assertFalse(this.filter.shouldFilter());
     }
 
     @Test
     void serviceIdIsEmpty() {
         final RequestContext ctx = RequestContext.getCurrentContext();
         ctx.set(SERVICE_ID_KEY, "");
-        assertEquals(false, this.filter.shouldFilter());
+        assertFalse(this.filter.shouldFilter());
     }
 
+    private void setRequestContextToOldPathFormat(RequestContext ctx) {
+        ctx.set(PROXY_KEY, "/ui/service");
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.setRequestURI("/ui/service");
+        ctx.setRequest(mockRequest);
+    }
 }

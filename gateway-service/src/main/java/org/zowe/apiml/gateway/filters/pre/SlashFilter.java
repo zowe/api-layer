@@ -9,22 +9,23 @@
  */
 package org.zowe.apiml.gateway.filters.pre;
 
-import org.zowe.apiml.util.UrlUtils;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import org.zowe.apiml.util.UrlUtils;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.regex.Pattern;
 
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PROXY_KEY;
-import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 /**
  * Must be run after PreDecorationFilter. This will set Proxy, ServiceId and other variables in RequestContext
  */
 public class SlashFilter extends ZuulFilter {
 
-    private static final String UI_IDENTIFIER = "ui/";
+    private static final Pattern REGEX_CONTAINS_UI_PATH = Pattern.compile("(ui/)|(/ui)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern REGEX_END_WITH_UI_ROUTE = Pattern.compile(".*/ui(/v[0-9])?$", // Optional version after ui
+        Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     @Override
     public boolean shouldFilter() {
@@ -32,9 +33,14 @@ public class SlashFilter extends ZuulFilter {
         String url = context.getRequest().getRequestURL().toString().toLowerCase();
         String serviceId = (String) context.get(SERVICE_ID_KEY);
         String proxy = (String) context.get(PROXY_KEY);
-        boolean checkProxy = (proxy != null) && proxy.toLowerCase().contains(UI_IDENTIFIER);
-        boolean checkServiceId = (serviceId != null) && !serviceId.isEmpty() && url.endsWith(serviceId);
-        return checkProxy && checkServiceId;
+
+        boolean checkProxy = (proxy != null) && REGEX_CONTAINS_UI_PATH.matcher(proxy).find();
+        boolean checkServiceId = (serviceId != null) && !serviceId.isEmpty() && url.contains(serviceId);
+
+        boolean oldPathFormatShouldFilter = checkServiceId && url.endsWith(serviceId);
+        boolean newPathFormatShouldFilter = checkProxy && REGEX_END_WITH_UI_ROUTE.matcher(url).find();
+
+        return checkProxy && checkServiceId && (oldPathFormatShouldFilter || newPathFormatShouldFilter);
     }
 
     @Override
@@ -58,6 +64,5 @@ public class SlashFilter extends ZuulFilter {
         }
         return null;
     }
-
 }
 
