@@ -22,15 +22,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-//TODO get all logged events with certain level
-
 /**
  * Class that contains the content made by a given logger.
  * Utility functions are available to search for and confirm general or specific log entries and events.
  */
 public class LogMessageTracker {
     private final ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
-    private final String loggerName;
 
     /**
      * @param loggedClass Class that generates the logs to be searched.
@@ -44,7 +41,6 @@ public class LogMessageTracker {
      *                   package of the class that generates logs, or a specific name like Logger.ROOT_LOGGER_NAME.
      */
     public LogMessageTracker(String loggerName) {
-        this.loggerName = loggerName;
         logAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
         Logger log = (Logger) LoggerFactory.getLogger(loggerName);
         log.setLevel(Level.ALL);
@@ -159,5 +155,15 @@ public class LogMessageTracker {
      */
     public List<ILoggingEvent> getAllLoggedEvents() {
         return Collections.unmodifiableList(logAppender.list);
+    }
+
+    /**
+     * @param level Level used to filter for ILoggingEvent instances.
+     * @return List of ILoggingEvent with a matching Level to the one given.
+     */
+    public List<ILoggingEvent> getAllLoggedEventsWithLevel(Level level) {
+        return logAppender.list.stream()
+            .filter(event -> event.getLevel().equals(level))
+            .collect(Collectors.toList());
     }
 }

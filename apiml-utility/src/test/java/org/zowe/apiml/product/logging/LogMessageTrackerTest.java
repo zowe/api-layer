@@ -65,8 +65,11 @@ public class LogMessageTrackerTest {
     @Test
     void testAllLogEventsTracked() {
         assertEquals(5, logMessageTracker.countEvents());
+
         List<ILoggingEvent> logEvents = logMessageTracker.getAllLoggedEvents();
         logEvents.forEach(event -> assertEquals(event.getMessage(), LOG_MESSAGE));
+
+        assertEquals(1, logMessageTracker.getAllLoggedEventsWithLevel(Level.WARN).size());
     }
 
     @Test
