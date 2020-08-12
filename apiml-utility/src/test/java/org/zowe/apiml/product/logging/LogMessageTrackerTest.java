@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class LogMessageTrackerTest {
+class LogMessageTrackerTest {
     private static final String LOG_MESSAGE = "This is a log message.";
     private static final Pattern MESSAGE_REGEX = Pattern.compile("^This.*");
 
@@ -67,7 +67,7 @@ public class LogMessageTrackerTest {
         assertEquals(5, logMessageTracker.countEvents());
 
         List<ILoggingEvent> logEvents = logMessageTracker.getAllLoggedEvents();
-        logEvents.forEach(event -> assertEquals(event.getMessage(), LOG_MESSAGE));
+        logEvents.forEach(event -> assertEquals(LOG_MESSAGE, event.getFormattedMessage()));
 
         assertEquals(1, logMessageTracker.getAllLoggedEventsWithLevel(Level.WARN).size());
     }
