@@ -10,11 +10,13 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.product.logging.LogMessageTracker;
 
 import javax.servlet.ServletContext;
 
@@ -24,6 +26,13 @@ class EurekaInstanceConfigValidatorTest {
 
     private final EurekaInstanceConfigValidator validator = new EurekaInstanceConfigValidator();
     private final ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
+
+    private final LogMessageTracker logTracker = new LogMessageTracker(validator.getClass());
+
+    @BeforeEach
+    void setup(){
+
+    }
 
     @Test
     void givenServiceConfiguration_whenConfigurationIsValid_thenValidate() throws ServiceDefinitionException {

@@ -32,7 +32,7 @@ public class LogMessageTrackerTest {
     private final Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         logMessageTracker.startTracking();
         log.trace(LOG_MESSAGE);
         log.debug(LOG_MESSAGE);

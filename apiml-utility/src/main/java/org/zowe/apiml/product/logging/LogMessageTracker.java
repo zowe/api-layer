@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+//TODO get all logged events with certain level
+
 /**
  * Class that contains the content made by a given logger.
  * Utility functions are available to search for and confirm general or specific log entries and events.
@@ -78,7 +80,7 @@ public class LogMessageTracker {
      * @return true if and only if the list contains an ILoggingEvent matching the content.
      */
     public boolean contains(String content) {
-        return contains(Pattern.compile(content, Pattern.CASE_INSENSITIVE));
+        return logAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains(content));
     }
 
     /**
@@ -98,7 +100,7 @@ public class LogMessageTracker {
      * @return true if and only if the list contains an ILoggingEvent matching the content and severity.
      */
     public boolean contains(String content, Level level) {
-        return contains(Pattern.compile(content, Pattern.CASE_INSENSITIVE), level);
+        return logAppender.list.stream().anyMatch(event -> event.getFormattedMessage().contains(content) && event.getLevel().equals(level));
     }
 
     /**
@@ -116,7 +118,9 @@ public class LogMessageTracker {
      * @return List of ILoggingEvent matching the given content.
      */
     public List<ILoggingEvent> search(String content) {
-        return search(Pattern.compile(content, Pattern.CASE_INSENSITIVE));
+        return logAppender.list.stream()
+            .filter(event -> event.getFormattedMessage().contains(content))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -137,14 +141,17 @@ public class LogMessageTracker {
      * @return List of ILoggingEvent matching the given content and severity level.
      */
     public List<ILoggingEvent> search(String content, Level level) {
-        return search(Pattern.compile(content, Pattern.CASE_INSENSITIVE), level);
+        return logAppender.list.stream()
+            .filter(event -> event.getFormattedMessage().contains(content)
+                && event.getLevel().equals(level))
+            .collect(Collectors.toList());
     }
 
     /**
      * @return the number (as a long) of ILoggingEvent generated.
      */
     public long countEvents() {
-        return logAppender.list.stream().filter(event -> event.getLoggerName().contains(loggerName)).count();
+        return logAppender.list.size();
     }
 
     /**
