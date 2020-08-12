@@ -21,12 +21,16 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 class LogMessageTrackerTest {
     private static final String LOG_MESSAGE = "This is a log message.";
+    private static final String NOT_LOGGED_MESSAGE = "This is not a log message.";
+
     private static final Pattern MESSAGE_REGEX = Pattern.compile("^This.*");
+    private static final Pattern NOT_MESSAGE_REGEX = Pattern.compile("^dummy");
 
     private final LogMessageTracker logMessageTracker = new LogMessageTracker(this.getClass());
     private final Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
@@ -50,16 +54,36 @@ class LogMessageTrackerTest {
     void testSearch() {
         assertEquals(5, logMessageTracker.search(LOG_MESSAGE).size());
         assertEquals(1, logMessageTracker.search(LOG_MESSAGE, Level.INFO).size());
+
         assertEquals(5, logMessageTracker.search(MESSAGE_REGEX).size());
         assertEquals(1, logMessageTracker.search(MESSAGE_REGEX, Level.INFO).size());
+    }
+
+    @Test
+    void testSearchFindsNothing() {
+        assertEquals(0, logMessageTracker.search(NOT_LOGGED_MESSAGE).size());
+        assertEquals(0, logMessageTracker.search(LOG_MESSAGE, Level.ALL).size());
+
+        assertEquals(0, logMessageTracker.search(NOT_MESSAGE_REGEX).size());
+        assertEquals(0, logMessageTracker.search(MESSAGE_REGEX, Level.ALL).size());
     }
 
     @Test
     void testContains() {
         assertTrue(logMessageTracker.contains(LOG_MESSAGE));
         assertTrue(logMessageTracker.contains(LOG_MESSAGE, Level.TRACE));
+
         assertTrue(logMessageTracker.contains(MESSAGE_REGEX));
         assertTrue(logMessageTracker.contains(MESSAGE_REGEX, Level.TRACE));
+    }
+
+    @Test
+    void testDoesNotContain() {
+        assertFalse(logMessageTracker.contains(NOT_LOGGED_MESSAGE));
+        assertFalse(logMessageTracker.contains(LOG_MESSAGE, Level.ALL));
+
+        assertFalse(logMessageTracker.contains(NOT_MESSAGE_REGEX));
+        assertFalse(logMessageTracker.contains(MESSAGE_REGEX, Level.ALL));
     }
 
     @Test
