@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 class AuthProviderInitializerTest {
 
     private DummyAuthenticationProvider dummyAuthenticationProvider;
+    private CompoundAuthProvider loginAuthProvider;
     private TokenAuthenticationProvider tokenAuthenticationProvider;
     private ZosmfAuthenticationProvider zosmfAuthenticationProvider;
     private CertificateAuthenticationProvider certificateAuthenticationProvider;
@@ -33,6 +34,7 @@ class AuthProviderInitializerTest {
         dummyAuthenticationProvider = mock(DummyAuthenticationProvider.class);
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);
         zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
+        loginAuthProvider =  mock(CompoundAuthProvider.class);
         certificateAuthenticationProvider = mock(CertificateAuthenticationProvider.class);
         zosAuthenticationProvider = mock(ZosAuthenticationProvider.class);
     }
@@ -42,8 +44,9 @@ class AuthProviderInitializerTest {
         String authProvider = LoginProvider.DUMMY.toString();
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
-            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, zosAuthenticationProvider, authProvider
+            loginAuthProvider,
+            tokenAuthenticationProvider,
+            certificateAuthenticationProvider
         );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
@@ -59,8 +62,9 @@ class AuthProviderInitializerTest {
         String authProvider = LoginProvider.ZOSMF.toString();
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
-            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, zosAuthenticationProvider, authProvider
+            loginAuthProvider,
+            tokenAuthenticationProvider,
+            certificateAuthenticationProvider
         );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
@@ -76,8 +80,9 @@ class AuthProviderInitializerTest {
         String authProvider = "unexpectedProvider";
 
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
-            dummyAuthenticationProvider, zosmfAuthenticationProvider, tokenAuthenticationProvider,
-            certificateAuthenticationProvider, zosAuthenticationProvider, authProvider
+            loginAuthProvider,
+            tokenAuthenticationProvider,
+            certificateAuthenticationProvider
         );
 
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);

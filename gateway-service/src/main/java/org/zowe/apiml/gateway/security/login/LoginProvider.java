@@ -13,18 +13,24 @@ package org.zowe.apiml.gateway.security.login;
  * Represents supported login providers
  */
 public enum LoginProvider {
-    ZOSMF("zosmf"),
-    SAF("saf"),
-    DUMMY("dummy");
+    ZOSMF("zosmf","zosmfAuthenticationProvider"),
+    SAF("saf","zosAuthenticationProvider"),
+    DUMMY("dummy", "dummyAuthenticationProvider");
 
     private final String value;
+    private final String authProviderBeanName;
 
-    LoginProvider(String value) {
+    LoginProvider(String value, String authProviderBeanName) {
         this.value = value;
+        this.authProviderBeanName = authProviderBeanName;
     }
 
     public String getValue() {
         return value;
+    }
+
+    public String getAuthProviderBeanName() {
+        return authProviderBeanName;
     }
 
     @Override
