@@ -18,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +31,9 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     @Autowired
     private Environment environment;
 
+    @Autowired
+    private AuthenticationService authenticationService;
+
     @Override
     public Authentication authenticate(Authentication authentication) {
         String userid = authentication.getName();
@@ -37,7 +41,9 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
         PlatformReturned returned = getPlatformUser().authenticate(userid, password);
 
         if ((returned == null) || (returned.isSuccess())) {
-            return new UsernamePasswordAuthenticationToken(userid, null, new ArrayList<>());
+            final String domain = "security-domain";
+            final String jwtToken = authenticationService.createJwtToken(userid, domain, "ltpa");
+            return authenticationService.createTokenAuthentication(userid, jwtToken);
         } else {
             throw new ZosAuthenticationException("Authentication failed: " + returned.toString(), returned);
         }
