@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-//TODO regex search for content
 //TODO assert on format?
 
 /**
@@ -55,7 +55,7 @@ public class LogMessageTracker {
      * Method used to start log tracking, avoiding memory consumption when tracking isn't wanted.
      * Must be invoked before log tracking will work.
      */
-    public void startTracking(){
+    public void startTracking() {
         logAppender.start();
     }
 
@@ -68,22 +68,78 @@ public class LogMessageTracker {
     }
 
     /**
-     * @param content log content for the ILoggingEvent to be searched for. Not case sensitivve
-     * @return true if and only if the list contains an ILoggingEvent matching the content.
+     * @param regex Pattern regex used to search for an ILoggingEvent message.
+     * @return true if and only if the list contains an ILoggingEvent with content matching the given regex.
      */
-    public boolean contains(String content) {
-        return logAppender.list.stream().anyMatch(event -> event.getMessage().toLowerCase().contains(content.toLowerCase()));
+    public boolean contains(Pattern regex) {
+        return logAppender.list.stream().anyMatch(event -> regex.matcher(event.getMessage()).find());
     }
 
     /**
-     * @param content log content fort the ILoggingEvent to be searched for. Not case sensitive.
+     * @param content log content for the ILoggingEvent to be searched for. Not case sensitive.
+     * @return true if and only if the list contains an ILoggingEvent matching the content.
+     */
+    public boolean contains(String content) {
+        return contains(Pattern.compile(content, Pattern.CASE_INSENSITIVE));
+    }
+
+    /**
+     * @param regex Pattern regex used to search for an ILoggingEvent message.
+     * @param level severity level for the ILoggingEvent to be searched for.
+     * @return true if and only if the list contains an ILoggingEvent matching the content and severity.
+     */
+    public boolean contains(Pattern regex, Level level) {
+        return logAppender.list.stream().anyMatch(
+            event -> regex.matcher(event.getMessage()).find()
+                && event.getLevel().equals(level));
+    }
+
+    /**
+     * @param content log content for the ILoggingEvent to be searched for. Not case sensitive.
      * @param level   severity level for the ILoggingEvent to be searched for.
      * @return true if and only if the list contains an ILoggingEvent matching the content and severity.
      */
     public boolean contains(String content, Level level) {
-        return logAppender.list.stream().anyMatch(
-            event -> event.getMessage().toLowerCase().contains(content.toLowerCase())
-                && event.getLevel().equals(level));
+        return contains(Pattern.compile(content, Pattern.CASE_INSENSITIVE), level);
+    }
+
+    /**
+     * @param regex Pattern regex used to search for log content.
+     * @return List of ILoggingEvent matching the given content.
+     */
+    public List<ILoggingEvent> search(Pattern regex) {
+        return logAppender.list.stream()
+            .filter(event -> regex.matcher(event.getMessage()).find())
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * @param content String used to search for log content. Not case sensitive.
+     * @return List of ILoggingEvent matching the given content.
+     */
+    public List<ILoggingEvent> search(String content) {
+        return search(Pattern.compile(content, Pattern.CASE_INSENSITIVE));
+    }
+
+    /**
+     * @param regex Pattern regex used to search for log content.
+     * @param level severity level for be searched for.
+     * @return List of ILoggingEvent matching the given content and severity level.
+     */
+    public List<ILoggingEvent> search(Pattern regex, Level level) {
+        return logAppender.list.stream()
+            .filter(event -> regex.matcher(event.getMessage()).find()
+                && event.getLevel().equals(level))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * @param content String used to search for log content. Not case sensitive.
+     * @param level   severity level for be searched for.
+     * @return List of ILoggingEvent matching the given content and severity level.
+     */
+    public List<ILoggingEvent> search(String content, Level level) {
+        return search(Pattern.compile(content, Pattern.CASE_INSENSITIVE), level);
     }
 
     /**
@@ -94,31 +150,9 @@ public class LogMessageTracker {
     }
 
     /**
-     * @param content log content to be search for. Not case sensitive.
-     * @return List of ILoggingEvent matching the given content.
-     */
-    public List<ILoggingEvent> search(String content) {
-        return logAppender.list.stream()
-            .filter(event -> event.getMessage().toLowerCase().contains(content.toLowerCase()))
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * @param content log content to be search for. Not case sensitive.
-     * @param level   severity level for be searched for.
-     * @return List of ILoggingEvent matching the given content and severity level.
-     */
-    public List<ILoggingEvent> search(String content, Level level) {
-        return logAppender.list.stream()
-            .filter(event -> event.getMessage().toLowerCase().contains(content.toLowerCase())
-                && event.getLevel().equals(level))
-            .collect(Collectors.toList());
-    }
-
-    /**
      * @return unmodifiable List of the ILoggingEvent that were generated.
      */
-    public List<ILoggingEvent> getLoggedEvents() {
+    public List<ILoggingEvent> getAllLoggedEvents() {
         return Collections.unmodifiableList(logAppender.list);
     }
 }

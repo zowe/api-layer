@@ -19,12 +19,14 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class LogMessageTrackerTest {
     private static final String LOG_MESSAGE = "This is a log message.";
+    private static final Pattern MESSAGE_REGEX = Pattern.compile("^This.*");
 
     private final LogMessageTracker logMessageTracker = new LogMessageTracker(this.getClass());
     private final Logger log = (Logger) LoggerFactory.getLogger(this.getClass());
@@ -48,18 +50,22 @@ public class LogMessageTrackerTest {
     void testSearch() {
         assertEquals(5, logMessageTracker.search(LOG_MESSAGE).size());
         assertEquals(1, logMessageTracker.search(LOG_MESSAGE, Level.INFO).size());
+        assertEquals(5, logMessageTracker.search(MESSAGE_REGEX).size());
+        assertEquals(1, logMessageTracker.search(MESSAGE_REGEX, Level.INFO).size());
     }
 
     @Test
     void testContains() {
         assertTrue(logMessageTracker.contains(LOG_MESSAGE));
         assertTrue(logMessageTracker.contains(LOG_MESSAGE, Level.TRACE));
+        assertTrue(logMessageTracker.contains(MESSAGE_REGEX));
+        assertTrue(logMessageTracker.contains(MESSAGE_REGEX, Level.TRACE));
     }
 
     @Test
-    void testLogEventsTracked() {
+    void testAllLogEventsTracked() {
         assertEquals(5, logMessageTracker.countEvents());
-        List<ILoggingEvent> logEvents = logMessageTracker.getLoggedEvents();
+        List<ILoggingEvent> logEvents = logMessageTracker.getAllLoggedEvents();
         logEvents.forEach(event -> assertEquals(event.getMessage(), LOG_MESSAGE));
     }
 
