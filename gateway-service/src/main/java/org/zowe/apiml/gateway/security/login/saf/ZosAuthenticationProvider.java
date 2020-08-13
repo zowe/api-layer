@@ -20,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 @Component

@@ -58,10 +58,10 @@ public class Login {
         given()
             .contentType(JSON)
             .body("{\"provider\": \"" + provider + "\"}")
-            .when()
+        .when()
             .post(String.format("%s://%s:%d%s/api/v1/gateway/authentication", SCHEME, HOST, PORT, BASE_PATH))
-            .then()
-            .statusCode(is(SC_OK));
+        .then()
+            .statusCode(is(SC_NO_CONTENT));
     }
 
     @AfterAll

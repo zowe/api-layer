@@ -9,7 +9,6 @@
  */
 package org.zowe.apiml.gatewayservice.authentication;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
