@@ -10,10 +10,9 @@
  */
 package org.zowe.apiml.gateway.security.login.saf;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,14 +23,12 @@ import java.util.Arrays;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class ZosAuthenticationProvider implements AuthenticationProvider, InitializingBean {
     private PlatformUser platformUser = null;
 
-    @Autowired
-    private Environment environment;
-
-    @Autowired
-    private AuthenticationService authenticationService;
+    private final AuthenticationService authenticationService;
+    private final String[] activeProfiles;
 
     @Override
     public Authentication authenticate(Authentication authentication) {
@@ -60,7 +57,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     @Override
     public void afterPropertiesSet() {
         if (platformUser == null) {
-            if ((environment != null) && Arrays.asList(environment.getActiveProfiles()).contains("zos")) {
+            if (Arrays.asList(activeProfiles).contains("zos")) {
                 platformUser = new SafPlatformUser(new SafPlatformClassFactory());
             } else {
                 platformUser = new MockPlatformUser();

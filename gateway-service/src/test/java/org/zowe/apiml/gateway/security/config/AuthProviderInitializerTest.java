@@ -12,10 +12,6 @@ package org.zowe.apiml.gateway.security.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.zowe.apiml.gateway.security.login.LoginProvider;
-import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
-import org.zowe.apiml.gateway.security.login.saf.ZosAuthenticationProvider;
-import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.TokenAuthenticationProvider;
 
 import static org.mockito.Mockito.*;
