@@ -51,7 +51,7 @@ class LogMessageTrackerTest {
     }
 
     @Test
-    void testSearch() {
+    void givenLogsAndLevelFilter_whenSearch_thenFindLogs() {
         assertEquals(5, logMessageTracker.search(LOG_MESSAGE).size());
         assertEquals(1, logMessageTracker.search(LOG_MESSAGE, Level.INFO).size());
 
@@ -60,7 +60,7 @@ class LogMessageTrackerTest {
     }
 
     @Test
-    void testSearchFindsNothing() {
+    void givenLogsAndLevelFilter_whenSearch_thenFindNoLogs() {
         assertEquals(0, logMessageTracker.search(NOT_LOGGED_MESSAGE).size());
         assertEquals(0, logMessageTracker.search(LOG_MESSAGE, Level.ALL).size());
 
@@ -69,7 +69,7 @@ class LogMessageTrackerTest {
     }
 
     @Test
-    void testContains() {
+    void givenLogsAndLevelFilter_whenCheckExist_thenLogsExist() {
         assertTrue(logMessageTracker.contains(LOG_MESSAGE));
         assertTrue(logMessageTracker.contains(LOG_MESSAGE, Level.TRACE));
 
@@ -78,7 +78,7 @@ class LogMessageTrackerTest {
     }
 
     @Test
-    void testDoesNotContain() {
+    void givenLogsAndLevelFilter_whenCheckExist_thenLogsDontExist() {
         assertFalse(logMessageTracker.contains(NOT_LOGGED_MESSAGE));
         assertFalse(logMessageTracker.contains(LOG_MESSAGE, Level.ALL));
 
@@ -87,7 +87,7 @@ class LogMessageTrackerTest {
     }
 
     @Test
-    void testAllLogEventsTracked() {
+    void givenLogs_whenGetLogs_thenAllLogsFound() {
         assertEquals(5, logMessageTracker.countEvents());
 
         List<ILoggingEvent> logEvents = logMessageTracker.getAllLoggedEvents();
@@ -97,7 +97,7 @@ class LogMessageTrackerTest {
     }
 
     @Test
-    void testFormattedMessage() {
+    void givenFormattedLog_whenLookForLog_thenFindFormattedLog() {
         log.info("This is a {} log message.", "formatted");
         assertEquals(6, logMessageTracker.countEvents());
         assertTrue(logMessageTracker.contains("This is a formatted log message."));
@@ -105,7 +105,7 @@ class LogMessageTrackerTest {
     }
 
     @Test
-    void testCleanup() {
+    void givenLogTracker_whenCleanUp_thenLogsReleasedFromTracking() {
         // Test LogMessageTracker doesn't keep logs after running LogMessageTracker.clear in @AfterEach method
         assertEquals(5, logMessageTracker.countEvents());
     }
