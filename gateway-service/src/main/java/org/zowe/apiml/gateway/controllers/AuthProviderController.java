@@ -18,8 +18,8 @@ import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 
 
-// These end points are activated only for dev profile.
-@Profile("dev")
+// These end points are activated only for diag profile.
+@Profile("diag")
 @AllArgsConstructor
 @RestController
 @RequestMapping(AuthProviderController.CONTROLLER_PATH)
