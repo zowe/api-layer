@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.security.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -28,8 +29,6 @@ import java.util.Map;
 public class CompoundAuthProvider implements AuthenticationProvider {
 
     public static final String ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER = "org.zowe.apiml.security.invalidAuthenticationProvider";
-    public static final String APIML_SECURITY_AUTH_PROVIDER = "apiml.security.auth.provider";
-    public static final String DEFAULT_AUTH_PROVIDER = "zosmf";
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -38,13 +37,14 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     private final Environment environment;
     private final LoginProvider defaultProvider;
 
+    @Value("${apiml.security.auth.provider:zosmf}")
+    private static String defaultProviderName;
+
     private LoginProvider loginProvider;
 
     public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment) {
         this.authProvidersMap = authProvidersMap;
         this.environment = environment;
-
-        String defaultProviderName = environment.getProperty(APIML_SECURITY_AUTH_PROVIDER, DEFAULT_AUTH_PROVIDER);
         defaultProvider = loginProvider =
             LoginProvider.getLoginProvider(defaultProviderName);
         if (loginProvider == null) {
@@ -52,7 +52,7 @@ public class CompoundAuthProvider implements AuthenticationProvider {
         }
     }
 
-    public AuthenticationProvider getConfiguredLoginAuthProvider() {
+    private AuthenticationProvider getConfiguredLoginAuthProvider() {
         return authProvidersMap.get(loginProvider.getAuthProviderBeanName());
     }
 
@@ -61,7 +61,7 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     }
 
     public void setLoginAuthProvider(String provider) {
-        if ((environment != null) && Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
+        if ((environment != null) && Arrays.asList(environment.getActiveProfiles()).contains("diag")) {
             LoginProvider newProvider = LoginProvider.getLoginProvider(provider);
             if (newProvider == null) {
                 newProvider = defaultProvider;
