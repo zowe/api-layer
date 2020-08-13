@@ -10,6 +10,7 @@
 package org.zowe.apiml.gateway.controllers;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,15 +36,8 @@ public class AuthProviderController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Data
     private static class AuthProvider {
-        public String provider;
-
-        public void setProvider(String provider) {
-            this.provider = provider;
-        }
-
-        public String getProvider() {
-            return provider;
-        }
+        private final String provider;
     }
 }
