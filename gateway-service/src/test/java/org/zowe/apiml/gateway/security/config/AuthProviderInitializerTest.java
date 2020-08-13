@@ -22,27 +22,19 @@ import static org.mockito.Mockito.*;
 
 class AuthProviderInitializerTest {
 
-    private DummyAuthenticationProvider dummyAuthenticationProvider;
     private CompoundAuthProvider loginAuthProvider;
     private TokenAuthenticationProvider tokenAuthenticationProvider;
-    private ZosmfAuthenticationProvider zosmfAuthenticationProvider;
     private CertificateAuthenticationProvider certificateAuthenticationProvider;
-    private ZosAuthenticationProvider zosAuthenticationProvider;
 
     @BeforeEach
     void setup() {
-        dummyAuthenticationProvider = mock(DummyAuthenticationProvider.class);
         tokenAuthenticationProvider = mock(TokenAuthenticationProvider.class);
-        zosmfAuthenticationProvider = mock(ZosmfAuthenticationProvider.class);
         loginAuthProvider =  mock(CompoundAuthProvider.class);
         certificateAuthenticationProvider = mock(CertificateAuthenticationProvider.class);
-        zosAuthenticationProvider = mock(ZosAuthenticationProvider.class);
     }
 
     @Test
-    void testConfigure_whenProviderIsDummy() {
-        String authProvider = LoginProvider.DUMMY.toString();
-
+    void givenValidProviders_whenTheClassIsCreated_thenTheProvidersArePassedToSpring() {
         AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
             loginAuthProvider,
             tokenAuthenticationProvider,
@@ -52,44 +44,8 @@ class AuthProviderInitializerTest {
         AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
         authProviderInitializer.configure(authenticationManagerBuilder);
 
+        verify(authenticationManagerBuilder).authenticationProvider(loginAuthProvider);
         verify(authenticationManagerBuilder).authenticationProvider(tokenAuthenticationProvider);
-        verify(authenticationManagerBuilder).authenticationProvider(dummyAuthenticationProvider);
-        verify(authenticationManagerBuilder, never()).authenticationProvider(zosmfAuthenticationProvider);
-    }
-
-    @Test
-    void testConfigure_whenProviderIsZOSMF() {
-        String authProvider = LoginProvider.ZOSMF.toString();
-
-        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
-            loginAuthProvider,
-            tokenAuthenticationProvider,
-            certificateAuthenticationProvider
-        );
-
-        AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
-        authProviderInitializer.configure(authenticationManagerBuilder);
-
-        verify(authenticationManagerBuilder).authenticationProvider(tokenAuthenticationProvider);
-        verify(authenticationManagerBuilder).authenticationProvider(zosmfAuthenticationProvider);
-        verify(authenticationManagerBuilder, never()).authenticationProvider(dummyAuthenticationProvider);
-    }
-
-    @Test
-    void testConfigure_whenProviderIsUnexpectedString() {
-        String authProvider = "unexpectedProvider";
-
-        AuthProviderInitializer authProviderInitializer = new AuthProviderInitializer(
-            loginAuthProvider,
-            tokenAuthenticationProvider,
-            certificateAuthenticationProvider
-        );
-
-        AuthenticationManagerBuilder authenticationManagerBuilder = mock(AuthenticationManagerBuilder.class);
-        authProviderInitializer.configure(authenticationManagerBuilder);
-
-        verify(authenticationManagerBuilder).authenticationProvider(tokenAuthenticationProvider);
-        verify(authenticationManagerBuilder).authenticationProvider(zosmfAuthenticationProvider);
-        verify(authenticationManagerBuilder, never()).authenticationProvider(dummyAuthenticationProvider);
+        verify(authenticationManagerBuilder).authenticationProvider(certificateAuthenticationProvider);
     }
 }
