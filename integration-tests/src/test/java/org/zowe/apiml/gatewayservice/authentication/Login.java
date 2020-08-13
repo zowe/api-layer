@@ -45,15 +45,6 @@ public class Login {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
-    protected static String loadCurrentProvider() {
-        return given()
-        .when()
-            .get(authenticationEndpointPath)
-        .then()
-            .statusCode(is(SC_OK))
-            .extract().body().jsonPath().getString("provider");
-    }
-
     protected static void switchProvider(String provider) {
         given()
             .contentType(JSON)
@@ -66,7 +57,7 @@ public class Login {
 
     @AfterAll
     static void switchToOriginalProvider() {
-        switchProvider(currentProvider);
+        switchProvider(null);
     }
 
     @BeforeEach

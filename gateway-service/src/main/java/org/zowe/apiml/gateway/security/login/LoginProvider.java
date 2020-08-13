@@ -44,6 +44,7 @@ public enum LoginProvider {
                 return provider;
             }
         }
-        throw new IllegalArgumentException();
+
+        return null;
     }
 }

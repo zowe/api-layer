@@ -18,7 +18,6 @@ public class DummyAuthenticationLoginIntegrationTest extends Login {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
 
-        currentProvider = loadCurrentProvider();
         switchProvider("dummy");
     }
 }

@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 
 
@@ -32,17 +31,8 @@ public class AuthProviderController {
     @PostMapping()
     @ResponseBody
     public ResponseEntity<Object> updateAuthProviderConfig(@RequestBody AuthProvider provider) {
-        LoginProvider loginProvider = LoginProvider.getLoginProvider(provider.getProvider());
-        compoundAuthProvider.setLoginAuthProvider(loginProvider);
+        compoundAuthProvider.setLoginAuthProvider(provider.getProvider());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    @GetMapping()
-    @ResponseBody
-    public AuthProvider getAuthProviderConfig() {
-        AuthProvider authProvider = new AuthProvider();
-        authProvider.setProvider(compoundAuthProvider.getLoginAuthProviderName());
-        return authProvider;
     }
 
     private static class AuthProvider {

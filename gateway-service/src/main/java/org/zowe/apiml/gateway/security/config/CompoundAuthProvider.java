@@ -30,35 +30,43 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     public static final String ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER = "org.zowe.apiml.security.invalidAuthenticationProvider";
     public static final String APIML_SECURITY_AUTH_PROVIDER = "apiml.security.auth.provider";
     public static final String DEFAULT_AUTH_PROVIDER = "zosmf";
+
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     private final Map<String, AuthenticationProvider> authProvidersMap;
     private final Environment environment;
+    private final LoginProvider defaultProvider;
+
     private LoginProvider loginProvider;
 
     public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment) {
         this.authProvidersMap = authProvidersMap;
         this.environment = environment;
-        final String authProvider = environment.getProperty(APIML_SECURITY_AUTH_PROVIDER, DEFAULT_AUTH_PROVIDER);
-        try {
-            loginProvider = LoginProvider.getLoginProvider(authProvider);
-        } catch (IllegalArgumentException ex) {
-            apimlLog.log(ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER, authProvider);
+
+        String defaultProviderName = environment.getProperty(APIML_SECURITY_AUTH_PROVIDER, DEFAULT_AUTH_PROVIDER);
+        defaultProvider = loginProvider =
+            LoginProvider.getLoginProvider(defaultProviderName);
+        if (loginProvider == null) {
+            apimlLog.log(ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER, defaultProviderName);
         }
     }
 
     public AuthenticationProvider getConfiguredLoginAuthProvider() {
-        final AuthenticationProvider currentAuthProvider = authProvidersMap.get(loginProvider.getAuthProviderBeanName());
-        return currentAuthProvider;
+        return authProvidersMap.get(loginProvider.getAuthProviderBeanName());
     }
 
     public String getLoginAuthProviderName() {
         return loginProvider.getValue();
     }
 
-    public void setLoginAuthProvider(LoginProvider loginAuthProvider) {
+    public void setLoginAuthProvider(String provider) {
         if ((environment != null) && Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
-            this.loginProvider = loginAuthProvider;
+            LoginProvider newProvider = LoginProvider.getLoginProvider(provider);
+            if (newProvider == null) {
+                newProvider = defaultProvider;
+            }
+            this.loginProvider = newProvider;
         } else {
             log.warn("Login Authentication provider can't be changed at runtime in the current profile.");
         }

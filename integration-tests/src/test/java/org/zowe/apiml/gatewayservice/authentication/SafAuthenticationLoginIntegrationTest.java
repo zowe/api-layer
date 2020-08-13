@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.gatewayservice.authentication;
 
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
@@ -22,7 +23,9 @@ import org.zowe.apiml.util.categories.MainframeDependentTests;
 public class SafAuthenticationLoginIntegrationTest extends Login {
     @BeforeAll
     static void switchToTestedProvider() {
-        currentProvider = loadCurrentProvider();
+        RestAssured.port = PORT;
+        RestAssured.useRelaxedHTTPSValidation();
+
         switchProvider("saf");
     }
 }

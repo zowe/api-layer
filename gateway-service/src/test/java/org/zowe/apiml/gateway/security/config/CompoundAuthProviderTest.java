@@ -56,7 +56,7 @@ public class CompoundAuthProviderTest {
     @Test
     public void testSetLoginAuthProvider() {
         when(environment.getActiveProfiles()).thenReturn(new String[]{"dev"});
-        compoundAuthProvider.setLoginAuthProvider(LoginProvider.SAF);
+        compoundAuthProvider.setLoginAuthProvider(LoginProvider.SAF.getValue());
         String loginAuthProviderName = compoundAuthProvider.getLoginAuthProviderName();
         assertEquals("saf", loginAuthProviderName);
     }
@@ -64,7 +64,7 @@ public class CompoundAuthProviderTest {
     @Test
     public void testSetLoginAuthProvider_withoutDevProfile() {
         when(environment.getActiveProfiles()).thenReturn(new String[]{"prod"});
-        compoundAuthProvider.setLoginAuthProvider(LoginProvider.SAF);
+        compoundAuthProvider.setLoginAuthProvider(LoginProvider.SAF.getValue());
         String loginAuthProviderName = compoundAuthProvider.getLoginAuthProviderName();
         assertEquals("dummy", loginAuthProviderName);
     }
