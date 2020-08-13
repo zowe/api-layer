@@ -10,11 +10,15 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
+import ch.qos.logback.classic.Level;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.product.logging.LogMessageTracker;
 
 import javax.servlet.ServletContext;
 
@@ -24,6 +28,18 @@ class EurekaInstanceConfigValidatorTest {
 
     private final EurekaInstanceConfigValidator validator = new EurekaInstanceConfigValidator();
     private final ApiMediationServiceConfigReader configReader = new ApiMediationServiceConfigReader();
+
+    private final LogMessageTracker logTracker = new LogMessageTracker(validator.getClass());
+
+    @BeforeEach
+    void setup() {
+        logTracker.startTracking();
+    }
+
+    @AfterEach
+    void cleanUp() {
+        logTracker.stopTracking();
+    }
 
     @Test
     void givenServiceConfiguration_whenConfigurationIsValid_thenValidate() throws ServiceDefinitionException {
@@ -105,6 +121,7 @@ class EurekaInstanceConfigValidatorTest {
         validator.validate(testConfig);
 
         assertNull(testConfig.getCatalog());
+        assertTrue(logTracker.contains("The API Catalog UI tile configuration is not provided. Try to add apiml.service.catalog.tile section.", Level.WARN));
     }
 
     @Test
@@ -113,6 +130,7 @@ class EurekaInstanceConfigValidatorTest {
         validator.validate(testConfig);
 
         assertNull(testConfig.getApiInfo());
+        assertTrue(logTracker.contains("The API info configuration is not provided. Try to add apiml.service.apiInfo section.", Level.WARN));
     }
 
     @Test
@@ -128,5 +146,32 @@ class EurekaInstanceConfigValidatorTest {
     void givenConfigurationWithKeyring_whenOtherConfigurationIsValid_thenValidate() throws Exception {
         ApiMediationServiceConfig testConfig = configReader.loadConfiguration("keyring-ssl-configuration.yml");
         assertDoesNotThrow(() -> validator.validate(testConfig));
+    }
+
+    @Test
+    void givenConfigurationWithBadUrlSlashes_whenValidate_thenLogWarnings() throws Exception {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("bad-url-slash-formatting.yml");
+        assertDoesNotThrow(() -> validator.validate(testConfig));
+
+        assertTrue(logTracker.contains("Relative URL parameters ** homePageRelativeUrl, healthCheckRelativeUrl, statusPageRelativeUrl, contextPath ** don't begin with '/' which often causes malformed URLs.", Level.WARN));
+        assertTrue(logTracker.contains("The baseUrl parameter ends with a trailing '/'. This often causes malformed URLs when relative URLs are used.", Level.WARN));
+        assertTrue(logTracker.contains("The contextPath parameter ends with a trailing '/'. This often causes malformed URLs when relative URLs are used.", Level.WARN));
+    }
+
+    @Test
+    void givenConfigurationWithNoRelativeUrls_whenValidate_thenOnlyLogHomePageWarning() throws Exception {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("no-relative-urls.yml");
+        assertDoesNotThrow(() -> validator.validate(testConfig));
+
+        assertTrue(logTracker.contains("The home page URL is not provided. Try to add apiml.service.homePageRelativeUrl property or check its value."));
+        assertEquals(1, logTracker.getAllLoggedEventsWithLevel(Level.WARN).size());
+    }
+
+    @Test
+    void givenConfigurationWithNoHomeUrlAndNoUiRoute_whenValidate_thenLogNoWarnings() throws Exception {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("no-home-page-or-ui-route.yml");
+        assertDoesNotThrow(() -> validator.validate(testConfig));
+
+        assertEquals(0, logTracker.getAllLoggedEventsWithLevel(Level.WARN).size());
     }
 }
