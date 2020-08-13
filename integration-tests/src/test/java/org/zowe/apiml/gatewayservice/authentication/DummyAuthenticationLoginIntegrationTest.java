@@ -9,11 +9,15 @@
  */
 package org.zowe.apiml.gatewayservice.authentication;
 
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 
 public class DummyAuthenticationLoginIntegrationTest extends Login {
     @BeforeAll
     static void switchToTestedProvider() {
+        RestAssured.port = PORT;
+        RestAssured.useRelaxedHTTPSValidation();
+
         currentProvider = loadCurrentProvider();
         switchProvider("dummy");
     }

@@ -25,7 +25,7 @@ import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 @RequestMapping(AuthProviderController.CONTROLLER_PATH)
 public class AuthProviderController {
 
-    public static final String CONTROLLER_PATH = "/api/v1/gateway/authentication";
+    public static final String CONTROLLER_PATH = "/gateway/authentication";
 
     private CompoundAuthProvider compoundAuthProvider;
 

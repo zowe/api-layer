@@ -35,7 +35,7 @@ public class Login {
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     protected final static String BASE_PATH = "/api/v1/gateway";
-    protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/api/v1/gateway/authentication", SCHEME, HOST, PORT, BASE_PATH);
+    protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
     protected static String currentProvider;
 
     private final static String LOGIN_ENDPOINT = "/auth/login";
@@ -59,7 +59,7 @@ public class Login {
             .contentType(JSON)
             .body("{\"provider\": \"" + provider + "\"}")
         .when()
-            .post(String.format("%s://%s:%d%s/api/v1/gateway/authentication", SCHEME, HOST, PORT, BASE_PATH))
+            .post(authenticationEndpointPath)
         .then()
             .statusCode(is(SC_NO_CONTENT));
     }
