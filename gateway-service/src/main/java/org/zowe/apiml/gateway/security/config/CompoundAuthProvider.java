@@ -29,6 +29,8 @@ import java.util.Map;
 public class CompoundAuthProvider implements AuthenticationProvider {
 
     public static final String ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER = "org.zowe.apiml.security.invalidAuthenticationProvider";
+    public static final String ORG_ZOWE_APIML_SECURITY_LOGIN_ENDPOINT_IN_DUMMY_MODE = "org.zowe.apiml.security.loginEndpointInDummyMode";
+    public static final String DUMMY = "dummy";
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -43,11 +45,18 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment, @Value("${apiml.security.auth.provider:zosmf}") String defaultProviderName) {
         this.authProvidersMap = authProvidersMap;
         this.environment = environment;
-        this.defaultProviderName = defaultProviderName;
+        CompoundAuthProvider.defaultProviderName = defaultProviderName;
+        warnForDummyProvider(defaultProviderName);
         defaultProvider = loginProvider =
             LoginProvider.getLoginProvider(defaultProviderName);
         if (loginProvider == null) {
             apimlLog.log(ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER, defaultProviderName);
+        }
+    }
+
+    private void warnForDummyProvider(String defaultProviderName) {
+        if(defaultProviderName.equalsIgnoreCase(DUMMY)) {
+            apimlLog.log(ORG_ZOWE_APIML_SECURITY_LOGIN_ENDPOINT_IN_DUMMY_MODE,"user","user");
         }
     }
 
@@ -66,6 +75,7 @@ public class CompoundAuthProvider implements AuthenticationProvider {
                 newProvider = defaultProvider;
             }
             this.loginProvider = newProvider;
+            warnForDummyProvider(newProvider.getValue());
         } else {
             log.warn("Login Authentication provider can't be changed at runtime in the current profile.");
         }

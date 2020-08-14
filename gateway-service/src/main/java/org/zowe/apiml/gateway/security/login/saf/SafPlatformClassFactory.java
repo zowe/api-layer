@@ -9,16 +9,34 @@
  */
 package org.zowe.apiml.gateway.security.login.saf;
 
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+
+import static org.zowe.apiml.util.ClassOrDefaultProxyUtils.ClassOrDefaultProxyState;
+import static org.zowe.apiml.util.ClassOrDefaultProxyUtils.createProxy;
+
 public class SafPlatformClassFactory implements PlatformClassFactory {
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Override
     public Class<?> getPlatformUserClass() throws ClassNotFoundException {
-        return Class.forName("com.ibm.os390.security.PlatformUser");
+        PlatformUser proxy = createProxy(PlatformUser.class, "com.ibm.os390.security.PlatformUser", MockPlatformUser::new);
+        if (!((ClassOrDefaultProxyState) proxy).isUsingBaseImplementation()) {
+            apimlLog.log("org.zowe.apiml.security.loginEndpointInDummyMode", MockPlatformUser.VALID_USERID, MockPlatformUser.VALID_PASSWORD);
+        }
+        return proxy.getClass();
     }
 
     @Override
     public Class<?> getPlatformReturnedClass() throws ClassNotFoundException {
-        return Class.forName("com.ibm.os390.security.PlatformReturned");
+        Class<?> aClass;
+        try {
+            aClass = Class.forName("com.ibm.os390.security.PlatformReturned");
+        } catch (ClassNotFoundException e) {
+            aClass = Class.forName("org.zowe.apiml.gateway.security.login.saf.PlatformReturned");
+        }
+        return aClass;
     }
 
     @Override
