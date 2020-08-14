@@ -10,22 +10,21 @@
 package org.zowe.apiml.gateway.security.login.saf;
 
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-
-import static org.zowe.apiml.util.ClassOrDefaultProxyUtils.ClassOrDefaultProxyState;
-import static org.zowe.apiml.util.ClassOrDefaultProxyUtils.createProxy;
+import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
 public class SafPlatformClassFactory implements PlatformClassFactory {
     @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
+    private final ApimlLogger apimlLog = ApimlLogger.of(SafPlatformClassFactory.class, YamlMessageServiceInstance.getInstance());
 
     @Override
     public Class<?> getPlatformUserClass() throws ClassNotFoundException {
-        PlatformUser proxy = createProxy(PlatformUser.class, "com.ibm.os390.security.PlatformUser", MockPlatformUser::new);
-        if (!((ClassOrDefaultProxyState) proxy).isUsingBaseImplementation()) {
+        Object platformUser = getPlatformUser();
+        if (!((ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) platformUser).isUsingBaseImplementation()) {
             apimlLog.log("org.zowe.apiml.security.loginEndpointInDummyMode", MockPlatformUser.VALID_USERID, MockPlatformUser.VALID_PASSWORD);
         }
-        return proxy.getClass();
+        return platformUser.getClass();
     }
 
     @Override
@@ -41,6 +40,7 @@ public class SafPlatformClassFactory implements PlatformClassFactory {
 
     @Override
     public Object getPlatformUser() {
-        return null;
+        PlatformUser platformUser = ClassOrDefaultProxyUtils.createProxy(PlatformUser.class, "com.ibm.os390.security.PlatformUser", MockPlatformUser::new);
+        return platformUser;
     }
 }

@@ -19,7 +19,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -32,14 +32,12 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     public static final String ORG_ZOWE_APIML_SECURITY_LOGIN_ENDPOINT_IN_DUMMY_MODE = "org.zowe.apiml.security.loginEndpointInDummyMode";
     public static final String DUMMY = "dummy";
 
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
+    private final ApimlLogger apimlLog = ApimlLogger.of(CompoundAuthProvider.class, YamlMessageServiceInstance.getInstance());
 
     private final Map<String, AuthenticationProvider> authProvidersMap;
     private final Environment environment;
     private final LoginProvider defaultProvider;
     private static String defaultProviderName;
-
     private LoginProvider loginProvider;
 
     public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment, @Value("${apiml.security.auth.provider:zosmf}") String defaultProviderName) {
