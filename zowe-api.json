@@ -56,10 +56,6 @@
                     "target": "apidef/zosmf.yml",
                     "binary": true
                 },
-                "../api-defs2/dc-passticket.yml": {
-                    "target": "apidef/dc-passticket.yml",
-                    "binary": true
-                },
                 "apiml-common/src/test/resources/zowe.version/zowe-manifest.json": {
                     "target": "zowe-manifest.json",
                     "binary": true
