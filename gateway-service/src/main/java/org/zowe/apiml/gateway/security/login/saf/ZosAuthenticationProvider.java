@@ -19,8 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 
-import java.util.Arrays;
-
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -57,12 +55,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     @Override
     public void afterPropertiesSet() {
         if (platformUser == null) {
-            if (Arrays.asList(activeProfiles).contains("zos")) {
                 platformUser = new SafPlatformUser(new SafPlatformClassFactory());
-            } else {
-                platformUser = new MockPlatformUser();
-                log.warn("The mock authentication provider is used. This application should not be used in production");
-            }
         }
     }
 }
