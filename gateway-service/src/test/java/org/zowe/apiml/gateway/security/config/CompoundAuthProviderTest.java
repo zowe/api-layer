@@ -37,7 +37,7 @@ public class CompoundAuthProviderTest {
         authProvidersMap.put(LoginProvider.DUMMY.getAuthProviderBeanName(), dummyAuthenticationProvider);
         environment = mock(Environment.class);
         ReflectionTestUtils.setField(CompoundAuthProvider.class,"defaultProviderName", "dummy");
-        compoundAuthProvider = new CompoundAuthProvider(authProvidersMap, environment);
+        compoundAuthProvider = new CompoundAuthProvider(authProvidersMap, environment, "dummy");
     }
 
     @Test

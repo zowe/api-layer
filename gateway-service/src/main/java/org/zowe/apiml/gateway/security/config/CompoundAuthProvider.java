@@ -36,15 +36,14 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     private final Map<String, AuthenticationProvider> authProvidersMap;
     private final Environment environment;
     private final LoginProvider defaultProvider;
-
-    @Value("${apiml.security.auth.provider:zosmf}")
     private static String defaultProviderName;
 
     private LoginProvider loginProvider;
 
-    public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment) {
+    public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment, @Value("${apiml.security.auth.provider:zosmf}") String defaultProviderName) {
         this.authProvidersMap = authProvidersMap;
         this.environment = environment;
+        this.defaultProviderName = defaultProviderName;
         defaultProvider = loginProvider =
             LoginProvider.getLoginProvider(defaultProviderName);
         if (loginProvider == null) {
