@@ -145,7 +145,7 @@ public class EurekaInstanceConfigValidator {
 
     private void validateHomePageRelativeUrl(ApiMediationServiceConfig config) {
         String homePageUrl = config.getHomePageRelativeUrl();
-        if (isInvalid(homePageUrl) && config.getRoutes().stream().noneMatch(route -> route.getGatewayUrl().toLowerCase().startsWith("ui"))) {
+        if (isInvalid(homePageUrl) && config.getRoutes().stream().anyMatch(route -> route.getGatewayUrl().toLowerCase().startsWith("ui"))) {
             // Some applications may not require a home page, so don't log a warning that the home page URL doesn't exist
             // unless there is a gateway UI URL, which indicates there should have been a home page URL.
             log.warn("The home page URL is not provided. Try to add apiml.service.homePageRelativeUrl property or check its value.");
