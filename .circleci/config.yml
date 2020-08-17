@@ -34,11 +34,12 @@ jobs:
                 name: "Install Dependencies"
                 command: |
                     npm install
+                    npm install -g pnpm@5.5 | sudo bash
 
             - run:
                   name: "Install FE Dependencies"
                   command: |
-                      cd api-catalog-ui/frontend && npm install pnpm@4.0 && pnpm install
+                      cd api-catalog-ui/frontend && pnpm install
 
           # Download and cache dependencies
             - restore_cache:
