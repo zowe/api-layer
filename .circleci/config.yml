@@ -34,7 +34,7 @@ jobs:
                 name: "Install Dependencies"
                 command: |
                     npm install
-                    sudo npm install -g pnpm@5.5
+                    sudo npm install -g pnpm@4.0
 
             - run:
                   name: "Install FE Dependencies"
