@@ -36,14 +36,24 @@ class Login {
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     protected final static String BASE_PATH = "/api/v1/gateway";
     protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
-    protected static String currentProvider;
 
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
+    // Customize the Username and password
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
+
+    protected String getUsername() {
+        return USERNAME;
+    }
+
+    protected String getPassword() {
+        return PASSWORD;
+    }
+
+
 
     protected static void switchProvider(String provider) {
         given()
@@ -69,7 +79,7 @@ class Login {
     //@formatter:off
     @Test
     void givenValidCredentialsInBody_whenUserAuthenticates_thenTheValidTokenIsProduced() {
-        LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
         Cookie cookie = given()
             .contentType(JSON)
@@ -94,7 +104,7 @@ class Login {
     @Test
     void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced() {
         String token = given()
-            .auth().preemptive().basic(USERNAME, PASSWORD)
+            .auth().preemptive().basic(getUsername(), getPassword())
             .contentType(JSON)
         .when()
             .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
@@ -111,7 +121,7 @@ class Login {
 
     private void assertThatTokenIsValid(Claims claims) {
         assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(USERNAME));
+        assertThat(claims.getSubject(), is(getUsername()));
     }
 
     private Claims parseJwtString(String untrustedJwtString) {
@@ -177,8 +187,8 @@ class Login {
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         JSONObject loginRequest = new JSONObject()
-            .put("user",USERNAME)
-            .put("pass",PASSWORD);
+            .put("user",getUsername())
+            .put("pass",getPassword());
 
         given()
             .contentType(JSON)
@@ -197,7 +207,7 @@ class Login {
         String expectedMessage = "Authentication method 'GET' is not supported for URL '" +
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
-        LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
 
         given()
             .contentType(JSON)

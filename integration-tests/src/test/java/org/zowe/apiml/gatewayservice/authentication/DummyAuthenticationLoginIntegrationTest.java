@@ -20,4 +20,12 @@ public class DummyAuthenticationLoginIntegrationTest extends Login {
 
         switchProvider("dummy");
     }
+
+    protected String getUsername() {
+        return "user";
+    }
+
+    protected String getPassword() {
+        return "user";
+    }
 }
