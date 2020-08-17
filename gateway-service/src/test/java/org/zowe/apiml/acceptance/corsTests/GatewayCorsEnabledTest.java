@@ -11,8 +11,8 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.annotation.DirtiesContext;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 @AcceptanceTest
 @ActiveProfiles("test")
 @DirtiesContext
-@Disabled
+@DisabledIf("${environment.older}")
 class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
     @Test
     // The CORS headers are properly set on the request
