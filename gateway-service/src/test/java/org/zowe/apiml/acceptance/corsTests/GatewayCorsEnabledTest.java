@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.DisabledIf;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -29,6 +30,10 @@ import static org.mockito.Mockito.*;
 @AcceptanceTest
 @ActiveProfiles("test")
 @DirtiesContext
+@DisabledIf(
+    expression = "${environment.older}",
+    loadContext = true
+)
 class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
     @Test
     // The CORS headers are properly set on the request

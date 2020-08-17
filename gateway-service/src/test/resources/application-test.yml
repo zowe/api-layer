@@ -1,4 +1,6 @@
 spring.profiles.include: diag
+environment.older: false
+
 logging:
     level:
         ROOT: TRACE
