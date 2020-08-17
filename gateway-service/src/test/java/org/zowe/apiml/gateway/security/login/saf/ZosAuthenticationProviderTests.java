@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.login.saf;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -43,7 +44,7 @@ class ZosAuthenticationProviderTests {
 
     @Test
     void exceptionOnInvalidCredentials() {
-        assertThrows(ZosAuthenticationException.class,
+        assertThrows(BadCredentialsException.class,
             () -> provider.authenticate(INVALID_TOKEN),
             "Expected exception is not ZosAuthenticationException");
     }
