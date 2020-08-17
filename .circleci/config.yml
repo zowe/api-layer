@@ -27,7 +27,7 @@ jobs:
                 name: "Set CI to false"
                 command: |
                     echo 'export CI=false' >> $BASH_ENV
-                    echo 'export environment.older=true' >> $BASH_ENV
+                    echo 'export ENVIRONMENT_OLDER=true' >> $BASH_ENV
                     source $BASH_ENV
 
             - run:
