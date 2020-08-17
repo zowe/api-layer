@@ -78,7 +78,7 @@ objective of this phase is to setup zowe-api-dev and perform first deployment
  
  - Run `zowe-api-dev config --name zos`. Configuration is deployed.
  
- - Start deployed instance by running 'zowe-api-dev start --job'. JES Job is started. You will get Job ID of started job.
+ - Start deployed instance by running `zowe-api-dev start --job`. JES Job is started. You will get Job ID of started job.
 
  *At this point you can go and use the deployment. You will not have to repeat these steps (Except the zfs mount if you dispose of it)*
 
