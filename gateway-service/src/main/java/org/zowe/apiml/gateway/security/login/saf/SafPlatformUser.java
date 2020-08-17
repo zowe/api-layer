@@ -43,5 +43,4 @@ public class SafPlatformUser implements PlatformUser {
             throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
         }
     }
-
 }
