@@ -48,7 +48,10 @@ import static org.mockito.Mockito.*;
 @AcceptanceTest
 @ActiveProfiles("test")
 @DirtiesContext
-@DisabledIf("#{systemProperties['os.name'].toLowerCase().contains('ubuntu')}")
+@DisabledIf(
+    expression = "${environment.older}",
+    loadContext = true
+)
 class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
         // Verify the header to allow CORS isn't set
