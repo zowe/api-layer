@@ -13,6 +13,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
+import io.restassured.response.ValidatableResponse;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -154,13 +155,13 @@ class Login {
 
         LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD);
 
-        given()
+        ValidatableResponse response = given()
             .contentType(JSON)
             .body(loginRequest)
         .when()
             .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED))
+        .then();
+        response.statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
             );
