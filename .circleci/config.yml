@@ -34,9 +34,13 @@ jobs:
                 name: "Install Dependencies"
                 command: |
                     npm install
-                    cd api-catalog-ui/frontend && npm install pnpm@4.0 && pnpm install
 
-            # Download and cache dependencies
+            - run:
+                  name: "Install FE Dependencies"
+                  command: |
+                      cd api-catalog-ui/frontend && npm install pnpm@4.0 && pnpm install
+
+          # Download and cache dependencies
             - restore_cache:
                   keys:
                       - v1-dependencies-{{ checksum "build.gradle" }}
