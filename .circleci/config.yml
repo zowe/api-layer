@@ -1,0 +1,5 @@
+steps:
+    - run: npm install -g pnpm@4.0
+    - run: npm install
+    - run: cd api-catalog-ui/frontend && pnpm install
+    - run: ./gradlew --info --scan build coverage runCITests
