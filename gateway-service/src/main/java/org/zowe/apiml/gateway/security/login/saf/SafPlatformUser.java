@@ -24,22 +24,22 @@ public class SafPlatformUser implements PlatformUser {
     public PlatformReturned authenticate(String userid, String password) {
         try {
             Object safReturned = platformClassFactory.getPlatformUserClass()
-                    .getMethod("authenticate", String.class, String.class)
-                    .invoke(platformClassFactory.getPlatformUser(), userid, password);
+                .getMethod("authenticate", String.class, String.class)
+                .invoke(platformClassFactory.getPlatformUser(), userid, password);
             if (safReturned == null) {
                 return null;
             } else {
                 Class<?> returnedClass = platformClassFactory.getPlatformReturnedClass();
                 return PlatformReturned.builder().success(returnedClass.getField("success").getBoolean(safReturned))
-                        .rc(returnedClass.getField("rc").getInt(safReturned))
-                        .errno(returnedClass.getField("errno").getInt(safReturned))
-                        .errno2(returnedClass.getField("errno2").getInt(safReturned))
-                        .errnoMsg((String) returnedClass.getField("errnoMsg").get(safReturned))
-                        .stringRet((String) returnedClass.getField("stringRet").get(safReturned))
-                        .objectRet(returnedClass.getField("objectRet").get(safReturned)).build();
+                    .rc(returnedClass.getField("rc").getInt(safReturned))
+                    .errno(returnedClass.getField("errno").getInt(safReturned))
+                    .errno2(returnedClass.getField("errno2").getInt(safReturned))
+                    .errnoMsg((String) returnedClass.getField("errnoMsg").get(safReturned))
+                    .stringRet((String) returnedClass.getField("stringRet").get(safReturned))
+                    .objectRet(returnedClass.getField("objectRet").get(safReturned)).build();
             }
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
-                | SecurityException | ClassNotFoundException | NoSuchFieldException e) {
+            | SecurityException | ClassNotFoundException | NoSuchFieldException e) {
             throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
         }
     }
