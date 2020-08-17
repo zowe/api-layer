@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.login.saf;
 
+import org.springframework.security.authentication.AuthenticationServiceException;
+
 import java.lang.reflect.InvocationTargetException;
 
 public class SafPlatformUser implements PlatformUser {
@@ -38,7 +40,7 @@ public class SafPlatformUser implements PlatformUser {
             }
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
                 | SecurityException | ClassNotFoundException | NoSuchFieldException e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new AuthenticationServiceException("A failure occurred when authenticating.", e);
         }
     }
 

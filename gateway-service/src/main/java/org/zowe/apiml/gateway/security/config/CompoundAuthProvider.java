@@ -37,13 +37,11 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     private final Map<String, AuthenticationProvider> authProvidersMap;
     private final Environment environment;
     private final LoginProvider defaultProvider;
-    private static String defaultProviderName;
     private LoginProvider loginProvider;
 
     public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment, @Value("${apiml.security.auth.provider:zosmf}") String defaultProviderName) {
         this.authProvidersMap = authProvidersMap;
         this.environment = environment;
-        CompoundAuthProvider.defaultProviderName = defaultProviderName;
         warnForDummyProvider(defaultProviderName);
         defaultProvider = loginProvider =
             LoginProvider.getLoginProvider(defaultProviderName);
@@ -94,7 +92,7 @@ public class CompoundAuthProvider implements AuthenticationProvider {
      * @throws AuthenticationException if authentication fails.
      */
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         AuthenticationProvider configuredLoginAuthProvider = getConfiguredLoginAuthProvider();
         return configuredLoginAuthProvider.authenticate(authentication);
     }

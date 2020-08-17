@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.login.dummy.DummyAuthenticationProvider;
 
@@ -24,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 
-public class CompoundAuthProviderTest {
+class CompoundAuthProviderTest {
 
     private Map<String, AuthenticationProvider> authProvidersMap;
     private AuthenticationProvider dummyAuthenticationProvider;
@@ -37,18 +36,17 @@ public class CompoundAuthProviderTest {
         authProvidersMap = new HashMap<>();
         authProvidersMap.put(LoginProvider.DUMMY.getAuthProviderBeanName(), dummyAuthenticationProvider);
         environment = mock(Environment.class);
-        ReflectionTestUtils.setField(CompoundAuthProvider.class,"defaultProviderName", "dummy");
         compoundAuthProvider = new CompoundAuthProvider(authProvidersMap, environment, "dummy");
     }
 
     @Test
-    public void testGetLoginAuthProviderName() {
+    void testGetLoginAuthProviderName() {
         String loginAuthProviderName = compoundAuthProvider.getLoginAuthProviderName();
         assertEquals("dummy", loginAuthProviderName);
     }
 
     @Test
-    public void testSetLoginAuthProvider() {
+    void testSetLoginAuthProvider() {
         when(environment.getActiveProfiles()).thenReturn(new String[]{"diag"});
         compoundAuthProvider.setLoginAuthProvider(LoginProvider.SAF.getValue());
         String loginAuthProviderName = compoundAuthProvider.getLoginAuthProviderName();
@@ -56,7 +54,7 @@ public class CompoundAuthProviderTest {
     }
 
     @Test
-    public void testSetLoginAuthProvider_withoutDevProfile() {
+    void testSetLoginAuthProvider_withoutDevProfile() {
         when(environment.getActiveProfiles()).thenReturn(new String[]{"prod"});
         compoundAuthProvider.setLoginAuthProvider(LoginProvider.SAF.getValue());
         String loginAuthProviderName = compoundAuthProvider.getLoginAuthProviderName();
@@ -64,13 +62,13 @@ public class CompoundAuthProviderTest {
     }
 
     @Test
-    public void testAuthenticate() {
+    void testAuthenticate() {
         compoundAuthProvider.authenticate(any());
         verify(dummyAuthenticationProvider, times(1)).authenticate(any());
     }
 
     @Test
-    public void testSupport() {
+    void testSupport() {
         compoundAuthProvider.supports(any());
         verify(dummyAuthenticationProvider, times(1)).supports(any());
     }

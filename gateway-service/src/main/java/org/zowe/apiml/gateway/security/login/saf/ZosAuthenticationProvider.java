@@ -26,7 +26,6 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     private PlatformUser platformUser = null;
 
     private final AuthenticationService authenticationService;
-    private final String[] activeProfiles;
 
     @Override
     public Authentication authenticate(Authentication authentication) {
@@ -39,7 +38,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
             final String jwtToken = authenticationService.createJwtToken(userid, domain, "ltpa");
             return authenticationService.createTokenAuthentication(userid, jwtToken);
         } else {
-            throw new ZosAuthenticationException("Authentication failed: " + returned.toString(), returned);
+            throw new ZosAuthenticationException("Authentication failed: " + returned.toString());
         }
     }
 

@@ -37,7 +37,7 @@ class ZosAuthenticationProviderTests {
     @BeforeAll
     static void setup() {
         mockService = mock(AuthenticationService.class);
-        provider = new ZosAuthenticationProvider(mockService, new String[]{});
+        provider = new ZosAuthenticationProvider(mockService);
         provider.afterPropertiesSet();
     }
 

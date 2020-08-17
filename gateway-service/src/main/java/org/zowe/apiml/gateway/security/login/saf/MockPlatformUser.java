@@ -11,9 +11,9 @@ package org.zowe.apiml.gateway.security.login.saf;
 
 public class MockPlatformUser implements PlatformUser {
     public static final String VALID_USERID = "zowe";
-    public static final String VALID_PASSWORD = "zowe";
+    public static final String VALID_PASSWORD = "zowe"; // NOSONAR
     public static final String INVALID_USERID = "notzowe";
-    public static final String INVALID_PASSWORD = "notzowe";
+    public static final String INVALID_PASSWORD = "notzowe"; // NOSONAR
 
     @Override
     public PlatformReturned authenticate(String userid, String password) {

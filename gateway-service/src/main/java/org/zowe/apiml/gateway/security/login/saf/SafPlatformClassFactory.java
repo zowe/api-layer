@@ -40,7 +40,6 @@ public class SafPlatformClassFactory implements PlatformClassFactory {
 
     @Override
     public Object getPlatformUser() {
-        PlatformUser platformUser = ClassOrDefaultProxyUtils.createProxy(PlatformUser.class, "com.ibm.os390.security.PlatformUser", MockPlatformUser::new);
-        return platformUser;
+        return ClassOrDefaultProxyUtils.createProxy(PlatformUser.class, "com.ibm.os390.security.PlatformUser", MockPlatformUser::new);
     }
 }
