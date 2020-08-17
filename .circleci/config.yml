@@ -23,6 +23,10 @@ jobs:
 
         steps:
             - checkout
+            - run:
+                  name: "Echo OS Name"
+                  command: |
+                      echo ${os.name}
 
             - run:
                 name: "Set CI to false"
