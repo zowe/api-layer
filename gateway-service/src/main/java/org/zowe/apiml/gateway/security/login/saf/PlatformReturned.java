@@ -12,13 +12,15 @@ package org.zowe.apiml.gateway.security.login.saf;
 import lombok.Builder;
 import lombok.Data;
 
-@Data @Builder
+@Data
+@Builder
 /**
  * More details about the z/OS security call results.
  *
  * See also:
  * https://www.ibm.com/support/knowledgecenter/en/SSYKE2_8.0.0/com.ibm.java.zsecurity.api.80.doc/com.ibm.os390.security/com/ibm/os390/security/PlatformReturned.html
  */
+@SuppressWarnings({"squid:S1104"})
 public class PlatformReturned {
     public boolean success;
     public int rc;

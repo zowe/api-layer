@@ -27,7 +27,6 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     private PlatformUser platformUser = null;
 
     private final AuthenticationService authenticationService;
-    private final String[] activeProfiles;
 
     @Override
     public Authentication authenticate(Authentication authentication) {
