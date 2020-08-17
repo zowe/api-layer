@@ -53,7 +53,7 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     }
 
     private void warnForDummyProvider(String defaultProviderName) {
-        if(defaultProviderName.equalsIgnoreCase(DUMMY)) {
+        if (defaultProviderName.equalsIgnoreCase(DUMMY)) {
             apimlLog.log(ORG_ZOWE_APIML_SECURITY_LOGIN_ENDPOINT_IN_DUMMY_MODE,"user","user");
         }
     }
