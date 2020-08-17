@@ -10,7 +10,7 @@
                 "target": "components/api-mediation/discovery-service.jar",
                 "binary": true
             },
-            "gateway-service/build/libs/gateway-service-thin.jar": {
+            "gateway-service/build/libs/gateway-service.jar": {
                 "target": "components/api-mediation/gateway-service.jar",
                 "binary": true
             },
@@ -20,6 +20,10 @@
             },
             "build/libraries.zip": {
                 "target": "components/api-mediation/lib/libraries.zip",
+                "binary": true
+            },
+            "discoverable-client/build/libs/discoverable-client-thin.jar": {
+                "target": "components/api-mediation/discoverable-client.jar",
                 "binary": true
             }
         }
@@ -36,7 +40,7 @@
                     "target": "run-wrapper.sh",
                     "binary": false
                 },
-                "zowe-install/src/main/resources/component-scripts/start.sh": {
+                "config/zowe-api-dev/alternative_start.sh": {
                     "target": "start.sh",
                     "binary": false
                 },
