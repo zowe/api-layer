@@ -15,5 +15,5 @@ public interface PlatformUser {
      *
      * If successful, a null object is returned. If not successful an instance of the PlatformReturned class is returned.
      */
-    PlatformReturned authenticate(java.lang.String userid, java.lang.String password);
+    Object authenticate(java.lang.String userid, java.lang.String password);
 }
