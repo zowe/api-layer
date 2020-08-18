@@ -7,13 +7,14 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-package org.zowe.apiml.gatewayservice;
+package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
 import static io.restassured.RestAssured.given;
@@ -24,7 +25,6 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 @MainframeDependentTests
 public class LogoutTest {
 
-    private final static String BASE_PATH = "/api/v1/gateway";
     private final static String LOGOUT_ENDPOINT = "/auth/logout";
     private final static String QUERY_ENDPOINT = "/auth/query";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";

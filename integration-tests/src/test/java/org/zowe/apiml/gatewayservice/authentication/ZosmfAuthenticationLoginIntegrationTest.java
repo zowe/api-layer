@@ -20,6 +20,6 @@ public class ZosmfAuthenticationLoginIntegrationTest extends Login {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
 
-        switchProvider("zosmf");
+        providers.switchProvider("zosmf");
     }
 }

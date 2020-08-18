@@ -10,22 +10,28 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
-/**
- * Test that when valid credentials are provided the SAF authentication provider will accept them and the valid token
- * will be produced.
- * <p>
- * Also verify that the invalid credentials will be properly rejected.
- */
+import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
+
 @MainframeDependentTests
-public class SafAuthenticationLoginIntegrationTest extends Login {
+public class SafLogoutTest extends LogoutTest {
+    private static AuthenticationProviders providers = new AuthenticationProviders(SecurityUtils.getGateWayUrl("/authentication"));
+
+    // Change to saf and run the same test as for the zOSMF
     @BeforeAll
     static void switchToTestedProvider() {
-        RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         providers.switchProvider("saf");
+    }
+
+    @AfterAll
+    static void switchToDefaultProvider() {
+        providers.switchProvider(null);
     }
 }

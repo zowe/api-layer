@@ -37,6 +37,7 @@ class Login {
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     protected final static String BASE_PATH = "/api/v1/gateway";
     protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
+    protected static AuthenticationProviders providers = new AuthenticationProviders(authenticationEndpointPath);
 
     private final static String LOGIN_ENDPOINT = "/auth/login";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
@@ -54,21 +55,9 @@ class Login {
         return PASSWORD;
     }
 
-
-
-    protected static void switchProvider(String provider) {
-        given()
-            .contentType(JSON)
-            .body("{\"provider\": \"" + provider + "\"}")
-        .when()
-            .post(authenticationEndpointPath)
-        .then()
-            .statusCode(is(SC_NO_CONTENT));
-    }
-
     @AfterAll
     static void switchToOriginalProvider() {
-        switchProvider(null);
+        providers.switchProvider(null);
     }
 
     @BeforeEach
