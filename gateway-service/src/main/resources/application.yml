@@ -46,6 +46,7 @@ apiml:
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         auth:
+            provider: zosmf
             jwtKeyAlias: jwtsecret
 
 spring:

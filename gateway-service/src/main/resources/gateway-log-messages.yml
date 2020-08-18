@@ -120,7 +120,7 @@ messages:
     - key: org.zowe.apiml.security.loginEndpointInDummyMode
       number: ZWEAG106
       type: WARNING
-      text: "Login endpoint is running in the dummy mode. Use credentials user/user to login. Do not use this option in the production environment."
+      text: "Login endpoint is running in the dummy mode. Use credentials '%s'/'%s' to login. Do not use this option in the production environment."
       reason: "The authentication is running in dummy mode."
       action: "Do not use this option in the production environment."
 

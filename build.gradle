@@ -126,12 +126,12 @@ task runIntegrationTestInstances(dependsOn: buildCore) {
         if (System.properties['os.name'].toLowerCase().contains('windows')) {
             ext.process = new ProcessBuilder()
                 .directory(projectDir)
-                .command("npm.cmd", "run", "api-layer")
+                .command("npm.cmd", "run", "api-layer-ci")
                 .start()
         } else {
             ext.process = new ProcessBuilder()
                 .directory(projectDir)
-                .command("npm", "run", "api-layer", ">", "integration-instances.log")
+                .command("npm", "run", "api-layer-ci", ">", "integration-instances.log")
                 .start()
         }
 
