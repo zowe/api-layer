@@ -32,7 +32,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
     public Authentication authenticate(Authentication authentication) {
         String userid = authentication.getName();
         String password = authentication.getCredentials().toString();
-        PlatformReturned returned = getPlatformUser().authenticate(userid, password);
+        PlatformReturned returned = (PlatformReturned) getPlatformUser().authenticate(userid, password);
 
         if ((returned == null) || (returned.isSuccess())) {
             final String domain = "security-domain";

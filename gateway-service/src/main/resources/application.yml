@@ -2,7 +2,6 @@ logging:
     level:
         ROOT: INFO
         org.zowe.apiml: INFO
-        org.zowe.apiml.gateway.security.login: DEBUG
         org.springframework: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
