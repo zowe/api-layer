@@ -30,7 +30,7 @@ public class LogoutTest {
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
