@@ -23,8 +23,27 @@ jobs:
 
         steps:
             - checkout
-
-            # Download and cache dependencies
+            - run:
+                name: "Set CI to false"
+                command: |
+                    echo 'export CI=false' >> $BASH_ENV
+                    echo 'export ENVIRONMENT_OLDER=true' >> $BASH_ENV
+                    source $BASH_ENV
+            - run:
+                name: "Install Node.js and npm"
+                command: |
+                    curl -sSL "https://nodejs.org/dist/v11.10.0/node-v11.10.0-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v11.10.0-linux-x64/bin/node
+                    curl https://www.npmjs.com/install.sh | sudo bash
+            - run:
+                name: "Install Dependencies"
+                command: |
+                    npm install
+                    sudo npm install -g pnpm@4.0
+            - run:
+                name: "Install FE Dependencies"
+                command: |
+                    cd api-catalog-ui/frontend && pnpm install
+          # Download and cache dependencies
             - restore_cache:
                 keys:
                     - v1-dependencies-{{ checksum "build.gradle" }}
@@ -37,3 +56,6 @@ jobs:
                 paths:
                     - ~/.gradle
                 key: v1-dependencies-{{ checksum "build.gradle" }}
+
+            # run tests!
+            - run: gradle -Denvironment.older=true test
