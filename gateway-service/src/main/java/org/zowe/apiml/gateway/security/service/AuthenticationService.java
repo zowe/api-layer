@@ -123,10 +123,8 @@ public class AuthenticationService {
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */
-        if (distribute) {
-            if (!invalidateTokenOnAnotherInstance(jwtToken)) {
-                return Boolean.FALSE;
-            }
+        if (distribute && !invalidateTokenOnAnotherInstance(jwtToken)) {
+            return Boolean.FALSE;
         }
 
         // invalidate token in z/OSMF
