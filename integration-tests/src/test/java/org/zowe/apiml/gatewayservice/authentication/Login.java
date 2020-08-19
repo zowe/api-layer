@@ -92,6 +92,39 @@ class Login {
     }
 
     @Test
+    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced() {
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+
+        String jwtToken1 = authenticateAndVerify(loginRequest);
+        String jwtToken2 = authenticateAndVerify(loginRequest);
+
+        assertThat(jwtToken1, is(not(jwtToken2)));
+    }
+
+    private String authenticateAndVerify(LoginRequest loginRequest) {
+        Cookie cookie = given()
+            .contentType(JSON)
+            .body(loginRequest)
+        .when()
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertThat(cookie.isHttpOnly(), is(true));
+        assertThat(cookie.getValue(), is(notNullValue()));
+        assertThat(cookie.getMaxAge(), is(-1));
+
+        int i = cookie.getValue().lastIndexOf('.');
+        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
+        Claims claims = parseJwtString(untrustedJwtString);
+        assertThatTokenIsValid(claims);
+
+        return cookie.getValue();
+    }
+
+    @Test
     void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced() {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
