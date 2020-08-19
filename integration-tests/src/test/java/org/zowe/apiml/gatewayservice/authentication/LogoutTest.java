@@ -23,7 +23,7 @@ import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @MainframeDependentTests
-public class LogoutTest {
+class LogoutTest {
 
     private final static String LOGOUT_ENDPOINT = "/auth/logout";
     private final static String QUERY_ENDPOINT = "/auth/query";
