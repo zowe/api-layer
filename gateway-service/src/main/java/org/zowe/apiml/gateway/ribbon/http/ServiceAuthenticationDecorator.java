@@ -22,6 +22,7 @@ import org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl;
 import org.zowe.apiml.gateway.security.service.schema.AuthenticationCommand;
 import org.zowe.apiml.gateway.security.service.schema.ServiceAuthenticationService;
 import org.zowe.apiml.security.common.auth.Authentication;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import static org.zowe.apiml.gateway.security.service.ServiceAuthenticationServiceImpl.AUTHENTICATION_COMMAND_KEY;
 
@@ -65,7 +66,7 @@ public class ServiceAuthenticationDecorator {
 
                 if (cmd.isRequiredValidJwt()) {
                     if (jwtToken == null || !authenticationService.validateJwtToken(jwtToken).isAuthenticated()) {
-                        throw new RequestAbortException(new BadCredentialsException("JWT Token is not authenticated"));
+                        throw new RequestAbortException(new TokenNotValidException("JWT Token is not authenticated"));
                     }
                 }
             }
