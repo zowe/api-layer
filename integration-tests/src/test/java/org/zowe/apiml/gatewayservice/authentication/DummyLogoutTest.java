@@ -28,6 +28,10 @@ class DummyLogoutTest extends LogoutTest {
         providers.switchProvider("dummy");
     }
 
+    protected String generateToken() {
+        return SecurityUtils.gatewayToken("user", "user");
+    }
+
     @AfterAll
     static void switchToDefaultProvider() {
         providers.switchProvider(null);

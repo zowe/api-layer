@@ -46,10 +46,14 @@ class LogoutTest {
             .statusCode(status.value());
     }
 
+    protected String generateToken() {
+        return SecurityUtils.gatewayToken();
+    }
+
     @Test
     void testLogout() {
         // make login
-        String jwt = SecurityUtils.gatewayToken();
+        String jwt = generateToken();
 
         // check if it is logged in
         assertIfLogged(jwt, true);
