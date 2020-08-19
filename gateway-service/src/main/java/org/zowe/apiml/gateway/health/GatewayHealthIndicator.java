@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.gateway.health;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.gateway.security.login.LoginProvider;
-import org.zowe.apiml.product.constants.CoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -19,6 +16,9 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.login.LoginProvider;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
 import static org.springframework.boot.actuate.health.Status.UP;
@@ -41,7 +41,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         boolean discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
 
         boolean authUp = true;
-        if (!authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.DUMMY.toString())) {
+        if (authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.ZOSMF.toString())) {
             try {
                 authUp = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
             } catch (AuthenticationServiceException ex) {
