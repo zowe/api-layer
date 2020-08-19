@@ -22,7 +22,6 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
-@MainframeDependentTests
 class LogoutTest {
 
     private final static String LOGOUT_ENDPOINT = "/auth/logout";
