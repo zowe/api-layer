@@ -18,7 +18,7 @@ import org.zowe.apiml.util.categories.MainframeDependentTests;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 @MainframeDependentTests
-public class ZosmfLogoutTest {
+public class ZosmfLogoutTest extends LogoutTest {
     private static AuthenticationProviders providers = new AuthenticationProviders(SecurityUtils.getGateWayUrl("/authentication"));
 
     // Change to dummy and run the same test as for the zOSMF
