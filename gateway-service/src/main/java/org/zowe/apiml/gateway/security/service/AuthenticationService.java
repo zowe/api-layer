@@ -124,7 +124,7 @@ public class AuthenticationService {
          * until ehCache is not distributed, send to other instances invalidation request
          */
         if (distribute) {
-            if(!invalidateTokenOnAnotherInstance(jwtToken)) {
+            if (!invalidateTokenOnAnotherInstance(jwtToken)) {
                 return Boolean.FALSE;
             }
         }

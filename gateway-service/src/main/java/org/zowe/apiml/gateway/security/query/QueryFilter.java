@@ -9,13 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.query;
 
-import org.springframework.security.authentication.BadCredentialsException;
-import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
-import org.zowe.apiml.security.common.error.InvalidCertificateException;
-import org.zowe.apiml.security.common.error.InvalidTokenException;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -24,6 +17,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.FilterChain;

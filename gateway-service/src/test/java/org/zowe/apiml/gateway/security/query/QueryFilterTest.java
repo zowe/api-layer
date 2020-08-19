@@ -74,6 +74,9 @@ class QueryFilterTest {
         when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
             Optional.of(VALID_TOKEN)
         );
+        TokenAuthentication valid = new TokenAuthentication(VALID_TOKEN);
+        valid.setAuthenticated(true);
+        when(authenticationManager.authenticate(new TokenAuthentication(VALID_TOKEN))).thenReturn(valid);
 
         queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
