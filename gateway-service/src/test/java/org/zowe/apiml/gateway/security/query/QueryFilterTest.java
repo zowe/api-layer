@@ -27,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.http.HttpMethod;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.Optional;
 
@@ -120,5 +121,24 @@ class QueryFilterTest {
         assertThrows(InvalidCertificateException.class,
             () -> protectedQueryFilter.attemptAuthentication(httpServletRequest, httpServletResponse),
             "Expected exception is not InvalidCertificateException");
+    }
+
+    @Test
+    void givenInvalidToken_whenQueryIsCalled_thenThrowTokenNotValidException() {
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletRequest.setMethod(HttpMethod.GET.name());
+        httpServletResponse = new MockHttpServletResponse();
+        queryFilter.setAuthenticationManager(authenticationManager);
+        when(authenticationService.getJwtTokenFromRequest(any())).thenReturn(
+            Optional.of(VALID_TOKEN)
+        );
+
+        TokenAuthentication invalid = new TokenAuthentication(VALID_TOKEN);
+        invalid.setAuthenticated(false);
+        when(authenticationManager.authenticate(new TokenAuthentication(VALID_TOKEN))).thenReturn(invalid);
+
+        assertThrows(TokenNotValidException.class, () -> {
+            queryFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        });
     }
 }

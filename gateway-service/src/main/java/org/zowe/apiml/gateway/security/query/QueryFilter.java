@@ -9,8 +9,10 @@
  */
 package org.zowe.apiml.gateway.security.query;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
+import org.zowe.apiml.security.common.error.InvalidTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -22,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -83,7 +86,12 @@ public class QueryFilter extends AbstractAuthenticationProcessingFilter {
         String token = authenticationService.getJwtTokenFromRequest(request)
             .orElseThrow(() -> new TokenNotProvidedException("Authorization token not provided."));
 
-        return this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
+        Authentication result = this.getAuthenticationManager().authenticate(new TokenAuthentication(token));
+        if (result.isAuthenticated()) {
+            return result;
+        } else {
+            throw new TokenNotValidException("JWT Token is not authenticated");
+        }
     }
 
     /**
