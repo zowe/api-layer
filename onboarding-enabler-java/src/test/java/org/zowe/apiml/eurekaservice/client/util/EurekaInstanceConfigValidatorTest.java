@@ -21,6 +21,7 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.product.logging.LogMessageTracker;
 
 import javax.servlet.ServletContext;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,6 +55,13 @@ class EurekaInstanceConfigValidatorTest {
             () -> validator.validate(testConfig),
             "Expected exception is not MetadataValidationException");
         assertEquals("SSL configuration was not provided. Try add apiml.service.ssl section.", exception.getMessage());
+    }
+
+    @Test
+    void givenConfigurationWithHttpEurekaAndInvalidSsl_thenValidate() throws ServiceDefinitionException {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("bad-ssl-configuration.yml");
+        testConfig.setDiscoveryServiceUrls(Collections.singletonList("http://localhost:10011/eureka"));
+        assertDoesNotThrow(() -> validator.validate(testConfig));
     }
 
     @Test
@@ -93,7 +101,7 @@ class EurekaInstanceConfigValidatorTest {
     }
 
     @Test
-    void givenSystemProperties_whenLoadFromFileThatHasWildcard_thenConfigOverridenBySystemProp() throws Exception {
+    void givenSystemProperties_whenLoadFromFileThatHasWildcard_thenConfigOverriddenBySystemProp() throws Exception {
         System.setProperty("apiml.serviceId", "veronica");
         System.setProperty("prefix.description", "samantha");
         System.setProperty("apiml.keystore", "keystore");
@@ -102,8 +110,8 @@ class EurekaInstanceConfigValidatorTest {
         validator.validate(testConfig);
 
         assertEquals("veronica", testConfig.getServiceId());    // wildcard is mandatory to replace
-        assertEquals("${prefix.description}", testConfig.getDescription());  // it allows you to specify arbitraty prefix, yet only apiml prefix is replaced
-        assertEquals("${apiml.title}", testConfig.getTitle());  // it leaves the unreplaced prefixes
+        assertEquals("${prefix.description}", testConfig.getDescription());  // it allows you to specify arbitrary prefix, yet only apiml prefix is replaced
+        assertEquals("${apiml.title}", testConfig.getTitle());  // it leaves the unchanged prefixes
     }
 
     @Test
