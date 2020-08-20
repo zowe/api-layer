@@ -209,5 +209,28 @@ class Login {
                 "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
             );
     }
+
+    protected String authenticateAndVerify(LoginRequest loginRequest) {
+        Cookie cookie = given()
+            .contentType(JSON)
+            .body(loginRequest)
+        .when()
+            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+        .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertThat(cookie.isHttpOnly(), is(true));
+        assertThat(cookie.getValue(), is(notNullValue()));
+        assertThat(cookie.getMaxAge(), is(-1));
+
+        int i = cookie.getValue().lastIndexOf('.');
+        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
+        Claims claims = parseJwtString(untrustedJwtString);
+        assertThatTokenIsValid(claims);
+
+        return cookie.getValue();
+    }
     //@formatter:on
 }
