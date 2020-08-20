@@ -12,8 +12,12 @@ package org.zowe.apiml.gatewayservice.authentication;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 
+import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 
 class DummyLogoutTest extends LogoutTest {
@@ -30,6 +34,25 @@ class DummyLogoutTest extends LogoutTest {
 
     protected String generateToken() {
         return SecurityUtils.gatewayToken("user", "user");
+    }
+
+    @Test
+    void givenTwoValidTokens_whenLogoutCalledOnFirstOne_thenSecondStillValid() {
+        String jwt1 = generateToken();
+        String jwt2 = generateToken();
+
+        assertIfLogged(jwt1, true);
+        assertIfLogged(jwt2, true);
+
+        given()
+            .cookie(COOKIE_NAME, jwt1)
+            .when()
+            .post(SecurityUtils.getGateWayUrl(LOGOUT_ENDPOINT))
+            .then()
+            .statusCode(is(SC_NO_CONTENT));
+
+        assertIfLogged(jwt1, false);
+        assertIfLogged(jwt2, true);
     }
 
     @AfterAll

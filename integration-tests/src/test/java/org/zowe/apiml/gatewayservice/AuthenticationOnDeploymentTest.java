@@ -19,6 +19,7 @@ import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 import org.zowe.apiml.util.categories.Flaky;
 import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.config.RandomPort;
 import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
@@ -48,7 +49,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  * - credentials.password = user
  */
 @TestsNotMeantForZowe
-public class AuthenticationOnDeploymentTest {
+class AuthenticationOnDeploymentTest {
 
     private static final int TIMEOUT = 3;
 
@@ -63,13 +64,12 @@ public class AuthenticationOnDeploymentTest {
     }
 
     @Test
-    @Flaky
-    public void testMultipleAuthenticationSchemes() throws Exception {
+    void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
         try (
-            final VirtualService service1 = new VirtualService("testService", 5678);
-            final VirtualService service2 = new VirtualService("testService", 5679)
+            final VirtualService service1 = new VirtualService("testService", (new RandomPort()).getPort());
+            final VirtualService service2 = new VirtualService("testService", (new RandomPort()).getPort());
         ) {
             // start first instance - without passTickets
             service1
@@ -145,13 +145,12 @@ public class AuthenticationOnDeploymentTest {
     }
 
     @Test
-    @Flaky
     void testReregistration() throws Exception {
 
         try (
-            final VirtualService service1 = new VirtualService("testService3", 5678);
-            final VirtualService service2 = new VirtualService("testService3", 5679);
-            final VirtualService service4 = new VirtualService("testService3", 5678)
+            final VirtualService service1 = new VirtualService("testService3", (new RandomPort()).getPort());
+            final VirtualService service2 = new VirtualService("testService3", (new RandomPort()).getPort());
+            final VirtualService service4 = new VirtualService("testService3", (new RandomPort()).getPort())
         ) {
 
             List<VirtualService> serviceList = Arrays.asList(service1, service2);
@@ -198,12 +197,12 @@ public class AuthenticationOnDeploymentTest {
         String serviceId = "testservice4";
         String host = InetAddress.getLocalHost().getHostName();
 
-        List<Integer> ports = Arrays.asList(5678, 5679, 5680);
+        List<Integer> ports = Arrays.asList((new RandomPort()).getPort(), (new RandomPort()).getPort(), (new RandomPort()).getPort());
 
         try (
-            final VirtualService service1 = new VirtualService(serviceId, 5678);
-            final VirtualService service2 = new VirtualService(serviceId, 5679);
-            final VirtualService service3 = new VirtualService(serviceId, 5680)
+            final VirtualService service1 = new VirtualService(serviceId, ports.get(0));
+            final VirtualService service2 = new VirtualService(serviceId, ports.get(1));
+            final VirtualService service3 = new VirtualService(serviceId, ports.get(2))
         ) {
 
 
@@ -221,7 +220,7 @@ public class AuthenticationOnDeploymentTest {
 
                 await().atMost(5, TimeUnit.SECONDS).until(() ->
                     given().when()
-                        .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678 + "/status?value=UP")
+                        .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + ports.get(0) + "/status?value=UP")
                         .then().extract().statusCode() == SC_OK
                 );
 
@@ -235,13 +234,13 @@ public class AuthenticationOnDeploymentTest {
 //                unregister service1
                 await().atMost(5, TimeUnit.SECONDS).until(() ->
                     given().when()
-                        .delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5678)
+                        .delete("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + ports.get(0))
                         .then().extract().statusCode() == SC_OK
                 );
 
 //                set service2 UP
                 await().atMost(5, TimeUnit.SECONDS).until(() -> given().when()
-                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5679 + "/status?value=UP")
+                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + ports.get(1) + "/status?value=UP")
                     .then().extract().statusCode() == SC_OK);
 
 //                call service2
@@ -251,7 +250,7 @@ public class AuthenticationOnDeploymentTest {
 
 //                set service3 UP
                 await().atMost(5, TimeUnit.SECONDS).until(() -> given().when()
-                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + 5680 + "/status?value=UP")
+                    .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + ports.get(2) + "/status?value=UP")
                     .then().extract().statusCode() == SC_OK);
 
 //                call service3
