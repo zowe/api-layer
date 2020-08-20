@@ -23,9 +23,9 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
 
 class LogoutTest {
 
-    private final static String LOGOUT_ENDPOINT = "/auth/logout";
-    private final static String QUERY_ENDPOINT = "/auth/query";
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
+    protected final static String LOGOUT_ENDPOINT = "/auth/logout";
+    protected final static String QUERY_ENDPOINT = "/auth/query";
+    protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     @BeforeEach
     void setUp() {
@@ -33,7 +33,7 @@ class LogoutTest {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
     }
 
-    private void assertIfLogged(String jwt, boolean logged) {
+    protected void assertIfLogged(String jwt, boolean logged) {
         final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
 
         given()
