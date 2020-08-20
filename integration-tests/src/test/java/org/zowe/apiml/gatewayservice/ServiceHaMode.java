@@ -38,7 +38,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig
  * The test repeats calls until it sees that request has been retried from mentioned header.
  */
 @TestsNotMeantForZowe
-public class ServiceHaMode {
+class ServiceHaMode {
     private static final int TIMEOUT = 30;
 
     @BeforeEach
@@ -48,7 +48,7 @@ public class ServiceHaMode {
     }
 
     @Test
-    void name() throws Exception {
+    void givenTwoServices_whenOneServiceGoesDown_verifyThatGatewayRetriesToTheLiveOne() throws Exception {
 
         try (
             VirtualService service1 = new VirtualService("testHaModeService", 5678);
