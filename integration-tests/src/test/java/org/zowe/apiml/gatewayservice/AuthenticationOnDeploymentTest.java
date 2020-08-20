@@ -48,7 +48,7 @@ import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
  * - credentials.password = user
  */
 @TestsNotMeantForZowe
-public class AuthenticationOnDeploymentTest {
+class AuthenticationOnDeploymentTest {
 
     private static final int TIMEOUT = 3;
 
@@ -63,8 +63,7 @@ public class AuthenticationOnDeploymentTest {
     }
 
     @Test
-    @Flaky
-    public void testMultipleAuthenticationSchemes() throws Exception {
+    void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
         try (
@@ -145,7 +144,6 @@ public class AuthenticationOnDeploymentTest {
     }
 
     @Test
-    @Flaky
     void testReregistration() throws Exception {
 
         try (
