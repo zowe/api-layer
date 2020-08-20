@@ -38,10 +38,9 @@ class Login {
     protected final static String BASE_PATH = "/api/v1/gateway";
     protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
     protected static AuthenticationProviders providers = new AuthenticationProviders(authenticationEndpointPath);
+    protected final static String LOGIN_ENDPOINT = "/auth/login";
+    protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
-    private final static String LOGIN_ENDPOINT = "/auth/login";
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    // Customize the Username and password
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
@@ -92,39 +91,6 @@ class Login {
     }
 
     @Test
-    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced() {
-        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
-
-        String jwtToken1 = authenticateAndVerify(loginRequest);
-        String jwtToken2 = authenticateAndVerify(loginRequest);
-
-        assertThat(jwtToken1, is(not(jwtToken2)));
-    }
-
-    private String authenticateAndVerify(LoginRequest loginRequest) {
-        Cookie cookie = given()
-            .contentType(JSON)
-            .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
-            .extract().detailedCookie(COOKIE_NAME);
-
-        assertThat(cookie.isHttpOnly(), is(true));
-        assertThat(cookie.getValue(), is(notNullValue()));
-        assertThat(cookie.getMaxAge(), is(-1));
-
-        int i = cookie.getValue().lastIndexOf('.');
-        String untrustedJwtString = cookie.getValue().substring(0, i + 1);
-        Claims claims = parseJwtString(untrustedJwtString);
-        assertThatTokenIsValid(claims);
-
-        return cookie.getValue();
-    }
-
-    @Test
     void givenValidCredentialsInHeader_whenUserAuthenticates_thenTheValidTokenIsProduced() {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
@@ -142,12 +108,12 @@ class Login {
         assertThatTokenIsValid(claims);
     }
 
-    private void assertThatTokenIsValid(Claims claims) {
+    protected void assertThatTokenIsValid(Claims claims) {
         assertThat(claims.getId(), not(isEmptyString()));
         assertThat(claims.getSubject(), is(getUsername()));
     }
 
-    private Claims parseJwtString(String untrustedJwtString) {
+    protected Claims parseJwtString(String untrustedJwtString) {
         return Jwts.parserBuilder().build()
             .parseClaimsJwt(untrustedJwtString)
             .getBody();
