@@ -10,16 +10,28 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
+import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
+
 @MainframeDependentTests
-public class ZosmfAuthenticationLoginIntegrationTest extends Login {
+public class SafLogoutTest extends LogoutTest {
+    private static AuthenticationProviders providers = new AuthenticationProviders(SecurityUtils.getGateWayUrl("/authentication"));
+
+    // Change to saf and run the same test as for the zOSMF
     @BeforeAll
     static void switchToTestedProvider() {
-        RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        providers.switchProvider("zosmf");
+        providers.switchProvider("saf");
+    }
+
+    @AfterAll
+    static void switchToDefaultProvider() {
+        providers.switchProvider(null);
     }
 }

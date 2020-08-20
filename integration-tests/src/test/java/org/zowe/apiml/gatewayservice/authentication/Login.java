@@ -37,10 +37,10 @@ class Login {
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
     protected final static String BASE_PATH = "/api/v1/gateway";
     protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
+    protected static AuthenticationProviders providers = new AuthenticationProviders(authenticationEndpointPath);
+    protected final static String LOGIN_ENDPOINT = "/auth/login";
+    protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
-    private final static String LOGIN_ENDPOINT = "/auth/login";
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    // Customize the Username and password
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
@@ -54,21 +54,9 @@ class Login {
         return PASSWORD;
     }
 
-
-
-    protected static void switchProvider(String provider) {
-        given()
-            .contentType(JSON)
-            .body("{\"provider\": \"" + provider + "\"}")
-        .when()
-            .post(authenticationEndpointPath)
-        .then()
-            .statusCode(is(SC_NO_CONTENT));
-    }
-
     @AfterAll
     static void switchToOriginalProvider() {
-        switchProvider(null);
+        providers.switchProvider(null);
     }
 
     @BeforeEach
@@ -120,12 +108,12 @@ class Login {
         assertThatTokenIsValid(claims);
     }
 
-    private void assertThatTokenIsValid(Claims claims) {
+    protected void assertThatTokenIsValid(Claims claims) {
         assertThat(claims.getId(), not(isEmptyString()));
         assertThat(claims.getSubject(), is(getUsername()));
     }
 
-    private Claims parseJwtString(String untrustedJwtString) {
+    protected Claims parseJwtString(String untrustedJwtString) {
         return Jwts.parserBuilder().build()
             .parseClaimsJwt(untrustedJwtString)
             .getBody();

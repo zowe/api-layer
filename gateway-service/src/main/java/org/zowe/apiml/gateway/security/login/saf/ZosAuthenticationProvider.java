@@ -36,7 +36,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
 
         if ((returned == null) || (returned.isSuccess())) {
             final String domain = "security-domain";
-            final String jwtToken = authenticationService.createJwtToken(userid, domain, "ltpa");
+            final String jwtToken = authenticationService.createJwtToken(userid, domain, null);
             return authenticationService.createTokenAuthentication(userid, jwtToken);
         } else {
             throw new BadCredentialsException("Username or password are invalid.");

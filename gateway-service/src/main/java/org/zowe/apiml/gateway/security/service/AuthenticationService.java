@@ -113,7 +113,7 @@ public class AuthenticationService {
      * - on logout phase (distribute = true)
      * - from another gateway instance to notify about change (distribute = false)
      *
-     * @param jwtToken   token to invalidated
+     * @param jwtToken   token to invalidate
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
@@ -123,18 +123,8 @@ public class AuthenticationService {
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */
-        if (distribute) {
-            final Application application = discoveryClient.getApplication(CoreService.GATEWAY.getServiceId());
-            // wrong state, gateway have to exists (at least this current instance), return false like unsuccessful
-            if (application == null) return Boolean.FALSE;
-
-            final String myInstanceId = discoveryClient.getApplicationInfoManager().getInfo().getInstanceId();
-            for (final InstanceInfo instanceInfo : application.getInstances()) {
-                if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
-
-                final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
-                restTemplate.delete(url, jwtToken);
-            }
+        if (distribute && !invalidateTokenOnAnotherInstance(jwtToken)) {
+            return Boolean.FALSE;
         }
 
         // invalidate token in z/OSMF
@@ -149,6 +139,24 @@ public class AuthenticationService {
                 break;
             default:
                 throw new TokenNotValidException("Unknown token type.");
+        }
+
+        return Boolean.TRUE;
+    }
+
+    private boolean invalidateTokenOnAnotherInstance(String jwtToken) {
+        final Application application = discoveryClient.getApplication(CoreService.GATEWAY.getServiceId());
+        // wrong state, gateway have to exists (at least this current instance), return false like unsuccessful
+        if (application == null) {
+            return Boolean.FALSE;
+        }
+
+        final String myInstanceId = discoveryClient.getApplicationInfoManager().getInfo().getInstanceId();
+        for (final InstanceInfo instanceInfo : application.getInstances()) {
+            if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
+
+            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
+            restTemplate.delete(url, jwtToken);
         }
 
         return Boolean.TRUE;
