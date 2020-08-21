@@ -23,9 +23,13 @@ import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
@@ -36,6 +40,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.*;
+import static org.zowe.apiml.util.config.RandomPort.available;
 
 /**
  * This test requires to allow endpoint routes on gateway (ie profile dev)
@@ -66,9 +71,11 @@ class AuthenticationOnDeploymentTest {
     void testMultipleAuthenticationSchemes() throws Exception {
         final String jwt = gatewayToken();
 
+        List<Integer> ports = generateUniquePorts(2);
+
         try (
-            final VirtualService service1 = new VirtualService("testService", (new RandomPort()).getPort());
-            final VirtualService service2 = new VirtualService("testService", (new RandomPort()).getPort());
+            final VirtualService service1 = new VirtualService("testService", ports.get(0));
+            final VirtualService service2 = new VirtualService("testService", ports.get(1));
         ) {
             // start first instance - without passTickets
             service1
@@ -145,15 +152,19 @@ class AuthenticationOnDeploymentTest {
 
     @Test
     void testReregistration() throws Exception {
+        System.out.println("Test reregistration");
+
+        List<Integer> ports = generateUniquePorts(3);
 
         try (
-            final VirtualService service1 = new VirtualService("testService3", (new RandomPort()).getPort());
-            final VirtualService service2 = new VirtualService("testService3", (new RandomPort()).getPort());
-            final VirtualService service4 = new VirtualService("testService3", (new RandomPort()).getPort())
+            final VirtualService service1 = new VirtualService("testService3", ports.get(0));
+            final VirtualService service2 = new VirtualService("testService3", ports.get(1));
+            final VirtualService service4 = new VirtualService("testService3", ports.get(2))
         ) {
 
             List<VirtualService> serviceList = Arrays.asList(service1, service2);
 
+            System.out.println("Wait for registration of service 1 and 2");
             serviceList.forEach(s -> {
                 try {
                     s.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
@@ -162,6 +173,7 @@ class AuthenticationOnDeploymentTest {
                 }
             });
 
+            System.out.println();
             serviceList.forEach(s -> {
                 try {
                     s.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
@@ -195,7 +207,7 @@ class AuthenticationOnDeploymentTest {
         String serviceId = "testservice4";
         String host = InetAddress.getLocalHost().getHostName();
 
-        List<Integer> ports = Arrays.asList((new RandomPort()).getPort(), (new RandomPort()).getPort(), (new RandomPort()).getPort());
+        List<Integer> ports = generateUniquePorts(3);
 
         try (
             final VirtualService service1 = new VirtualService(serviceId, ports.get(0));
@@ -276,5 +288,41 @@ class AuthenticationOnDeploymentTest {
             }
 
         }
+    }
+
+    private List<Integer> generateUniquePorts(int size) {
+        // Populate the array with random ports
+
+        Integer[] result = new Integer[size];
+        //     While the
+        while(portsNotSatisfied(result)) {
+            result = new Integer[size];
+            generateCandidates(result);
+        }
+
+        return Arrays.asList(result);
+    }
+
+    private void generateCandidates(Integer[] candidatePorts) {
+        for( int i = 0; i < candidatePorts.length; i++) {
+            candidatePorts[i] = (new RandomPort()).getPort();
+        }
+    }
+
+    private boolean portsNotSatisfied(Integer[] ports) {
+        return portsAreDistinct(ports) && portsAreAvailable(ports);
+    }
+
+    private boolean portsAreAvailable(Integer[] ports) {
+        for (Integer port : ports) {
+            if (!available(port)) return false;
+        }
+
+        return true;
+    }
+
+    private boolean portsAreDistinct(Integer[] ports) {
+        Set<Integer> s = new HashSet<>(Arrays.asList(ports));
+        return (s.size() == ports.length);
     }
 }
