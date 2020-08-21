@@ -162,6 +162,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpoint()), LoginFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
@@ -212,6 +213,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             authenticationManager(),
             handlerInitializer.getResourceAccessExceptionHandler(),
             x509AuthenticationProvider);
+    }
+
+    private X509Filter x509Filter(String loginEndpoint) {
+        return new X509Filter(loginEndpoint, x509AuthenticationProvider);
     }
 
     /**

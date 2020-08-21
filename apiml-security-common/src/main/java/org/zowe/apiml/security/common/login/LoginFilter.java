@@ -26,7 +26,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -34,7 +33,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -84,13 +82,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
         Authentication auth = null;
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-            if (certs != null && certs.length > 1) {
-                auth = this.baseAuthProvider.authenticate(new X509AuthenticationToken(certs));
-            } else {
-                throw new AuthenticationCredentialsNotFoundException("Username/password or client certificate not provided.");
-            }
-            return auth;
+            throw new AuthenticationCredentialsNotFoundException("Username/password or client certificate not provided.");
         }
 
         UsernamePasswordAuthenticationToken authentication
