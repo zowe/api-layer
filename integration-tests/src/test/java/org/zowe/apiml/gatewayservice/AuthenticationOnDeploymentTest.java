@@ -150,7 +150,6 @@ class AuthenticationOnDeploymentTest {
 
     @Test
     void testReregistration() throws Exception {
-        System.out.println("Test reregistration");
 
         List<Integer> ports = generateUniquePorts(3);
 
@@ -162,7 +161,6 @@ class AuthenticationOnDeploymentTest {
 
             List<VirtualService> serviceList = Arrays.asList(service1, service2);
 
-            System.out.println("Wait for registration of service 1 and 2");
             serviceList.forEach(s -> {
                 try {
                     s.addVerifyServlet().start().waitForGatewayRegistration(1, TIMEOUT);
@@ -171,7 +169,6 @@ class AuthenticationOnDeploymentTest {
                 }
             });
 
-            System.out.println();
             serviceList.forEach(s -> {
                 try {
                     s.unregister().waitForGatewayUnregistering(1, TIMEOUT).stop();
@@ -218,34 +215,28 @@ class AuthenticationOnDeploymentTest {
             service2.addVerifyServlet().start();
             service3.addVerifyServlet().start();
 
-            System.out.println("Started servlets");
 
             String verifyUrl = service1.getGatewayVerifyUrls().get(0);
             for (int i = 0; i < 5; i++) {
-                System.out.println("Try " + i);
 
-                System.out.println("Update all to out of service");
                 ports.forEach(port -> await().atMost(5, TimeUnit.SECONDS).until(() ->
                     given().when()
                         .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + port + "/status?value=OUT_OF_SERVICE")
                         .then().extract().statusCode() == SC_OK
                 ));
 
-                System.out.println("Set all services to UP");
                 await().atMost(5, TimeUnit.SECONDS).until(() ->
                     given().when()
                         .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + ports.get(0) + "/status?value=UP")
                         .then().extract().statusCode() == SC_OK
                 );
 
-                System.out.println("Verify Service 1, GatewayVerify URL");
                 await().atMost(5, TimeUnit.SECONDS).until(() ->
                     given()
                         .when().get(verifyUrl + "/test")
                         .then().extract().statusCode() == SC_OK
                 );
 
-                System.out.println("Unregister Service 1");
 //                unregister service1
                 await().atMost(5, TimeUnit.SECONDS).until(() ->
                     given().when()
@@ -253,25 +244,21 @@ class AuthenticationOnDeploymentTest {
                         .then().extract().statusCode() == SC_OK
                 );
 
-                System.out.println("Set Service 2 UP");
 //                set service2 UP
                 await().atMost(5, TimeUnit.SECONDS).until(() -> given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + ports.get(1) + "/status?value=UP")
                     .then().extract().statusCode() == SC_OK);
 
-                System.out.println("Call Service 2");
 //                call service2
                 await().atMost(5, TimeUnit.SECONDS).until(() -> given()
                     .when().get(verifyUrl + "/test")
                     .then().extract().statusCode() == SC_OK);
 
-                System.out.println("Set Service 3 UP");
 //                set service3 UP
                 await().atMost(5, TimeUnit.SECONDS).until(() -> given().when()
                     .put("https://localhost:10011/eureka/apps/" + serviceId + "/" + host + ":" + serviceId + ":" + ports.get(2) + "/status?value=UP")
                     .then().extract().statusCode() == SC_OK);
 
-                System.out.println("Call Service 3");
 //                call service3
                 await().atMost(5, TimeUnit.SECONDS).until(
                     () -> given()
