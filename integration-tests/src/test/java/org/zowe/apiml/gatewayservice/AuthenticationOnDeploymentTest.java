@@ -293,7 +293,7 @@ class AuthenticationOnDeploymentTest {
 
         Integer[] result = new Integer[size];
         //     While the
-        while(portsNotSatisfied(result)) {
+        while (portsNotSatisfied(result)) {
             result = new Integer[size];
             generateCandidates(result);
         }
@@ -302,13 +302,13 @@ class AuthenticationOnDeploymentTest {
     }
 
     private void generateCandidates(Integer[] candidatePorts) {
-        for( int i = 0; i < candidatePorts.length; i++) {
+        for ( int i = 0; i < candidatePorts.length; i++) {
             candidatePorts[i] = (new RandomPort()).getPort();
         }
     }
 
     private boolean portsNotSatisfied(Integer[] ports) {
-        return portsAreDistinct(ports) && portsAreAvailable(ports);
+        return !portsAreDistinct(ports) || !portsAreAvailable(ports);
     }
 
     private boolean portsAreAvailable(Integer[] ports) {
