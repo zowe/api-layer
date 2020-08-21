@@ -14,12 +14,32 @@ import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.*;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.util.ResourceUtils;
+import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
+
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -46,12 +66,35 @@ class Login {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
+    public static final char[] KEYSTORE_PASSWORD = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword();
+    public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore();
+    private static RestTemplate restTemplate;
+
     protected String getUsername() {
         return USERNAME;
     }
 
     protected String getPassword() {
         return PASSWORD;
+    }
+
+    @BeforeAll
+    static void setup() throws IOException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        // blind-fold trust on the server.
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
+
+        SSLContext sslContext = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+            // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+
+        HttpClient client = HttpClients.custom().setSSLContext(sslContext).build();
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        requestFactory.setHttpClient(client);
+        restTemplate = new RestTemplate(requestFactory);
     }
 
     @AfterAll
@@ -201,13 +244,27 @@ class Login {
         given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
+            .when()
             .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
             );
     }
     //@formatter:on
+
+    @Test
+    public void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws URISyntaxException {
+        final HttpHeaders headers = new HttpHeaders();
+        HttpEntity<?> httpEntity = new HttpEntity<>(null, headers);
+        final ResponseEntity<String> exchange = restTemplate
+            .exchange(new URI(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT)), HttpMethod.POST, httpEntity, String.class);
+        exchange.getStatusCode();
+
+        // assert below attributes.
+        final HttpStatus statusCode = exchange.getStatusCode();
+        final HttpHeaders headers1 = exchange.getHeaders();
+        final String body = exchange.getBody(); // assert body has jwt token.
+    }
 }
