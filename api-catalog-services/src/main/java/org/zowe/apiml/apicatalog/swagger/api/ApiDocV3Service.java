@@ -10,29 +10,32 @@
 package org.zowe.apiml.apicatalog.swagger.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import io.swagger.v3.oas.models.ExternalDocumentation;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.tags.Tag;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 import org.zowe.apiml.apicatalog.swagger.SecuritySchemeSerializer;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.RoutedService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.v3.oas.models.ExternalDocumentation;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.Paths;
-import io.swagger.v3.oas.models.servers.Server;
-import io.swagger.v3.oas.models.tags.Tag;
-import io.swagger.v3.parser.OpenAPIV3Parser;
-import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.UnexpectedTypeException;
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -185,6 +188,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         simpleModule.addSerializer(SecurityScheme.class, new SecuritySchemeSerializer());
 
         objectMapper.registerModule(simpleModule);
+        objectMapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
 
         return objectMapper;
     }
