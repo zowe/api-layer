@@ -12,10 +12,17 @@ package org.zowe.apiml.gateway.security.config;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -24,10 +31,39 @@ import java.security.cert.X509Certificate;
 public class X509Filter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationProvider authenticationProvider;
+    private final AuthenticationSuccessHandler successHandler;
+    private final AuthenticationFailureHandler failureHandler;
+    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
 
-    public X509Filter(String endpoint, AuthenticationProvider authenticationProvider) {
+
+    public X509Filter(String endpoint,
+                      AuthenticationSuccessHandler successHandler,
+                      AuthenticationFailureHandler failureHandler,
+                      ResourceAccessExceptionHandler resourceAccessExceptionHandler,
+                      AuthenticationProvider authenticationProvider) {
         super(endpoint);
         this.authenticationProvider = authenticationProvider;
+        this.successHandler = successHandler;
+        this.failureHandler = failureHandler;
+        this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
+    }
+
+    @Override
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+
+        Authentication authResult = null;
+        try {
+            authResult = attemptAuthentication(request, response);
+            if (authResult == null) {
+                chain.doFilter(request, response);
+                return;
+            }
+        } catch (AuthenticationException failed) {
+            chain.doFilter(request, response);
+        }
+        successfulAuthentication(request, response, chain, authResult);
     }
 
     @Override
@@ -37,5 +73,27 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
             return this.authenticationProvider.authenticate(new X509AuthenticationToken(certs));
         }
         return null;
+    }
+
+    /**
+     * Calls successful login handler
+     */
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            FilterChain chain,
+                                            Authentication authResult) throws IOException, ServletException {
+        successHandler.onAuthenticationSuccess(request, response, authResult);
+    }
+
+    /**
+     * Calls unauthorized handler
+     */
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException, ServletException {
+        SecurityContextHolder.clearContext();
+        failureHandler.onAuthenticationFailure(request, response, failed);
     }
 }

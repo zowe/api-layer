@@ -15,7 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -44,7 +43,6 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final ObjectMapper mapper;
-    private final AuthenticationProvider baseAuthProvider;
 
     public LoginFilter(
         String authEndpoint,
@@ -52,15 +50,13 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         AuthenticationFailureHandler failureHandler,
         ObjectMapper mapper,
         AuthenticationManager authenticationManager,
-        ResourceAccessExceptionHandler resourceAccessExceptionHandler,
-        AuthenticationProvider baseAuthProvider) {
+        ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.mapper = mapper;
         this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
         this.setAuthenticationManager(authenticationManager);
-        this.baseAuthProvider = baseAuthProvider;
     }
 
     /**
@@ -80,14 +76,14 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
 
         LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
-        Authentication auth = null;
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-            throw new AuthenticationCredentialsNotFoundException("Username/password or client certificate not provided.");
+            throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
         }
 
         UsernamePasswordAuthenticationToken authentication
             = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
 
+        Authentication auth = null;
 
         try {
             auth = this.getAuthenticationManager().authenticate(authentication);
@@ -166,7 +162,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
             return mapper.readValue(request.getInputStream(), LoginRequest.class);
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
-            return new LoginRequest();
+            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
         }
     }
 }
