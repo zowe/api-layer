@@ -23,9 +23,7 @@ import org.zowe.apiml.util.service.RequestVerifier;
 import org.zowe.apiml.util.service.VirtualService;
 
 import java.io.IOException;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
