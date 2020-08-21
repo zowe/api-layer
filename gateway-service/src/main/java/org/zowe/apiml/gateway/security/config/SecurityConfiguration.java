@@ -36,6 +36,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
+import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.gateway.security.query.QueryFilter;
 import org.zowe.apiml.gateway.security.query.SuccessfulQueryHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -84,6 +85,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
     private final ZuulProperties zuulProperties;
+    private final X509AuthenticationProvider x509AuthenticationProvider;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -208,7 +210,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getAuthenticationFailureHandler(),
             securityObjectMapper,
             authenticationManager(),
-            handlerInitializer.getResourceAccessExceptionHandler());
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            x509AuthenticationProvider);
     }
 
     /**

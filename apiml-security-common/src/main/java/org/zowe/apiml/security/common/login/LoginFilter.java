@@ -9,15 +9,13 @@
  */
 package org.zowe.apiml.security.common.login;
 
-import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.zowe.apiml.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -25,6 +23,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -32,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -43,6 +46,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final ObjectMapper mapper;
+    private final AuthenticationProvider baseAuthProvider;
 
     public LoginFilter(
         String authEndpoint,
@@ -50,13 +54,15 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         AuthenticationFailureHandler failureHandler,
         ObjectMapper mapper,
         AuthenticationManager authenticationManager,
-        ResourceAccessExceptionHandler resourceAccessExceptionHandler) {
+        ResourceAccessExceptionHandler resourceAccessExceptionHandler,
+        AuthenticationProvider baseAuthProvider) {
         super(authEndpoint);
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.mapper = mapper;
         this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
         this.setAuthenticationManager(authenticationManager);
+        this.baseAuthProvider = baseAuthProvider;
     }
 
     /**
@@ -73,16 +79,24 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
         }
-
         Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
+
         LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
+        Authentication auth = null;
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
-            throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
+            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+            if (certs != null && certs.length > 1) {
+                auth = this.baseAuthProvider.authenticate(new X509AuthenticationToken(certs));
+            } else {
+                throw new AuthenticationCredentialsNotFoundException("Username/password or client certificate not provided.");
+            }
+            return auth;
         }
 
         UsernamePasswordAuthenticationToken authentication
             = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
-        Authentication auth = null;
+
+
         try {
             auth = this.getAuthenticationManager().authenticate(authentication);
         } catch (RuntimeException ex) {
@@ -90,6 +104,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         }
         return auth;
     }
+
 
     /**
      * Calls successful login handler
@@ -159,7 +174,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
             return mapper.readValue(request.getInputStream(), LoginRequest.class);
         } catch (IOException e) {
             logger.debug("Authentication problem: login object has wrong format");
-            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
+            return new LoginRequest();
         }
     }
 }

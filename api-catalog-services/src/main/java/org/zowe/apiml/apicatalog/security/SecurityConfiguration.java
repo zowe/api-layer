@@ -25,6 +25,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
+import org.zowe.apiml.security.client.login.GatewayX509AuthProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
@@ -50,6 +51,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final HandlerInitializer handlerInitializer;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
+    private final GatewayX509AuthProvider baseAuthenticationProvider;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
@@ -128,7 +130,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getAuthenticationFailureHandler(),
             securityObjectMapper,
             authenticationManager(),
-            handlerInitializer.getResourceAccessExceptionHandler()
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            baseAuthenticationProvider
         );
     }
 
