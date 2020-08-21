@@ -159,10 +159,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
             // add filters - login, query, ticket
             .and()
-            .addFilterBefore(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpoint()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(loginFilter(authConfigurationProperties.getGatewayLoginEndpoint()), X509Filter.class)
             .addFilterBefore(queryFilter(authConfigurationProperties.getGatewayQueryEndpoint()), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(ticketFilter(authConfigurationProperties.getGatewayTicketEndpoint()), UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(x509Filter(authConfigurationProperties.getGatewayLoginEndpoint()), LoginFilter.class)
             .addFilterBefore(basicFilter(), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(cookieFilter(), UsernamePasswordAuthenticationFilter.class);
     }
@@ -211,12 +211,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getAuthenticationFailureHandler(),
             securityObjectMapper,
             authenticationManager(),
-            handlerInitializer.getResourceAccessExceptionHandler(),
-            x509AuthenticationProvider);
+            handlerInitializer.getResourceAccessExceptionHandler());
     }
 
     private X509Filter x509Filter(String loginEndpoint) {
-        return new X509Filter(loginEndpoint, x509AuthenticationProvider);
+        return new X509Filter(loginEndpoint,
+            handlerInitializer.getSuccessfulLoginHandler(),
+            handlerInitializer.getAuthenticationFailureHandler(),
+            handlerInitializer.getResourceAccessExceptionHandler(),
+            x509AuthenticationProvider);
     }
 
     /**

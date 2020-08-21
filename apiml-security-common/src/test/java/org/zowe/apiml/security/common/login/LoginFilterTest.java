@@ -23,7 +23,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -65,9 +64,6 @@ public class LoginFilterTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
-    @Mock
-    private AuthenticationProvider baseAuthProvider;
-
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -78,8 +74,7 @@ public class LoginFilterTest {
             authenticationFailureHandler,
             mapper,
             authenticationManager,
-            resourceAccessExceptionHandler,
-            baseAuthProvider);
+            resourceAccessExceptionHandler);
     }
 
     @Test
@@ -118,7 +113,7 @@ public class LoginFilterTest {
         httpServletResponse = new MockHttpServletResponse();
 
         exception.expect(AuthenticationCredentialsNotFoundException.class);
-        exception.expectMessage("Username/password or client certificate not provided.");
+        exception.expectMessage("Username or password not provided.");
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
@@ -130,7 +125,7 @@ public class LoginFilterTest {
         httpServletResponse = new MockHttpServletResponse();
 
         exception.expect(AuthenticationCredentialsNotFoundException.class);
-        exception.expectMessage("Username/password or client certificate not provided.");
+        exception.expectMessage("Login object has wrong format.");
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
@@ -155,7 +150,7 @@ public class LoginFilterTest {
         httpServletResponse = new MockHttpServletResponse();
 
         exception.expect(AuthenticationCredentialsNotFoundException.class);
-        exception.expectMessage("Username/password or client certificate not provided.");
+        exception.expectMessage("Login object has wrong format.");
 
         loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
     }
@@ -176,7 +171,7 @@ public class LoginFilterTest {
         ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
         loginFilter = new LoginFilter("TEST_ENDPOINT", authenticationSuccessHandler,
             authenticationFailureHandler, objectMapper, authenticationManager,
-            resourceAccessExceptionHandler, baseAuthProvider);
+            resourceAccessExceptionHandler);
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("user", "pwd");
         when(authenticationManager.authenticate(authentication)).thenThrow(exception);
