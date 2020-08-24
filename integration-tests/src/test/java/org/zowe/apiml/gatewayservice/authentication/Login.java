@@ -12,10 +12,12 @@ package org.zowe.apiml.gatewayservice.authentication;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClients;
+import io.restassured.specification.RequestSpecification;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
@@ -23,10 +25,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.util.ResourceUtils;
-import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.config.ConfigReader;
 
@@ -59,6 +58,7 @@ class Login {
     protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
     protected static AuthenticationProviders providers = new AuthenticationProviders(authenticationEndpointPath);
     protected final static String LOGIN_ENDPOINT = "/auth/login";
+    public static final String LOGIN_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT);
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -68,7 +68,7 @@ class Login {
 
     public static final char[] KEYSTORE_PASSWORD = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword();
     public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore();
-    private static RestTemplate restTemplate;
+    private static RequestSpecification clientCertificateRequestConfig;
 
     protected String getUsername() {
         return USERNAME;
@@ -91,10 +91,10 @@ class Login {
             .loadTrustMaterial(null, trustStrategy)
             .build();
 
-        HttpClient client = HttpClients.custom().setSSLContext(sslContext).build();
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-        requestFactory.setHttpClient(client);
-        restTemplate = new RestTemplate(requestFactory);
+        clientCertificateRequestConfig = given()
+            .config(RestAssuredConfig
+                .newConfig()
+                .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext))));
     }
 
     @AfterAll
@@ -116,13 +116,17 @@ class Login {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
 
+        assertValidAuthToken(cookie);
+    }
+
+    private void assertValidAuthToken(Cookie cookie) {
         assertThat(cookie.isHttpOnly(), is(true));
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1));
@@ -138,8 +142,8 @@ class Login {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
             .contentType(JSON)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -171,8 +175,8 @@ class Login {
         given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -189,8 +193,8 @@ class Login {
         ValidatableResponse response = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then();
         response.statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -204,8 +208,8 @@ class Login {
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         given()
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
@@ -225,8 +229,8 @@ class Login {
         given()
             .contentType(JSON)
             .body(loginRequest.toString())
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
@@ -245,7 +249,7 @@ class Login {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .get(LOGIN_ENDPOINT_URL)
             .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
@@ -256,15 +260,15 @@ class Login {
 
     @Test
     public void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws URISyntaxException {
-        final HttpHeaders headers = new HttpHeaders();
-        HttpEntity<?> httpEntity = new HttpEntity<>(null, headers);
-        final ResponseEntity<String> exchange = restTemplate
-            .exchange(new URI(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT)), HttpMethod.POST, httpEntity, String.class);
-        exchange.getStatusCode();
+        Cookie cookie = clientCertificateRequestConfig
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
 
-        // assert below attributes.
-        final HttpStatus statusCode = exchange.getStatusCode();
-        final HttpHeaders headers1 = exchange.getHeaders();
-        final String body = exchange.getBody(); // assert body has jwt token.
+        assertValidAuthToken(cookie);
+
+
     }
 }
