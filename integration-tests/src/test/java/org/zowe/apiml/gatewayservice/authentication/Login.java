@@ -58,6 +58,7 @@ class Login {
     protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
     protected static AuthenticationProviders providers = new AuthenticationProviders(authenticationEndpointPath);
     protected final static String LOGIN_ENDPOINT = "/auth/login";
+    public static final String LOGIN_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT);
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -116,7 +117,7 @@ class Login {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .post(LOGIN_ENDPOINT_URL)
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -141,8 +142,8 @@ class Login {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
             .contentType(JSON)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
@@ -174,8 +175,8 @@ class Login {
         given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -192,8 +193,8 @@ class Login {
         ValidatableResponse response = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then();
         response.statusCode(is(SC_UNAUTHORIZED))
             .body(
@@ -207,8 +208,8 @@ class Login {
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         given()
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
@@ -228,8 +229,8 @@ class Login {
         given()
             .contentType(JSON)
             .body(loginRequest.toString())
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
@@ -248,7 +249,7 @@ class Login {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
+            .get(LOGIN_ENDPOINT_URL)
             .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
@@ -260,7 +261,7 @@ class Login {
     @Test
     public void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws URISyntaxException {
         Cookie cookie = clientCertificateRequestConfig
-            .post(new URI(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT)))
+            .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
