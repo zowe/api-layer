@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
@@ -33,27 +34,24 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
     private final AuthenticationProvider authenticationProvider;
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
-    private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
 
 
     public X509Filter(String endpoint,
                       AuthenticationSuccessHandler successHandler,
                       AuthenticationFailureHandler failureHandler,
-                      ResourceAccessExceptionHandler resourceAccessExceptionHandler,
                       AuthenticationProvider authenticationProvider) {
         super(endpoint);
         this.authenticationProvider = authenticationProvider;
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
-        this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
+
     }
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-
-        Authentication authResult = null;
+        Authentication authResult;
         try {
             authResult = attemptAuthentication(request, response);
             if (authResult == null) {
@@ -62,6 +60,7 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
             }
         } catch (AuthenticationException failed) {
             chain.doFilter(request, response);
+            return;
         }
         successfulAuthentication(request, response, chain, authResult);
     }
@@ -69,7 +68,7 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-        if (certs != null && certs.length > 1) {
+        if (certs != null && certs.length > 0) {
             return this.authenticationProvider.authenticate(new X509AuthenticationToken(certs));
         }
         return null;

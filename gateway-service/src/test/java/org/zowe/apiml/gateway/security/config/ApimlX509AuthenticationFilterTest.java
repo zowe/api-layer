@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.zowe.apiml.gateway.utils.X509Utils;
 
 import javax.security.auth.x500.X500Principal;
 import javax.servlet.FilterChain;
@@ -54,35 +55,20 @@ class ApimlX509AuthenticationFilterTest {
         verify(chain, times(1)).doFilter(request, response);
     }
 
-    private X509Certificate getCertificate(String base64) {
-        X509Certificate out = mock(X509Certificate.class);
-        PublicKey publicKey = mock(PublicKey.class);
-        doReturn(publicKey).when(out).getPublicKey();
-        doReturn(Base64.getDecoder().decode(base64)).when(publicKey).getEncoded();
-        doReturn(new X500Principal("CN=test")).when(out).getSubjectDN();
-        return out;
-    }
-
-    private String correctBase64(String i) {
-        return new String(
-            Base64.getEncoder().encode(i.getBytes())
-        );
-    }
-
     @Test
     void giveCertificates_thenRemoveForeign_whenCallFilter() throws IOException, ServletException {
         ApimlX509AuthenticationFilter filter = new ApimlX509AuthenticationFilter(new HashSet<>(Arrays.asList(
-            correctBase64("apimlCert1"),
-            correctBase64("apimlCert2")
+            X509Utils.correctBase64("apimlCert1"),
+            X509Utils.correctBase64("apimlCert2")
         )));
         filter.setAuthenticationDetailsSource(mock(AuthenticationDetailsSource.class));
         filter.setAuthenticationManager(mock(AuthenticationManager.class));
 
         X509Certificate[] certificates = new X509Certificate[] {
-            getCertificate(correctBase64("foreignCert1")),
-            getCertificate(correctBase64("apimlCert1")),
-            getCertificate(correctBase64("foreignCert2")),
-            getCertificate(correctBase64("apimlCert2"))
+            X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1")),
+            X509Utils.getCertificate(X509Utils.correctBase64("apimlCert1")),
+            X509Utils.getCertificate(X509Utils.correctBase64("foreignCert2")),
+            X509Utils.getCertificate(X509Utils.correctBase64("apimlCert2"))
         };
         //doReturn(certificates).when(request).getAttribute("javax.servlet.request.X509Certificate");
         request.setAttribute("javax.servlet.request.X509Certificate", certificates);

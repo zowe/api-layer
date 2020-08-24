@@ -29,8 +29,10 @@ public class X509AuthenticationService implements X509Authentication {
             e.printStackTrace();
         }
         for (Rdn rdn : ldapDN.getRdns()) {
-            System.out.println(rdn.getType() + " -> " + rdn.getValue());
+            if("cn".equalsIgnoreCase(rdn.getType())){
+                return String.valueOf(rdn.getValue());
+            }
         }
-        return "user";
+        return null;
     }
 }
