@@ -33,14 +33,13 @@ services:
         - apiId: com.ibm.zosmf
           gatewayUrl: api/v1
           documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
-          swaggerUrl: https://${ZOSMF_HOST}:${ZOSMF_PORT}/zosmf/api/docs
       customMetadata:
           apiml:
               enableUrlEncodedCharacters: true
 
     - serviceId: ibmzosmf
       title: IBM z/OSMF
-      description: 'IBM z/OS Management Facility REST API service. \n Once configured you can access z/OSMF via the API gateway:\n''curl -k -X GET -H "X-CSRF-ZOSMF-HEADER: *" https://${ZOWE_EXPLORER_HOST}:${GATEWAY_PORT}/api/v1/zosmf/info'' '
+      description: 'IBM z/OS Management Facility REST API service. Once configured you can access z/OSMF via the API gateway: https://${ZOWE_EXPLORER_HOST}:${GATEWAY_PORT}/api/v1/zosmf/info'
       catalogUiTileId: zosmf
       instanceBaseUrls:
         - https://${ZOSMF_HOST}:${ZOSMF_PORT}/
