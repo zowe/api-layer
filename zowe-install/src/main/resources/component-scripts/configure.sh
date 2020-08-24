@@ -39,7 +39,7 @@ services:
 
     - serviceId: ibmzosmf
       title: IBM z/OSMF
-      description: 'IBM z/OS Management Facility REST API service. Once configured you can access z/OSMF via the API gateway: https://${ZOWE_EXPLORER_HOST}:${GATEWAY_PORT}/api/v1/zosmf/info'
+      description: 'IBM z/OS Management Facility REST API service. Once configured you can access z/OSMF via the API gateway: https://${ZOWE_EXPLORER_HOST}:${GATEWAY_PORT}/api/v1/ibmzosmf/zosmf/info'
       catalogUiTileId: zosmf
       instanceBaseUrls:
         - https://${ZOSMF_HOST}:${ZOSMF_PORT}/
