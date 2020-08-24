@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 
 
 /**
@@ -85,7 +86,7 @@ public class AuthConfigurationProperties {
      */
     public String validatedZosmfServiceId() {
 
-        if (provider.equalsIgnoreCase("zosmf")) {
+        if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())) {
             if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
                 apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
                 throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
