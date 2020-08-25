@@ -33,7 +33,7 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  * <p>
  * Special characters encoding is enabled on Tomcat and Spring Firewall so this filter takes over responsibility
  * for filtering them.
- * Encoded characters in URL are allowed only for services that have it explicitly configured on the metadata.
+ * Encoded characters in URL are allowed by default.
  */
 
 @RequiredArgsConstructor
