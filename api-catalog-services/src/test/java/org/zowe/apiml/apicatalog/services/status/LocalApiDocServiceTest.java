@@ -9,11 +9,6 @@
  */
 package org.zowe.apiml.apicatalog.services.status;
 
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,18 +19,26 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
 public class LocalApiDocServiceTest {
     private static final String SERVICE_ID = "service";
+    private final String ZOSMF_ID = "ibmzosmf";
     private static final String SERVICE_HOST = "service";
     private static final int SERVICE_PORT = 8080;
     private static final String SERVICE_VERSION = "1.0.0";
@@ -88,6 +91,47 @@ public class LocalApiDocServiceTest {
         assertEquals(responseBody, actualResponse.getApiDocContent());
 
         assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+    }
+
+    @Test
+    public void givenZosmfId_whenDocIsRequested_ValidDocIsProduced() {
+        String responseBody = "api-doc [ null, null ] body";
+        String expectedResponseBody = "api-doc [ true, false ] body";
+
+        when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
+            .thenReturn(getStandardInstance(getStandardMetadata(), true));
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+
+        ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION);
+
+        assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
+        assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
+        assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
+        assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+
+        assertNotNull(actualResponse);
+        assertNotNull(actualResponse.getApiDocContent());
+        assertEquals(expectedResponseBody, actualResponse.getApiDocContent());
+
+        assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+    }
+
+    @Test
+    public void givenZosmfId_whenIncorrectResponseFromServer_thenReturnDefaultDoc() {
+        String responseBody = "Server not found";
+
+        when(instanceRetrievalService.getInstanceInfo(ZOSMF_ID))
+            .thenReturn(getStandardInstance(getStandardMetadata(), true));
+
+        ResponseEntity<String> expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+        when(restTemplate.exchange(SWAGGER_URL, HttpMethod.GET, getObjectHttpEntity(), String.class))
+            .thenReturn(expectedResponse);
+
+        ApiDocInfo result = apiDocRetrievalService.retrieveApiDoc(ZOSMF_ID, SERVICE_VERSION);
+        assertThat(result.getApiDocContent(), is(notNullValue()));
     }
 
     @Test
