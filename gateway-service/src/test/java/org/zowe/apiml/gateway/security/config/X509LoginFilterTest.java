@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 package org.zowe.apiml.gateway.security.config;
 
 
@@ -22,51 +31,41 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-/*
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License v2.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v20.html
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Copyright Contributors to the Zowe Project.
- *
- */
 class X509LoginFilterTest {
 
-     private MockHttpServletRequest httpServletRequest;
-     private MockHttpServletResponse httpServletResponse;
+    private MockHttpServletRequest httpServletRequest;
+    private MockHttpServletResponse httpServletResponse;
 
-     private X509Filter x509Filter;
+    private X509Filter x509Filter;
 
-     private AuthenticationSuccessHandler successHandler;
+    private AuthenticationSuccessHandler successHandler;
 
-     private AuthenticationFailureHandler failureHandler;
-     private AuthenticationService authenticationService;
-     private AuthenticationProvider authenticationProvider;
-     private FilterChain filterChain;
+    private AuthenticationFailureHandler failureHandler;
+    private AuthenticationService authenticationService;
+    private AuthenticationProvider authenticationProvider;
+    private FilterChain filterChain;
 
-     private X509Certificate[] x509Certificate = new X509Certificate[] {
-         X509Utils.getCertificate(X509Utils.correctBase64("zowe")),
-     };
+    private X509Certificate[] x509Certificate = new X509Certificate[]{
+        X509Utils.getCertificate(X509Utils.correctBase64("zowe"),"CN=user"),
+    };
 
-     @BeforeEach
-     void setup(){
-         successHandler = mock(AuthenticationSuccessHandler.class);
-         failureHandler = mock(AuthenticationFailureHandler.class);
-         authenticationProvider = mock(AuthenticationProvider.class);
-         filterChain = mock(FilterChain.class);
-         authenticationService = mock(AuthenticationService.class);
-         x509Filter = new X509Filter("login_endpoint", successHandler, failureHandler,authenticationProvider);
+    @BeforeEach
+    void setup() {
+        successHandler = mock(AuthenticationSuccessHandler.class);
+        failureHandler = mock(AuthenticationFailureHandler.class);
+        authenticationProvider = mock(AuthenticationProvider.class);
+        filterChain = mock(FilterChain.class);
+        authenticationService = mock(AuthenticationService.class);
+        x509Filter = new X509Filter("login_endpoint", successHandler, failureHandler, authenticationProvider);
 
-         when(authenticationService.getJwtTokenFromRequest(httpServletRequest)).thenReturn(Optional.of("jwt"));
-     }
+        when(authenticationService.getJwtTokenFromRequest(httpServletRequest)).thenReturn(Optional.of("jwt"));
+    }
 
     @Test
     public void shouldCallAuthProviderWithCertificate() throws ServletException, IOException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
-        httpServletRequest.setAttribute("javax.servlet.request.X509Certificate",x509Certificate);
+        httpServletRequest.setAttribute("apiml.X509Certificate", x509Certificate);
         httpServletResponse = new MockHttpServletResponse();
 
         x509Filter.attemptAuthentication(httpServletRequest, httpServletResponse);
@@ -75,14 +74,14 @@ class X509LoginFilterTest {
     }
 
     @Test
-    public void filterShouldAuthenticateWithCertificate() throws ServletException, IOException {
+    public void shouldAuthenticateWithCertificate() throws ServletException, IOException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
-        httpServletRequest.setAttribute("javax.servlet.request.X509Certificate",x509Certificate);
+        httpServletRequest.setAttribute("apiml.X509Certificate", x509Certificate);
         httpServletResponse = new MockHttpServletResponse();
         when(authenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)))
             .thenReturn(new TokenAuthentication("user", "jwt"));
-        x509Filter.doFilter(httpServletRequest, httpServletResponse,filterChain);
+        x509Filter.doFilter(httpServletRequest, httpServletResponse, filterChain);
 
         verify(authenticationProvider).authenticate(new X509AuthenticationToken(x509Certificate));
     }

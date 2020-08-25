@@ -22,16 +22,20 @@ import static org.mockito.Mockito.mock;
 @UtilityClass
 public class X509Utils {
     public X509Certificate getCertificate(String base64) {
-        X509Certificate out = mock(X509Certificate.class);
-        PublicKey publicKey = mock(PublicKey.class);
-        doReturn(publicKey).when(out).getPublicKey();
-        doReturn(Base64.getDecoder().decode(base64)).when(publicKey).getEncoded();
-        doReturn(new X500Principal("CN=zowe user")).when(out).getSubjectDN();
-        return out;
+      return getCertificate(base64, "CN=zowe user");
     }
     public String correctBase64(String i) {
         return new String(
             Base64.getEncoder().encode(i.getBytes())
         );
+    }
+
+    public X509Certificate getCertificate(String base64, String CN) {
+        X509Certificate out = mock(X509Certificate.class);
+        PublicKey publicKey = mock(PublicKey.class);
+        doReturn(publicKey).when(out).getPublicKey();
+        doReturn(Base64.getDecoder().decode(base64)).when(publicKey).getEncoded();
+        doReturn(new X500Principal(CN)).when(out).getSubjectDN();
+        return out;
     }
 }

@@ -54,6 +54,7 @@ public class ApimlX509AuthenticationFilter extends X509AuthenticationFilter {
     private void filterCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         if (certs != null) {
+            request.setAttribute("apiml.X509Certificate",certs);
             certs = filter(certs);
             request.setAttribute("javax.servlet.request.X509Certificate", certs);
         }

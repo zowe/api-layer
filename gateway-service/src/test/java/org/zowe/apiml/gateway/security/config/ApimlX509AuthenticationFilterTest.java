@@ -15,17 +15,14 @@ import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.zowe.apiml.gateway.utils.X509Utils;
 
-import javax.security.auth.x500.X500Principal;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 
@@ -64,7 +61,7 @@ class ApimlX509AuthenticationFilterTest {
         filter.setAuthenticationDetailsSource(mock(AuthenticationDetailsSource.class));
         filter.setAuthenticationManager(mock(AuthenticationManager.class));
 
-        X509Certificate[] certificates = new X509Certificate[] {
+        X509Certificate[] certificates = new X509Certificate[]{
             X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1")),
             X509Utils.getCertificate(X509Utils.correctBase64("apimlCert1")),
             X509Utils.getCertificate(X509Utils.correctBase64("foreignCert2")),

@@ -18,6 +18,7 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        javax.servlet: INFO
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration

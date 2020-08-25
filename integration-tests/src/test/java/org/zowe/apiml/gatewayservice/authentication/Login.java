@@ -67,7 +67,7 @@ class Login {
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
     public static final char[] KEYSTORE_PASSWORD = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword();
-    public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore();
+    public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore();
     private static RequestSpecification clientCertificateRequestConfig;
 
     protected String getUsername() {
