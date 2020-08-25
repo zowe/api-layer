@@ -29,12 +29,11 @@ import java.util.stream.Collectors;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.*;
 
 /**
- *  This filter should run on all requests for services, which do not have enabled encoded characters in URL
- *
- *  Special characters encoding is enabled on Tomcat and Spring Firewall so this filter takes over responsibility
- *  for filtering them.
- *  Encoded characters in URL are allowed only for services that have it explicitly configured on the metadata.
- *
+ * This filter should run on all requests for services, which do not have enabled encoded characters in URL
+ * <p>
+ * Special characters encoding is enabled on Tomcat and Spring Firewall so this filter takes over responsibility
+ * for filtering them.
+ * Encoded characters in URL are allowed only for services that have it explicitly configured on the metadata.
  */
 
 @RequiredArgsConstructor
@@ -68,7 +67,8 @@ public class EncodedCharactersFilter extends ZuulFilter {
 
         List<Map<String, String>> enabledList = instanceList.stream()
             .map(ServiceInstance::getMetadata)
-            .filter( metadata -> String.valueOf(true).equalsIgnoreCase(metadata.get(METADATA_KEY)) )
+            .filter(metadata -> metadata.get(METADATA_KEY) == null
+                || String.valueOf(true).equalsIgnoreCase(metadata.get(METADATA_KEY)))
             .collect(Collectors.toList());
 
         if (enabledList.size() == instanceList.size()) {
