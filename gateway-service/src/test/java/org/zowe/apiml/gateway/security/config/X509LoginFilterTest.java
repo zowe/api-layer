@@ -46,7 +46,7 @@ class X509LoginFilterTest {
     private FilterChain filterChain;
 
     private X509Certificate[] x509Certificate = new X509Certificate[]{
-        X509Utils.getCertificate(X509Utils.correctBase64("zowe"),"CN=user"),
+        X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "CN=user"),
     };
 
     @BeforeEach
@@ -62,7 +62,7 @@ class X509LoginFilterTest {
     }
 
     @Test
-    public void shouldCallAuthProviderWithCertificate() throws ServletException, IOException {
+    void shouldCallAuthProviderWithCertificate() throws ServletException, IOException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setAttribute("apiml.X509Certificate", x509Certificate);
@@ -74,7 +74,7 @@ class X509LoginFilterTest {
     }
 
     @Test
-    public void shouldAuthenticateWithCertificate() throws ServletException, IOException {
+    void shouldAuthenticateWithCertificate() throws ServletException, IOException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setAttribute("apiml.X509Certificate", x509Certificate);
@@ -87,7 +87,7 @@ class X509LoginFilterTest {
     }
 
     @Test
-    public void shouldNotAuthenticate() throws ServletException, IOException {
+    void shouldNotAuthenticate() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();

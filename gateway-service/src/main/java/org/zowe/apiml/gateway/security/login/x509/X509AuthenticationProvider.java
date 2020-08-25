@@ -12,7 +12,6 @@ package org.zowe.apiml.gateway.security.login.x509;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
@@ -28,7 +27,7 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     private final AuthenticationService authenticationService;
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    public Authentication authenticate(Authentication authentication) {
         if (authentication instanceof X509AuthenticationToken) {
             X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
             String username = x509Authentication.verifyCertificate(certs[0]);

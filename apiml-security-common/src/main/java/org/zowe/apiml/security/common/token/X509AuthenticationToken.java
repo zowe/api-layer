@@ -10,26 +10,15 @@
 package org.zowe.apiml.security.common.token;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 
 import java.security.cert.X509Certificate;
-import java.util.Collection;
+import java.util.Objects;
 
 public class X509AuthenticationToken extends AbstractAuthenticationToken {
 
-    private X509Certificate[] x509Certificates;
+    private final X509Certificate[] x509Certificates;
 
-    /**
-     * Creates a token with the supplied array of authorities.
-     *
-     * @param authorities the collection of <tt>GrantedAuthority</tt>s for the principal
-     *                    represented by this authentication object.
-     */
-    public X509AuthenticationToken(Collection<? extends GrantedAuthority> authorities) {
-        super(authorities);
-    }
-
-    public X509AuthenticationToken( X509Certificate[] x509Certificates) {
+    public X509AuthenticationToken(X509Certificate[] x509Certificates) {
         super(null);
         this.x509Certificates = x509Certificates;
     }
@@ -42,5 +31,22 @@ public class X509AuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public Object getPrincipal() {
         return null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        if (this == obj) {
+            return true;
+        }
+        return (obj instanceof X509AuthenticationToken) && ((X509AuthenticationToken) obj).getCredentials() == this.getCredentials();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getCredentials());
     }
 }

@@ -259,7 +259,7 @@ class Login {
     //@formatter:on
 
     @Test
-    public void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws URISyntaxException {
+     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws URISyntaxException {
         Cookie cookie = clientCertificateRequestConfig
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
