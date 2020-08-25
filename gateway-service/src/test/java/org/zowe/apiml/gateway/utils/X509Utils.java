@@ -16,8 +16,7 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @UtilityClass
 public class X509Utils {
@@ -34,6 +33,8 @@ public class X509Utils {
         X509Certificate out = mock(X509Certificate.class);
         PublicKey publicKey = mock(PublicKey.class);
         doReturn(publicKey).when(out).getPublicKey();
+        doReturn(new X500Principal(CN))
+            .when(out).getSubjectX500Principal();
         doReturn(Base64.getDecoder().decode(base64)).when(publicKey).getEncoded();
         doReturn(new X500Principal(CN)).when(out).getSubjectDN();
         return out;

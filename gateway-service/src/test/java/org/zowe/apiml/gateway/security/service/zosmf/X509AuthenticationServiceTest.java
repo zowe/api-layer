@@ -1,0 +1,38 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+package org.zowe.apiml.gateway.security.service.zosmf;
+
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gateway.utils.X509Utils;
+
+import java.security.cert.X509Certificate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+
+class X509AuthenticationServiceTest {
+
+    @Test
+    void providedValidCertificate_returnUserId() {
+        X509Certificate x509Certificate =
+            X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "CN=user,OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");
+        X509AuthenticationService x509AuthenticationService = new X509AuthenticationService();
+        assertEquals("user", x509AuthenticationService.verifyCertificate(x509Certificate));
+    }
+
+    @Test
+    void providedInvalidCertificate_returnNull() {
+        X509Certificate x509Certificate =
+            X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");
+        X509AuthenticationService x509AuthenticationService = new X509AuthenticationService();
+        assertNull(x509AuthenticationService.verifyCertificate(x509Certificate));
+    }
+}

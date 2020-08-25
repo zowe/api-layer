@@ -12,9 +12,7 @@ package org.zowe.apiml.gateway.security.config;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
@@ -31,17 +29,14 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationProvider authenticationProvider;
     private final AuthenticationSuccessHandler successHandler;
-    private final AuthenticationFailureHandler failureHandler;
 
 
     public X509Filter(String endpoint,
                       AuthenticationSuccessHandler successHandler,
-                      AuthenticationFailureHandler failureHandler,
                       AuthenticationProvider authenticationProvider) {
         super(endpoint);
         this.authenticationProvider = authenticationProvider;
         this.successHandler = successHandler;
-        this.failureHandler = failureHandler;
 
     }
 
@@ -81,16 +76,5 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
         successHandler.onAuthenticationSuccess(request, response, authResult);
-    }
-
-    /**
-     * Calls unauthorized handler
-     */
-    @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request,
-                                              HttpServletResponse response,
-                                              AuthenticationException failed) throws IOException, ServletException {
-        SecurityContextHolder.clearContext();
-        failureHandler.onAuthenticationFailure(request, response, failed);
     }
 }

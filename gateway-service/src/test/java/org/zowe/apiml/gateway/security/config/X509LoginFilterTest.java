@@ -16,7 +16,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.utils.X509Utils;
@@ -40,7 +39,6 @@ class X509LoginFilterTest {
 
     private AuthenticationSuccessHandler successHandler;
 
-    private AuthenticationFailureHandler failureHandler;
     private AuthenticationService authenticationService;
     private AuthenticationProvider authenticationProvider;
     private FilterChain filterChain;
@@ -52,17 +50,16 @@ class X509LoginFilterTest {
     @BeforeEach
     void setup() {
         successHandler = mock(AuthenticationSuccessHandler.class);
-        failureHandler = mock(AuthenticationFailureHandler.class);
         authenticationProvider = mock(AuthenticationProvider.class);
         filterChain = mock(FilterChain.class);
         authenticationService = mock(AuthenticationService.class);
-        x509Filter = new X509Filter("login_endpoint", successHandler, failureHandler, authenticationProvider);
+        x509Filter = new X509Filter("login_endpoint", successHandler, authenticationProvider);
 
         when(authenticationService.getJwtTokenFromRequest(httpServletRequest)).thenReturn(Optional.of("jwt"));
     }
 
     @Test
-    void shouldCallAuthProviderWithCertificate() throws ServletException, IOException {
+    void shouldCallAuthProviderWithCertificate() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setAttribute("apiml.X509Certificate", x509Certificate);

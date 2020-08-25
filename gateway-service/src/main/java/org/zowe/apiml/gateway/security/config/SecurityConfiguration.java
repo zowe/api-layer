@@ -217,7 +217,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private X509Filter x509Filter(String loginEndpoint) {
         return new X509Filter(loginEndpoint,
             handlerInitializer.getSuccessfulLoginHandler(),
-            handlerInitializer.getAuthenticationFailureHandler(),
             x509AuthenticationProvider);
     }
 
