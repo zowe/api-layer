@@ -45,7 +45,6 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
         HttpServletResponse response = (HttpServletResponse) res;
         if (!requiresAuthentication(request, response)) {
             chain.doFilter(request, response);
-
             return;
         }
         Authentication authResult = attemptAuthentication(request, response);

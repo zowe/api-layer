@@ -40,12 +40,6 @@ public class ApimlX509AuthenticationFilter extends X509AuthenticationFilter {
      */
     private Map<Boolean, List<X509Certificate>> filter(X509Certificate[] certs) {
         return Arrays.stream(certs).collect(Collectors.partitioningBy(cer -> publicKeyCertificatesBase64.contains(Base64.getEncoder().encodeToString(cer.getPublicKey().getEncoded()))));
-
-
-//            return       Arrays.stream(certs).filter(x -> publicKeyCertificatesBase64.contains(
-//                Base64.getEncoder().encodeToString(x.getPublicKey().getEncoded())
-//            ))
-//            .toArray(X509Certificate[]::new);
     }
 
     /**
