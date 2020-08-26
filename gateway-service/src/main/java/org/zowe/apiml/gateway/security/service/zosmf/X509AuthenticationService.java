@@ -45,6 +45,9 @@ public class X509AuthenticationService implements X509Authentication {
         } catch (CertificateParsingException e) {
             throw new AuthenticationServiceException("Can't get extensions from certificate");
         }
+        if(extendedKeyUsage == null) {
+            return false;
+        }
         return extendedKeyUsage.contains(CLIENT_AUTH_OID);
     }
 
