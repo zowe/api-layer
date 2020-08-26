@@ -13,8 +13,10 @@ import lombok.experimental.UtilityClass;
 
 import javax.security.auth.x500.X500Principal;
 import java.security.PublicKey;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.Collections;
 
 import static org.mockito.Mockito.*;
 
@@ -36,6 +38,11 @@ public class X509Utils {
         doReturn(new X500Principal(CN))
             .when(out).getSubjectX500Principal();
         doReturn(Base64.getDecoder().decode(base64)).when(publicKey).getEncoded();
+        try {
+            doReturn(Collections.singletonList("1.3.6.1.5.5.7.3.2")).when(out).getExtendedKeyUsage();
+        } catch (CertificateParsingException e) {
+           throw new RuntimeException("Problems mocking key extensions");
+        }
         doReturn(new X500Principal(CN)).when(out).getSubjectDN();
         return out;
     }
