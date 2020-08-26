@@ -47,11 +47,4 @@ class X509AuthenticationServiceTest {
         assertEquals("Not able to create ldap name from certificate. Cause: Invalid name: wrong DN", exception.getMessage());
     }
 
-    @Test
-    void rejectZoweServiceCertificate() {
-        X509Certificate x509Certificate =
-            X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "CN=Zowe Service,OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");
-
-        assertNull(x509AuthenticationService.mapUserToCertificate(x509Certificate));
-    }
 }

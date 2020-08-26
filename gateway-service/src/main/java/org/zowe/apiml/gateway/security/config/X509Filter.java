@@ -58,7 +58,7 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("apiml.X509Certificate");
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
         if (certs != null && certs.length > 0) {
             return this.authenticationProvider.authenticate(new X509AuthenticationToken(certs));
         }

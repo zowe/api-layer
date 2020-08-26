@@ -18,14 +18,13 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This filter extends authentication via certificate. It removes all certificates signature from request which are not
  * related to private key using to request signing.
- *
+ * <p>
  * Be careful with usage as later on it means that the set of original certificates won't be available.
  */
 @RequiredArgsConstructor
@@ -35,27 +34,34 @@ public class ApimlX509AuthenticationFilter extends X509AuthenticationFilter {
 
     /**
      * Filter certificated by allowed - see publicKeyCertificatesBase64
+     *
      * @param certs all certificated to filter
      * @return filtered certificates (certs), contains only certificated used to sign in APIML
      */
-    private X509Certificate[] filter(X509Certificate[] certs) {
-        return Arrays.stream(certs)
-            .filter(x -> publicKeyCertificatesBase64.contains(
-                Base64.getEncoder().encodeToString(x.getPublicKey().getEncoded())
-            ))
-            .toArray(X509Certificate[]::new);
+    private Map<Boolean, List<X509Certificate>> filter(X509Certificate[] certs) {
+        return Arrays.stream(certs).collect(Collectors.partitioningBy(cer -> publicKeyCertificatesBase64.contains(Base64.getEncoder().encodeToString(cer.getPublicKey().getEncoded()))));
+
+
+//            return       Arrays.stream(certs).filter(x -> publicKeyCertificatesBase64.contains(
+//                Base64.getEncoder().encodeToString(x.getPublicKey().getEncoded())
+//            ))
+//            .toArray(X509Certificate[]::new);
     }
 
     /**
      * Get certificates from request (if exists), filter them (to use only APIML certificate to request sign) and
      * store again into request.
+     *
      * @param request Request to filter certificates
      */
     private void filterCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         if (certs != null) {
-            request.setAttribute("apiml.X509Certificate",certs);
-            certs = filter(certs);
+            Map<Boolean, List<X509Certificate>> separatedCerts = filter(certs);
+            X509Certificate[] clientAuthCerts = new X509Certificate[separatedCerts.get(false).size()];
+            request.setAttribute("client.auth.X509Certificate", separatedCerts.get(false).toArray(clientAuthCerts));
+            X509Certificate[] zoweCerts = new X509Certificate[separatedCerts.get(true).size()];
+            certs = separatedCerts.get(true).toArray(zoweCerts);
             request.setAttribute("javax.servlet.request.X509Certificate", certs);
         }
     }
@@ -65,14 +71,14 @@ public class ApimlX509AuthenticationFilter extends X509AuthenticationFilter {
      * This filter remove in attribute "javax.servlet.request.X509Certificate" all certificates which has no relations
      * with private certificate using to request sign and then call original implementation (without "foreign"
      * certificates)
-     * @param request request to process
+     *
+     * @param request  request to process
      * @param response response of call
-     * @param chain chain of filters to evaluate
+     * @param chain    chain of filters to evaluate
      **/
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-        throws IOException, ServletException
-    {
+        throws IOException, ServletException {
         filterCerts(request);
         super.doFilter(request, response, chain);
     }

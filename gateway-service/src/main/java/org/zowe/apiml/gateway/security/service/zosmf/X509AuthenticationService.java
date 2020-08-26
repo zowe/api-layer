@@ -31,11 +31,7 @@ public class X509AuthenticationService implements X509Authentication {
             LdapName ldapDN = getLdapName(dn);
             for (Rdn rdn : ldapDN.getRdns()) {
                 if ("cn".equalsIgnoreCase(rdn.getType())) {
-                    String username = String.valueOf(rdn.getValue());
-                    if ("zowe service".equalsIgnoreCase(username)) {
-                        return null;
-                    }
-                    return username;
+                    return String.valueOf(rdn.getValue());
                 }
             }
         }

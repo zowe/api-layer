@@ -62,7 +62,7 @@ class X509LoginFilterTest {
     void shouldCallAuthProviderWithCertificate() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
-        httpServletRequest.setAttribute("apiml.X509Certificate", x509Certificate);
+        httpServletRequest.setAttribute("client.auth.X509Certificate", x509Certificate);
         httpServletResponse = new MockHttpServletResponse();
 
         x509Filter.attemptAuthentication(httpServletRequest, httpServletResponse);
@@ -74,7 +74,7 @@ class X509LoginFilterTest {
     void shouldAuthenticateWithCertificate() throws ServletException, IOException {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
-        httpServletRequest.setAttribute("apiml.X509Certificate", x509Certificate);
+        httpServletRequest.setAttribute("client.auth.X509Certificate", x509Certificate);
         httpServletRequest.setServletPath("/api/v1/gateway/auth/login");
 
         httpServletResponse = new MockHttpServletResponse();
