@@ -22,7 +22,6 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.ResourceUtils;
@@ -31,14 +30,7 @@ import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import javax.net.ssl.SSLContext;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import static io.restassured.RestAssured.given;
@@ -69,7 +61,7 @@ class Login {
 
     public static final char[] KEYSTORE_PASSWORD = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword();
     public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore();
-    private static RequestSpecification clientCertificateRequestConfig;
+
 
     protected String getUsername() {
         return USERNAME;
@@ -77,25 +69,6 @@ class Login {
 
     protected String getPassword() {
         return PASSWORD;
-    }
-
-    @BeforeAll
-    static void setup() throws IOException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        // blind-fold trust on the server.
-        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
-
-        SSLContext sslContext = SSLContextBuilder
-            .create()
-            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
-            // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
-            .loadTrustMaterial(null, trustStrategy)
-            .build();
-
-        clientCertificateRequestConfig = given()
-            .config(RestAssuredConfig
-                .newConfig()
-                .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext))));
     }
 
     @AfterAll
@@ -145,7 +118,7 @@ class Login {
             .contentType(JSON)
             .when()
             .post(LOGIN_ENDPOINT_URL)
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(COOKIE_NAME);
@@ -178,7 +151,7 @@ class Login {
             .body(loginRequest)
             .when()
             .post(LOGIN_ENDPOINT_URL)
-        .then()
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
@@ -196,7 +169,7 @@ class Login {
             .body(loginRequest)
             .when()
             .post(LOGIN_ENDPOINT_URL)
-        .then();
+            .then();
         response.statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
@@ -211,7 +184,7 @@ class Login {
         given()
             .when()
             .post(LOGIN_ENDPOINT_URL)
-        .then()
+            .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
@@ -224,15 +197,15 @@ class Login {
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         JSONObject loginRequest = new JSONObject()
-            .put("user",getUsername())
-            .put("pass",getPassword());
+            .put("user", getUsername())
+            .put("pass", getPassword());
 
         given()
             .contentType(JSON)
             .body(loginRequest.toString())
             .when()
             .post(LOGIN_ENDPOINT_URL)
-        .then()
+            .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
@@ -264,7 +237,22 @@ class Login {
      */
     @Test
     @NotForMainframeTest
-     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws URISyntaxException {
+    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
+
+        SSLContext sslContext = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+            // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+
+        RequestSpecification clientCertificateRequestConfig = given()
+            .config(RestAssuredConfig
+                .newConfig()
+                .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext))));
+
         Cookie cookie = clientCertificateRequestConfig
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
