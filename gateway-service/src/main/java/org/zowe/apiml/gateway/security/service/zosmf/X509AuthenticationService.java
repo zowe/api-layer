@@ -23,17 +23,20 @@ public class X509AuthenticationService implements X509Authentication {
 
     public String verifyCertificate(X509Certificate certificate) {
         String dn = certificate.getSubjectX500Principal().getName();
-        LdapName ldapDN;
-        try {
-            ldapDN = new LdapName(dn);
-        } catch (InvalidNameException e) {
-            throw new AuthenticationServiceException("Not able to create DN from certificate", e);
-        }
+        LdapName ldapDN = getLdapName(dn);
         for (Rdn rdn : ldapDN.getRdns()) {
             if ("cn".equalsIgnoreCase(rdn.getType())) {
                 return String.valueOf(rdn.getValue());
             }
         }
         return null;
+    }
+
+    public LdapName getLdapName(String dn) {
+        try {
+          return new LdapName(dn);
+        } catch (InvalidNameException e) {
+            throw new AuthenticationServiceException("Not able to create ldap name from certificate. Cause: " + e.getMessage(), e);
+        }
     }
 }
