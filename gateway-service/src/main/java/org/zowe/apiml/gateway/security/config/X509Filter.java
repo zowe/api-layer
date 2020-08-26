@@ -44,18 +44,24 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-        Authentication authResult;
-        try {
-            authResult = attemptAuthentication(request, response);
-            if (authResult == null) {
+        if (!requiresAuthentication(request, response)) {
+            chain.doFilter(request, response);
+
+            return;
+        }
+            Authentication authResult;
+            try {
+                authResult = attemptAuthentication(request, response);
+                if (authResult == null) {
+                    chain.doFilter(request, response);
+                    return;
+                }
+            } catch (AuthenticationException failed) {
                 chain.doFilter(request, response);
                 return;
             }
-        } catch (AuthenticationException failed) {
-            chain.doFilter(request, response);
-            return;
-        }
-        successfulAuthentication(request, response, chain, authResult);
+            successfulAuthentication(request, response, chain, authResult);
+
     }
 
     @Override

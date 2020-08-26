@@ -40,6 +40,6 @@ class X509AuthenticationTokenTest {
 
     @Test
     void objectIstNull_returnFalse() {
-        assertNotEquals(token, null);
+        assertNotEquals(null, token);
     }
 }

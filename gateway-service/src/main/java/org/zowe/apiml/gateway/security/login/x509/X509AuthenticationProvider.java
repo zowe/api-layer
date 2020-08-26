@@ -30,8 +30,8 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) {
         if (authentication instanceof X509AuthenticationToken) {
             X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-            String username = x509Authentication.verifyCertificate(certs[0]);
-            if (!"user".equals(username)) {
+            String username = x509Authentication.mapUserToCertificate(certs[0]);
+            if (username == null) {
                 return null;
             }
             final String domain = "security-domain";

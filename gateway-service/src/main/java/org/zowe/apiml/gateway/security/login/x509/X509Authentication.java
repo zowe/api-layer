@@ -12,5 +12,5 @@ import java.security.cert.X509Certificate;
 
 public interface X509Authentication {
 
-    String verifyCertificate(X509Certificate certificate) ;
+    String mapUserToCertificate(X509Certificate certificate) ;
 }

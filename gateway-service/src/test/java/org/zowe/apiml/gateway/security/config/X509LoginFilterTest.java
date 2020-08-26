@@ -53,7 +53,7 @@ class X509LoginFilterTest {
         authenticationProvider = mock(AuthenticationProvider.class);
         filterChain = mock(FilterChain.class);
         authenticationService = mock(AuthenticationService.class);
-        x509Filter = new X509Filter("login_endpoint", successHandler, authenticationProvider);
+        x509Filter = new X509Filter("/api/v1/gateway/auth/login", successHandler, authenticationProvider);
 
         when(authenticationService.getJwtTokenFromRequest(httpServletRequest)).thenReturn(Optional.of("jwt"));
     }
@@ -75,6 +75,8 @@ class X509LoginFilterTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setAttribute("apiml.X509Certificate", x509Certificate);
+        httpServletRequest.setServletPath("/api/v1/gateway/auth/login");
+
         httpServletResponse = new MockHttpServletResponse();
         when(authenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)))
             .thenReturn(new TokenAuthentication("user", "jwt"));

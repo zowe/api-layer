@@ -25,13 +25,17 @@ public class X509AuthenticationService implements X509Authentication {
 
     private static final String CLIENT_AUTH_OID = "1.3.6.1.5.5.7.3.2";
 
-    public String verifyCertificate(X509Certificate certificate) {
+    public String mapUserToCertificate(X509Certificate certificate) {
         if (isClientAuthCertificate(certificate)) {
             String dn = certificate.getSubjectX500Principal().getName();
             LdapName ldapDN = getLdapName(dn);
             for (Rdn rdn : ldapDN.getRdns()) {
                 if ("cn".equalsIgnoreCase(rdn.getType())) {
-                    return String.valueOf(rdn.getValue());
+                    String username = String.valueOf(rdn.getValue());
+                    if ("zowe service".equalsIgnoreCase(username)) {
+                        return null;
+                    }
+                    return username;
                 }
             }
         }
