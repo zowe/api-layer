@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test;
 
 import java.security.cert.X509Certificate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 class X509AuthenticationTokenTest {
@@ -35,7 +35,7 @@ class X509AuthenticationTokenTest {
 
     @Test
     void sameObjectsAreEquals() {
-        assertEquals(token, token2);
+        assertTrue(token.equals(token2));
     }
 
     @Test

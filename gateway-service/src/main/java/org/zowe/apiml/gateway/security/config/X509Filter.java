@@ -11,7 +11,6 @@ package org.zowe.apiml.gateway.security.config;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
@@ -49,19 +48,12 @@ public class X509Filter extends AbstractAuthenticationProcessingFilter {
 
             return;
         }
-            Authentication authResult;
-            try {
-                authResult = attemptAuthentication(request, response);
-                if (authResult == null) {
-                    chain.doFilter(request, response);
-                    return;
-                }
-            } catch (AuthenticationException failed) {
-                chain.doFilter(request, response);
-                return;
-            }
-            successfulAuthentication(request, response, chain, authResult);
-
+        Authentication authResult = attemptAuthentication(request, response);
+        if (authResult == null) {
+            chain.doFilter(request, response);
+            return;
+        }
+        successfulAuthentication(request, response, chain, authResult);
     }
 
     @Override
