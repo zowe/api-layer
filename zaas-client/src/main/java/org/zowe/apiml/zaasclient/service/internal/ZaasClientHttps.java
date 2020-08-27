@@ -29,7 +29,7 @@ public class ZaasClientHttps implements ZaasClient {
             HttpsClientProvider provider = new HttpsClientProvider(configProperties);
             String baseUrl = String.format("https://%s:%s%s", configProperties.getApimlHost(), configProperties.getApimlPort(),
                 configProperties.getApimlBaseUrl());
-            tokens = new TokenServiceHttpsJwt(provider, baseUrl, configProperties.getApimlHost());
+            tokens = new TokenServiceHttpsJwt(provider, baseUrl);
             passTickets = new PassTicketServiceHttps(provider, baseUrl);
         } catch (ZaasConfigurationException e) {
             log.error(e.getErrorCode().toString());
@@ -82,6 +82,7 @@ public class ZaasClientHttps implements ZaasClient {
     }
 
     @Override
+    @SuppressWarnings("squid:S2147")
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
         if (Objects.isNull(applicationId) || applicationId.isEmpty()) {
             throw new ZaasClientException(ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND);
