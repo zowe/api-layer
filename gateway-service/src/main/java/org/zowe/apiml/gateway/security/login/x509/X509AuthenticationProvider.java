@@ -31,9 +31,6 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
         if (authentication instanceof X509AuthenticationToken) {
             X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
             String username = x509Authentication.mapUserToCertificate(certs[0]);
-            if (!"user".equals(username)) {
-                return null;
-            }
             final String domain = "security-domain";
             final String jwtToken = authenticationService.createJwtToken(username, domain, null);
             return authenticationService.createTokenAuthentication(username, jwtToken);
