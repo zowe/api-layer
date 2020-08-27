@@ -26,7 +26,7 @@ import java.io.IOException;
 
 @Slf4j
 class PassTicketServiceHttps implements PassTicketService {
-    private static final String COOKIE_PREFIX = "apimlAuthenticationToken";
+    private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
 
     private HttpsClientProvider httpsClientProvider;
     private final String ticketUrl;
@@ -50,7 +50,7 @@ class PassTicketServiceHttps implements PassTicketService {
             HttpPost httpPost = new HttpPost(ticketUrl);
             httpPost.setEntity(new StringEntity(mapper.writeValueAsString(zaasClientTicketRequest)));
             httpPost.setHeader("Content-type", "application/json");
-            httpPost.setHeader("Cookie", COOKIE_PREFIX + "=" + jwtToken);
+            httpPost.setHeader("Cookie", TOKEN_PREFIX + "=" + jwtToken);
 
             response = closeableHttpsClient.execute(httpPost);
             return extractPassTicket(response);
@@ -59,7 +59,7 @@ class PassTicketServiceHttps implements PassTicketService {
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
         } finally {
-            finallyClose(closeableHttpsClient, response);
+            finallyClose(response);
         }
     }
 
@@ -84,13 +84,10 @@ class PassTicketServiceHttps implements PassTicketService {
         }
     }
 
-    private void finallyClose(CloseableHttpClient client, CloseableHttpResponse response) {
+    private void finallyClose(CloseableHttpResponse response) {
         try {
             if (response != null) {
                 response.close();
-            }
-            if (client != null) {
-                client.close();
             }
         } catch (IOException e) {
             log.warn("It wasn't possible to close the resources. " + e.getMessage());
