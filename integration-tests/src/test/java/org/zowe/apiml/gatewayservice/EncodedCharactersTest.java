@@ -19,8 +19,7 @@ import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.is;
 
 public class EncodedCharactersTest {
@@ -81,5 +80,30 @@ public class EncodedCharactersTest {
             .get(String.format("%s://%s:%s%s", scheme, host, port, encodedURI))
             .then()
             .statusCode(is(SC_BAD_REQUEST));
+    }
+
+    @Test
+    void shouldCallServiceWithGatewayAllowingAndAllow() {
+        final String encodedURI = "/api/v1/apicatalog/gf%2fd/testcall";
+
+        given()
+            .contentType(ContentType.JSON)
+            .urlEncodingEnabled(true)
+            .when()
+            .get(String.format("%s://%s:%s%s", scheme, host, port, encodedURI))
+            .then()
+            .statusCode(is(SC_NOT_FOUND)); //Means not a bad request. Route doesn't actually exist so NOT_FOUND is expected
+    }
+
+    @Test
+    void shouldCallServiceWithGatewayNotSetAndAllow() {
+        final String encodedURI = "/api/v1/apicatalog/gf%2fd/testcall";
+
+        given()
+            .contentType(ContentType.JSON)
+            .when()
+            .get(String.format("%s://%s:%s%s", scheme, host, port, encodedURI))
+            .then()
+            .statusCode(is(SC_NOT_FOUND)); //Means not a bad request. Route doesn't actually exist so NOT_FOUND is expected
     }
 }
