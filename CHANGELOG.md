@@ -3,12 +3,12 @@
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 ## `1.15.0`
 
-- Feature: API Path Pattern supports serviceId as first element [#688](https://github.com/zowe/api-layer/issues/688)
-- Feature: Add SAF Provider as a possible authentication provider [#472](https://github.com/zowe/api-layer/issues/472)
-- Bugfix: Fix SSL validation when Eureka is running in HTTP mode [#792](https://github.com/zowe/api-layer/issues/792)
-- Bugfix: Fix problem in error handling when no api-doc is available [#571](https://github.com/zowe/api-layer/issues/571)
-- Feature: Provide the Swagger URL for zOSMF [#665](https://github.com/zowe/api-layer/issues/665)
-- Feature: Allow character encoding by default [#777](https://github.com/zowe/api-layer/issues/777)
+- Feature: The API Path Pattern now supports serviceId as the first element. This improves the consistency of the URL when processing through the Gateway or outside of the Gateway. [#688](https://github.com/zowe/api-layer/issues/688)
+- Feature: The SAF Provider can now be used as a possible authentication provider. This removes the API ML dependency on z/OSMF for authentication enabling SAF to obtain the JWT. [#472](https://github.com/zowe/api-layer/issues/472)
+- Feature: The Swagger URL is now provided for z/OSMF. This URL provides full documentation containing the Try It Out functionality if the zOSMF version supports the Swagger endpoint. Alternatively, the URL provides the info endpoint to directly enable access to Zowe endpoints.  [#665](https://github.com/zowe/api-layer/issues/665)
+- Feature: The default configuration of API ML now supports character encoding. [#777](https://github.com/zowe/api-layer/issues/777)
+- Bugfix: SSL validation when Eureka is running in HTTP mode has been fixed. When the scheme is HTTP, SSL configuration is not verified since it not used. [#792](https://github.com/zowe/api-layer/issues/792)
+- Bugfix: A problem in error handling has been fixed when no api-doc is available. Now a specific return code and message is generated when a problem occurs when obtaining or transforming the api-doc. [#571](https://github.com/zowe/api-layer/issues/571)
 
 ## `1.14.0`
 
