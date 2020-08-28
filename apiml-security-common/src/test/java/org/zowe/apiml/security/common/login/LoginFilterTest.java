@@ -9,15 +9,6 @@
  */
 package org.zowe.apiml.security.common.login;
 
-import org.springframework.http.HttpMethod;
-import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
-import org.zowe.apiml.security.common.error.ErrorType;
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
-import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -34,6 +26,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
+import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.ErrorType;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -170,7 +170,8 @@ public class LoginFilterTest {
         MessageService messageService = new YamlMessageService("/security-service-messages.yml");
         ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
         loginFilter = new LoginFilter("TEST_ENDPOINT", authenticationSuccessHandler,
-            authenticationFailureHandler, objectMapper, authenticationManager, resourceAccessExceptionHandler);
+            authenticationFailureHandler, objectMapper, authenticationManager,
+            resourceAccessExceptionHandler);
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken("user", "pwd");
         when(authenticationManager.authenticate(authentication)).thenThrow(exception);
