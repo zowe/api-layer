@@ -11,6 +11,7 @@ package org.zowe.apiml.apicatalog.services.cached;
 
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,6 +20,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -38,7 +41,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void testRetrievalOfApiDocWhenApiIsAvailable() {
+    public void givenValidApiDoc_whenRetrieving_thenReturnIt() {
         String serviceId = "Service";
         String version = "v1";
         String expectedApiDoc = "This is some api doc";
@@ -57,7 +60,7 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void testUpdateOfApiDocForService() {
+    public void givenValidApiDoc_whenUpdating_thenRetrieve() {
         String serviceId = "Service";
         String version = "v1";
         String expectedApiDoc = "This is some api doc";
@@ -92,20 +95,13 @@ public class CachedApiDocServiceTest {
     }
 
     @Test
-    public void shouldReturnNullIfNotValidResponse() {
+    public void givenInvalidApiDoc_whenRetrieving_thenThrowException() {
         String serviceId = "Service";
         String version = "v1";
-        String expectedApiDoc = "This is some api doc";
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null);
-
-        when(apiDocRetrievalService.retrieveApiDoc(serviceId, version))
-            .thenReturn(apiDocInfo);
-        when(transformApiDocService.transformApiDoc(serviceId, apiDocInfo))
-            .thenReturn(expectedApiDoc);
-
-        String apiDoc = cachedApiDocService.getApiDocForService(serviceId, version);
-
-        Assert.assertNull(apiDoc);
+        Exception exception = assertThrows(ApiDocNotFoundException.class,
+            () -> cachedApiDocService.getApiDocForService(serviceId, version),
+        "Expected exception is not ApiDocNotFoundException");
+        assertEquals("No API Documentation was retrieved for the service Service.", exception.getMessage());
     }
 }

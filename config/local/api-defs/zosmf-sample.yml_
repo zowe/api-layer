@@ -14,7 +14,7 @@
 #   http --verify=keystore/local_ca/localca.cer GET https://localhost:10010/api/{zosmf-service-id}/zosmf/info 'X-CSRF-ZOSMF-HEADER;'
 #
 services:
-    - serviceId: zosmf                                            # unique lowercase ID of the service
+    - serviceId: ibmzosmf                                         # unique lowercase ID of the service
       title: IBM z/OSMF                                           # Title of the z/OSMF service in the API catalog
       description: IBM z/OS Management Facility REST API service  # Description of the z/OSMF service in the API catalog
       catalogUiTileId: zosmf                                      # ID of the API Catalog UI tile for z/OSMF services
@@ -33,6 +33,7 @@ services:
           gatewayUrl: api
           version: 2.x.0
           documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.3.0/com.ibm.zos.v2r3.izua700/IZUHPINFO_RESTServices.htm
+          swaggerUrl:                                             # scheme://hostname:port/contextPath/api/docs
 
 catalogUiTiles:                                                   # z/OSMF services tile
     zosmf:

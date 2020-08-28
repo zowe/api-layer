@@ -20,9 +20,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
@@ -35,16 +33,14 @@ import java.util.stream.Stream;
 
 @Slf4j
 class TokenServiceHttpsJwt implements TokenService {
-    private static final String COOKIE_PREFIX = "apimlAuthenticationToken";
+    private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
     private final String loginEndpoint;
     private final String queryEndpoint;
-    private final String host;
 
     private HttpsClientProvider httpsClientProvider;
 
-    public TokenServiceHttpsJwt(HttpsClientProvider client, String baseUrl, String host) {
+    public TokenServiceHttpsJwt(HttpsClientProvider client, String baseUrl) {
         this.httpsClientProvider = client;
-        this.host = host;
 
         loginEndpoint = baseUrl + "/login";
         queryEndpoint = baseUrl + "/query";
@@ -90,28 +86,16 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
-        BasicCookieStore cookieStore = prepareCookieWithToken(jwtToken);
-        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore(cookieStore);
+        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
         HttpGet httpGet = new HttpGet(queryEndpoint);
+        httpGet.addHeader("Cookie", TOKEN_PREFIX + "=" + jwtToken);
         return new ClientWithResponse(client, client.execute(httpGet));
     }
 
-    private BasicCookieStore prepareCookieWithToken(String jwtToken) {
-        BasicCookieStore cookieStore = new BasicCookieStore();
-        BasicClientCookie cookie = new BasicClientCookie(COOKIE_PREFIX, jwtToken);
-        cookie.setDomain(host);
-        cookie.setPath("/");
-        cookieStore.addCookie(cookie);
-        return cookieStore;
-    }
-
-    private void finallyClose(CloseableHttpClient client, CloseableHttpResponse response) {
+    private void finallyClose(CloseableHttpResponse response) {
         try {
             if (response != null) {
                 response.close();
-            }
-            if (client != null) {
-                client.close();
             }
         } catch (IOException e) {
             log.warn("It wasn't possible to close the resources. " + e.getMessage());
@@ -132,7 +116,7 @@ class TokenServiceHttpsJwt implements TokenService {
         if (httpResponseCode == 204) {
             HeaderElement[] elements = response.getHeaders("Set-Cookie")[0].getElements();
             Optional<HeaderElement> apimlAuthCookie = Stream.of(elements)
-                .filter(element -> element.getName().equals(COOKIE_PREFIX))
+                .filter(element -> element.getName().equals(TOKEN_PREFIX))
                 .findFirst();
             if (apimlAuthCookie.isPresent()) {
                 token = apimlAuthCookie.get().getValue();
@@ -165,7 +149,7 @@ class TokenServiceHttpsJwt implements TokenService {
         } catch (Exception e) {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, e);
         } finally {
-            finallyClose(clientWithResponse.getClient(), clientWithResponse.getResponse());
+            finallyClose(clientWithResponse.getResponse());
         }
     }
 

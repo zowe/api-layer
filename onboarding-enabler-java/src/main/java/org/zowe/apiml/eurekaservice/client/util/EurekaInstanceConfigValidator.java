@@ -34,14 +34,16 @@ public class EurekaInstanceConfigValidator {
     private final List<String> poorlyFormedRelativeUrlParameters = new ArrayList<>();
 
     /**
-     * Validation method that validates mandatory and non-mandatory parameters
+     * Validates mandatory and non-mandatory parameters
      *
-     * @param config
+     * @param config of the service which will be validated
      * @throws MetadataValidationException if the validation fails
      */
     public void validate(ApiMediationServiceConfig config) {
         validateRoutes(config.getRoutes());
-        validateSsl(config.getSsl());
+        if (config.getDiscoveryServiceUrls().stream().anyMatch(url -> url.toLowerCase().startsWith("https"))) {
+            validateSsl(config.getSsl());
+        }
         validateUrls(config);
 
         if (config.getCatalog() == null) {
@@ -92,17 +94,13 @@ public class EurekaInstanceConfigValidator {
         if (isInvalid(ssl.getTrustStoreType())) {
             addParameterToProblemsList("trustStoreType", missingSslParameters);
         }
-        if (isInvalid(ssl.getTrustStorePassword())) {
-            if (isInvalid(ssl.getTrustStoreType()) ||
-                (!isInvalid(ssl.getTrustStoreType()) && !ssl.getTrustStoreType().equals("JCERACFKS"))) {
-                addParameterToProblemsList("trustStorePassword", missingSslParameters);
-            }
+        if (isInvalid(ssl.getTrustStorePassword()) && (isInvalid(ssl.getTrustStoreType()) ||
+                (!isInvalid(ssl.getTrustStoreType()) && !ssl.getTrustStoreType().equals("JCERACFKS")))) {
+            addParameterToProblemsList("trustStorePassword", missingSslParameters);
         }
-        if (isInvalid(ssl.getKeyStorePassword())) {
-            if (isInvalid(ssl.getKeyStoreType()) ||
-                (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals("JCERACFKS"))) {
-                addParameterToProblemsList("keyStorePassword", missingSslParameters);
-            }
+        if (isInvalid(ssl.getKeyStorePassword()) && (isInvalid(ssl.getKeyStoreType()) ||
+                (!isInvalid(ssl.getKeyStoreType()) && !ssl.getKeyStoreType().equals("JCERACFKS")))) {
+            addParameterToProblemsList("keyStorePassword", missingSslParameters);
         }
         if (isInvalid(ssl.getKeyPassword())) {
             addParameterToProblemsList("keyPassword", missingSslParameters);

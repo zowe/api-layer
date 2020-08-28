@@ -9,8 +9,7 @@
  */
 package org.zowe.apiml.zaasclient.service.internal;
 
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
@@ -30,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-public class CloseableClientProviderTest {
+class CloseableClientProviderTest {
 
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
     private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
@@ -77,19 +76,24 @@ public class CloseableClientProviderTest {
     }
 
     @Test
-    void testGetHttpClientWithTrustStoreWithCookies() throws ZaasConfigurationException {
-        BasicCookieStore cookieStore = new BasicCookieStore();
-        BasicClientCookie cookie = new BasicClientCookie("apimlAuthenticationToken", "token");
-        cookie.setDomain(configProperties.getApimlHost());
-        cookie.setPath("/");
-        cookieStore.addCookie(cookie);
+    void whenGetHttpClientWithTrustStore_thenIdenticalClientReturned() throws ZaasConfigurationException {
+        CloseableHttpClient client1 = httpsClientProvider.getHttpsClientWithTrustStore();
+        CloseableHttpClient client2 = httpsClientProvider.getHttpsClientWithTrustStore();
 
-        assertNotNull(httpsClientProvider.getHttpsClientWithTrustStore(cookieStore));
+        assertEquals(client1, client2);
     }
 
     @Test
     void testGetHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
         assertNotNull(httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore());
+    }
+
+    @Test
+    void whenGetHttpsClientWithKeyStoreAndTrustStore_thenIdenticalClientReturned() throws ZaasConfigurationException {
+        CloseableHttpClient client1 = httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore();
+        CloseableHttpClient client2 = httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore();
+
+        assertEquals(client1, client2);
     }
 
     @Test
@@ -121,9 +125,7 @@ public class CloseableClientProviderTest {
         config.setTrustStorePath("src/test/resources/localhost.truststore.p12");
         config.setTrustStoreType("PKCS12");
         HttpsClientProvider provider = new HttpsClientProvider(config);
-        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
-            provider.getHttpsClientWithKeyStoreAndTrustStore();
-        });
+        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, provider::getHttpsClientWithKeyStoreAndTrustStore);
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS501E"));
     }
@@ -137,9 +139,7 @@ public class CloseableClientProviderTest {
         config.setKeyStorePath("intentionallyInvalidPath");
         config.setKeyStoreType("PKCS12");
         HttpsClientProvider provider = new HttpsClientProvider(config);
-        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
-            provider.getHttpsClientWithKeyStoreAndTrustStore();
-        });
+        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, provider::getHttpsClientWithKeyStoreAndTrustStore);
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS503E"));
     }
@@ -153,9 +153,7 @@ public class CloseableClientProviderTest {
         config.setKeyStorePath("src/test/resources/localhost.keystore.p12");
         config.setKeyStoreType("invalidCryptoType");
         HttpsClientProvider provider = new HttpsClientProvider(config);
-        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, () -> {
-            provider.getHttpsClientWithKeyStoreAndTrustStore();
-        });
+        ZaasConfigurationException zaasException = assertThrows(ZaasConfigurationException.class, provider::getHttpsClientWithKeyStoreAndTrustStore);
 
         assertThat(zaasException.getErrorCode().getId(), is("ZWEAS502E"));
     }

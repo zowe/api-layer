@@ -12,9 +12,8 @@ package org.zowe.apiml.apicatalog.services.cached;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocCacheKey;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +29,6 @@ public class CachedApiDocService {
     private static final Map<ApiDocCacheKey, String> serviceApiDocs = new HashMap<>();
     private final APIDocRetrievalService apiDocRetrievalService;
     private final TransformApiDocService transformApiDocService;
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Autowired
     public CachedApiDocService(APIDocRetrievalService apiDocRetrievalService, TransformApiDocService transformApiDocService) {
@@ -54,10 +51,13 @@ public class CachedApiDocService {
                 apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
                 CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
             }
+            if (apiDoc == null) {
+                throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
+            }
         } catch (Exception e) {
             //if there's not apiDoc in cache
             if (apiDoc == null) {
-                apimlLog.log("org.zowe.apiml.apicatalog.apidocRetrievalProblem", serviceId, e.getMessage());
+                throw new ApiDocNotFoundException("No API Documentation was retrieved for the service " + serviceId + ".");
             }
         }
         return apiDoc;

@@ -12,7 +12,6 @@ package org.zowe.apiml.zaasclient.service.internal;
 import lombok.AllArgsConstructor;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -23,7 +22,10 @@ import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -43,6 +45,9 @@ class HttpsClientProvider implements CloseableClientProvider {
     private final String keyStoreType;
     private String keyStorePath;
 
+    private CloseableHttpClient httpsClientWithTruststore;
+    private CloseableHttpClient httpsClientWithKeyStoreAndTrustStore;
+
     public HttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
         this.requestConfig = this.buildCustomRequestConfig();
 
@@ -58,30 +63,30 @@ class HttpsClientProvider implements CloseableClientProvider {
     }
 
     @Override
-    public CloseableHttpClient getHttpsClientWithTrustStore() throws ZaasConfigurationException {
-        return sharedHttpClientConfiguration(getSSLContext())
-            .build();
+    public synchronized CloseableHttpClient getHttpsClientWithTrustStore() throws ZaasConfigurationException {
+        if (httpsClientWithTruststore == null) {
+            httpsClientWithTruststore = sharedHttpClientConfiguration(getSSLContext())
+                .build();
+        }
+        return httpsClientWithTruststore;
     }
 
+    //TODO how is this working compared to the other method to get the client?
+    // What if you call the methods in reverse order
+    // this does not seem to have deterministic behavior
     @Override
-    public CloseableHttpClient getHttpsClientWithTrustStore(BasicCookieStore cookieStore) throws ZaasConfigurationException {
-        return sharedHttpClientConfiguration(getSSLContext())
-            .setDefaultCookieStore(cookieStore)
-            .build();
-    }
-
-    @Override
-    public CloseableHttpClient getHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
+    public synchronized CloseableHttpClient getHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
         if (keyStorePath == null) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED);
         }
-
-        if (kmf == null) {
-            initializeKeyStoreManagerFactory();
+        if (httpsClientWithKeyStoreAndTrustStore == null) {
+            if (kmf == null) {
+                initializeKeyStoreManagerFactory();
+            }
+            httpsClientWithKeyStoreAndTrustStore = sharedHttpClientConfiguration(getSSLContext())
+                .build();
         }
-
-        return sharedHttpClientConfiguration(getSSLContext())
-            .build();
+        return httpsClientWithKeyStoreAndTrustStore;
     }
 
     private void initializeTrustManagerFactory(String trustStorePath, String trustStoreType, char[] trustStorePassword)

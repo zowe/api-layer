@@ -17,7 +17,6 @@ import org.apache.http.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -94,7 +93,7 @@ class ZaasClientHttpsTest {
         expiredToken = getToken(now, expirationForExpiredToken, jwtSecretKey);
         invalidToken = token + "DUMMY TEXT";
 
-        when(httpsClientProvider.getHttpsClientWithTrustStore(any(BasicCookieStore.class))).thenReturn(closeableHttpClient);
+        when(httpsClientProvider.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
         when(closeableHttpClient.execute(any(HttpGet.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpClient.execute(any(HttpPost.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpResponse.getEntity()).thenReturn(httpsEntity);
@@ -102,7 +101,7 @@ class ZaasClientHttpsTest {
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         String baseUrl = "/api/v1/gateway/auth";
-        tokenService = new TokenServiceHttpsJwt(httpsClientProvider, baseUrl, "localhost");
+        tokenService = new TokenServiceHttpsJwt(httpsClientProvider, baseUrl);
         passTicketService = new PassTicketServiceHttps(httpsClientProvider, baseUrl);
     }
 
