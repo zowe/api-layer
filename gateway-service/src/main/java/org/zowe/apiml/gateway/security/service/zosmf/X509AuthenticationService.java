@@ -30,13 +30,10 @@ public class X509AuthenticationService implements X509Authentication {
     public String mapUserToCertificate(X509Certificate certificate) {
         if (isClientAuthCertificate(certificate)) {
             String dn = certificate.getSubjectX500Principal().getName();
-            log.error("Cert dn " + dn);
             LdapName ldapDN = getLdapName(dn);
             for (Rdn rdn : ldapDN.getRdns()) {
                 if ("cn".equalsIgnoreCase(rdn.getType())) {
-                    String name = String.valueOf(rdn.getValue());
-                    log.error("Username from certificate " + name);
-                    return name;
+                    return String.valueOf(rdn.getValue());
                 }
             }
         }

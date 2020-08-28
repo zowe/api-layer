@@ -14,28 +14,26 @@ import org.junit.jupiter.api.Test;
 
 import java.security.cert.X509Certificate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 class X509AuthenticationTokenTest {
 
-    private X509Certificate x509Certificate;
-    private X509Certificate[] certs;
     X509AuthenticationToken token;
     X509AuthenticationToken token2;
 
     @BeforeEach
     void setup() {
-        x509Certificate = mock(X509Certificate.class);
-        certs = new X509Certificate[]{x509Certificate};
+        X509Certificate x509Certificate = mock(X509Certificate.class);
+        X509Certificate[] certs = new X509Certificate[]{x509Certificate};
         token = new X509AuthenticationToken(certs);
         token2 = new X509AuthenticationToken(certs);
     }
 
     @Test
     void sameObjectsAreEquals() {
-        assertTrue(token.equals(token2));
+        assertEquals(token, token2);
     }
 
     @Test
