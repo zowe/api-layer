@@ -144,7 +144,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH).authenticated()
             .and().x509()
-            .x509AuthenticationFilter(apimlX509AuthenticationFilter())
+            .x509AuthenticationFilter(apimlX509Filter())
             .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
             .userDetailsService(x509UserDetailsService())
 
@@ -153,7 +153,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers(HttpMethod.DELETE, CacheServiceController.CONTROLLER_PATH, CacheServiceController.CONTROLLER_PATH + "/**").authenticated()
             .and().x509()
-            .x509AuthenticationFilter(apimlX509AuthenticationFilter())
+            .x509AuthenticationFilter(apimlX509Filter())
             .subjectPrincipalRegex(EXTRACT_USER_PRINCIPAL_FROM_COMMON_NAME)
             .userDetailsService(x509UserDetailsService())
 
@@ -293,7 +293,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * 2) Move the logic to decide whether the client which is signed by the Gateway client certificate should be used
      * into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
      */
-    private ApimlX509Filter apimlX509AuthenticationFilter() throws Exception {
+    private ApimlX509Filter apimlX509Filter() throws Exception {
         ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
         out.setAuthenticationManager(authenticationManager());
         return out;
