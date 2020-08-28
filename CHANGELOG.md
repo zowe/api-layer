@@ -1,6 +1,15 @@
 # API Mediation Layer Changelog
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
+## `1.15.0`
+
+- Feature: API Path Pattern supports serviceId as first element [#688](https://github.com/zowe/api-layer/issues/688)
+- Feature: Add SAF Provider as a possible authentication provider [#472](https://github.com/zowe/api-layer/issues/472)
+- Bugfix: Fix SSL validation when Eureka is running in HTTP mode [#792](https://github.com/zowe/api-layer/issues/792)
+- Bugfix: Fix problem in error handling when no api-doc is available [#571](https://github.com/zowe/api-layer/issues/571)
+- Feature: Provide the Swagger URL for zOSMF [#665](https://github.com/zowe/api-layer/issues/665)
+- Feature: Allow character encoding by default [#777](https://github.com/zowe/api-layer/issues/777)
+
 ## `1.14.0`
 
 - Bugfix: Prevent crashing of API ML when null routes are set. [#767](https://github.com/zowe/api-layer/pull/767)
