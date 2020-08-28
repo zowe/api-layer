@@ -24,15 +24,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
-public class X509Filter extends AbstractAuthenticationProcessingFilter {
+public class X509AuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationProvider authenticationProvider;
     private final AuthenticationSuccessHandler successHandler;
 
 
-    public X509Filter(String endpoint,
-                      AuthenticationSuccessHandler successHandler,
-                      AuthenticationProvider authenticationProvider) {
+    public X509AuthenticationFilter(String endpoint,
+                                    AuthenticationSuccessHandler successHandler,
+                                    AuthenticationProvider authenticationProvider) {
         super(endpoint);
         this.authenticationProvider = authenticationProvider;
         this.successHandler = successHandler;

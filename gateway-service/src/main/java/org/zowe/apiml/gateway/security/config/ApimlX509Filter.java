@@ -28,35 +28,39 @@ import java.util.stream.Collectors;
  * Be careful with usage as later on it means that the set of original certificates won't be available.
  */
 @RequiredArgsConstructor
-public class ApimlX509AuthenticationFilter extends X509AuthenticationFilter {
+public class ApimlX509Filter extends X509AuthenticationFilter {
 
     private final Set<String> publicKeyCertificatesBase64;
 
     /**
-     * Filter certificated by allowed - see publicKeyCertificatesBase64
-     *
+     * Separate certificates into 2 lists by allowed - see publicKeyCertificatesBase64.
+     *  List with key "true" are allowed and "false" not allowed certificates.
      * @param certs all certificated to filter
-     * @return filtered certificates (certs), contains only certificated used to sign in APIML
+     * @return map of lists with separated certificates (certs)
      */
-    private Map<Boolean, List<X509Certificate>> filter(X509Certificate[] certs) {
-        return Arrays.stream(certs).collect(Collectors.partitioningBy(cer -> publicKeyCertificatesBase64.contains(Base64.getEncoder().encodeToString(cer.getPublicKey().getEncoded()))));
+    private Map<Boolean, List<X509Certificate>> partitionByAllowed(X509Certificate[] certs) {
+        return Arrays.stream(certs).collect(Collectors.partitioningBy(
+            cer -> publicKeyCertificatesBase64.contains(
+                Base64.getEncoder().encodeToString(cer.getPublicKey().getEncoded())
+            )
+        ));
     }
 
     /**
-     * Get certificates from request (if exists), filter them (to use only APIML certificate to request sign) and
-     * store again into request.
+     * Get certificates from request (if exists), separate them (to use only APIML certificate to request sign and
+     * other for authentication) and store again into request.
      *
      * @param request Request to filter certificates
      */
     private void filterCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         if (certs != null) {
-            Map<Boolean, List<X509Certificate>> separatedCerts = filter(certs);
+            Map<Boolean, List<X509Certificate>> separatedCerts = partitionByAllowed(certs);
             X509Certificate[] clientAuthCerts = new X509Certificate[separatedCerts.get(false).size()];
             request.setAttribute("client.auth.X509Certificate", separatedCerts.get(false).toArray(clientAuthCerts));
             X509Certificate[] zoweCerts = new X509Certificate[separatedCerts.get(true).size()];
-            certs = separatedCerts.get(true).toArray(zoweCerts);
-            request.setAttribute("javax.servlet.request.X509Certificate", certs);
+            zoweCerts = separatedCerts.get(true).toArray(zoweCerts);
+            request.setAttribute("javax.servlet.request.X509Certificate", zoweCerts);
         }
     }
 

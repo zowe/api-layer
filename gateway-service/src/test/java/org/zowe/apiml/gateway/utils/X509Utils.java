@@ -34,6 +34,7 @@ public class X509Utils {
     public X509Certificate getCertificate(String base64, String CN) {
         X509Certificate out = mock(X509Certificate.class);
         PublicKey publicKey = mock(PublicKey.class);
+
         doReturn(publicKey).when(out).getPublicKey();
         doReturn(new X500Principal(CN))
             .when(out).getSubjectX500Principal();

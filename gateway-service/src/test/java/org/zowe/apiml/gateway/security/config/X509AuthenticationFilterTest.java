@@ -30,12 +30,12 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-class X509LoginFilterTest {
+class X509AuthenticationFilterTest {
 
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
 
-    private X509Filter x509Filter;
+    private X509AuthenticationFilter x509AuthenticationFilter;
 
     private AuthenticationSuccessHandler successHandler;
 
@@ -53,7 +53,7 @@ class X509LoginFilterTest {
         authenticationProvider = mock(AuthenticationProvider.class);
         filterChain = mock(FilterChain.class);
         authenticationService = mock(AuthenticationService.class);
-        x509Filter = new X509Filter("/api/v1/gateway/auth/login", successHandler, authenticationProvider);
+        x509AuthenticationFilter = new X509AuthenticationFilter("/api/v1/gateway/auth/login", successHandler, authenticationProvider);
 
         when(authenticationService.getJwtTokenFromRequest(httpServletRequest)).thenReturn(Optional.of("jwt"));
     }
@@ -65,7 +65,7 @@ class X509LoginFilterTest {
         httpServletRequest.setAttribute("client.auth.X509Certificate", x509Certificate);
         httpServletResponse = new MockHttpServletResponse();
 
-        x509Filter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        x509AuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         verify(authenticationProvider).authenticate(new X509AuthenticationToken(x509Certificate));
     }
@@ -80,7 +80,7 @@ class X509LoginFilterTest {
         httpServletResponse = new MockHttpServletResponse();
         when(authenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)))
             .thenReturn(new TokenAuthentication("user", "jwt"));
-        x509Filter.doFilter(httpServletRequest, httpServletResponse, filterChain);
+        x509AuthenticationFilter.doFilter(httpServletRequest, httpServletResponse, filterChain);
 
         verify(authenticationProvider).authenticate(new X509AuthenticationToken(x509Certificate));
     }
@@ -91,7 +91,7 @@ class X509LoginFilterTest {
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
-        x509Filter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        x509AuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         verify(authenticationProvider, times(0)).authenticate(new X509AuthenticationToken(x509Certificate));
     }

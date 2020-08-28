@@ -214,8 +214,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             handlerInitializer.getResourceAccessExceptionHandler());
     }
 
-    private X509Filter x509Filter(String loginEndpoint) {
-        return new X509Filter(loginEndpoint,
+    private X509AuthenticationFilter x509Filter(String loginEndpoint) {
+        return new X509AuthenticationFilter(loginEndpoint,
             handlerInitializer.getSuccessfulLoginHandler(),
             x509AuthenticationProvider);
     }
@@ -293,8 +293,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      * 2) Move the logic to decide whether the client which is signed by the Gateway client certificate should be used
      * into the HttpClientChooser - This didn't work as the HttpClientChooser isn't used in these specific calls.
      */
-    private ApimlX509AuthenticationFilter apimlX509AuthenticationFilter() throws Exception {
-        ApimlX509AuthenticationFilter out = new ApimlX509AuthenticationFilter(publicKeyCertificatesBase64);
+    private ApimlX509Filter apimlX509AuthenticationFilter() throws Exception {
+        ApimlX509Filter out = new ApimlX509Filter(publicKeyCertificatesBase64);
         out.setAuthenticationManager(authenticationManager());
         return out;
     }
