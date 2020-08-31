@@ -9,63 +9,70 @@
  */
 package org.zowe.apiml.gateway.security.service.zosmf;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-
-import lombok.extern.slf4j.Slf4j;
-
-import org.zowe.apiml.gateway.security.service.ZosmfService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
+import com.nimbusds.jose.jwk.JWKSet;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Primary;
+import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-/**
- * This implementation is used for version z/OSMF which can support authentication
- * endpoint depends on z/OSMF's configuration).
- * This endpoint allows to generate new token, verify using token and
- * also deactivation of token. Token could be LTPA or JWT.
- *
- * Bean could be served via {@link ZosmfServiceFacade}
- */
+import java.text.ParseException;
+
+@Primary
 @Service
-@Order(1)
 @Slf4j
-public class ZosmfServiceV2 extends AbstractZosmfService {
+public class ZosmfService extends AbstractZosmfService {
+    //TODO:: Do we still need an abstract parent? only one implementation now...
 
-    public ZosmfServiceV2(AuthConfigurationProperties authConfigurationProperties, DiscoveryClient discovery,
-            @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
-            ObjectMapper securityObjectMapper) {
-        super(authConfigurationProperties, discovery, restTemplateWithoutKeystore, securityObjectMapper);
+    private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
+
+    public ZosmfService(
+        final AuthConfigurationProperties authConfigurationProperties,
+        final DiscoveryClient discovery,
+        final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
+        final ObjectMapper securityObjectMapper,
+        final ApplicationContext applicationContext
+    ) {
+        super(
+            authConfigurationProperties,
+            discovery,
+            restTemplateWithoutKeystore,
+            securityObjectMapper
+        );
     }
 
     @Override
     public AuthenticationResponse authenticate(Authentication authentication) {
         String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+        if (authenticationEndpointExists()) {
+            final HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.AUTHORIZATION, getAuthenticationValue(authentication));
+            headers.add(ZOSMF_CSRF_HEADER, "");
 
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.AUTHORIZATION, getAuthenticationValue(authentication));
-        headers.add(ZOSMF_CSRF_HEADER, "");
-
-        try {
-            final ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
+            try {
+                final ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
                     new HttpEntity<>(null, headers), String.class);
-            return getAuthenticationResponse(response);
-        } catch (RuntimeException re) {
-            throw handleExceptionOnCall(url, re);
+                return getAuthenticationResponse(response);
+            } catch (RuntimeException re) {
+                throw handleExceptionOnCall(url, re);
+            }
         }
+        throw handleExceptionOnCall(url, new RuntimeException("Create new zosmf PTF missing exception")); //TODO:: Create Exception class
     }
 
+    /**
+     * TODO:: MAKE this cachable?
+     * @return
+     */
     private boolean authenticationEndpointExists() {
         String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
@@ -89,7 +96,7 @@ public class ZosmfServiceV2 extends AbstractZosmfService {
     }
 
     @Override
-    public void validate(ZosmfService.TokenType type, String token) {
+    public void validate(TokenType type, String token) {
         final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
         final HttpHeaders headers = new HttpHeaders();
@@ -98,7 +105,7 @@ public class ZosmfServiceV2 extends AbstractZosmfService {
 
         try {
             ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
-                    new HttpEntity<>(null, headers), String.class);
+                new HttpEntity<>(null, headers), String.class);
 
             if (re.getStatusCode().is2xxSuccessful())
                 return;
@@ -113,7 +120,7 @@ public class ZosmfServiceV2 extends AbstractZosmfService {
     }
 
     @Override
-    public void invalidate(ZosmfService.TokenType type, String token) {
+    public void invalidate(TokenType type, String token) {
         final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
         final HttpHeaders headers = new HttpHeaders();
@@ -122,7 +129,7 @@ public class ZosmfServiceV2 extends AbstractZosmfService {
 
         try {
             ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.DELETE,
-                    new HttpEntity<>(null, headers), String.class);
+                new HttpEntity<>(null, headers), String.class);
 
             if (re.getStatusCode().is2xxSuccessful())
                 return;
@@ -133,10 +140,17 @@ public class ZosmfServiceV2 extends AbstractZosmfService {
         }
     }
 
+    public JWKSet getPublicKeys() {
+        final String url = getURI(getZosmfServiceId()) + PUBLIC_JWK_ENDPOINT;
 
-    @Override
-    public boolean isSupported(int version) {
-        return (version >= 26) && authenticationEndpointExists();
+        try {
+            final String json = restTemplateWithoutKeystore.getForObject(url, String.class);
+            return JWKSet.parse(json);
+        } catch (ParseException pe) {
+            log.debug("Invalid format of public keys from z/OSMF", pe);
+        } catch (HttpClientErrorException.NotFound nf) {
+            log.debug("Cannot get public keys from z/OSMF", nf);
+        }
+        return new JWKSet();
     }
-
 }

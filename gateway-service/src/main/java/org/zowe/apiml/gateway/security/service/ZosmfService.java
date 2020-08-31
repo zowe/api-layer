@@ -51,17 +51,6 @@ public interface ZosmfService {
     void invalidate(ZosmfService.TokenType type, String token);
 
     /**
-     * Method is to decide which version of z/OSMF are supported by implementation.
-     * If bean is not real implementation but delegates it has to return false (see
-     * {@link org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceFacade}).
-     *
-     * @param version version of z/OSMF
-     * @return if bean provides implementation for specific version and
-     *         configuration of z/OSMF
-     */
-    boolean isSupported(int version);
-
-    /**
      * Enumeration of supported security tokens
      */
     @AllArgsConstructor
