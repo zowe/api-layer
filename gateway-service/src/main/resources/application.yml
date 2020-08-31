@@ -18,6 +18,7 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        javax.servlet: INFO
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -32,7 +33,6 @@ apiml:
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
         preferIpAddress: false
-        allowEncodedSlashes: false
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
 
     gateway:

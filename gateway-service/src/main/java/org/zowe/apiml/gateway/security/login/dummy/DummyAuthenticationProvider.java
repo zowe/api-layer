@@ -62,7 +62,7 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
         }
 
         String username = usernamePasswordAuthentication.getName();
-        String token = authenticationService.createJwtToken(username, DUMMY_PROVIDER, DUMMY_PROVIDER);
+        String token = authenticationService.createJwtToken(username, DUMMY_PROVIDER, null);
 
         TokenAuthentication tokenAuthentication = new TokenAuthentication(username, token);
         tokenAuthentication.setAuthenticated(true);

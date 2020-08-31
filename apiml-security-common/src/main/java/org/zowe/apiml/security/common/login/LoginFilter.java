@@ -9,9 +9,6 @@
  */
 package org.zowe.apiml.security.common.login;
 
-import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.zowe.apiml.constants.ApimlConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +22,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -73,8 +73,8 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         if (!request.getMethod().equals(HttpMethod.POST.name())) {
             throw new AuthMethodNotSupportedException(request.getMethod());
         }
-
         Optional<LoginRequest> optionalLoginRequest = getCredentialFromAuthorizationHeader(request);
+
         LoginRequest loginRequest = optionalLoginRequest.orElseGet(() -> getCredentialsFromBody(request));
         if (StringUtils.isBlank(loginRequest.getUsername()) || StringUtils.isBlank(loginRequest.getPassword())) {
             throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
@@ -82,7 +82,9 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
         UsernamePasswordAuthenticationToken authentication
             = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword());
+
         Authentication auth = null;
+
         try {
             auth = this.getAuthenticationManager().authenticate(authentication);
         } catch (RuntimeException ex) {
@@ -90,6 +92,7 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         }
         return auth;
     }
+
 
     /**
      * Calls successful login handler

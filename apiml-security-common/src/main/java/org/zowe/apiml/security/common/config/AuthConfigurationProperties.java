@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.auth.AuthenticationScheme;
 
 
 /**
@@ -50,7 +51,7 @@ public class AuthConfigurationProperties {
     //Token properties
     @Data
     public static class TokenProperties {
-        private int expirationInSeconds = 24 * 60 * 60;
+        private int expirationInSeconds = 8 * 60 * 60;
         private String issuer = "APIML";
         private String shortTtlUsername = "expire";
         private long shortTtlExpirationInSeconds = 1;
@@ -84,11 +85,13 @@ public class AuthConfigurationProperties {
      * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
     public String validatedZosmfServiceId() {
-        if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
-            apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
-            throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
-        }
 
+        if (provider.equalsIgnoreCase(AuthenticationScheme.ZOSMF.getScheme())) {
+            if ((zosmfServiceId == null) || zosmfServiceId.isEmpty()) {
+                apimlLog.log("org.zowe.apiml.security.zosmfNotFound");
+                throw new AuthenticationServiceException("The parameter 'zosmfServiceId' is not configured.");
+            }
+        }
         return zosmfServiceId;
     }
 }

@@ -21,6 +21,7 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,7 +53,7 @@ class ZosAuthenticationProviderTests {
     @Test
     void validAuthenticationOnOnValidCredentials() {
         String validJwtToken = "validJwtToken";
-        when(mockService.createJwtToken(anyString(), anyString(), anyString())).thenReturn(validJwtToken);
+        when(mockService.createJwtToken(anyString(), anyString(), any())).thenReturn(validJwtToken);
         when(mockService.createTokenAuthentication(VALID_USERID, validJwtToken))
             .thenReturn(new TokenAuthentication(VALID_USERID, validJwtToken));
 

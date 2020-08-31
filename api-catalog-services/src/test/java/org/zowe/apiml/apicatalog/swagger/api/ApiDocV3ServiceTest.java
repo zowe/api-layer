@@ -10,13 +10,6 @@
 
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayConfigProperties;
-import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.product.routing.RoutedServices;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -29,13 +22,20 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayConfigProperties;
+import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.product.routing.RoutedServices;
 
 import javax.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 public class ApiDocV3ServiceTest {
@@ -128,6 +128,29 @@ public class ApiDocV3ServiceTest {
         exceptionRule.expect(UnexpectedTypeException.class);
         exceptionRule.expectMessage("attribute openapi is not of type `object`");
         apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
+    }
+
+    /**
+     * GH #637
+     */
+    @Test
+    public void givenValidApidoc_whenTransformed_thenDontCapitalizeEnums() {
+        ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", "3.0.0", "https://localhost:10014/apicatalog/api-doc", "https://www.zowe.org");
+        String content = "{\"openapi\":\"3.0.1\",\"info\":{\"title\":\"ZoweKotlinSampleRESTAPI\",\"description\":\"SampleKotlinSpringBootRESTAPIforZowe.\",\"version\":\"1.0.0\"},\"servers\":[{\"url\":\"https://localhost:10090\",\"description\":\"Generatedserverurl\"}],\"paths\":{\"/api/v1/greeting\":{\"get\":{\"tags\":[\"Greeting\"],\"summary\":\"Returnsagreetingforthenamepassed\",\"operationId\":\"getGreeting\",\"parameters\":[{\"name\":\"name\",\"in\":\"query\",\"description\":\"Personorobjecttobegreeted\",\"required\":false,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"Successfulgreeting\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/Greeting\"}}}},\"404\":{\"description\":\"Notfound\",\"content\":{\"application/json\":{\"schema\":{\"$ref\":\"#/components/schemas/ApiMessage\"}}}}}}}},\"components\":{\"schemas\":{\"Greeting\":{\"required\":[\"content\",\"id\",\"languageTag\"],\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"description\":\"GeneratedsequenceIDofthemessage\",\"format\":\"int64\"},\"content\":{\"type\":\"string\",\"description\":\"Thegreetingmessage\"},\"languageTag\":{\"type\":\"string\",\"description\":\"Thelocalelanguagetagusedforthismessage\"}}},\"ApiMessage\":{\"type\":\"object\",\"properties\":{\"messages\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/components/schemas/Message\"}}}},\"Message\":{\"type\":\"object\",\"properties\":{\"messageType\":{\"type\":\"string\",\"enum\":[\"ERROR\",\"WARNING\",\"INFO\",\"DEBUG\",\"TRACE\"]},\"messageNumber\":{\"type\":\"string\"},\"messageContent\":{\"type\":\"string\"},\"messageAction\":{\"type\":\"string\"},\"messageReason\":{\"type\":\"string\"},\"messageKey\":{\"type\":\"string\"},\"messageParameters\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"messageInstanceId\":{\"type\":\"string\"},\"messageComponent\":{\"type\":\"string\"},\"messageSource\":{\"type\":\"string\"}}}}}}";
+        RoutedService routedService = new RoutedService("api_v1", "api/v1", "/apicatalog");
+
+        RoutedServices routedServices = new RoutedServices();
+        routedServices.addRoutedService(routedService);
+
+        ApiDocInfo info = new ApiDocInfo(apiInfo, content, routedServices);
+
+        assertThat(content, not(containsString("\"style\":\"form\"")));
+        assertThat(content, not(containsString("\"style\":\"FORM\"")));
+
+        String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, info);
+
+        assertThat(actualContent, containsString("\"style\":\"form\""));
+        assertThat(actualContent, not(containsString("\"style\":\"FORM\"")));
     }
 
     private String convertOpenApiToJson(OpenAPI openApi) {

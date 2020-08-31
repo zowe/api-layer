@@ -11,14 +11,20 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.security.common.login.LoginRequest;
 
-public class DummyAuthenticationLoginIntegrationTest extends Login {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+
+class DummyAuthenticationLoginIntegrationTest extends Login {
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
 
-        switchProvider("dummy");
+        providers.switchProvider("dummy");
     }
 
     protected String getUsername() {
@@ -28,4 +34,15 @@ public class DummyAuthenticationLoginIntegrationTest extends Login {
     protected String getPassword() {
         return "user";
     }
+
+    @Test
+    void givenValidCredentialsInBody_whenUserAuthenticatesTwice_thenTwoDifferentValidTokenIsProduced() {
+        LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword());
+
+        String jwtToken1 = authenticateAndVerify(loginRequest);
+        String jwtToken2 = authenticateAndVerify(loginRequest);
+
+        assertThat(jwtToken1, is(not(jwtToken2)));
+    }
+
 }

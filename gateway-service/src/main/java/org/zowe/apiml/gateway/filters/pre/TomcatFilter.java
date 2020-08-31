@@ -35,7 +35,7 @@ public class TomcatFilter implements Filter {
     private final MessageService messageService;
     private final ObjectMapper mapper;
 
-    @Value("${apiml.service.allowEncodedSlashes:#{false}}")
+    @Value("${apiml.service.allowEncodedSlashes:#{true}}")
     private boolean allowEncodedSlashes;
 
     @InjectApimlLogger
