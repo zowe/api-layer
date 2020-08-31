@@ -12,14 +12,26 @@ package org.zowe.apiml.gatewayservice.authentication;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.restassured.RestAssured;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
+import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
+
+import javax.net.ssl.SSLContext;
+import java.net.URI;
+import java.security.cert.X509Certificate;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -39,12 +51,17 @@ class Login {
     protected static String authenticationEndpointPath = String.format("%s://%s:%d%s/authentication", SCHEME, HOST, PORT, BASE_PATH);
     protected static AuthenticationProviders providers = new AuthenticationProviders(authenticationEndpointPath);
     protected final static String LOGIN_ENDPOINT = "/auth/login";
+    public static final String LOGIN_ENDPOINT_URL = String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT);
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
+
+    public static final char[] KEYSTORE_PASSWORD = ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStorePassword();
+    public static final String KEYSTORE_LOCALHOST_TEST_JKS = ConfigReader.environmentConfiguration().getTlsConfiguration().getClientKeystore();
+
 
     protected String getUsername() {
         return USERNAME;
@@ -73,13 +90,17 @@ class Login {
         Cookie cookie = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
 
+        assertValidAuthToken(cookie);
+    }
+
+    private void assertValidAuthToken(Cookie cookie) {
         assertThat(cookie.isHttpOnly(), is(true));
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1));
@@ -95,9 +116,9 @@ class Login {
         String token = given()
             .auth().preemptive().basic(getUsername(), getPassword())
             .contentType(JSON)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().cookie(COOKIE_NAME);
@@ -128,9 +149,9 @@ class Login {
         given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
+            .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
@@ -146,9 +167,9 @@ class Login {
         ValidatableResponse response = given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then();
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
+            .then();
         response.statusCode(is(SC_UNAUTHORIZED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
@@ -161,9 +182,9 @@ class Login {
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         given()
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
+            .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
@@ -176,15 +197,15 @@ class Login {
             BASE_PATH + LOGIN_ENDPOINT + "'";
 
         JSONObject loginRequest = new JSONObject()
-            .put("user",getUsername())
-            .put("pass",getPassword());
+            .put("user", getUsername())
+            .put("pass", getPassword());
 
         given()
             .contentType(JSON)
             .body(loginRequest.toString())
-        .when()
-            .post(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .when()
+            .post(LOGIN_ENDPOINT_URL)
+            .then()
             .statusCode(is(SC_BAD_REQUEST))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
@@ -201,9 +222,9 @@ class Login {
         given()
             .contentType(JSON)
             .body(loginRequest)
-        .when()
-            .get(String.format("%s://%s:%d%s%s", SCHEME, HOST, PORT, BASE_PATH, LOGIN_ENDPOINT))
-        .then()
+            .when()
+            .get(LOGIN_ENDPOINT_URL)
+            .then()
             .statusCode(is(SC_METHOD_NOT_ALLOWED))
             .body(
                 "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
@@ -233,4 +254,36 @@ class Login {
         return cookie.getValue();
     }
     //@formatter:on
+
+    /*
+     * This test will be for MF once the implementation of certificate mapping in SAF is available
+     */
+    @Test
+    @NotForMainframeTest
+    void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
+
+        SSLContext sslContext = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+            // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+
+        RequestSpecification clientCertificateRequestConfig = given()
+            .config(RestAssuredConfig
+                .newConfig()
+                .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext))));
+
+        Cookie cookie = clientCertificateRequestConfig
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
+
+        assertValidAuthToken(cookie);
+
+    }
 }
