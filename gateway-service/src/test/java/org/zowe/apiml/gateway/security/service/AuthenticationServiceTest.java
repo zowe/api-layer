@@ -203,7 +203,7 @@ public class AuthenticationServiceTest {
         assertEquals(DOMAIN, parsedToken.getDomain());
         assertEquals(USER, parsedToken.getUserId());
         assertEquals(parsedToken.getCreation().toString().substring(0, 16), dateNow);
-        Date toBeExpired = DateUtils.addHours(parsedToken.getCreation(), 24);
+        Date toBeExpired = DateUtils.addHours(parsedToken.getCreation(), 8);
         assertEquals(parsedToken.getExpiration(), toBeExpired);
     }
 

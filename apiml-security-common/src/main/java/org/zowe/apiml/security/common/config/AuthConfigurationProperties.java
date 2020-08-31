@@ -51,7 +51,7 @@ public class AuthConfigurationProperties {
     //Token properties
     @Data
     public static class TokenProperties {
-        private int expirationInSeconds = 24 * 60 * 60;
+        private int expirationInSeconds = 8 * 60 * 60;
         private String issuer = "APIML";
         private String shortTtlUsername = "expire";
         private long shortTtlExpirationInSeconds = 1;
