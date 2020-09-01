@@ -100,7 +100,7 @@ class Login {
         assertValidAuthToken(cookie);
     }
 
-    private void assertValidAuthToken(Cookie cookie) {
+    protected void assertValidAuthToken(Cookie cookie) {
         assertThat(cookie.isHttpOnly(), is(true));
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1));
@@ -256,6 +256,7 @@ class Login {
     //@formatter:on
 
     /*
+     * TODO: Figure out integration test which contains the zOSMF calls.
      * This test will be for MF once the implementation of certificate mapping in SAF is available
      */
     @Test

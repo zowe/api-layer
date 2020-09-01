@@ -70,6 +70,7 @@ public abstract class AbstractZosmfService implements ZosmfService {
      * @param authentication credentials to generates header value
      * @return prepared header value (see header Authentication)
      */
+    // TODO: Test if this works with the passticket as the credentials.
     protected String getAuthenticationValue(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
         final String password = authentication.getCredentials().toString();
