@@ -17,8 +17,9 @@ logging:
         net.sf.ehcache: WARN
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: ERROR
         # New Config
-        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         javax.servlet: INFO
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
