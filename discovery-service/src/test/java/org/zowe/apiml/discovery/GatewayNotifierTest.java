@@ -123,7 +123,7 @@ public class GatewayNotifierTest {
         when(application.getInstances()).thenReturn(instances);
         when(registry.getApplication("GATEWAY")).thenReturn(application);
 
-        // no gateway is registred
+        // no gateway is registered
         gatewayNotifierSync.serviceUpdated("service", "host:service:1433");
         verify(restTemplate, never()).delete(anyString());
 

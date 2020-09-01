@@ -111,7 +111,7 @@ public class GatewayNotifier implements Runnable {
      * If notification is about a Gateway instance, this instance is not notified itself.
      *
      * @param serviceId service ID of changed service
-     * @param instanceId isntance ID of changed service
+     * @param instanceId instance ID of changed service
      */
     public void serviceUpdated(String serviceId, String instanceId) {
         final Notification notification = new Notification(serviceId, instanceId, Type.SERVICE_UPDATED);
@@ -119,10 +119,10 @@ public class GatewayNotifier implements Runnable {
     }
 
     /**
-     * Each Gateway use cache for sotring of invalidated tokens. Purpose of this method is distribute list of invalidated
+     * Each Gateway use cache for sorting of invalidated tokens. Purpose of this method is distribute list of invalidated
      * tokens to a Gateway which is new, because meanwhile the Gateway was down, anybody can make logout and this
      * information is stored in other instance of Gateway. After this call those Gateway, which were up, will notify
-     * this newly registred gateway.
+     * this newly registered gateway.
      *
      * @param instanceId instance ID of newly registered Gateway
      */
@@ -201,7 +201,7 @@ public class GatewayNotifier implements Runnable {
     }
 
     /**
-     * This class contains inforamtion about one notification (required information about instance to notifying and
+     * This class contains information about one notification (required information about instance to notifying and
      * type of notification)
      */
     @AllArgsConstructor
