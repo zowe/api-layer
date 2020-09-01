@@ -48,13 +48,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ZaasClientHttpsTest {
+class ZaasClientImplTest {
     private TokenService tokenService;
     private PassTicketService passTicketService;
 
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
 
-    private HttpsClientProvider httpsClientProvider;
+    private ZaasHttpsClientProvider zaasHttpsClientProvider;
     StatusLine statusLine;
     HeaderElement headerElement;
     Header header;
@@ -74,7 +74,7 @@ class ZaasClientHttpsTest {
 
     @BeforeEach
     void setupMethod() throws Exception {
-        httpsClientProvider = mock(HttpsClientProvider.class);
+        zaasHttpsClientProvider = mock(ZaasHttpsClientProvider.class);
         statusLine = mock(StatusLine.class);
         headerElement = mock(HeaderElement.class);
         header = mock(Header.class);
@@ -93,7 +93,7 @@ class ZaasClientHttpsTest {
         expiredToken = getToken(now, expirationForExpiredToken, jwtSecretKey);
         invalidToken = token + "DUMMY TEXT";
 
-        when(httpsClientProvider.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
+        when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
         when(closeableHttpClient.execute(any(HttpGet.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpClient.execute(any(HttpPost.class))).thenReturn(closeableHttpResponse);
         when(closeableHttpResponse.getEntity()).thenReturn(httpsEntity);
@@ -101,8 +101,8 @@ class ZaasClientHttpsTest {
         when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         String baseUrl = "/api/v1/gateway/auth";
-        tokenService = new TokenServiceHttpsJwt(httpsClientProvider, baseUrl);
-        passTicketService = new PassTicketServiceHttps(httpsClientProvider, baseUrl);
+        tokenService = new ZaasJwtService(zaasHttpsClientProvider, baseUrl);
+        passTicketService = new PassTicketServiceImpl(zaasHttpsClientProvider, baseUrl);
     }
 
     private String getToken(long now, long expiration, Key jwtSecretKey) {
@@ -169,7 +169,7 @@ class ZaasClientHttpsTest {
         HeaderElement[] headerElements = new HeaderElement[1];
         headerElements[0] = headerElement;
         try {
-            when(httpsClientProvider.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
+            when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
             when(statusLine.getStatusCode()).thenReturn(httpResponseCode);
             when(closeableHttpResponse.getHeaders("Set-Cookie")).thenReturn(headers);
             when(header.getElements()).thenReturn(headerElements);
@@ -182,7 +182,7 @@ class ZaasClientHttpsTest {
 
     private void prepareResponseForServerUnavailable() {
         try {
-            when(httpsClientProvider.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
+            when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
             when(closeableHttpClient.execute(any(HttpPost.class))).thenThrow(IOException.class);
         } catch (IOException | ZaasConfigurationException e) {
             e.printStackTrace();
@@ -191,7 +191,7 @@ class ZaasClientHttpsTest {
 
     private void prepareResponseForUnexpectedException() {
         try {
-            when(httpsClientProvider.getHttpsClientWithTrustStore()).thenReturn(closeableHttpClient);
+            when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
             when(closeableHttpClient.execute(any(HttpPost.class))).thenAnswer( invocation -> { throw new Exception(); });
         } catch (IOException | ZaasConfigurationException e) {
             e.printStackTrace();
@@ -328,7 +328,7 @@ class ZaasClientHttpsTest {
         ZaasPassTicketResponse zaasPassTicketResponse = new ZaasPassTicketResponse();
         zaasPassTicketResponse.setTicket("ticket");
 
-        when(httpsClientProvider.getHttpsClientWithKeyStoreAndTrustStore()).thenReturn(closeableHttpClient);
+        when(zaasHttpsClientProvider.getHttpClient()).thenReturn(closeableHttpClient);
         when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasPassTicketResponse)));
 
         assertEquals("ticket", passTicketService.passTicket(token, "ZOWEAPPL"));

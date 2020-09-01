@@ -14,7 +14,7 @@ import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
-import org.zowe.apiml.zaasclient.service.internal.ZaasClientHttps;
+import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 
 @Service
 public class ZaasClientService {
@@ -22,7 +22,7 @@ public class ZaasClientService {
     private ZaasClient zaasClient;
 
     public ZaasClientService(ConfigProperties getConfigProperties) throws ZaasConfigurationException {
-        zaasClient = new ZaasClientHttps(getConfigProperties);
+        zaasClient = new ZaasClientImpl(getConfigProperties);
     }
 
     public String login(String username, String password) throws ZaasClientException {
