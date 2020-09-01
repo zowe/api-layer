@@ -16,6 +16,7 @@ logging:
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.eclipse.jetty: WARN
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
     #    com.netflix.eureka.resources: WARN
 
 apiml:
