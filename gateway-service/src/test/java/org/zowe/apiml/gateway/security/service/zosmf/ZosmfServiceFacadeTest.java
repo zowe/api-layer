@@ -354,6 +354,11 @@ public class ZosmfServiceFacadeTest {
             return true;
         }
 
+        @Override
+        public boolean isUsed() {
+            return true;
+        }
+
     }
 
     @AllArgsConstructor
@@ -383,6 +388,11 @@ public class ZosmfServiceFacadeTest {
 
         @Override
         public boolean isAvailable() {
+            return true;
+        }
+
+        @Override
+        public boolean isUsed() {
             return true;
         }
 

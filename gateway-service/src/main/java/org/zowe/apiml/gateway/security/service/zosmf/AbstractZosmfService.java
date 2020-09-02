@@ -21,6 +21,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.service.ZosmfService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -70,7 +71,6 @@ public abstract class AbstractZosmfService implements ZosmfService {
      * @param authentication credentials to generates header value
      * @return prepared header value (see header Authentication)
      */
-    // TODO: Test if this works with the passticket as the credentials.
     protected String getAuthenticationValue(Authentication authentication) {
         final String user = authentication.getPrincipal().toString();
         final String password = authentication.getCredentials().toString();
@@ -168,6 +168,11 @@ public abstract class AbstractZosmfService implements ZosmfService {
 
     @Override
     public boolean isAvailable() {
-        return true;
+        return discovery.getApplication(authConfigurationProperties.validatedZosmfServiceId()) != null;
+    }
+
+    @Override
+    public boolean isUsed() {
+        return authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.ZOSMF.toString());
     }
 }

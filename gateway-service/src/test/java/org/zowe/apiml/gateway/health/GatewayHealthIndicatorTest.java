@@ -11,7 +11,7 @@ package org.zowe.apiml.gateway.health;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.gateway.security.service.ZosmfService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
@@ -28,12 +28,12 @@ class GatewayHealthIndicatorTest {
 
     private static final String ZOSMF = "zosmf";
 
-    private AuthConfigurationProperties authConfigurationProperties;
+    private ZosmfService zosmfService;
 
     @BeforeEach
     void setUp() {
-        authConfigurationProperties = new AuthConfigurationProperties();
-        authConfigurationProperties.setZosmfServiceId(ZOSMF);
+        zosmfService = mock(ZosmfService.class);
+        when(zosmfService.isUsed()).thenReturn(false);
     }
 
     @Test
@@ -46,7 +46,7 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(ZOSMF, "host", 10050, true)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, authConfigurationProperties);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, zosmfService);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
@@ -60,7 +60,7 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
         when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.emptyList());
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, authConfigurationProperties);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, zosmfService);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());

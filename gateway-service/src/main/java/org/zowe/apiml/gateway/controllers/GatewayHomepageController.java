@@ -15,10 +15,9 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.zowe.apiml.gateway.security.login.LoginProvider;
+import org.zowe.apiml.gateway.security.service.ZosmfService;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.util.List;
 
@@ -33,22 +32,22 @@ public class GatewayHomepageController {
     private static final String SUCCESS_ICON_NAME = "success";
 
     private final DiscoveryClient discoveryClient;
-    private final AuthConfigurationProperties authConfigurationProperties;
+    private final ZosmfService zosmfService;
 
     private BuildInfo buildInfo;
     private String buildString;
 
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     AuthConfigurationProperties authConfigurationProperties) {
-       this(discoveryClient, authConfigurationProperties, new BuildInfo());
+                                     ZosmfService zosmfService) {
+       this(discoveryClient, zosmfService, new BuildInfo());
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     AuthConfigurationProperties authConfigurationProperties,
+                                     ZosmfService zosmfService,
                                      BuildInfo buildInfo) {
         this.discoveryClient = discoveryClient;
-        this.authConfigurationProperties = authConfigurationProperties;
+        this.zosmfService = zosmfService;
         this.buildInfo = buildInfo;
 
         initializeBuildInfos();
@@ -144,12 +143,10 @@ public class GatewayHomepageController {
     }
 
     private boolean authorizationServiceUp() {
-        boolean authUp = true;
-
-        if (authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.ZOSMF.toString())) {
-            authUp = !this.discoveryClient.getInstances(authConfigurationProperties.validatedZosmfServiceId()).isEmpty();
+        if (zosmfService.isUsed()) {
+            return zosmfService.isAvailable();
         }
 
-        return authUp;
+        return true;
     }
 }
