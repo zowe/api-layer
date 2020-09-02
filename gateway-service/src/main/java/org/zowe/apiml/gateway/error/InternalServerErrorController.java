@@ -23,7 +23,6 @@ import org.zowe.apiml.gateway.error.check.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.log.ApimlLogger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ public class InternalServerErrorController implements ErrorController {
 
         errorChecks.add(new TlsErrorCheck(messageService));
         errorChecks.add(new TimeoutErrorCheck(messageService));
-        errorChecks.add(new SecurityTokenErrorCheck(messageService));
+        errorChecks.add(new SecurityErrorCheck(messageService));
         errorChecks.add(new ServiceNotFoundCheck(messageService));
         errorChecks.add(new RibbonRetryErrorCheck(messageService));
     }
