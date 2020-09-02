@@ -41,12 +41,9 @@ public class InternalServerErrorController implements ErrorController {
     private final MessageService messageService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
 
-    private ApimlLogger apimlLog;
-
     @Autowired
     public InternalServerErrorController(MessageService messageService) {
         this.messageService = messageService;
-        this.apimlLog = ApimlLogger.of(InternalServerErrorController.class, messageService);
 
         errorChecks.add(new TlsErrorCheck(messageService));
         errorChecks.add(new TimeoutErrorCheck(messageService));
@@ -78,17 +75,16 @@ public class InternalServerErrorController implements ErrorController {
             return entity;
         }
 
-        return logAndCreateResponseForInternalError(request, exc);
+        return createResponseForInternalError(request, exc);
     }
 
-    private ResponseEntity<ApiMessageView> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
+    private ResponseEntity<ApiMessageView> createResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
         Message message = messageService.createMessage("org.zowe.apiml.common.internalRequestError",
             ErrorUtils.getGatewayUri(request),
             ExceptionUtils.getMessage(exc),
             ExceptionUtils.getRootCauseMessage(exc));
 
-        apimlLog.log(message);
         return ResponseEntity.status(status).body(message.mapToView());
     }
 
