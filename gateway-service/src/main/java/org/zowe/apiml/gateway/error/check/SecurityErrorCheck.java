@@ -25,7 +25,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Checks whether the error was caused by an invalid token
+ * Checks whether the error was caused by an invalid token or credentials.
  */
 @RequiredArgsConstructor
 public class SecurityErrorCheck implements ErrorCheck {
