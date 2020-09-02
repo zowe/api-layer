@@ -10,25 +10,16 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
-import io.restassured.config.RestAssuredConfig;
-import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
-import io.restassured.specification.RequestSpecification;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
-import javax.net.ssl.SSLContext;
 import java.net.URI;
-import java.security.cert.X509Certificate;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
@@ -46,12 +37,15 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private int port;
     private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
 
+    //TODO this is not running yet, need to be finalized once the functionality is in place
+
     @BeforeAll
-    static void switchToTestedProvider() {
+    static void setupClients()  {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
 
-        providers.switchProvider("zosmf");
+
+
     }
 
     @BeforeEach
@@ -75,26 +69,13 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         assertThat(jwtToken1, is((jwtToken2)));
     }
 
+    //TODO after some thinking, i think this is enough to prove that zOSMF can work with client cert
     @Test
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
-        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
-        SSLContext sslContext = SSLContextBuilder
-            .create()
-            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
-            // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
-            .loadTrustMaterial(null, trustStrategy)
-            .build();
-
-        RequestSpecification clientCertificateRequestConfig = given()
-            .config(RestAssuredConfig
-                .newConfig()
-                .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext))));
-
-        Cookie cookie = clientCertificateRequestConfig
+        Cookie cookie = given().config(clientCertValid)
             .post(new URI(LOGIN_ENDPOINT_URL))
-        .then()
+            .then()
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
@@ -104,10 +85,10 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
 
-        clientCertificateRequestConfig
+        given().config(tlsWithoutCert)
             .cookie(cookie)
-        .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
-        .then()
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
+            .then()
             .statusCode(is(SC_OK))
             .body(
                 "items.dsname", hasItems(dsname1, dsname2));

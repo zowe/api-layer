@@ -16,7 +16,6 @@ import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
 import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
@@ -71,9 +70,39 @@ class Login {
         return PASSWORD;
     }
 
+    protected static RestAssuredConfig clientCertValid;
+    protected static RestAssuredConfig clientCertApiml;
+    protected static RestAssuredConfig tlsWithoutCert;
+
     @AfterAll
-    static void switchToOriginalProvider() {
+    static void switchToOriginalProvider() throws Exception {
         providers.switchProvider(null);
+
+        providers.switchProvider("zosmf");
+
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
+
+        SSLContext sslContext = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext)));
+
+        SSLContext sslContext2 = SSLContextBuilder
+            .create()
+            .loadKeyMaterial(ResourceUtils.getFile(ConfigReader.environmentConfiguration().getTlsConfiguration().getKeyStore()),
+                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        clientCertApiml = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext2)));
+
+        SSLContext sslContext3 = SSLContextBuilder
+            .create()
+            .loadTrustMaterial(null, trustStrategy)
+            .build();
+        tlsWithoutCert =  RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3)));
     }
 
     @BeforeEach
@@ -256,28 +285,13 @@ class Login {
     //@formatter:on
 
     /*
-     * TODO: Figure out integration test which contains the zOSMF calls.
      * This test will be for MF once the implementation of certificate mapping in SAF is available
      */
     @Test
     @NotForMainframeTest
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
-        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
-        SSLContext sslContext = SSLContextBuilder
-            .create()
-            .loadKeyMaterial(ResourceUtils.getFile(KEYSTORE_LOCALHOST_TEST_JKS),
-                KEYSTORE_PASSWORD, KEYSTORE_PASSWORD)
-            // trust server blind folded. Need to test only that the client pass appropriate x509 certificate.
-            .loadTrustMaterial(null, trustStrategy)
-            .build();
-
-        RequestSpecification clientCertificateRequestConfig = given()
-            .config(RestAssuredConfig
-                .newConfig()
-                .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext))));
-
-        Cookie cookie = clientCertificateRequestConfig
+        Cookie cookie = given().config(clientCertValid)
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
             .statusCode(is(SC_NO_CONTENT))
@@ -285,6 +299,27 @@ class Login {
             .extract().detailedCookie(COOKIE_NAME);
 
         assertValidAuthToken(cookie);
+    }
+    @NotForMainframeTest
+    @Test
+    void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
+        Cookie cookie = given().config(clientCertValid)
+            .auth().basic("Bob","The Builder")
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_NO_CONTENT))
+            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .extract().detailedCookie(COOKIE_NAME);
 
+        assertValidAuthToken(cookie);
+    }
+    @NotForMainframeTest
+    @Test
+    void givenApimlsCert_whenAuth_thenUnauthorized() throws Exception {
+        given().config(clientCertApiml)
+            .post(new URI(LOGIN_ENDPOINT_URL))
+            .then()
+            .statusCode(is(SC_UNAUTHORIZED))
+            .cookie(COOKIE_NAME, isEmptyString());
     }
 }
