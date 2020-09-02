@@ -61,6 +61,8 @@ public interface ZosmfService {
      */
     boolean isSupported(int version);
 
+    boolean isAvailable();
+
     /**
      * Enumeration of supported security tokens
      */

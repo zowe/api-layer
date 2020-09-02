@@ -17,9 +17,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.gateway.security.service.ZosmfService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
@@ -34,9 +34,10 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
 
     private final X509Authentication x509Authentication;
     private final AuthenticationService authenticationService;
+
     private final PassTicketService passTicketService;
     private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
-    protected final AuthConfigurationProperties authConfigurationProperties;
+    private final ZosmfService zosmfService;
 
     @Override
     public Authentication authenticate(Authentication authentication) {
@@ -47,10 +48,8 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
                 return null;
             }
 
-            // TODO: How do we verify presence of zOSMF? I don't think we have this implemented so far.
-            boolean isZosmfPresent = authConfigurationProperties.getProvider().equals("zosmf");
-
-            if (isZosmfPresent) {
+            // TODO: Replace with the actual implementationss
+            if (zosmfService.isAvailable()) {
                 try {
                     String passTicket = passTicketService.generate(username, zosmfApplId);
                     return zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(username, passTicket));

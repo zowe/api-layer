@@ -166,4 +166,8 @@ public abstract class AbstractZosmfService implements ZosmfService {
         return new AuthenticationResponse(tokens);
     }
 
+    @Override
+    public boolean isAvailable() {
+        return true;
+    }
 }
