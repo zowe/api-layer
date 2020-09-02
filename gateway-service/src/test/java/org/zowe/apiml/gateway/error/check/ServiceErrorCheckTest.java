@@ -27,7 +27,6 @@ import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
 import java.util.List;
