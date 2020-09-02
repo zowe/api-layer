@@ -47,7 +47,7 @@ public class InternalServerErrorController implements ErrorController {
         errorChecks.add(new TlsErrorCheck(messageService));
         errorChecks.add(new TimeoutErrorCheck(messageService));
         errorChecks.add(new SecurityErrorCheck(messageService));
-        errorChecks.add(new ServiceNotFoundCheck(messageService));
+        errorChecks.add(new ServiceErrorCheck(messageService));
         errorChecks.add(new RibbonRetryErrorCheck(messageService));
     }
 
