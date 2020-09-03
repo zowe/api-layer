@@ -21,6 +21,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.TrustStrategy;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.ResourceUtils;
@@ -74,12 +75,8 @@ class Login {
     protected static RestAssuredConfig clientCertApiml;
     protected static RestAssuredConfig tlsWithoutCert;
 
-    @AfterAll
-    static void switchToOriginalProvider() throws Exception {
-        providers.switchProvider(null);
-
-        providers.switchProvider("zosmf");
-
+    @BeforeAll
+    static void prepareSslAuthentication() throws Exception {
         TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
         SSLContext sslContext = SSLContextBuilder
@@ -103,6 +100,11 @@ class Login {
             .loadTrustMaterial(null, trustStrategy)
             .build();
         tlsWithoutCert =  RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3)));
+    }
+
+    @AfterAll
+    static void switchToOriginalProvider() {
+        providers.switchProvider(null);
     }
 
     @BeforeEach
@@ -319,7 +321,6 @@ class Login {
         given().config(clientCertApiml)
             .post(new URI(LOGIN_ENDPOINT_URL))
             .then()
-            .statusCode(is(SC_UNAUTHORIZED))
-            .cookie(COOKIE_NAME, isEmptyString());
+            .statusCode(is(SC_BAD_REQUEST));
     }
 }
