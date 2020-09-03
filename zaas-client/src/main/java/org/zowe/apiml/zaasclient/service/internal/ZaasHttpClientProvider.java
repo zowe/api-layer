@@ -11,16 +11,15 @@ package org.zowe.apiml.zaasclient.service.internal;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import lombok.Getter;
 
 public class ZaasHttpClientProvider implements CloseableClientProvider {
+
+    @Getter
     private final CloseableHttpClient httpClient;
 
     public ZaasHttpClientProvider() {
         httpClient = HttpClientBuilder.create().disableCookieManagement().disableAuthCaching().build();
     }
-
-    @Override
-    public CloseableHttpClient getHttpClient() {
-        return httpClient;
-    }
+    
 }
