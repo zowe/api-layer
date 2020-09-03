@@ -88,7 +88,7 @@ class ZaasJwtService implements TokenService {
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpGet httpGet = new HttpGet(queryEndpoint);
-        httpGet.addHeader("Cookie", TOKEN_PREFIX + "=" + jwtToken);
+        httpGet.addHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
         return new ClientWithResponse(client, client.execute(httpGet));
     }
 
