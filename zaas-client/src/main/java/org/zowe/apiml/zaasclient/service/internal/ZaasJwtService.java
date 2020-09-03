@@ -30,6 +30,7 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.http.cookie.SM;
 
 @Slf4j
 class ZaasJwtService implements TokenService {
