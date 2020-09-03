@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
-class CloseableClientProviderTest {
+class ZaasHttpsClientProviderTests {
 
     private static final String CONFIG_FILE_PATH = "src/test/resources/configFile.properties";
     private static final char[] PASSWORD = "password".toCharArray(); // NOSONAR
