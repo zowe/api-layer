@@ -47,8 +47,8 @@ class PassTicketServiceImpl implements PassTicketService {
 
             HttpPost httpPost = new HttpPost(ticketUrl);
             httpPost.setEntity(new StringEntity(mapper.writeValueAsString(zaasClientTicketRequest)));
-            httpPost.setHeader("Content-Type", "application/json");
-            httpPost.setHeader("Cookie", TOKEN_PREFIX + "=" + jwtToken);
+            httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            httpPost.setHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
 
             CloseableHttpResponse response = closeableHttpsClient.execute(httpPost);
             return extractPassTicket(response);
