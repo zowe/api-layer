@@ -13,6 +13,7 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -23,20 +24,25 @@ import javax.servlet.http.HttpServletRequest;
  * Custom {@link ZuulFilter} that replaces {@link SendErrorFilter}. Does not log errors to avoid
  * unnecessary log entries.
  */
+@Component
 public class CustomSendErrorFilter extends SendErrorFilter {
     public static final String ERROR_FILTER_RAN = SEND_ERROR_FILTER_RAN;
 
-    @Value("${error.path:/error}")
-    private String error_path;
+    private String errorPath;
+
+    public CustomSendErrorFilter(@Value("${error.path:/error}") String errorPath) {
+        this.errorPath = errorPath;
+    }
 
     @Override
     public int filterOrder() {
-        return super.filterOrder() + 1; // Ensure it runs before SendErrorFilter, so SendErrorFilter is disabled.
+        return super.filterOrder() - 1; // Ensure it runs before SendErrorFilter
     }
 
     @Override
     public Object run() {
         // Same behaviour as SendErrorFilter except for logging
+        // This removes unhelpful logs, while still letting error controllers return informative responses
         try {
             RequestContext ctx = RequestContext.getCurrentContext();
             ExceptionHolder exception = findZuulException(ctx.getThrowable());
@@ -53,9 +59,9 @@ public class CustomSendErrorFilter extends SendErrorFilter {
                     exception.getErrorCause());
             }
 
-            RequestDispatcher dispatcher = request.getRequestDispatcher(this.error_path);
+            RequestDispatcher dispatcher = request.getRequestDispatcher(this.errorPath);
             if (dispatcher != null) {
-                ctx.set(SEND_ERROR_FILTER_RAN, true);
+                ctx.set(SEND_ERROR_FILTER_RAN, true); // Disables other error filters
                 if (!ctx.getResponse().isCommitted()) {
                     ctx.setResponseStatusCode(exception.getStatusCode());
                     dispatcher.forward(request, ctx.getResponse());
@@ -69,6 +75,6 @@ public class CustomSendErrorFilter extends SendErrorFilter {
 
     @Override
     public void setErrorPath(String errorPath) {
-        this.error_path = errorPath;
+        this.errorPath = errorPath;
     }
 }

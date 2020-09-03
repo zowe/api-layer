@@ -16,6 +16,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
 class CustomSendErrorFilterTest {
@@ -38,7 +39,7 @@ class CustomSendErrorFilterTest {
         ctx.setRequest(request);
         ctx.setResponse(response);
 
-        this.filter = new CustomSendErrorFilter();
+        this.filter = new CustomSendErrorFilter("/error");
     }
 
     @Test
@@ -53,8 +54,21 @@ class CustomSendErrorFilterTest {
     }
 
     @Test
+    void givenFilter_whenRun_thenNoErrors() {
+        Object result = filter.run();
+        assertNull(result);
+    }
+
+    @Test
+    void givenFilterNoErrorPath_whenRun_thenErrorWithDispatcher() {
+        filter = new CustomSendErrorFilter(null);
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> filter.run());
+        assertEquals("Resource must not be null", ex.getMessage());
+    }
+
+    @Test
     void givenFilter_whenGetOrder_ShouldBeOne() {
         int filterOrder = filter.filterOrder();
-        assertEquals(1, filterOrder);
+        assertEquals(-1, filterOrder);
     }
 }
