@@ -48,13 +48,11 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
                 return null;
             }
 
-            // TODO: Replace with the actual implementationss
             if (zosmfService.isAvailable()) {
                 try {
                     String passTicket = passTicketService.generate(username, zosmfApplId);
                     return zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(username, passTicket));
                 } catch (IRRPassTicketGenerationException e) {
-                    // TODO: Log the information
                     throw new AuthenticationTokenException("Problem with generating PassTicket");
                 }
             } else {

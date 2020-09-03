@@ -25,9 +25,10 @@ import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import java.security.cert.X509Certificate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -103,5 +104,23 @@ class X509AuthenticationProviderTest {
         assertThat(result.isAuthenticated(), is(true));
     }
 
-    // TODO: How do we handle unhappy paths.
+    @Test
+    void givenZosmfIPresent_whenPassTicketGeneratesException_thenThrowAuthenticationException() throws IRRPassTicketGenerationException {
+        String validUsername = "validUsername";
+
+        when(zosmfService.isAvailable()).thenReturn(true);
+        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn(validUsername);
+        when(passTicketService.generate(validUsername, null)).thenThrow(new IRRPassTicketGenerationException(8,8,8));
+
+        assertThrows(AuthenticationTokenException.class, () -> {
+            x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
+        });
+    }
+
+    @Test
+    void givenCertificateIsntMappedToUser_whenAuthenticationIsRequired_thenNullIsReturned() {
+        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn(null);
+        Authentication result = x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
+        assertThat(result, is(nullValue()));
+    }
 }
