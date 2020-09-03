@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class ZaasHttpClientProviderTests {
+class ZaasHttpClientProviderTests {
     @Test
     void testHttpClientProviderCanCreateHttpClient() {
         ZaasHttpClientProvider zaasHttpClientProvider = new ZaasHttpClientProvider();
