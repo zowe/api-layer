@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ZaasHttpClientProviderTests {
     @Test
-    void testHttpClientCanCreateHttpClient() {
+    void testHttpClientProviderCanCreateHttpClient() {
         ZaasHttpClientProvider zaasHttpClientProvider = new ZaasHttpClientProvider();
         assertNotNull(zaasHttpClientProvider.getHttpClient());
     }
