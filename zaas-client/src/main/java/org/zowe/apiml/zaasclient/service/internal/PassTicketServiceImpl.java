@@ -23,6 +23,8 @@ import org.zowe.apiml.zaasclient.passticket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
 
 import java.io.IOException;
+import org.apache.http.HttpHeaders;
+import org.apache.http.cookie.SM;
 
 @Slf4j
 class PassTicketServiceImpl implements PassTicketService {
