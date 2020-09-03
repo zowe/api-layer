@@ -61,7 +61,7 @@ class ZaasJwtService implements TokenService {
         String json = mapper.writeValueAsString(new Credentials(userId, password));
         StringEntity entity = new StringEntity(json);
         httpPost.setEntity(entity);
-        httpPost.setHeader("Content-type", "application/json");
+        httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         return new ClientWithResponse(client, client.execute(httpPost));
     }
 
@@ -115,7 +115,7 @@ class ZaasJwtService implements TokenService {
         String token = "";
         int httpResponseCode = response.getStatusLine().getStatusCode();
         if (httpResponseCode == 204) {
-            HeaderElement[] elements = response.getHeaders("Set-Cookie")[0].getElements();
+            HeaderElement[] elements = response.getHeaders(SM.SET_COOKIE)[0].getElements();
             Optional<HeaderElement> apimlAuthCookie = Stream.of(elements)
                 .filter(element -> element.getName().equals(TOKEN_PREFIX))
                 .findFirst();
