@@ -22,4 +22,5 @@ public class ConfigProperties {
     private String trustStoreType;
     private String trustStorePath;
     private char[] trustStorePassword;
+    private boolean httpOnly;
 }

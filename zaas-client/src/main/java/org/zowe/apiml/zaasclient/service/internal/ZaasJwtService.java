@@ -30,17 +30,18 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.http.cookie.SM;
 
 @Slf4j
-class TokenServiceHttpsJwt implements TokenService {
+class ZaasJwtService implements TokenService {
     private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
+
     private final String loginEndpoint;
     private final String queryEndpoint;
+    private final CloseableClientProvider httpClientProvider;
 
-    private HttpsClientProvider httpsClientProvider;
-
-    public TokenServiceHttpsJwt(HttpsClientProvider client, String baseUrl) {
-        this.httpsClientProvider = client;
+    public ZaasJwtService(CloseableClientProvider client, String baseUrl) {
+        this.httpClientProvider = client;
 
         loginEndpoint = baseUrl + "/login";
         queryEndpoint = baseUrl + "/query";
@@ -54,13 +55,13 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     private ClientWithResponse loginWithCredentials(String userId, String password) throws ZaasConfigurationException, IOException  {
-        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
+        CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         ObjectMapper mapper = new ObjectMapper();
         String json = mapper.writeValueAsString(new Credentials(userId, password));
         StringEntity entity = new StringEntity(json);
         httpPost.setEntity(entity);
-        httpPost.setHeader("Content-type", "application/json");
+        httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         return new ClientWithResponse(client, client.execute(httpPost));
     }
 
@@ -72,7 +73,7 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     private ClientWithResponse loginWithHeader(String authorizationHeader) throws ZaasConfigurationException, IOException {
-        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
+        CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(loginEndpoint);
         httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
         return new ClientWithResponse(client, client.execute(httpPost));
@@ -86,9 +87,9 @@ class TokenServiceHttpsJwt implements TokenService {
     }
 
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
-        CloseableHttpClient client = httpsClientProvider.getHttpsClientWithTrustStore();
+        CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpGet httpGet = new HttpGet(queryEndpoint);
-        httpGet.addHeader("Cookie", TOKEN_PREFIX + "=" + jwtToken);
+        httpGet.addHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
         return new ClientWithResponse(client, client.execute(httpGet));
     }
 
@@ -114,7 +115,7 @@ class TokenServiceHttpsJwt implements TokenService {
         String token = "";
         int httpResponseCode = response.getStatusLine().getStatusCode();
         if (httpResponseCode == 204) {
-            HeaderElement[] elements = response.getHeaders("Set-Cookie")[0].getElements();
+            HeaderElement[] elements = response.getHeaders(SM.SET_COOKIE)[0].getElements();
             Optional<HeaderElement> apimlAuthCookie = Stream.of(elements)
                 .filter(element -> element.getName().equals(TOKEN_PREFIX))
                 .findFirst();

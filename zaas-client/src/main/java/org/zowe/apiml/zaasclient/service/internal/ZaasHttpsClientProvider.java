@@ -31,7 +31,9 @@ import java.security.*;
 import java.security.cert.CertificateException;
 
 @AllArgsConstructor
-class HttpsClientProvider implements CloseableClientProvider {
+class ZaasHttpsClientProvider implements CloseableClientProvider {
+    private static final int REQUEST_TIMEOUT = 30 * 1000;
+
     private final RequestConfig requestConfig;
 
     public static final String SAFKEYRING = "safkeyring";
@@ -39,16 +41,13 @@ class HttpsClientProvider implements CloseableClientProvider {
     private TrustManagerFactory tmf;
     private KeyManagerFactory kmf;
 
-    // KeyStore is initialized only in the case of PassTicket handling.
-    //     It can be null, if passticket functionality not used.
     private final char[] keyStorePassword;
     private final String keyStoreType;
-    private String keyStorePath;
+    private final String keyStorePath;
 
-    private CloseableHttpClient httpsClientWithTruststore;
     private CloseableHttpClient httpsClientWithKeyStoreAndTrustStore;
 
-    public HttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
+    public ZaasHttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
         this.requestConfig = this.buildCustomRequestConfig();
 
         if (configProperties.getTrustStorePath() == null) {
@@ -63,19 +62,7 @@ class HttpsClientProvider implements CloseableClientProvider {
     }
 
     @Override
-    public synchronized CloseableHttpClient getHttpsClientWithTrustStore() throws ZaasConfigurationException {
-        if (httpsClientWithTruststore == null) {
-            httpsClientWithTruststore = sharedHttpClientConfiguration(getSSLContext())
-                .build();
-        }
-        return httpsClientWithTruststore;
-    }
-
-    //TODO how is this working compared to the other method to get the client?
-    // What if you call the methods in reverse order
-    // this does not seem to have deterministic behavior
-    @Override
-    public synchronized CloseableHttpClient getHttpsClientWithKeyStoreAndTrustStore() throws ZaasConfigurationException {
+    public synchronized CloseableHttpClient getHttpClient() throws ZaasConfigurationException {
         if (keyStorePath == null) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.KEY_STORE_NOT_PROVIDED);
         }
@@ -162,14 +149,11 @@ class HttpsClientProvider implements CloseableClientProvider {
             .setMaxConnPerRoute(3);
     }
 
-    /**
-     * Create configuration for requests with default timeouts set to 10s.
-     */
     private RequestConfig buildCustomRequestConfig() {
         final RequestConfig.Builder builder = RequestConfig.custom();
-        builder.setConnectionRequestTimeout(10 * 1000);
-        builder.setSocketTimeout(10 * 1000);
-        builder.setConnectTimeout(10 * 1000);
+        builder.setConnectionRequestTimeout(REQUEST_TIMEOUT);
+        builder.setSocketTimeout(REQUEST_TIMEOUT);
+        builder.setConnectTimeout(REQUEST_TIMEOUT);
         return builder.build();
     }
 }

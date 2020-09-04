@@ -20,24 +20,41 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 import java.util.Objects;
 
 @Slf4j
-public class ZaasClientHttps implements ZaasClient {
-    private TokenService tokens;
-    private PassTicketService passTickets;
+public class ZaasClientImpl implements ZaasClient {
+    private final TokenService tokens;
+    private final PassTicketService passTickets;
 
-    public ZaasClientHttps(ConfigProperties configProperties) throws ZaasConfigurationException {
+    public ZaasClientImpl(ConfigProperties configProperties) throws ZaasConfigurationException {
         try {
-            HttpsClientProvider provider = new HttpsClientProvider(configProperties);
-            String baseUrl = String.format("https://%s:%s%s", configProperties.getApimlHost(), configProperties.getApimlPort(),
+            CloseableClientProvider httpClientProvider = getTokenProvider(configProperties);
+            String baseUrl = String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
                 configProperties.getApimlBaseUrl());
-            tokens = new TokenServiceHttpsJwt(provider, baseUrl);
-            passTickets = new PassTicketServiceHttps(provider, baseUrl);
+            tokens = new ZaasJwtService(httpClientProvider, baseUrl);
+            passTickets = new PassTicketServiceImpl(httpClientProvider, baseUrl);
         } catch (ZaasConfigurationException e) {
             log.error(e.getErrorCode().toString());
             throw e;
         }
     }
 
-    ZaasClientHttps(TokenService tokens, PassTicketService passTickets) {
+    private CloseableClientProvider getTokenProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
+        if (configProperties.isHttpOnly()) {
+            return new ZaasHttpClientProvider();
+        } else {
+            return new ZaasHttpsClientProvider(configProperties);
+        }
+
+    }
+
+    private Object getScheme(boolean httpOnly) {
+        if (httpOnly) {
+            return "http";
+        } else {
+            return "https";
+        }
+    }
+
+    ZaasClientImpl(TokenService tokens, PassTicketService passTickets) {
         this.tokens = tokens;
         this.passTickets = passTickets;
     }
