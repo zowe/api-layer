@@ -9,11 +9,13 @@
  */
 package org.zowe.apiml.gateway.security.service.zosmf;
 
+import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.gateway.security.login.x509.X509Authentication;
 
 import java.security.cert.X509Certificate;
 
-public class XSSX509Authentication implements X509Authentication {
+@Slf4j
+public class ZSSX509Authentication implements X509Authentication {
     @Override
     public String mapUserToCertificate(X509Certificate certificate) {
         return "apimtst"; // Get username from configuration

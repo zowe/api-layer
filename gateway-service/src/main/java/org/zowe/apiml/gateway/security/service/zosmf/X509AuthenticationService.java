@@ -11,7 +11,6 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.stereotype.Service;
 import org.zowe.apiml.gateway.security.login.x509.X509Authentication;
 
 import javax.naming.InvalidNameException;
@@ -21,7 +20,6 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-@Service
 @Slf4j
 public class X509AuthenticationService implements X509Authentication {
 
