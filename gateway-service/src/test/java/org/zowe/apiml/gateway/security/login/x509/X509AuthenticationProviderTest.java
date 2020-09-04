@@ -112,9 +112,8 @@ class X509AuthenticationProviderTest {
         when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn(validUsername);
         when(passTicketService.generate(validUsername, null)).thenThrow(new IRRPassTicketGenerationException(8,8,8));
 
-        assertThrows(AuthenticationTokenException.class, () -> {
-            x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
-        });
+        X509AuthenticationToken token = new X509AuthenticationToken(x509Certificate);
+        assertThrows(AuthenticationTokenException.class, () -> x509AuthenticationProvider.authenticate(token));
     }
 
     @Test
