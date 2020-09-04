@@ -56,7 +56,8 @@ class X509AuthenticationProviderTest {
         zosmfService = mock(ZosmfService.class);
         when(authenticationService.createJwtToken("user", "security-domain", null)).thenReturn("jwt");
         when(authenticationService.createTokenAuthentication("user", "jwt")).thenReturn(new TokenAuthentication("user", "jwt"));
-        x509AuthenticationProvider = new X509AuthenticationProvider(x509Authentication, authenticationService, passTicketService, zosmfAuthenticationProvider, zosmfService);
+        x509AuthenticationProvider = new X509AuthenticationProvider(x509AuthenticationMapper
+            , authenticationService, passTicketService, zosmfAuthenticationProvider, zosmfService);
         x509AuthenticationProvider.isClientCertEnabled = true;
     }
 
