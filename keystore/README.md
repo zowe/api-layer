@@ -12,7 +12,7 @@ You can use the provided key store and trust store or create your own version of
 
 Last section of this document shows how to import and trust the local CA certificate on your system.
 
-Key stores:
+## Key stores:
 
   * `keystore/local/localhost.keystore.cer` 
     - convenience 
@@ -44,7 +44,7 @@ Key stores:
     - password: ``password``
     - used for tests only, please refer to the particular tests for detils
 
-Local CA:
+### Local CA:
 
   * `keystore/local_ca/localca.cer`
     - public certificate of local CA
@@ -52,6 +52,22 @@ Local CA:
   * `keystore/local_ca/localca.keystore.p12`
     - private key of the local CA 
 
+### Client certificates:
+
+  * `keystore/client_cert/APIML_External_Certificate_Authority.cer`
+  * `keystore/client_cert/APIML_External_Certificate_Authority.key`
+    - Apiml External Certificate authority - Certificate and private key of additional certificate authority that is trusted by apiml and can sign certificates that are used for authentication. Convenience export only.
+  
+  * `keystore/client_cert/APIMTST_APIML_External_Certificate_Authority_.cer`
+  * `keystore/client_cert/APIMTST_APIML_External_Certificate_Authority_.key`
+  * `keystore/client_cert/UNKNOWNUSER_APIML_External_Certificate_Authority_.cer`
+  * `keystore/client_cert/UNKNOWNUSER_APIML_External_Certificate_Authority_.key`
+    - Client certificates - used for testing of client certificate authentication functionality. APIMTST and UNKNOWNUSER respectively. Convenience export only.
+    
+  * `keystore/client_cert/client-certs.p12`
+    - Keystore containing all the above including private keys. Used for testing client certificate authentication functionality.
+  
+  
 
 ## Generating own certificates for localhost
 **!!! Note that apiml_cm.sh script has been moved to [zowe/zowe-install-packaging repo](https://github.com/zowe/zowe-install-packaging) !!!** 
