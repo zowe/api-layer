@@ -58,16 +58,25 @@ Last section of this document shows how to import and trust the local CA certifi
   * `keystore/client_cert/APIML_External_Certificate_Authority.key`
     - Apiml External Certificate authority - Certificate and private key of additional certificate authority that is trusted by apiml and can sign certificates that are used for authentication. Convenience export only.
   
-  * `keystore/client_cert/APIMTST_APIML_External_Certificate_Authority_.cer`
-  * `keystore/client_cert/APIMTST_APIML_External_Certificate_Authority_.key`
-  * `keystore/client_cert/UNKNOWNUSER_APIML_External_Certificate_Authority_.cer`
-  * `keystore/client_cert/UNKNOWNUSER_APIML_External_Certificate_Authority_.key`
+  * `keystore/client_cert/APIMTST-cert.cer`
+  * `keystore/client_cert/APIMTST-PRIVATEKEY.key`
+  * `keystore/client_cert/UNKNOWNUSER-cert.cer`
+  * `keystore/client_cert/UNKNOWNUSER-PRIVATEKEY.key`
+  * `keystore/client_cert/USER-cert.cer`
+  * `keystore/client_cert/USER-PRIVATEKEY.key`
     - Client certificates - used for testing of client certificate authentication functionality. APIMTST and UNKNOWNUSER respectively. Convenience export only.
     
   * `keystore/client_cert/client-certs.p12`
     - Keystore containing all the above including private keys. Used for testing client certificate authentication functionality.
   
-  
+  * `keystore/client_cert/openssl.conf`
+    - openssl Configuration for certificate generation
+    
+##### How to generate additional client certs using OPENSSL
+
+    openssl req -newkey rsa:2048 -keyout PRIVATEKEY.key -out MYCSR.csr -config openssl.conf
+    openssl x509 -req -days 365 -in MYCSR.csr -CA APIML_External_Certificate_Authority.cer -CAkey APIML_External_Certificate_Authority.key -out server-cert.pem -CAcreateserial -extfile openssl.conf -extensions v3_clientauth
+
 
 ## Generating own certificates for localhost
 **!!! Note that apiml_cm.sh script has been moved to [zowe/zowe-install-packaging repo](https://github.com/zowe/zowe-install-packaging) !!!** 
