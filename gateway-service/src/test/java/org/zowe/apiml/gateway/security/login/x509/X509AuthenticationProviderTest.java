@@ -25,16 +25,16 @@ import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import java.security.cert.X509Certificate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class X509AuthenticationProviderTest {
 
-    private X509Authentication x509Authentication;
+    private X509AuthenticationMapper x509AuthenticationMapper;
     private AuthenticationService authenticationService;
     private X509AuthenticationProvider x509AuthenticationProvider;
 
@@ -48,7 +48,7 @@ class X509AuthenticationProviderTest {
 
     @BeforeEach
     void setUp() {
-        x509Authentication = mock(X509Authentication.class);
+        x509AuthenticationMapper = mock(X509AuthenticationMapper.class);
 
         authenticationService = mock(AuthenticationService.class);
         passTicketService = mock(PassTicketService.class);
@@ -63,7 +63,7 @@ class X509AuthenticationProviderTest {
     @Test
     void givenZosmfIsntPresent_whenProvidedCertificate_shouldReturnToken() {
         when(zosmfService.isAvailable()).thenReturn(false);
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn("user");
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("user");
         TokenAuthentication token = (TokenAuthentication) x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
         assertEquals("jwt", token.getCredentials());
     }
@@ -71,7 +71,7 @@ class X509AuthenticationProviderTest {
     @Test
     void givenZosmfIsntPresent_whenWrongTokenProvided_ThrowException() {
         when(zosmfService.isAvailable()).thenReturn(false);
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn("user");
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("user");
         TokenAuthentication token = new TokenAuthentication("user", "user");
         AuthenticationTokenException exception = assertThrows(AuthenticationTokenException.class, () -> x509AuthenticationProvider.authenticate(token));
         assertEquals("Wrong authentication token. " + TokenAuthentication.class, exception.getMessage());
@@ -85,7 +85,7 @@ class X509AuthenticationProviderTest {
     @Test
     void givenZosmfIsntPresent_givenZosmfIsntPresent_whenCommonNameIsNotCorrect_returnNull() {
         when(zosmfService.isAvailable()).thenReturn(false);
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn("wrong username");
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("wrong username");
         assertNull(x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)));
     }
 
@@ -95,7 +95,8 @@ class X509AuthenticationProviderTest {
         String validZosmfApplId = "IZUDFLT";
 
         when(zosmfService.isAvailable()).thenReturn(true);
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn(validUsername);
+        when(zosmfService.isUsed()).thenReturn(true);
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn(validUsername);
         when(passTicketService.generate(validUsername, validZosmfApplId)).thenReturn("validPassticket");
         Authentication authentication = new TokenAuthentication(validUsername, "validJwtToken");
         authentication.setAuthenticated(true);
@@ -110,7 +111,8 @@ class X509AuthenticationProviderTest {
         String validUsername = "validUsername";
 
         when(zosmfService.isAvailable()).thenReturn(true);
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn(validUsername);
+        when(zosmfService.isUsed()).thenReturn(true);
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn(validUsername);
         when(passTicketService.generate(validUsername, null)).thenThrow(new IRRPassTicketGenerationException(8,8,8));
 
         X509AuthenticationToken token = new X509AuthenticationToken(x509Certificate);
@@ -119,7 +121,7 @@ class X509AuthenticationProviderTest {
 
     @Test
     void givenCertificateIsntMappedToUser_whenAuthenticationIsRequired_thenNullIsReturned() {
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn(null);
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn(null);
         Authentication result = x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
         assertThat(result, is(nullValue()));
     }

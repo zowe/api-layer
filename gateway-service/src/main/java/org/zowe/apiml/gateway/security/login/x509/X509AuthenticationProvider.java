@@ -34,13 +34,26 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Value("${apiml.security.x509.enabled:false}")
     boolean isClientCertEnabled;
 
-    private final X509Authentication x509Authentication;
+    private final X509AuthenticationMapper x509AuthenticationMapper;
     private final AuthenticationService authenticationService;
 
     private final PassTicketService passTicketService;
     private final ZosmfAuthenticationProvider zosmfAuthenticationProvider;
     private final ZosmfService zosmfService;
 
+    /**
+     * Performs Authentication of Client certificate
+     *
+     * Maps certificate to mainframe UserId
+     *
+     * If z/OSMF is active, authenticate against it with passticket.
+     * Otherwise, the fact that mapping happened is proof of authentication
+     * If SAF or DUMMY auth providers are selected, they defer the decision to the mapping component.
+     * For list of mapping components, see implementations of {@link X509AuthenticationMapper}
+     *
+     * @param {@link Authentication}
+     * @return {@link Authentication}
+     */
     @Override
     public Authentication authenticate(Authentication authentication) {
         if (authentication instanceof X509AuthenticationToken) {
@@ -49,12 +62,12 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
             }
 
             X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-            String username = x509Authentication.mapUserToCertificate(certs[0]);
+            String username = x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
             if (username == null) {
                 return null;
             }
 
-            if (zosmfService.isAvailable()) {
+            if (zosmfService.isUsed() && zosmfService.isAvailable()) {
                 try {
                     String passTicket = passTicketService.generate(username, zosmfApplId);
                     return zosmfAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(username, passTicket));
@@ -62,7 +75,6 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
                     throw new AuthenticationTokenException("Problem with generating PassTicket");
                 }
             } else {
-                // If only SAF is present this is totally valid
                 final String domain = "security-domain";
                 final String jwtToken = authenticationService.createJwtToken(username, domain, null);
                 return authenticationService.createTokenAuthentication(username, jwtToken);

@@ -10,20 +10,18 @@
 package org.zowe.apiml.gateway.security.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.zowe.apiml.gateway.security.login.x509.X509Authentication;
-import org.zowe.apiml.gateway.security.service.zosmf.X509AuthenticationService;
-import org.zowe.apiml.gateway.security.service.zosmf.ZSSX509Authentication;
-import org.zowe.apiml.passticket.PassTicketService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.zowe.apiml.gateway.security.login.x509.*;
+import org.zowe.apiml.passticket.PassTicketService;
 
 /**
  * Registers security related beans
  */
 @Configuration
 public class ComponentsConfiguration {
-    @Value("${apiml.security.x509.provider:zss}")
+    @Value("${apiml.security.x509.authenticationMapper:commonName}")
     private String x509Provider;
 
     /**
@@ -46,11 +44,11 @@ public class ComponentsConfiguration {
     }
 
     @Bean
-    public X509Authentication x509Authentication() {
-        if (x509Provider.equals("attls")) {
-            return new X509AuthenticationService();
+    public X509AuthenticationMapper x509Authentication() {
+        if (x509Provider.equals("commonName")) {
+            return new X509CommonNameUserMapper();
         } else {
-            return new ZSSX509Authentication();
+            return new X509StaticUserMapper();
         }
 
     }
