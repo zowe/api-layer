@@ -31,6 +31,8 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
 
     @Value("${apiml.security.zosmf.applid:IZUDFLT}")
     private String zosmfApplId;
+    @Value("${apiml.security.x509.enabled:false}")
+    boolean isClientCertEnabled;
 
     private final X509Authentication x509Authentication;
     private final AuthenticationService authenticationService;
@@ -42,6 +44,10 @@ public class X509AuthenticationProvider implements AuthenticationProvider {
     @Override
     public Authentication authenticate(Authentication authentication) {
         if (authentication instanceof X509AuthenticationToken) {
+            if (!isClientCertEnabled) {
+                return null;
+            }
+
             X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
             String username = x509Authentication.mapUserToCertificate(certs[0]);
             if (username == null) {

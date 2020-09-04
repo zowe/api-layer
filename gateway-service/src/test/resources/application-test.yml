@@ -39,6 +39,8 @@ apiml:
             jwtKeyAlias: jwtSecret
         zosmf:
             useJwtToken: true # if true and z/OSMF returns JWT token use it, otherwise create Zowe JWT token with LTPA token from z/OSMF, default is true
+        x509:
+            enabled: true
 
 spring:
     application:
