@@ -30,7 +30,7 @@ public class X509CommonNameUserMapper implements X509AuthenticationMapper {
             LdapName ldapDN = getLdapName(dn);
             for (Rdn rdn : ldapDN.getRdns()) {
                 if ("cn".equalsIgnoreCase(rdn.getType())) {
-                    return String.valueOf(rdn.getValue());
+                    return String.valueOf(rdn.getValue()).toLowerCase();
                 }
             }
         }
