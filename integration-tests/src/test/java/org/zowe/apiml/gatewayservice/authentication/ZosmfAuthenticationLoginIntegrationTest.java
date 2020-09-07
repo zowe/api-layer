@@ -11,9 +11,7 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -37,15 +35,10 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private int port;
     private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
 
-    //TODO this is not running yet, need to be finalized once the functionality is in place
-
     @BeforeAll
     static void setupClients()  {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
-
-
-
     }
 
     @BeforeEach
@@ -69,7 +62,6 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         assertThat(jwtToken1, is((jwtToken2)));
     }
 
-    //TODO after some thinking, i think this is enough to prove that zOSMF can work with client cert
     @Test
     void givenValidCertificate_whenRequestToZosmfHappensAfterAuthentication_thenTheRequestSucceeds() throws Exception {
 

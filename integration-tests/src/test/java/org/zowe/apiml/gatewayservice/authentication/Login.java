@@ -22,7 +22,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import javax.net.ssl.SSLContext;
@@ -293,11 +292,7 @@ class Login {
     }
     //@formatter:on
 
-    /*
-     * This test will be for MF once the implementation of certificate mapping in SAF is available
-     */
     @Test
-    @NotForMainframeTest
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
 
         Cookie cookie = given().config(clientCertValid)
@@ -309,7 +304,7 @@ class Login {
 
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
     }
-    @NotForMainframeTest
+
     @Test
     void givenValidClientCertAndInvalidBasic_whenAuth_thenCertShouldTakePrecedenceAndTokenIsProduced() throws Exception {
         Cookie cookie = given().config(clientCertValid)
@@ -322,7 +317,7 @@ class Login {
 
         assertValidAuthToken(cookie, Optional.of("APIMTST"));
     }
-    @NotForMainframeTest
+
     @Test
     void givenApimlsCert_whenAuth_thenUnauthorized() throws Exception {
         given().config(clientCertApiml)
