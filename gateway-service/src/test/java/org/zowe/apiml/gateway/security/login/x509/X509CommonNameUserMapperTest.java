@@ -34,14 +34,6 @@ class X509CommonNameUserMapperTest {
     }
 
     @Test
-    void providedValidCertificateWithUpperOrMixedCase_returnUserIdInLowercase() {
-        X509Certificate x509Certificate =
-            X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "CN=UsER,OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");
-
-        assertEquals("user", x509CommonNameUserMapper.mapCertificateToMainframeUserId(x509Certificate));
-    }
-
-    @Test
     void providedInvalidCertificate_returnNull() {
         X509Certificate x509Certificate =
             X509Utils.getCertificate(X509Utils.correctBase64("zowe"), "OU=CA CZ,O=Broadcom,L=Prague,ST=Czechia,C=CZ");

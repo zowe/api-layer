@@ -36,7 +36,6 @@ import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -169,7 +168,7 @@ class Login {
 
     protected void assertThatTokenIsValid(Claims claims, Optional<String> username) {
         assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(equalToIgnoringCase(username.orElseGet(this::getUsername))));
+        assertThat(claims.getSubject(), is(username.orElseGet(this::getUsername)));
     }
 
     protected Claims parseJwtString(String untrustedJwtString) {
