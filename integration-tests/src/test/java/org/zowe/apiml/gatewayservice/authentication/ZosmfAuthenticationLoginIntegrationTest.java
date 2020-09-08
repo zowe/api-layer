@@ -34,6 +34,8 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     private String host;
     private int port;
     private final static String ZOSMF_ENDPOINT = "/zosmf/restfiles/ds?dslevel=sys1.p*";
+    private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
+    private final static String ZOSMF_BASE_PATH = "/api/" + ZOSMF_SERVICE_ID;
 
     @BeforeAll
     static void setupClients()  {
@@ -79,7 +81,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
 
         given().config(tlsWithoutCert)
             .cookie(cookie)
-            .get(String.format("%s://%s:%d%s%s", scheme, host, port, BASE_PATH, ZOSMF_ENDPOINT))
+            .get(String.format("%s://%s:%d%s%s", scheme, host, port, ZOSMF_BASE_PATH, ZOSMF_ENDPOINT))
             .then()
             .statusCode(is(SC_OK))
             .body(
