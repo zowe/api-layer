@@ -26,7 +26,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
-import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -76,7 +76,7 @@ class SuccessfulQueryHandlerTest {
         if (keyPair != null) {
             privateKey = keyPair.getPrivate();
         }
-        ZosmfServiceV2 zosmfService = new ZosmfServiceV2(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
+        ZosmfService zosmfService = new ZosmfService(authConfigurationProperties, discoveryClient, restTemplate, new ObjectMapper());
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager, new CacheUtils()

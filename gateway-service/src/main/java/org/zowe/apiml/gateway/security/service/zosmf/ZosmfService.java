@@ -12,10 +12,6 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -40,8 +36,6 @@ import java.util.Map;
 @Slf4j
 public class ZosmfService extends AbstractZosmfService {
 
-    private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
-
     /**
      * Enumeration of supported security tokens
      */
@@ -64,18 +58,17 @@ public class ZosmfService extends AbstractZosmfService {
     @RequiredArgsConstructor
     static
     public class AuthenticationResponse {
-
         private String domain;
         private final Map<TokenType, String> tokens;
-
     }
+
+    private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
 
     public ZosmfService(
         final AuthConfigurationProperties authConfigurationProperties,
         final DiscoveryClient discovery,
         final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
-        final ObjectMapper securityObjectMapper,
-        final ApplicationContext applicationContext
+        final ObjectMapper securityObjectMapper
     ) {
         super(
             authConfigurationProperties,
@@ -87,19 +80,13 @@ public class ZosmfService extends AbstractZosmfService {
 
     public AuthenticationResponse authenticate(Authentication authentication) {
         if (authenticationEndpointExists(HttpMethod.POST)) {
-            return authenticateWithAuthEndpoint(authentication);
+            return issueAuthenticationRequest(
+                authentication,
+                getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT);
         }
-        return authenticateWithInfoEndpoint(authentication);
-    }
-
-    public AuthenticationResponse authenticateWithAuthEndpoint(Authentication authentication) {
-        String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
-        return issueAuthenticationRequest(authentication, url);
-    }
-
-    public AuthenticationResponse authenticateWithInfoEndpoint(Authentication authentication) {
-        String url = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
-        return issueAuthenticationRequest(authentication, url);
+        return issueAuthenticationRequest(
+            authentication,
+            getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT);
     }
 
     /**
@@ -108,7 +95,7 @@ public class ZosmfService extends AbstractZosmfService {
      * @param url String containing auth endpoint to be used
      * @return AuthenticationResponse containing auth token, either LTPA or JWT
      */
-    public AuthenticationResponse issueAuthenticationRequest(Authentication authentication, String url) {
+    protected AuthenticationResponse issueAuthenticationRequest(Authentication authentication, String url) {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, getAuthenticationValue(authentication));
         headers.add(ZOSMF_CSRF_HEADER, "");
@@ -126,11 +113,11 @@ public class ZosmfService extends AbstractZosmfService {
 
     /**
      * Check if POST to ZOSMF_AUTHENTICATE_END_POINT resolves
-     * @param httpMethod HttpMEthod to be checked for existence
+     * @param httpMethod HttpMethod to be checked for existence
      * @return bool, containing true if endpoint resolves
      */
     @Cacheable("zosmfAuthenticationEndpoint")
-    private boolean authenticationEndpointExists(HttpMethod httpMethod) {
+    protected boolean authenticationEndpointExists(HttpMethod httpMethod) {
         String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
         final HttpHeaders headers = new HttpHeaders();
@@ -179,7 +166,7 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public void invalidate(TokenType type, String token) {
-        if(authenticationEndpointExists(HttpMethod.DELETE)) {
+        if (authenticationEndpointExists(HttpMethod.DELETE)) {
             final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
             final HttpHeaders headers = new HttpHeaders();
