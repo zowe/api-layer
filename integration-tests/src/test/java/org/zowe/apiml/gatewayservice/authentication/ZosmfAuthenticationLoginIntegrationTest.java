@@ -78,7 +78,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
 
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
-
+        System.out.println( "DJDEBUG:" + String.format("%s://%s:%d%s%s", scheme, host, port, ZOSMF_BASE_PATH, ZOSMF_ENDPOINT));
         given().config(tlsWithoutCert)
             .cookie(cookie)
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, ZOSMF_BASE_PATH, ZOSMF_ENDPOINT))
