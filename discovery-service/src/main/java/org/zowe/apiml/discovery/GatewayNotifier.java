@@ -42,7 +42,7 @@ import java.util.function.Consumer;
  * This bean is used to send a notification to the Gateways. It is sending notification asynchronous (at first they
  * are stored into the queue and then with a delay send to Gateways). If same notification is waiting for sending
  * it send it only once.
- *
+ * <p>
  * Purpose of this bean is at first in notification Gateways about new and removed services and process at least
  * evicting of caches there.
  */
@@ -55,7 +55,7 @@ public class GatewayNotifier implements Runnable {
     private static final String DISTRIBUTE_PATH = "/gateway/auth/distribute/";  // NOSONAR: URL is always using / to separate path segments
     private static final String CACHE_PATH = "/gateway/cache/services";  // NOSONAR: URL is always using / to separate path segments
 
-    private final ApimlLogger logger;
+    private final ApimlLogger apimlLogger;
 
     private final RestTemplate restTemplate;
 
@@ -65,7 +65,7 @@ public class GatewayNotifier implements Runnable {
 
     public GatewayNotifier(@Qualifier("restTemplateWithKeystore") RestTemplate restTemplate, MessageService messageService) {
         this.restTemplate = restTemplate;
-        this.logger = ApimlLogger.of(GatewayNotifier.class, messageService);
+        this.apimlLogger = ApimlLogger.of(GatewayNotifier.class, messageService);
     }
 
     @PostConstruct
@@ -91,7 +91,7 @@ public class GatewayNotifier implements Runnable {
         final PeerAwareInstanceRegistry registry = getRegistry();
         final Application application = registry.getApplication(GATEWAY_SERVICE_ID);
         if (application == null) {
-            logger.log("org.zowe.apiml.discovery.errorNotifyingGateway");
+            apimlLogger.log("org.zowe.apiml.discovery.errorNotifyingGateway");
             return Collections.emptyList();
         }
         return application.getInstances();
@@ -105,16 +105,30 @@ public class GatewayNotifier implements Runnable {
 
     /**
      * Method notifies Gateways about any service's change. This is necessary to cache evicting on Gateway side.
-     * If any service was added or removed, through this method all Gateway will clean our cached data about
+     * If any service was added, through this method all Gateway will clean our cached data about
      * this service. It support using cache about services on Gateway at all.
-     *
+     * <p>
      * If notification is about a Gateway instance, this instance is not notified itself.
      *
-     * @param serviceId service ID of changed service
+     * @param serviceId  service ID of changed service
      * @param instanceId instance ID of changed service
      */
     public void serviceUpdated(String serviceId, String instanceId) {
         final Notification notification = new Notification(serviceId, instanceId, Type.SERVICE_UPDATED);
+        addToQueue(notification);
+    }
+
+    /**
+     * Method notifies Gateways about any service's registration being cancelled.
+     * This is necessary to cache evicting on Gateway side. If any service was removed it will
+     * clean our cached data about this service. It support using cache about services on Gateway at all.
+     * <p>
+     * If notification is about a Gateway instance, this instance is not notified itself.
+     *
+     * @param serviceId  service ID of changed service
+     */
+    public void serviceCancelledRegistration(String serviceId) {
+        final Notification notification = new Notification(serviceId, null, Type.SERVICE_CANCEL_REGISTRATION);
         addToQueue(notification);
     }
 
@@ -135,7 +149,7 @@ public class GatewayNotifier implements Runnable {
      * Process to send notification to gateways
      *
      * @param instanceId instance ID of notified Gateway to reduce call - don't call itself
-     * @param call function to make a call
+     * @param call       function to make a call
      */
     private void notify(String instanceId, Consumer<InstanceInfo> call) {
         final List<InstanceInfo> gatewayInstances = getGatewayInstances();
@@ -149,17 +163,24 @@ public class GatewayNotifier implements Runnable {
 
     protected void serviceUpdatedProcess(String serviceId, String instanceId) {
         notify(instanceId, instanceInfo -> {
-            final StringBuilder url = new StringBuilder();
-            url
-                .append(EurekaUtils.getUrl(instanceInfo))
-                .append(CACHE_PATH);
-            if (serviceId != null) url.append('/').append(serviceId);
-
+            final String url = getServiceUrl(serviceId, instanceInfo);
             try {
-                restTemplate.delete(url.toString());
+                restTemplate.delete(url);
             } catch (Exception e) {
-                log.debug("Cannot notify the Gateway {} about {}", url.toString(), instanceId, e);
-                logger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
+                log.debug("Cannot notify the Gateway {} about {}", url, instanceId, e);
+                apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url, instanceId);
+            }
+        });
+    }
+
+    protected void serviceCancelRegistrationProcess(String serviceId) {
+        notify(null, instanceInfo -> {
+            final String url = getServiceUrl(serviceId, instanceInfo);
+            try {
+                restTemplate.delete(url);
+            } catch (Exception e) {
+                log.debug("Cannot notify the Gateway {} about service un-registration", url, e);
+                apimlLogger.log("org.zowe.apiml.discovery.unregistration.gateway.notify", url);
             }
         });
     }
@@ -168,14 +189,14 @@ public class GatewayNotifier implements Runnable {
         notify(instanceId, instanceInfo -> {
             final StringBuilder url = new StringBuilder();
             url.append(EurekaUtils.getUrl(instanceInfo))
-               .append(DISTRIBUTE_PATH)
-               .append(instanceId);
+                .append(DISTRIBUTE_PATH)
+                .append(instanceId);
 
             try {
                 restTemplate.getForEntity(url.toString(), Void.class);
             } catch (Exception e) {
                 log.debug("Cannot notify the Gateway {} about {}", url.toString(), instanceId, e);
-                logger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
+                apimlLogger.log("org.zowe.apiml.discovery.registration.gateway.notify", url.toString(), instanceId);
             }
         });
     }
@@ -198,6 +219,14 @@ public class GatewayNotifier implements Runnable {
                 log.debug("Unexpected exception on gateway notifier", e);
             }
         }
+    }
+
+    private String getServiceUrl(String serviceId, InstanceInfo instanceInfo) {
+        final StringBuilder url = new StringBuilder();
+        url.append(EurekaUtils.getUrl(instanceInfo))
+            .append(CACHE_PATH);
+        if (serviceId != null) url.append('/').append(serviceId);
+        return url.toString();
     }
 
     /**
@@ -225,15 +254,17 @@ public class GatewayNotifier implements Runnable {
     @AllArgsConstructor
     private enum Type {
 
-        SERVICE_UPDATED( (gatewayNotifier, notification) ->
+        SERVICE_UPDATED((gatewayNotifier, notification) ->
             gatewayNotifier.serviceUpdatedProcess(notification.serviceId, notification.instanceId)
         ),
 
-        DISTRIBUTE_INVALIDATED_CREDENTIALS( (gatewayNotifier, notification) ->
-            gatewayNotifier.distributeInvalidatedCredentialsProcess(notification.instanceId)
-        )
+        SERVICE_CANCEL_REGISTRATION(((gatewayNotifier, notification) ->
+            gatewayNotifier.serviceCancelRegistrationProcess(notification.serviceId))
+        ),
 
-        ;
+        DISTRIBUTE_INVALIDATED_CREDENTIALS((gatewayNotifier, notification) ->
+            gatewayNotifier.distributeInvalidatedCredentialsProcess(notification.instanceId)
+        );
 
         /**
          * Realize mapping of notification to method which process it
