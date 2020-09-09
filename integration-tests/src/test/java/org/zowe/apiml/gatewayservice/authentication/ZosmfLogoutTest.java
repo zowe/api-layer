@@ -10,13 +10,13 @@
 package org.zowe.apiml.gatewayservice.authentication;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
 import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.util.categories.MainframeDependentTests;
 
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 @SuppressWarnings({"squid:S2187"})
+@Disabled
 @MainframeDependentTests
 public class ZosmfLogoutTest extends LogoutTest {
     private static AuthenticationProviders providers = new AuthenticationProviders(SecurityUtils.getGateWayUrl("/authentication"));
