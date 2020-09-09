@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.client.service.ZaasClientService;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
+import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/zaasClient")
@@ -36,7 +39,7 @@ public class ZaasClientTestController {
         this.zaasClientService = zaasClientService;
     }
 
-    @PostMapping
+    @PostMapping(value = "/login")
     @ApiOperation(value = "Forward login to gateway service via zaas client")
     public ResponseEntity<String> forwardLogin(@RequestBody LoginRequest loginRequest) {
         try {
@@ -46,6 +49,12 @@ public class ZaasClientTestController {
             return ResponseEntity.status(e.getErrorCode().getReturnCode()).body(e.getErrorCode().getMessage());
         }
 
+    }
+
+    @PostMapping(value = "/logout")
+    @ApiOperation(value = "Forward logout to gateway service via zaas client")
+    public void forwardLogout(@RequestBody String jwtToken) throws ZaasConfigurationException, ZaasClientException, IOException {
+        zaasClientService.logout(jwtToken);
     }
 }
 
@@ -57,3 +66,4 @@ class LoginRequest {
     private String password;
 
 }
+

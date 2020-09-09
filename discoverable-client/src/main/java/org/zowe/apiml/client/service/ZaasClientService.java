@@ -16,6 +16,8 @@ import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 
+import java.io.IOException;
+
 @Service
 public class ZaasClientService {
 
@@ -27,5 +29,9 @@ public class ZaasClientService {
 
     public String login(String username, String password) throws ZaasClientException {
         return zaasClient.login(username, password);
+    }
+
+    public void logout(String token) throws ZaasConfigurationException, ZaasClientException, IOException {
+        zaasClient.logout(token);
     }
 }

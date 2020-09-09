@@ -17,6 +17,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
+import java.io.IOException;
 import java.util.Objects;
 
 @Slf4j
@@ -117,5 +118,10 @@ public class ZaasClientImpl implements ZaasClient {
             log.error(e.getErrorCode().toString());
             throw e;
         }
+    }
+
+    @Override
+    public void logout(String jwtToken) throws ZaasClientException, IOException, ZaasConfigurationException {
+            tokens.logout(jwtToken);
     }
 }

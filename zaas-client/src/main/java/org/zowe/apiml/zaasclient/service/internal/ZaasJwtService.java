@@ -38,6 +38,7 @@ class ZaasJwtService implements TokenService {
 
     private final String loginEndpoint;
     private final String queryEndpoint;
+    private final String logoutEndpoint;
     private final CloseableClientProvider httpClientProvider;
 
     public ZaasJwtService(CloseableClientProvider client, String baseUrl) {
@@ -45,6 +46,7 @@ class ZaasJwtService implements TokenService {
 
         loginEndpoint = baseUrl + "/login";
         queryEndpoint = baseUrl + "/query";
+        logoutEndpoint = baseUrl + "/logout";
     }
 
     @Override
@@ -86,11 +88,27 @@ class ZaasJwtService implements TokenService {
             this::extractZaasToken);
     }
 
+    @Override
+    public void logout(String jwtToken) throws ZaasClientException {
+        doRequest(() -> logoutJwtToken(jwtToken));
+
+    }
+
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpGet httpGet = new HttpGet(queryEndpoint);
         httpGet.addHeader(SM.COOKIE, TOKEN_PREFIX + "=" + jwtToken);
         return new ClientWithResponse(client, client.execute(httpGet));
+    }
+
+    private ClientWithResponse logoutJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
+        CloseableHttpClient client;
+        client = httpClientProvider.getHttpClient();
+        HttpPost httpPost = new HttpPost(logoutEndpoint);
+        httpPost.addHeader("Cookie", TOKEN_PREFIX + "=" + jwtToken);
+//        client.execute(httpPost);
+        //
+        return new ClientWithResponse(client, client.execute(httpPost));
     }
 
     private void finallyClose(CloseableHttpResponse response) {
@@ -133,6 +151,20 @@ class ZaasJwtService implements TokenService {
             }
         }
         return token;
+    }
+
+    private void doRequest(Operation request) throws ZaasClientException {
+        ClientWithResponse clientWithResponse = new ClientWithResponse();
+        try {
+
+            clientWithResponse = request.request();
+    } catch (IOException e) {
+        throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
+    } catch (Exception e) {
+        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, e);
+    } finally {
+        finallyClose(clientWithResponse.getResponse());
+    }
     }
 
     private Object doRequest(Operation request, Token token) throws ZaasClientException {

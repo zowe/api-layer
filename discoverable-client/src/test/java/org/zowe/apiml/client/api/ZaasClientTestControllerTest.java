@@ -43,13 +43,15 @@ public class ZaasClientTestControllerTest {
     @MockBean
     private ZaasClientService zaasClientService;
 
+    private static final String TOKEN_PREFIX = "apimlAuthenticationToken";
+
     @Test
     public void forwardLoginTest_successfulLogin() throws Exception {
         LoginRequest loginRequest = new LoginRequest("username", "password");
         when(zaasClientService.login("username", "password")).thenReturn("token");
 
         this.mockMvc.perform(
-            post("/api/v1/zaasClient")
+            post("/api/v1/zaasClient/login")
                 .content(mapper.writeValueAsString(loginRequest))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(content().string("token"));
@@ -62,11 +64,36 @@ public class ZaasClientTestControllerTest {
             .thenThrow(new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION));
 
         this.mockMvc.perform(
-            post("/api/v1/zaasClient")
+            post("/api/v1/zaasClient/login")
                 .content(mapper.writeValueAsString(loginRequest))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(status().is(401))
             .andExpect(content().string("Invalid username or password"));
     }
 
+    @Test
+    public void forwardLogout_successfulLogout() throws Exception {
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        String token = "token";
+        this.mockMvc.perform(
+            post("/api/v1/zaasClient/logout")
+                .content(mapper.writeValueAsString(loginRequest))
+                .header("Cookie", TOKEN_PREFIX + "=" + token)
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(status().is(200));
+    }
+
+
+    //TODO What if invalid token is provided?? Right now it returns 200 code. Should the status code be changed?
+    @Test
+    public void forwardLogout_failLogout() throws Exception {
+        LoginRequest loginRequest = new LoginRequest("username", "password");
+        String token = "token";
+        this.mockMvc.perform(
+            post("/api/v1/zaasClient/logout")
+                .content(mapper.writeValueAsString(loginRequest))
+                .header("Cookie", "s" + "=" + token)
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(status().is(200));
+    }
 }
