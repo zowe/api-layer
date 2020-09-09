@@ -374,6 +374,7 @@ public class AuthenticationServiceTest {
 
         final ZosmfService zosmfService = getSpiedZosmfService();
         final AuthenticationService authService = getSpiedAuthenticationService(zosmfService);
+        doReturn(true).when(zosmfService).authenticationEndpointExists(HttpMethod.DELETE);
         doReturn(new QueryResponse(
             "domain", "userId", new Date(), new Date(), QueryResponse.Source.ZOSMF
         )).when(authService).parseJwtToken(token);

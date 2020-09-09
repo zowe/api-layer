@@ -12,9 +12,12 @@ package org.zowe.apiml.gateway.security.service.zosmf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
@@ -117,7 +120,7 @@ public class ZosmfService extends AbstractZosmfService {
      * @return bool, containing true if endpoint resolves
      */
     @Cacheable("zosmfAuthenticationEndpoint")
-    protected boolean authenticationEndpointExists(HttpMethod httpMethod) {
+    public boolean authenticationEndpointExists(HttpMethod httpMethod) {
         String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
         final HttpHeaders headers = new HttpHeaders();
@@ -143,26 +146,29 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public void validate(TokenType type, String token) {
-        final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
+        if (authenticationEndpointExists(HttpMethod.POST)) {
+            final String url = getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT;
 
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(ZOSMF_CSRF_HEADER, "");
-        headers.add(HttpHeaders.COOKIE, type.getCookieName() + "=" + token);
+            final HttpHeaders headers = new HttpHeaders();
+            headers.add(ZOSMF_CSRF_HEADER, "");
+            headers.add(HttpHeaders.COOKIE, type.getCookieName() + "=" + token);
 
-        try {
-            ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
-                new HttpEntity<>(null, headers), String.class);
+            try {
+                ResponseEntity<String> re = restTemplateWithoutKeystore.exchange(url, HttpMethod.POST,
+                    new HttpEntity<>(null, headers), String.class);
 
-            if (re.getStatusCode().is2xxSuccessful())
-                return;
-            if (re.getStatusCodeValue() == 401) {
-                throw new TokenNotValidException("Token is not valid.");
+                if (re.getStatusCode().is2xxSuccessful())
+                    return;
+                if (re.getStatusCodeValue() == 401) {
+                    throw new TokenNotValidException("Token is not valid.");
+                }
+                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
+                throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
+            } catch (RuntimeException re) {
+                throw handleExceptionOnCall(url, re);
             }
-            apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
-            throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
-        } catch (RuntimeException re) {
-            throw handleExceptionOnCall(url, re);
         }
+        log.warn("The request to validate an auth token was unsuccessful, z/OSMF validate endpoint not available");
     }
 
     public void invalidate(TokenType type, String token) {
