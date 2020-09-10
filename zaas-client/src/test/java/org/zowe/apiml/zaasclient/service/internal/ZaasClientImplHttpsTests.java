@@ -333,4 +333,9 @@ class ZaasClientImplHttpsTests {
 
         assertEquals("ticket", passTicketService.passTicket(token, "ZOWEAPPL"));
     }
+
+    @Test
+    void test() {
+
+    }
 }

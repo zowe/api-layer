@@ -15,14 +15,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.client.service.ZaasClientService;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
+import javax.servlet.http.Cookie;
 import java.io.IOException;
 
 @RestController
@@ -53,8 +51,13 @@ public class ZaasClientTestController {
 
     @PostMapping(value = "/logout")
     @ApiOperation(value = "Forward logout to gateway service via zaas client")
-    public void forwardLogout(@RequestBody String jwtToken) throws ZaasConfigurationException, ZaasClientException, IOException {
-        zaasClientService.logout(jwtToken);
+    public ResponseEntity<String> forwardLogout(@RequestHeader Cookie cookie) throws ZaasConfigurationException, IOException {
+        try {
+            zaasClientService.logout(cookie.getValue());
+        } catch (ZaasClientException e) {
+            return ResponseEntity.status(e.getErrorCode().getReturnCode()).body(e.getErrorCode().getMessage());
+        }
+        return ResponseEntity.noContent().build();
     }
 }
 

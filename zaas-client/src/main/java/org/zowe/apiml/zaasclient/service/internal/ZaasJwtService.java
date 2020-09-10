@@ -90,8 +90,14 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public void logout(String jwtToken) throws ZaasClientException {
-        doRequest(() -> logoutJwtToken(jwtToken));
-
+        doRequest(() -> {
+                try {
+                    return logoutJwtToken(jwtToken);
+                } catch (ZaasClientException e) {
+                    throw e;
+                }
+            }
+        );
     }
 
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
@@ -101,14 +107,30 @@ class ZaasJwtService implements TokenService {
         return new ClientWithResponse(client, client.execute(httpGet));
     }
 
-    private ClientWithResponse logoutJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
+    private ClientWithResponse logoutJwtToken(String jwtToken) throws ZaasConfigurationException, IOException, ZaasClientException {
         CloseableHttpClient client;
         client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(logoutEndpoint);
         httpPost.addHeader("Cookie", TOKEN_PREFIX + "=" + jwtToken);
-//        client.execute(httpPost);
-        //
-        return new ClientWithResponse(client, client.execute(httpPost));
+        return getClientWithResponse(client, httpPost);
+    }
+
+    private ClientWithResponse getClientWithResponse(CloseableHttpClient client, HttpPost httpPost) throws IOException, ZaasClientException {
+        ClientWithResponse clientWithResponse = new ClientWithResponse(client, client.execute(httpPost));
+        int httpResponseCode = clientWithResponse.getResponse().getStatusLine().getStatusCode();
+        if (httpResponseCode == 204) {
+            return clientWithResponse;
+        }
+        else {
+            String obtainedMessage = EntityUtils.toString(clientWithResponse.getResponse().getEntity());
+            if (httpResponseCode == 401) {
+                throw new ZaasClientException(ZaasClientErrorCodes.INVALID_AUTHENTICATION, obtainedMessage);
+            } else if (httpResponseCode == 400) {
+                throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD, obtainedMessage);
+            } else {
+                throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
+            }
+        }
     }
 
     private void finallyClose(CloseableHttpResponse response) {
@@ -206,6 +228,6 @@ class ZaasJwtService implements TokenService {
     }
 
     interface Operation {
-        ClientWithResponse request() throws ZaasConfigurationException, IOException;
+        ClientWithResponse request() throws ZaasConfigurationException, IOException, ZaasClientException;
     }
 }

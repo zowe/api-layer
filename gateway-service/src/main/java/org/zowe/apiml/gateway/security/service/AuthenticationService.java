@@ -369,10 +369,19 @@ public class AuthenticationService {
      * @param request the http request
      * @return the JWT token
      */
+
     public Optional<String> getJwtTokenFromRequest(HttpServletRequest request) {
         Optional<String> fromCookie = getJwtTokenFromCookie(request);
         if (!fromCookie.isPresent()) {
             return extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+        }
+        return fromCookie;
+    }
+
+    public Optional<String> getJwtTokenFromRequestToLogout(HttpServletRequest request) {
+        Optional<String> fromCookie = getJwtTokenFromCookie(request);
+        if (!fromCookie.isPresent()) {
+            throw new TokenNotValidException("The token you are trying to logout is not valid");
         }
         return fromCookie;
     }

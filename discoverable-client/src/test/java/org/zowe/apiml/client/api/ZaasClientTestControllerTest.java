@@ -72,7 +72,7 @@ public class ZaasClientTestControllerTest {
     }
 
     @Test
-    public void forwardLogout_successfulLogout() throws Exception {
+    public void givenValidToken_whenPerformingLogout_thenSuccessLogout() throws Exception {
         LoginRequest loginRequest = new LoginRequest("username", "password");
         String token = "token";
         this.mockMvc.perform(
@@ -80,20 +80,16 @@ public class ZaasClientTestControllerTest {
                 .content(mapper.writeValueAsString(loginRequest))
                 .header("Cookie", TOKEN_PREFIX + "=" + token)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(status().is(200));
+            .andExpect(status().is(204));
     }
 
-
-    //TODO What if invalid token is provided?? Right now it returns 200 code. Should the status code be changed?
     @Test
-    public void forwardLogout_failLogout() throws Exception {
+    public void givenEmptyToken_whenPerformingLogout_thenFailLogout() throws Exception {
         LoginRequest loginRequest = new LoginRequest("username", "password");
-        String token = "token";
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
                 .content(mapper.writeValueAsString(loginRequest))
-                .header("Cookie", "s" + "=" + token)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(status().is(200));
+            .andExpect(status().is(400));
     }
 }
