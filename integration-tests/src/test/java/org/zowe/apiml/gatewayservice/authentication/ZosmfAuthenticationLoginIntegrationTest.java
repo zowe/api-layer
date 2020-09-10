@@ -40,6 +40,8 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
     static void setupClients()  {
         RestAssured.port = PORT;
         RestAssured.useRelaxedHTTPSValidation();
+
+        providers.switchProvider("zosmf");
     }
 
     @BeforeEach
@@ -80,6 +82,7 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
         System.out.println( "DJDEBUG:Url:" + String.format("%s://%s:%d%s%s", scheme, host, port, ZOSMF_BASE_PATH, ZOSMF_ENDPOINT));
         given().config(tlsWithoutCert)
             .cookie(cookie)
+            .header("X-CSRF-ZOSMF-HEADER", "")
             .get(String.format("%s://%s:%d%s%s", scheme, host, port, ZOSMF_BASE_PATH, ZOSMF_ENDPOINT))
             .then()
             .statusCode(is(SC_OK))
