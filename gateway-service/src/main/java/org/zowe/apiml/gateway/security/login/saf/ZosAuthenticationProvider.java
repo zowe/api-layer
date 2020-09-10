@@ -13,9 +13,7 @@ package org.zowe.apiml.gateway.security.login.saf;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -37,6 +35,7 @@ public class ZosAuthenticationProvider implements AuthenticationProvider, Initia
         if ((returned == null) || (returned.isSuccess())) {
             final String domain = "security-domain";
             final String jwtToken = authenticationService.createJwtToken(userid, domain, null);
+            log.warn("ZOSAUTH:{}", jwtToken);
             return authenticationService.createTokenAuthentication(userid, jwtToken);
         } else {
             throw new BadCredentialsException("Username or password are invalid.");

@@ -9,18 +9,17 @@
  */
 package org.zowe.apiml.gateway.security.login.dummy;
 
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.gateway.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 /**
  * Authentication provider for development purposes
@@ -28,6 +27,7 @@ import org.springframework.stereotype.Component;
  * Allows Gateway to run without mainframe (z/OSMF service)
  */
 @Component
+@Slf4j
 public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
     private static final String DUMMY_PROVIDER = "Dummy provider";
 
@@ -63,7 +63,7 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
 
         String username = usernamePasswordAuthentication.getName();
         String token = authenticationService.createJwtToken(username, DUMMY_PROVIDER, null);
-
+        log.warn("DUMMYAUTH:{}", token);
         TokenAuthentication tokenAuthentication = new TokenAuthentication(username, token);
         tokenAuthentication.setAuthenticated(true);
         return tokenAuthentication;

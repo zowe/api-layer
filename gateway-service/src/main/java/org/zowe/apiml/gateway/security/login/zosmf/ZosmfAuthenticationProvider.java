@@ -10,10 +10,9 @@
 package org.zowe.apiml.gateway.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
@@ -25,6 +24,7 @@ import static org.zowe.apiml.gateway.security.service.ZosmfService.TokenType.LTP
 /**
  * Authentication provider that verifies credentials against z/OSMF service
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ZosmfAuthenticationProvider implements AuthenticationProvider {
@@ -56,7 +56,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             // construct own JWT token, including LTPA from z/OSMF
             final String domain = ar.getDomain();
             final String jwtToken = authenticationService.createJwtToken(user, domain, ar.getTokens().get(LTPA));
-
+            log.warn("ZOSMFAUTH:{}", jwtToken);
             return authenticationService.createTokenAuthentication(user, jwtToken);
         }
 
