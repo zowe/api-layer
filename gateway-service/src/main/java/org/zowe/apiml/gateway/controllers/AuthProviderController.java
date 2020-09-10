@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.controllers;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.zowe.apiml.gateway.security.config.CompoundAuthProvider;
 @AllArgsConstructor
 @RestController
 @RequestMapping(AuthProviderController.CONTROLLER_PATH)
+@Slf4j
 public class AuthProviderController {
 
     public static final String CONTROLLER_PATH = "/gateway/authentication"; // NOSONAR
@@ -33,6 +35,7 @@ public class AuthProviderController {
     @ResponseBody
     public ResponseEntity<Object> updateAuthProviderConfig(@RequestBody AuthProvider provider) {
         compoundAuthProvider.setLoginAuthProvider(provider.getProvider());
+        log.warn("SWITCHED AUTH PROVIDER:{}", compoundAuthProvider.getLoginAuthProviderName());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
