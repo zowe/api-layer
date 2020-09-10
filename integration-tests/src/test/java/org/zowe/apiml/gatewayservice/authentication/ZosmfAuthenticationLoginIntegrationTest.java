@@ -74,12 +74,11 @@ class ZosmfAuthenticationLoginIntegrationTest extends Login {
             .statusCode(is(SC_NO_CONTENT))
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
-        System.out.println( "DJDEBUG:Cookie:" + cookie.toString());
         assertValidAuthToken(cookie);
 
         String dsname1 = "SYS1.PARMLIB";
         String dsname2 = "SYS1.PROCLIB";
-        System.out.println( "DJDEBUG:Url:" + String.format("%s://%s:%d%s%s", scheme, host, port, ZOSMF_BASE_PATH, ZOSMF_ENDPOINT));
+
         given().config(tlsWithoutCert)
             .cookie(cookie)
             .header("X-CSRF-ZOSMF-HEADER", "")
