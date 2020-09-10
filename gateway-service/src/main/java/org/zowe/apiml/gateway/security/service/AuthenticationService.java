@@ -12,21 +12,14 @@ package org.zowe.apiml.gateway.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.*;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -34,10 +27,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -120,21 +110,29 @@ public class AuthenticationService {
     @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
     @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
+        log.warn("INVALIDATING:{}", jwtToken);
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */
         if (distribute && !invalidateTokenOnAnotherInstance(jwtToken)) {
+            log.warn("ENDING FIRST CASE");
             return Boolean.FALSE;
         }
 
         // invalidate token in z/OSMF
         final QueryResponse queryResponse = parseJwtToken(jwtToken);
+        log.warn("QUERYRESPONSE:{}", queryResponse.toString());
         switch (queryResponse.getSource()) {
             case ZOWE:
                 final String ltpaToken = getLtpaToken(jwtToken);
-                if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
+                if (ltpaToken != null) {
+                    log.warn("INVALIDATING AGAINST ZOSMF WITH LTPA:{}", ltpaToken);
+                    zosmfService.invalidate(LTPA, ltpaToken);
+                }
+                log.warn("INVALIDATED ZOWE CASE");
                 break;
             case ZOSMF:
+                log.warn("INVALIDATED ZOSMF CASE WITH JWT:{}", JWT);
                 zosmfService.invalidate(JWT, jwtToken);
                 break;
             default:
