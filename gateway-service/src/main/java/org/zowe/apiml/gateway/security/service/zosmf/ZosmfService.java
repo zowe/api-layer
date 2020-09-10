@@ -59,8 +59,7 @@ public class ZosmfService extends AbstractZosmfService {
     @Data
     @AllArgsConstructor
     @RequiredArgsConstructor
-    static
-    public class AuthenticationResponse {
+    public static class AuthenticationResponse {
         private String domain;
         private final Map<TokenType, String> tokens;
     }
@@ -85,11 +84,13 @@ public class ZosmfService extends AbstractZosmfService {
         if (authenticationEndpointExists(HttpMethod.POST)) {
             return issueAuthenticationRequest(
                 authentication,
-                getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT);
+                getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
+                HttpMethod.POST);
         }
         return issueAuthenticationRequest(
             authentication,
-            getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT);
+            getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT,
+            HttpMethod.GET);
     }
 
     /**
@@ -98,7 +99,7 @@ public class ZosmfService extends AbstractZosmfService {
      * @param url String containing auth endpoint to be used
      * @return AuthenticationResponse containing auth token, either LTPA or JWT
      */
-    protected AuthenticationResponse issueAuthenticationRequest(Authentication authentication, String url) {
+    protected AuthenticationResponse issueAuthenticationRequest(Authentication authentication, String url, HttpMethod httpMethod) {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, getAuthenticationValue(authentication));
         headers.add(ZOSMF_CSRF_HEADER, "");
@@ -106,7 +107,7 @@ public class ZosmfService extends AbstractZosmfService {
         try {
             final ResponseEntity<String> response = restTemplateWithoutKeystore.exchange(
                 url,
-                HttpMethod.POST,
+                httpMethod,
                 new HttpEntity<>(null, headers), String.class);
             return getAuthenticationResponse(response);
         } catch (RuntimeException re) {

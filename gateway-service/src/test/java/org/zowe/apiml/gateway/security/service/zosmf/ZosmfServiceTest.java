@@ -110,7 +110,7 @@ public class ZosmfServiceTest {
 
         doReturn(responseEntity).when(restTemplate).exchange(
             "http://zosmf:1433/zosmf/info",
-            HttpMethod.POST,
+            HttpMethod.GET,
             new HttpEntity<>(null, requestHeaders),
             String.class
         );
