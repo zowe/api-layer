@@ -141,7 +141,8 @@ task runAllIntegrationTests(type: Test) {
         excludeTags(
             'StartupCheck',
             'AdditionalLocalTest',
-            'NotForMainframeTest'
+            'NotForMainframeTest',
+            'SlowTests'
         )
     }
     outputs.upToDateWhen { false }
