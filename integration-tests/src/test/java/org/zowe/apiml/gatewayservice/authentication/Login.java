@@ -11,7 +11,6 @@ package org.zowe.apiml.gatewayservice.authentication;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import io.restassured.http.Cookie;
@@ -41,7 +40,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
-class Login {
+abstract class Login {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
@@ -104,12 +103,6 @@ class Login {
     @AfterAll
     static void switchToOriginalProvider() {
         providers.switchProvider(null);
-    }
-
-    @BeforeEach
-    public void setUp() {
-        RestAssured.port = PORT;
-        RestAssured.useRelaxedHTTPSValidation();
     }
 
     //@formatter:off
@@ -290,7 +283,6 @@ class Login {
 
         return cookie.getValue();
     }
-    //@formatter:on
 
     @Test
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
@@ -325,4 +317,5 @@ class Login {
             .then()
             .statusCode(is(SC_BAD_REQUEST));
     }
+    //@formatter:on
 }

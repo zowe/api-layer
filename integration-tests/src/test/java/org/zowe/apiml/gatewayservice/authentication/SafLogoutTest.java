@@ -51,8 +51,4 @@ class SafLogoutTest extends LogoutTest {
         assertIfLogged(jwt2, true);
     }
 
-    @AfterAll
-    static void switchToDefaultProvider() {
-        providers.switchProvider(null);
-    }
 }

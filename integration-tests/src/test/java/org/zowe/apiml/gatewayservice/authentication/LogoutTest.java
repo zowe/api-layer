@@ -20,16 +20,22 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.gatewayservice.SecurityUtils.getConfiguredSslConfig;
 @Disabled
-class LogoutTest {
+abstract class LogoutTest {
 
     protected final static String LOGOUT_ENDPOINT = "/auth/logout";
     protected final static String QUERY_ENDPOINT = "/auth/query";
     protected final static String COOKIE_NAME = "apimlAuthenticationToken";
+    protected static AuthenticationProviders providers = new AuthenticationProviders(Login.authenticationEndpointPath);
 
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+    }
+
+    @AfterAll
+    static void switchToOriginalProvider() {
+        providers.switchProvider(null);
     }
 
     protected void assertIfLogged(String jwt, boolean logged) {
