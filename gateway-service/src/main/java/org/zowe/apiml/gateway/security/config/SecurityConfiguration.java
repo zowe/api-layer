@@ -62,7 +62,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
         "/api/v1/gateway",
-        "/application"
+        "/application",
+        "/service-info"
     };
 
     private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/api/v1/gateway/**", "/gateway/version");
@@ -132,6 +133,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
             .antMatchers("/application/health", "/application/info").permitAll()
             .antMatchers("/application/**").authenticated()
+            .antMatchers("/service-info/**").authenticated()
 
             // auth controller
             .and()
