@@ -23,7 +23,11 @@ export default class ServiceTab extends Component {
             selectedService.homePageUrl !== null &&
             selectedService.homePageUrl !== undefined &&
             selectedService.homePageUrl.length > 0;
-
+        const hasBasePath =
+            selectedService.basePath !== null &&
+            selectedService.basePath !== undefined &&
+            selectedService.basePath.length > 0;
+        console.log(selectedService);
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
@@ -79,6 +83,34 @@ export default class ServiceTab extends Component {
                                             )}
                                         </React.Fragment>
                                     )}
+                                    <br />
+                                    <br />
+                                   {hasBasePath && (
+                                       <React.Fragment>
+                                           {selectedService.status === 'UP' && (
+                                               <Tooltip
+                                                   key={selectedService.serviceId}
+                                                   content="Open Service Base Path"
+                                                   placement="bottom"
+                                               >
+                                                   <Link href={selectedService.basePath}>
+                                                       <strong>Service Base Path</strong>
+                                                   </Link>
+                                               </Tooltip>
+                                           )}
+                                           {selectedService.status === 'DOWN' && (
+                                               <Tooltip
+                                                   key={selectedService.serviceId}
+                                                   content="API Base Path navigation is disabled as the service is not running"
+                                                   placement="bottom"
+                                               >
+                                                   <Link variant="danger">
+                                                       <strong>API Base Path</strong>
+                                                   </Link>
+                                               </Tooltip>
+                                           )}
+                                       </React.Fragment>
+                                   )}
                                     <Text style={{ marginTop: '15px' }}>{selectedService.description}</Text>
                                 </div>
                             </div>
