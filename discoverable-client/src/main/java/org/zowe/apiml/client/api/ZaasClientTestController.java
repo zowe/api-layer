@@ -20,7 +20,6 @@ import org.zowe.apiml.client.service.ZaasClientService;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
-import javax.servlet.http.Cookie;
 import java.io.IOException;
 
 @RestController
@@ -51,10 +50,7 @@ public class ZaasClientTestController {
 
     @PostMapping(value = "/logout")
     @ApiOperation(value = "Forward logout to gateway service via zaas client")
-    public ResponseEntity<String> forwardLogout(@RequestHeader(value="Cookie") String cookie) throws ZaasConfigurationException, IOException {
-//        if (cookie.contains("apimlAuthenticationToken")) {
-//            cookie = cookie.split("apimlAuthenticationToken=")[1];
-//        }
+    public ResponseEntity<String> forwardLogout(@RequestHeader(value = "Cookie") String cookie) throws ZaasConfigurationException, IOException {
         try {
             zaasClientService.logout(cookie);
         } catch (ZaasClientException e) {

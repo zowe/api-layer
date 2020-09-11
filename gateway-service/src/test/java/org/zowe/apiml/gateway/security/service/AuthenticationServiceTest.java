@@ -37,10 +37,7 @@ import org.zowe.apiml.gateway.config.CacheConfig;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceV2;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -579,5 +576,38 @@ public class AuthenticationServiceTest {
         Optional<String> token = authService.getJwtTokenFromRequest(request);
         assertTrue(token.isPresent());
         assertEquals("jwt", token.get());
+    }
+
+    @Test
+    void givenAValidToken_whenGetJwtTokenFromRequestToLogout_thenReturnTheToken() {
+        String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie("apimlAuthenticationToken", jwtToken));
+        Optional<String> optionalToken = authService.getJwtTokenFromRequestToLogout(request);
+        assertTrue(optionalToken.isPresent());
+        assertEquals(optionalToken.get(), jwtToken);
+    }
+
+    @Test
+    void givenTokenWithInvalidPrefix_whenGetJwtTokenFromRequestToLogout_thenThrowException() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie("invalidName", "jwtToken"));
+
+        Exception exception = assertThrows(TokenFormatNotValidException.class,
+            () -> authService.getJwtTokenFromRequestToLogout(request),
+            "Expected exception is not TokenFormatNotValidException");
+
+        assertEquals("The token you are trying to logout is not valid or not present in the cookie", exception.getMessage());
+    }
+
+    @Test
+    void givenRequestWithNoCookie_whenGetJwtTokenFromRequestToLogout_thenThrowException() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
+        Exception exception = assertThrows(TokenFormatNotValidException.class,
+            () -> authService.getJwtTokenFromRequestToLogout(request),
+            "Expected exception is not TokenFormatNotValidException");
+
+        assertEquals("The token you are trying to logout is not valid or not present in the cookie", exception.getMessage());
     }
 }

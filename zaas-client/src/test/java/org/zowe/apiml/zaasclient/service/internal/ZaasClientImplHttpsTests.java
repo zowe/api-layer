@@ -43,6 +43,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -335,7 +336,18 @@ class ZaasClientImplHttpsTests {
     }
 
     @Test
-    void test() {
+    void givenValidToken_whenLogout_thenSuccess() throws ZaasClientException {
+        prepareResponse(HttpStatus.SC_NO_CONTENT);
+        String token = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
+        assertDoesNotThrow(() -> tokenService.logout(token));
+    }
 
+    @Test
+    void givenInvalidToken_whenLogout_thenThrowException() {
+        prepareResponse(HttpStatus.SC_NO_CONTENT);
+        when(closeableHttpResponse.getStatusLine().getStatusCode()).thenReturn(400);
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("invalid"));
+
+        assertTrue(exception.getMessage().contains("'ZWEAS130E', message='Invalid token provided'"));
     }
 }
