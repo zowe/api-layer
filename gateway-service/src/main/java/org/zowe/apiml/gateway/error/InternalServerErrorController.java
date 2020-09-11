@@ -23,7 +23,6 @@ import org.zowe.apiml.gateway.error.check.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.log.ApimlLogger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -41,17 +40,14 @@ public class InternalServerErrorController implements ErrorController {
     private final MessageService messageService;
     private final List<ErrorCheck> errorChecks = new ArrayList<>();
 
-    private ApimlLogger apimlLog;
-
     @Autowired
     public InternalServerErrorController(MessageService messageService) {
         this.messageService = messageService;
-        this.apimlLog = ApimlLogger.of(InternalServerErrorController.class, messageService);
 
         errorChecks.add(new TlsErrorCheck(messageService));
         errorChecks.add(new TimeoutErrorCheck(messageService));
-        errorChecks.add(new SecurityTokenErrorCheck(messageService));
-        errorChecks.add(new ServiceNotFoundCheck(messageService));
+        errorChecks.add(new SecurityErrorCheck(messageService));
+        errorChecks.add(new ServiceErrorCheck(messageService));
         errorChecks.add(new RibbonRetryErrorCheck(messageService));
     }
 
@@ -78,17 +74,16 @@ public class InternalServerErrorController implements ErrorController {
             return entity;
         }
 
-        return logAndCreateResponseForInternalError(request, exc);
+        return createResponseForInternalError(request, exc);
     }
 
-    private ResponseEntity<ApiMessageView> logAndCreateResponseForInternalError(HttpServletRequest request, Throwable exc) {
+    private ResponseEntity<ApiMessageView> createResponseForInternalError(HttpServletRequest request, Throwable exc) {
         final int status = ErrorUtils.getErrorStatus(request);
         Message message = messageService.createMessage("org.zowe.apiml.common.internalRequestError",
             ErrorUtils.getGatewayUri(request),
             ExceptionUtils.getMessage(exc),
             ExceptionUtils.getRootCauseMessage(exc));
 
-        apimlLog.log(message);
         return ResponseEntity.status(status).body(message.mapToView());
     }
 

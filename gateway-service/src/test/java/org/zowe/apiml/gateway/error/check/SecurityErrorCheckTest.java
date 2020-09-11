@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.error.check;
 
 import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.zowe.apiml.config.error.check.MessageServiceConfiguration;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -42,9 +43,9 @@ import static org.junit.Assert.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
 @Import(MessageServiceConfiguration.class)
-class SecurityTokenErrorCheckTest {
+class SecurityErrorCheckTest {
 
-    private static SecurityTokenErrorCheck securityTokenErrorCheck;
+    private static SecurityErrorCheck securityErrorCheck;
 
     @Autowired
     private MessageService messageService;
@@ -56,7 +57,7 @@ class SecurityTokenErrorCheckTest {
 
     @BeforeEach
     void setup() {
-        securityTokenErrorCheck = new SecurityTokenErrorCheck(messageService);
+        securityErrorCheck = new SecurityErrorCheck(messageService);
     }
 
 
@@ -70,7 +71,7 @@ class SecurityTokenErrorCheckTest {
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
-        ResponseEntity<ApiMessageView> actualResponse = securityTokenErrorCheck.checkError(request, exc);
+        ResponseEntity<ApiMessageView> actualResponse = securityErrorCheck.checkError(request, exc);
 
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
@@ -88,13 +89,35 @@ class SecurityTokenErrorCheckTest {
         ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
 
         request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
-        ResponseEntity<ApiMessageView> actualResponse = securityTokenErrorCheck.checkError(request, exc);
+        ResponseEntity<ApiMessageView> actualResponse = securityErrorCheck.checkError(request, exc);
 
         assertNotNull(actualResponse);
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
 
+        assertNotNull(actualResponse.getBody());
         List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
         assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.gateway.security.invalidToken", MessageType.ERROR, "ZWEAG102E", "Token is not valid")));
+    }
+
+    @Test
+    void shouldReturnCauseMessageWhenBadCredentialsException() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        BadCredentialsException badCredentialsException = new BadCredentialsException("CREDENTIALS_NOT_VALID");
+
+        AuthenticationException exception = new BadCredentialsException(badCredentialsException.getMessage(), badCredentialsException);
+
+        ZuulException exc = new ZuulException(exception, HttpStatus.GATEWAY_TIMEOUT.value(), String.valueOf(exception));
+
+        request.setAttribute(ErrorUtils.ATTR_ERROR_EXCEPTION, exc);
+        ResponseEntity<ApiMessageView> actualResponse = securityErrorCheck.checkError(request, exc);
+
+        assertNotNull(actualResponse);
+        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
+
+        assertNotNull(actualResponse.getBody());
+        List<ApiMessage> actualMessageList = actualResponse.getBody().getMessages();
+        assertThat(actualMessageList, hasItem(new ApiMessage("org.zowe.apiml.security.login.invalidCredentials",
+            MessageType.ERROR, "ZWEAG120E", "Invalid username or password for URL 'null'")));
     }
 }
 
