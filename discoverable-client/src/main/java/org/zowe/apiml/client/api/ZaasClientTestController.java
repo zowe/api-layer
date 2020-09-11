@@ -51,9 +51,12 @@ public class ZaasClientTestController {
 
     @PostMapping(value = "/logout")
     @ApiOperation(value = "Forward logout to gateway service via zaas client")
-    public ResponseEntity<String> forwardLogout(@RequestHeader Cookie cookie) throws ZaasConfigurationException, IOException {
+    public ResponseEntity<String> forwardLogout(@RequestHeader(value="Cookie") String cookie) throws ZaasConfigurationException, IOException {
+//        if (cookie.contains("apimlAuthenticationToken")) {
+//            cookie = cookie.split("apimlAuthenticationToken=")[1];
+//        }
         try {
-            zaasClientService.logout(cookie.getValue());
+            zaasClientService.logout(cookie);
         } catch (ZaasClientException e) {
             return ResponseEntity.status(e.getErrorCode().getReturnCode()).body(e.getErrorCode().getMessage());
         }

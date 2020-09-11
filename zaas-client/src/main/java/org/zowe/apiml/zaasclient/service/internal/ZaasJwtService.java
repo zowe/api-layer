@@ -90,14 +90,7 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public void logout(String jwtToken) throws ZaasClientException {
-        doRequest(() -> {
-                try {
-                    return logoutJwtToken(jwtToken);
-                } catch (ZaasClientException e) {
-                    throw e;
-                }
-            }
-        );
+        doRequest(() -> logoutJwtToken(jwtToken));
     }
 
     private ClientWithResponse queryWithJwtToken(String jwtToken) throws ZaasConfigurationException, IOException {
@@ -108,10 +101,9 @@ class ZaasJwtService implements TokenService {
     }
 
     private ClientWithResponse logoutJwtToken(String jwtToken) throws ZaasConfigurationException, IOException, ZaasClientException {
-        CloseableHttpClient client;
-        client = httpClientProvider.getHttpClient();
+        CloseableHttpClient client = httpClientProvider.getHttpClient();
         HttpPost httpPost = new HttpPost(logoutEndpoint);
-        httpPost.addHeader("Cookie", TOKEN_PREFIX + "=" + jwtToken);
+        httpPost.addHeader(SM.COOKIE, jwtToken);
         return getClientWithResponse(client, httpPost);
     }
 
@@ -128,7 +120,7 @@ class ZaasJwtService implements TokenService {
             } else if (httpResponseCode == 400) {
                 throw new ZaasClientException(ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD, obtainedMessage);
             } else {
-                throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
+                throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, obtainedMessage);
             }
         }
     }
@@ -180,10 +172,14 @@ class ZaasJwtService implements TokenService {
         try {
 
             clientWithResponse = request.request();
-    } catch (IOException e) {
+    }
+        catch (ZaasClientException e) {
+            throw e;
+        }
+        catch (IOException e) {
         throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
     } catch (Exception e) {
-        throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, e);
+        throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN, e);
     } finally {
         finallyClose(clientWithResponse.getResponse());
     }
