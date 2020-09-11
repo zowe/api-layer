@@ -45,9 +45,11 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
+import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 
+import javax.servlet.ServletException;
 import java.util.*;
 
 /**
@@ -272,16 +274,25 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             PROTECTED_ENDPOINTS);
     }
 
+    /**
+     * Handles the logout action by checking the validity of JWT token passed in the Cookie.
+     * If present, the token will be invalidated.
+     */
     private LogoutHandler logoutHandler() {
+        FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
         return (request, response, authentication) -> {
             try {
                 authenticationService.getJwtTokenFromRequestToLogout(request)
                     .ifPresent(x ->
                         authenticationService.invalidateJwtToken(x, true)
                     );
-            } catch (TokenNotValidException e) {
-                response.setStatus(org.apache.http.HttpStatus.SC_BAD_REQUEST);
-                throw e;
+            }
+            catch (TokenFormatNotValidException e) {
+                try {
+                    failure.onAuthenticationFailure(request, response, e);
+                } catch (ServletException ex) {
+                    ex.printStackTrace();
+                }
             }
         };
     }

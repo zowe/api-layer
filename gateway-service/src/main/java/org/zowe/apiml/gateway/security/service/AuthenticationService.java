@@ -34,10 +34,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -378,10 +375,17 @@ public class AuthenticationService {
         return fromCookie;
     }
 
+    /**
+     * Get the JWT token from the cookie to process the logout
+     *
+     * @param request the http request
+     * @throws TokenFormatNotValidException if the token format is not valid or the cookie is empty
+     * @return the JWT token
+     */
     public Optional<String> getJwtTokenFromRequestToLogout(HttpServletRequest request) {
         Optional<String> fromCookie = getJwtTokenFromCookie(request);
         if (!fromCookie.isPresent()) {
-            throw new TokenNotValidException("The token you are trying to logout is not valid");
+            throw new TokenFormatNotValidException("The token you are trying to logout is not valid or not present in the cookie");
         }
         return fromCookie;
     }
