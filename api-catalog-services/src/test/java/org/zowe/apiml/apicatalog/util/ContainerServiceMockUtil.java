@@ -112,7 +112,8 @@ public class ContainerServiceMockUtil {
             serviceId + "-title",
             serviceId + "-desc",
             false,
-            "home");
+            "home",
+            "base");
         services.add(service);
         allServices.add(service);
         return service;

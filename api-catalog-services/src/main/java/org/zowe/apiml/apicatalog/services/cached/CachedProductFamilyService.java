@@ -9,6 +9,7 @@
  */
 package org.zowe.apiml.apicatalog.services.cached;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -39,12 +40,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_DESCRIPTION;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_TITLE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_VERSION;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 import static java.util.stream.Collectors.toList;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
  * Caching service for eureka services
@@ -210,9 +207,7 @@ public class CachedProductFamilyService {
         String instanceHomePage = instanceInfo.getHomePageUrl();
 
         //Gateway homePage is used to hold DVIPA address and must not be modified
-        if (instanceHomePage != null
-            && !instanceHomePage.isEmpty()
-            && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId())) {
+        if (hasRealHomePage(instanceInfo)) {
             RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
             try {
@@ -228,6 +223,31 @@ public class CachedProductFamilyService {
 
         log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
         return instanceHomePage;
+    }
+
+    /**
+     * Use the homepage to get the base path for the service.
+     *
+     * @param instanceInfo the service instance
+     * @return the base URL
+     */
+    private String getInstanceBasePath(InstanceInfo instanceInfo) {
+        String instanceBasePath = instanceInfo.getHomePageUrl();
+        if (hasRealHomePage(instanceInfo)) {
+            int fourthSlashIndex = StringUtils.ordinalIndexOf(instanceBasePath, "/", 4);
+            if (fourthSlashIndex >= 0) {
+                instanceBasePath = instanceBasePath.substring(0, fourthSlashIndex);
+            }
+        }
+
+        return instanceBasePath;
+    }
+
+    private boolean hasRealHomePage(InstanceInfo instanceInfo) {
+        String instanceHomePage = instanceInfo.getHomePageUrl();
+        return instanceHomePage != null
+            && !instanceHomePage.isEmpty()
+            && !instanceInfo.getAppName().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
     }
 
     /**
@@ -302,11 +322,13 @@ public class CachedProductFamilyService {
         boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
 
         String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
+        String instanceBasePath = getInstanceBasePath(instanceInfo);
         return new APIService(
             instanceInfo.getAppName().toLowerCase(),
             instanceInfo.getMetadata().get(SERVICE_TITLE),
             instanceInfo.getMetadata().get(SERVICE_DESCRIPTION),
-            secureEnabled, instanceHomePage);
+            secureEnabled, instanceHomePage,
+            instanceBasePath);
     }
 
     /**
