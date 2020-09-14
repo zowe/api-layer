@@ -30,6 +30,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Map;
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -98,7 +99,12 @@ abstract class Login {
         assertValidAuthToken(cookie);
     }
 
-    private void assertValidAuthToken(Cookie cookie) {
+    protected void assertValidAuthToken (Cookie cookie) {
+        assertValidAuthToken(cookie, Optional.empty());
+    }
+
+    protected void assertValidAuthToken(Cookie cookie, Optional<String> username) {
+
         assertThat(cookie.isHttpOnly(), is(true));
         assertThat(cookie.getValue(), is(notNullValue()));
         assertThat(cookie.getMaxAge(), is(-1));
@@ -106,7 +112,7 @@ abstract class Login {
         int i = cookie.getValue().lastIndexOf('.');
         String untrustedJwtString = cookie.getValue().substring(0, i + 1);
         Claims claims = parseJwtString(untrustedJwtString);
-        assertThatTokenIsValid(claims);
+        assertThatTokenIsValid(claims, username);
     }
 
     @Test
@@ -128,8 +134,12 @@ abstract class Login {
     }
 
     protected void assertThatTokenIsValid(Claims claims) {
+        assertThatTokenIsValid(claims, Optional.empty());
+    }
+
+    protected void assertThatTokenIsValid(Claims claims, Optional<String> username) {
         assertThat(claims.getId(), not(isEmptyString()));
-        assertThat(claims.getSubject(), is(getUsername()));
+        assertThat(claims.getSubject(), is(username.orElseGet(this::getUsername)));
     }
 
     protected Claims parseJwtString(String untrustedJwtString) {
@@ -278,7 +288,7 @@ abstract class Login {
             .cookie(COOKIE_NAME, not(isEmptyString()))
             .extract().detailedCookie(COOKIE_NAME);
 
-        assertValidAuthToken(cookie);
+        assertValidAuthToken(cookie, Optional.of("APIMTST"));
 
     }
 }
