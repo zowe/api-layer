@@ -43,7 +43,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         if (loginProviders.isZosfmUsed()) {
             try {
                 authUp = loginProviders.isZosmfAvailable();
-            } catch(AuthenticationServiceException ex) {
+            } catch (AuthenticationServiceException ex) {
                 System.exit(-1);
             }
         }
