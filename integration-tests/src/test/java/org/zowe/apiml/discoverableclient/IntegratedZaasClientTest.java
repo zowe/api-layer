@@ -12,6 +12,7 @@ package org.zowe.apiml.discoverableclient;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gatewayservice.SecurityUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -21,8 +22,7 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -37,6 +37,7 @@ class IntegratedZaasClientTest {
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
+    private final static String COOKIE_NAME = "apimlAuthenticationToken";
 
     private final static URI ZAAS_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/zaasClient");
     private final static URI ZAAS_CLIENT_URI_OLD_FORMAT = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/zaasClient");
@@ -59,7 +60,7 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(ZAAS_CLIENT_URI)
+            .post(ZAAS_CLIENT_URI + "/login")
             .then()
             .statusCode(is(SC_OK))
             .body(not(isEmptyString()));
@@ -78,7 +79,7 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(ZAAS_CLIENT_URI)
+            .post(ZAAS_CLIENT_URI + "/login")
             .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(is("Invalid username or password"));
@@ -92,7 +93,7 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(ZAAS_CLIENT_URI_OLD_FORMAT)
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + "/login")
             .then()
             .statusCode(is(SC_OK))
             .body(not(isEmptyString()));
@@ -106,9 +107,37 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(ZAAS_CLIENT_URI_OLD_FORMAT)
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + "/login")
             .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(is("Invalid username or password"));
+    }
+
+    @Test
+    void givenValidToken_whenCallingLogout_thenSuccess() {
+        String token = "validToken";
+
+        given()
+            .contentType(JSON)
+            .cookie(COOKIE_NAME, generateToken())
+            .when()
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + "/logout")
+            .then()
+            .statusCode(is(SC_NO_CONTENT));
+    }
+
+    @Test
+    void givenInvalidToken_whenCallingLogout_thenFail() {
+
+        given()
+            .contentType(JSON)
+            .when()
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + "/logout")
+            .then()
+            .statusCode(is(SC_BAD_REQUEST));
+    }
+
+    private String generateToken() {
+        return SecurityUtils.gatewayToken();
     }
 }

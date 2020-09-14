@@ -71,6 +71,8 @@ public interface ZaasClient {
      * @param token JWT token to invalidate
      * @throws ZaasClientException If the provided token was expired, invalid or some other issue with respect to
      *      communication occurs, this exception with details is thrown.
+     * @throws ZaasConfigurationException Wrapper for errors in HTTP client and TLS configuration.
+     * @throws IOException
      */
     void logout(String token) throws ZaasClientException, IOException, ZaasConfigurationException;
 }
