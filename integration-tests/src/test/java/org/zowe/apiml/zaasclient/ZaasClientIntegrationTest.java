@@ -25,7 +25,7 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
-import org.zowe.apiml.zaasclient.service.internal.ZaasClientHttps;
+import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.File;
@@ -59,8 +59,8 @@ class ZaasClientIntegrationTest {
     private static final String EMPTY_AUTH_HEADER = "";
     private static final String EMPTY_STRING = "";
 
-    private long now = System.currentTimeMillis();
-    private long expirationForExpiredToken = now - 1000;
+    private final long now = System.currentTimeMillis();
+    private final long expirationForExpiredToken = now - 1000;
 
     ConfigProperties configProperties;
     ZaasClient tokenService;
@@ -79,7 +79,7 @@ class ZaasClientIntegrationTest {
             .setExpiration(new Date(expiration))
             .setIssuer("APIML")
             .setId(UUID.randomUUID().toString())
-            .signWith(SignatureAlgorithm.RS256, jwtSecretKey)
+            .signWith(jwtSecretKey, SignatureAlgorithm.RS256)
             .compact();
     }
 
@@ -105,7 +105,7 @@ class ZaasClientIntegrationTest {
     @BeforeEach
     void setUp() throws Exception {
         configProperties = ConfigReaderZaasClient.getConfigProperties();
-        tokenService = new ZaasClientHttps(configProperties);
+        tokenService = new ZaasClientImpl(configProperties);
     }
 
     @Test

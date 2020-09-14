@@ -21,7 +21,7 @@ tlsConfiguration:
     keyPassword: password
     keyStoreType: PKCS12
     keyStore: ../keystore/localhost/localhost.keystore.p12
-    clientKeystore: ../keystore/client_cert/cert_key.p12
+    clientKeystore: ../keystore/client_cert/client-certs.p12
     keyStorePassword: password
     trustStoreType: PKCS12
     trustStore: ../keystore/localhost/localhost.truststore.p12

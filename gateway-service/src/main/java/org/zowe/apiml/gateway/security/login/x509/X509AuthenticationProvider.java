@@ -23,14 +23,14 @@ import java.security.cert.X509Certificate;
 @RequiredArgsConstructor
 public class X509AuthenticationProvider implements AuthenticationProvider {
 
-    private final X509Authentication x509Authentication;
+    private final X509AuthenticationMapper x509AuthenticationMapper;
     private final AuthenticationService authenticationService;
 
     @Override
     public Authentication authenticate(Authentication authentication) {
         if (authentication instanceof X509AuthenticationToken) {
             X509Certificate[] certs = (X509Certificate[]) authentication.getCredentials();
-            String username = x509Authentication.mapUserToCertificate(certs[0]);
+            String username = x509AuthenticationMapper.mapCertificateToMainframeUserId(certs[0]);
             if (username == null) {
                 return null;
             }

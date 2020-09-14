@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 
 class X509AuthenticationProviderTest {
 
-    private X509Authentication x509Authentication;
+    private X509AuthenticationMapper x509AuthenticationMapper;
     private AuthenticationService authenticationService;
     private X509AuthenticationProvider x509AuthenticationProvider;
 
@@ -35,24 +35,24 @@ class X509AuthenticationProviderTest {
 
     @BeforeEach
     void setUp() {
-        x509Authentication = mock(X509Authentication.class);
+        x509AuthenticationMapper = mock(X509AuthenticationMapper.class);
 
         authenticationService = mock(AuthenticationService.class);
         when(authenticationService.createJwtToken("user", "security-domain", null)).thenReturn("jwt");
         when(authenticationService.createTokenAuthentication("user", "jwt")).thenReturn(new TokenAuthentication("user", "jwt"));
-        x509AuthenticationProvider = new X509AuthenticationProvider(x509Authentication, authenticationService);
+        x509AuthenticationProvider = new X509AuthenticationProvider(x509AuthenticationMapper, authenticationService);
     }
 
     @Test
     void whenProvidedCertificate_shouldReturnToken() {
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn("user");
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("user");
         TokenAuthentication token = (TokenAuthentication) x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
         assertEquals("jwt", token.getCredentials());
     }
 
     @Test
     void whenWrongTokenProvided_ThrowException() {
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn("user");
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("user");
         TokenAuthentication token = new TokenAuthentication("user", "user");
         AuthenticationTokenException exception = assertThrows(AuthenticationTokenException.class, () -> x509AuthenticationProvider.authenticate(token));
         assertEquals("Wrong authentication token. " + TokenAuthentication.class, exception.getMessage());
@@ -65,7 +65,7 @@ class X509AuthenticationProviderTest {
 
     @Test
     void whenCommonNameIsNotCorrect_returnNull() {
-        when(x509Authentication.mapUserToCertificate(x509Certificate[0])).thenReturn("wrong username");
+        when(x509AuthenticationMapper.mapCertificateToMainframeUserId(x509Certificate[0])).thenReturn("wrong username");
         assertNull(x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)));
     }
 

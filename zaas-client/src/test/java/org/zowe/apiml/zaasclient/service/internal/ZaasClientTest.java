@@ -45,7 +45,7 @@ class ZaasClientTest {
         tokens = mock(TokenService.class);
         passTickets = mock(PassTicketService.class);
 
-        underTest = new ZaasClientHttps(tokens, passTickets);
+        underTest = new ZaasClientImpl(tokens, passTickets);
     }
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
@@ -67,9 +67,7 @@ class ZaasClientTest {
     @ParameterizedTest
     @MethodSource("provideInvalidUsernamePassword")
     void givenFullyInvalidCredentials_whenLoggingIn_thenExceptionIsRaised(String username, String password) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> {
-            underTest.login(username, password);
-        });
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.login(username, password));
 
         assertThatExceptionContainValidCode(exception, EMPTY_NULL_USERNAME_PASSWORD);
     }
@@ -81,9 +79,7 @@ class ZaasClientTest {
     @ParameterizedTest
     @MethodSource("provideNullEmptyArguments")
     void givenFullyInvalidAuthorizationHeader_whenLoggingIn_thenExceptionIsRaised(String authorizationHeader) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> {
-            underTest.login(authorizationHeader);
-        });
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.login(authorizationHeader));
 
         assertThatExceptionContainValidCode(exception, EMPTY_NULL_AUTHORIZATION_HEADER);
     }
@@ -102,9 +98,7 @@ class ZaasClientTest {
     void givenFullyInvalidApplicationId_whenGettingPassticket_thenExceptionIsRaised(String token,
                                                                                            String applicationId,
                                                                                            ZaasClientErrorCodes errorCode) {
-        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> {
-            underTest.passTicket(token, applicationId);
-        });
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.passTicket(token, applicationId));
 
         assertThatExceptionContainValidCode(exception, errorCode);
     }
@@ -113,36 +107,28 @@ class ZaasClientTest {
     void givenValidCredentials_whenLoginApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
         when(tokens.login(anyString(), anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
-        assertThrows(ZaasClientException.class, () -> {
-            underTest.login(VALID_USERNAME, VALID_PASSWORD);
-        });
+        assertThrows(ZaasClientException.class, () -> underTest.login(VALID_USERNAME, VALID_PASSWORD));
     }
 
     @Test
     void givenValidToken_whenLoginApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
         when(tokens.login(anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
-        assertThrows(ZaasClientException.class, () -> {
-            underTest.login(VALID_TOKEN);
-        });
+        assertThrows(ZaasClientException.class, () -> underTest.login(VALID_TOKEN));
     }
 
     @Test
     void givenValidToken_whenQueryApiIsCalled_thenRaisedExceptionIsRethrown() throws Exception {
         when(tokens.query(anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
-        assertThrows(ZaasClientException.class, () -> {
-            underTest.query(VALID_TOKEN);
-        });
+        assertThrows(ZaasClientException.class, () -> underTest.query(VALID_TOKEN));
     }
 
     @Test
     void givenValidTokenApplId_whenPassTicketApiIsCalled_thenRaisedClientExceptionIsRethrown() throws Exception {
         when(passTickets.passTicket(anyString(), anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
-        assertThrows(ZaasClientException.class, () -> {
-            underTest.passTicket(VALID_TOKEN, VALID_APPLICATION_ID);
-        });
+        assertThrows(ZaasClientException.class, () -> underTest.passTicket(VALID_TOKEN, VALID_APPLICATION_ID));
     }
 
     @Test
@@ -151,8 +137,6 @@ class ZaasClientTest {
             new ZaasConfigurationException(IO_CONFIGURATION_ISSUE)
         );
 
-        assertThrows(ZaasConfigurationException.class, () -> {
-            underTest.passTicket(VALID_TOKEN, VALID_APPLICATION_ID);
-        });
+        assertThrows(ZaasConfigurationException.class, () -> underTest.passTicket(VALID_TOKEN, VALID_APPLICATION_ID));
     }
 }
