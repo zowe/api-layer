@@ -102,6 +102,7 @@ public class ZosmfServiceTest {
         ZosmfService zosmfService = getZosmfServiceSpy();
 
         doReturn(false).when(zosmfService).authenticationEndpointExists(HttpMethod.POST);
+        doReturn("realm").when(zosmfService).getZosmfRealm("http://zosmf:1433/zosmf/info");
         HttpHeaders requestHeaders = getBasicRequestHeaders();
 
         HttpHeaders responseHeaders = new HttpHeaders();

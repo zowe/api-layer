@@ -9,6 +9,8 @@
  */
 package org.zowe.apiml.gateway.security.service.zosmf;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -17,10 +19,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -64,6 +68,24 @@ public class ZosmfService extends AbstractZosmfService {
         private final Map<TokenType, String> tokens;
     }
 
+    /**
+     * DTO with base information about z/OSMF (version and realm/domain)
+     */
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ZosmfInfo {
+
+        @JsonProperty("zosmf_version")
+        private int version;
+
+        @JsonProperty("zosmf_full_version")
+        private String fullVersion;
+
+        @JsonProperty(ZOSMF_DOMAIN)
+        private String safRealm;
+
+    }
+
     private static final String PUBLIC_JWK_ENDPOINT = "/jwt/ibm/api/zOSMFBuilder/jwk";
 
     public ZosmfService(
@@ -81,16 +103,51 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     public AuthenticationResponse authenticate(Authentication authentication) {
+        AuthenticationResponse authenticationResponse;
         if (authenticationEndpointExists(HttpMethod.POST)) {
-            return issueAuthenticationRequest(
+            authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 getURI(getZosmfServiceId()) + ZOSMF_AUTHENTICATE_END_POINT,
                 HttpMethod.POST);
+        } else {
+            String zosmfInfoURIEndpoint = getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT;
+            authenticationResponse = issueAuthenticationRequest(
+                authentication,
+                zosmfInfoURIEndpoint,
+                HttpMethod.GET);
+            authenticationResponse.setDomain(getZosmfRealm(zosmfInfoURIEndpoint));
         }
-        return issueAuthenticationRequest(
-            authentication,
-            getURI(getZosmfServiceId()) + ZOSMF_INFO_END_POINT,
-            HttpMethod.GET);
+        return authenticationResponse;
+    }
+
+    /**
+     *
+     * @return String containing the zosmf realm/domain
+     */
+    @Cacheable("zosmfInfo")
+    public String getZosmfRealm(String infoURIEndpoint) {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+
+        try {
+            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
+                infoURIEndpoint,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                ZosmfInfo.class
+            );
+
+            ZosmfInfo zosmfInfo = info.getBody();
+
+            if ((zosmfInfo != null) && StringUtils.isEmpty(zosmfInfo.getSafRealm())) {
+                apimlLog.log("apiml.security.zosmfDomainIsEmpty", ZOSMF_DOMAIN);
+                throw new AuthenticationServiceException("z/OSMF domain cannot be read.");
+            }
+
+            return zosmfInfo.getSafRealm();
+        } catch (RuntimeException re) {
+            throw handleExceptionOnCall(infoURIEndpoint, re);
+        }
     }
 
     /**
@@ -116,9 +173,9 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     /**
-     * Check if POST to ZOSMF_AUTHENTICATE_END_POINT resolves
+     * Check if call to ZOSMF_AUTHENTICATE_END_POINT resolves
      * @param httpMethod HttpMethod to be checked for existence
-     * @return bool, containing true if endpoint resolves
+     * @return boolean, containing true if endpoint resolves
      */
     @Cacheable("zosmfAuthenticationEndpoint")
     public boolean authenticationEndpointExists(HttpMethod httpMethod) {

@@ -67,7 +67,7 @@ class ZosmfAuthenticationProviderTest {
    private AuthenticationService authenticationService;
    private ObjectMapper securityObjectMapper = new ObjectMapper();
 
-    private ZosmfService.AuthenticationResponse getResponse(boolean valid) throws IOException {
+    private ZosmfService.AuthenticationResponse getResponse(boolean valid) {
         if (valid) return new ZosmfService.AuthenticationResponse(RESPONSE, null);
         return new ZosmfService.AuthenticationResponse(INVALID_RESPONSE, null);
     }
@@ -126,6 +126,7 @@ class ZosmfAuthenticationProviderTest {
        ZosmfService zosmfService = createZosmfService();
        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+       doReturn("realm").when(zosmfService).getZosmfRealm(Mockito.anyString());
 
        Authentication tokenAuthentication
            = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
@@ -151,6 +152,7 @@ class ZosmfAuthenticationProviderTest {
        ZosmfService zosmfService = createZosmfService();
        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+       doReturn("realm").when(zosmfService).getZosmfRealm(Mockito.anyString());
 
        Exception exception = assertThrows(BadCredentialsException.class,
            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
@@ -188,7 +190,7 @@ class ZosmfAuthenticationProviderTest {
    }
 
    @Test
-   void notValidZosmfResponse() {
+   void notValidZosmfResponse() throws Exception {
        authConfigurationProperties.setZosmfServiceId(ZOSMF);
 
        final Application application = createApplication(zosmfInstance);
@@ -201,7 +203,7 @@ class ZosmfAuthenticationProviderTest {
            Mockito.eq(HttpMethod.GET),
            Mockito.any(),
            Mockito.<Class<Object>>any()))
-           .thenReturn(new ResponseEntity<>(null, headers, HttpStatus.OK));
+           .thenReturn(new ResponseEntity<>(new ZosmfService.ZosmfInfo(), headers, HttpStatus.OK));
 
        ZosmfService zosmfService = createZosmfService();
        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
@@ -220,6 +222,9 @@ class ZosmfAuthenticationProviderTest {
        final Application application = createApplication(zosmfInstance);
        when(discovery.getApplication(ZOSMF)).thenReturn(application);
 
+       ZosmfService.ZosmfInfo zosmfInfoNoDomain =
+           securityObjectMapper.reader().forType(ZosmfService.ZosmfInfo.class).readValue(INVALID_RESPONSE);
+
        HttpHeaders headers = new HttpHeaders();
        headers.add(HttpHeaders.SET_COOKIE, COOKIE1);
        headers.add(HttpHeaders.SET_COOKIE, COOKIE2);
@@ -227,7 +232,7 @@ class ZosmfAuthenticationProviderTest {
            Mockito.eq(HttpMethod.GET),
            Mockito.any(),
            Mockito.<Class<Object>>any()))
-           .thenReturn(new ResponseEntity<>(getResponse(false), headers, HttpStatus.OK));
+           .thenReturn(new ResponseEntity<>(zosmfInfoNoDomain, headers, HttpStatus.OK));
 
        ZosmfService zosmfService = createZosmfService();
        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
@@ -258,6 +263,7 @@ class ZosmfAuthenticationProviderTest {
 
        ZosmfService zosmfService = createZosmfService();
        doReturn(false).when(zosmfService).authenticationEndpointExists(HttpMethod.POST);
+       doReturn("realm").when(zosmfService).getZosmfRealm(Mockito.anyString());
        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
 
@@ -287,6 +293,7 @@ class ZosmfAuthenticationProviderTest {
        ZosmfService zosmfService = createZosmfService();
        ZosmfAuthenticationProvider zosmfAuthenticationProvider =
            new ZosmfAuthenticationProvider(authenticationService, zosmfService);
+       doReturn("realm").when(zosmfService).getZosmfRealm(Mockito.anyString());
 
        Authentication tokenAuthentication = zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication);
 
