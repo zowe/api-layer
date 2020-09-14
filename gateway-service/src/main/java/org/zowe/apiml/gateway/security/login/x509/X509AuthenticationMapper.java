@@ -10,7 +10,7 @@ package org.zowe.apiml.gateway.security.login.x509;/*
 
 import java.security.cert.X509Certificate;
 
-public interface X509Authentication {
+public interface X509AuthenticationMapper {
 
-    String mapUserToCertificate(X509Certificate certificate) ;
+    String mapCertificateToMainframeUserId(X509Certificate certificate);
 }
