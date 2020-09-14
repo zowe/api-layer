@@ -18,7 +18,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
-import org.zowe.apiml.gateway.security.service.ZosmfService;
+import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class GatewayHomepageControllerTest {
-    private ZosmfService zosmfService;
+    private Providers providers;
     private DiscoveryClient discoveryClient;
 
     private GatewayHomepageController gatewayHomepageController;
@@ -42,7 +42,7 @@ class GatewayHomepageControllerTest {
     @BeforeEach
     void setup() {
         discoveryClient = mock(DiscoveryClient.class);
-        zosmfService = mock(ZosmfService.class);
+        providers = mock(Providers.class);
 
         BuildInfo buildInfo = mock(BuildInfo.class);
 
@@ -50,7 +50,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, zosmfService, buildInfo);
+            discoveryClient, providers, buildInfo);
     }
 
 
@@ -75,7 +75,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, zosmfService, buildInfo);
+            discoveryClient, providers, buildInfo);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -103,8 +103,8 @@ class GatewayHomepageControllerTest {
     @Test
     void givenApiCatalogInstanceWithEmptyAuthService_whenHomePageCalled_thenHomePageModelShouldBeReportedDown() {
         discoveryReturnValidApiCatalog();
-        when(zosmfService.isUsed()).thenReturn(true);
-        when(zosmfService.isAvailable()).thenReturn(false);
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(false);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -249,8 +249,8 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenZOSMFProviderIsntRunning_whenHomePageCalled_thenHomePageModelShouldContainNotRunning() {
-        when(zosmfService.isUsed()).thenReturn(true);
-        when(zosmfService.isAvailable()).thenReturn(false);
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(false);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -263,8 +263,8 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenZOSMFProviderRunning_whenHomePageCalled_thenHomePageModelShouldContainRunning() {
-        when(zosmfService.isUsed()).thenReturn(true);
-        when(zosmfService.isAvailable()).thenReturn(true);
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(true);
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);

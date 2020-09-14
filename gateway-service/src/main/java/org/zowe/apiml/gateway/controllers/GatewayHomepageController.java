@@ -15,7 +15,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.zowe.apiml.gateway.security.service.ZosmfService;
+import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -32,22 +32,22 @@ public class GatewayHomepageController {
     private static final String SUCCESS_ICON_NAME = "success";
 
     private final DiscoveryClient discoveryClient;
-    private final ZosmfService zosmfService;
+    private final Providers providers;
 
     private BuildInfo buildInfo;
     private String buildString;
 
     @Autowired
     public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     ZosmfService zosmfService) {
-       this(discoveryClient, zosmfService, new BuildInfo());
+                                     Providers providers) {
+       this(discoveryClient, providers, new BuildInfo());
     }
 
     public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     ZosmfService zosmfService,
+                                     Providers providers,
                                      BuildInfo buildInfo) {
         this.discoveryClient = discoveryClient;
-        this.zosmfService = zosmfService;
+        this.providers = providers;
         this.buildInfo = buildInfo;
 
         initializeBuildInfos();
@@ -143,8 +143,8 @@ public class GatewayHomepageController {
     }
 
     private boolean authorizationServiceUp() {
-        if (zosmfService.isUsed()) {
-            return zosmfService.isAvailable();
+        if (providers.isZosfmUsed()) {
+            return providers.isZosmfAvailable();
         }
 
         return true;

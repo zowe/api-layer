@@ -15,7 +15,7 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.zowe.apiml.gateway.security.service.ZosmfService;
+import org.zowe.apiml.gateway.security.login.Providers;
 import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
@@ -26,23 +26,23 @@ import static org.mockito.Mockito.when;
 
 class GatewayHealthIndicatorTest {
 
-    private ZosmfService zosmfService;
+    private Providers providers;
 
     @BeforeEach
     void setUp() {
-        zosmfService = mock(ZosmfService.class);
+        providers = mock(Providers.class);
     }
 
     @Test
     void testStatusIsUpWhenCatalogAndDiscoveryAreAvailable() {
-        when(zosmfService.isUsed()).thenReturn(false);
+        when(providers.isZosfmUsed()).thenReturn(false);
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, zosmfService);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());
@@ -50,13 +50,13 @@ class GatewayHealthIndicatorTest {
 
     @Test
     void testStatusIsDownWhenDiscoveryIsNotAvailable() {
-        when(zosmfService.isUsed()).thenReturn(false);
+        when(providers.isZosfmUsed()).thenReturn(false);
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, zosmfService);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
@@ -64,15 +64,15 @@ class GatewayHealthIndicatorTest {
 
     @Test
     void givenZosmfIsUsedAnfZosmfIsUnavailable_whenHealthIsRequested_thenStatusIsDown() {
-        when(zosmfService.isUsed()).thenReturn(true);
-        when(zosmfService.isAvailable()).thenReturn(false);
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(false);
 
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014, true)));
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, zosmfService);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.DOWN, builder.build().getStatus());
@@ -80,8 +80,8 @@ class GatewayHealthIndicatorTest {
 
     @Test
     void givenZosmfIsUsedAndAvailable_whenHealthIsRequested_thenStatusIsUp() {
-        when(zosmfService.isUsed()).thenReturn(true);
-        when(zosmfService.isAvailable()).thenReturn(true);
+        when(providers.isZosfmUsed()).thenReturn(true);
+        when(providers.isZosmfAvailable()).thenReturn(true);
 
         DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
@@ -89,7 +89,7 @@ class GatewayHealthIndicatorTest {
         when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
             Collections.singletonList(new DefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011, true)));
 
-        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, zosmfService);
+        GatewayHealthIndicator gatewayHealthIndicator = new GatewayHealthIndicator(discoveryClient, providers);
         Health.Builder builder = new Health.Builder();
         gatewayHealthIndicator.doHealthCheck(builder);
         assertEquals(Status.UP, builder.build().getStatus());

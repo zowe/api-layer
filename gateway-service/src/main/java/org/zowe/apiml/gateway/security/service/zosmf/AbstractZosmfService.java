@@ -21,7 +21,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.gateway.security.login.LoginProvider;
 import org.zowe.apiml.gateway.security.service.ZosmfService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -165,15 +164,4 @@ public abstract class AbstractZosmfService implements ZosmfService {
         }
         return new AuthenticationResponse(tokens);
     }
-
-    @Override
-    public boolean isAvailable() {
-        return discovery.getApplication(authConfigurationProperties.validatedZosmfServiceId()) != null;
-    }
-
-    @Override
-    public boolean isUsed() {
-        return authConfigurationProperties.getProvider().equalsIgnoreCase(LoginProvider.ZOSMF.toString());
-    }
-
 }

@@ -9,11 +9,6 @@
  */
 package org.zowe.apiml.gateway.security.service.zosmf;
 
-import org.zowe.apiml.security.common.auth.AuthenticationScheme;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.gateway.security.service.ZosmfService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
@@ -30,10 +25,13 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.gateway.security.service.ZosmfService;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.Collections;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
@@ -208,34 +206,6 @@ public class ZosmfServiceV1Test {
         assertTrue(zosmfService.isSupported(25));
         assertTrue(zosmfService.isSupported(26));
         assertTrue(zosmfService.isSupported(Integer.MAX_VALUE));
-    }
-
-    @Test
-    public void givenZosmfAsAuthentication_whenInUseIsRequested_thenReturnTrue() {
-        when(authConfigurationProperties.getProvider()).thenReturn(AuthenticationScheme.ZOSMF.getScheme());
-
-        assertThat(zosmfService.isUsed(), is(true));
-    }
-
-    @Test
-    public void givenSafIsUsedAsAuthentication_whenInUseIsRequested_thenReturnFalse() {
-        when(authConfigurationProperties.getProvider()).thenReturn("saf");
-
-        assertThat(zosmfService.isUsed(), is(false));
-    }
-
-    @Test
-    public void givenZosmfIsKnownByDiscovery_whenAvailabilityIsRequested_thenReturnTrue() {
-        when(discovery.getApplication(ZOSMF_ID)).thenReturn(new Application());
-
-        assertThat(zosmfService.isAvailable(), is(true));
-    }
-
-    @Test
-    public void givenZosmfIsUnknownByDiscovery_whenAvailabilityIsRequested_thenReturnFalse() {
-        when(discovery.getApplication(ZOSMF_ID)).thenReturn(null);
-
-        assertThat(zosmfService.isAvailable(), is(false));
     }
 
 }
