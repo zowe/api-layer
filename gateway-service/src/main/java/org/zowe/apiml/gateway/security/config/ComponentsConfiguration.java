@@ -9,10 +9,12 @@
  */
 package org.zowe.apiml.gateway.security.config;
 
-import org.zowe.apiml.passticket.PassTicketService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.zowe.apiml.gateway.security.login.x509.X509AuthenticationMapper;
+import org.zowe.apiml.gateway.security.login.x509.X509CommonNameUserMapper;
+import org.zowe.apiml.passticket.PassTicketService;
 
 /**
  * Registers security related beans
@@ -36,6 +38,11 @@ public class ComponentsConfiguration {
     @Bean
     public PassTicketService passTicketService() {
         return new PassTicketService();
+    }
+
+    @Bean
+    public X509AuthenticationMapper x509Authentication() {
+        return new X509CommonNameUserMapper();
     }
 
 }
