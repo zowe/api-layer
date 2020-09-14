@@ -23,7 +23,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.util.categories.NotForMainframeTest;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import javax.net.ssl.SSLContext;
@@ -42,7 +41,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
-class Login {
+abstract class Login {
     protected final static int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
     protected final static String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     protected final static String HOST = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
@@ -254,11 +253,7 @@ class Login {
     }
     //@formatter:on
 
-    /*
-     * This test will be for MF once the implementation of certificate mapping in SAF is available
-     */
     @Test
-    @NotForMainframeTest
     void givenClientX509Cert_whenUserAuthenticates_thenTheValidTokenIsProduced() throws Exception {
         TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
