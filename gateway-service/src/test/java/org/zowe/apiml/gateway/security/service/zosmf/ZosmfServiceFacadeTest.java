@@ -349,6 +349,16 @@ public class ZosmfServiceFacadeTest {
             return this.version == version;
         }
 
+        @Override
+        public boolean isAvailable() {
+            return true;
+        }
+
+        @Override
+        public boolean isUsed() {
+            return true;
+        }
+
     }
 
     @AllArgsConstructor
@@ -374,6 +384,16 @@ public class ZosmfServiceFacadeTest {
         @Override
         public boolean isSupported(int version) {
             return this.version == version;
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return true;
+        }
+
+        @Override
+        public boolean isUsed() {
+            return true;
         }
 
     }

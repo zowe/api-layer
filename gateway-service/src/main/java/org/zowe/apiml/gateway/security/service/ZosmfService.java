@@ -62,6 +62,19 @@ public interface ZosmfService {
     boolean isSupported(int version);
 
     /**
+     * This method decides whether the Zosmf service is available.
+     * @return Availability of the ZOSMF service in the system.
+     */
+    boolean isAvailable();
+
+    /**
+     * This method decides whether the Zosmf is used for authentication
+     * @return Usage of the ZOSMF service in the system.
+     */
+    boolean isUsed();
+
+
+    /**
      * Enumeration of supported security tokens
      */
     @AllArgsConstructor
