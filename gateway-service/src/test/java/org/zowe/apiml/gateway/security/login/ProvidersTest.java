@@ -23,7 +23,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProvidersTest {
+class ProvidersTest {
     private AuthConfigurationProperties authConfigurationProperties;
     private DiscoveryClient discovery;
     private Providers underTest;
@@ -40,21 +40,21 @@ public class ProvidersTest {
 
 
     @Test
-    public void givenZosmfAsAuthentication_whenInUseIsRequested_thenReturnTrue() {
+    void givenZosmfAsAuthentication_whenInUseIsRequested_thenReturnTrue() {
         when(authConfigurationProperties.getProvider()).thenReturn(AuthenticationScheme.ZOSMF.getScheme());
 
         assertThat(underTest.isZosfmUsed(), is(true));
     }
 
     @Test
-    public void givenSafIsUsedAsAuthentication_whenInUseIsRequested_thenReturnFalse() {
+    void givenSafIsUsedAsAuthentication_whenInUseIsRequested_thenReturnFalse() {
         when(authConfigurationProperties.getProvider()).thenReturn("saf");
 
         assertThat(underTest.isZosfmUsed(), is(false));
     }
 
     @Test
-    public void givenZosmfIsKnownByDiscovery_whenAvailabilityIsRequested_thenReturnTrue() {
+    void givenZosmfIsKnownByDiscovery_whenAvailabilityIsRequested_thenReturnTrue() {
         when(discovery.getInstances(ZOSMF_ID)).thenReturn(
             Collections.singletonList(mock(ServiceInstance.class))
         );
@@ -64,7 +64,7 @@ public class ProvidersTest {
     }
 
     @Test
-    public void givenZosmfIsUnknownByDiscovery_whenAvailabilityIsRequested_thenReturnFalse() {
+    void givenZosmfIsUnknownByDiscovery_whenAvailabilityIsRequested_thenReturnFalse() {
         when(discovery.getInstances(ZOSMF_ID)).thenReturn(Collections.emptyList());
 
         assertThat(underTest.isZosmfAvailable(), is(false));

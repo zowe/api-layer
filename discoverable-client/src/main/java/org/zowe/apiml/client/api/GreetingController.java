@@ -40,8 +40,6 @@ public class GreetingController {
         tags = {"Other Operations"})
     public Greeting greeting(@RequestParam(value = "name", defaultValue = "world") String name,
                              @RequestParam(value = "delayMs", defaultValue = "0", required = false) Integer delayMs) {
-        System.out.println("Called name: " + name);
-
         if (delayMs > 0) {
             try {
                 Thread.sleep(delayMs);
