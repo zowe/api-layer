@@ -70,7 +70,9 @@ which enables your application to add following functions:
      ```java
      void logout(String token) throws ZaasClientException, IOException, ZaasConfigurationException;   
      ```
-
+  
+    In return, you receive a `204` HTTP status code if the token was successfully invalidated.
+    
 - **Obtain a PassTicket (passTicket)**
 
     The `passTicket` method has an added layer of protection. To use this method, call the method of the interface and provide
