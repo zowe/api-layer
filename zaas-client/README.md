@@ -21,7 +21,7 @@ This java library provides you the `ZaasClient` interface:
         String login(String authorizationHeader) throws ZaasClientException;
         ZaasToken query(String token) throws ZaasClientException;
         String passTicket(String jwtToken, String applicationId) throws ZaasClientException;
-        void logout(String token) throws ZaasClientException, IOException, ZaasConfigurationException;
+        void logout(String token) throws ZaasClientException, ZaasConfigurationException;
     }
     ```
 
@@ -68,7 +68,7 @@ which enables your application to add following functions:
     To use this method, call the method from your API.
     
      ```java
-     void logout(String token) throws ZaasClientException, IOException, ZaasConfigurationException;   
+     void logout(String token) throws ZaasClientException, ZaasConfigurationException;   
      ```
   
     In return, you receive a `204` HTTP status code if the token was successfully invalidated.

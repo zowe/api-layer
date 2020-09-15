@@ -11,6 +11,7 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -61,6 +62,7 @@ import java.util.*;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     // List of endpoints protected by content filters
     private static final String[] PROTECTED_ENDPOINTS = {
@@ -291,7 +293,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 try {
                     failure.onAuthenticationFailure(request, response, e);
                 } catch (ServletException ex) {
-                    ex.printStackTrace();
+                    log.error("The response cannot be written during the logout exception handler: {}", ex.getMessage());
                 }
             }
         };

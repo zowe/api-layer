@@ -73,11 +73,9 @@ public class ZaasClientTestControllerTest {
 
     @Test
     public void givenValidToken_whenPerformingLogout_thenSuccessLogout() throws Exception {
-        LoginRequest loginRequest = new LoginRequest("username", "password");
         String token = "token";
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
-                .content(mapper.writeValueAsString(loginRequest))
                 .header("Cookie", TOKEN_PREFIX + "=" + token)
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(status().is(204));
@@ -85,11 +83,20 @@ public class ZaasClientTestControllerTest {
 
     @Test
     public void givenEmptyToken_whenPerformingLogout_thenFailLogout() throws Exception {
-        LoginRequest loginRequest = new LoginRequest("username", "password");
         this.mockMvc.perform(
             post("/api/v1/zaasClient/logout")
-                .content(mapper.writeValueAsString(loginRequest))
                 .contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(status().is(400));
+    }
+
+//    @Test
+    public void test() throws Exception {
+        this.mockMvc.perform(
+            post("/api/v1/zaasClient/logout")
+                .header("Cookie", TOKEN_PREFIX + "=" + 1234)
+                .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(status().is(400))
+            .andExpect(content().string("Invalid token provided"));
+
     }
 }

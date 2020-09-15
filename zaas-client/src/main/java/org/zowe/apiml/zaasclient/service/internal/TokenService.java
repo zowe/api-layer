@@ -13,8 +13,6 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 
-import java.io.IOException;
-
 /**
  * Operations related to the tokens. Mainly JWT token.
  */
@@ -58,7 +56,6 @@ interface TokenService {
      * @throws ZaasClientException If the provided token was expired, invalid or some other issue with respect to
      *      communication occurs, this exception with details is thrown.
      * @throws ZaasConfigurationException Wrapper for errors in HTTP client and TLS configuration.
-     * @throws IOException
      */
-    void logout(String token) throws ZaasClientException, IOException, ZaasConfigurationException;
+    void logout(String token) throws ZaasClientException, ZaasConfigurationException;
 }

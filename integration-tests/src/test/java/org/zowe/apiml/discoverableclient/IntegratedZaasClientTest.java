@@ -38,6 +38,8 @@ class IntegratedZaasClientTest {
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
     private final static String COOKIE_NAME = "apimlAuthenticationToken";
+    private final static String LOGIN = "/login";
+    private final static String LOGOUT = "/logout";
 
     private final static URI ZAAS_CLIENT_URI = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/zaasClient");
     private final static URI ZAAS_CLIENT_URI_OLD_FORMAT = HttpRequestUtils.getUriFromGateway("/api/v1/discoverableclient/zaasClient");
@@ -60,7 +62,7 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(ZAAS_CLIENT_URI + "/login")
+            .post(ZAAS_CLIENT_URI + LOGIN)
             .then()
             .statusCode(is(SC_OK))
             .body(not(isEmptyString()));
@@ -79,7 +81,7 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(ZAAS_CLIENT_URI + "/login")
+            .post(ZAAS_CLIENT_URI + LOGIN)
             .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(is("Invalid username or password"));
@@ -93,7 +95,7 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(ZAAS_CLIENT_URI_OLD_FORMAT + "/login")
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGIN)
             .then()
             .statusCode(is(SC_OK))
             .body(not(isEmptyString()));
@@ -107,7 +109,7 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .body(loginRequest)
             .when()
-            .post(ZAAS_CLIENT_URI_OLD_FORMAT + "/login")
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGIN)
             .then()
             .statusCode(is(SC_UNAUTHORIZED))
             .body(is("Invalid username or password"));
@@ -121,7 +123,7 @@ class IntegratedZaasClientTest {
             .contentType(JSON)
             .cookie(COOKIE_NAME, generateToken())
             .when()
-            .post(ZAAS_CLIENT_URI_OLD_FORMAT + "/logout")
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGOUT)
             .then()
             .statusCode(is(SC_NO_CONTENT));
     }
@@ -132,7 +134,7 @@ class IntegratedZaasClientTest {
         given()
             .contentType(JSON)
             .when()
-            .post(ZAAS_CLIENT_URI_OLD_FORMAT + "/logout")
+            .post(ZAAS_CLIENT_URI_OLD_FORMAT + LOGOUT)
             .then()
             .statusCode(is(SC_BAD_REQUEST));
     }

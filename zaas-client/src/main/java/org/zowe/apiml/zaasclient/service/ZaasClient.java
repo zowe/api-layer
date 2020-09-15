@@ -12,8 +12,6 @@ package org.zowe.apiml.zaasclient.service;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 
-import java.io.IOException;
-
 /**
  * Get JWT tokens, PaasTickets and details about the Tokens.
  * Facade covering all operations related to the security API exposed via API Mediation Layer
@@ -72,7 +70,6 @@ public interface ZaasClient {
      * @throws ZaasClientException If the provided token was expired, invalid or some other issue with respect to
      *      communication occurs, this exception with details is thrown.
      * @throws ZaasConfigurationException Wrapper for errors in HTTP client and TLS configuration.
-     * @throws IOException
      */
-    void logout(String token) throws ZaasClientException, IOException, ZaasConfigurationException;
+    void logout(String token) throws ZaasClientException, ZaasConfigurationException;
 }

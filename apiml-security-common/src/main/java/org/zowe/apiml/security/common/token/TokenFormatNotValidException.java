@@ -20,7 +20,4 @@ public class TokenFormatNotValidException extends AuthenticationException {
         super(msg);
     }
 
-    public TokenFormatNotValidException(String msg, Throwable t) {
-        super(msg, t);
-    }
 }
