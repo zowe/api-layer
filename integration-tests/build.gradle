@@ -104,6 +104,7 @@ task runIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'SlowTests',
             'AdditionalLocalTest'
         )
@@ -119,6 +120,7 @@ task runLocalIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'SlowTests',
             'MainframeDependentTests',
             'AdditionalLocalTest'
@@ -136,6 +138,7 @@ task runAllLocalIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'SlowTests',
             'MainframeDependentTests'
         )
@@ -152,6 +155,7 @@ task runAllIntegrationTests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'AdditionalLocalTest',
             'NotForMainframeTest'
         )
@@ -178,6 +182,7 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'AdditionalLocalTest',
             'TestsNotMeantForZowe'
         )
@@ -194,6 +199,7 @@ task runCITests(type: Test) {
     useJUnitPlatform {
         excludeTags(
             'StartupCheck',
+            'EnvironmentCheck',
             'SlowTests',
             'AdditionalLocalTest',
             'MainframeDependentTests'
