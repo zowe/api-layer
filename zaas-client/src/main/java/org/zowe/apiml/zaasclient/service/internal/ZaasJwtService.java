@@ -102,7 +102,7 @@ class ZaasJwtService implements TokenService {
 
     private ClientWithResponse logoutJwtToken(String jwtToken) throws ZaasConfigurationException, IOException, ZaasClientException {
         CloseableHttpClient client = httpClientProvider.getHttpClient();
-        ((ZaasHttpsClientProvider) httpClientProvider).clearCookieStore();
+        clearZaasClientCookies();
         HttpPost httpPost = new HttpPost(logoutEndpoint);
         if(jwtToken.startsWith("Bearer")){
             httpPost.addHeader(HttpHeaders.AUTHORIZATION,jwtToken);
@@ -110,6 +110,12 @@ class ZaasJwtService implements TokenService {
             httpPost.addHeader(SM.COOKIE, jwtToken);
         }
         return getClientWithResponse(client, httpPost);
+    }
+
+    private void clearZaasClientCookies () {
+        if(httpClientProvider instanceof ZaasHttpsClientProvider) {
+            ((ZaasHttpsClientProvider) httpClientProvider).clearCookieStore();
+        }
     }
 
     private ClientWithResponse getClientWithResponse(CloseableHttpClient client, HttpPost httpPost) throws IOException, ZaasClientException {

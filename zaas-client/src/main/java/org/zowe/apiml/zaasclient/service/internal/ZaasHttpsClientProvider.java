@@ -47,7 +47,7 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     private final String keyStoreType;
     private final String keyStorePath;
 
-    private CookieStore cookieStore = new BasicCookieStore();
+    private final CookieStore cookieStore = new BasicCookieStore();
 
     private CloseableHttpClient httpsClientWithKeyStoreAndTrustStore;
 
@@ -63,7 +63,6 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         this.keyStorePath = configProperties.getKeyStorePath();
         this.keyStorePassword = configProperties.getKeyStorePassword();
         this.keyStoreType = configProperties.getKeyStoreType();
-
     }
 
     public void clearCookieStore() {
