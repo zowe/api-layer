@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.JwtSecurityInitializer;
-import org.zowe.apiml.gateway.security.service.zosmf.ZosmfServiceFacade;
+import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,7 +43,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     private final JwtSecurityInitializer jwtSecurityInitializer;
-    private final ZosmfServiceFacade zosmfServiceFacade;
+    private final ZosmfService zosmfService;
 
     public static final String CONTROLLER_PATH = "/gateway/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
@@ -80,7 +80,7 @@ public class AuthController {
     @ResponseBody
     public JSONObject getAllPublicKeys() {
         final List<JWK> keys = new LinkedList<>();
-        keys.addAll(zosmfServiceFacade.getPublicKeys().getKeys());
+        keys.addAll(zosmfService.getPublicKeys().getKeys());
         keys.add(jwtSecurityInitializer.getJwkPublicKey());
         return new JWKSet(keys).toJSONObject(true);
     }
@@ -90,7 +90,7 @@ public class AuthController {
     public JSONObject getCurrentPublicKeys() {
         final List<JWK> keys = new LinkedList<>();
         if (useZosmfJwtToken) {
-            keys.addAll(zosmfServiceFacade.getPublicKeys().getKeys());
+            keys.addAll(zosmfService.getPublicKeys().getKeys());
         }
         if (keys.isEmpty()) {
             keys.add(jwtSecurityInitializer.getJwkPublicKey());
