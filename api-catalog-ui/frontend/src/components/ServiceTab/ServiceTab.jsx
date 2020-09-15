@@ -27,7 +27,6 @@ export default class ServiceTab extends Component {
             selectedService.basePath !== null &&
             selectedService.basePath !== undefined &&
             selectedService.basePath.length > 0;
-        console.log(selectedService);
         if (tiles === null || tiles === undefined || tiles.length === 0) {
             throw new Error('No tile is selected.');
         }
