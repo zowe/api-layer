@@ -10,8 +10,10 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import lombok.AllArgsConstructor;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -45,6 +47,8 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
     private final String keyStoreType;
     private final String keyStorePath;
 
+    private CookieStore cookieStore = new BasicCookieStore();
+
     private CloseableHttpClient httpsClientWithKeyStoreAndTrustStore;
 
     public ZaasHttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
@@ -59,6 +63,11 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         this.keyStorePath = configProperties.getKeyStorePath();
         this.keyStorePassword = configProperties.getKeyStorePassword();
         this.keyStoreType = configProperties.getKeyStoreType();
+
+    }
+
+    public void clearCookieStore() {
+        this.cookieStore.clear();
     }
 
     @Override
@@ -146,7 +155,8 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             .setSSLSocketFactory(sslsf)
             .setDefaultRequestConfig(this.requestConfig)
             .setMaxConnTotal(3 * 3)
-            .setMaxConnPerRoute(3);
+            .setMaxConnPerRoute(3)
+            .setDefaultCookieStore(cookieStore);
     }
 
     private RequestConfig buildCustomRequestConfig() {

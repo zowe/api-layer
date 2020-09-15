@@ -123,9 +123,6 @@ public class ZaasClientImpl implements ZaasClient {
 
     @Override
     public void logout(String jwtToken) throws ZaasConfigurationException, ZaasClientException {
-        if (jwtToken == null || jwtToken.isEmpty() || !jwtToken.contains(TOKEN_PREFIX)) {
-            throw new ZaasClientException(ZaasClientErrorCodes.INVALID_JWT_TOKEN);
-        }
         try {
             tokens.logout(jwtToken);
         } catch (ZaasClientException e) {

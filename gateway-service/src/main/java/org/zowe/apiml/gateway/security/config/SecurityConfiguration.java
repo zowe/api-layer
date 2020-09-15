@@ -284,7 +284,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
         return (request, response, authentication) -> {
             try {
-                authenticationService.getJwtTokenFromRequestToLogout(request)
+                authenticationService.getJwtTokenFromRequest(request)
                     .ifPresent(x ->
                         authenticationService.invalidateJwtToken(x, true)
                     );
